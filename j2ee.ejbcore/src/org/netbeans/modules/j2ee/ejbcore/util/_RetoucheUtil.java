@@ -173,7 +173,7 @@ public final class _RetoucheUtil {
         javaSource.runModificationTask(new Task<WorkingCopy>() {
             @Override
             public void run(WorkingCopy workingCopy) throws IOException {
-                workingCopy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
+                workingCopy.toPhase(JavaSource.Phase.RESOLVED);
                 TypeElement typeElement = workingCopy.getElements().getTypeElement(className);
                 TreeMaker treeMaker = workingCopy.getTreeMaker();
                 GenerationUtils generationUtils = GenerationUtils.newInstance(workingCopy);
@@ -183,13 +183,13 @@ public final class _RetoucheUtil {
                 }
 
                 // modifiers
-                Set<Modifier> modifiers = new HashSet<Modifier>();
+                Set<Modifier> modifiers = new HashSet<>();
                 modifiers.add(Modifier.PRIVATE);
                 if (isStatic) {
                     modifiers.add(Modifier.STATIC);
                 }
                 // annotation with attributes
-                List<ExpressionTree> attributesList = new ArrayList<ExpressionTree>();
+                List<ExpressionTree> attributesList = new ArrayList<>();
                 if (attributes != null) {
                     for (Map.Entry<String, String> entry : attributes.entrySet()) {
                         if ("".equals(entry.getKey())) { //NOI18N
@@ -202,10 +202,12 @@ public final class _RetoucheUtil {
                 AnnotationTree annotationTree = generationUtils.createAnnotation(annotationType, attributesList);
                 ModifiersTree modifiersTree = treeMaker.addModifiersAnnotation(treeMaker.Modifiers(modifiers), annotationTree);
                 // field itself
+                ExpressionTree returnType = returnTypeElement != null ?
+                    treeMaker.QualIdent(returnTypeElement) : treeMaker.QualIdent(fieldType);
                 VariableTree variableTree = treeMaker.Variable(
                         modifiersTree,
                         name,
-                        treeMaker.QualIdent(returnTypeElement),
+                        returnType,
                         null
                         );
                 // adding field to class

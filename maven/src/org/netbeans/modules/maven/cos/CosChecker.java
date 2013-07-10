@@ -203,11 +203,15 @@ public class CosChecker implements PrerequisitesChecker, LateBoundPrerequisitesC
                             }
                             processedGoals.add(goal);
                         }
-                        if (processedGoals.size() > 0) {
+                        /*#232323 nasty but necessary because of the hack to add switches among the  list of goals */
+                        boolean containsResumeFrom = processedGoals.contains("--resume-from") || processedGoals.contains("-rf");
+                        if (processedGoals.size() > (containsResumeFrom ? 2 : 0)) {
                             brc.setGoals(processedGoals);
                             injectDependencyProjects(brc, false, con);
                         }
                     } else {
+                        //#221781 we might need to add -DlastModGranularityMs=-10000000000 to force re-compilation of CoS created class files.
+                        // or clear the IDe generated files in some other way
                         LOG.log(Level.INFO, "could not strip phase goals from RunConfig subclass {0}", config.getClass().getName());
                     }
                 }

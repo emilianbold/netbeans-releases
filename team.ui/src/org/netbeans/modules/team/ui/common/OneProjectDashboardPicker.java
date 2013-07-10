@@ -306,7 +306,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
                     @Override
                     public void stateChanged(ChangeEvent e) {
                         ListNode node = mm.getSelectedItem();
-                        if(node != null) {
+                        if(node != null && node instanceof MyProjectNode) {
                             MyProjectNode mpn = (MyProjectNode) node;
                             ProjectHandle<P> ph = mpn.getProject();
                             

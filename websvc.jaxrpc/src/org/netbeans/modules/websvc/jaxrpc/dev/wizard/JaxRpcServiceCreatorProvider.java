@@ -45,7 +45,7 @@
 package org.netbeans.modules.websvc.jaxrpc.dev.wizard;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.websvc.api.support.ServiceCreator;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.modules.websvc.spi.support.ServiceCreatorProvider;
@@ -66,7 +66,7 @@ public class JaxRpcServiceCreatorProvider implements ServiceCreatorProvider {
         ProjectInfo projectInfo = new ProjectInfo(project);
         int projectType = projectInfo.getProjectType();
      
-        if (!Util.isJavaEE5orHigher(project) &&
+        if (!ProjectUtil.isJavaEE5orHigher(project) &&
                    (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)) {
                if ((!projectInfo.isJsr109Supported() && projectType == ProjectInfo.WEB_PROJECT_TYPE && !projectInfo.isJsr109oldSupported())) {
                    return null;

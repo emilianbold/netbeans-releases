@@ -55,9 +55,9 @@ import org.openide.util.WeakListeners;
 /**
  * @author Jan Becicka
  */
-public final class LoginAction extends AbstractAction {
+final class LoginAction extends AbstractAction {
 
-    private TeamServer teamServer;
+    private final TeamServer teamServer;
     private PropertyChangeListener l;
     public LoginAction(TeamServer teamServer) {
         this.teamServer = teamServer;

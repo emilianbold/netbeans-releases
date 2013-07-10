@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -513,7 +514,13 @@ public class BrowserConsoleLogger implements Console.Listener {
         FileObject fileObject = null;
         if (filePath.startsWith("http:") || filePath.startsWith("https:")) {    // NOI18N
             try {
-                URL url = URI.create(filePath).toURL();
+                URL url;
+                try {
+                    url = new URI(filePath).toURL();
+                } catch (URISyntaxException usex) {
+                    // Issue 231564
+                    url = new URL(filePath);
+                }
                 if (project != null) {
                     fileObject = ServerURLMapping.fromServer(project, url);
                 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -152,7 +152,7 @@ public class Hk2Cookie {
             if (instance != null) {
                 Future<ResultString> future = ServerAdmin.<ResultString>exec(
                         instance, new CommandEnable(name, Util.computeTarget(
-                        instance.getProperties())), null);
+                        instance.getProperties())));
                 status = new WeakReference<Future<ResultString>>(future);
                 return future;
             } else {
@@ -187,7 +187,7 @@ public class Hk2Cookie {
             if (instance != null) {
                 Future<ResultString> future = ServerAdmin.<ResultString>exec(
                         instance, new CommandDisable(name, Util.computeTarget(
-                        instance.getProperties())), null);
+                        instance.getProperties())));
                 status = new WeakReference<Future<ResultString>>(future);
                 return future;
             } else {
@@ -222,7 +222,7 @@ public class Hk2Cookie {
             if (instance != null) {
                 Future<ResultString> future = ServerAdmin.<ResultString>exec(
                         instance, new CommandUndeploy(name, Util.computeTarget(
-                        instance.getProperties())), null);
+                        instance.getProperties())));
                 status = new WeakReference<Future<ResultString>>(future);
                 return future;
             } else {
@@ -274,7 +274,7 @@ public class Hk2Cookie {
             Future<ResultString> future = ServerAdmin.<ResultString>exec(
                     instance, new CommandDeploy(dir.getParentFile().getName(),
                     Util.computeTarget(instance.getProperties()),
-                    dir, null, null, null), null);
+                    dir, null, null, null));
             status = new WeakReference<Future<ResultString>>(future);
             return future;
         }
@@ -320,7 +320,7 @@ public class Hk2Cookie {
             if (instance != null) {
                 Future<ResultString> future = ServerAdmin.<ResultString>exec(
                         instance, new CommandDeleteResource(
-                        name, cmdSuffix, cmdPropertyName, cascadeDelete), null);
+                        name, cmdSuffix, cmdPropertyName, cascadeDelete));
                 status = new WeakReference<Future<ResultString>>(future);
                 return future;
             } else {
@@ -444,7 +444,7 @@ public class Hk2Cookie {
                 public void run() {
                     if (instance != null) {
                         Future<ResultMap> future = ServerAdmin.<ResultMap>exec(
-                        instance, new CommandGetProperty(query), null);
+                        instance, new CommandGetProperty(query));
                         Map<String, String> value;
                         try {
                             ResultMap result = future.get();
@@ -486,7 +486,7 @@ public class Hk2Cookie {
                                     for (String key : keys) {
                                         String value = properties.get(key);
                                         Future<ResultString> future = ServerAdmin.<ResultString>exec(
-                                                instance, new CommandSetProperty(key, value), null);
+                                                instance, new CommandSetProperty(key, value));
                                         try {
                                             ResultString result = future.get();
                                         } catch (InterruptedException ie) {

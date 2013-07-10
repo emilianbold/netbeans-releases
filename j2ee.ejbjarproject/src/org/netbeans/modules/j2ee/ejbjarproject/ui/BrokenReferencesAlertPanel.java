@@ -45,7 +45,7 @@
 package org.netbeans.modules.j2ee.ejbjarproject.ui;
 
 import javax.swing.JPanel;
-import org.netbeans.modules.j2ee.common.project.ui.UserProjectSettings;
+import org.netbeans.modules.javaee.project.api.ui.UserProjectSettings;
 
 public class BrokenReferencesAlertPanel extends JPanel {
     private static final long serialVersionUID = 1L;

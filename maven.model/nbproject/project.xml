@@ -170,6 +170,8 @@
                 <friend>org.netbeans.modules.maven.repository</friend>
                 <friend>org.netbeans.modules.selenium.maven</friend>
                 <friend>org.netbeans.modules.testng.maven</friend>
+                <!-- danis@netbeans.org -->
+                <friend>org.vaadin.netbeans.maven</friend>
                 <package>org.netbeans.modules.maven.model</package>
                 <package>org.netbeans.modules.maven.model.pom</package>
                 <package>org.netbeans.modules.maven.model.settings</package>

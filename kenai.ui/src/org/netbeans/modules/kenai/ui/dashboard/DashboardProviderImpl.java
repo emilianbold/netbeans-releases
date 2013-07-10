@@ -41,12 +41,11 @@
  */
 package org.netbeans.modules.kenai.ui.dashboard;
 
-import java.awt.event.ActionEvent;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
+import javax.swing.JComponent;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
 import org.netbeans.modules.kenai.ui.MemberAccessorImpl;
@@ -68,7 +67,6 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.netbeans.modules.team.ui.util.treelist.LeafNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.RequestProcessor;
@@ -80,7 +78,6 @@ import org.openide.util.RequestProcessor;
 public class DashboardProviderImpl extends DashboardProvider<KenaiProject> {
     
     private final KenaiServer server;
-    private static final RequestProcessor RP = new RequestProcessor("Kenai logout", 5); //NOI18N
 
     public DashboardProviderImpl(KenaiServer server) {
         this.server = server;
@@ -93,7 +90,12 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiProject> {
 
     @Override
     public TreeListNode createProjectLinksNode(TreeListNode pn, ProjectHandle<KenaiProject> project) {
-        return new ProjectLinksNode(pn, project);
+       return new ProjectLinksNode(pn, project);
+    }
+     
+    @Override
+    public JComponent createProjectLinksComponent(ProjectHandle<KenaiProject> project) {
+        return new ProjectLinksPanel(project, null);
     }
 
     @Override

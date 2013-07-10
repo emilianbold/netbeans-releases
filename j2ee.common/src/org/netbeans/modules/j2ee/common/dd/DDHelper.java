@@ -51,7 +51,6 @@ import java.io.OutputStreamWriter;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.openide.filesystems.FileLock;
@@ -277,9 +276,9 @@ public class DDHelper {
             template = "ear-1.4.xml"; // NOI18N
         } else if (Profile.JAVA_EE_5.equals(profile) && forceCreation) {
             template = "ear-5.xml"; // NOI18N
-        } else if (Util.isAtLeastJavaEE7Web(profile) && forceCreation) {
+        } else if (profile != null && profile.isAtLeast(Profile.JAVA_EE_7_WEB) && forceCreation) {
             template = "ear-7.xml"; // NOI18N
-        } else if (Util.isAtLeastJavaEE6Web(profile) && forceCreation) {
+        } else if (profile != null && profile.isAtLeast(Profile.JAVA_EE_6_WEB) && forceCreation) {
             template = "ear-6.xml"; // NOI18N
         }
 

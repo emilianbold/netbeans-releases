@@ -88,10 +88,12 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
         }
     }
 
+    @Override
     public Object state() {
         return state;
     }
 
+    @Override
     public Token<YamlTokenId> nextToken() {
         // TODO - support embedded Ruby in <% %> tags.
         // This is used in fixtures files from Rails for example; see
@@ -445,6 +447,7 @@ public final class YamlLexer implements Lexer<YamlTokenId> {
         return tokenFactory.createToken(id);
     }
 
+    @Override
     public void release() {
     }
 }

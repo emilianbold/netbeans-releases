@@ -99,7 +99,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
     private static final Logger LOG = Logger.getLogger(
             ODCSBuilderAccessor.class.getName());
 
-    private static RequestProcessor rp = new RequestProcessor(
+    private static final RequestProcessor rp = new RequestProcessor(
             "ODCSS Build Services", 10);                                 // NOI18N
     
     private final static Map<BuildsListener, Object> CACHE =
@@ -266,11 +266,11 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
 
     private static class HudsonJobHandle extends JobHandle {
 
-        private HudsonInstance hudsonInstance;
-        private String jobName;
+        private final HudsonInstance hudsonInstance;
+        private final String jobName;
         private HudsonJob hudsonJob;
-        private HudsonChangeAdapter hudsonChangeListener;
-        private PropertyChangeSupport propertyChangeSupport;
+        private final HudsonChangeAdapter hudsonChangeListener;
+        private final PropertyChangeSupport propertyChangeSupport;
         private final Object listenerLock = new Object();
         private volatile Status currentStatus = null;
         private volatile boolean updateStatusScheduled = false;
@@ -434,7 +434,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
 
     private static class HudsonBuildHandle extends BuildHandle {
 
-        private HudsonJobBuild build;
+        private final HudsonJobBuild build;
 
         public HudsonBuildHandle(HudsonJobBuild build) {
             this.build = build;
@@ -478,7 +478,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
 
         private HudsonInstance instance;
         private Reference<ProjectHandle<ODCSProject>> projectHandle;
-        private Reference<ODCSServer> server;
+        private final Reference<ODCSServer> server;
         private final List<HudsonJobHandle> buildHandles;
         private List<HudsonJobHandle> watchedBuildHandles;
 

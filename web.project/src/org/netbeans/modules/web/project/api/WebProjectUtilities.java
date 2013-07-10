@@ -54,7 +54,6 @@ import java.io.OutputStreamWriter;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.project.ProjectUtils;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.dd.api.ejb.EnterpriseBeans;
 import org.netbeans.modules.j2ee.dd.api.ejb.Session;
@@ -98,10 +97,10 @@ import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.modules.j2ee.common.project.ProjectConstants;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
-import org.netbeans.modules.j2ee.common.project.ui.DeployOnSaveUtils;
-import org.netbeans.modules.j2ee.common.project.ui.J2EEProjectProperties;
+import org.netbeans.modules.javaee.project.api.ant.AntProjectConstants;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
+import org.netbeans.modules.javaee.project.api.ant.DeployOnSaveUtils;
+import org.netbeans.modules.javaee.project.api.ant.ui.J2EEProjectProperties;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.ui.PlatformUiSupport;
@@ -382,7 +381,7 @@ public class WebProjectUtilities {
     }
     
     private static FileObject createWelcomeFile(FileObject webFolder, Profile profile) throws IOException {
-        FileObject template = profile != null && Util.isAtLeastJavaEE7Web(profile) ?
+        FileObject template = profile != null && profile.isAtLeast(Profile.JAVA_EE_7_WEB) ?
                 FileUtil.getConfigFile( "Templates/JSP_Servlet/Html.html" ) :
                 FileUtil.getConfigFile( "Templates/JSP_Servlet/JSP.jsp" ); // NOI18N
         
@@ -674,8 +673,8 @@ public class WebProjectUtilities {
         Profile j2eeProfile = data.getJavaEEProfile();
         if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
                 j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
-            if (rh.getProjectLibraryManager().getLibrary(ProjectConstants.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
-                rh.copyLibrary(LibraryManager.getDefault().getLibrary(ProjectConstants.ENDORSED_LIBRARY_NAME)); // NOI18N
+            if (rh.getProjectLibraryManager().getLibrary(AntProjectConstants.ENDORSED_LIBRARY_NAME) == null) { // NOI18N
+                rh.copyLibrary(LibraryManager.getDefault().getLibrary(AntProjectConstants.ENDORSED_LIBRARY_NAME)); // NOI18N
             }
         }
         SharabilityUtility.makeSureProjectHasCopyLibsLibrary(h, rh);
@@ -827,7 +826,7 @@ public class WebProjectUtilities {
         
         if (j2eeProfile.equals(Profile.JAVA_EE_6_FULL) || j2eeProfile.equals(Profile.JAVA_EE_6_WEB) ||
                 j2eeProfile.equals(Profile.JAVA_EE_7_FULL) || j2eeProfile.equals(Profile.JAVA_EE_7_WEB)) {
-            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{ProjectConstants.ENDORSED_LIBRARY_CLASSPATH});
+            ep.setProperty(ProjectProperties.ENDORSED_CLASSPATH, new String[]{AntProjectConstants.ENDORSED_LIBRARY_CLASSPATH});
         }
 
         // ant deployment support

@@ -47,11 +47,11 @@ package org.netbeans.modules.websvc.core.dev.wizard;
 import org.netbeans.modules.websvc.api.support.ServiceCreator;
 import org.netbeans.modules.websvc.core.ProjectInfo;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.websvc.core.JaxWsUtils;
 import org.netbeans.modules.websvc.core.ServerType;
 import org.netbeans.modules.websvc.spi.support.ServiceCreatorProvider;
 import org.openide.WizardDescriptor;
-import org.netbeans.modules.j2ee.common.Util;
 import org.netbeans.modules.websvc.jaxws.api.JAXWSSupport;
 
 /**
@@ -69,13 +69,13 @@ public class JaxWsServiceCreatorProvider implements ServiceCreatorProvider {
             ProjectInfo projectInfo = new ProjectInfo(project);
             int projectType = projectInfo.getProjectType();
             if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && Utils.isSourceLevel16orHigher(project)) ||
-                    ((Util.isJavaEE5orHigher(project) &&
+                    ((ProjectUtil.isJavaEE5orHigher(project) &&
                     (projectType == ProjectInfo.WEB_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE)))
                     ) {
                 return new JaxWsServiceCreator(projectInfo, wiz, false);
             } else if (JaxWsUtils.isEjbJavaEE5orHigher(projectInfo)) {
                 return new JaxWsServiceCreator(projectInfo, wiz, false);
-            } else if (!Util.isJavaEE5orHigher(project) &&
+            } else if (!ProjectUtil.isJavaEE5orHigher(project) &&
                        (projectType == ProjectInfo.WEB_PROJECT_TYPE)) {
                        if (!(projectInfo.isJsr109Supported() || projectInfo.isJsr109oldSupported())) {                   
                            boolean addLibraries = !projectInfo.isWsgenSupported() || !projectInfo.isWsimportSupported();

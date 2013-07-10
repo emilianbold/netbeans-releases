@@ -115,6 +115,9 @@ public enum Directive {
     //ngdoc parser is here: https://github.com/angular/angular.js/blob/master/docs/src/ngdoc.js
     //the directives documentation in .ngdoc format is here: https://github.com/angular/angular.js/blob/master/src/ng/directive/ngController.js
     
+    private static final String PARTIAL_DOC_URL_BASE = "http://code.angularjs.org/1.0.7/docs/partials/api/ng.directive:"; //NOI18N
+    private static final String PARTIAL_SUFFIX = ".html"; //NOI18N
+    
     private static final String DOC_URL_BASE = "http://docs.angularjs.org/api/ng.directive:"; //NOI18N
     
     public static final String NAME_PREFIX = "ng";
@@ -167,6 +170,19 @@ public enum Directive {
                 .append(NAME_PREFIX)
                 .append(Character.toUpperCase(getCleanCoreName().charAt(0)))
                 .append(getCleanCoreName().substring(1))
+                .toString();
+    }
+    
+    /**
+     * Workaround for the "I'm a teapot" embedded browser issue:
+     * https://netbeans.org/bugzilla/show_bug.cgi?id=229689
+     */
+    public String getExternalDocumentationURL_partial() {
+        return new StringBuilder().append(PARTIAL_DOC_URL_BASE)
+                .append(NAME_PREFIX)
+                .append(Character.toUpperCase(getCleanCoreName().charAt(0)))
+                .append(getCleanCoreName().substring(1))
+                .append(PARTIAL_SUFFIX)
                 .toString();
     }
     

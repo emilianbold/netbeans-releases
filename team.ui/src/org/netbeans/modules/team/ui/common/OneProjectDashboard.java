@@ -44,6 +44,8 @@ package org.netbeans.modules.team.ui.common;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.net.MalformedURLException;
 import javax.accessibility.AccessibleContext;
 import java.beans.PropertyChangeEvent;
@@ -54,31 +56,33 @@ import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.*;
 import java.util.List;
-import java.util.prefs.Preferences;
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
+import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.team.ui.TeamView;
 import org.netbeans.modules.team.ui.common.DashboardSupport.DashboardImpl;
-import org.netbeans.modules.team.ui.picker.MegaMenu;
 import org.netbeans.modules.team.ui.spi.BuilderAccessor;
+import org.netbeans.modules.team.ide.spi.TeamDashboardComponentProvider;
+import org.netbeans.modules.team.ui.picker.MegaMenu;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
-import org.netbeans.modules.team.ui.util.treelist.ListListener;
 import org.netbeans.modules.team.ui.util.treelist.ListNode;
 import org.netbeans.modules.team.ui.util.treelist.SelectionList;
 import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
 import org.netbeans.modules.team.ui.util.treelist.TreeList;
+import org.netbeans.modules.team.ui.util.treelist.TreeListListener;
 import org.netbeans.modules.team.ui.util.treelist.TreeListModel;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
 import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
-import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.windows.TopComponent;
@@ -92,21 +96,10 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
 
     private LoginHandle login;
     
-    private final TreeListModel model = new TreeListModel();
-    private static final ListModel EMPTY_MODEL = new AbstractListModel() {
-        @Override
-        public int getSize() {
-            return 0;
-        }
-        @Override
-        public Object getElementAt(int index) {
-            return null;
-        }
-    };
+    private final DashboardComponent dashboardComponent;
     private final RequestProcessor requestProcessor = new RequestProcessor("Team Dashboard", 1, true); // NOI18N
-    private final TreeList treeList = new TreeList(model);
                
-    private final JScrollPane dashboardComponent;
+    private final JScrollPane scrollPane;
     private final JPanel dashboardPanel;
     private final PropertyChangeListener userListener;
     private boolean opened = false;
@@ -117,9 +110,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     private boolean otherProjectsLoaded = false;    
     private OtherProjectsLoader otherProjectsLoader;
     private MemberProjectsLoader memberProjectsLoader;
-
-    private final ErrorNode memberProjectsError;
-    private final ErrorNode otherProjectsError;
 
     private final Object LOCK = new Object();
 
@@ -133,6 +123,8 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     private final ArrayList<ProjectHandle<P>> memberProjects = new ArrayList<>(50);
     private final ArrayList<ProjectHandle<P>> otherProjects = new ArrayList<>(50);
     private WeakReference<SelectionList> selectionListRef;
+
+    private ErrorNode errorNode;
     
     private static final Map<TeamServer, OneProjectDashboard> dashboardMap = new WeakHashMap<>(3);
     
@@ -163,7 +155,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                  
         dashboardPanel = new JPanel(new BorderLayout());
         
-        dashboardComponent = new JScrollPane() {
+        scrollPane = new JScrollPane() {
             @Override
             public void requestFocus() {
                 Component view = getViewport().getView();
@@ -179,14 +171,17 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 return view != null ? view.requestFocusInWindow() : super.requestFocusInWindow();
             }
         };
-        dashboardComponent.setBorder(BorderFactory.createEmptyBorder());
-        dashboardComponent.setBackground(ColorManager.getDefault().getDefaultBackground());
+        
+        this.dashboardComponent = createComponent();
+
+        scrollPane.setBorder(BorderFactory.createEmptyBorder());
+        scrollPane.setBackground(ColorManager.getDefault().getDefaultBackground());
         dashboardPanel.setBorder(BorderFactory.createEmptyBorder());
         dashboardPanel.setBackground(ColorManager.getDefault().getDefaultBackground());
         
-        dashboardComponent.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
+        scrollPane.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
         
-        dashboardPanel.add(dashboardComponent, BorderLayout.CENTER);
+        dashboardPanel.add(scrollPane, BorderLayout.CENTER);
                     
         userListener = new PropertyChangeListener() {
             @Override
@@ -197,26 +192,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             }
         };
 
-        memberProjectsError = new ErrorNode(NbBundle.getMessage(DashboardSupport.class, "ERR_OpenMemberProjects"), new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                clearError(memberProjectsError);
-                refreshMemberProjects(true);
-            }
-        });
-
-        otherProjectsError = new ErrorNode(NbBundle.getMessage(DashboardSupport.class, "ERR_OpenProjects"), new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                clearError(otherProjectsError);
-                startAllProjectsLoading(true, false);
-            }
-        });
-        AccessibleContext accessibleContext = treeList.getAccessibleContext();
-        String a11y = NbBundle.getMessage(DashboardSupport.class, "A11Y_TeamProjects");
-        accessibleContext.setAccessibleName(a11y);
-        accessibleContext.setAccessibleDescription(a11y);
-        
         initServer();
     }
 
@@ -454,8 +429,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
 
     public void close() {
         synchronized( LOCK ) {
-            treeList.setModel(EMPTY_MODEL);
-            model.clear();
+            dashboardComponent.close();
             opened = false;
         }
     }
@@ -483,27 +457,27 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                     isEmpty = getProjectPicker().isNoProject();
                 }
 
-                boolean isTreeListShowing = dashboardComponent.getViewport().getView() == treeList;
+                boolean dashboardComponentShowing = scrollPane.getViewport().getView() == dashboardComponent.getComponent();
                 if( isEmpty ) {
-                    if( isTreeListShowing || dashboardComponent.getViewport().getView() == null ) {
-                        dashboardComponent.setViewportView(createEmptyContent());
-                        dashboardComponent.invalidate();
-                        dashboardComponent.revalidate();
-                        dashboardComponent.repaint();
+                    if( dashboardComponentShowing || scrollPane.getViewport().getView() == null ) {
+                        scrollPane.setViewportView(createEmptyContent());
+                        scrollPane.invalidate();
+                        scrollPane.revalidate();
+                        scrollPane.repaint();
                     }
                 } else {
-                    treeList.setModel(model);
+                    dashboardComponent.beforeShow();
                     switchMemberProjects();
-                    if( !isTreeListShowing ) {
-                        dashboardComponent.setViewportView(treeList);
-                        dashboardComponent.invalidate();
-                        dashboardComponent.revalidate();
-                        dashboardComponent.repaint();
+                    if( !dashboardComponentShowing ) {
+                        scrollPane.setViewportView(dashboardComponent.getComponent());
+                        scrollPane.invalidate();
+                        scrollPane.revalidate();
+                        scrollPane.repaint();
                         // hack: ensure the dashboard component has focus (when
                         // added to already visible and activated TopComponent)
-                        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, dashboardComponent);
+                        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, scrollPane);
                         if (tc != null && TopComponent.getRegistry().getActivated() == tc) {
-                            treeList.requestFocus();
+                            dashboardComponent.getComponent().requestFocus();
                         }
                     }
                 }
@@ -727,9 +701,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             
     void switchProject(ProjectHandle project) {
         switchContent();
-        for( TreeListNode node : model.getRootNodes() ) {
-            model.removeRoot(node);
-        }
+        dashboardComponent.clear();
         if(project != null) {
             synchronized(projectChildren) {
                 List<TreeListNode> children = projectChildren.get(project.getId());
@@ -737,10 +709,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                     children = createProjectChildren(project);
                     projectChildren.put(project.getId(), children);
                 } 
-                int idx = 1;
-                for (TreeListNode n : children) {
-                    model.addRoot(idx++, n);
-                }
+                dashboardComponent.addChildren(getDashboardProvider().createProjectLinksComponent(project), children);
             }
         }
     }
@@ -748,7 +717,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     protected List<TreeListNode> createProjectChildren(ProjectHandle project) {
         ArrayList<TreeListNode> children = new ArrayList<>();
         DashboardProvider<P> provider = getDashboardProvider();
-        children.add( provider.createProjectLinksNode(null, project) ); 
         if( null != provider.getMemberAccessor() ) {
             children.add( new MemberListNode(null, project, provider) );
         }
@@ -757,7 +725,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             children.add(new BuildListNode(null, project, builds));
         }
         if( null != provider.getQueryAccessor() ) {
-            children.add( new QueryListNode(null, project, provider) );
+            children.add(new QueryListNode(null, project, provider));
         }
         if( null != provider.getSourceAccessor() ) {
             children.add( provider.createSourceListNode(null, project) );
@@ -768,21 +736,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     private void removeProjectNodes( Collection<ProjectHandle<P>> projects ) {
         for( ProjectHandle p : projects ) {
             projectNodes.remove( p );
-        }
-    }
-
-    private void showError( ErrorNode node ) {
-        synchronized( LOCK ) {
-            List<TreeListNode> roots = model.getRootNodes();
-            if( !roots.contains(node) ) {
-                model.addRoot(1, node);
-            }
-        }
-    }
-
-    private void clearError( ErrorNode node ) {
-        synchronized( LOCK ) {
-            model.removeRoot(node);
         }
     }
 
@@ -809,7 +762,12 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             for (ProjectHandle p : otherProjects) {
                 getProjectNode(p); // adds node to projectNodes
             }
-            res.setItems(new ArrayList<ListNode>(projectNodes.values()));
+            ArrayList<ListNode> l = new ArrayList<ListNode>(projectNodes.values());
+            if(errorNode != null) {
+                l.add(errorNode);
+            }             
+            res.setItems(l);
+            
         }
 
         this.selectionListRef = new WeakReference<>(res);
@@ -830,6 +788,18 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         return new CloseProjectAction(currentProject);
     }
 
+    private void createErrorNode() throws MissingResourceException {
+        errorNode = new ErrorNode(NbBundle.getMessage(DashboardSupport.class, "ERR_LoadingProjects"), new AbstractAction() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                MegaMenu mm = MegaMenu.getCurrent();
+                if(mm != null) {
+                    mm.showAgain();
+                }
+            }
+        });
+    }
+        
     private class OtherProjectsLoader implements Runnable, Cancellable {
 
         private boolean cancelled = false;
@@ -877,12 +847,13 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 return;
             }
             if( null == res[0] ) {
-                showError( otherProjectsError );
+                createErrorNode();
+                otherProjectsLoaded = false;
                 return;
             }
 
             setOtherProjects( res[0] );
-            clearError( otherProjectsError );
+            errorNode = null;
         }
 
         @Override
@@ -902,7 +873,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             task = requestProcessor.post(this);
             return task;
         }        
-
     }
 
     private class MemberProjectsLoader implements Runnable, Cancellable {
@@ -943,12 +913,13 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 return;
             }
             if( null == res[0] ) {
-                showError( memberProjectsError );
+                createErrorNode();
+                memberProjectsLoaded = false;
                 return;
-            }
+            } 
 
             setMemberProjects( res[0] );
-            clearError( memberProjectsError );
+            errorNode = null;
         }
 
         @Override
@@ -973,7 +944,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     private class CloseProjectAction extends AbstractAction {
         private final ProjectHandle prj;
         public CloseProjectAction(ProjectHandle project) {
-            super(org.openide.util.NbBundle.getMessage(OneProjectDashboard.class, "CTL_RemoveProject"));
+            super(org.openide.util.NbBundle.getMessage(OneProjectDashboard.class, "CTL_RemoveProject")); // NOI18N
             this.prj = project;
         }
         @Override
@@ -994,5 +965,316 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     private OneProjectDashboardPicker getProjectPicker() {
         return TeamView.getInstance().getProjectPicker();
     }
+
+    DashboardComponent createComponent() {
+        Collection<? extends TeamDashboardComponentProvider> c = Lookup.getDefault().lookupAll(TeamDashboardComponentProvider.class);
+        TeamDashboardComponentProvider providerImpl = c != null && c.size() > 0 ? c.iterator().next() : null;
+        if(providerImpl != null) {
+            return new ProvidedDashboardComponent(providerImpl);
+        } else if(Boolean.getBoolean("team.dashboard.useDummyComponentProvider")) { // NOI18N
+            return new ProvidedDashboardComponent(new DummyDashboardComponentProviderImpl());
+        } else {    
+            return new NbDashboardComponent();
+        }
+    }
+
+    private abstract class DashboardComponent {
+        
+        protected void setAccessibleCtx(AccessibleContext accessibleContext) {
+            String a11y = NbBundle.getMessage(DashboardSupport.class, "A11Y_TeamProjects"); // NOI18N
+            accessibleContext.setAccessibleName(a11y);
+            accessibleContext.setAccessibleDescription(a11y);
+        }
+
+        abstract JComponent getComponent();
+
+        abstract void close();
+
+        abstract void beforeShow();
+
+        abstract void clear();
+
+        abstract void addChildren(JComponent projectLinks, Collection<TreeListNode> children);
+    }
+
+    private class NbDashboardComponent extends DashboardComponent {
+            
+        private final TreeListModel model = new TreeListModel();
+        private final ListModel EMPTY_MODEL = new AbstractListModel() {
+            @Override
+            public int getSize() {
+                return 0;
+            }
+            @Override
+            public Object getElementAt(int index) {
+                return null;
+            }
+        };
+        private final TreeList treeList = new TreeList(model);
+        private final JPanel panel;
+
+        public NbDashboardComponent() {
+            panel = new JPanel(new BorderLayout());
+            panel.setOpaque(false);
+
+            setAccessibleCtx(treeList.getAccessibleContext());
+        }
+
+        @Override
+        JComponent getComponent() {
+            return panel;
+        }
+
+        @Override
+        void close() {
+            treeList.setModel(EMPTY_MODEL);
+            model.clear();
+        }
+
+        @Override
+        void beforeShow() {
+            treeList.setModel(model);
+        }
+
+        @Override
+        void clear() {
+            for( TreeListNode node : model.getRootNodes() ) {
+                model.removeRoot(node);
+            }
+        }
+
+        @Override
+        void addChildren(JComponent projectLinks, Collection<TreeListNode> children) {
+            panel.removeAll();
+            projectLinks.setBorder(new EmptyBorder(5, 10, 5, 0));
+            panel.add(projectLinks, BorderLayout.NORTH);
+            panel.add(treeList, BorderLayout.CENTER);
+
+            int idx = 1;
+            for (TreeListNode n : children) {
+                model.addRoot(idx++, n);
+            }
+        }
+    }
+
+    private class ProvidedDashboardComponent extends DashboardComponent {
+
+        private final TeamDashboardComponentProvider provider;
+        private final JComponent component;
+        private Collection<TreeListNode> children;
+        private JComponent projectLinks;
+
+        private final Object LOCK = new Object();
+
+        private ProvidedDashboardComponent(TeamDashboardComponentProvider provider) {
+            this.provider = provider;
+
+            component = new JPanel(new BorderLayout());
+            component.setOpaque(false);
+        }
+
+        @Override
+        JComponent getComponent() {
+            return component;
+        }
+
+        @Override
+        void close() {
+            clear();
+        }
+
+        @Override
+        void beforeShow() {
+            populate();
+        }
+
+        @Override
+        void clear() {
+            component.removeAll();
+        }
+
+        @Override
+        void addChildren(JComponent projectLinks, Collection<TreeListNode> children) {
+            this.children = children;
+            this.projectLinks = projectLinks;
+            projectLinks.setBorder(new EmptyBorder(5, 10, 5, 0));
+            populate();
+        }
+
+        private void populate() {
+            synchronized ( LOCK ) {
+                if(children == null) {
+                    return;
+                }
+                List<TeamDashboardComponentProvider.Section> sections = new ArrayList<>(children.size());
+                for (TreeListNode n : children) {
+                    if(n instanceof QueryListNode  || 
+                       n instanceof BuildListNode  || 
+                       n instanceof SourceListNode || 
+                       n instanceof MemberListNode) 
+                    {
+                        sections.add(new SectionImpl((SectionNode)n));
+                    } 
+                }
+
+                JComponent cmp = provider.create(sections.toArray(new TeamDashboardComponentProvider.Section[sections.size()]));
+
+                setAccessibleCtx(cmp.getAccessibleContext());
+
+                component.removeAll();
+                component.add(projectLinks, BorderLayout.NORTH);
+                component.add(cmp, BorderLayout.CENTER);
+            }
+        }
+    }
+        
+    private class SectionImpl implements TeamDashboardComponentProvider.Section {
+        
+        private final String title;
+        private final TreeListNode node;
+        
+        private final TreeListModel model = new TreeListModel();
+        private final TreeList treeList = new TreeList(model);
+            
+        private final Object LOCK = new Object();
+        
+        public SectionImpl(SectionNode node) {
+            this.title = node.getDisplayName();
+            this.node = node;
+
+            // XXX Hacking the SectioNode/treelist so that instead of the actuall node, 
+            // its children are shown as roots in the list (kind of not show root nodes mode)
+            this.node.setListener(new TreeListListener() {
+                @Override
+                public void childrenRemoved(TreeListNode parent) {
+                    synchronized ( LOCK ) {
+                        clearModel();
+                    }
+                }
+
+                @Override
+                public void childrenAdded(TreeListNode parent) {
+                    synchronized ( LOCK ) {
+                        clearModel();
+                        List<TreeListNode> children = parent.getChildren();
+                        for (int i = 0; i < children.size(); i++) {
+                            model.addRoot(i, children.get(i));
+                        }
+                    }    
+                }
+                @Override public void contentChanged(ListNode node) { }
+                @Override public void contentSizeChanged(ListNode node) { }
+
+                private void clearModel() {
+                    for( TreeListNode node : model.getAllNodes() ) {
+                        model.removeRoot(node);
+                    }
+                }
+            });
+        }
+
+        @Override
+        public void setExpanded(boolean expand) {
+            if(!node.isExpanded()) {
+                synchronized ( LOCK ) {
+                    EmptyNode emptyNode = new EmptyNode(NbBundle.getMessage(OneProjectDashboard.class, "LBL_LoadingTitle"), NbBundle.getMessage(OneProjectDashboard.class, "LBL_LoadingInProgress")); // NOI18N
+                    emptyNode.loadingStarted();
+                    model.addRoot(-1, emptyNode);
+                }
+            } 
+            
+            node.setExpanded(expand);
+        }
+
+        @Override
+        public JComponent getComponent() {
+            return treeList;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return title;
+        }
+        
+    }
+    
+    public static class DummyDashboardComponentProviderImpl implements TeamDashboardComponentProvider {
+        private final static Icon expandedIcon;
+        private final static Icon collapsedIcon;
+
+        static {
+            JTree tv = new JTree();
+            BasicTreeUI tvui = (BasicTreeUI) tv.getUI();
+            expandedIcon = tvui.getExpandedIcon();
+            collapsedIcon = tvui.getCollapsedIcon();
+        }
+        
+        @Override
+        public JComponent create(final TeamDashboardComponentProvider.Section... sections) {
+            JPanel panel = new JPanel( new GridBagLayout() );
+            panel.setOpaque(false);
+            
+            for (int i = 0; i < sections.length; i++) {
+
+                final Section section = sections[i];
+                
+                section.setExpanded(false);
+                
+                JPanel sp = new JPanel(new BorderLayout());
+                final JLabel titleLabel = new JLabel(section.getDisplayName());
+                titleLabel.setIcon(collapsedIcon);
+                
+                titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD, (float)(titleLabel.getFont().getSize2D() * 1.2)));
+                
+                final JComponent cmp = section.getComponent();
+                
+                titleLabel.addMouseListener(new MouseListener() {
+                    @Override
+                    public void mouseClicked(MouseEvent e) {
+                        cmp.setVisible(!cmp.isVisible());
+                        section.setExpanded(cmp.isVisible());
+                        
+                        titleLabel.setIcon(cmp.isVisible() ? expandedIcon : collapsedIcon);
+                    }
+                    @Override public void mousePressed(MouseEvent e) { }
+                    @Override public void mouseReleased(MouseEvent e) { }
+                    @Override public void mouseEntered(MouseEvent e) { }
+                    @Override public void mouseExited(MouseEvent e) { }
+                });
+                
+                titleLabel.setBorder(BorderFactory.createCompoundBorder(
+                    BorderFactory.createMatteBorder(0, 0, 1, 0, ColorManager.getDefault().getDefaultBackground()),
+                    BorderFactory.createEmptyBorder(1, 1, 0, 1))
+                );
+
+                Color c = UIManager.getColor("PropSheet.setBackground");
+                titleLabel.setBackground(new Color((int) Math.max(0.0, c.getRed() * 0.85), (int) Math.max(0.0, c.getGreen() * 0.85), (int) Math.max(0.0, c.getBlue() * 0.85)));
+            
+                sp.add(titleLabel, BorderLayout.NORTH);
+                sp.add( cmp, BorderLayout.CENTER);
+                
+                GridBagConstraints gridBagConstraints = new GridBagConstraints();
+                gridBagConstraints.gridx = 0;
+                gridBagConstraints.gridy = i;
+                gridBagConstraints.fill = GridBagConstraints.BOTH;
+                gridBagConstraints.anchor = GridBagConstraints.WEST;
+        
+                panel.add( sp, gridBagConstraints );
+            }
+                
+            GridBagConstraints gridBagConstraints = new GridBagConstraints();
+            gridBagConstraints.gridx = 0;
+            gridBagConstraints.gridy = 2;
+            gridBagConstraints.fill = GridBagConstraints.BOTH;
+            gridBagConstraints.anchor = GridBagConstraints.WEST;
+            gridBagConstraints.weightx = 1.0;
+            gridBagConstraints.weighty = 1.0;         
+            JPanel p = new JPanel();
+            p.setOpaque(false);
+            panel.add( p, gridBagConstraints );
+            
+            return panel;
+        }
+    }    
     
 }

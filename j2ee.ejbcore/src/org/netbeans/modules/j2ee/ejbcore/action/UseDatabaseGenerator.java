@@ -62,7 +62,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModelSupport;
 import org.netbeans.modules.javaee.injection.api.InjectionTargetQuery;
@@ -111,7 +111,7 @@ public final class UseDatabaseGenerator {
         ServiceLocatorStrategy serviceLocatorStrategy = (serviceLocator == null) ? null : 
             ServiceLocatorStrategy.create(project, fileObject, serviceLocator);
         EnterpriseReferenceContainer erc = project.getLookup().lookup(EnterpriseReferenceContainer.class);
-        if (Util.isJavaEE5orHigher(project) && serviceLocatorStrategy == null &&
+        if (ProjectUtil.isJavaEE5orHigher(project) && serviceLocatorStrategy == null &&
                 InjectionTargetQuery.isInjectionTarget(fileObject, className)) {
             boolean isStatic = InjectionTargetQuery.isStaticReferenceRequired(fileObject, className);
             String fieldName = Utils.makeJavaIdentifierPart(Utils.jndiNameToCamelCase(datasourceReferenceName, true, null));

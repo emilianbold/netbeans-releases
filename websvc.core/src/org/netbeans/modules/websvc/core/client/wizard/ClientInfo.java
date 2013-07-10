@@ -105,7 +105,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 
@@ -841,7 +841,7 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
         if (projectType > 0) {
             //jLabelJaxVersion.setEnabled(false);
             //jComboBoxJaxVersion.setEnabled(false);
-            if (Util.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) {
+            if (ProjectUtil.isJavaEE5orHigher(project) || JaxWsUtils.isEjbJavaEE5orHigher(project)) {
                 jComboBoxJaxVersion.setSelectedItem(ClientWizardProperties.JAX_WS);
             }
             else{
@@ -910,7 +910,7 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
             jCbxPackageName.setModel(getPackageModel(project));
             String pName = (String) d.getProperty(ClientWizardProperties.WSDL_PACKAGE_NAME);
             String jaxwsVersion = (String)this.jComboBoxJaxVersion.getSelectedItem();
-            if (Util.isJavaEE5orHigher(project) ||
+            if (ProjectUtil.isJavaEE5orHigher(project) ||
                     (projectType == 0 && jaxwsVersion.equals(ClientWizardProperties.JAX_WS)) ){
                     jCbxPackageName.setToolTipText(NbBundle.getMessage(ClientInfo.class, "TOOLTIP_DEFAULT_PACKAGE"));
             } else{

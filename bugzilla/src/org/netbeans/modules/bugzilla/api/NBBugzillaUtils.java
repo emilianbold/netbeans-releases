@@ -44,13 +44,19 @@ package org.netbeans.modules.bugzilla.api;
 
 import java.io.File;
 import java.net.URL;
+import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Repository;
+import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.bugzilla.Bugzilla;
+import org.netbeans.modules.bugzilla.commands.ValidateCommand;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
+import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -73,6 +79,19 @@ public class NBBugzillaUtils {
         Issue.open(nbRepo, issueID);
     }
 
+    public static void reportAnIssue() {
+        RequestProcessor.getDefault().post(new Runnable() {
+            @Override
+            public void run() {
+                final BugzillaRepository repo = NBRepositorySupport.getInstance().getNBBugzillaRepository();
+                if(!checkLogin(repo)) {
+                    return;
+                }
+                Issue.open(NBRepositorySupport.getInstance().getNBRepository(), null);
+            }
+        });
+    }
+        
     /**
      * Returns the netbeans.org username
      * Shouldn't be called in awt
@@ -150,4 +169,33 @@ public class NBBugzillaUtils {
         }
         BugzillaUtil.openIssue(issue);
     }
+    
+    private static boolean checkLogin(final BugzillaRepository repo) {
+        if(repo.getUsername() != null && !repo.getUsername().equals("")) { // NOI18N
+            return true;
+        }
+
+        String errorMsg = NbBundle.getMessage(NBLoginPanel.class, "MSG_MISSING_USERNAME_PASSWORD");  // NOI18N
+        while(NBLoginPanel.show(repo, errorMsg)) {
+
+            ValidateCommand cmd = new ValidateCommand(repo.getTaskRepository());
+            ProgressHandle handle = ProgressHandleFactory.createHandle(NbBundle.getMessage(NBLoginPanel.class, "MSG_CONNECTING_2_NBORG")); // NOI18N
+            handle.start();
+            try {
+                repo.getExecutor().execute(cmd, false, false, false);
+            } finally {
+                handle.finish();
+            }
+            if(cmd.hasFailed()) {
+                errorMsg = cmd.getErrorMessage();
+                continue;
+            }
+            // everythings fine, store the credentials ...
+            TeamUtil.addRepository(BugzillaUtil.getRepository(repo));
+            return true;
+        }
+        repo.setCredentials(null, null, null, null); // reset
+        return false;
+    }
+    
 }

@@ -107,7 +107,11 @@ public class KOModel {
                     for (Attribute ngAttr : ot.attributes(new AttributeFilter() {
                         @Override
                         public boolean accepts(Attribute attribute) {
-                            return isKODataBindingAttribute(attribute) && containsKODirective(result.getSnapshot(), attribute);
+                            //the data-bind attribute can contain custom directives which we do not have any metadata for
+                            //so the data-bind attribute is always considered as a knockout regardless the content, 
+                            //at least until we have some custom directives metadata facility.
+                            return isKODataBindingAttribute(attribute);
+//                            return isKODataBindingAttribute(attribute) && containsKODirective(result.getSnapshot(), attribute);
                         }
                     })) {
                         Collection<Attribute> attrs = elements2attributes.get(ot);

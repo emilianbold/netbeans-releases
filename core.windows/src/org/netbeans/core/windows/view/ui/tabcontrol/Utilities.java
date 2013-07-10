@@ -42,6 +42,7 @@
 package org.netbeans.core.windows.view.ui.tabcontrol;
 
 import org.netbeans.core.WindowSystem;
+import org.netbeans.core.windows.Switches;
 import org.openide.util.Lookup;
 
 /**
@@ -59,5 +60,9 @@ public final class Utilities {
         WindowSystem  ws = Lookup.getDefault().lookup( WindowSystem.class );
         ws.hide();
         ws.show();
+    }
+
+    public static boolean isEditorTopComponentClosingEnabled() {
+        return Switches.isEditorTopComponentClosingEnabled();
     }
 }

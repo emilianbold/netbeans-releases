@@ -50,7 +50,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.spi.support.InvokeOperationActionProvider;
 import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
@@ -67,7 +67,7 @@ public class JaxWsInvokeOperationProvider implements InvokeOperationActionProvid
             int projectType = projectInfo.getProjectType();
             if ((projectType == ProjectInfo.JSE_PROJECT_TYPE && !isJAXRPCProject(project) && !isJAXWSProject(project))
                     ||(projectType == ProjectInfo.JSE_PROJECT_TYPE && isJAXWSProject(project) && isJaxWsLibraryOnClasspath(targetSource)) ||
-                    (Util.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE ||
+                    (ProjectUtil.isJavaEE5orHigher(project) && (projectType == ProjectInfo.WEB_PROJECT_TYPE ||
                     projectType == ProjectInfo.CAR_PROJECT_TYPE || projectType == ProjectInfo.EJB_PROJECT_TYPE))
                     ) {
                 return new JaxWsInvokeOperation(targetSource);
@@ -75,7 +75,7 @@ public class JaxWsInvokeOperationProvider implements InvokeOperationActionProvid
                 return new JaxWsInvokeOperation(targetSource);
             }
             // Tomcat on J2EE14 project Case
-            if (projectType == ProjectInfo.WEB_PROJECT_TYPE && !Util.isJavaEE5orHigher(project) && isJaxWsLibraryOnRuntimeClasspath(targetSource)) {
+            if (projectType == ProjectInfo.WEB_PROJECT_TYPE && !ProjectUtil.isJavaEE5orHigher(project) && isJaxWsLibraryOnRuntimeClasspath(targetSource)) {
                 return new JaxWsInvokeOperation(targetSource);
             }
         }

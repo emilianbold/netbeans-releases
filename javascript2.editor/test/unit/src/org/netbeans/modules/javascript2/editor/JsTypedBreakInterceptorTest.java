@@ -333,6 +333,7 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
                 + "window.SYNERGY = new Synergy();");
     }
 
+    // FIXME are those actually indenter tests ?
     public void testIssue118656() throws Exception {
         insertBreak("if (true) ^thing()", "if (true) \n    ^thing()");
     }
@@ -398,9 +399,41 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
     public void testIssue231018() throws Exception {
         insertBreak("angular.module('quizesApp.services', ['ngResource'])\n"
             + "        .factory('QuizService', function($resource) {^",
-                "angular.module('quizesApp.services', ['ngResource'])\n"
+            "angular.module('quizesApp.services', ['ngResource'])\n"
             + "        .factory('QuizService', function($resource) {\n"
             + "            ^\n"
             + "        }");
+    }
+
+    public void testIssue225016_1() throws Exception {
+        insertBreak("$(document).ready(function() {\n"
+                + "    var a = {\n"
+                + "        test1: function() {\n"
+                + "            if (a == 1^)\n"
+                + "        }\n"
+                + "    };\n"
+                + "});",
+                "$(document).ready(function() {\n"
+                + "    var a = {\n"
+                + "        test1: function() {\n"
+                + "            if (a == 1\n"
+                + "                    ^)\n"
+                + "        }\n"
+                + "    };\n"
+                + "});");
+    }
+
+    public void testIssue225016_3() throws Exception {
+        insertBreak("var a = {\n"
+                + "    test1: function() {\n"
+                + "\n"
+                + "    },^\n"
+                + "};",
+                "var a = {\n"
+                + "    test1: function() {\n"
+                + "\n"
+                + "    },\n"
+                + "    ^\n"
+                + "};");
     }
 }

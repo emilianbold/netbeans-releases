@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries;
 
-import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -64,7 +63,7 @@ import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.MessageDestination;
@@ -263,7 +262,7 @@ public class SendJMSMessageCodeGenerator implements CodeGenerator {
         }
         String j2eeVersion = j2eeModuleProvider.getJ2eeModule().getModuleVersion();
         J2eeModule.Type moduleType = j2eeModuleProvider.getJ2eeModule().getType();
-        if (Util.isJavaEE5orHigher(project) ||
+        if (ProjectUtil.isJavaEE5orHigher(project) ||
                 (J2eeModule.Type.WAR.equals(moduleType) && WebApp.VERSION_2_4.equals(j2eeVersion)) ||
                 (J2eeModule.Type.EJB.equals(moduleType) && EjbJar.VERSION_2_1.equals(j2eeVersion)))  {
             return ElementKind.INTERFACE != typeElement.getKind();

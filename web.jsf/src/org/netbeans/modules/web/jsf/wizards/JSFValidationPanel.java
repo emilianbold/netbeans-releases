@@ -43,8 +43,8 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ServerUtil;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.openide.WizardDescriptor;
 import org.openide.util.NbBundle;
@@ -68,7 +68,7 @@ public class JSFValidationPanel extends DelegatingWizardDescriptorPanel {
 
         if (super.isValid()) {
             // check that this project has a valid target server
-            if (!ProjectUtil.isValidServerInstance(project)) {
+            if (!ServerUtil.isValidServerInstance(project)) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_WARNING_MESSAGE,
                         NbBundle.getMessage(TemplatePanel.class, "WARN_MissingTargetServer"));
             }

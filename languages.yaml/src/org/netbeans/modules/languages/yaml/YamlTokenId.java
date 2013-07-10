@@ -91,6 +91,7 @@ public enum YamlTokenId implements TokenId {
         this.primaryCategory = primaryCategory;
     }
 
+    @Override
     public String primaryCategory() {
         return primaryCategory;
     }
@@ -101,10 +102,12 @@ public enum YamlTokenId implements TokenId {
     private static final Language<YamlTokenId> language =
             new LanguageHierarchy<YamlTokenId>() {
 
+                @Override
                 protected String mimeType() {
                     return YamlTokenId.YAML_MIME_TYPE;
                 }
 
+                @Override
                 protected Collection<YamlTokenId> createTokenIds() {
                     return EnumSet.allOf(YamlTokenId.class);
                 }
@@ -116,6 +119,7 @@ public enum YamlTokenId implements TokenId {
                     return cats;
                 }
 
+                @Override
                 protected Lexer<YamlTokenId> createLexer(LexerRestartInfo<YamlTokenId> info) {
                     return new YamlLexer(info);
                 }

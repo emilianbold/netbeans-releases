@@ -52,8 +52,8 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.j2ee.ejb.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ServerUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -179,7 +179,7 @@ public class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
     @Override
     public boolean validServerInstancePresent() {
         J2eeModuleProvider prvd = project.getLookup().lookup(J2eeModuleProvider.class);
-        return prvd != null && ProjectUtil.isValidServerInstance(prvd);
+        return prvd != null && ServerUtil.isValidServerInstance(prvd);
     }
 
     @Override

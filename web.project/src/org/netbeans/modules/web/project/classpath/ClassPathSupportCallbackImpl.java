@@ -47,11 +47,11 @@ package org.netbeans.modules.web.project.classpath;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.j2ee.common.Util;
-import org.netbeans.modules.j2ee.common.project.ProjectConstants;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.javaee.project.api.ant.AntProjectConstants;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport.Item;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
+import org.netbeans.modules.javaee.project.api.ant.AntProjectUtil;
 import org.netbeans.modules.web.project.WebProjectType;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.openide.xml.XMLUtil;
@@ -80,8 +80,8 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
             String property = CommonProjectUtils.getAntPropertyName( item.getReference() );
             String deploymentPath = warIncludesMap.get(property);
             item.setAdditionalProperty(PATH_IN_DEPLOYMENT, deploymentPath);
-            item.setAdditionalProperty(ProjectConstants.DESTINATION_DIRECTORY,
-                warIncludesMap.get(property+"."+ProjectConstants.DESTINATION_DIRECTORY));
+            item.setAdditionalProperty(AntProjectConstants.DESTINATION_DIRECTORY,
+                warIncludesMap.get(property+"."+AntProjectConstants.DESTINATION_DIRECTORY));
         }
     }
 
@@ -116,9 +116,9 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
                         if (ch.item(i).getNodeType() == Node.ELEMENT_NODE) {
                             Element library = (Element) ch.item(i);
                             String dirs = library.getAttribute(ATTR_DIRS);
-                            if (!ProjectConstants.DESTINATION_DIRECTORY_ROOT.equals(dirs) &&
-                                !ProjectConstants.DESTINATION_DIRECTORY_LIB.equals(dirs) &&
-                                !ProjectConstants.DESTINATION_DIRECTORY_DO_NOT_COPY.equals(dirs)) {
+                            if (!AntProjectConstants.DESTINATION_DIRECTORY_ROOT.equals(dirs) &&
+                                !AntProjectConstants.DESTINATION_DIRECTORY_LIB.equals(dirs) &&
+                                !AntProjectConstants.DESTINATION_DIRECTORY_DO_NOT_COPY.equals(dirs)) {
                                 dirs = null;
                             }
                             Node webFile = library.getElementsByTagNameNS(ns, TAG_FILE).item(0);
@@ -140,7 +140,7 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
                                 warIncludesMap.put(webFileText, pathInWarElements.getLength() > 0 ? XMLUtil.findText((Element) pathInWarElements.item(0)) : PATH_IN_WAR_NONE);
                             }
                             if (dirs != null) {
-                                warIncludesMap.put(webFileText+"."+ProjectConstants.DESTINATION_DIRECTORY, dirs);
+                                warIncludesMap.put(webFileText+"."+AntProjectConstants.DESTINATION_DIRECTORY, dirs);
                             }
                         }
                     }
@@ -188,7 +188,7 @@ public final class ClassPathSupportCallbackImpl implements org.netbeans.modules.
             pathInWar.appendChild(doc.createTextNode(item.getAdditionalProperty(PATH_IN_DEPLOYMENT)));
             libraryElement.appendChild(pathInWar);
         }
-        ProjectUtil.updateDirsAttributeInCPSItem(item, libraryElement);
+        AntProjectUtil.updateDirsAttributeInCPSItem(item, libraryElement);
         return libraryElement;
     }
 

@@ -165,7 +165,7 @@ public class AngularCustomAttribute implements CustomAttribute {
                     return u.toURL();
                 }
             } catch (MalformedURLException | URISyntaxException ex) {
-                Exceptions.printStackTrace(ex);
+                LOGGER.log(Level.FINE, null, ex); //basically ignore the exception
             }
 
 
@@ -194,7 +194,7 @@ public class AngularCustomAttribute implements CustomAttribute {
                     LOGGER.log(Level.FINE, "resolved to = ''{0}''", url); //NOI18N
                     return url;
                 } catch (URISyntaxException | MalformedURLException ex) {
-                    LOGGER.log(Level.INFO, null, ex);
+                    LOGGER.log(Level.FINE, null, ex); //basically ignore the exception
                 }
             }
             
@@ -230,38 +230,21 @@ public class AngularCustomAttribute implements CustomAttribute {
             try {
                 return new URL(url);
             } catch (java.net.MalformedURLException e) {
-                LOGGER.log(Level.INFO, null, e);
+                LOGGER.log(Level.FINE, null, e); //basically ignore the exception
             }
             return null;
         }
 
         @Override
         public String getHelpContent(URL url) {
-            return getContentAsString(url, null);
-        }
-
-        String getContentAsString(URL url, Charset charset) {
-            if (charset == null) {
-                charset = Charset.defaultCharset();
-            }
             try {
-                URLConnection con = url.openConnection();
-                con.connect();
-                Reader r = new InputStreamReader(new BufferedInputStream(con.getInputStream()), charset);
-                char[] buf = new char[2048];
-                int read;
-                StringBuilder content = new StringBuilder();
-                while ((read = r.read(buf)) != -1) {
-                    content.append(buf, 0, read);
-                }
-                r.close();
-                String strContent = content.toString();
-                return strContent;
+                return Utils.getContentAsString(url, null);
             } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
+                Exceptions.printStackTrace(ex);
+                return null;
             }
-
-            return null;
         }
+
+        
     };
 }

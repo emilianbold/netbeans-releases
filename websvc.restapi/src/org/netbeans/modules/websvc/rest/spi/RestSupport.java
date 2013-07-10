@@ -230,6 +230,9 @@ public abstract class RestSupport {
         // and server without any Jersey on its classpath, eg. Tomcat or some
         // very very old GF (v2? or older)
         
+        // extend build script if necessary
+        extendBuildScripts();
+        
         boolean hasJersey2 = hasJersey2(true);
         boolean hasJaxRsOnClasspath = hasJaxRsOnClasspath(false);
         
@@ -238,17 +241,9 @@ public abstract class RestSupport {
         
         if (isEE5() && (hasJersey2 || !hasJaxRs)) {
             webXmlUpdater.addJersey2ResourceConfigToWebApp(restConfig);
-        } else {
-            // add latest JAX-RS APIs to project's classpath:
-            if (RestConfig.DD.equals(restConfig) && (!hasJaxRs || !hasJaxRsOnClasspath)) {
-                webXmlUpdater.addResourceConfigToWebApp();
-            }
         }
         // add latest JAX-RS APIs to project's classpath:
         if (!hasJaxRs || !hasJaxRsOnClasspath) {
-            // extend build script if necessary
-            extendBuildScripts();
-            
             boolean jaxRSApiAdded = false;
             JaxRsStackSupport support = getJaxRsStackSupport();
             if (support != null) {
@@ -259,10 +254,6 @@ public abstract class RestSupport {
                 // fallback on IDE's default impl if server does not have its own
                 // jax-rs impl:
                 JaxRsStackSupport.getDefault().addJsr311Api(getProject());
-            }
-
-            if (RestConfig.DD.equals(restConfig)) {
-                webXmlUpdater.addResourceConfigToWebApp();
             }
         }
 

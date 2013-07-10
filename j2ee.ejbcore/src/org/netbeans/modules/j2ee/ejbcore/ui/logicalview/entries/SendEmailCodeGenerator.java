@@ -65,7 +65,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
 import org.netbeans.modules.j2ee.api.ejbjar.ResourceReference;
-import org.netbeans.modules.j2ee.common.Util;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModel;
 import org.netbeans.modules.j2ee.core.api.support.java.method.MethodModelSupport;
 import org.netbeans.modules.javaee.injection.api.InjectionTargetQuery;
@@ -82,7 +82,6 @@ import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -189,7 +188,7 @@ public class SendEmailCodeGenerator implements CodeGenerator {
                 }
                 
                 String jndiName = null;
-                if (!Util.isJavaEE5orHigher(enterpriseProject) || !InjectionTargetQuery.isInjectionTarget(srcFile, beanClass.getQualifiedName().toString())) {
+                if (!ProjectUtil.isJavaEE5orHigher(enterpriseProject) || !InjectionTargetQuery.isInjectionTarget(srcFile, beanClass.getQualifiedName().toString())) {
                     jndiName = generateJNDILookup(sendEmailPanel.getJndiName(), erc, srcFile, beanClass.getQualifiedName().toString());
                 }
                 

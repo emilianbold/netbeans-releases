@@ -373,7 +373,7 @@ public class StartTask extends BasicTask<TaskState> {
                 db.start();
             }
             int testPort = 0;
-            String portCandidate = support.getAdminPort();
+            String portCandidate = Integer.toString(instance.getAdminPort());
             try {
                 testPort = Integer.parseInt(portCandidate);
             } catch (NumberFormatException nfe) {
@@ -746,7 +746,7 @@ public class StartTask extends BasicTask<TaskState> {
     }
 
     private File getDomainFolder() {
-        return new File(support.getDomainsRoot() + File.separatorChar + getDomainName());
+        return new File(instance.getDomainsRoot() + File.separatorChar + getDomainName());
     }
 
     private String getDomainName() {
@@ -755,7 +755,7 @@ public class StartTask extends BasicTask<TaskState> {
 
     private boolean upgradeFailed() {
         // get server install version
-        File glassfishDir = new File(support.getGlassfishRoot());
+        File glassfishDir = new File(instance.getGlassfishRoot());
         int installVersion = ServerDetails.getVersionFromInstallDirectory(glassfishDir);
 
         if (installVersion < 0) {
@@ -776,13 +776,13 @@ public class StartTask extends BasicTask<TaskState> {
 
     private int executeUpgradeProcess() {
         int retVal = -1;
-        File asadmin = findFirstExecutableFile(new File(support.getGlassfishRoot()), "asadmin", "bin");
+        File asadmin = findFirstExecutableFile(new File(instance.getGlassfishRoot()), "asadmin", "bin");
         if (null == asadmin) {
             return retVal;
         }
         NbProcessDescriptor upgrader = new NbProcessDescriptor(asadmin.getAbsolutePath(),
-                "start-domain --upgrade --domaindir " + Util.quote(support.getDomainsRoot()) + " " + // NOI18N
-                support.getDomainName());
+                "start-domain --upgrade --domaindir " + Util.quote(instance.getDomainsRoot()) + " " + // NOI18N
+                instance.getDomainName());
         try {
             Process p = upgrader.exec();
             p.waitFor();
