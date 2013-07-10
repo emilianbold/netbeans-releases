@@ -45,6 +45,9 @@ import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,6 +61,9 @@ public final class LoginAction extends AbstractAction {
         super(NbBundle.getMessage(LoginAction.class, "CTL_LoginAction", NAME));
     }
 
+    @ActionID(id = "org.netbeans.modules.team.ui.LoginAction", category = "Team")
+    @ActionRegistration(lazy = false, displayName = "#CTL_LoginAction")
+    @ActionReference(path = "Menu/Versioning/Team", position = 100)
     public static synchronized LoginAction getDefault() {
         if (instance==null) {
             instance=new LoginAction();

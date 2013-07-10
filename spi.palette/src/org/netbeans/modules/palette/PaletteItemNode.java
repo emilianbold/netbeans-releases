@@ -318,8 +318,8 @@ public final class PaletteItemNode extends FilterNode implements Node.Cookie {
             } catch( IOException ex ) {
                 Logger.getLogger( getClass().getName() ).log( Level.INFO, null, ex );
                 // fall back to the original:
-                if (!FileUtil.isParentOf(
-                        FileUtil.getConfigRoot(), originalDO.getPrimaryFile())) {
+                if (null != originalDO 
+                        && !FileUtil.isParentOf( FileUtil.getConfigRoot(), originalDO.getPrimaryFile())) {
                     icon = getOriginal().getIcon(BeanInfo.ICON_COLOR_16x16);
                 }
             }
