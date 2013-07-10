@@ -51,7 +51,7 @@ import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 
 public class WebKitDebuggingTransport implements TransportImplementation {
 
-    private ChromeBrowserImpl impl;
+    private final ChromeBrowserImpl impl;
     private ResponseCallback callback;
 
     public WebKitDebuggingTransport(ChromeBrowserImpl impl) {
