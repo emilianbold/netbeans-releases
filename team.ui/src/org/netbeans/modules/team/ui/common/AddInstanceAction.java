@@ -55,6 +55,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.team.ui.LoginAction;
 import org.netbeans.modules.team.ui.TeamServerManager;
 import org.netbeans.modules.team.ui.TeamView;
 import org.netbeans.modules.team.ui.nodes.TeamRootNode;
@@ -72,25 +73,29 @@ import org.openide.windows.WindowManager;
 import static org.netbeans.modules.team.ui.common.Bundle.*;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 
 /**
  *
  * @author Jan Becicka
  */
+@Messages("CTL_AddInstance=Add Team Server")
 public class AddInstanceAction extends AbstractAction {
 
     @Messages("CTL_ADD=Add")
     public static final String ADD_BUTTON = CTL_ADD();
     @Messages("CTL_Cancel=Cancel")
     public static final String CANCEL_BUTTON = CTL_Cancel();
+    private static AddInstanceAction instance;
 
     private TeamServer teamServer;
     private JDialog dialog;
     private boolean expandNewNode = false;
     private TeamServerProvider provider;
 
-    @Messages("CTL_AddInstance=Add Team Server")
     public AddInstanceAction() {
         super(CTL_AddInstance());
     }
@@ -109,6 +114,17 @@ public class AddInstanceAction extends AbstractAction {
         this.expandNewNode = expandNewNode;
     }
 
+    @ActionID(id = "org.netbeans.modules.team.ui.common.AddInstanceAction", category = "Team")
+    @ActionRegistration(lazy = false, displayName = "#CTL_AddInstance")
+    @ActionReference(path = "Menu/Versioning/Team", position = 120)
+    public static synchronized AddInstanceAction getDefault() {
+        if (instance==null) {
+            instance=new AddInstanceAction();
+            TeamServerManager.getDefault();
+        }
+        return instance;
+    }
+    
     @Override
     @Messages({"ERR_TeamServerNotValid=Provide a valid Team Server URL.", "CTL_NewTeamServerInstance=New Team Server"})
     public void actionPerformed(final ActionEvent ae) {

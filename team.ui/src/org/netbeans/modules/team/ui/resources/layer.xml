@@ -17,9 +17,13 @@
             <folder name="Team">
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.team.ui.Bundle"/>
                 <attr name="position" intvalue="50"/>
-                <file name="org-netbeans-modules-team-ui-SubMenu-separatorAfter.instance">
+                <file name="org-netbeans-modules-team-ui-SubMenu-separatorAfter1.instance">
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="111"/>
+                </file>
+                <file name="org-netbeans-modules-team-ui-SubMenu-separatorAfter2.instance">
+                    <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
+                    <attr name="position" intvalue="121"/>
                 </file>
             </folder>
             <file name="org-netbeans-modules-team-ui-Menu-separatorAfter.instance">
