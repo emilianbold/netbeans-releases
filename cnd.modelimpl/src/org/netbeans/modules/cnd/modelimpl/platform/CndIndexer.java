@@ -88,7 +88,8 @@ public class CndIndexer extends CustomIndexer {
     @MimeRegistrations({
         @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = CustomIndexerFactory.class),
         @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = CustomIndexerFactory.class),
-        @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = CustomIndexerFactory.class)
+        @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = CustomIndexerFactory.class),
+        @MimeRegistration(mimeType = MIMENames.FORTRAN_MIME_TYPE, service = CustomIndexerFactory.class)
     })
     public static final class Factory extends CustomIndexerFactory {
 
