@@ -256,7 +256,7 @@ public final class ELTypeUtilities {
      * false otherwise.
      */
     public static boolean isSameMethod(CompilationContext info, Node methodNode, ExecutableElement method) {
-        String image = methodNode.getImage();
+        String image = getMethodName(methodNode);
         String methodName = method.getSimpleName().toString();
         TypeMirror methodReturnType = method.getReturnType();
         if (image == null) {
@@ -390,6 +390,30 @@ public final class ELTypeUtilities {
         }
         String bundleVar = target.getImage();
         return resourceBundles.isResourceBundleIdentifier(bundleVar, info.context());
+    }
+
+    /**
+     * Returns name of the method which is called by bracket call.
+     * @param bracketSuffixNode node of the type AstBracketSuffix
+     * @return method name without any quotes or apostrophes
+     */
+    public static String getBracketMethodName(Node bracketSuffixNode) {
+        String nameInclQuot = bracketSuffixNode.jjtGetChild(0).getImage();
+        if (nameInclQuot.length() > 2) {
+            return nameInclQuot.substring(1, nameInclQuot.length() - 1);
+        } else {
+            return ""; //NOI18N
+        }
+    }
+
+    private static String getMethodName(Node methodNode) {
+        if (methodNode instanceof AstBracketSuffix) {
+            // method call in the brackets like bean['myCall']()
+            return getBracketMethodName(methodNode);
+        } else {
+            // method call after the dot like bean.myCall()
+            return methodNode.getImage();
+        }
     }
 
     private static TypeMirror getTypeMirrorFor(CompilationContext info, Element element) {

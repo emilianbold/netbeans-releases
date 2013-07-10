@@ -110,4 +110,12 @@ public class IdentifiersTest extends HintTestBase {
         checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers13.xhtml", null);
     }
 
+    public void testMethodCalledInBracket01() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers14.xhtml", null);
+    }
+
+    public void testMethodCalledInBracket02() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers15.xhtml", null);
+    }
+
 }
