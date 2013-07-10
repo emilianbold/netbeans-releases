@@ -152,7 +152,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="boundCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="propNameTextField" alignment="3" min="-2" pref="21" max="-2" attributes="0"/>
+                  <Component id="propNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="vetoableCheckBox" min="-2" max="-2" attributes="0"/>
