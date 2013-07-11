@@ -145,9 +145,11 @@ public class JsErrorManager extends ErrorManager {
 
     @Override
     public void error(ParserException e) {
-        
-        String message = "<html><pre>" + StringEscapeUtils.escapeHtml(e.getMessage()).replaceAll("\n", "<br/>") + "</pre></html>";
-        addParserError(new ParserError(message, e.getLineNumber(), e.getColumnNumber(), e.getToken()));
+        StringBuilder message = new StringBuilder();
+        message.append("<html><pre>");          //NOI18N
+        message.append(StringEscapeUtils.escapeHtml(e.getMessage()).replaceAll("\n", "<br/>"));//NOI18N
+        message.append("</pre></html>");        //NOI18N
+        addParserError(new ParserError(message.toString(), e.getLineNumber(), e.getColumnNumber(), e.getToken()));
     }
 
     @Override
