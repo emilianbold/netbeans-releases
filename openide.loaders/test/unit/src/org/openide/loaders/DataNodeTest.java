@@ -117,7 +117,7 @@ public class DataNodeTest extends NbTestCase {
     }
     */
     
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
+    @RandomlyFails // http://deadlock.netbeans.org/job/NB-Core-Build/9880/testReport/
     public void testDataNodeGetHtmlNameDoesNotInitializeAllFiles () throws Exception {
         org.openide.filesystems.FileSystem lfs = TestUtilHid.createLocalFileSystem(getWorkDir (), new String[] {
             "F.java", "F.form"

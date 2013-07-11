@@ -110,6 +110,8 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             sendInitCommands();
 
             return true;
+        } catch (IllegalStateException ise) {
+            throw ise;
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
             return false;
@@ -157,9 +159,9 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
                 return cmd;
             }
             return cmd.replace("$tabIdentifier", getBundleIdentifier().equals("com.apple.mobilesafari")?tabs.getActive():"1"); // NOI18N
-        } catch (IOException ex) {
+        } catch (IOException | InterruptedException ex) {
             throw new RuntimeException(ex);
-        }
+        } 
     }
 
     protected final String createJSONCommand(JSONObject command) throws IOException {
@@ -335,18 +337,14 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             return map.get(key);
         }
 
-        private String getActive() {
-                synchronized(monitor) {
-                    if (!inited) {
-                        try {
-                            monitor.wait(2*60*1000);
-                        } catch (InterruptedException ex) {
-                            Exceptions.printStackTrace(ex);
-                        }
-                    }
+        private String getActive() throws InterruptedException {
+            synchronized (monitor) {
+                if (!inited) {
+                    monitor.wait(2 * 60 * 1000);
                 }
+            }
             final String tabForUrl = getTabForUrl();
-            if (tabForUrl !=null) {
+            if (tabForUrl != null) {
                 return tabForUrl;
             }
             return map.entrySet().iterator().next().getKey();

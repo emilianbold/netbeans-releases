@@ -168,6 +168,7 @@
                 <friend>org.netbeans.modules.extbrowser.chrome</friend>
                 <friend>org.netbeans.modules.html</friend>
                 <friend>org.netbeans.modules.j2ee.common</friend>
+                <friend>org.netbeans.modules.j2ee.earproject</friend>
                 <friend>org.netbeans.modules.javaee.project</friend>
                 <friend>org.netbeans.modules.javascript.jstestdriver</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>

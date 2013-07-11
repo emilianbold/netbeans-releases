@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.java.hints.introduce;
 
+import com.sun.source.tree.ClassTree;
+import com.sun.source.tree.Tree;
 import java.awt.Dialog;
 import java.util.Arrays;
 import java.util.EnumMap;
@@ -56,17 +58,17 @@ import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
-import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
-import org.netbeans.api.java.source.TreeUtilities;
+import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
-import org.netbeans.junit.internal.MemoryPreferencesFactory;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences.Provider;
+import org.netbeans.modules.java.hints.introduce.IntroduceHint.InsertClassMember;
 import org.netbeans.modules.java.hints.spiimpl.TestUtilities;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -100,6 +102,11 @@ public class IntroduceHintTest extends NbTestCase {
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
         super.setUp();
         codeStylePrefs = NbPreferences.root().node("test/java/codestyle");
+        IntroduceHint.INSERT_CLASS_MEMBER = new InsertClassMember() {
+            @Override public ClassTree insertClassMember(WorkingCopy wc, ClassTree clazz, Tree member, int offset) throws IllegalStateException {
+                return GeneratorUtilities.get(wc).insertClassMember(clazz, member);
+            }
+        };
     }
 
 //    public static TestSuite suite() {

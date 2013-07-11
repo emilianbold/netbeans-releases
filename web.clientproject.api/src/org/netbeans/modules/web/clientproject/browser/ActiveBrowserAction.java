@@ -114,6 +114,8 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
     private Lookup.Result<Project> resultPrj;
     private Lookup.Result<DataObject> resultDO;
     private Lookup.Result<FileObject> resultFO;
+    private Lookup.Result<ProjectBrowserProvider> resultPBP;
+    private LookupListener lookupListener;
     private WebBrowser lastWebBrowser = null;
     
     private ChangeListener ideBrowserChangeListener = new ChangeListener() {
@@ -145,7 +147,14 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
                 }
             }
         };
-        refreshView();
+        lookupListener = new LookupListener() {
+            @Override
+            public void resultChanged(LookupEvent ev) {
+                refreshViewLater(true);
+            }
+        };
+
+        refreshView(false);
     }
 
     @Override
@@ -168,7 +177,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
 
     @Override
     public void resultChanged(LookupEvent ev) {
-        refreshViewLater();
+        refreshViewLater(false);
     }
 
     @Override
@@ -282,28 +291,32 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         return button;
     }
 
-    private void refreshViewLater() {
+    private void refreshViewLater(final boolean projectLookupChange) {
         RP.post(new Runnable() {
             public @Override void run() {
-                refreshView();
+                refreshView(projectLookupChange);
             }
         });
     }
 
-    private void refreshView() {
+    private void refreshView(boolean projectLookupChange) {
         Project[] selected = getProjectsFromLookup(lookup, null);
         if (selected.length == 1) {
-            activeProjectChanged(selected[0]);
+            activeProjectChanged(selected[0], projectLookupChange);
         } else {
-            activeProjectChanged(null);
+            activeProjectChanged(null, projectLookupChange);
         }
     }
 
-    private void activeProjectChanged(Project p) {
+    private void activeProjectChanged(Project p, boolean projectLookupChange) {
         ProjectBrowserProvider pbp = null;
         synchronized (this) {
-            if (currentProject == p) {
+            if (currentProject == p && !projectLookupChange) {
                 return;
+            }
+            if (resultPBP != null) {
+                resultPBP.removeLookupListener(lookupListener);
+                resultPBP = null;
             }
             if (currentBrowserProvider != null) {
                 currentBrowserProvider.removePropertyChangeListener(currentBrowserProviderListener);
@@ -311,7 +324,10 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
             }
             currentProject = p;
             if (currentProject != null) {
-                currentBrowserProvider = currentProject.getLookup().lookup(ProjectBrowserProvider.class);
+                resultPBP = currentProject.getLookup().lookupResult(ProjectBrowserProvider.class);
+                resultPBP.addLookupListener(lookupListener);
+                Collection<? extends ProjectBrowserProvider> c = resultPBP.allInstances();
+                currentBrowserProvider = c.isEmpty() ? null : c.iterator().next();
                 pbp = currentBrowserProvider;
                 if (currentBrowserProvider != null) {
                     currentBrowserProvider.addPropertyChangeListener(currentBrowserProviderListener);

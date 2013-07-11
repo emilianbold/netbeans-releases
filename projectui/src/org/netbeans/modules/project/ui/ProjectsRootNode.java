@@ -455,6 +455,7 @@ public class ProjectsRootNode extends AbstractNode {
         RequestProcessor.Task task;
         private boolean nameChange;
         private boolean iconChange;
+        private volatile Boolean mainCache;
         private final ProjectChildren ch;
         private final boolean logicalView;
         private final ProjectChildren.Pair pair;
@@ -783,7 +784,7 @@ public class ProjectsRootNode extends AbstractNode {
                     LOG.log(Level.INFO, null, e);
                 }
             }      
-            return isMain() ? "<b>" + htmlName + "</b>" : htmlName;
+            return isMainAsync()? "<b>" + htmlName + "</b>" : htmlName;
         }
 
         public @Override Image getIcon(int type) {
@@ -818,6 +819,7 @@ public class ProjectsRootNode extends AbstractNode {
         @Override
         public void propertyChange( PropertyChangeEvent e ) {
             if ( OpenProjectList.PROPERTY_MAIN_PROJECT.equals( e.getPropertyName() ) ) {
+                mainCache = null;
                 fireDisplayNameChange( null, null );
             }
             if ( OpenProjectList.PROPERTY_REPLACE.equals(e.getPropertyName())) {
@@ -826,6 +828,21 @@ public class ProjectsRootNode extends AbstractNode {
             if (SourceGroup.PROP_CONTAINERSHIP.equals(e.getPropertyName())) {
                 setProjectFilesAsynch();
             }
+        }
+
+        private boolean isMainAsync() {
+            final Boolean res = mainCache;
+            if (res != null) {
+                return res;
+            }
+            RP.execute(new Runnable() {
+                @Override
+                public void run() {                    
+                    mainCache = isMain();
+                    fireDisplayNameChange( null, null );
+                }
+            });
+            return false;
         }
 
         private boolean isMain() {

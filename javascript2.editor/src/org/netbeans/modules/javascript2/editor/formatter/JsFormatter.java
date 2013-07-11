@@ -1174,6 +1174,8 @@ public class JsFormatter implements Formatter {
                 case BRACKET_RIGHT_CURLY:
                     curlyBalance--;
                     break;
+                default:
+                    break;
             }
         } while (ts.movePrevious());
 
@@ -1223,7 +1225,7 @@ public class JsFormatter implements Formatter {
 
             JsTokenId id = token.id();
 
-            boolean isContinuationOperator = isBinaryOperator(id, previousId);
+            boolean isContinuationOperator = LexUtilities.isBinaryOperator(id, previousId);
 
             if (ts.offset() == offset && token.length() > 1 && token.text().toString().startsWith("\\")) {
                 // Continued lines have different token types
@@ -1504,7 +1506,7 @@ public class JsFormatter implements Formatter {
                             } else {
                                 lineType =  IN_BLOCK_COMMENT_MIDDLE;
                             }
-                        } else if (isBinaryOperator(id, previousId)) {
+                        } else if (LexUtilities.isBinaryOperator(id, previousId)) {
                             // If a line starts with a non unary operator we can
                             // assume it's a continuation from a previous line
                             continued = true;
@@ -1913,55 +1915,6 @@ public class JsFormatter implements Formatter {
         }
 
         return null;
-    }
-
-    private static boolean isBinaryOperator(JsTokenId id, JsTokenId previous) {
-        switch (id) {
-            case OPERATOR_GREATER:
-            case OPERATOR_LOWER:
-            case OPERATOR_EQUALS:
-            case OPERATOR_EQUALS_EXACTLY:
-            case OPERATOR_LOWER_EQUALS:
-            case OPERATOR_GREATER_EQUALS:
-            case OPERATOR_NOT_EQUALS:
-            case OPERATOR_NOT_EQUALS_EXACTLY:
-            case OPERATOR_AND:
-            case OPERATOR_OR:
-            case OPERATOR_MULTIPLICATION:
-            case OPERATOR_DIVISION:
-            case OPERATOR_BITWISE_AND:
-            case OPERATOR_BITWISE_OR:
-            case OPERATOR_BITWISE_XOR:
-            case OPERATOR_MODULUS:
-            case OPERATOR_LEFT_SHIFT_ARITHMETIC:
-            case OPERATOR_RIGHT_SHIFT_ARITHMETIC:
-            case OPERATOR_RIGHT_SHIFT:
-            case OPERATOR_ASSIGNMENT:
-            case OPERATOR_PLUS_ASSIGNMENT:
-            case OPERATOR_MINUS_ASSIGNMENT:
-            case OPERATOR_MULTIPLICATION_ASSIGNMENT:
-            case OPERATOR_DIVISION_ASSIGNMENT:
-            case OPERATOR_BITWISE_AND_ASSIGNMENT:
-            case OPERATOR_BITWISE_OR_ASSIGNMENT:
-            case OPERATOR_BITWISE_XOR_ASSIGNMENT:
-            case OPERATOR_MODULUS_ASSIGNMENT:
-            case OPERATOR_LEFT_SHIFT_ARITHMETIC_ASSIGNMENT:
-            case OPERATOR_RIGHT_SHIFT_ARITHMETIC_ASSIGNMENT:
-            case OPERATOR_RIGHT_SHIFT_ASSIGNMENT:
-            case OPERATOR_DOT:
-                return true;
-            case OPERATOR_PLUS:
-            case OPERATOR_MINUS:
-                if (previous != null && (previous == JsTokenId.IDENTIFIER || previous == JsTokenId.NUMBER
-                        || previous == JsTokenId.REGEXP_END || previous == JsTokenId.STRING_END
-                        || previous == JsTokenId.BRACKET_RIGHT_BRACKET || previous == JsTokenId.BRACKET_RIGHT_CURLY
-                        || previous == JsTokenId.BRACKET_RIGHT_PAREN)) {
-                    return true;
-                }
-                return false;
-            default:
-                return false;
-        }
     }
 
     /**

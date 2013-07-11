@@ -68,6 +68,18 @@ public class PushDownTest extends RefactoringTestBase {
     public PushDownTest(String name) {
         super(name);
    }
+    
+    public void testPushDownMethodException() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("pushdown/A.java", "package pushdown; public class A extends B {}"),
+                new File("pushdown/C.java", "package pushdown; public class C extends B {}"),
+                new File("pushdown/B.java", "package pushdown; import java.io.IOException; public class B { public int a() throws IOException { return 1; } }"));
+        performPushDown(src.getFileObject("pushdown/B.java"), 1, Boolean.FALSE);
+        verifyContent(src,
+                new File("pushdown/A.java", "package pushdown; import java.io.IOException; public class A extends B { public int a() throws IOException { return 1; } }"),
+                new File("pushdown/C.java", "package pushdown; import java.io.IOException; public class C extends B { public int a() throws IOException { return 1; } }"),
+                new File("pushdown/B.java", "package pushdown; import java.io.IOException; public class B {}"));
+    }
 
     public void testPushDownComments() throws Exception { // #208705 - Duplicate comments after Push Down
         writeFilesAndWaitForScan(src,

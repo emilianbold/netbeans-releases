@@ -94,7 +94,7 @@ public abstract class HintAction extends TextAction implements PropertyChangeLis
     private String doPerform() {
         int[] span = new int[2];
         JTextComponent pane = getCurrentFile(span);
-        Document doc = pane.getDocument();
+        Document doc = pane != null ? pane.getDocument() : null;
         
         if (doc == null) {
             if (span[0] != span[1])

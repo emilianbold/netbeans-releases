@@ -3903,17 +3903,18 @@ public class Reformatter implements ReformatTask {
                             tokenText = javadocTokens.token().text().toString();
                             if (tokenText.endsWith(">")) { //NOI18N
                                 if (P_TAG.equalsIgnoreCase(tokenText) || END_P_TAG.equalsIgnoreCase(tokenText)) {
-                                    if (currWSOffset >= 0 && (toAdd == null || toAdd.first() < currWSOffset)) {
+                                    if (currWSOffset >= 0 && currWSOffset > lastAddedNLOffset && (toAdd == null || toAdd.first() < currWSOffset)) {
                                         marks.add(Pair.of(currWSOffset, 1));
                                     }
                                     lastAddedNLOffset = javadocTokens.offset() + javadocTokens.token().length() - offset;
                                     marks.add(Pair.of(lastAddedNLOffset, 1));
                                     afterText = false;
-                                } else if (PRE_TAG.equalsIgnoreCase(tokenText)
-                                        || CODE_TAG.equalsIgnoreCase(tokenText)) {
+                                } else if (PRE_TAG.equalsIgnoreCase(tokenText)) {
                                     if (currWSOffset >= 0 && state == 0 && (toAdd == null || toAdd.first() < currWSOffset)) {
                                         marks.add(Pair.of(currWSOffset, 1));
                                     }
+                                    marks.add(Pair.of(javadocTokens.offset() - offset, 5));
+                                } else if (CODE_TAG.equalsIgnoreCase(tokenText)) {
                                     marks.add(Pair.of(javadocTokens.offset() - offset, 5));
                                 } else if (PRE_END_TAG.equalsIgnoreCase(tokenText)
                                         || CODE_END_TAG.equalsIgnoreCase(tokenText)) {

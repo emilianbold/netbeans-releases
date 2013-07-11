@@ -180,13 +180,17 @@ public class GuardedDocument extends BaseDocument
             }
         };
     }
-
+    
     /** Get the chain of the guarded blocks */
     public MarkBlockChain getGuardedBlockChain() {
         return guardedBlockChain;
     }
 
     public boolean isPosGuarded(int offset) {
+        Object o = getProperty(EDITABLE_PROP);
+        if (o != null && !(Boolean)o) {
+            return true;
+        }
         if (!modifiable) { // if whole doc is readonly due to CES modificationListener veto
             return true;
         }

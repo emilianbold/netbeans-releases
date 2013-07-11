@@ -53,6 +53,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.AbstractListModel;
 import javax.swing.ComboBoxModel;
+import javax.swing.JComboBox;
 import javax.swing.JPanel;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
@@ -65,6 +66,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.earproject.EarProject;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.util.Exceptions;
@@ -96,6 +98,13 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
         updateEnabled();
     }
     
+    private JComboBox createBrowserComboBox() {
+        JComboBox combo = BrowserUISupport.createBrowserPickerComboBox(
+                uiProperties.BROWSERS_MODEL.getSelectedBrowserId(), true, false,
+                uiProperties.BROWSERS_MODEL);
+        return combo;
+    }
+
     private boolean isWebModuleSelected() {
         return clientModuleUriCombo.getSelectedItem() == null ||
                 !((ClientModuleItem)clientModuleUriCombo.getSelectedItem()).appClient;
@@ -143,9 +152,12 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
     
     private void handleWebModuleRelated(Boolean isWebUri) {
         jCheckBoxDisplayBrowser.setEnabled(isWebUri);
-        jLabelContextPathDesc.setEnabled(isWebUri);
-        jLabelRelativeURL.setEnabled(isWebUri);
-        jTextFieldRelativeURL.setEnabled(isWebUri);
+        jLabelContextPathDesc.setEnabled(isWebUri && jCheckBoxDisplayBrowser.isSelected());
+        jLabelRelativeURL.setEnabled(isWebUri && jCheckBoxDisplayBrowser.isSelected());
+        jTextFieldRelativeURL.setEnabled(isWebUri && jCheckBoxDisplayBrowser.isSelected());
+        jTextFieldRelativeURL.setEditable(isWebUri && jCheckBoxDisplayBrowser.isSelected());
+        jBrowserLabel.setEnabled(isWebUri && jCheckBoxDisplayBrowser.isSelected());
+        jBrowserComboBox.setEnabled(isWebUri && jCheckBoxDisplayBrowser.isSelected());
     }
     
     private int getLongestVersionLength() {
@@ -170,6 +182,8 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelRelativeURL = new javax.swing.JLabel();
         jTextFieldRelativeURL = new javax.swing.JTextField();
         jCheckBoxDisplayBrowser = new javax.swing.JCheckBox();
+        jBrowserLabel = new javax.swing.JLabel();
+        jBrowserComboBox = createBrowserComboBox();
         clientInfoPanel = new javax.swing.JPanel();
         jLabelVMOptionsExample = new javax.swing.JLabel();
         jTextVMOptions = new javax.swing.JTextField();
@@ -210,6 +224,8 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(jBrowserLabel, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_Browser")); // NOI18N
+
         javax.swing.GroupLayout webInfoPanelLayout = new javax.swing.GroupLayout(webInfoPanel);
         webInfoPanel.setLayout(webInfoPanelLayout);
         webInfoPanelLayout.setHorizontalGroup(
@@ -217,12 +233,19 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
             .addGroup(webInfoPanelLayout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(webInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jCheckBoxDisplayBrowser)
-                    .addComponent(jLabelContextPathDesc)
                     .addGroup(webInfoPanelLayout.createSequentialGroup()
                         .addComponent(jLabelRelativeURL)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextFieldRelativeURL, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE)))
+                        .addComponent(jTextFieldRelativeURL, javax.swing.GroupLayout.DEFAULT_SIZE, 520, Short.MAX_VALUE))
+                    .addGroup(webInfoPanelLayout.createSequentialGroup()
+                        .addGroup(webInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jCheckBoxDisplayBrowser)
+                            .addComponent(jLabelContextPathDesc))
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(webInfoPanelLayout.createSequentialGroup()
+                        .addComponent(jBrowserLabel)
+                        .addGap(35, 35, 35)
+                        .addComponent(jBrowserComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         webInfoPanelLayout.setVerticalGroup(
@@ -235,6 +258,10 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 .addGroup(webInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabelRelativeURL)
                     .addComponent(jTextFieldRelativeURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(webInfoPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jBrowserLabel)
+                    .addComponent(jBrowserComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -293,8 +320,8 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
         jLabelVersion.setLabelFor(jTextFieldVersion);
         org.openide.awt.Mnemonics.setLocalizedText(jLabelVersion, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_Version_JLabel")); // NOI18N
 
-        jTextFieldVersion.setColumns(getLongestVersionLength());
         jTextFieldVersion.setEditable(false);
+        jTextFieldVersion.setColumns(getLongestVersionLength());
 
         org.openide.awt.Mnemonics.setLocalizedText(jCheckBoxDeployOnSave, org.openide.util.NbBundle.getMessage(CustomizerRun.class, "LBL_CustomizeRun_DeployOnSave_JCheckBox")); // NOI18N
 
@@ -310,27 +337,22 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(jLabelVersion)
-                            .addComponent(jLabelContextPath)
-                            .addComponent(jLabelServer))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(clientModuleUriCombo, 0, 533, Short.MAX_VALUE)
-                            .addComponent(jComboBoxServer, 0, 533, Short.MAX_VALUE)
-                            .addComponent(jTextFieldVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jLabelVersion)
+                                    .addComponent(jLabelContextPath)
+                                    .addComponent(jLabelServer))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(clientModuleUriCombo, 0, 533, Short.MAX_VALUE)
+                                    .addComponent(jComboBoxServer, 0, 533, Short.MAX_VALUE)
+                                    .addComponent(jTextFieldVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
                             .addGroup(layout.createSequentialGroup()
                                 .addGap(21, 21, 21)
                                 .addComponent(dosDescription, javax.swing.GroupLayout.DEFAULT_SIZE, 642, Short.MAX_VALUE))
-                            .addComponent(jCheckBoxDeployOnSave)))
-                    .addGroup(layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(webInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addContainerGap()
-                        .addComponent(clientInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                            .addComponent(jCheckBoxDeployOnSave)
+                            .addComponent(webInfoPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(clientInfoPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -358,7 +380,7 @@ public final class CustomizerRun extends JPanel implements HelpCtx.Provider {
                 .addComponent(webInfoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(clientInfoPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(114, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         jComboBoxServer.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(CustomizerRun.class, "ACS_CustomizeRun_Server_A11YDesc")); // NOI18N
@@ -380,6 +402,8 @@ private void jCheckBoxDisplayBrowserActionPerformed(java.awt.event.ActionEvent e
     private javax.swing.JComboBox clientModuleUriCombo;
     private javax.swing.JLabel dosDescription;
     private javax.swing.JLabel filler;
+    private javax.swing.JComboBox jBrowserComboBox;
+    private javax.swing.JLabel jBrowserLabel;
     private javax.swing.JCheckBox jCheckBoxDeployOnSave;
     private javax.swing.JCheckBox jCheckBoxDisplayBrowser;
     private javax.swing.JComboBox jComboBoxServer;

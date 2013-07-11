@@ -66,7 +66,7 @@ public class SystemOptionTest extends NbTestCase {
     
     /** Test manipulation of a SystemOption in memory.
      */
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9882/testReport/
+    @RandomlyFails // http://deadlock.netbeans.org/job/NB-Core-Build/9882/testReport/
     public void testBasicUsage() throws Exception {
         assertNull(SharedClassObject.findObject(SimpleOption.class, false));
         SimpleOption o = (SimpleOption)SharedClassObject.findObject(SimpleOption.class, true);

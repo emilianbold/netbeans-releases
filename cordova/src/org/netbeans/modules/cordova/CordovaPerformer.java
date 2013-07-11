@@ -102,7 +102,7 @@ public class CordovaPerformer implements BuildPerformer {
     
     private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
 
-    private final int BUILD_SCRIPT_VERSION = 9;
+    private final int BUILD_SCRIPT_VERSION = 10;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
@@ -117,6 +117,10 @@ public class CordovaPerformer implements BuildPerformer {
         }
         if (PlatformManager.getPlatform(PlatformManager.IOS_TYPE).isReady()) {
             task2 = perform("create-ios", project); // NOI18N
+        }
+        
+        if (task1 == null && task2 == null ) {
+            task1 = perform("create-resources", project); // NOI18N
         }
         
         Task t = new CompoundTask(task1, task2);
@@ -295,7 +299,7 @@ public class CordovaPerformer implements BuildPerformer {
             FileObject config = project.getProjectDirectory().getFileObject(configPath);
             SourceConfig conf = new SourceConfig(FileUtil.toFile(config));
             if (fresh) {
-                final String appName = ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".","_"); // NOI18N
+                final String appName = ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", "_").replaceAll("-", "_").replaceAll("\\.","_"); // NOI18N
                 conf.setId(DEFAULT_ID_PREFIX + "." + appName); // NOI18N
                 conf.setName(appName);
                 conf.setDescription(DEFAULT_DESCRIPTION);

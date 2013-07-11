@@ -58,7 +58,7 @@ public class ContentProviderTest extends NbTestCase {
         super(name);
     }
 
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9882/testReport/
+    @RandomlyFails // http://deadlock.netbeans.org/job/NB-Core-Build/9882/testReport/
     public void testCheckAFileFromOurLayer() {
         FileObject fo = FileUtil.getConfigFile("foo/bar");
         assertNotNull("foo/bar is provided", fo);

@@ -108,6 +108,8 @@ public class JFXPackagingPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.BASELINE_LEADING;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 15);
         add(labelManifest, gridBagConstraints);
+        labelManifest.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXPackagingPanel.class, "AN_JFXPackagingPanel.labelManifest.text")); // NOI18N
+        labelManifest.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXPackagingPanel.class, "AD_JFXPackagingPanel.labelManifest.text")); // NOI18N
 
         labelManifestMessage.setText(org.openide.util.NbBundle.getMessage(JFXPackagingPanel.class, "JFXPackagingPanel.labelManifestMessage.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();

@@ -110,7 +110,7 @@ public final class Path {
      */
     public static String describeObject(Object obj) {
         if (obj == null) {
-            // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/1393/testReport/org.netbeans.modules.projectapi/AuxiliaryConfigBasedPreferencesProviderTest/testReclaimable/
+            // http://deadlock.netbeans.org/job/NB-Core-Build/1393/testReport/org.netbeans.modules.projectapi/AuxiliaryConfigBasedPreferencesProviderTest/testReclaimable/
             // java.lang.NullPointerException
             //         at org.netbeans.insane.live.Path.describeObject(Path.java:109)
             //         at org.netbeans.insane.live.Path.toString(Path.java:119)

@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.*;
+import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -661,6 +662,17 @@ public final class ELTypeUtilities {
     }
 
     /**
+     * Whether the given node represents access to the collection or array.
+     * @param ccontext compilation context
+     * @param node node to examine
+     * @return {@code true} if the node means access to collection or array, {@code false} otherwise
+     * @since 1.34
+     */
+    public static boolean isAccessIntoCollection(CompilationContext ccontext, Node node) {
+        return (node instanceof AstInteger);
+    }
+
+    /**
      * Whether the given node represents static {@link Iterable} field where can be used operators.
      * @param ccontext compilation context
      * @param element element to examine
@@ -668,7 +680,9 @@ public final class ELTypeUtilities {
      * @since 1.26
      */
     public static boolean isIterableElement(CompilationContext ccontext, Element element) {
-        if (element.getKind() == ElementKind.METHOD) {
+        if (element.getKind() == ElementKind.CLASS) {
+            return isSubtypeOf(ccontext, element.asType(), "java.lang.Iterable"); //NOI18N
+        } else if (element.getKind() == ElementKind.METHOD) {
             TypeMirror returnType = ELTypeUtilities.getReturnType(ccontext, (ExecutableElement) element);
             if (returnType.getKind() == TypeKind.ARRAY
                     || isSubtypeOf(ccontext, returnType, "java.lang.Iterable")) { //NOI18N
@@ -788,7 +802,15 @@ public final class ELTypeUtilities {
                                     // for array try to look like Iterable (operators for array return type)
                                     enclosing = info.info().getElements().getTypeElement("java.lang.Iterable"); //NOI18N
                                 } else {
-                                    enclosing = info.info().getTypes().asElement(returnType);
+                                    if (isAccessIntoCollection(info, target) && returnType instanceof DeclaredType) {
+                                        List<? extends TypeMirror> typeArguments = ((DeclaredType) returnType).getTypeArguments();
+                                        if (!typeArguments.isEmpty()) {
+                                            enclosing = info.info().getTypes().asElement(typeArguments.get(0));
+                                            result = enclosing;
+                                        }
+                                    } else {
+                                        enclosing = info.info().getTypes().asElement(returnType);
+                                    }
                                 }
                                 if (enclosing == null) {
                                     return;

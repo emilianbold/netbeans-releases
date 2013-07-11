@@ -180,15 +180,7 @@ private void connectionComboActionPerformed(java.awt.event.ActionEvent evt) {//G
 
     @Override
     public boolean canImportData(FormModel form) {
-        PersistenceLocationProvider provider = null;
-        FormDataObject fdo = FormEditor.getFormDataObject(form);
-        if (fdo != null) {
-            Project project = FileOwnerQuery.getOwner(fdo.getPrimaryFile());
-            if (project != null) {
-                provider = project.getLookup().lookup(PersistenceLocationProvider.class);
-            }
-        }
-        return (provider != null);
+        return J2EEUtils.supportsJPA(form);
     }
 
     /**
