@@ -44,6 +44,8 @@ package org.netbeans.modules.cordova.platforms.android;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.net.InetSocketAddress;
+import java.net.Proxy;
 import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -59,7 +61,6 @@ import org.json.simple.JSONValue;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.netbeans.modules.cordova.platforms.spi.MobileDebugTransport;
-import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.netserver.api.ProtocolDraft;
@@ -145,7 +146,8 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
         
         for (long stop = System.nanoTime() + TimeUnit.MINUTES.toNanos(2); stop > System.nanoTime();) {
             try {
-                Socket socket = new Socket("localhost", 9222); // NOI18N
+                Socket socket = new Socket(Proxy.NO_PROXY); // NOI18N
+                socket.connect(new InetSocketAddress("localhost", 9222));
                 break;
             } catch (java.net.ConnectException ex) {
                 try {
@@ -188,12 +190,12 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
         try {
             JSONParser parser = new JSONParser();
 
-            URL oracle = new URL("http://localhost:9222/json");
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(oracle.openStream()))) {
+            URL chromeJson = new URL("http://localhost:9222/json");
+            try (BufferedReader reader = new BufferedReader(new InputStreamReader(chromeJson.openConnection(Proxy.NO_PROXY).getInputStream()))) {
                 Object obj = parser.parse(reader);
                 array = (JSONArray) obj;
                 if (array.size()==0) {
-                    try (BufferedReader r = new BufferedReader(new InputStreamReader(oracle.openStream()))) {
+                    try (BufferedReader r = new BufferedReader(new InputStreamReader(chromeJson.openConnection(Proxy.NO_PROXY).getInputStream()))) {
                         while (r.ready()) {
                             LOGGER.info(r.readLine());
                         }

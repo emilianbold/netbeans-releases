@@ -1,157 +1,157 @@
 <Unnamed test>
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=13, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "menu", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=12, zzLexicalState=0}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "menu", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=13, zzLexicalState=0}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=12, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
 WHITESPACE      "  ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "id", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "id", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-NUMBER          "2e10", la=1, st=LexerState{zzState=39, zzLexicalState=0}
-OPERATOR_COMMA  ",", st=LexerState{zzState=17, zzLexicalState=0}
+NUMBER          "2e10", la=1, st=LexerState{zzState=37, zzLexicalState=0}
+OPERATOR_COMMA  ",", st=LexerState{zzState=16, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
 WHITESPACE      "  ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "value", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "value", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "File", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "File", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COMMA  ",", st=LexerState{zzState=17, zzLexicalState=0}
+OPERATOR_COMMA  ",", st=LexerState{zzState=16, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
 WHITESPACE      "  ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "x", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "x", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
 NUMBER          "1.5", la=1, st=LexerState{zzState=28, zzLexicalState=0}
-OPERATOR_COMMA  ",", st=LexerState{zzState=17, zzLexicalState=0}
+OPERATOR_COMMA  ",", st=LexerState{zzState=16, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
 WHITESPACE      "  ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "y", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "y", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-NUMBER          "2.5e-5", la=1, st=LexerState{zzState=39, zzLexicalState=0}
-OPERATOR_COMMA  ",", st=LexerState{zzState=17, zzLexicalState=0}
+NUMBER          "2.5e-5", la=1, st=LexerState{zzState=37, zzLexicalState=0}
+OPERATOR_COMMA  ",", st=LexerState{zzState=16, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
 WHITESPACE      "  ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "q", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "q", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-OPERATOR_MINUS  "-", st=LexerState{zzState=19, zzLexicalState=0}
+OPERATOR_MINUS  "-", st=LexerState{zzState=18, zzLexicalState=0}
 NUMBER          "7", la=1, st=LexerState{zzState=8, zzLexicalState=0}
-OPERATOR_COMMA  ",", st=LexerState{zzState=17, zzLexicalState=0}
+OPERATOR_COMMA  ",", st=LexerState{zzState=16, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
 WHITESPACE      "  ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "popup", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "popup", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=13, zzLexicalState=0}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=12, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
 WHITESPACE      "    ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "menuitem", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "menuitem", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-BRACKET_LEFT_BRACKET  "[", st=LexerState{zzState=15, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
+BRACKET_LEFT_BRACKET  "[", st=LexerState{zzState=14, zzLexicalState=0}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COMMA  ",", st=LexerState{zzState=17, zzLexicalState=0}
+OPERATOR_COMMA  ",", st=LexerState{zzState=16, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
 WHITESPACE      "      ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=13, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "value", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=12, zzLexicalState=0}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "value", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "New", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "New", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COMMA  ",", st=LexerState{zzState=17, zzLexicalState=0}
+OPERATOR_COMMA  ",", st=LexerState{zzState=16, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "onclick", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "onclick", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "CreateNewDoc()", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "CreateNewDoc()", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-BRACKET_RIGHT_CURLY  "}", st=LexerState{zzState=14, zzLexicalState=0}
-OPERATOR_COMMA  ",", st=LexerState{zzState=17, zzLexicalState=0}
+BRACKET_RIGHT_CURLY  "}", st=LexerState{zzState=13, zzLexicalState=0}
+OPERATOR_COMMA  ",", st=LexerState{zzState=16, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
 WHITESPACE      "      ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=13, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "value", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=12, zzLexicalState=0}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "value", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "Open", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "Open", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COMMA  ",", st=LexerState{zzState=17, zzLexicalState=0}
+OPERATOR_COMMA  ",", st=LexerState{zzState=16, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "onclick", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "onclick", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "OpenDoc()", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "OpenDoc()", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-BRACKET_RIGHT_CURLY  "}", st=LexerState{zzState=14, zzLexicalState=0}
-OPERATOR_COMMA  ",", st=LexerState{zzState=17, zzLexicalState=0}
+BRACKET_RIGHT_CURLY  "}", st=LexerState{zzState=13, zzLexicalState=0}
+OPERATOR_COMMA  ",", st=LexerState{zzState=16, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
 WHITESPACE      "      ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=13, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "value", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+BRACKET_LEFT_CURLY  "{", st=LexerState{zzState=12, zzLexicalState=0}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "value", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "Close", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "Close", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COMMA  ",", st=LexerState{zzState=17, zzLexicalState=0}
+OPERATOR_COMMA  ",", st=LexerState{zzState=16, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "onclick", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "onclick", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-OPERATOR_COLON  ":", st=LexerState{zzState=18, zzLexicalState=0}
+OPERATOR_COLON  ":", st=LexerState{zzState=17, zzLexicalState=0}
 WHITESPACE      " ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-STRING_BEGIN    """, st=LexerState{zzState=9, zzLexicalState=2}
-STRING          "CloseDoc()", la=1, st=LexerState{zzState=23, zzLexicalState=4}
+STRING_BEGIN    """, st=LexerState{zzState=19, zzLexicalState=2}
+STRING          "CloseDoc()", la=1, st=LexerState{zzState=24, zzLexicalState=4}
 STRING_END      """, st=LexerState{zzState=25, zzLexicalState=0}
-BRACKET_RIGHT_CURLY  "}", st=LexerState{zzState=14, zzLexicalState=0}
+BRACKET_RIGHT_CURLY  "}", st=LexerState{zzState=13, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
 WHITESPACE      "    ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-BRACKET_RIGHT_BRACKET  "]", st=LexerState{zzState=16, zzLexicalState=0}
+BRACKET_RIGHT_BRACKET  "]", st=LexerState{zzState=15, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
 WHITESPACE      "  ", la=1, st=LexerState{zzState=7, zzLexicalState=0}
-BRACKET_RIGHT_CURLY  "}", st=LexerState{zzState=14, zzLexicalState=0}
+BRACKET_RIGHT_CURLY  "}", st=LexerState{zzState=13, zzLexicalState=0}
 EOL             "\n", st=LexerState{zzState=6, zzLexicalState=0}
-BRACKET_RIGHT_CURLY  "}", st=LexerState{zzState=14, zzLexicalState=0}
-BRACKET_RIGHT_CURLY  "}", st=LexerState{zzState=14, zzLexicalState=0}
+BRACKET_RIGHT_CURLY  "}", st=LexerState{zzState=13, zzLexicalState=0}
+BRACKET_RIGHT_CURLY  "}", st=LexerState{zzState=13, zzLexicalState=0}
 ----- EOF -----
 

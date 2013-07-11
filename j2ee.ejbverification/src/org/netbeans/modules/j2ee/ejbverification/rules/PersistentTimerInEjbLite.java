@@ -90,7 +90,7 @@ import org.openide.util.NbBundle.Messages;
 @Hint(displayName = "#PersistentTimerInEjbLite.display.name",
         description = "#PersistentTimerInEjbLite.desc",
         id = "o.n.m.j2ee.ejbverification.PersistentTimerInEjbLite",
-        category = "JavaEE",
+        category = "javaee/ejb",
         enabled = true,
         suppressWarnings = "PersistentTimerInEjbLite")
 @NbBundle.Messages({

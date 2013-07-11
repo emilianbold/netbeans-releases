@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.j2ee.ejbverification.rules.source;
+package org.netbeans.modules.j2ee.ejbverification.rules;
 
 import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
@@ -78,17 +78,23 @@ import org.openide.util.RequestProcessor;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
+@Hint(id="o.n.m.j2ee.ejbverification.UseInjectionInsteadOfInstantionRule",
+        displayName = "#UseInjectionInsteadOfInstantionRule.display.name",
+        description = "#UseInjectionInsteadOfInstantionRule.desc",
+        category = "javaee/ejb",
+        enabled = true,
+        suppressWarnings = "UseInjectionInsteadOfInstantion")
+@NbBundle.Messages({
+    "UseInjectionInsteadOfInstantionRule.display.name=Instantiation replaceable with @EJB injection",
+    "UseInjectionInsteadOfInstantionRule.desc=Finds instantiations of a bean which can be injected by @EJB annotation",
+    "UseInjectionInsteadOfInstantionRule.fix=Replace Instantiation of bean by @EJB injection",
+    "UseInjectionInsteadOfInstantionRule.error=Instantiation of bean can be replaced by @EJB injection"
+})
 public final class UseInjectionInsteadOfInstantionRule {
 
     private UseInjectionInsteadOfInstantionRule() {
     }
 
-    @Hint(id="o.n.m.j2ee.ejbverification.UseInjectionInsteadOfInstantionRule",
-            displayName = "#DN_UseInjectionInsteadOfInstantion",
-            description = "#DESC_UseInjectionInsteadOfInstantion",
-            category = "JavaEE",
-            enabled = true,
-            suppressWarnings = "UseInjectionInsteadOfInstantion")
     @TriggerPattern("$type $name = new $clazz()")
     public static ErrorDescription useInjectionInsteadOfInstantion(final HintContext ctx) {
         CompilationInfo cpi = ctx.getInfo();
@@ -124,7 +130,7 @@ public final class UseInjectionInsteadOfInstantionRule {
                         return ErrorDescriptionFactory.forTree(
                                 ctx,
                                 ctx.getPath(),
-                                NbBundle.getMessage(UseInjectionInsteadOfInstantionRule.class, "ERR_UseInjectionInsteadOfInstantion"), //NOI18N
+                                Bundle.UseInjectionInsteadOfInstantionRule_error(),
                                 fix);
                     }
                     return null;
@@ -151,7 +157,7 @@ public final class UseInjectionInsteadOfInstantionRule {
 
         return EjbJar.getEjbJar(fileObject);
     }
-    
+
     private static class ReplaceInstantionByInjectionFix implements Fix {
 
         private final HintContext context;
@@ -164,7 +170,7 @@ public final class UseInjectionInsteadOfInstantionRule {
 
         @Override
         public String getText() {
-            return NbBundle.getMessage(UseInjectionInsteadOfInstantionRule.class, "FIX_UseInjectionInsteadOfInstantion"); //NOI18N
+            return Bundle.UseInjectionInsteadOfInstantionRule_fix();
         }
 
         @Override

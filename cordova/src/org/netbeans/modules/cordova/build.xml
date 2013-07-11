@@ -242,7 +242,9 @@ made subject to such option by the copyright holder.
             <arg value="${cordova.platforms}/android"/>
             <arg value="--name"/>
             <arg value="${project.name}"/>
-        </exec>
+            <arg value="--target"/>
+            <arg value="${android.build.target}"/>
+       </exec>
 
         <exec executable="${android.exec.android}.bat" osfamily="windows" resolveexecutable="true" failonerror="true">
             <arg value="update"/>
@@ -251,6 +253,8 @@ made subject to such option by the copyright holder.
             <arg value="${cordova.platforms}/android"/>
             <arg value="--name"/>
             <arg value="${project.name}"/>
+            <arg value="--target"/>
+            <arg value="${android.build.target}"/>
         </exec>
         
         <move tofile="${cordova.platforms}/android/src/${android.project.package.folder}/${android.project.activity}.java">
@@ -367,6 +371,8 @@ made subject to such option by the copyright holder.
     
     <target name="clean-android">
         <delete dir="${cordova.build}/android" />
+        <delete file="${cordova.platforms}/android/local.properties" />
+        <delete file="${cordova.platforms}/android/project.properties" />
     </target>
     
     <target name="clean-ios">
