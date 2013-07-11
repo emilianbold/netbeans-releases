@@ -1,6 +1,6 @@
 diff -r 02f810c26ff9 make/build-nasgen.xml
 --- a/make/build-nasgen.xml	Wed Feb 06 12:51:09 2013 -0400
-+++ b/make/build-nasgen.xml	Thu Jul 11 12:09:53 2013 +0200
++++ b/make/build-nasgen.xml	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,7 +25,7 @@
      <description>Builds and runs nasgen.</description>
      <import file="build.xml"/>
@@ -12,7 +12,7 @@ diff -r 02f810c26ff9 make/build-nasgen.xml
      </target>
 diff -r 02f810c26ff9 make/build.xml
 --- a/make/build.xml	Wed Feb 06 12:51:09 2013 -0400
-+++ b/make/build.xml	Thu Jul 11 12:09:53 2013 +0200
++++ b/make/build.xml	Thu Jul 11 15:26:53 2013 +0200
 @@ -63,24 +63,16 @@
      <delete dir="${dynalink.dir}"/>
    </target>
@@ -110,7 +110,7 @@ diff -r 02f810c26ff9 make/build.xml
        <fileset dir="${jdk.asm.src.dir}" includes="**/*.java"/>
 diff -r 02f810c26ff9 make/nbproject/nbjdk.properties
 --- a/make/nbproject/nbjdk.properties	Wed Feb 06 12:51:09 2013 -0400
-+++ b/make/nbproject/nbjdk.properties	Thu Jul 11 12:09:53 2013 +0200
++++ b/make/nbproject/nbjdk.properties	Thu Jul 11 15:26:53 2013 +0200
 @@ -20,5 +20,5 @@
  # or visit www.oracle.com if you need additional information or have any
  # questions.
@@ -120,7 +120,7 @@ diff -r 02f810c26ff9 make/nbproject/nbjdk.properties
  
 diff -r 02f810c26ff9 make/project.properties
 --- a/make/project.properties	Wed Feb 06 12:51:09 2013 -0400
-+++ b/make/project.properties	Thu Jul 11 12:09:53 2013 +0200
++++ b/make/project.properties	Thu Jul 11 15:26:53 2013 +0200
 @@ -88,18 +88,22 @@
  # "-SNAPSHOT" suffix and the jar version will have a timestamp in it. When
  # it's 'release', the version has no suffix, and the jar version is 
@@ -150,7 +150,7 @@ diff -r 02f810c26ff9 make/project.properties
      ${build.test.classes.dir}:\
 diff -r 02f810c26ff9 src/META-INF/services/javax.script.ScriptEngineFactory
 --- a/src/META-INF/services/javax.script.ScriptEngineFactory	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/META-INF/services/javax.script.ScriptEngineFactory	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/META-INF/services/javax.script.ScriptEngineFactory	Thu Jul 11 15:26:53 2013 +0200
 @@ -22,4 +22,4 @@
  # or visit www.oracle.com if you need additional information or have any
  # questions.
@@ -159,7 +159,7 @@ diff -r 02f810c26ff9 src/META-INF/services/javax.script.ScriptEngineFactory
 +#jdk.nashorn.api.scripting.NashornScriptEngineFactory
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/ClassEmitter.java
 --- a/src/jdk/nashorn/internal/codegen/ClassEmitter.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/ClassEmitter.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/ClassEmitter.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,18 +25,18 @@
  
  package jdk.nashorn.internal.codegen;
@@ -208,7 +208,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/ClassEmitter.java
  import jdk.nashorn.internal.runtime.Context;
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/MethodEmitter.java
 --- a/src/jdk/nashorn/internal/codegen/MethodEmitter.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/MethodEmitter.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/MethodEmitter.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,38 +25,38 @@
  
  package jdk.nashorn.internal.codegen;
@@ -311,7 +311,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/MethodEmitter.java
  
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/ArrayType.java
 --- a/src/jdk/nashorn/internal/codegen/types/ArrayType.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/ArrayType.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/ArrayType.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,13 +25,13 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -334,7 +334,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/ArrayType.java
   * This is an array type, i.e. OBJECT_ARRAY, NUMBER_ARRAY.
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BooleanType.java
 --- a/src/jdk/nashorn/internal/codegen/types/BooleanType.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BooleanType.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/BooleanType.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -50,14 +50,14 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -358,7 +358,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BooleanType.java
  import jdk.nashorn.internal.runtime.JSType;
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java
 --- a/src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -370,7 +370,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.jav
   * Array operations, not supported by all ops
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java
 --- a/src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -382,7 +382,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.j
   * Bitwise operations not supported by all types
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java
 --- a/src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -394,7 +394,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.j
   * Numeric operations, not supported by all types
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeOps.java
 --- a/src/jdk/nashorn/internal/codegen/types/BytecodeOps.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BytecodeOps.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/BytecodeOps.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -406,7 +406,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeOps.java
  /**
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/IntType.java
 --- a/src/jdk/nashorn/internal/codegen/types/IntType.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/IntType.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/IntType.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,35 +25,35 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -472,7 +472,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/IntType.java
  
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/LongType.java
 --- a/src/jdk/nashorn/internal/codegen/types/LongType.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/LongType.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/LongType.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,29 +25,29 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -526,7 +526,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/LongType.java
  
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/NumberType.java
 --- a/src/jdk/nashorn/internal/codegen/types/NumberType.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/NumberType.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/NumberType.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,22 +25,22 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -566,7 +566,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/NumberType.java
  import jdk.nashorn.internal.runtime.JSType;
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/ObjectType.java
 --- a/src/jdk/nashorn/internal/codegen/types/ObjectType.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/ObjectType.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/ObjectType.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,18 +25,18 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -596,7 +596,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/ObjectType.java
  import jdk.nashorn.internal.runtime.ScriptRuntime;
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/Type.java
 --- a/src/jdk/nashorn/internal/codegen/types/Type.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/Type.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/Type.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,30 +25,30 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -787,9 +787,23 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/Type.java
      }
  
      /**
+diff -r 02f810c26ff9 src/jdk/nashorn/internal/parser/AbstractParser.java
+--- a/src/jdk/nashorn/internal/parser/AbstractParser.java	Wed Feb 06 12:51:09 2013 -0400
++++ b/src/jdk/nashorn/internal/parser/AbstractParser.java	Thu Jul 11 15:26:53 2013 +0200
+@@ -167,6 +167,10 @@
+ 
+             // Set up next token.
+             k++;
++            if (k > source.getLength()) {
++                type  = EOF;
++                return type;
++            }
+             final long lastToken = token;
+             token = getToken(k);
+             type = Token.descType(token);
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/parser/JSONParser.java
 --- a/src/jdk/nashorn/internal/parser/JSONParser.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/parser/JSONParser.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/parser/JSONParser.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -158,24 +158,52 @@
  
      @SuppressWarnings("fallthrough")
@@ -857,7 +871,27 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/parser/JSONParser.java
          case DECIMAL:
          case FLOATING:
              return getLiteral();
-@@ -325,10 +353,8 @@
+@@ -258,6 +286,9 @@
+ 
+             case COMMARIGHT:
+                 next();
++                if (type == RBRACKET) {
++                    error(AbstractParser.message("expected", "array element", type.getNameOrType()));
++                }
+                 break;
+ 
+             default:
+@@ -297,6 +328,9 @@
+ 
+             case COMMARIGHT:
+                 next();
++                if (type == RBRACE) {
++                    error(AbstractParser.message("expected", "object member", type.getNameOrType()));
++                }
+                 break;
+ 
+             default:
+@@ -325,10 +359,8 @@
          final long propertyToken = token;
          LiteralNode<?> name = null;
  
@@ -871,7 +905,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/parser/JSONParser.java
          if (name != null) {
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/runtime/Context.java
 --- a/src/jdk/nashorn/internal/runtime/Context.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/Context.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/runtime/Context.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -44,8 +44,8 @@
  import java.security.PrivilegedAction;
  import java.util.Locale;
@@ -885,7 +919,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/runtime/Context.java
  import jdk.nashorn.internal.codegen.Namespace;
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java
 --- a/src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java	Thu Jul 11 12:09:53 2013 +0200
++++ b/src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java	Thu Jul 11 15:26:53 2013 +0200
 @@ -25,21 +25,21 @@
  
  package jdk.nashorn.internal.runtime.linker;

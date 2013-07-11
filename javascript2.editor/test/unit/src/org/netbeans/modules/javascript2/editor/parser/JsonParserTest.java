@@ -111,6 +111,26 @@ public class JsonParserTest extends JsonTestBase {
         parse("{ \"a\" : \"t\\'est\" }", Collections.singletonList("<html><pre>test.json:1:9 Unexpected token: t\\'est"));
     }
 
+    public void testTrailingComma1() throws Exception {
+        parse("{ \"a\" : \"test\" }", Collections.<String>emptyList());
+    }
+
+    public void testTrailingComma2() throws Exception {
+        parse("{ \"a\" : [1, 2] }", Collections.<String>emptyList());
+    }
+
+    public void testTrailingComma3() throws Exception {
+        parse("{ \"a\" : \"test\", }", Collections.singletonList("<html><pre>test.json:1:16 Expected object member but found }"));
+    }
+
+    public void testTrailingComma4() throws Exception {
+        parse("{ \"a\" : [1, 2,] }", Collections.singletonList("<html><pre>test.json:1:14 Expected array element but found ]"));
+    }
+
+    public void testTrailingComma5() throws Exception {
+        parse("{ \"a\" : [{\"w\":1}, {\"e\":2},] }", Collections.singletonList("<html><pre>test.json:1:26 Expected array element but found ]"));
+    }
+
     private void parse(String original, List<String> errors) throws Exception {
 
         JsonParser parser = new JsonParser();
