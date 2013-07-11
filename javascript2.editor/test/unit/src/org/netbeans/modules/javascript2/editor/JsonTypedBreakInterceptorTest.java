@@ -92,4 +92,8 @@ public class JsonTypedBreakInterceptorTest extends JsonTestBase {
     public void testNoContComment2() throws Exception {
         insertBreak("/*^\n*/", "/*\n^\n*/");
     }
+
+    public void testNoMultilineString() throws Exception {
+        insertBreak("{ \"a\" : \"abc^def\"^ }", "{ \"a\" : \"abc\n    ^def\" }");
+    }
 }
