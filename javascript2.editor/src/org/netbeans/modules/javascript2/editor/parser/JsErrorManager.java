@@ -51,6 +51,7 @@ import java.util.logging.Logger;
 import jdk.nashorn.internal.runtime.ParserException;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.lib.editor.util.StringEscapeUtils;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
@@ -144,7 +145,9 @@ public class JsErrorManager extends ErrorManager {
 
     @Override
     public void error(ParserException e) {
-        addParserError(new ParserError(e.getMessage(), e.getLineNumber(), e.getColumnNumber(), e.getToken()));
+        
+        String message = "<html><pre>" + StringEscapeUtils.escapeHtml(e.getMessage()).replaceAll("\n", "<br/>") + "</pre></html>";
+        addParserError(new ParserError(message, e.getLineNumber(), e.getColumnNumber(), e.getToken()));
     }
 
     @Override
