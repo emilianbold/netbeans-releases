@@ -160,7 +160,7 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
                 case CLIENT:
                     if (clientNode == null) {
                         clientNode = new WSRootNode(new WSChildrenFactory(view, key), 
-                                createLookup(project, new WsPrivilegedTemplates()));
+                                createLookup(project, new WsClientPrivilegedTemplates()));
                         clientNode.setDisplayName(NbBundle.getBundle(
                                 ProjectWebServiceNodeFactory.class).getString(
                                         "LBL_ServiceReferences"));  // NOI18N
