@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugzilla.autoupdate;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -90,7 +91,9 @@ public class BugzillaAutoupdate {
      * @param repository the repository to check the version for
      */
     public void checkAndNotify(final BugzillaRepository repository) {
-        repos.add(repository);
+        synchronized(repos) {
+            repos.add(repository);
+        }
         support.checkAndNotify(repository.getUrl());
     }
 
@@ -126,9 +129,11 @@ public class BugzillaAutoupdate {
         @Override
         public String getServerVersion(String url) {
             BugzillaRepository repository = null;
-            for (BugzillaRepository r : repos) {
-                if(r.getUrl().equals(url)) {
-                    repository = r;
+            synchronized (repos) {
+                for (BugzillaRepository r : repos) {
+                    if(r.getUrl().equals(url)) {
+                        repository = r;
+                    }
                 }
             }
             assert repository != null : "no repository found for url " + url;
