@@ -300,7 +300,6 @@ public final class MakeProject implements Project, MakeProjectListener {
                     kind,
                     new MakeProjectEncodingQueryImpl(this), remoteProject,
                     new ToolchainProjectImpl(this),
-                    new CPPImpl(sources, openStateAndLock),
                     new CacheDirectoryProviderImpl(helper.getProjectDirectory()),
                     BrokenReferencesSupport.createPlatformVersionProblemProvider(this, helper, projectDescriptorProvider, makeProjectConfigurationProvider),
                     new CndDocumentCodeStyleProviderImpl(),
@@ -1822,33 +1821,6 @@ public final class MakeProject implements Project, MakeProjectListener {
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
             pcs.firePropertyChange(new PropertyChangeEvent(this, evt.getPropertyName(), evt.getOldValue(), evt.getNewValue()));
-        }
-    }
-
-    private static final class CPPImpl implements ClassPathProvider {
-
-        private final MakeSources sources;
-        private final AtomicBoolean projectOpenStateAndLock;
-
-        public CPPImpl(MakeSources sources, AtomicBoolean projectOpenStateAndLock) {
-            this.sources = sources;
-            this.projectOpenStateAndLock = projectOpenStateAndLock;
-        }
-
-        @Override
-        public ClassPath findClassPath(FileObject file, String type) {
-            synchronized (projectOpenStateAndLock) {
-                if (projectOpenStateAndLock.get()) {
-                    if (MakeProjectPaths.SOURCES.equals(type)) {
-                        for (SourceGroup sg : sources.getSourceGroups(MakeSources.GENERIC)) {
-                            if (sg.getRootFolder().equals(file)) {
-                                return ClassPathSupport.createClassPath(Arrays.asList(new PathResourceImpl(ClassPathSupport.createResource(file.toURL()))));
-                            }
-                        }
-                    }
-                }
-            }
-            return null;
         }
     }
 
