@@ -103,6 +103,9 @@ public class AnalysisOptionsPanel extends JPanel {
     private final MessDetectorRuleSetsListModel ruleSetsListModel = new MessDetectorRuleSetsListModel();
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
+    // #232367
+    volatile boolean ignoreChanges = false;
+
 
     public AnalysisOptionsPanel() {
         initComponents();
@@ -124,6 +127,7 @@ public class AnalysisOptionsPanel extends JPanel {
     })
     private void initCodeSniffer(DocumentListener defaultDocumentListener) {
         codeSnifferHintLabel.setText(Bundle.AnalysisOptionsPanel_codeSniffer_hint(CodeSniffer.NAME, CodeSniffer.LONG_NAME));
+        codeSnifferStandardsModel.fetchStandards(codeSnifferStandardComboBox);
         codeSnifferStandardComboBox.setModel(codeSnifferStandardsModel);
 
         // listeners
@@ -159,7 +163,9 @@ public class AnalysisOptionsPanel extends JPanel {
     }
 
     public void setCodeSnifferPath(String path) {
+        ignoreChanges = true;
         codeSnifferTextField.setText(path);
+        ignoreChanges = false;
     }
 
     @CheckForNull
@@ -172,7 +178,9 @@ public class AnalysisOptionsPanel extends JPanel {
     }
 
     public void setCodeSnifferStandard(String standard) {
+        ignoreChanges = true;
         codeSnifferStandardsModel.setSelectedItem(standard);
+        ignoreChanges = false;
     }
 
     public String getMessDetectorPath() {
@@ -612,6 +620,10 @@ public class AnalysisOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
+            if (ignoreChanges) {
+                // default values set
+                return;
+            }
             String codeSnifferPath = getCodeSnifferPath();
             // reset cached standards only if the new path is valid
             ValidationResult result = new AnalysisOptionsValidator()
@@ -630,6 +642,10 @@ public class AnalysisOptionsPanel extends JPanel {
 
         @Override
         public void itemStateChanged(ItemEvent e) {
+            if (ignoreChanges) {
+                // default values set
+                return;
+            }
             fireChange();
         }
 

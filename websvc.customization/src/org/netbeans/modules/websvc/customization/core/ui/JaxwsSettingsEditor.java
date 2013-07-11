@@ -76,10 +76,17 @@ public class JaxwsSettingsEditor implements WSEditor {
         service = node.getLookup().lookup(Service.class);
         client = node.getLookup().lookup(Client.class);
         WsimportOptions wsimportOptions = null;
+        String[] jvmArgs = null;
+        String jvmOptions = "";
         if (service != null) {
             wsimportOptions = service.getWsImportOptions();
+            jvmArgs = service.getJvmArgs();
         } else if (client != null) {
             wsimportOptions = client.getWsImportOptions();
+            jvmArgs = client.getJvmArgs();
+        }
+        if (jvmArgs.length>0) {
+            jvmOptions = strJoin(jvmArgs);
         }
         List<WsimportOption> options = new ArrayList<WsimportOption>();
         List<WsimportOption> jaxbOptions = new ArrayList<WsimportOption>();
@@ -94,7 +101,7 @@ public class JaxwsSettingsEditor implements WSEditor {
                 }
             }
         }
-        panel = new WsimportOptionsPanel(options, jaxbOptions, wsimportOptions);
+        panel = new WsimportOptionsPanel(options, jaxbOptions, wsimportOptions, jvmOptions);
 
         return panel;
     }
@@ -111,10 +118,18 @@ public class JaxwsSettingsEditor implements WSEditor {
                 if (wsimportOptions == null) {
                     wsimportOptions = service.newWsimportOptions();
                 }
+                String jvmOptions = getJvmOptions();
+                if (jvmOptions.length()>0) {
+                    service.setJvmArgs(jvmOptions.split("\\s+"));
+                }
             } else if (client != null) {
                 wsimportOptions = client.getWsImportOptions();
                 if (wsimportOptions == null) {
                     wsimportOptions = client.newWsimportOptions();
+                }
+                String jvmOptions = getJvmOptions();
+                if (jvmOptions.length()>0) {
+                    client.setJvmArgs(jvmOptions.split("\\s+"));
                 }
             }
 
@@ -152,5 +167,19 @@ public class JaxwsSettingsEditor implements WSEditor {
 
     private List<WsimportOption> getJaxbOptions() {
         return panel.getJaxbOptions();
+    }
+    
+    private String getJvmOptions() {
+        return panel.getJvmOptions();
+    }
+    
+    private String strJoin(String[] aArr) {
+        StringBuilder sbStr = new StringBuilder();
+        for (int i = 0; i < aArr.length; i++) {
+            if (i > 0)
+                sbStr.append(' ');
+            sbStr.append(aArr[i]);
+        }
+        return sbStr.toString();
     }
 }

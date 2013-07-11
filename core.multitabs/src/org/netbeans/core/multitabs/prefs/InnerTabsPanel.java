@@ -88,14 +88,17 @@ class InnerTabsPanel extends javax.swing.JPanel {
 
         buttonGroup2.add(radioRowPerProject);
         org.openide.awt.Mnemonics.setLocalizedText(radioRowPerProject, NbBundle.getMessage(InnerTabsPanel.class, "InnerTabsPanel.radioRowPerProject.text")); // NOI18N
+        radioRowPerProject.setActionCommand(org.openide.util.NbBundle.getMessage(InnerTabsPanel.class, "InnerTabsPanel.radioRowPerProject.actionCommand")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(checkSortDocumentList, NbBundle.getMessage(InnerTabsPanel.class, "InnerTabsPanel.checkSortDocumentList.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(checkMultiRow, NbBundle.getMessage(InnerTabsPanel.class, "InnerTabsPanel.checkMultiRow.text")); // NOI18N
+        checkMultiRow.setActionCommand(org.openide.util.NbBundle.getMessage(InnerTabsPanel.class, "InnerTabsPanel.checkMultiRow.actionCommand")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(InnerTabsPanel.class, "InnerTabsPanel.jLabel1.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(checkProjectColors, NbBundle.getMessage(InnerTabsPanel.class, "InnerTabsPanel.checkProjectColors.text")); // NOI18N
+        checkProjectColors.setActionCommand(org.openide.util.NbBundle.getMessage(InnerTabsPanel.class, "InnerTabsPanel.checkProjectColors.actionCommand")); // NOI18N
 
         buttonGroup1.add(radioPlacementRight);
         org.openide.awt.Mnemonics.setLocalizedText(radioPlacementRight, NbBundle.getMessage(InnerTabsPanel.class, "InnerTabsPanel.radioPlacementRight.text")); // NOI18N
@@ -230,6 +233,8 @@ class InnerTabsPanel extends javax.swing.JPanel {
         radioRowPerProject.setVisible( projectSupport.isEnabled() );
         checkProjectColors.setVisible( projectSupport.isEnabled() );
         checkSortDocumentList.setVisible( projectSupport.isEnabled() );
+
+        enableControls();
     }
 
     boolean store() {

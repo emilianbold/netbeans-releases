@@ -66,7 +66,7 @@ public class WsimportOptionsPanel extends javax.swing.JPanel {
     private WsimportOptions wsimportOptionParent;
 
     /** Creates new form WsimportOptionsPanel */
-    public WsimportOptionsPanel(List<WsimportOption> wsimportOptions, List<WsimportOption> jaxbOptions, WsimportOptions wsimportOptionParent) {
+    public WsimportOptionsPanel(List<WsimportOption> wsimportOptions, List<WsimportOption> jaxbOptions, WsimportOptions wsimportOptionParent, String jvmOptions) {
 
         this.wsimportOptions = wsimportOptions;
         this.jaxbOptions = jaxbOptions;
@@ -77,6 +77,7 @@ public class WsimportOptionsPanel extends javax.swing.JPanel {
         };
         reservedOptions = getReservedOptions();
         initComponents();
+        jvmTextField.setText(jvmOptions);
         
     }
 
@@ -98,6 +99,10 @@ public class WsimportOptionsPanel extends javax.swing.JPanel {
     public List<WsimportOption> getJaxbOptions(){
         return jaxbOptionsPanel.getOptions();
     }
+    
+    public String getJvmOptions(){
+        return jvmTextField.getText().trim();
+    }
 
     /** This method is called from within the constructor to
      * initialize the form.
@@ -111,11 +116,21 @@ public class WsimportOptionsPanel extends javax.swing.JPanel {
         wsimportOptionsPanel = new OptionsPanel(columnNames, wsimportOptions, reservedOptions, wsimportOptionParent);
         jaxbOptionsPanel = new OptionsPanel(columnNames, jaxbOptions, null, wsimportOptionParent);
         wsimportLabel = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
+        jaxbLabel = new javax.swing.JLabel();
+        jvmLabel = new javax.swing.JLabel();
+        jvmTextField = new javax.swing.JTextField();
+        jvmDescriptionLabel = new javax.swing.JLabel();
 
-        wsimportLabel.setText(org.openide.util.NbBundle.getMessage(WsimportOptionsPanel.class, "LBL_WSIMPORT_OPTIONS")); // NOI18N
+        wsimportLabel.setLabelFor(wsimportOptionsPanel);
+        org.openide.awt.Mnemonics.setLocalizedText(wsimportLabel, org.openide.util.NbBundle.getMessage(WsimportOptionsPanel.class, "LBL_WSIMPORT_OPTIONS")); // NOI18N
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(WsimportOptionsPanel.class, "Label_JAXB_OPTIONS")); // NOI18N
+        jaxbLabel.setLabelFor(jaxbOptionsPanel);
+        org.openide.awt.Mnemonics.setLocalizedText(jaxbLabel, org.openide.util.NbBundle.getMessage(WsimportOptionsPanel.class, "Label_JAXB_OPTIONS")); // NOI18N
+
+        jvmLabel.setLabelFor(jvmTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(jvmLabel, org.openide.util.NbBundle.getMessage(WsimportOptionsPanel.class, "WsimportOptionsPanel.jvmLabel.text")); // NOI18N
+
+        jvmDescriptionLabel.setText(org.openide.util.NbBundle.getMessage(WsimportOptionsPanel.class, "WsimportOptionsPanel.jvmDescriptionLabel.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -124,29 +139,49 @@ public class WsimportOptionsPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jaxbOptionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(wsimportOptionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(wsimportLabel)
-                    .addComponent(jLabel2))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jvmLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jvmDescriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 439, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jvmTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 449, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(wsimportOptionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jaxbOptionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jaxbLabel)
+                            .addComponent(wsimportLabel))
+                        .addGap(0, 0, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(wsimportLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(wsimportOptionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(wsimportOptionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, 157, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jvmTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jvmLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 17, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(1, 1, 1)
+                .addComponent(jvmDescriptionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
-                .addComponent(jLabel2)
-                .addGap(5, 5, 5)
-                .addComponent(jaxbOptionsPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 157, Short.MAX_VALUE)
+                .addComponent(jaxbLabel)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 8, Short.MAX_VALUE)
+                .addComponent(jaxbOptionsPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
+
+        jvmTextField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(WsimportOptionsPanel.class, "WsimportOptionsPanel.jvmTextField.AccessibleContext.accessibleDescription")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jaxbLabel;
     private org.netbeans.modules.websvc.customization.jaxwssettings.panel.OptionsPanel jaxbOptionsPanel;
+    private javax.swing.JLabel jvmDescriptionLabel;
+    private javax.swing.JLabel jvmLabel;
+    private javax.swing.JTextField jvmTextField;
     private javax.swing.JLabel wsimportLabel;
     private org.netbeans.modules.websvc.customization.jaxwssettings.panel.OptionsPanel wsimportOptionsPanel;
     // End of variables declaration//GEN-END:variables

@@ -156,6 +156,7 @@ public final class NbStatusDisplayer extends StatusDisplayer {
      * @param toRemove
      */
     private void remove(MessageImpl toRemove) {
+        boolean removed = false;
         synchronized (this) {
             WeakReference<MessageImpl> refToRemove = null;
             for (WeakReference<MessageImpl> ref : messages) {
@@ -165,10 +166,12 @@ public final class NbStatusDisplayer extends StatusDisplayer {
                 }
             }
             if (null != refToRemove) {
-                messages.remove(refToRemove);
+                removed = messages.remove(refToRemove);
             }
         }
-        cs.fireChange();
+        if (removed) {
+            cs.fireChange();
+        }
     }
 
     /**

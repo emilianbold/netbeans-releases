@@ -73,7 +73,12 @@ public class WebInspectorJNIBinding {
 
     public synchronized void start() {
         if (started++ < 1) {
-            nstart();
+            try {
+                nstart();
+            } catch (IllegalStateException ise) {
+                started--;
+                throw ise;
+            }
         } else {
             LOG.info("WebKit Debugging Service already started");
         }
