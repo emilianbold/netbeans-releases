@@ -83,7 +83,7 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
         getAnalysisOptionsPanel().setMessDetectorPath(getAnalysisOptions().getMessDetectorPath());
         getAnalysisOptionsPanel().setMessDetectorRuleSets(getAnalysisOptions().getMessDetectorRuleSets());
 
-        changed = false;
+        changed = true;
     }
 
     @Override
@@ -156,8 +156,7 @@ public class AnalysisOptionsPanelController extends OptionsPanelController imple
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        if (!changed) {
-            changed = true;
+        if (changed) {
             propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
