@@ -3,8 +3,8 @@
 # XXX consider using lastStableBuild
 BUILD=`wget http://deadlock.nbextras.org/hudson/job/trunk/lastSuccessfulBuild/buildNumber -O -`
 
-TESTDIST="http://deadlock.netbeans.org/hudson/job/test-compilation/lastSuccessfulBuild/artifact/nbbuild/build/testdist.zip"
-PLATFORM="http://deadlock.netbeans.org/hudson/job/trunk/lastSuccessfulBuild/artifact/nbbuild/dist/zip/netbeans-hudson-trunk-$BUILD-platform.zip"
+TESTDIST="http://deadlock.netbeans.org/job/test-compilation/lastSuccessfulBuild/artifact/nbbuild/build/testdist.zip"
+PLATFORM="http://deadlock.netbeans.org/job/trunk/lastSuccessfulBuild/artifact/nbbuild/dist/zip/netbeans-hudson-trunk-$BUILD-platform.zip"
 
 [ -f `basename $TESTDIST` ] || wget $TESTDIST
 [ -f `basename $PLATFORM` ] || wget $PLATFORM

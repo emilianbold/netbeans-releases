@@ -144,7 +144,7 @@ public class ProjectUtilsTest extends NbTestCase {
         assertEquals("D asked for subprojects just once", 1, d.getSubprojectsCalled());
     }
     
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
+    @RandomlyFails // http://deadlock.netbeans.org/job/NB-Core-Build/9880/testReport/
     public void testGenericSources() throws Exception {
         clearWorkDir();
         File topF = new File(getWorkDir(), "top");
