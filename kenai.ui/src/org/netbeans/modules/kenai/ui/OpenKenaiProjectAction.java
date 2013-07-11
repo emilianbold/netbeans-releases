@@ -59,14 +59,16 @@ import org.openide.util.NbBundle;
 
 @ActionID(id = OpenKenaiProjectAction.ID, category = "Team")
 @ActionRegistration(displayName = "#CTL_OpenKenaiProjectAction")
+@NbBundle.Messages("CTL_OpenKenaiProjectAction=Open Project...")
 public final class OpenKenaiProjectAction extends AbstractAction {
 
     static final String ID = "org.netbeans.modules.kenai.ui.OpenKenaiProjectAction"; //NOI18N
-    private String dialogTitle = NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectWindowTitle");
+    private final String dialogTitle = NbBundle.getMessage(OpenKenaiProjectAction.class, "OpenKenaiProjectWindowTitle");
 
     private Kenai kenai;
 
     public OpenKenaiProjectAction(Kenai kenai) {
+        super(NbBundle.getMessage(OpenKenaiProjectAction.class, "CTL_OpenKenaiProjectAction"));
         this.kenai = kenai;
     }
 

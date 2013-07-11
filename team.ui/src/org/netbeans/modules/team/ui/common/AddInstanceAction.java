@@ -82,7 +82,7 @@ import org.openide.util.NbBundle.Messages;
  *
  * @author Jan Becicka
  */
-@Messages("CTL_AddInstance=Add Team Server")
+@Messages("CTL_AddInstance=Add Team Server...")
 public class AddInstanceAction extends AbstractAction {
 
     @Messages("CTL_ADD=Add")
@@ -90,6 +90,7 @@ public class AddInstanceAction extends AbstractAction {
     @Messages("CTL_Cancel=Cancel")
     public static final String CANCEL_BUTTON = CTL_Cancel();
     private static AddInstanceAction instance;
+    public static final String ID = "org.netbeans.modules.team.ui.common.AddInstanceAction";
 
     private TeamServer teamServer;
     private JDialog dialog;
@@ -114,9 +115,8 @@ public class AddInstanceAction extends AbstractAction {
         this.expandNewNode = expandNewNode;
     }
 
-    @ActionID(id = "org.netbeans.modules.team.ui.common.AddInstanceAction", category = "Team")
+    @ActionID(id = ID, category = "Team")
     @ActionRegistration(lazy = false, displayName = "#CTL_AddInstance")
-    @ActionReference(path = "Menu/Versioning/Team", position = 120)
     public static synchronized AddInstanceAction getDefault() {
         if (instance==null) {
             instance=new AddInstanceAction();

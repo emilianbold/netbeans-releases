@@ -42,9 +42,9 @@
 package org.netbeans.modules.odcs.ui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
@@ -55,20 +55,19 @@ import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
 
 @ActionID(category = "Team", id = "org.netbeans.modules.odcs.ui.OpenProjectAction")
 @ActionRegistration(displayName = "#CTL_OpenProjectAction")
-@ActionReference(path = "Menu/Versioning/Team/ODCS", position = 300)
 @Messages("CTL_OpenProjectAction=&Open Project...")
-public final class OpenProjectAction implements ActionListener {
+public final class OpenProjectAction extends AbstractAction {
 
     private ODCSServer server;
 
     public OpenProjectAction(ODCSUiServer server) {
+        super(Bundle.CTL_OpenProjectAction());
         this.server = server.getServer();
     }
 

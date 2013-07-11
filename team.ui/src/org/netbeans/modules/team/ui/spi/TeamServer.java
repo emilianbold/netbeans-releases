@@ -127,6 +127,11 @@ public interface TeamServer {
      */    
     public Action getOpenProjectAction();
 
+    /**
+     * @return actions for the servers main menu. Null values will be replaced by separator.
+     */
+    public Action[] getTeamMenuActions();
+    
     public void setDisplayName(String value);
 
     public void setUrl(String value) throws MalformedURLException;
