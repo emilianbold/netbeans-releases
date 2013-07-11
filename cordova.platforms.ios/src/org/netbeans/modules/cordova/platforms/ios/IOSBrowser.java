@@ -47,6 +47,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
@@ -125,6 +126,10 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
     public void stopLoading() {
     }
 
+    @NbBundle.Messages({
+            "LBL_DeviceNotConnected=iOS Device Not Connected.",
+            "TTL_DeviceNotConnected=Cannot Connect to Device"
+    })
     @Override
     public void setURL(final URL url) {
         if (!Utilities.isMac()) {
@@ -148,7 +153,24 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
             @Override
             public void run() {
                 if (kind == Kind.IOS_DEVICE_DEFAULT) {
-                    build.startDebugging(dev, projectContext.lookup(Project.class), new ProxyLookup(projectContext, Lookups.fixed(BrowserFamilyId.IOS, url)), true);
+                    try {
+                        build.startDebugging(dev, projectContext.lookup(Project.class), new ProxyLookup(projectContext, Lookups.fixed(BrowserFamilyId.IOS, url)), true);
+                    } catch (IllegalStateException ise) {
+                        build.stopDebugging(true);
+                        SwingUtilities.invokeLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                NotifyDescriptor not = new NotifyDescriptor(
+                                        Bundle.LBL_DeviceNotConnected(),
+                                        Bundle.TTL_DeviceNotConnected(),
+                                        NotifyDescriptor.DEFAULT_OPTION,
+                                        NotifyDescriptor.ERROR_MESSAGE,
+                                        null,
+                                        null);
+                                DialogDisplayer.getDefault().notify(not);
+                            }
+                        });
+                    }
                 } else {
                     build.startDebugging(dev, projectContext.lookup(Project.class), new ProxyLookup(projectContext, Lookups.fixed(BrowserFamilyId.IOS, url)), false);
                 }
