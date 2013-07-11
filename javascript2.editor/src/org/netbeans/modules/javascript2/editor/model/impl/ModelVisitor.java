@@ -1577,7 +1577,7 @@ public class ModelVisitor extends PathNodeVisitor {
             return where;
         }
         JsElement.Kind parentKind = parent.getJSKind();
-        if (parentKind == JsElement.Kind.FILE) {
+        if (parentKind == JsElement.Kind.FILE && !where.isAnonymous()) {
             // this is used in a function that is in the global context
             return where;
         }
