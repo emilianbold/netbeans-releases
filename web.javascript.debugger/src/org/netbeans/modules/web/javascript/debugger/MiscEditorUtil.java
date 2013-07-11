@@ -169,7 +169,14 @@ public final class MiscEditorUtil {
         try {
             URI uri = URI.create(filePath);
             if (uri.isAbsolute()) {
-                URL url = uri.toURL();
+                URL url;
+                try {
+                    url = uri.toURL();
+                } catch (MalformedURLException muex) {
+                    // Issue 230657
+                    LOG.log(Level.INFO, "Cannot resolve " + filePath, muex); // NOI18N
+                    return null;
+                }
                 if (project != null) {
                     fileObject = ServerURLMapping.fromServer(project, url);
                 }
