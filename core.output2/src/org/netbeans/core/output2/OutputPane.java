@@ -227,6 +227,7 @@ class OutputPane extends AbstractOutputPane {
             }
         };
         result.getActionMap().put("EOF", act);
+        result.setDragEnabled(false); // #225994
         
         
         return result;
