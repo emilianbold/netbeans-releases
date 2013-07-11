@@ -1591,7 +1591,7 @@ is divided into following sections:
                         </pathconvert>
                         <taskdef classname="org.netbeans.modules.java.j2seproject.copylibstask.CopyLibs" classpath="${{libs.CopyLibs.classpath}}" name="copylibs"/>
                         <copylibs rebase="${{copylibs.rebase}}" compress="${{jar.compress}}" jarfile="${{dist.jar}}" manifest="@{{manifest}}" runtimeclasspath="${{run.classpath.without.build.classes.dir}}" index="${{jar.index}}" indexMetaInf="${{jar.index.metainf}}" excludeFromCopy="${{copylibs.excludes}}">
-                            <fileset dir="${{build.classes.dir}}"/>
+                            <fileset dir="${{build.classes.dir}}" excludes="${{dist.archive.excludes}}"/>
                             <manifest>
                                 <attribute name="Class-Path" value="${{jar.classpath}}"/>
                                 <customize/>
@@ -1606,7 +1606,7 @@ is divided into following sections:
                     <xsl:attribute name="name">jar</xsl:attribute>
                     <xsl:attribute name="uri">http://www.netbeans.org/ns/j2se-project/1</xsl:attribute>
                     <jar jarfile="${{dist.jar}}" compress="${{jar.compress}}" index="${{jar.index}}">
-                        <j2seproject1:fileset dir="${{build.classes.dir}}"/>
+                        <j2seproject1:fileset dir="${{build.classes.dir}}" excludes="${{dist.archive.excludes}}"/>
                         <!-- XXX should have a property serving as the excludes list -->
                     </jar>
                 </presetdef>

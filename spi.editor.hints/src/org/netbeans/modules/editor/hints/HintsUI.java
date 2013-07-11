@@ -594,6 +594,18 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
             if (wasSelected != view.getSelectedIndex() && view == hintListComponent.getView()) {
                 closeSubList();
             }
+
+            if (sublistPopup != null && e.getSource() == hintListComponent.getView()
+                    && hintListComponent.getView().getSize().width - ListCompletionView.arrowSpan() > e.getPoint().x) {
+                closeSubList();
+            }
+
+            if (sublistPopup == null && e.getSource() == hintListComponent.getView()
+                    && hintListComponent.getView().getSize().width - ListCompletionView.arrowSpan() <= e.getPoint().x) {
+                if (hintListComponent.getView().right()) {
+                    e.consume();
+                }
+            }
         }
     }
 

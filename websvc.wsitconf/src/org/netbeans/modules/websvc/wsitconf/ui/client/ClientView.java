@@ -157,39 +157,41 @@ public class ClientView extends SectionView {
             }
             rootChildren.add(bindingNodes.toArray(new Node[bindingNodes.size()]));
         } else {
-            Binding binding = (Binding) bindings.toArray()[0];
-            ArrayList<Node> nodes = new ArrayList<Node>();
+            if (bindings.size() > 0) {
+                Binding binding = (Binding) bindings.toArray()[0];
+                ArrayList<Node> nodes = new ArrayList<Node>();
+                
+                Node transportNode = new TransportClientNode();
+                SectionPanel transportPanel = new SectionPanel(this, transportNode, 
+                        TRANSPORT_NODE_ID + binding.getName(), false);
+                addSection(transportPanel);
+                nodes.add(transportNode);
 
-            Node transportNode = new TransportClientNode();
-            SectionPanel transportPanel = new SectionPanel(this, transportNode, 
-                    TRANSPORT_NODE_ID + binding.getName(), false);
-            addSection(transportPanel);
-            nodes.add(transportNode);
-            
-            if (isCallBackConfigRequired(binding, serviceModel) || isStoreConfigRequired(binding, serviceModel)) {
-                Node callbackNode = new CallbackClientNode();
-                SectionPanel callbackPanel = new SectionPanel(this, callbackNode, 
-                        CALLBACK_NODE_ID + binding.getName(), true);
-                addSection(callbackPanel);
-                nodes.add(callbackNode);
-            }
+                if (isCallBackConfigRequired(binding, serviceModel) || isStoreConfigRequired(binding, serviceModel)) {
+                    Node callbackNode = new CallbackClientNode();
+                    SectionPanel callbackPanel = new SectionPanel(this, callbackNode, 
+                            CALLBACK_NODE_ID + binding.getName(), true);
+                    addSection(callbackPanel);
+                    nodes.add(callbackNode);
+                }
 
-            if (isClientSTSConfigRequired(binding, serviceModel)) {
-                Node stsNode = new STSClientNode();
-                SectionPanel stsPanel = new SectionPanel(this, stsNode, 
-                        STS_NODE_ID + binding.getName());
-                addSection(stsPanel);
-                nodes.add(stsNode);
-            }
+                if (isClientSTSConfigRequired(binding, serviceModel)) {
+                    Node stsNode = new STSClientNode();
+                    SectionPanel stsPanel = new SectionPanel(this, stsNode, 
+                            STS_NODE_ID + binding.getName());
+                    addSection(stsPanel);
+                    nodes.add(stsNode);
+                }
 
-            if (isClientAdvancedConfigRequired(binding, serviceModel)) {
-                Node advancedConfigNode = new AdvancedConfigurationClientNode();
-                SectionPanel advancedConfigPanel = new SectionPanel(this, advancedConfigNode, 
-                        ADVANCEDCONFIG_NODE_ID + binding.getName());
-                addSection(advancedConfigPanel);
-                nodes.add(advancedConfigNode);
+                if (isClientAdvancedConfigRequired(binding, serviceModel)) {
+                    Node advancedConfigNode = new AdvancedConfigurationClientNode();
+                    SectionPanel advancedConfigPanel = new SectionPanel(this, advancedConfigNode, 
+                            ADVANCEDCONFIG_NODE_ID + binding.getName());
+                    addSection(advancedConfigPanel);
+                    nodes.add(advancedConfigNode);
+                }
+                rootChildren.add(nodes.toArray(new Node[nodes.size()]));
             }
-            rootChildren.add(nodes.toArray(new Node[nodes.size()]));
         }
         setRoot(root);
     }

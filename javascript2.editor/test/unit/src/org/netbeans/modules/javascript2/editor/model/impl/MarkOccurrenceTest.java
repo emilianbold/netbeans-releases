@@ -803,6 +803,22 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue231913.js","return recurs^ion();", true);
     }
     
+    public void testIssue232570_01() throws Exception {
+        checkOccurrences("testfiles/completion/issue232570.js", "Test.modules.moduleA.na^me;", true);
+    }
+    
+    public void testIssue232570_02() throws Exception {
+        checkOccurrences("testfiles/completion/issue232570.js", "Test.modules.modul^eA.name;", true);
+    }
+    
+    public void testIssue232570_03() throws Exception {
+        checkOccurrences("testfiles/completion/issue232570.js", "Test.modul^es.moduleA.name;", true);
+    }
+    
+    public void testIssue232570_04() throws Exception {
+        checkOccurrences("testfiles/completion/issue232570.js", "Te^st.modules.moduleA.name;", true);
+    }
+    
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
