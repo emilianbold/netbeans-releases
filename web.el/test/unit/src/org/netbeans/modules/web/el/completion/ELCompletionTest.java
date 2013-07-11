@@ -136,6 +136,11 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion17.xhtml", "#{^}", false, toCheck);
     }
 
+    public void testCompleteAfterAccessToList() throws Exception {
+        List<String> toCheck = Arrays.asList("concat", "toCharArray", "trim", "bytes");
+        checkCompletion("projects/testWebProject/web/completion/completion21.xhtml", "#{bean.myList[0].^}", false, toCheck);
+    }
+
     public void testJavaCompletion01() throws Exception {
         List<String> toCheck = Arrays.asList("AssertionError", "Boolean", "Double", "Enum", "StringBuilder", "instanceof", "true", "bundle");
         checkCompletion("projects/testWebProject/web/completion/java/java_completion01.xhtml", "#{^}", false, toCheck);

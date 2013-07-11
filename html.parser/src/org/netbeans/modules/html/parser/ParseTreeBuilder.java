@@ -365,14 +365,19 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
             case ATTRIBUTE_NAME:
                 switch (from) {
                     case BEFORE_ATTRIBUTE_NAME:
+                    case AFTER_ATTRIBUTE_NAME: //empty attributes w/o value
                         //switching to attribute name
                         AttrInfo ainfo = new AttrInfo();
                         attrs.push(ainfo);
                         ainfo.nameOffset = offset;
+                        
+                         if (LOG_FINER) {
+                            LOGGER.log(Level.FINER, String.format("pushed attribute %s", ainfo));
+                         }
                         break;
                 }
                 break;
-
+                
             case BEFORE_ATTRIBUTE_VALUE:
                 switch (from) {
                     case ATTRIBUTE_NAME:
@@ -639,6 +644,20 @@ public class ParseTreeBuilder extends CoalescingTreeBuilder<Named> implements Tr
         public int valueOffset = -1;
         
         public ValueQuotation valueQuotationType;
+
+        @Override
+        public String toString() {
+            return new StringBuilder()
+                    .append("AttrInfo[")
+                    .append("nameOffset=")
+                    .append(nameOffset)
+                    .append(",equalSignOffset=")
+                    .append(equalSignOffset)
+                    .append(",valueOffset=")
+                    .append(valueOffset)
+                    .append("]")
+                    .toString();
+        }
 
         private enum ValueQuotation {
 

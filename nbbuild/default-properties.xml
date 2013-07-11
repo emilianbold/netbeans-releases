@@ -72,7 +72,7 @@ made subject to such option by the copyright holder.
   <property name="netbeans.javadoc.dir" location="${nb.build.dir}/javadoc"/>
   <property name="moduleCluster.file" location="${netbeans.dest.dir}/moduleCluster.properties"/>
 
-  <property name="autoupdate.catalog.url" value="http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/nbms/updates.xml.gz"/>
+  <property name="autoupdate.catalog.url" value="http://deadlock.netbeans.org/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/nbms/updates.xml.gz"/>
 
   <macrodef name="resolve">
     <attribute name="name"/>

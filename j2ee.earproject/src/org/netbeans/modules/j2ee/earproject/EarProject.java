@@ -122,6 +122,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
@@ -156,6 +157,7 @@ public final class EarProject implements Project, AntProjectListener {
     private final UpdateProjectImpl updateProject;
     private final ClassPathProviderImpl cpProvider;
     private PropertyChangeListener j2eePlatformListener;
+    private EarProjectLookup earLookup;
     
     private AntBuildExtender buildExtender;
     public ClassPathSupport cs;
@@ -253,9 +255,41 @@ public final class EarProject implements Project, AntProjectListener {
             new SourceForBinaryQueryImpl(this),
             new JavaEEProjectSettingsImpl(this),
         });
-        return LookupProviderSupport.createCompositeLookup(base, "Projects/org-netbeans-modules-j2ee-earproject/Lookup"); //NOI18N
+        earLookup = new EarProjectLookup(this, base, new WebBrowserProvider(this));
+        evaluator().addPropertyChangeListener(earLookup);
+        return LookupProviderSupport.createCompositeLookup(earLookup, "Projects/org-netbeans-modules-j2ee-earproject/Lookup"); //NOI18N
     }
-    
+
+    private static class EarProjectLookup extends ProxyLookup implements PropertyChangeListener{
+        private Lookup base;
+        private EarProject project;
+        private WebBrowserProvider webProvider;
+
+        public EarProjectLookup(EarProject project, Lookup base, WebBrowserProvider webProvider) {
+            super(base);
+            this.project = project;
+            this.base = base;
+            this.webProvider = webProvider;
+            updateLookup();
+        }
+
+        private void updateLookup() {
+            if ("true".equals(project.evaluator().getProperty(EarProjectProperties.DISPLAY_BROWSER)) &&
+                project.evaluator().getProperty(EarProjectProperties.APPLICATION_CLIENT) == null) {
+                setLookups(base, Lookups.singleton(webProvider));
+            } else {
+                setLookups(base);
+            }
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (evt.getPropertyName().equals(EarProjectProperties.DISPLAY_BROWSER) ||
+                evt.getPropertyName().equals(EarProjectProperties.APPLICATION_CLIENT)) {
+                updateLookup();
+            }
+        }
+    }
+
     public void configurationXmlChanged(AntProjectEvent ev) {
     }
     

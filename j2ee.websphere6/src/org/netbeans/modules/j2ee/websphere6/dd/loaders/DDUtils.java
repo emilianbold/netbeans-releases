@@ -165,7 +165,7 @@ public class DDUtils {
             throws org.xml.sax.SAXException, java.io.IOException {
         ErrorHandler errorHandler = new ErrorHandler();
         try {
-            SAXParser parser = createSAXParserFactory().newSAXParser();
+            SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
             XMLReader reader = parser.getXMLReader();
             reader.setErrorHandler(errorHandler);
             //reader.setEntityResolver(DDResolver.getInstance());
@@ -181,22 +181,5 @@ public class DDUtils {
             throw ex;
         }
         return null;
-    }
-    
-    /** Method that retrieves SAXParserFactory to get the parser prepared to validate against XML schema
-     */
-    private static SAXParserFactory createSAXParserFactory() throws ParserConfigurationException {
-        try {
-            SAXParserFactory fact = SAXParserFactory.newInstance();
-            if (fact!=null) {
-                try {
-                    fact.getClass().getMethod("getSchema", new Class[]{}); //NOI18N
-                    return fact;
-                } catch (NoSuchMethodException ex) {}
-            }
-            return (SAXParserFactory) Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance(); // NOI18N
-        } catch (Exception ex) {
-            throw new ParserConfigurationException(ex.getMessage());
-        }
     }
 }
