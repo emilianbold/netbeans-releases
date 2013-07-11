@@ -132,10 +132,16 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
     }
 
     private void update(DocumentEvent e) {
+        boolean changeConfigureScript = false;
+        if (e!= null) {
+            if (e.getDocument().equals(configureNameTextField.getDocument())) {
+                changeConfigureScript = true;
+            }
+        }
         refreshSourceFolderTask.cancel();
         controller.getWizardDescriptor().putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, NbBundle.getMessage(MakefileOrConfigurePanel.class, "SelectModeError0")); // NOI18N
         controller.stateChanged(null);
-        refreshRunnable.start(settings);
+        refreshRunnable.start(settings, changeConfigureScript);
         refreshSourceFolderTask.schedule(VERIFY_DELAY);
     }
 
@@ -183,6 +189,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         } finally {
             addDocumentLiseners();
         }
+        update((DocumentEvent)null);
     }
 
     void store(WizardDescriptor wizardDescriptor) {
@@ -595,12 +602,14 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
         private AtomicInteger generation = new AtomicInteger(0);
         private final Object lock = new Object();
         private WizardDescriptor settings;
+        private boolean configureScriptChanged;
 
         public RefreshRunnable() {
         }
 
-        private void start(WizardDescriptor settings) {
+        private void start(WizardDescriptor settings, boolean configureScriptChanged) {
             this.settings = settings;
+            this.configureScriptChanged = configureScriptChanged;
             generation.incrementAndGet();
         }
 
@@ -618,6 +627,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             String newConfigureNameTextField = null;
             String newConfigureMakefileNameTextField = null;
             String newMakefileNameTextField = null;
+            String newConfigureArgumentsTextField = null;
             if (makefileRadioButton.isSelected()) {
                 if (makefileNameTextField.getText().isEmpty()) {
                     String msg = NbBundle.getMessage(BuildActionsPanel.class, "NOMAKEFILE"); // NOI18N
@@ -686,6 +696,18 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                         newMakefileNameTextField = mn;
                     }
                 }
+                if (configureScriptChanged) {
+                    String hostUID = (String) settings.getProperty(WizardConstants.PROPERTY_HOST_UID);
+                    ExecutionEnvironment ee = null;
+                    if (hostUID != null) {
+                        ee = ExecutionEnvironmentFactory.fromUniqueID(hostUID);
+                    }
+                    CompilerSet cs = null;
+                    if (ee != null) {
+                        cs = (CompilerSet) settings.getProperty(WizardConstants.PROPERTY_TOOLCHAIN);
+                    }
+                    newConfigureArgumentsTextField = ConfigureUtils.getConfigureArguments(ee, cs, configureNameTextField.getText(), "");
+                }
             }
             if (startCount < generation.get()) {
                 return;
@@ -694,6 +716,7 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
             final String finalConfigureNameTextField = newConfigureNameTextField;
             final String finalConfigureMakefileNameTextField = newConfigureMakefileNameTextField;
             final String finalMakefileNameTextField = newMakefileNameTextField;
+            final String finalConfigureArgumentsTextField = newConfigureArgumentsTextField;
             SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
@@ -711,6 +734,9 @@ public class MakefileOrConfigurePanel extends javax.swing.JPanel implements Help
                         }
                         if (finalMakefileNameTextField != null && !makefileNameTextField.getText().equals(finalMakefileNameTextField)) {
                             makefileNameTextField.setText(finalMakefileNameTextField);
+                        }
+                        if (finalConfigureArgumentsTextField != null && !configureArgumentsTextField.getText().equals(finalConfigureArgumentsTextField)) {
+                            configureArgumentsTextField.setText(finalConfigureArgumentsTextField);
                         }
                     } finally {
                         addDocumentLiseners();
