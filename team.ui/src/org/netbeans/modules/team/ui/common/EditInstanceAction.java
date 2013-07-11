@@ -69,7 +69,7 @@ public class EditInstanceAction extends AbstractAction {
     private JDialog dialog;
     
     public TeamServer server;
-    @NbBundle.Messages("CTL_ChangeInstance=Change Team Server")
+    @NbBundle.Messages("CTL_ChangeInstance=Change Team Server...")
     public EditInstanceAction(TeamServer server) {
         super(Bundle.CTL_ChangeInstance());
         this.server = server;

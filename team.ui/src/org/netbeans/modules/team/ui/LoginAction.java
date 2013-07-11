@@ -56,14 +56,14 @@ import org.openide.util.NbBundle;
 public final class LoginAction extends AbstractAction {
 
     private static LoginAction instance;
+    public static final String ID = "org.netbeans.modules.team.ui.LoginAction"; // NOI18N
 
     private LoginAction() {
         super(NbBundle.getMessage(LoginAction.class, "CTL_LoginAction", NAME));
     }
 
-    @ActionID(id = "org.netbeans.modules.team.ui.LoginAction", category = "Team")
+    @ActionID(id = ID, category = "Team")
     @ActionRegistration(lazy = false, displayName = "#CTL_LoginAction")
-    @ActionReference(path = "Menu/Versioning/Team", position = 100)
     public static synchronized LoginAction getDefault() {
         if (instance==null) {
             instance=new LoginAction();
