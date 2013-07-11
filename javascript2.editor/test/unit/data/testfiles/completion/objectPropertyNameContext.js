@@ -11,7 +11,7 @@ $.ajax({
 
     },
     beforeSend: function(xhr) {
-
+        // try here
     },
     crossDomain: false,
     dataFilter: function(data, type) {
