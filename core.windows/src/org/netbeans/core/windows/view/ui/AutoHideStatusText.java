@@ -45,6 +45,8 @@ import java.awt.BorderLayout;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Rectangle;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -56,6 +58,8 @@ import javax.swing.border.Border;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.core.windows.EditorOnlyDisplayer;
+import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.awt.StatusDisplayer;
 
 /**
@@ -80,6 +84,16 @@ final class AutoHideStatusText implements ChangeListener, Runnable {
         panel.add( lblStatus, BorderLayout.CENTER );
         frame.getLayeredPane().add( panel, Integer.valueOf( 101 ) );
         StatusDisplayer.getDefault().addChangeListener( this );
+
+        lblStatus.addMouseListener( new MouseAdapter() {
+            @Override
+            public void mouseEntered( MouseEvent e ) {
+                if( isWindowMinimizedAtBottom() ) {
+                    text = null;
+                    run();
+                }
+            }
+        });
     }
     
     static void install( JFrame frame ) {
@@ -123,5 +137,11 @@ final class AutoHideStatusText implements ChangeListener, Runnable {
                 pane.moveToFront( panel );
             }
         }
+    }
+
+    private static boolean isWindowMinimizedAtBottom() {
+        WindowManagerImpl wm = WindowManagerImpl.getInstance();
+        ModeImpl mode = ( ModeImpl ) wm.findMode( "bottomSlidingSide" ); //NOI18N
+        return null != mode && !mode.getOpenedTopComponentsIDs().isEmpty();
     }
 }
