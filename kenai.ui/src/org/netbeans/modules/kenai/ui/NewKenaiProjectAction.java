@@ -42,11 +42,11 @@
 package org.netbeans.modules.kenai.ui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Set;
+import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JButton;
 import org.netbeans.modules.kenai.api.Kenai;
@@ -60,17 +60,18 @@ import org.openide.WizardDescriptor;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 
 @ActionID(id = NewKenaiProjectAction.ID, category = "Team")
-@ActionRegistration(displayName = "#Actions/Versioning/org-netbeans-modules-kenai-ui-NewKenaiProjectAction.instance")
-public final class NewKenaiProjectAction implements ActionListener {
+@ActionRegistration(displayName = "#CTL_NewKenaiProjectAction")
+@NbBundle.Messages("CTL_NewKenaiProjectAction=New Project...")
+public final class NewKenaiProjectAction extends AbstractAction {
 
     static final String ID = "org.netbeans.modules.kenai.ui.NewKenaiProjectAction"; //NOI18N
-    private Kenai kenai;
+    private final Kenai kenai;
 
     public NewKenaiProjectAction(Kenai kenai) {
+        super(Bundle.CTL_NewKenaiProjectAction());
         this.kenai = kenai;
     }
 
@@ -78,10 +79,12 @@ public final class NewKenaiProjectAction implements ActionListener {
         this.kenai = Utilities.getPreferredKenai();
     }
 
-
     @Override
     public void actionPerformed(ActionEvent e) {
-
+        createNewProject(kenai);
+    }
+    
+    public static void createNewProject(Kenai kenai) {
         WizardDescriptor wizardDescriptor = new WizardDescriptor(new NewKenaiProjectWizardIterator(new File[0], kenai));
         // {0} will be replaced by WizardDesriptor.Panel.getComponent().getName()
         wizardDescriptor.setTitleFormat(new MessageFormat("{0}")); // NOI18N
@@ -95,11 +98,10 @@ public final class NewKenaiProjectAction implements ActionListener {
             Set<CreatedProjectInfo> createdProjects = wizardDescriptor.getInstantiatedObjects();
             // everything should be created, show summary
             showLandingPage(createdProjects);
-        }
-
+        }        
     }
 
-    private void showLandingPage(Set<CreatedProjectInfo> projects) {
+    private static void showLandingPage(Set<CreatedProjectInfo> projects) {
 
         CreatedProjectInfo cpi = projects.iterator().next();
         KenaiProject kenaiPrj = cpi.project;
@@ -135,4 +137,4 @@ public final class NewKenaiProjectAction implements ActionListener {
 
     }
 
-    }
+}

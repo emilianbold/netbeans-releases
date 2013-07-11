@@ -116,13 +116,26 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
     private PropertyChangeListener listener;
     private ArrayList<ApiProvider> providerList;
 
+    public GetSourcesFromODCSPanel(ODCSUiServer server) {
+        this(server, null);
+    }
+    
     public GetSourcesFromODCSPanel(ProjectAndRepository prjFtr) {
+        this(null, prjFtr);
+    }
+    
+    private GetSourcesFromODCSPanel(ODCSUiServer odcsUiServer, ProjectAndRepository prjFtr) {
         this.prjAndRepository = prjFtr;
+        this.server = odcsUiServer;
+        
         initComponents();
-        if (prjAndRepository==null) {
+        
+        if (server == null && prjAndRepository == null) {
             server = ((ODCSUiServer) odcsCombo.getSelectedItem());
         } else {
-            server = ODCSUiServer.forServer(prjAndRepository.project.getTeamProject().getServer());
+            if (prjAndRepository != null) {
+                server = ODCSUiServer.forServer(prjAndRepository.project.getTeamProject().getServer());
+            }
             odcsCombo.setSelectedItem(server);
             odcsCombo.setEnabled(false);
         }
@@ -149,7 +162,7 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
                 }
             }
         };
-        if (server!=null) {
+        if (server != null) {
             server.addPropertyChangeListener(WeakListeners.propertyChange(listener, server));
         }
     }
@@ -255,7 +268,7 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
                 .addGap(4, 4, 4)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(odcsCombo, 0, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(odcsCombo, 0, 261, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(usernameLabel)
                         .addGap(4, 4, 4)

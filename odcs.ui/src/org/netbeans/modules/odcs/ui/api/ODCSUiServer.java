@@ -72,6 +72,7 @@ import org.netbeans.modules.odcs.ui.LoginPanelSupportImpl;
 import org.netbeans.modules.odcs.ui.NewProjectAction;
 import org.netbeans.modules.odcs.ui.OpenProjectAction;
 import org.netbeans.modules.odcs.ui.Utilities;
+import org.netbeans.modules.odcs.ui.spi.VCSAccessor;
 import org.netbeans.modules.team.ui.common.UserNode;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.util.treelist.SelectionList;
@@ -243,13 +244,7 @@ public class ODCSUiServer implements TeamServer {
         if(getPasswordAuthentication() == null) {
             return null;
         }
-        AbstractAction newProjectAction = new AbstractAction() {
-            private final NewProjectAction a = new NewProjectAction(getImpl(false));
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                a.actionPerformed(e);
-            }
-        };
+        NewProjectAction newProjectAction = new NewProjectAction(getImpl(false));
         newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true));
         newProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_NewProject") );
         return newProjectAction;
@@ -260,15 +255,18 @@ public class ODCSUiServer implements TeamServer {
         if(getPasswordAuthentication() == null) {
             return null;
         }        
-        AbstractAction openProjectAction = new AbstractAction() {
-            private final OpenProjectAction a = new OpenProjectAction(ODCSUiServer.this);
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                a.actionPerformed(e);
-            }
-        };        
+        OpenProjectAction openProjectAction = new OpenProjectAction(ODCSUiServer.this);
         openProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_team_project.png", true));
         openProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_OpenProject") );
         return openProjectAction;
+    }
+
+    @Override
+    public Action[] getTeamMenuActions() {
+        return new Action[] {
+            new NewProjectAction(getServer()),
+            new OpenProjectAction(this),
+            VCSAccessor.getDefault().getOpenSourcesAction(this)
+        };
     }
 }
