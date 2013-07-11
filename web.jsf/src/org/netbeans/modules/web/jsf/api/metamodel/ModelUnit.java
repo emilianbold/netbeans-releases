@@ -63,6 +63,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Parameters;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -70,7 +71,7 @@ import org.openide.util.Parameters;
  * event is fired when list of configuration files or individual
  * file has changed.
  */
-public class ModelUnit {
+public class ModelUnit implements PropertyChangeListener, FileChangeListener {
 
     private final ClassPath bootPath;
     private final ClassPath compilePath;
@@ -267,92 +268,93 @@ public class ModelUnit {
     }
 
     private void initListeners() {
-        Listener l = new Listener();
         // listen to any change on source path classpath:
-        sourcePath.addPropertyChangeListener(l);
+        sourcePath.addPropertyChangeListener(WeakListeners.propertyChange(this, sourcePath));
         // listen to any change on compilation classpath:
-        compilePath.addPropertyChangeListener(l);
+        compilePath.addPropertyChangeListener(WeakListeners.propertyChange(this, compilePath));
+
         // listen to any relevant configuration file change:
-        FileUtil.addFileChangeListener(l);
+        Project project = projectRef.get();
+        if (project != null) {
+            project.getProjectDirectory().addRecursiveListener(FileUtil.weakFileChangeListener(this, project.getProjectDirectory()));
+        }
     }
 
-    private class Listener implements FileChangeListener, PropertyChangeListener {
-
-        public void propertyChange( PropertyChangeEvent event ) {
-            if (event.getPropertyName().equals(ClassPath.PROP_ENTRIES)) {
-                fireChange();
-            }
+    @Override
+    public void propertyChange(PropertyChangeEvent event) {
+        if (event.getPropertyName().equals(ClassPath.PROP_ENTRIES)) {
+            fireChange();
         }
+    }
 
-        private boolean isRelevantFileEvent(FileEvent fe) {
-            // relevant files changes are (JSF spec "11.4.2 Application Startup Behavior"):
-            //   - resources that match either "META-INF/faces-config.xml" or
-            //     end with ".facesconfig.xml" directly in the "META-INF" directory
-            //   - existence of a context initialization parameter named javax.faces.CONFIG_FILES iun web.xml
-            //   - /WEB-INF/faces-config.xml
-            String path = fe.getFile().getPath();
+    private boolean isRelevantFileEvent(FileEvent fe) {
+        // relevant files changes are (JSF spec "11.4.2 Application Startup Behavior"):
+        //   - resources that match either "META-INF/faces-config.xml" or
+        //     end with ".facesconfig.xml" directly in the "META-INF" directory
+        //   - existence of a context initialization parameter named javax.faces.CONFIG_FILES iun web.xml
+        //   - /WEB-INF/faces-config.xml
+        String path = fe.getFile().getPath();
             boolean res = path.endsWith("/web.xml") ||
                    path.endsWith("/WEB-INF/faces-config.xml") ||
                    path.endsWith("/META-INF/faces-config.xml") ||
                   (path.endsWith(FACES_CONFIG_SUFFIX) && fe.getFile().getParent() != null && fe.getFile().getParent().getNameExt().equals("META-INF"));
-            if (!res && fe instanceof FileRenameEvent) {
+        if (!res && fe instanceof FileRenameEvent) {
                 FileRenameEvent fre = (FileRenameEvent)fe;
                 res = (fre.getName().equals("faces-config") || fre.getName().endsWith(".faces-config") || fre.getName().endsWith("web.xml")) &&
                         fre.getExt().equals("xml");
-            }
-            if (res) {
-                // file passed filename criteria but it must be also under one
-                // of the folder we are keeping eye on; that way we will ignore
-                // events coming for JSF configuration files from different projects
-                res = false;
-                List<FileObject> cfRoots = ModelUnit.this.getConfigRoots();
-                synchronized (cfRoots) {
-                    for (FileObject fo : cfRoots) {
-                        if (FileUtil.isParentOf(fo, fe.getFile())) {
-                            res = true;
-                            break;
-                        }
+        }
+        if (res) {
+            // file passed filename criteria but it must be also under one
+            // of the folder we are keeping eye on; that way we will ignore
+            // events coming for JSF configuration files from different projects
+            res = false;
+            List<FileObject> cfRoots = ModelUnit.this.getConfigRoots();
+            synchronized (cfRoots) {
+                for (FileObject fo : cfRoots) {
+                    if (FileUtil.isParentOf(fo, fe.getFile())) {
+                        res = true;
+                        break;
                     }
                 }
             }
-            return res;
         }
-
-        @Override
-        public void fileFolderCreated(FileEvent fe) {
-        }
-
-        @Override
-        public void fileDataCreated(FileEvent fe) {
-            if (isRelevantFileEvent(fe)) {
-                fireChange();
-            }
-        }
-
-        @Override
-        public void fileChanged(FileEvent fe) {
-            if (isRelevantFileEvent(fe)) {
-                fireChange();
-            }
-        }
-
-        @Override
-        public void fileDeleted(FileEvent fe) {
-            if (isRelevantFileEvent(fe)) {
-                fireChange();
-            }
-        }
-
-        @Override
-        public void fileRenamed(FileRenameEvent fe) {
-            if (isRelevantFileEvent(fe)) {
-                fireChange();
-            }
-        }
-
-        @Override
-        public void fileAttributeChanged(FileAttributeEvent fe) {
-        }
-
+        return res;
     }
+
+    @Override
+    public void fileFolderCreated(FileEvent fe) {
+    }
+
+    @Override
+    public void fileDataCreated(FileEvent fe) {
+        if (isRelevantFileEvent(fe)) {
+            fireChange();
+        }
+    }
+
+    @Override
+    public void fileChanged(FileEvent fe) {
+        if (isRelevantFileEvent(fe)) {
+            fireChange();
+        }
+    }
+
+    @Override
+    public void fileDeleted(FileEvent fe) {
+        if (isRelevantFileEvent(fe)) {
+            fireChange();
+        }
+    }
+
+    @Override
+    public void fileRenamed(FileRenameEvent fe) {
+        if (isRelevantFileEvent(fe)) {
+            fireChange();
+        }
+    }
+
+    @Override
+    public void fileAttributeChanged(FileAttributeEvent fe) {
+    }
+
 }

@@ -65,14 +65,14 @@ public class JsonParserTest extends JsonTestBase {
             + "\"name\": \"test\"  //line comment\n"
             + "/*comment*/\n"
             + "}\n",
-            Collections.singletonList("test.json:2:16 Expected , or } but found /"));
+            Collections.singletonList("<html><pre>test.json:2:16 Expected , or } but found /"));
     }
 
     public void testComments2() throws Exception {
         parse("{\n"
             + "\"name\": \"test\"  //line comment\n"
             + "}\n",
-            Collections.singletonList("test.json:2:16 Expected , or } but found /"));
+            Collections.singletonList("<html><pre>test.json:2:16 Expected , or } but found /"));
     }
 
     public void testComments3() throws Exception {
@@ -80,7 +80,7 @@ public class JsonParserTest extends JsonTestBase {
             + "\"name\": \"test\"\n"
             + "/*comment*/\n"
             + "}\n",
-            Collections.singletonList("test.json:3:0 Expected , or } but found /"));
+            Collections.singletonList("<html><pre>test.json:3:0 Expected , or } but found /"));
     }
 
     private void parse(String original, List<String> errors) throws Exception {
