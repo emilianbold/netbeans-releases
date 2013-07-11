@@ -102,6 +102,14 @@ public class CompletionContextFinderTest extends JsTestBase {
         checkCompletionContext("testfiles/completion/objectPropertyNameContext.js", "    ^complete: function(jqXHR, textStatus) {", CompletionContext.OBJECT_PROPERTY_NAME);
     }
     
+    public void testObjectPropertyName06() throws Exception {
+        checkCompletionContext("testfiles/completion/objectPropertyNameContext.js", "    complete: functi^on(jqXHR, textStatus) {", CompletionContext.EXPRESSION);
+    }
+    
+    public void testObjectPropertyName07() throws Exception {
+        checkCompletionContext("testfiles/completion/objectPropertyNameContext.js", "       ^ // try here", CompletionContext.GLOBAL);
+    }
+    
     public void testString01() throws Exception {
         checkCompletionContext("testfiles/completion/extDefine.js", "    extend: '^',", CompletionContext.STRING);
     }
