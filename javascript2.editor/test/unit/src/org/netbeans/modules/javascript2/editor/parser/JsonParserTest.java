@@ -88,11 +88,11 @@ public class JsonParserTest extends JsonTestBase {
     }
 
     public void testStringLiteral2() throws Exception {
-        parse("{ \"a\" : \"test\\xw\" }", Collections.singletonList("test.json:1:9 Unexpected token: test\\xw"));
+        parse("{ \"a\" : \"test\\xw\" }", Collections.singletonList("<html><pre>test.json:1:9 Unexpected token: test\\xw"));
     }
 
     public void testStringLiteral3() throws Exception {
-        parse("{ \"a\" : \"test\\\nw\" }", Collections.singletonList("test.json:1:9 Unexpected token: test\\\nw"));
+        parse("{ \"a\" : \"test\\\nw\" }", Collections.singletonList("<html><pre>test.json:1:9 Unexpected token: test\\<br/>w"));
     }
 
     public void testStringLiteral4() throws Exception {
@@ -100,7 +100,7 @@ public class JsonParserTest extends JsonTestBase {
     }
 
     public void testStringLiteral5() throws Exception {
-        parse("{ \"a\" : \"test\\u000gw\" }", Collections.singletonList("test.json:1:9 Unexpected token: test\\u000gw"));
+        parse("{ \"a\" : \"test\\u000gw\" }", Collections.singletonList("<html><pre>test.json:1:9 Unexpected token: test\\u000gw"));
     }
 
     public void testStringLiteral6() throws Exception {
@@ -108,7 +108,7 @@ public class JsonParserTest extends JsonTestBase {
     }
 
     public void testStringLiteral7() throws Exception {
-        parse("{ \"a\" : \"t\\'est\" }", Collections.singletonList("test.json:1:9 Unexpected token: t\\'est"));
+        parse("{ \"a\" : \"t\\'est\" }", Collections.singletonList("<html><pre>test.json:1:9 Unexpected token: t\\'est"));
     }
 
     private void parse(String original, List<String> errors) throws Exception {
