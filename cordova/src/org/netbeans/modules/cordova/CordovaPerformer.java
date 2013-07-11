@@ -102,7 +102,7 @@ public class CordovaPerformer implements BuildPerformer {
     
     private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
 
-    private final int BUILD_SCRIPT_VERSION = 10;
+    private final int BUILD_SCRIPT_VERSION = 11;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
