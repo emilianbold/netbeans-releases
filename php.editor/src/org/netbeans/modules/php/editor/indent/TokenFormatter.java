@@ -678,16 +678,16 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_BEFORE_NAMESPACE:
                                         indentRule = true;
-                                        newLines = docOptions.blankLinesBeforeNamespace + 1;
+                                        newLines = docOptions.blankLinesBeforeNamespace + 1 > newLines ? docOptions.blankLinesBeforeNamespace + 1 : newLines;
                                         countSpaces = Math.max(indent, countSpaces);
                                         break;
                                     case WHITESPACE_AFTER_NAMESPACE:
                                         indentRule = true;
-                                        newLines = docOptions.blankLinesAfterNamespace + 1;
+                                        newLines = docOptions.blankLinesAfterNamespace + 1 > newLines ? docOptions.blankLinesAfterNamespace + 1 : newLines;
                                         break;
                                     case WHITESPACE_BEFORE_USE:
                                         indentRule = true;
-                                        newLines = docOptions.blankLinesBeforeUse + 1;
+                                        newLines = docOptions.blankLinesBeforeUse + 1 > newLines ? docOptions.blankLinesBeforeUse + 1 : newLines;
                                         break;
                                     case WHITESPACE_BETWEEN_USE:
                                         indentRule = true;
@@ -695,7 +695,7 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_AFTER_USE:
                                         indentRule = true;
-                                        newLines = docOptions.blankLinesAfterUse + 1;
+                                        newLines = docOptions.blankLinesAfterUse + 1 > newLines ? docOptions.blankLinesAfterUse + 1 : newLines;
                                         break;
                                     case WHITESPACE_BEFORE_USES_PART:
                                         indentRule = true;

@@ -128,7 +128,7 @@ public class IOSActionProvider implements ActionProvider {
 
     @Override
     public boolean isActionEnabled(String command, Lookup context) throws IllegalArgumentException {
-        return true;
+        return Utilities.isMac();
     }
     
 }
