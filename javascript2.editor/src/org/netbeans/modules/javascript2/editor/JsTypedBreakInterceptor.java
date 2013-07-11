@@ -83,11 +83,14 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
     private final boolean comments;
 
+    private final boolean multiLineLiterals;
+
     private CommentGenerator commentGenerator = null;
 
-    public JsTypedBreakInterceptor(Language<JsTokenId> language, boolean comments) {
+    public JsTypedBreakInterceptor(Language<JsTokenId> language, boolean comments, boolean multiLineLiterals) {
         this.language = language;
         this.comments = comments;
+        this.multiLineLiterals = multiLineLiterals;
     }
 
     public boolean isInsertMatchingEnabled(BaseDocument doc) {
@@ -213,32 +216,34 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
 
-        if (id == JsTokenId.STRING ||
-                (id == JsTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
-            // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
-            //int indent = GsfUtilities.getLineIndent(doc, offset);
-            //int delimiterOffset = id == JsTokenId.STRING_END ? ts.offset() : ts.offset()-1;
-            //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
-            //doc.insertString(offset, delimiter + " + " + delimiter, null);
-            //caret.setDot(offset+3);
-            //return offset + 5 + indent;
-            String str = (id != JsTokenId.STRING || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
-            context.setText(str, -1, str.length());
-            return;
-        }
+        if (multiLineLiterals) {
+            if (id == JsTokenId.STRING ||
+                    (id == JsTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
+                // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
+                //int indent = GsfUtilities.getLineIndent(doc, offset);
+                //int delimiterOffset = id == JsTokenId.STRING_END ? ts.offset() : ts.offset()-1;
+                //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
+                //doc.insertString(offset, delimiter + " + " + delimiter, null);
+                //caret.setDot(offset+3);
+                //return offset + 5 + indent;
+                String str = (id != JsTokenId.STRING || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
+                context.setText(str, -1, str.length());
+                return;
+            }
 
 
 
-        if (id == JsTokenId.REGEXP ||
-                (id == JsTokenId.REGEXP_END) && offset < ts.offset()+ts.token().length()) {
-            // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
-            //int indent = GsfUtilities.getLineIndent(doc, offset);
-            //doc.insertString(offset, "/ + /", null);
-            //caret.setDot(offset+3);
-            //return offset + 5 + indent;
-            String str = (id != JsTokenId.REGEXP || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
-            context.setText(str, -1, str.length());
-            return;
+            if (id == JsTokenId.REGEXP ||
+                    (id == JsTokenId.REGEXP_END) && offset < ts.offset()+ts.token().length()) {
+                // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
+                //int indent = GsfUtilities.getLineIndent(doc, offset);
+                //doc.insertString(offset, "/ + /", null);
+                //caret.setDot(offset+3);
+                //return offset + 5 + indent;
+                String str = (id != JsTokenId.REGEXP || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
+                context.setText(str, -1, str.length());
+                return;
+            }
         }
 
         // Special case: since I do hash completion, if you try to type
@@ -748,7 +753,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
         @Override
         public TypedBreakInterceptor createTypedBreakInterceptor(MimePath mimePath) {
-            return new JsTypedBreakInterceptor(JsTokenId.javascriptLanguage(), true);
+            return new JsTypedBreakInterceptor(JsTokenId.javascriptLanguage(), true, true);
         }
 
     }
@@ -758,7 +763,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
         @Override
         public TypedBreakInterceptor createTypedBreakInterceptor(MimePath mimePath) {
-            return new JsTypedBreakInterceptor(JsTokenId.jsonLanguage(), false);
+            return new JsTypedBreakInterceptor(JsTokenId.jsonLanguage(), false, false);
         }
 
     }

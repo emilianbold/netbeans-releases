@@ -1572,13 +1572,16 @@ public class ModelVisitor extends PathNodeVisitor {
             // the case where is defined private function in another function
             return where;
         }
-        JsElement.Kind parentKind = where.getParent().getJSKind();
         JsObject parent = where.getParent();
-        if (parentKind == JsElement.Kind.FILE) {
+        if (parent == null) {
+            return where;
+        }
+        JsElement.Kind parentKind = parent.getJSKind();
+        if (parentKind == JsElement.Kind.FILE && !where.isAnonymous()) {
             // this is used in a function that is in the global context
             return where;
         }
-        if (ModelUtils.PROTOTYPE.equals(where.getParent().getName())) {
+        if (ModelUtils.PROTOTYPE.equals(parent.getName())) {
             // this is used in a function defined in prototype object
             return where.getParent().getParent();
         }
@@ -1588,7 +1591,7 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         if (isInPropertyNode()) {
             // this is used in a method of an object -> this is the object
-            return where.getParent();
+            return parent;
         }
         if (where.isAnonymous()) {
             int pathIndex = 1;

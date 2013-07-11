@@ -50,6 +50,8 @@
 
 package org.netbeans.modules.tomcat5.util;
 
+import com.sun.org.apache.xml.internal.serialize.OutputFormat;
+import com.sun.org.apache.xml.internal.serialize.XMLSerializer;
 import java.io.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -66,7 +68,6 @@ import org.openide.cookies.SaveCookie;
 
 
 import org.w3c.dom.Document;
-import org.apache.xml.serialize.*;
 import org.netbeans.editor.BaseDocument;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.EditableProperties;

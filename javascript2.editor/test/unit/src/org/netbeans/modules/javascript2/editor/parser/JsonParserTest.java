@@ -83,6 +83,54 @@ public class JsonParserTest extends JsonTestBase {
             Collections.singletonList("<html><pre>test.json:3:0 Expected , or } but found /"));
     }
 
+    public void testStringLiteral1() throws Exception {
+        parse("{ \"a\" : \"test\\tw\" }", Collections.<String>emptyList());
+    }
+
+    public void testStringLiteral2() throws Exception {
+        parse("{ \"a\" : \"test\\xw\" }", Collections.singletonList("<html><pre>test.json:1:9 Unexpected token: test\\xw"));
+    }
+
+    public void testStringLiteral3() throws Exception {
+        parse("{ \"a\" : \"test\\\nw\" }", Collections.singletonList("<html><pre>test.json:1:9 Unexpected token: test\\<br/>w"));
+    }
+
+    public void testStringLiteral4() throws Exception {
+        parse("{ \"a\" : \"test\\u000fw\" }", Collections.<String>emptyList());
+    }
+
+    public void testStringLiteral5() throws Exception {
+        parse("{ \"a\" : \"test\\u000gw\" }", Collections.singletonList("<html><pre>test.json:1:9 Unexpected token: test\\u000gw"));
+    }
+
+    public void testStringLiteral6() throws Exception {
+        parse("{ \"a\" : \"t'est\" }", Collections.<String>emptyList());
+    }
+
+    public void testStringLiteral7() throws Exception {
+        parse("{ \"a\" : \"t\\'est\" }", Collections.singletonList("<html><pre>test.json:1:9 Unexpected token: t\\'est"));
+    }
+
+    public void testTrailingComma1() throws Exception {
+        parse("{ \"a\" : \"test\" }", Collections.<String>emptyList());
+    }
+
+    public void testTrailingComma2() throws Exception {
+        parse("{ \"a\" : [1, 2] }", Collections.<String>emptyList());
+    }
+
+    public void testTrailingComma3() throws Exception {
+        parse("{ \"a\" : \"test\", }", Collections.singletonList("<html><pre>test.json:1:16 Expected object member but found }"));
+    }
+
+    public void testTrailingComma4() throws Exception {
+        parse("{ \"a\" : [1, 2,] }", Collections.singletonList("<html><pre>test.json:1:14 Expected array element but found ]"));
+    }
+
+    public void testTrailingComma5() throws Exception {
+        parse("{ \"a\" : [{\"w\":1}, {\"e\":2},] }", Collections.singletonList("<html><pre>test.json:1:26 Expected array element but found ]"));
+    }
+
     private void parse(String original, List<String> errors) throws Exception {
 
         JsonParser parser = new JsonParser();

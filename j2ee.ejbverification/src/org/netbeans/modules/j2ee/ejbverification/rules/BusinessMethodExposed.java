@@ -86,7 +86,7 @@ import org.openide.util.NbBundle;
 @Hint(displayName = "#BusinessMethodExposed.display.name",
         description = "#BusinessMethodExposed.hint",
         id = "o.n.m.j2ee.ejbverification.BusinessMethodExposed",
-        category = "JavaEE",
+        category = "javaee/ejb",
         enabled = true,
         suppressWarnings = "BusinessMethodExposed")
 @NbBundle.Messages({

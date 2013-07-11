@@ -153,16 +153,15 @@ public class AndroidPlatform implements MobilePlatform {
     }
     
     private final HashSet<String> targets = new HashSet<String>(Arrays.asList(new String[]{
-            "android-7", //NOI18N
-            "android-8", //NOI18N
-            "android-9", //NOI18N
-            "android-10", //NOI18N
-            "android-11", //NOI18N
-            "android-12", //NOI18N
-            "android-13", //NOI18N
             "android-14", //NOI18N
             "android-15", //NOI18N
-            "android-16"})); //NOI18N
+            "android-16", //NOI18N
+            "android-17", //NOI18N
+            "android-18", //NOI18N
+            "android-19", //NOI18N
+            "android-20", //NOI18N
+            "android-21", //NOI18N
+            "android-22"})); //NOI18N
     
     
     @Override
