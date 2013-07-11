@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
@@ -60,6 +62,7 @@ import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCompleter;
 import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
 
 /**
@@ -73,6 +76,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
      * (that does not also have code on the same line).
      */
     static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("js.cont.comment"); // NOI18N
+
+    private static final Logger LOGGER = Logger.getLogger(JsTypedBreakInterceptor.class.getName());
 
     private final Language<JsTokenId> language;
 
@@ -148,7 +153,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 carretOffset = sb.length();
                 sb.append("\n"); // NOI18N
                 if (curlyOffset >= 0) {
-                    sb.append(IndentUtils.createIndentString(doc, GsfUtilities.getLineIndent(doc, curlyOffset)));
+                    sb.append(IndentUtils.createIndentString(doc, getCurlyIndent(doc, curlyOffset)));
                 } else {
                     sb.append(IndentUtils.createIndentString(doc, indent));
                 }
@@ -169,7 +174,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                     sb.append(restOfLine); // NOI18N
                     sb.append("\n"); // NOI18N
                     if (curlyOffset >= 0) {
-                        sb.append(IndentUtils.createIndentString(doc, GsfUtilities.getLineIndent(doc, curlyOffset)));
+                        sb.append(IndentUtils.createIndentString(doc, getCurlyIndent(doc, curlyOffset)));
                     } else {
                         sb.append(IndentUtils.createIndentString(doc, indent));
                     }
@@ -664,6 +669,51 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
         return -1;
+    }
+
+    private int getCurlyIndent(BaseDocument doc, int offset) {
+        try {
+            int lineStart = Utilities.getRowStart(doc, offset, 0);
+            TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                    doc, lineStart, language);
+
+            int prevLineStart = -1;
+            if (ts != null) {
+                do {
+                    ts.move(lineStart);
+                    if (!ts.moveNext()) {
+                        if (prevLineStart >= 0) {
+                            return IndentUtils.lineIndent(doc, lineStart);
+                        } else {
+                            return GsfUtilities.getLineIndent(doc, offset);
+                        }
+                    }
+
+                    Token<? extends JsTokenId> token = LexUtilities.findNextNonWsNonComment(ts);
+                    Token<? extends JsTokenId> nextToken = LexUtilities.findNextNonWsNonComment(ts);
+                    if (!LexUtilities.isBinaryOperator(token.id(), nextToken.id())) {
+                        ts.move(lineStart);
+                        if (!ts.movePrevious()) {
+                            return IndentUtils.lineIndent(doc, lineStart);
+                        }
+                        nextToken = token;
+                        token = LexUtilities.findPreviousNonWsNonComment(ts);
+                        if (!LexUtilities.isBinaryOperator(token.id(), nextToken.id())) {
+                            return IndentUtils.lineIndent(doc, lineStart);
+                        }
+                    }
+                    prevLineStart = lineStart;
+                    lineStart = Utilities.getRowStart(doc, lineStart, -1);
+                } while (lineStart > 0);
+
+                if (lineStart <= 0) {
+                    return IndentUtils.lineIndent(doc, lineStart);
+                }
+            }
+        } catch (BadLocationException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+        }
+        return GsfUtilities.getLineIndent(doc, offset);
     }
 
     private boolean isDocToken(JsTokenId id) {

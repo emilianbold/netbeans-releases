@@ -54,7 +54,6 @@ import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
-import static org.netbeans.modules.web.project.ui.customizer.WebProjectProperties.SELECTED_BROWSER;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 
@@ -98,7 +97,7 @@ public class WebProjectBrowserProvider implements ProjectBrowserProvider {
             public void run() {
 		AntProjectHelper helper = project.getAntProjectHelper();
 		EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                privateProps.put(SELECTED_BROWSER, browser.getId());
+                privateProps.put(WebProjectProperties.SELECTED_BROWSER, browser.getId());
 		helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
             }
         });

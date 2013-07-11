@@ -234,7 +234,7 @@ public abstract class ProjectHudsonProvider {
         }
 
         /**
-         * @return the root URL of the server ending in slash, e.g. {@code http://deadlock.netbeans.org/hudson/}
+         * @return the root URL of the server ending in slash, e.g. {@code http://deadlock.netbeans.org/}
          */
         public String getServerUrl() {
             return jobPath[0];

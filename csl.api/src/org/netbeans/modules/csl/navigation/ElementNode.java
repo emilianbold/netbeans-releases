@@ -74,6 +74,7 @@ import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.lookup.Lookups;
 
 /** 
  * This file is originally from Retouche, the Java Support 
@@ -105,7 +106,7 @@ public class ElementNode extends AbstractNode {
            
     /** Creates a new instance of TreeNode */
     public ElementNode( StructureItem description, ClassMemberPanelUI ui, FileObject fileObject) {
-        super(description.isLeaf() ? Children.LEAF: new ElementChildren(description, ui, fileObject));
+        super(description.isLeaf() ? Children.LEAF: new ElementChildren(description, ui, fileObject), Lookups.fixed(fileObject));
         this.description = description;
         setDisplayName( description.getName() ); 
         this.ui = ui;

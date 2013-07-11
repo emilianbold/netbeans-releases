@@ -973,7 +973,7 @@ jnlp.platform.codebase - can point to a shared repository which can be generated
   this property. Sample values with prebuilt binaries (good for testing):
 http://bits.netbeans.org/6.5/jnlp/
 http://bits.netbeans.org/6.7/fcs/jnlp/
-http://deadlock.netbeans.org/hudson/job/ide-jnlp/lastStableBuild/artifact/nbbuild/build/jnlp/
+http://deadlock.netbeans.org/job/ide-jnlp/lastStableBuild/artifact/nbbuild/build/jnlp/
 
 jnlp.indirect.jars [since 6.0] - optional pattern of JARs in the cluster to load
   in JNLP mode even though they are not listed as Class-Path extensions of the
@@ -1040,7 +1040,7 @@ no NetBeans binaries in VCS. For example:
 +suite.dir=${basedir}
 +nbplatform.active.dir=${suite.dir}/nb
 +harness.dir=${nbplatform.active.dir}/harness
-+bootstrap.url=http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/netbeans/harness/tasks.jar
++bootstrap.url=http://deadlock.netbeans.org/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/netbeans/harness/tasks.jar
 +autoupdate.catalog.url=http://updates.netbeans.org/netbeans/updates/7.0.1/uc/final/distribution/catalog.xml.gz
 
 cluster.path [since 6.7] - list of clusters to build your modules against and

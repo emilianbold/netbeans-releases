@@ -60,21 +60,19 @@ import org.openide.util.NbBundle;
 public class EditWSAttributesPanel extends javax.swing.JPanel {
     
     private static final long serialVersionUID = 1L;
-    private StringBuffer description;
     private TreeMap<String, WSEditor> treeMap;
     
     /** Creates new form EditWSAttributesPanel */
     public EditWSAttributesPanel() {
         initComponents();
-        initComponents();
         treeMap = new TreeMap<String, WSEditor>(new AlphabeticalComparator());
-        description = new StringBuffer("");
     }
     
     public void addTabs(Set<WSEditor> editors, Node node) throws InvalidDataException {
         jTabbedPane1.removeAll();
         treeMap.clear();
         
+        StringBuilder description = new StringBuilder("");
         //Display tabs in alphabetical order
         for (WSEditor editor : editors){
             treeMap.put(editor.getTitle(), editor);

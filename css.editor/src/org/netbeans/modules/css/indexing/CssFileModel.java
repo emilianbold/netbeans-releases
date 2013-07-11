@@ -89,7 +89,6 @@ public class CssFileModel {
     private Collection<Entry> classes, ids, htmlElements, imports, colors;
     private final Snapshot snapshot;
     private final Snapshot topLevelSnapshot;
-    private Node parseTreeRoot;
 
     public static CssFileModel create(Source source) throws ParseException {
         final AtomicReference<CssParserResult> result = new AtomicReference<CssParserResult>();
@@ -120,11 +119,9 @@ public class CssFileModel {
     private CssFileModel(CssParserResult parserResult, Snapshot topLevelSnapshot) {
         this.snapshot = parserResult.getSnapshot();
         this.topLevelSnapshot = topLevelSnapshot;
-        this.parseTreeRoot = parserResult.getParseTree();
-        
-        if (parseTreeRoot != null) {
+        if ( parserResult.getParseTree() != null) {
             ParseTreeVisitor visitor = new ParseTreeVisitor();
-            visitor.visitChildren(parseTreeRoot);
+            visitor.visitChildren(parserResult.getParseTree());
         } //else broken source, no parse tree
 
     }
