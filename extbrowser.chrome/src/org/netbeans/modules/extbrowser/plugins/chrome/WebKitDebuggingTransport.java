@@ -51,7 +51,7 @@ import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 
 public class WebKitDebuggingTransport implements TransportImplementation {
 
-    private ChromeBrowserImpl impl;
+    private final ChromeBrowserImpl impl;
     private ResponseCallback callback;
 
     public WebKitDebuggingTransport(ChromeBrowserImpl impl) {
@@ -73,9 +73,15 @@ public class WebKitDebuggingTransport implements TransportImplementation {
 
     @Override
     public boolean attach() {
-        ExternalBrowserPlugin.getInstance().attachWebKitDebugger(impl.getBrowserTabDescriptor());
-        impl.getBrowserTabDescriptor().setCallback(callback);
-        return true;
+        ExternalBrowserPlugin.BrowserTabDescriptor tab = impl.getBrowserTabDescriptor();
+        if (tab == null) {
+            // Issue 226812
+            return false;
+        } else {
+            ExternalBrowserPlugin.getInstance().attachWebKitDebugger(tab);
+            tab.setCallback(callback);
+            return true;
+        }
     }
 
     @Override

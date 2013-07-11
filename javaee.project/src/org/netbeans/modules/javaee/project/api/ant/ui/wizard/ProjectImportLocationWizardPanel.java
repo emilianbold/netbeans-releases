@@ -60,7 +60,7 @@ import org.openide.util.ChangeSupport;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
-public final class ProjectImportLocationWizardPanel implements WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
+public final class ProjectImportLocationWizardPanel implements WizardDescriptor.FinishablePanel, WizardDescriptor.ValidatingPanel {
 
     public static final String SOURCE_ROOT = "sourceRoot"; //NOI18N
     

@@ -102,6 +102,7 @@ import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.project.ui.customizer.ClassPathListCellRenderer;
 import org.netbeans.modules.java.api.common.util.CommonProjectUtils;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
@@ -206,6 +207,7 @@ public final class EarProjectProperties {
     public static final String DEPLOY_ANT_PROPS_FILE = "deploy.ant.properties.file"; // NOI18N
     
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
+    public static final String SELECTED_BROWSER = "selected.browser"; //NOI18N
     
     private static final Logger LOGGER = Logger.getLogger(EarProjectProperties.class.getName());
     
@@ -234,6 +236,7 @@ public final class EarProjectProperties {
     Document APPLICATION_CLIENT_MODEL;
     JToggleButton.ToggleButtonModel DEPLOY_ON_SAVE_MODEL;
     JToggleButton.ToggleButtonModel COMPILE_ON_SAVE_MODEL;
+    BrowserUISupport.BrowserComboBoxModel BROWSERS_MODEL;
     
     // Private fields ----------------------------------------------------------
     
@@ -332,6 +335,9 @@ public final class EarProjectProperties {
         VM_OPTIONS_MODEL = projectGroup.createStringDocument(evaluator, APPCLIENT_JVM_OPTIONS);
         APPLICATION_CLIENT_MODEL = projectGroup.createStringDocument(evaluator, APPLICATION_CLIENT);
         CLIENT_MODULE_MODEL = CustomizerRun.createApplicationUrisComboBoxModel(project);
+
+        String selectedBrowser = evaluator.getProperty(SELECTED_BROWSER);
+        BROWSERS_MODEL = BrowserUISupport.createBrowserModel(selectedBrowser, true);
     }
 
     private void saveLibrariesLocation() throws IOException, IllegalArgumentException {
@@ -388,6 +394,7 @@ public final class EarProjectProperties {
         }
         
         CLIENT_MODULE_MODEL.storeSelectedItem(projectProperties);
+        privateProperties.setProperty(SELECTED_BROWSER, BROWSERS_MODEL.getSelectedBrowserId());
         
         // Store the property changes into the project
         updateHelper.putProperties( AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties );
