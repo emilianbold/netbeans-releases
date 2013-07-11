@@ -58,6 +58,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -144,7 +146,7 @@ import org.openide.util.TaskListener;
  *
  * @author Tim Boudreau
  */
-public final class HintsUI implements MouseListener, MouseMotionListener, KeyListener, PropertyChangeListener, AWTEventListener, CaretListener  {
+public final class HintsUI implements MouseListener, MouseMotionListener, KeyListener, PropertyChangeListener, AWTEventListener, CaretListener, FocusListener  {
 
     //-J-Dorg.netbeans.modules.editor.hints.HintsUI.always.show.error=true
     private static final boolean ALWAYS_SHOW_ERROR_MESSAGE = Boolean.getBoolean(HintsUI.class.getName() + ".always.show.error");
@@ -512,13 +514,9 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
       if (gs.length == 0 || gs.length == 1) {
           return new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
       }
-
-      for (int j = 0; j < gs.length; j++) {
-          GraphicsDevice gd = gs[j];
-          GraphicsConfiguration[] gc = gd.getConfigurations();
-          for (int i=0; i < gc.length; i++) {
-              virtualBounds = virtualBounds.union(gc[i].getBounds());
-          }
+     
+      for (GraphicsDevice gd : gs) {
+          virtualBounds = virtualBounds.union(gd.getDefaultConfiguration().getBounds());
       }
 
       return virtualBounds;
@@ -891,6 +889,14 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
         if (getComponent() != active) {
             removeHints();
             setComponent(active);
+
+            if (getComponent() != null) {
+                getComponent().removeFocusListener(this);
+            }
+
+            if (active != null) {
+                active.addFocusListener(this);
+            }
         }
     }
     
@@ -1038,6 +1044,15 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
                 });
             }
         });
+    }
+
+    @Override
+    public void focusGained(FocusEvent e) {
+    }
+
+    @Override
+    public void focusLost(FocusEvent e) {
+        removePopups();
     }
 
     private static final class CaretLocationAndMessage {

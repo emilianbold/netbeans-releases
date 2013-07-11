@@ -78,7 +78,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.netbeans.spi.java.hints.Hint;
@@ -119,18 +119,6 @@ public final class JavadocHint {
             return Collections.<ErrorDescription>emptyList();
         }
 
-        Document doc = null;
-
-        try {
-            doc = javac.getDocument();
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }
-
-        if (doc == null) {
-            return null;
-        }
-
         TreePath currentPath = ctx.getPath();
         Severity severity = ctx.getSeverity();
         Access access = Access.resolve(pref.get(SCOPE_KEY, SCOPE_DEFAULT));
@@ -149,8 +137,16 @@ public final class JavadocHint {
                     Level.INFO, "Cannot resolve element for {0} in {1}", new Object[]{node, javac.getFileObject()}); // NOI18N
             return errors;
         }
-        if (isGuarded(node, javac, doc)) {
-            return errors;
+        {
+            Document doc = null;
+            try {
+                doc = javac.getDocument();
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+            if (doc != null && isGuarded(node, javac, doc)) {
+                return errors;
+            }
         }
         DocCommentTree docCommentTree = ((DocTrees) javac.getTrees()).getDocCommentTree(currentPath);
         // create hint descriptor + prepare javadoc
@@ -161,45 +157,23 @@ public final class JavadocHint {
             if (hasErrors(node) || JavadocUtilities.hasInheritedDoc(javac, elm)) {
                 return errors;
             }
-
-            try {
-                Position[] positions = createSignaturePositions(node, javac, doc);
-                if (positions == null) {
-                    return errors;
-                }
-                
-                TreePathHandle handle = TreePathHandle.create(currentPath, javac);
-
-                String description;
-                if (elm.getKind() == ElementKind.CONSTRUCTOR) {
-                    description = elm.getEnclosingElement().getSimpleName().toString();
-                } else {
-                    description = elm.getSimpleName().toString();
-                }
-
-                errors = new ArrayList<ErrorDescription>();
-                GenerateJavadocFix javadocFix = new GenerateJavadocFix(description, handle, resolveSourceVersion(javac.getFileObject()));
-//                if (severity == Severity.HINT) {
-//                    if(caretLocation >= 0) {
-//                        errors.add(ErrorDescriptionFactory.createErrorDescription(
-//                                severity,
-//                                NbBundle.getMessage(Analyzer.class, "MISSING_JAVADOC_DESC"), // NOI18N
-//                                Collections.singletonList(javadocFix.toEditorFix()), javac.getFileObject(),
-//                                caretLocation,
-//                                caretLocation));
-//                    }
-//                } else {
-                    errors.add(ErrorDescriptionFactory.createErrorDescription(
-                            severity,
-                            NbBundle.getMessage(Analyzer.class, "MISSING_JAVADOC_DESC"), // NOI18N
-                            Collections.singletonList(javadocFix.toEditorFix()),
-                            doc,
-                            positions[0],
-                            positions[1]));
-//                }
-            } catch (BadLocationException ex) {
-                Logger.getLogger(Analyzer.class.getName()).log(Level.INFO, ex.getMessage(), ex);
+            int[] positions = createSignaturePositions(node, javac);
+            if (positions == null) {
+                return errors;
             }
+
+            TreePathHandle handle = TreePathHandle.create(currentPath, javac);
+
+            String description;
+            if (elm.getKind() == ElementKind.CONSTRUCTOR) {
+                description = elm.getEnclosingElement().getSimpleName().toString();
+            } else {
+                description = elm.getSimpleName().toString();
+            }
+
+            errors = new ArrayList<>();
+            GenerateJavadocFix javadocFix = new GenerateJavadocFix(description, handle, resolveSourceVersion(javac.getFileObject()));
+            errors.add(ErrorDescriptionFactory.forSpan(ctx, positions[0], positions[1], NbBundle.getMessage(Analyzer.class, "MISSING_JAVADOC_DESC"), javadocFix.toEditorFix()));
         }
         return errors;
     }
@@ -223,28 +197,21 @@ public final class JavadocHint {
             return Collections.<ErrorDescription>emptyList();
         }
 
-        Document doc = null;
-
-        try {
-            doc = javac.getDocument();
-        } catch (IOException e) {
-            Exceptions.printStackTrace(e);
-        }
-
-        if (doc == null) {
-            return null;
+        TreePath path = ctx.getPath();
+        {
+            Document doc = null;
+            try {
+                doc = javac.getDocument();
+            } catch (IOException e) {
+                Exceptions.printStackTrace(e);
+            }
+            if (doc != null && isGuarded(path.getLeaf(), javac, doc)) {
+                return null;
+            }
         }
         
-        TreePath path = ctx.getPath();
-        Severity severity = ctx.getSeverity();
         Access access = Access.resolve(pref.get(SCOPE_KEY, SCOPE_DEFAULT));
-        Analyzer a = new Analyzer(javac, doc, path, severity, access, new Cancel() {
-
-            @Override
-            public boolean isCanceled() {
-                return ctx.isCanceled();
-            }
-        });
+        Analyzer a = new Analyzer(javac, path, access, ctx);
         return a.analyze();
     }
 

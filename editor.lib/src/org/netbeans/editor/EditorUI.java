@@ -285,6 +285,14 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                             if (ui!=null) ui.refresh();
                          }
                      }
+
+                     @Override
+                     public void focusLost(FocusEvent e) {
+                         // see #222935, update actions before menu activates
+                         if (e.isTemporary()) {
+                             doStateChange(true);
+                         }
+                     }
                  };
 
         getToolTipSupport();
@@ -477,6 +485,10 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
     }
     
     public @Override void stateChanged(ChangeEvent evt) {
+        doStateChange(false);
+    }
+    
+    private void doStateChange(final boolean b) {
         SwingUtilities.invokeLater(
             new Runnable() {
                 
@@ -503,9 +515,15 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                         } else {
                             int offset = c.getCaretPosition();
                             boolean guarded = gdoc.isPosGuarded(offset);
+                            boolean startGuarded = guarded;
+                            // only enable paste if on start of the 1st guarded line, not at each line start.
+                            if (offset > 0 && !gdoc.isPosGuarded(offset -1) &&
+                                org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(bdoc).charAt(offset - 1) == '\n') { // NOI18N
+                                startGuarded = false;
+                            }
                             return new boolean [] {
                                 guarded,
-                                guarded && !(offset == 0 || org.netbeans.lib.editor.util.swing.DocumentUtilities.getText(bdoc).charAt(offset - 1) == '\n') //NOI18N
+                                startGuarded
                             };
                         }
                     }
@@ -514,7 +532,7 @@ public class EditorUI implements ChangeListener, PropertyChangeListener, MouseLi
                 
                 public @Override void run() {
                     JTextComponent c = component;
-                    if (c != null && c.hasFocus()) { // do nothing if the component does not have focus, see #110715
+                    if (c != null && (b || c.hasFocus())) { // do nothing if the component does not have focus, see #110715
                         BaseKit kit = Utilities.getKit(c);
                         if (kit != null) {
                             boolean isEditable = c.isEditable();

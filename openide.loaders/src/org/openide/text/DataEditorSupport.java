@@ -1015,7 +1015,7 @@ public class DataEditorSupport extends CloneableEditorSupport {
                             NotifyDescriptor.WARNING_MESSAGE));
                 }
                 // event is consumed in CloneableEditorSupport
-                firePropertyChange("DataEditorSupport.read-only.changing", null, null);  //NOI18N
+                firePropertyChange("DataEditorSupport.read-only.changing", !canWrite, canWrite);  //NOI18N
             }
         }
 

@@ -240,15 +240,16 @@ public class CustomizerObfuscate extends JPanel implements CustomizerPanel, Visu
                         for (UpdateElement req : oc.add(element).getRequiredElements()) {
                             oc.add(req);
                         }
-                        PluginManager.openInstallWizard(oc);
-                        ((CardLayout)getLayout()).show(this, "panel1"); //NOI18N
-                        return;
+                        if (PluginManager.openInstallWizard(oc)) {
+                            ((CardLayout) getLayout()).show(this, "panel1"); //NOI18N
+                            return;
+                        }
                     }
                 }
             }
         }
         //PluginManager.show();
-        ((CardLayout)getLayout()).show(this, "panel1"); //NOI18N
+        ((CardLayout)getLayout()).show(this, "panel2"); //NOI18N
     }//GEN-LAST:event_jButton1ActionPerformed
     
     private void initAccessibility() {

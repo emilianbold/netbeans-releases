@@ -44,9 +44,11 @@
 
 package org.netbeans.modules.refactoring.java.ui;
 
+import java.awt.EventQueue;
 import java.awt.datatransfer.Transferable;
 import java.util.*;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -77,8 +79,18 @@ public class RefactoringActionsProvider extends ActionsImplementationProvider{
     }
     @Override
     public void doRename(final Lookup lookup) {
-        Runnable task = ContextAnalyzer.createTask(lookup, RenameRefactoringUI.factory(lookup));
-        ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
+        final Runnable task = ContextAnalyzer.createTask(lookup, RenameRefactoringUI.factory(lookup));
+        if(!EventQueue.isDispatchThread()) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
+                }
+            });
+        } else {
+            ScanDialog.runWhenScanFinished(task, getActionName(RefactoringActionsFactory.renameAction()));
+        }
     }
     
     static String getActionName(Action action) {

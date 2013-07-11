@@ -194,8 +194,8 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
                             @Override
                             public Collection<? extends ProjectProblem> run() {
                                 final JavaPlatform activePlatform = platformSetter.getProjectPlatform();
-                                boolean hasFX = JavaFXPlatformUtils.isJavaFXEnabled(activePlatform);
-                                return hasFX  ? Collections.<ProjectProblem>emptySet() :
+                                boolean hasFXProblem = activePlatform != null && !JavaFXPlatformUtils.isJavaFXEnabled(activePlatform);
+                                return !hasFXProblem  ? Collections.<ProjectProblem>emptySet() :
                                     Collections.singleton(ProjectProblem.createError(
                                         Bundle.LBL_FX_Not_Supported_By_JDK(),
                                         Bundle.HINT_FX_Not_Supported_By_JDK(),
@@ -210,7 +210,7 @@ public class JFXProjectProblems implements ProjectProblemsProvider, PropertyChan
             }
         });
     }
-    
+
     private static boolean isFXProject(@NonNull final J2SEPropertyEvaluator eval) {
         if (eval == null) {
             return false;

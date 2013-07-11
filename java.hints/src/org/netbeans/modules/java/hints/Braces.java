@@ -46,6 +46,7 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
@@ -207,6 +208,8 @@ public class Braces {
                 
                 TreeMaker make = copy.getTreeMaker();
                 Tree oldTree = path.getLeaf();                 
+                
+                oldTree = GeneratorUtilities.get(copy).importComments(oldTree, copy.getCompilationUnit());
                 
                 switch( oldTree.getKind() ) {
                 case FOR_LOOP:
