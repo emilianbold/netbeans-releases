@@ -51,6 +51,7 @@ import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.modules.java.hints.infrastructure.TreeRuleTestBase;
 import org.netbeans.modules.java.hints.legacy.spi.RulesManager;
+import org.netbeans.modules.java.hints.legacy.spi.RulesManager.LegacyHintConfiguration;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 
 /**
@@ -98,7 +99,8 @@ public class HideFieldTest extends TreeRuleTestBase {
     }
 
     public void testDisabled() throws Exception {
-        Preferences prefs = RulesManager.currentHintPreferences.get();
+        LegacyHintConfiguration conf = RulesManager.currentHintPreferences.get();
+        Preferences prefs = conf.preferences;
         String origSetting = prefs.get(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS, null);
         try {
             prefs.putBoolean(HideField.KEY_WARN_HIDDEN_STATIC_FIELDS, false);

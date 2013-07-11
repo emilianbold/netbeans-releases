@@ -126,7 +126,7 @@ public abstract class AbstractHint implements TreeRule {
     public final HintSeverity getSeverity() {
         LegacyHintConfiguration conf = RulesManager.currentHintPreferences.get();
         
-        if (conf != null) return HintSeverity.fromOfficialHintSeverity(conf.severity, severityDefault);
+        if (conf != null && conf.severity != null) return HintSeverity.fromOfficialHintSeverity(conf.severity, severityDefault);
         
         return severityDefault;
     }
