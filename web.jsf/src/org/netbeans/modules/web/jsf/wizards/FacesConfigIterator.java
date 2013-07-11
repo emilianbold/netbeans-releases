@@ -58,7 +58,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.j2ee.core.api.support.classpath.ContainerClassPathModifier;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;

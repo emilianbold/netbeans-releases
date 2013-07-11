@@ -78,7 +78,7 @@ import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;

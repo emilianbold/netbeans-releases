@@ -44,7 +44,8 @@ package org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ServerUtil;
 import org.netbeans.modules.j2ee.core.api.support.wizard.DelegatingWizardDescriptorPanel;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.modules.javaee.specs.support.api.EjbSupport;
@@ -71,7 +72,7 @@ public final class AppServerValidationPanel extends DelegatingWizardDescriptorPa
 
         // check that this project has a valid target server
         J2eePlatform j2eePlatform = ProjectUtil.getPlatform(project);
-        if (j2eePlatform == null || !ProjectUtil.isValidServerInstance(project)) {
+        if (j2eePlatform == null || !ServerUtil.isValidServerInstance(project)) {
             wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                     NbBundle.getMessage(AppServerValidationPanel.class, "ERR_MissingServer")); // NOI18N
             return false;

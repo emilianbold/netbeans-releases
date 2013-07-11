@@ -51,7 +51,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javaee.specs.support.api.EjbSupport;
 import org.netbeans.modules.javaee.specs.support.api.JpaSupport;

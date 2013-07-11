@@ -106,7 +106,7 @@ public class JsStructureScanner implements StructureScanner {
         
         for (JsObject child : properties) {
             // we do not want to show items from virtual source
-            if (result.getSnapshot().getOriginalOffset(child.getOffset()) < 0) {
+            if (result.getSnapshot().getOriginalOffset(child.getOffset()) < 0 && !ModelUtils.PROTOTYPE.equals(child.getName())) {
                 continue;
             }
             List<StructureItem> children = new ArrayList<StructureItem>();

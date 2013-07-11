@@ -253,11 +253,15 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     }
     
     private boolean isSameTypeOrSupertype(CompilationContext info, TypeMirror tm1, TypeMirror tm2) {
-        DeclaredType declaredTm2 = (DeclaredType)tm2;
+        if (tm2 instanceof DeclaredType == false) {
+            return info.info().getTypes().isSameType(tm1, tm2);
+        }
+
+        DeclaredType declaredTm2 = (DeclaredType) tm2;
         List<Element> all = ELTypeUtilities.getSuperTypesFor(info, declaredTm2.asElement());
-        for(Element e : all) {
+        for (Element e : all) {
             TypeMirror tm = e.asType();
-            if(info.info().getTypes().isSameType(tm1, tm2)) {
+            if(info.info().getTypes().isSameType(tm1, tm)) {
                 return true;
             }
         }

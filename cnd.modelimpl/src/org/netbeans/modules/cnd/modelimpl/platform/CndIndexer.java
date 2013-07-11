@@ -41,11 +41,14 @@
  */
 package org.netbeans.modules.cnd.modelimpl.platform;
 
+import java.util.Collection;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
+import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
@@ -70,9 +73,6 @@ public class CndIndexer extends CustomIndexer {
         if (context.isAllFilesIndexing()) {
             return;
         }
-        if (!files.iterator().hasNext()) {
-            return;
-        }
         FileObject root = context.getRoot();
         for (Indexable idx : files) {
             FileObject fo = root.getFileObject(idx.getRelativePath());
@@ -88,7 +88,8 @@ public class CndIndexer extends CustomIndexer {
     @MimeRegistrations({
         @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = CustomIndexerFactory.class),
         @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = CustomIndexerFactory.class),
-        @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = CustomIndexerFactory.class)
+        @MimeRegistration(mimeType = MIMENames.HEADER_MIME_TYPE, service = CustomIndexerFactory.class),
+        @MimeRegistration(mimeType = MIMENames.FORTRAN_MIME_TYPE, service = CustomIndexerFactory.class)
     })
     public static final class Factory extends CustomIndexerFactory {
 
@@ -103,7 +104,15 @@ public class CndIndexer extends CustomIndexer {
         }
 
         @Override
-        public void filesDeleted(Iterable<? extends Indexable> deleted, Context context) {
+        public void filesDeleted(Iterable<? extends Indexable> files, Context context) {
+            if (!CndTraceFlags.USE_INDEXING_API) {
+                return;
+            }
+            FileObject root = context.getRoot();
+            Collection<CsmProject> projects = CsmUtilities.getOwnerCsmProjects(root);
+            for (CsmProject csmProject : projects) {
+                ((ProjectBase)csmProject).checkForRemoved();
+            }
         }
 
         @Override

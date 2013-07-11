@@ -1680,7 +1680,7 @@ It is possible to use -Ddebug.port=3234 -Ddebug.pause=y to start the system in d
   <target name="check-sigtests-version">
     <echo message="Checking version of signature files for ${cluster.config} modules"/>
     
-    <property name="sigtest.previous.url" value="http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/build/sigtest/snapshot/*zip*/snapshot.zip"/>
+    <property name="sigtest.previous.url" value="http://deadlock.netbeans.org/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/build/sigtest/snapshot/*zip*/snapshot.zip"/>
     <property name="sigtest.prev.dir" location="${nb.build.dir}/sigtest/prev-snapshot"/>
     <property name="sigtest.output.dir" location="${nb.build.dir}/sigtest/versioncheck"/>
 

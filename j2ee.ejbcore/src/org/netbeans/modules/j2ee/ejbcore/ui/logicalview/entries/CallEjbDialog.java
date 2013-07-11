@@ -67,7 +67,7 @@ import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.netbeans.modules.j2ee.ejbcore.Utils;
 import org.netbeans.modules.j2ee.api.ejbjar.EnterpriseReferenceContainer;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.j2ee.ejbcore.util._RetoucheUtil;
 import org.netbeans.modules.j2ee.ejbcore.api.codegeneration.CallEjbGenerator;
 import org.openide.DialogDisplayer;

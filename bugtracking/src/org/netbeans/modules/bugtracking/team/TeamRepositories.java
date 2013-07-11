@@ -357,13 +357,7 @@ public abstract class TeamRepositories implements PropertyChangeListener {
             TeamProject teamProject = null;
             try {
                 if(NBBugzillaUtils.isNbRepository(url)) {
-                    OwnerInfo owner = null;
-                    for (TeamAccessor teamAccessor : TeamUtil.getTeamAccessors()) {
-                        owner = teamAccessor.getOwnerInfo(FileUtil.toFile(rootDir));
-                        if (owner != null) {
-                            break;
-                        }
-                    }
+                    OwnerInfo owner = TeamUtil.getOwnerInfo(FileUtil.toFile(rootDir));
                     if(owner != null) {
                         teamProject = TeamUtil.getTeamProject(url, owner.getOwner());
                     } else {

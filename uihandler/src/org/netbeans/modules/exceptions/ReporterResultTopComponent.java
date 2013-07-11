@@ -88,6 +88,7 @@ public final class ReporterResultTopComponent extends TopComponent implements Hy
         setToolTipText(NbBundle.getMessage(ReporterResultTopComponent.class, "HINT_ReporterResultTopComponent"));
         dataDisplayer.addHyperlinkListener(this);
         dataDisplayer.setContentType("text/html");
+        dataDisplayer.putClientProperty(javax.swing.JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         Image img = ImageUtilities.loadImage(ICON_PATH, true);
         setIcon(img);
     }

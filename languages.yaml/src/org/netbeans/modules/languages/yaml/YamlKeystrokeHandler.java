@@ -171,17 +171,6 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         return false;
     }
 
-//    public boolean isInsertMatchingEnabled(BaseDocument doc) {
-//        // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
-//        //Boolean b = ((Boolean)Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
-//        //return b == null || b.booleanValue();
-//        EditorOptions options = EditorOptions.get(YamlTokenId.YAML_MIME_TYPE);
-//        if (options != null) {
-//            return options.getMatchBrackets();
-//        }
-//
-//        return true;
-//    }
     @Override
     public int beforeBreak(Document document, int offset, JTextComponent target) throws BadLocationException {
 
@@ -191,8 +180,6 @@ public class YamlKeystrokeHandler implements KeystrokeHandler {
         // Very simple algorithm for now..
         // Basically, use the same indent as the current line, unless the caret is immediately preceeded by a ":" (possibly with whitespace
         // in between)
-
-        //        boolean insertMatching = isInsertMatchingEnabled(doc);
 
         int lineBegin = Utilities.getRowStart(doc, offset);
         int lineEnd = Utilities.getRowEnd(doc, offset);

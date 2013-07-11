@@ -167,17 +167,17 @@ public class TeamAccessorImpl extends TeamAccessor {
 
     @Override
     public JLabel createUserWidget(String userName, String host, String chatMessage) {
-        return null;
+        return null; // no user/member info provided
     }
 
     @Override
     public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(Node node) {
-        throw new UnsupportedOperationException("Owner info shouldn't be requested from ODCS"); // NOI18N
+        return null; // available only for netbeans.org 
     }
 
     @Override
     public org.netbeans.modules.bugtracking.team.spi.OwnerInfo getOwnerInfo(File file) {
-        throw new UnsupportedOperationException("Owner info shouldn't be requested from ODCS"); // NOI18N
+        return null; // available only for netbeans.org 
     }
 
     @Override

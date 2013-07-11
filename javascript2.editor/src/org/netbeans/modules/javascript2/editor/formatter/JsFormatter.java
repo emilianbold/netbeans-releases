@@ -1858,7 +1858,7 @@ public class JsFormatter implements Formatter {
             // find the corresponding opening marker, and indent the line to the same
             // offset as the beginning of that line.
             if (id == JsTokenId.BRACKET_RIGHT_CURLY || id == JsTokenId.BRACKET_RIGHT_BRACKET
-                    || id == JsTokenId.BRACKET_RIGHT_PAREN) {
+                    /*|| id == JsTokenId.BRACKET_RIGHT_PAREN*/) {
                 int indents = 1;
 
                 // Check if there are multiple end markers here... if so increase indent level.

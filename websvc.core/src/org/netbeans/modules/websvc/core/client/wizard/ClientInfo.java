@@ -105,7 +105,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 

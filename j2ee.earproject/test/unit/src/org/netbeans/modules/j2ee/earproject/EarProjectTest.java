@@ -63,7 +63,7 @@ import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.j2ee.common.project.JavaEEProjectSettings;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.j2ee.earproject.test.EarTestCase;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
@@ -296,11 +296,7 @@ public class EarProjectTest extends EarTestCase {
     }
 
     public static void validate(final File ddFile) throws Exception {
-        SAXParserFactory f = (SAXParserFactory) Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance();
-        if (f == null) {
-            System.err.println("Validation skipped because org.apache.xerces.jaxp.SAXParserFactoryImpl was not found on classpath");
-            return;
-        }
+        SAXParserFactory f = SAXParserFactory.newInstance();
         f.setNamespaceAware(true);
         f.setValidating(true);
         SAXParser p = f.newSAXParser();

@@ -50,7 +50,7 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
 import org.netbeans.modules.websvc.spi.support.InvokeOperationActionProvider;
 import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;

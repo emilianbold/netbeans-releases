@@ -822,9 +822,6 @@ public final class FileUtil extends Object {
                 retVal = Utilities.toFile(URI.create(fileURL.toExternalForm()));
             }
         }
-        if (retVal != null) {
-            retVal = normalizeFile(retVal);
-        }
         assert assertNormalized(retVal);
         return retVal;
     }

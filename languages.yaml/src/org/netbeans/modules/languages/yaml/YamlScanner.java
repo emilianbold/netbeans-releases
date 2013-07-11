@@ -42,6 +42,7 @@
 package org.netbeans.modules.languages.yaml;
 
 import java.io.CharConversionException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -49,6 +50,8 @@ import java.util.IdentityHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import javax.swing.text.BadLocationException;
 import org.jruby.util.ByteList;
@@ -76,6 +79,7 @@ import org.openide.xml.XMLUtil;
  * @author Tor Norbye
  */
 public class YamlScanner implements StructureScanner {
+    private static final Logger LOGGER = Logger.getLogger(YamlScanner.class.getName());
 
     @Override
     public List<? extends StructureItem> scan(ParserResult info) {
@@ -97,6 +101,7 @@ public class YamlScanner implements StructureScanner {
         return Collections.emptyList();
     }
 
+    @Override
     public Map<String, List<OffsetRange>> folds(ParserResult info) {
         YamlParserResult result = (YamlParserResult) info;
         if (result == null) {
@@ -104,7 +109,7 @@ public class YamlScanner implements StructureScanner {
         }
 
         List<? extends StructureItem> items = result.getItems();
-        if (items.size() == 0) {
+        if (items.isEmpty()) {
             return Collections.emptyMap();
         }
 
@@ -147,6 +152,7 @@ public class YamlScanner implements StructureScanner {
         }
     }
 
+    @Override
     public Configuration getConfiguration() {
         return new Configuration(false, false, 0);
     }
@@ -170,45 +176,52 @@ public class YamlScanner implements StructureScanner {
             this(node, name, positions.getStart(), positions.getEnd());
         }
 
+        @Override
         public String getName() {
             return name;
         }
 
+        @Override
         public String getSortText() {
             return getName();
         }
 
+        @Override
         public String getHtml(HtmlFormatter formatter) {
             String s = getName();
             try {
                 return XMLUtil.toElementContent(s);
             } catch (CharConversionException cce) {
-                Exceptions.printStackTrace(cce);
+                // fine to just log...probably some UTF8 name (e.g. russian cyrillic, etc.)
+                LOGGER.log(Level.FINE, "NAME:" + s, cce);
                 return s;
             }
         }
 
+        @Override
         public ElementHandle getElementHandle() {
             return null;
         }
 
+        @Override
         public ElementKind getKind() {
             return ElementKind.ATTRIBUTE;
         }
 
+        @Override
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
         }
 
+        @Override
         public boolean isLeaf() {
-            return getNestedItems().size() == 0;
+            return getNestedItems().isEmpty();
         }
 
         private static List<? extends StructureItem> initialize(YamlParserResult result, List<Node> roots) {
             // Really need IdentitySet or IdentityHashSet but there isn't one built in
             // or in our available libraries...
             IdentityHashMap<Object, Boolean> seen = new IdentityHashMap<Object, Boolean>(100);
-            //return new YamlStructureItem(root, null).getNestedItems();
             List<StructureItem> children = new ArrayList<StructureItem>();
             for (Node root : roots) {
                 YamlStructureItem fakeRoot = new YamlStructureItem(root, null, OffsetRange.NONE);
@@ -286,7 +299,15 @@ public class YamlScanner implements StructureScanner {
                     } else if (key instanceof PositionedScalarNode) {
                         //ScalarNode scalar = (ScalarNode)key;
                         PositionedScalarNode scalar = (PositionedScalarNode) key;
-                        String childName = scalar.getValue().toString();
+                        Object childNameValue = scalar.getValue();
+                        assert childNameValue instanceof ByteList;
+                        ByteList byteListChildName = (ByteList) childNameValue;
+                        String childName = byteListChildName.toString();
+                        try {
+                            childName = new String(byteListChildName.bytes, "UTF-8"); //NOI18N
+                        } catch (UnsupportedEncodingException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
                         Node child = (Node) entry.getValue();
                         if (child != null) {
                             int e = result.convertByteToUtf8(((Positionable) child).getRange().end.offset);
@@ -299,7 +320,7 @@ public class YamlScanner implements StructureScanner {
                             if (child.getValue() instanceof ByteList && ((ByteList) child.getValue()).length() == 0) {
                                 e = result.convertByteToUtf8(((Positionable) scalar).getRange().end.offset);
                             }
-                            children.add(new YamlStructureItem(child, childName,
+                            children.add(new YamlStructureItem(child, childName.trim(),
                                     // Range: beginning of -key- to ending of -value-
                                     result.convertByteToUtf8(((Positionable) scalar).getRange().start.offset),
                                     e));
@@ -345,29 +366,31 @@ public class YamlScanner implements StructureScanner {
             }
         }
 
+        @Override
         public List<? extends StructureItem> getNestedItems() {
             assert children != null;
             return children;
         }
 
+        @Override
         public long getPosition() {
             return begin;
         }
 
+        @Override
         public long getEndPosition() {
             return end;
         }
 
+        @Override
         public ImageIcon getCustomIcon() {
             return null;
         }
 
+        @Override
         public int compareTo(YamlStructureItem other) {
             return (int) (begin - other.begin);
         }
-        //@Override
-        //public String toString() {
-        //    return "YamlStructureItem(" + name + ",begin=" + begin;
-        //}
+
     }
 }

@@ -167,7 +167,8 @@ public final class Identifiers extends ELRule {
             return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Identifier", node.getImage());
         }
         if (NodeUtil.isMethodCall(node)) {
-            return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Method", node.getImage());
+            String methodName = node instanceof AstBracketSuffix ? ELTypeUtilities.getBracketMethodName(node) : node.getImage();
+            return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Method", methodName);
         }
         if (node instanceof AstDotSuffix) {
             return NbBundle.getMessage(Identifiers.class, "Identifiers_Unknown_Property", node.getImage());

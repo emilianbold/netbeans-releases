@@ -417,7 +417,7 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
                 + "    var a = {\n"
                 + "        test1: function() {\n"
                 + "            if (a == 1\n"
-                + "                ^)\n"
+                + "                    ^)\n"
                 + "        }\n"
                 + "    };\n"
                 + "});");

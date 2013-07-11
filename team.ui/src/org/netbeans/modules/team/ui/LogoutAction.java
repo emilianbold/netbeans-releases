@@ -47,6 +47,9 @@ import javax.swing.AbstractAction;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -62,6 +65,9 @@ public final class LogoutAction extends AbstractAction {
         super(LOGOUT);
     }
 
+    @ActionID(id = "org.netbeans.modules.team.ui.LogoutAction", category = "Team")
+    @ActionRegistration(lazy = false, displayName = "#CTL_LogoutAction")
+    @ActionReference(path = "Menu/Versioning/Team", position = 110)
     public static synchronized LogoutAction getDefault() {
         if (instance==null) {
             instance=new LogoutAction();

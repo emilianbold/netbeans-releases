@@ -187,7 +187,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     @Override
     public int getOffset() {
-        return declarationName.getOffsetRange().getStart();
+        return declarationName == null ? -1 : declarationName.getOffsetRange().getStart();
     }
 
     @Override

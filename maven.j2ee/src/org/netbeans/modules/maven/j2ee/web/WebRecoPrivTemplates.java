@@ -46,7 +46,7 @@ import java.util.Arrays;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
-import org.netbeans.modules.j2ee.common.project.ProjectUtil;
+import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.project.ProjectServiceProvider;
