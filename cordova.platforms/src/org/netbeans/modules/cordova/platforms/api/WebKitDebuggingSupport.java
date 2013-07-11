@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.cordova.platforms.api;
 
-import org.netbeans.modules.cordova.platforms.api.ClientProjectUtilities;
 import java.net.URL;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.project.Project;
@@ -79,6 +78,7 @@ public final class WebKitDebuggingSupport {
     private MobileDebugTransport transport;
     private MessageDispatcherImpl dispatcher;
     private final RequestProcessor RP = new RequestProcessor(WebKitDebuggingSupport.class.getName(), 10);
+    private volatile boolean startDebuggingInProgress = true;
     
     public static synchronized WebKitDebuggingSupport getDefault() {
         if (instance == null) {
@@ -87,11 +87,12 @@ public final class WebKitDebuggingSupport {
         return instance;
     }
     
-    public void startDebugging(Device device, Project p, Lookup context, boolean navigateToUrl) {
+    public synchronized void startDebugging(Device device, Project p, Lookup context, boolean navigateToUrl) {
         if (transport != null || webKitDebugging != null) {
             //stop old session
-            stopDebugging(false);
+            stopDebuggingNow(false);
         }
+        startDebuggingInProgress = true;
         transport = device.getDebugTransport();
         final String url = getUrl(p, context);
         transport.setBaseUrl(url);
@@ -121,9 +122,21 @@ public final class WebKitDebuggingSupport {
         networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webKitDebugging, projectContext);
         dispatcher = new MessageDispatcherImpl();
         PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(BrowserFamilyId.class), dispatcher));
+        startDebuggingInProgress = false;
     }
-
-    public void stopDebugging(boolean fullCleanup) {
+    
+    public void stopDebugging(final boolean fullCleanup) {
+        if (startDebuggingInProgress)
+            return;
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                stopDebuggingNow(fullCleanup);
+            }
+        });
+    }
+    
+    private synchronized void stopDebuggingNow(boolean fullCleanup) {
         if (webKitDebugging == null || webKitDebugging == null) {
             return;
         }
@@ -153,6 +166,7 @@ public final class WebKitDebuggingSupport {
         transport = null;
         webKitDebugging = null;
     }
+    
 
     public void reload() {
         RP.post(new Runnable() {
