@@ -244,17 +244,44 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
 
+        jSplitPane1 = new javax.swing.JSplitPane();
+        previewPanel = new javax.swing.JPanel();
+        previewLabel = new javax.swing.JLabel();
+        previewScrollPane = new javax.swing.JScrollPane();
         optionsPanel = new javax.swing.JPanel();
         languageLabel = new javax.swing.JLabel();
         languageCombo = new javax.swing.JComboBox();
         categoryLabel = new javax.swing.JLabel();
         categoryCombo = new javax.swing.JComboBox();
         categoryPanel = new javax.swing.JPanel();
-        previewPanel = new javax.swing.JPanel();
-        previewLabel = new javax.swing.JLabel();
-        previewScrollPane = new javax.swing.JScrollPane();
 
         setLayout(new java.awt.GridBagLayout());
+
+        jSplitPane1.setBorder(null);
+
+        previewPanel.setMinimumSize(new java.awt.Dimension(150, 100));
+        previewPanel.setOpaque(false);
+        previewPanel.setPreferredSize(new java.awt.Dimension(150, 100));
+        previewPanel.setLayout(new java.awt.GridBagLayout());
+
+        org.openide.awt.Mnemonics.setLocalizedText(previewLabel, org.openide.util.NbBundle.getMessage(FormattingPanel.class, "LBL_Preview")); // NOI18N
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+        previewPanel.add(previewLabel, gridBagConstraints);
+        previewLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AN_Preview")); // NOI18N
+        previewLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AD_Preview")); // NOI18N
+
+        previewScrollPane.setDoubleBuffered(true);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weighty = 1.0;
+        previewPanel.add(previewScrollPane, gridBagConstraints);
+        previewScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AN_Preview")); // NOI18N
+        previewScrollPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AD_Preview")); // NOI18N
+
+        jSplitPane1.setRightComponent(previewPanel);
 
         optionsPanel.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 8));
         optionsPanel.setOpaque(false);
@@ -288,7 +315,7 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
             optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(optionsPanelLayout.createSequentialGroup()
                 .addGroup(optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                    .addComponent(categoryPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 160, Short.MAX_VALUE)
+                    .addComponent(categoryPanel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(javax.swing.GroupLayout.Alignment.LEADING, optionsPanelLayout.createSequentialGroup()
                         .addGroup(optionsPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(categoryLabel)
@@ -313,7 +340,7 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
                     .addComponent(categoryLabel)
                     .addComponent(categoryCombo, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
-                .addComponent(categoryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 266, Short.MAX_VALUE))
+                .addComponent(categoryPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 260, Short.MAX_VALUE))
         );
 
         languageLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AD_Language")); // NOI18N
@@ -323,39 +350,16 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
         categoryCombo.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "FormattingPanel.categoryCombo.AccessibleContext.accessibleName")); // NOI18N
         categoryCombo.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "FormattingPanel.categoryCombo.AccessibleContext.accessibleDescription")); // NOI18N
 
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
-        gridBagConstraints.weighty = 1.0;
-        add(optionsPanel, gridBagConstraints);
-
-        previewPanel.setMinimumSize(new java.awt.Dimension(150, 100));
-        previewPanel.setOpaque(false);
-        previewPanel.setPreferredSize(new java.awt.Dimension(150, 100));
-        previewPanel.setLayout(new java.awt.GridBagLayout());
-
-        org.openide.awt.Mnemonics.setLocalizedText(previewLabel, org.openide.util.NbBundle.getMessage(FormattingPanel.class, "LBL_Preview")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        previewPanel.add(previewLabel, gridBagConstraints);
-        previewLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AN_Preview")); // NOI18N
-        previewLabel.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AD_Preview")); // NOI18N
-
-        previewScrollPane.setDoubleBuffered(true);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.weighty = 1.0;
-        previewPanel.add(previewScrollPane, gridBagConstraints);
-        previewScrollPane.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AN_Preview")); // NOI18N
-        previewScrollPane.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(FormattingPanel.class, "AD_Preview")); // NOI18N
+        jSplitPane1.setLeftComponent(optionsPanel);
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
-        add(previewPanel, gridBagConstraints);
+        gridBagConstraints.weighty = 1.0;
+        add(jSplitPane1, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void languageChanged(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_languageChanged
@@ -374,6 +378,7 @@ public final class FormattingPanel extends JPanel implements PropertyChangeListe
     private javax.swing.JComboBox categoryCombo;
     private javax.swing.JLabel categoryLabel;
     private javax.swing.JPanel categoryPanel;
+    private javax.swing.JSplitPane jSplitPane1;
     private javax.swing.JComboBox languageCombo;
     private javax.swing.JLabel languageLabel;
     private javax.swing.JPanel optionsPanel;
