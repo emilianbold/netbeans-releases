@@ -93,36 +93,39 @@ public final class WebKitDebuggingSupport {
             stopDebuggingNow(false);
         }
         startDebuggingInProgress = true;
-        transport = device.getDebugTransport();
-        final String url = getUrl(p, context);
-        transport.setBaseUrl(url);
-        if (url==null) {
-            //phonegap
-            String id = context.lookup(String.class);
-            transport.setBundleIdentifier(id);
-            if (context !=null) {
-                BrowserURLMapperImplementation.BrowserURLMapper mapper = context.lookup(BrowserURLMapperImplementation.BrowserURLMapper.class);
-                transport.setBrowserURLMapper(mapper);
-            }
-        }
-        transport.attach();
         try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
+            transport = device.getDebugTransport();
+            final String url = getUrl(p, context);
+            transport.setBaseUrl(url);
+            if (url == null) {
+                //phonegap
+                String id = context.lookup(String.class);
+                transport.setBundleIdentifier(id);
+                if (context != null) {
+                    BrowserURLMapperImplementation.BrowserURLMapper mapper = context.lookup(BrowserURLMapperImplementation.BrowserURLMapper.class);
+                    transport.setBrowserURLMapper(mapper);
+                }
+            }
+            transport.attach();
+            try {
+                Thread.sleep(1000);
+            } catch (InterruptedException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            webKitDebugging = Factory.createWebKitDebugging(transport);
+            if (navigateToUrl) {
+                webKitDebugging.getPage().navigate(url);
+            }
+            webKitDebugging.getDebugger().enable();
+            Lookup projectContext = Lookups.singleton(p);
+            debuggerSession = WebKitUIManager.getDefault().createDebuggingSession(webKitDebugging, projectContext);
+            consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webKitDebugging, projectContext);
+            networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webKitDebugging, projectContext);
+            dispatcher = new MessageDispatcherImpl();
+            PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(BrowserFamilyId.class), dispatcher));
+        } finally {
+            startDebuggingInProgress = false;
         }
-        webKitDebugging = Factory.createWebKitDebugging(transport);
-        if (navigateToUrl) {
-            webKitDebugging.getPage().navigate(url);
-        }
-        webKitDebugging.getDebugger().enable();
-        Lookup projectContext = Lookups.singleton(p);
-        debuggerSession = WebKitUIManager.getDefault().createDebuggingSession(webKitDebugging, projectContext);
-        consoleLogger = WebKitUIManager.getDefault().createBrowserConsoleLogger(webKitDebugging, projectContext);
-        networkMonitor = WebKitUIManager.getDefault().createNetworkMonitor(webKitDebugging, projectContext);
-        dispatcher = new MessageDispatcherImpl();
-        PageInspector.getDefault().inspectPage(Lookups.fixed(webKitDebugging, p, context.lookup(BrowserFamilyId.class), dispatcher));
-        startDebuggingInProgress = false;
     }
     
     public void stopDebugging(final boolean fullCleanup) {
