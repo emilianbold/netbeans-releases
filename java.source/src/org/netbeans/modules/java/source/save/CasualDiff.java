@@ -740,7 +740,8 @@ public class CasualDiff {
             int[] restypeBounds = getBounds(oldT.restype);
             copyTo(localPointer, restypeBounds[0]);
             localPointer = diffTree(oldT.restype, newT.restype, restypeBounds);
-            copyTo(localPointer, localPointer = restypeBounds[1]);
+            if (restypeBounds[1] > localPointer)
+                copyTo(localPointer, localPointer = restypeBounds[1]);
         } else if(oldT.restype == null && newT.restype != null) {
             copyTo(localPointer, localPointer = oldT.pos);
             printer.print(newT.restype);
