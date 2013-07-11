@@ -161,7 +161,7 @@ If you are sure you want to build with JDK 8+ anyway, use: -Dpermit.jdk8.builds=
         <condition property="nbm.distribution" value="${dist.base}/${nbm}"> <!-- compatibility -->
             <isset property="dist.base"/>
         </condition>
-        <property name="dist.base.structured" value="http://deadlock.netbeans.org/hudson/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/nbms"/>
+        <property name="dist.base.structured" value="http://deadlock.netbeans.org/job/nbms-and-javadoc/lastStableBuild/artifact/nbbuild/nbms"/>
         <property name="nbm.distribution" value="${dist.base.structured}/${cluster.dir}/${nbm}"/>
         <property name="nbm.module.author" value=""/>
         <property name="nbm.release.date" value=""/>

@@ -60,7 +60,7 @@ public class HudsonManager {
     /**
      * Adds a Hudson instance to the system (if not already registered).
      * @param name a name by which the instance will be identified (e.g. {@code Deadlock})
-     * @param url the master URL (e.g. {@code http://deadlock.netbeans.org/hudson/})
+     * @param url the master URL (e.g. {@code http://deadlock.netbeans.org/})
      * @param sync interval (in minutes) between refreshes, or 0 to disable
      * @param persistent if true, persist this configuration; if false, will be transient
      * @return a new or existing instance
@@ -76,7 +76,7 @@ public class HudsonManager {
      * @param name a name by which the instance will be identified (e.g.
      * {@code Deadlock})
      * @param url the master URL (e.g.
-     * {@code http://deadlock.netbeans.org/hudson/})
+     * {@code http://deadlock.netbeans.org/})
      * @param sync interval (in minutes) between refreshes, or 0 to disable
      * @param persistence persistence settings for the new instance
      */
@@ -103,7 +103,7 @@ public class HudsonManager {
      * @param name a name by which the instance will be identified (e.g.
      * {@code Deadlock})
      * @param url the master URL (e.g.
-     * {@code http://deadlock.netbeans.org/hudson/})
+     * {@code http://deadlock.netbeans.org/})
      * @param sync interval (in minutes) between refreshes, or 0 to disable
      * @param builderConnector Connector for retrieving builder data.
      *

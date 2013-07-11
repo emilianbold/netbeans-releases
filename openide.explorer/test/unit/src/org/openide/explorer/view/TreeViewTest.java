@@ -532,7 +532,7 @@ public final class TreeViewTest extends NbTestCase {
         fail("Node shall not be GCed: " + ref.get());
     }
 
-    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
+    @RandomlyFails // http://deadlock.netbeans.org/job/NB-Core-Build/9880/testReport/
     public void testNodesGCedAfterSetChildrenLazy() {
         doTestNodesGCedAfterSetChildren(true);
     }
