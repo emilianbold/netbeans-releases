@@ -109,6 +109,18 @@ public final class Service {
         return service.getPackageName();
     }
     
+    public void setJvmArgs(String[] jvmArgs) {
+        service.setJvmArg(jvmArgs);
+    }
+
+    public String[] getJvmArgs() {
+        return service.getJvmArg();
+    }
+    
+    public int sizeJvmArgs() {
+        return service.sizeJvmArg();
+    }
+    
      public Binding newBinding(){
         return new Binding(service.newBinding());
     }
