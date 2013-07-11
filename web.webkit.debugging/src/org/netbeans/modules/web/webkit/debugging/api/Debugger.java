@@ -117,7 +117,8 @@ public final class Debugger {
     private final Object breakpointsActiveLock = new Object();
     private final Map<String, Breakpoint> breakpointsById = Collections.synchronizedMap(new HashMap<String, Breakpoint>());
     private boolean inLiveHTMLMode = false;
-    private RequestProcessor.Task latestSnapshotTask;    
+    private RequestProcessor.Task latestSnapshotTask;   
+    private final Object ENABLED_LOCK = new Object();
 
     Debugger(TransportHelper transport, WebKitDebugging webkit) {
         this.transport = transport;
@@ -127,17 +128,22 @@ public final class Debugger {
     }
     
     public boolean enable() {
-        breakpointsActive = true; // By default, breakpoints are active initially.
-        transport.sendBlockingCommand(new Command(COMMAND_ENABLE));
+        synchronized (ENABLED_LOCK) {
+            if (enabled) {
+                return true;
+            }
+            breakpointsActive = true; // By default, breakpoints are active initially.
+            transport.sendBlockingCommand(new Command(COMMAND_ENABLE));
 
-        // always enable Page and Network; at the moment only Live HTML is using them
-        // but I expect that soon it will be used somewhere else as well
-        webkit.getPage().enable();
-        webkit.getNetwork().enable();
-        webkit.getConsole().enable();
-        webkit.getCSS().enable();
+            // always enable Page and Network; at the moment only Live HTML is using them
+            // but I expect that soon it will be used somewhere else as well
+            webkit.getPage().enable();
+            webkit.getNetwork().enable();
+            webkit.getConsole().enable();
+            webkit.getCSS().enable();
 
-        enabled = true;
+            enabled = true;
+        }
         
         setBreakpointsActive(lastBreakpointsActive);
         
@@ -166,17 +172,21 @@ public final class Debugger {
     }
     
     public void disable() {
-        assert enabled;
-        webkit.getPage().disable();
-        webkit.getNetwork().disable();
-        webkit.getConsole().disable();
-        webkit.getCSS().disable();
-        transport.sendCommand(new Command(COMMAND_DISABLE));
-        enabled = false;
-        suspended = false;
-        currentCallStack.clear();
-        currentCallFrame = null;
-        initDOMLister = true;
+        synchronized (ENABLED_LOCK) {
+            if (!enabled) {
+                return;
+            }
+            webkit.getPage().disable();
+            webkit.getNetwork().disable();
+            webkit.getConsole().disable();
+            webkit.getCSS().disable();
+            transport.sendCommand(new Command(COMMAND_DISABLE));
+            enabled = false;
+            suspended = false;
+            currentCallStack.clear();
+            currentCallFrame = null;
+            initDOMLister = true;
+        }
     }
 
     public void stepOver() {
@@ -208,7 +218,9 @@ public final class Debugger {
     }
     
     public boolean isEnabled() {
-        return enabled;
+        synchronized (ENABLED_LOCK) {
+            return enabled;
+        }
     }
     
     /**
