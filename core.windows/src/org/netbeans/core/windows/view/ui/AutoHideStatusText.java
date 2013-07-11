@@ -103,7 +103,8 @@ final class AutoHideStatusText implements ChangeListener, Runnable {
     @Override
     public void stateChanged( ChangeEvent e ) {
         text = StatusDisplayer.getDefault().getStatusText();
-        if (text.equals(lblStatus.getText())) {
+        String oldValue = lblStatus.getText();
+        if( text == null ? oldValue == null : text.equals( oldValue ) ) {
             // no change needed
             return;
         }
