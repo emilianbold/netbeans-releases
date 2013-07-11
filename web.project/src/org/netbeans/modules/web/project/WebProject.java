@@ -165,6 +165,7 @@ import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.javaee.project.api.ant.AntProjectUtil;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
+import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.modules.web.project.classpath.ClassPathSupportCallbackImpl;
@@ -625,7 +626,6 @@ public final class WebProject implements Project {
             QuerySupport.createBinaryForSourceQueryImplementation(getSourceRoots(), getTestSourceRoots(), helper, eval),
             new ProjectWebRootProviderImpl(),
             easelSupport,
-            new WebProjectBrowserProvider(this),
             CssPreprocessors.getDefault().createProjectProblemsProvider(this),
             new JavaEEProjectSettingsImpl(this),
         });
@@ -635,7 +635,7 @@ public final class WebProject implements Project {
             EjbJarSupport.createEjbJarsInProject(apiEjbJar)
         });
 
-        WebProjectLookup wpl = new WebProjectLookup(this, base, ee6);
+        WebProjectLookup wpl = new WebProjectLookup(this, base, ee6, new WebProjectBrowserProvider(this));
         eval.addPropertyChangeListener(wpl);
         lookup = wpl;
         return LookupProviderSupport.createCompositeLookup(lookup, "Projects/org-netbeans-modules-web-project/Lookup"); //NOI18N
@@ -2334,29 +2334,36 @@ public final class WebProject implements Project {
     }
 
     private static class WebProjectLookup extends ProxyLookup implements PropertyChangeListener{
-        Lookup base, ee6;
-        WebProject project;
+        private Lookup base, ee6;
+        private WebProject project;
+        private ProjectBrowserProvider browserProvider;
 
-        public WebProjectLookup(WebProject project, Lookup base, Lookup ee6) {
+        public WebProjectLookup(WebProject project, Lookup base, Lookup ee6, ProjectBrowserProvider browserProvider) {
             super(base);
             this.project = project;
             this.base = base;
             this.ee6 = ee6;
+            this.browserProvider = browserProvider;
             updateLookup();
         }
 
         private void updateLookup(){
+            List<Lookup> lookups = new ArrayList<>();
+            lookups.add(base);
             Profile profile = Profile.fromPropertiesString(project.evaluator().getProperty(WebProjectProperties.J2EE_PLATFORM));
             if (Profile.JAVA_EE_6_FULL.equals(profile) || Profile.JAVA_EE_6_WEB.equals(profile) ||
                     Profile.JAVA_EE_7_FULL.equals(profile) || Profile.JAVA_EE_7_WEB.equals(profile)){
-                setLookups(base, ee6);
-            }else{
-                setLookups(base);
+                lookups.add(ee6);
             }
+            if ("true".equals(project.evaluator().getProperty(WebProjectProperties.DISPLAY_BROWSER))) {
+                lookups.add(Lookups.singleton(browserProvider));
+            }
+            setLookups(lookups.toArray(new Lookup[lookups.size()]));
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
-            if (evt.getPropertyName().equals(WebProjectProperties.J2EE_PLATFORM)){
+            if (evt.getPropertyName().equals(WebProjectProperties.J2EE_PLATFORM) ||
+                evt.getPropertyName().equals(WebProjectProperties.DISPLAY_BROWSER) ){
                 updateLookup();
             }
         }

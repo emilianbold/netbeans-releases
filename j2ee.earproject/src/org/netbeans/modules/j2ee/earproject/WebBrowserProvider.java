@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.project;
+package org.netbeans.modules.j2ee.earproject;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -47,30 +47,27 @@ import java.beans.PropertyChangeSupport;
 import java.io.IOException;
 import java.util.Collection;
 import org.netbeans.api.project.ProjectManager;
-import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerProviderImpl;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.EarCompositePanelProvider;
+import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
+import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.WebBrowsers;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
-import org.netbeans.modules.web.project.ui.customizer.CustomizerProviderImpl;
-import org.netbeans.modules.web.project.ui.customizer.WebCompositePanelProvider;
-import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 
-/**
- *
- */
-public class WebProjectBrowserProvider implements ProjectBrowserProvider {
+public class WebBrowserProvider implements ProjectBrowserProvider {
 
-    private WebProject project;
+    private EarProject project;
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
 
-    public WebProjectBrowserProvider(WebProject project) {
+    public WebBrowserProvider(EarProject project) {
         this.project = project;
         project.evaluator().addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (evt.getPropertyName().equals(WebProjectProperties.SELECTED_BROWSER)) {
+                if (evt.getPropertyName().equals(EarProjectProperties.SELECTED_BROWSER)) {
                     pcs.firePropertyChange(PROP_BROWSER_ACTIVE, null, null);
                 }
             }
@@ -84,7 +81,7 @@ public class WebProjectBrowserProvider implements ProjectBrowserProvider {
 
     @Override
     public WebBrowser getActiveBrowser() {
-        String selectedBrowser = project.evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
+        String selectedBrowser = project.evaluator().getProperty(EarProjectProperties.SELECTED_BROWSER);
         if (selectedBrowser == null) {
             return BrowserUISupport.getDefaultBrowserChoice(true);
         }
@@ -97,7 +94,7 @@ public class WebProjectBrowserProvider implements ProjectBrowserProvider {
             public void run() {
 		AntProjectHelper helper = project.getAntProjectHelper();
 		EditableProperties privateProps = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                privateProps.put(WebProjectProperties.SELECTED_BROWSER, browser.getId());
+                privateProps.put(EarProjectProperties.SELECTED_BROWSER, browser.getId());
 		helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, privateProps);
             }
         });
@@ -111,7 +108,7 @@ public class WebProjectBrowserProvider implements ProjectBrowserProvider {
 
     @Override
     public void customize() {
-        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(WebCompositePanelProvider.RUN);
+        project.getLookup().lookup(CustomizerProviderImpl.class).showCustomizer(EarCompositePanelProvider.RUN);
     }
 
     @Override
