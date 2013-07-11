@@ -247,6 +247,9 @@ public final class TeamView {
     }
 
     private void switchContent() {
+        if(dashboardPanel == null) {
+            return;
+        }
         Runnable r = new Runnable() {
             @Override
             public void run() {
