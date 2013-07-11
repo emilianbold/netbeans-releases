@@ -67,6 +67,7 @@ import javax.swing.*;
 import java.io.File;
 import java.io.IOException;
 import org.openide.text.NbDocument;
+import org.openide.util.Mutex;
 
 /**
  * Show/Hide Annotations action. It's enabled for single
@@ -186,9 +187,14 @@ public class AnnotationsAction extends AbstractSystemAction {
      * does not have any or more nodes selected.
      */
     private JEditorPane activatedEditorPane(Node[] nodes) {
-        EditorCookie ec = activatedEditorCookie(nodes);
-        if (ec != null && SwingUtilities.isEventDispatchThread()) {
-            return NbDocument.findRecentEditorPane(ec);
+        final EditorCookie ec = activatedEditorCookie(nodes);
+        if (ec != null) {
+            return Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
+                @Override
+                public JEditorPane run () {
+                    return NbDocument.findRecentEditorPane(ec);
+                }
+            });
         }
         return null;
     }
