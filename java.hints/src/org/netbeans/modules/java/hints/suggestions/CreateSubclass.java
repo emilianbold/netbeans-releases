@@ -67,6 +67,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePath;
+import java.util.concurrent.Callable;
 import javax.lang.model.element.TypeParameterElement;
 
 import org.netbeans.api.editor.EditorRegistry;
@@ -81,12 +82,11 @@ import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.codegen.ConstructorGenerator;
 import org.netbeans.modules.java.editor.codegen.GeneratorUtils;
 import org.netbeans.modules.java.hints.suggestions.NameAndPackagePanel.ErrorListener;
-import org.netbeans.modules.parsing.impl.indexing.friendapi.IndexingController;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.editor.codegen.CodeGenerator;
 import org.netbeans.spi.editor.hints.ChangeInfo;
 import org.netbeans.spi.editor.hints.ErrorDescription;
@@ -177,8 +177,8 @@ public class CreateSubclass {
 
         @Override
         public ChangeInfo implement() throws Exception {
-            IndexingController.getDefault().enterProtectedMode();
-            try {
+            return IndexingManager.getDefault().runProtected(new Callable<ChangeInfo>() {
+                @Override public ChangeInfo call() throws Exception {
                 if (overrideNameAndPackage == null) {
                     final NameAndPackagePanel panel = new NameAndPackagePanel(targetSourceRoot, superType, simpleName, packageName);
                     final DialogDescriptor desc = new DialogDescriptor(panel, getText());
@@ -199,7 +199,7 @@ public class CreateSubclass {
                     packageName = overrideNameAndPackage[1];
                 }
 
-                EditorRegistry.addPropertyChangeListener(this);
+                EditorRegistry.addPropertyChangeListener(CreateSubclassFix.this);
 
                 final String path = packageName.replace('.', '/') + '/' + simpleName + ".java"; //NOI18N
                 target = targetSourceRoot.getFileObject(path);
@@ -268,9 +268,8 @@ public class CreateSubclass {
                     target = it.hasNext() ? FileUtil.toFileObject(it.next()) : null;
                 }
                 return target != null ? new ChangeInfo(target, null, null) : null;
-            } finally {
-                IndexingController.getDefault().exitProtectedMode(null);
-            }
+                }
+            });
         }
 
         @Override

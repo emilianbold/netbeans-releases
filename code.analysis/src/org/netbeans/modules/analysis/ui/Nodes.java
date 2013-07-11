@@ -88,6 +88,7 @@ import org.openide.text.Line.ShowVisibilityType;
 import org.openide.text.PositionBounds;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.Lookups;
 
 /**
@@ -691,6 +692,7 @@ public class Nodes {
         
     }
 
+    @Messages("ERR_CannotOpen=Cannot open target file")
     static void openErrorDescription(AnalyzerFactory analyzer, ErrorDescription ed) throws IndexOutOfBoundsException {
         try {
             DataObject od = DataObject.find(ed.getFile());
@@ -703,7 +705,7 @@ public class Nodes {
                 analyzer.warningOpened(ed);
             }
         } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
+            Exceptions.printStackTrace(Exceptions.attachLocalizedMessage(Exceptions.attachSeverity(ex, Level.WARNING), Bundle.ERR_CannotOpen()));
         }
     }
 

@@ -48,7 +48,6 @@ import com.sun.javadoc.MethodDoc;
 import com.sun.javadoc.ParamTag;
 import com.sun.javadoc.ThrowsTag;
 import com.sun.javadoc.Type;
-import static org.netbeans.modules.javadoc.hints.JavadocUtilities.*;
 import com.sun.source.doctree.AttributeTree;
 import com.sun.source.doctree.AuthorTree;
 import com.sun.source.doctree.CommentTree;
@@ -103,21 +102,16 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import javax.lang.model.util.Types;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import javax.swing.text.Position;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.DocTreePathHandle;
 import org.netbeans.api.java.source.ElementUtilities;
-import org.netbeans.api.java.source.support.CaretAwareJavaSourceTaskFactory;
+import static org.netbeans.modules.javadoc.hints.Bundle.*;
+import static org.netbeans.modules.javadoc.hints.JavadocUtilities.resolveSourceVersion;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
-import org.netbeans.spi.editor.hints.LazyFixList;
-import org.netbeans.spi.editor.hints.Severity;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
+import org.netbeans.spi.java.hints.HintContext;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
-import static org.netbeans.modules.javadoc.hints.Bundle.*;
 
 /**
  * Checks:
@@ -142,50 +136,24 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
 
     private final CompilationInfo javac;
     private final FileObject file;
-    private final Document doc;
     private final TreePath currentPath;
-    private final Severity severity;
     private final SourceVersion sourceVersion;
     private final Access access;
     
-    private Set<Element> foundParams = new HashSet<Element>();
-    private Set<TypeMirror> foundThrows = new HashSet<TypeMirror>();
+    private Set<Element> foundParams = new HashSet<>();
+    private Set<TypeMirror> foundThrows = new HashSet<>();
     private TypeMirror returnType = null;
     private boolean returnTypeFound = false;
     private Element currentElement;
-    private final Cancel ctx;
+    private final HintContext ctx;
 
-    Analyzer(CompilationInfo javac, Document doc, TreePath currentPath, Severity severity, Access access, Cancel ctx) {
+    Analyzer(CompilationInfo javac, TreePath currentPath, Access access, HintContext ctx) {
         this.javac = javac;
         this.file = javac.getFileObject();
-        this.doc = doc;
         this.currentPath = currentPath;
-        this.severity = severity;
         this.sourceVersion = resolveSourceVersion(javac.getFileObject());
         this.access = access;
         this.ctx = ctx;
-    }
-
-    private ErrorDescription createErrorDescription(String message, LazyFixList fixes, Position[] positions) {
-        if (severity == Severity.HINT) {
-            return ErrorDescriptionFactory.createErrorDescription(severity,
-                    message,
-                    fixes,
-                    file,
-                    CaretAwareJavaSourceTaskFactory.getLastPosition(file),
-                    CaretAwareJavaSourceTaskFactory.getLastPosition(file));
-        } else {
-            return ErrorDescriptionFactory.createErrorDescription(severity,
-                    message,
-                    fixes,
-                    doc,
-                    positions[0],
-                    positions[1]);
-        }
-    }
-
-    private ErrorDescription createErrorDescription(String message, List<Fix> fixes, Position[] positions) {
-        return createErrorDescription(message, ErrorDescriptionFactory.lazyListForFixes(fixes), positions);
     }
 
     public List<ErrorDescription> analyze() {
@@ -204,14 +172,11 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                     Level.INFO, "Cannot resolve element for {0} in {1}", new Object[]{node, file}); // NOI18N
             return errors;
         }
-        if (isGuarded(node, javac, doc)) {
-            return errors;
-        }
         if(ctx.isCanceled()) { return Collections.<ErrorDescription>emptyList(); }
         // check javadoc
         DocCommentTree docCommentTree = javac.getDocTrees().getDocCommentTree(currentPath);
         if (docCommentTree != null) {
-            errors = new ArrayList<ErrorDescription>();
+            errors = new ArrayList<>();
             if (node.getKind() == Tree.Kind.METHOD) {
                 ExecutableElement methodElm = (ExecutableElement) currentElement;
                 returnType = methodElm.getReturnType();
@@ -263,21 +228,8 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                                     //                                    && !foundInheritDoc
                                     && !javac.getTypes().isSameType(ee.getReturnType(), javac.getElements().getTypeElement("java.lang.Void").asType())) {
                             Tree returnTree = methodTree.getReturnType();
-                            Position[] poss;
-                            try {
-                                poss = createPositions(returnTree, javac, doc);
-                            } catch (BadLocationException ex) {
-                                if (ctx.isCanceled()) {
-                                    return null;
-                                } else {
-                                    LOG.log(Level.INFO, "Cannot create position for DocTree.");
-                                    return null;
-                                }
-                            }
                             DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
-                            errors.add(createErrorDescription(MISSING_RETURN_DESC(), // NOI18N
-                                    Collections.singletonList(AddTagFix.createAddReturnTagFix(dtph).toEditorFix()), poss)); //NOI18N
-                            //                                reportMissing("dc.missing.return");
+                            errors.add(ErrorDescriptionFactory.forTree(ctx, returnTree, MISSING_RETURN_DESC(), AddTagFix.createAddReturnTagFix(dtph).toEditorFix()));
                         }
                     }
 //                    checkThrowsDocumented(ee.getThrownTypes());
@@ -301,67 +253,67 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     
     @Override
     public Void visitAttribute(AttributeTree node, List<ErrorDescription> errors) {
-        return super.visitAttribute(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitAttribute(node, errors);
     }
 
     @Override
     public Void visitAuthor(AuthorTree node, List<ErrorDescription> errors) {
-        return super.visitAuthor(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitAuthor(node, errors);
     }
 
     @Override
     public Void visitComment(CommentTree node, List<ErrorDescription> errors) {
-        return super.visitComment(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitComment(node, errors);
     }
 
     @Override
     public Void visitDeprecated(DeprecatedTree node, List<ErrorDescription> errors) {
-        return super.visitDeprecated(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitDeprecated(node, errors);
     }
 
     @Override
     public Void visitDocComment(DocCommentTree node, List<ErrorDescription> errors) {
-        return super.visitDocComment(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitDocComment(node, errors);
     }
 
     @Override
     public Void visitDocRoot(DocRootTree node, List<ErrorDescription> errors) {
-        return super.visitDocRoot(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitDocRoot(node, errors);
     }
 
     @Override
     public Void visitEndElement(EndElementTree node, List<ErrorDescription> errors) {
-        return super.visitEndElement(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitEndElement(node, errors);
     }
 
     @Override
     public Void visitEntity(EntityTree node, List<ErrorDescription> errors) {
-        return super.visitEntity(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitEntity(node, errors);
     }
 
     @Override
     public Void visitErroneous(ErroneousTree node, List<ErrorDescription> errors) {
-        return super.visitErroneous(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitErroneous(node, errors);
     }
 
     @Override
     public Void visitIdentifier(IdentifierTree node, List<ErrorDescription> errors) {
-        return super.visitIdentifier(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitIdentifier(node, errors);
     }
 
     @Override
     public Void visitInheritDoc(InheritDocTree node, List<ErrorDescription> errors) {
-        return super.visitInheritDoc(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitInheritDoc(node, errors);
     }
 
     @Override
     public Void visitLink(LinkTree node, List<ErrorDescription> errors) {
-        return super.visitLink(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitLink(node, errors);
     }
 
     @Override
     public Void visitLiteral(LiteralTree node, List<ErrorDescription> errors) {
-        return super.visitLiteral(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitLiteral(node, errors);
     }
 
     @Override
@@ -373,40 +325,27 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
         int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
         int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
         if(ctx.isCanceled()) { return null; }
-        Position[] positions;
-        try {
-            positions = new Position[] { doc.createPosition(start), doc.createPosition(end) };
-        } catch (BadLocationException ex) {
-            if(ctx.isCanceled()) {
-                return null;
-            } else {
-                LOG.log(Level.INFO, "Cannot create position for DocTree.");
-                return null;
-            }
-        }
         boolean typaram = tree.isTypeParameter();
         switch (currentElement.getKind()) {
             case METHOD:
             case CONSTRUCTOR: {
                 ExecutableElement ee = (ExecutableElement) currentElement;
-                checkParamDeclared(tree, typaram ? ee.getTypeParameters() : ee.getParameters(), dtph, positions, errors);
+                checkParamDeclared(tree, typaram ? ee.getTypeParameters() : ee.getParameters(), dtph, start, end, errors);
                 break;
             }
             case CLASS:
             case INTERFACE: {
                 TypeElement te = (TypeElement) currentElement;
                 if (typaram) {
-                    checkParamDeclared(tree, te.getTypeParameters(), dtph, positions, errors);
+                    checkParamDeclared(tree, te.getTypeParameters(), dtph, start, end, errors);
                 } else {
-                errors.add(createErrorDescription(INVALID_TAG_DESC("@param", currentElement.getKind()), //NOI18N
-                        Collections.singletonList(new RemoveTagFix(dtph, "@param").toEditorFix()), positions)); //NOI18N
+                    errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, INVALID_TAG_DESC("@param", currentElement.getKind()), new RemoveTagFix(dtph, "@param").toEditorFix())); //NOI18N
 //                    env.messages.error(REFERENCE, tree, "dc.invalid.param");
                 }
                 break;
             }
             default:
-                errors.add(createErrorDescription(INVALID_TAG_DESC("@param", currentElement.getKind()), //NOI18N
-                        Collections.singletonList(new RemoveTagFix(dtph, "@param").toEditorFix()), positions)); //NOI18N
+                errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, INVALID_TAG_DESC("@param", currentElement.getKind()), new RemoveTagFix(dtph, "@param").toEditorFix())); //NOI18N
 //                env.messages.error(REFERENCE, tree, "dc.invalid.param");
                 break;
         }
@@ -418,27 +357,24 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
     @NbBundle.Messages({"# {0} - @param name", "UNKNOWN_TYPEPARAM_DESC=Unknown @param: {0}",
                         "# {0} - @param name", "DUPLICATE_PARAM_DESC=Duplicate @param name: {0}"})
     private void checkParamDeclared(ParamTree tree, List<? extends Element> list,
-            DocTreePathHandle dtph, Position[] positions, List<ErrorDescription> errors) {
+            DocTreePathHandle dtph, int start, int end, List<ErrorDescription> errors) {
         Name name = tree.getName().getName();
         boolean found = false;
         for (Element e: list) {
             if(ctx.isCanceled()) { return; }
             if (name.equals(e.getSimpleName())) {
                 if(!foundParams.add(e)) {
-                    errors.add(createErrorDescription(DUPLICATE_PARAM_DESC(name), //NOI18N
-                    Collections.singletonList(new RemoveTagFix(dtph, "@param").toEditorFix()), positions)); //NOI18N
+                    errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, DUPLICATE_PARAM_DESC(name), new RemoveTagFix(dtph, "@param").toEditorFix())); // NOI18N
                 }
                 found = true;
             }
         }
         if (!found) {
-            errors.add(createErrorDescription(UNKNOWN_TYPEPARAM_DESC(name), //NOI18N
-                    Collections.singletonList(new RemoveTagFix(dtph, "@param").toEditorFix()), positions)); //NOI18N
+            errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, UNKNOWN_TYPEPARAM_DESC(name), new RemoveTagFix(dtph, "@param").toEditorFix())); //NOI18N
         }
     }
 
     private void checkParamsDocumented(List<? extends Element> list, List<? extends Tree> trees, DocTreePath docTreePath, Set<String> inheritedParams, List<ErrorDescription> errors) {
-
         for (int i = 0; i < list.size(); i++) {
             if(ctx.isCanceled()) { return; }
             Element e = list.get(i);
@@ -448,19 +384,8 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                 CharSequence paramName = (isTypeParam)
                         ? "<" + e.getSimpleName() + ">"
                         : e.getSimpleName();
-                try {
-                    Position[] poss = createPositions(t, javac, doc);
                     DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
-                    errors.add(createErrorDescription(MISSING_PARAM_DESC(paramName),
-                            Collections.singletonList(AddTagFix.createAddParamTagFix(dtph, e.getSimpleName().toString(), isTypeParam, i).toEditorFix()), poss));
-                } catch (BadLocationException ex) {
-                    if (ctx.isCanceled()) {
-                        return;
-                    } else {
-                        LOG.log(Level.INFO, "Cannot create position for DocTree.");
-                        return;
-                    }
-                }
+                    errors.add(ErrorDescriptionFactory.forTree(ctx, t, MISSING_PARAM_DESC(paramName), AddTagFix.createAddParamTagFix(dtph, e.getSimpleName().toString(), isTypeParam, i).toEditorFix()));
             }
         }
     }
@@ -469,7 +394,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                         "DUPLICATE_THROWS_DESC=Duplicate @{0} tag: {1}",
                         "# {0} - [@throws|@exception]", "# {1} - @throws name",
                         "UNKNOWN_THROWABLE_DESC=Unknown throwable: @{0} {1}"})
-    private void checkThrowsDeclared(ThrowsTree tree, Element ex, String fqn, List<? extends TypeMirror> list, DocTreePathHandle dtph, Position[] positions, List<ErrorDescription> errors) {
+    private void checkThrowsDeclared(ThrowsTree tree, Element ex, String fqn, List<? extends TypeMirror> list, DocTreePathHandle dtph, int start, int end, List<ErrorDescription> errors) {
         boolean found = false;
         final TypeMirror type;
         if(ex != null) {
@@ -486,24 +411,21 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
             if(ctx.isCanceled()) { return; }
             if(type != null && javac.getTypes().isAssignable(type, t)) {
                 if(!foundThrows.add(type)) {
-                    errors.add(createErrorDescription(DUPLICATE_THROWS_DESC(tree.getTagName(), fqn),
-                    Collections.singletonList(new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()), positions));
+                    errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, DUPLICATE_THROWS_DESC(tree.getTagName(), fqn), new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()));
                 }
                 found = true;
                 break;
             }
             if (type == null && fqn.equals(t.toString())) {
                 if(!foundThrows.add(t)) {
-                    errors.add(createErrorDescription(DUPLICATE_THROWS_DESC(tree.getTagName(), fqn),
-                    Collections.singletonList(new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()), positions));
+                    errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, DUPLICATE_THROWS_DESC(tree.getTagName(), fqn), new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()));
                 }
                 found = true;
                 break;
             }
         }
         if (!found) {
-            errors.add(createErrorDescription(UNKNOWN_THROWABLE_DESC(tree.getTagName(), fqn),
-                    Collections.singletonList(new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()), positions));
+            errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, UNKNOWN_THROWABLE_DESC(tree.getTagName(), fqn), new RemoveTagFix(dtph, "@" + tree.getTagName()).toEditorFix()));
         }
     }
     
@@ -524,20 +446,8 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                     }
                 }
                 if(!found) {
-                    try {
-                        if(ctx.isCanceled()) { return; }
-                        Position[] poss = createPositions(t, javac, doc);
                         DocTreePathHandle dtph = DocTreePathHandle.create(docTreePath, javac);
-                        errors.add(createErrorDescription(NbBundle.getMessage(Analyzer.class, "MISSING_THROWS_DESC", e.toString()),
-                                Collections.singletonList(AddTagFix.createAddThrowsTagFix(dtph, e.toString(), i).toEditorFix()), poss));
-                    } catch (BadLocationException ex) {
-                        if (ctx.isCanceled()) {
-                            return;
-                        } else {
-                            LOG.log(Level.INFO, "Cannot create position for DocTree.");
-                            return;
-                        }
-                    }
+                        errors.add(ErrorDescriptionFactory.forTree(ctx, t, NbBundle.getMessage(Analyzer.class, "MISSING_THROWS_DESC", e.toString()), AddTagFix.createAddThrowsTagFix(dtph, e.toString(), i).toEditorFix()));
                 }
             }
         }
@@ -559,7 +469,7 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
 
     @Override
     public Void visitReference(ReferenceTree node, List<ErrorDescription> errors) {
-        return super.visitReference(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitReference(node, errors);
     }
 
     @Override
@@ -568,142 +478,120 @@ final class Analyzer extends DocTreePathScanner<Void, List<ErrorDescription>> {
                         "DUPLICATE_RETURN_DESC=Duplicate @return tag."})
     public Void visitReturn(ReturnTree node, List<ErrorDescription> errors) {
         DocTreePath currentDocPath = getCurrentPath();
-
-        try {
-            DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
-            DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
-            int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
-            int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
-            Position[] positions = { doc.createPosition(start), doc.createPosition(end) };
-            if(returnType == null) {
-                errors.add(createErrorDescription(WRONG_CONSTRUCTOR_RETURN_DESC(),
-                        Collections.singletonList(new RemoveTagFix(dtph, "@return").toEditorFix()), positions));
-            } else if (returnType.getKind() == TypeKind.VOID) {
-                errors.add(createErrorDescription(WRONG_RETURN_DESC(),
-                        Collections.singletonList(new RemoveTagFix(dtph, "@return").toEditorFix()), positions));
-            } else if(returnTypeFound) {
-                errors.add(createErrorDescription(DUPLICATE_RETURN_DESC(),
-                        Collections.singletonList(new RemoveTagFix(dtph, "@return").toEditorFix()), positions));
-            } else {
-                returnTypeFound = true;
-            }
-        } catch (BadLocationException ex) {
-            if (ctx.isCanceled()) {
-                return null;
-            } else {
-                LOG.log(Level.INFO, "Cannot create position for DocTree.");
-                return null;
-            }
+        DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
+        DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
+        int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
+        int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), node);
+        if(returnType == null) {
+            errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, WRONG_CONSTRUCTOR_RETURN_DESC(),
+                    new RemoveTagFix(dtph, "@return").toEditorFix()));
+        } else if (returnType.getKind() == TypeKind.VOID) {
+            errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, WRONG_RETURN_DESC(),
+                    new RemoveTagFix(dtph, "@return").toEditorFix()));
+        } else if(returnTypeFound) {
+            errors.add(ErrorDescriptionFactory.forSpan(ctx, start, end, DUPLICATE_RETURN_DESC(),
+                    new RemoveTagFix(dtph, "@return").toEditorFix()));
+        } else {
+            returnTypeFound = true;
         }
         return super.visitReturn(node, errors);
     }
 
     @Override
     public Void visitSee(SeeTree node, List<ErrorDescription> errors) {
-        return super.visitSee(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitSee(node, errors);
     }
 
     @Override
     public Void visitSerial(SerialTree node, List<ErrorDescription> errors) {
-        return super.visitSerial(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitSerial(node, errors);
     }
 
     @Override
     public Void visitSerialData(SerialDataTree node, List<ErrorDescription> errors) {
-        return super.visitSerialData(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitSerialData(node, errors);
     }
 
     @Override
     public Void visitSerialField(SerialFieldTree node, List<ErrorDescription> errors) {
-        return super.visitSerialField(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitSerialField(node, errors);
     }
 
     @Override
     public Void visitSince(SinceTree node, List<ErrorDescription> errors) {
-        return super.visitSince(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitSince(node, errors);
     }
 
     @Override
     public Void visitStartElement(StartElementTree node, List<ErrorDescription> errors) {
-        return super.visitStartElement(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitStartElement(node, errors);
     }
 
     @Override
     public Void visitText(TextTree node, List<ErrorDescription> errors) {
-        return super.visitText(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitText(node, errors);
     }
 
     @Override
     public Void visitThrows(ThrowsTree tree, List<ErrorDescription> errors) {
         ReferenceTree exName = tree.getExceptionName();
-        try {
-            DocTreePath refPath = new DocTreePath(getCurrentPath(), tree.getExceptionName());
-            Element ex = javac.getDocTrees().getElement(refPath);
-            Types types = javac.getTypes();
-            Elements elements = javac.getElements();
-            TypeMirror throwable = elements.getTypeElement("java.lang.Throwable").asType();
-            TypeMirror error = elements.getTypeElement("java.lang.Error").asType();
-            TypeMirror runtime = elements.getTypeElement("java.lang.RuntimeException").asType();
-            DocTreePath currentDocPath = getCurrentPath();
-            DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
-            DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
-            int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
-            int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
-            if(ctx.isCanceled()) { return null; }
-            Position[] positions = {doc.createPosition(start), doc.createPosition(end)};
-            if (ex == null || (ex.asType().getKind() == TypeKind.DECLARED
-                    && types.isAssignable(ex.asType(), throwable))) {
-                switch (currentElement.getKind()) {
-                    case CONSTRUCTOR:
-                    case METHOD:
-                        if (ex == null || !(types.isAssignable(ex.asType(), error)
-                                || types.isAssignable(ex.asType(), runtime))) {
-                            ExecutableElement ee = (ExecutableElement) currentElement;
-                            String fqn = ex != null ? ((TypeElement) ex).getQualifiedName().toString() : javac.getTreeUtilities().getReferenceClass(new DocTreePath(currentDocPath, exName)).toString();
-                            checkThrowsDeclared(tree, ex, fqn, ee.getThrownTypes(), dtph, positions, errors);
-                        }
-                        break;
-                    default:
-//                        env.messages.error(REFERENCE, tree, "dc.invalid.throws");
+        DocTreePath refPath = new DocTreePath(getCurrentPath(), tree.getExceptionName());
+        Element ex = javac.getDocTrees().getElement(refPath);
+        Types types = javac.getTypes();
+        Elements elements = javac.getElements();
+        TypeMirror throwable = elements.getTypeElement("java.lang.Throwable").asType();
+        TypeMirror error = elements.getTypeElement("java.lang.Error").asType();
+        TypeMirror runtime = elements.getTypeElement("java.lang.RuntimeException").asType();
+        DocTreePath currentDocPath = getCurrentPath();
+        DocTreePathHandle dtph = DocTreePathHandle.create(currentDocPath, javac);
+        DocSourcePositions sp = (DocSourcePositions) javac.getTrees().getSourcePositions();
+        int start = (int) sp.getStartPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
+        int end = (int) sp.getEndPosition(javac.getCompilationUnit(), currentDocPath.getDocComment(), tree);
+        if (ex == null || (ex.asType().getKind() == TypeKind.DECLARED
+                && types.isAssignable(ex.asType(), throwable))) {
+            switch (currentElement.getKind()) {
+                case CONSTRUCTOR:
+                case METHOD:
+                    if (ex == null || !(types.isAssignable(ex.asType(), error)
+                            || types.isAssignable(ex.asType(), runtime))) {
+                    ExecutableElement ee = (ExecutableElement) currentElement;
+                    String fqn = ex != null ? ((TypeElement) ex).getQualifiedName().toString() : javac.getTreeUtilities().getReferenceClass(new DocTreePath(currentDocPath, exName)).toString();
+                    checkThrowsDeclared(tree, ex, fqn, ee.getThrownTypes(), dtph, start, end, errors);
                 }
-            } else {
+                    break;
+                default:
+//                        env.messages.error(REFERENCE, tree, "dc.invalid.throws");
+            }
+        } else {
 //                env.messages.error(REFERENCE, tree, "dc.invalid.throws");
-            }
-            warnIfEmpty(tree, tree.getDescription());
-        } catch (BadLocationException ex) {
-            if (ctx.isCanceled()) {
-                return null;
-            } else {
-                LOG.log(Level.INFO, "Cannot create position for DocTree.");
-                return null;
-            }
         }
+        warnIfEmpty(tree, tree.getDescription());
         return super.visitThrows(tree, errors);
     }
 
     @Override
     public Void visitUnknownBlockTag(UnknownBlockTagTree node, List<ErrorDescription> errors) {
-        return super.visitUnknownBlockTag(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitUnknownBlockTag(node, errors);
     }
 
     @Override
     public Void visitUnknownInlineTag(UnknownInlineTagTree node, List<ErrorDescription> errors) {
-        return super.visitUnknownInlineTag(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitUnknownInlineTag(node, errors);
     }
 
     @Override
     public Void visitValue(ValueTree node, List<ErrorDescription> errors) {
-        return super.visitValue(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitValue(node, errors);
     }
 
     @Override
     public Void visitVersion(VersionTree node, List<ErrorDescription> errors) {
-        return super.visitVersion(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitVersion(node, errors);
     }
 
     @Override
     public Void visitOther(DocTree node, List<ErrorDescription> errors) {
-        return super.visitOther(node, errors); //To change body of generated methods, choose Tools | Templates.
+        return super.visitOther(node, errors);
     }
 
     @Override

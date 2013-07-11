@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import javax.swing.JComponent;
 import org.netbeans.spi.options.OptionsPanelController;
+import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
 
@@ -92,7 +93,8 @@ final class HintsOptionsPanelController extends OptionsPanelController {
     
     public synchronized JComponent getComponent(Lookup masterLookup) {
         if ( panel == null ) {
-            panel = new HintsPanel(manager.getHintsTreeModel(), manager);
+            OptionsFilter filter = masterLookup.lookup(OptionsFilter.class);
+            panel = new HintsPanel(filter, manager.getHintsTreeModel(), manager);
         }
         return panel;
     }

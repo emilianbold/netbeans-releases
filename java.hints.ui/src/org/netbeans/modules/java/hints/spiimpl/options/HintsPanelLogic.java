@@ -55,8 +55,10 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
+import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.prefs.AbstractPreferences;
@@ -572,6 +574,8 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 
         public final String codeName;
         public final String displayName;
+        public final List<HintCategory> subCategories = new ArrayList<>();
+        public final List<HintMetadata> hints = new ArrayList<>();
 
         public HintCategory(String codeName) {
             this.codeName = codeName;

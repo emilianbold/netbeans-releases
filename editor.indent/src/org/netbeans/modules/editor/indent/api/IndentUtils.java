@@ -112,7 +112,7 @@ public final class IndentUtils {
             }
         }
 
-        assert indentLevel > 0 : "Invalid indentLevelSize " + indentLevel + " for " + doc; //NOI18N
+        assert indentLevel >= 0 : "Invalid indentLevelSize " + indentLevel + " for " + doc; //NOI18N
         return indentLevel;
     }
 

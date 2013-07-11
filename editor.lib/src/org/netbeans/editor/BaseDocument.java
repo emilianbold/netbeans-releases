@@ -204,6 +204,13 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      */
     public static final String LINE_LIMIT_PROP = "line-limit"; // NOI18N
 
+    /**
+     * If set, determines the document's editability. Note that even though the 
+     * editable property may be set to true, the document may be still uneditable for
+     * other reasons. The document should not permit any edits if the editable
+     * property is set to false.
+     */
+    /* public */ static final String EDITABLE_PROP = "editable"; // NOI18N
 
     /**
      * Size of the line batch. Line batch can be used at various places
@@ -1686,6 +1693,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
     
     final void atomicLockImpl () {
         boolean alreadyAtomicLocker;
+        boolean modifiableChanged = false;
         synchronized (this) {
             if (runExclusiveDepth > 0) {
                 throw new IllegalStateException(
@@ -1713,12 +1721,21 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
                 extWriteLock();
                 atomicDepth++;
                 if (atomicDepth == 1) { // lock really started
+                    Object o = getProperty(EDITABLE_PROP);
+                    if (o == null) {
+                        o = Boolean.TRUE;
+                    }
+                    modifiableChanged = modifiable != modifiableLocal || 
+                            o != modifiableLocal;                
                     modifiable = modifiableLocal;
                     fireAtomicLock(atomicLockEventInstance);
                     // Copy the listener list - will be used for firing undo
                     atomicLockListenerList = listenerList.getListenerList();
                 }
             }
+        }
+        if (modifiableChanged) {
+            putProperty(EDITABLE_PROP, modifiable);
         }
     }
 

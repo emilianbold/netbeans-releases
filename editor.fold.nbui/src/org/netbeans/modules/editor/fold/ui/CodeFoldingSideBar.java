@@ -478,6 +478,12 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
                     }
                     
                     if (map.isEmpty() && foldList.size() > 0) {
+                        if (foldList.size() != 1) {
+                            LOG.log(Level.WARNING, "More folds found on screen, but no fold in paint map. foldList: {0},"
+                                    + "foldHierarchy: {1}", new Object[] {
+                                    foldList, hierarchy.toString()
+                                    });
+                        }
                         assert foldList.size() == 1;
                         PaintInfo pi = new PaintInfo(PAINT_LINE, 0, clip.y, clip.height, -1, -1);
                         mouseBoundary = new Rectangle(0, 0, 0, clip.height);

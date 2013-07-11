@@ -74,6 +74,7 @@ public class LazyLookupProviders {
 
     private LazyLookupProviders() {}
 
+    private static final Logger LOG = Logger.getLogger(LazyLookupProviders.class.getName());
     private static final Map<Lookup,ThreadLocal<Member>> INSIDE_LOAD = new WeakHashMap<Lookup,ThreadLocal<Member>>();
     private static final Collection<Member> WARNED = Collections.synchronizedSet(new HashSet<Member>());
 
@@ -84,7 +85,7 @@ public class LazyLookupProviders {
         return new LookupProvider() {
             @Override
             public Lookup createAdditionalLookup(final Lookup lkp) {
-                return new ProxyLookup() {
+                final Lookup result =  new ProxyLookup() {
                     Collection<String> serviceNames = Arrays.asList(((String) attrs.get("service")).split(",")); // NOI18N
                     final ThreadLocal<Boolean> insideBeforeLookup = new ThreadLocal<Boolean>(); // #212862
                     final Object LOCK = new Object();
@@ -133,10 +134,19 @@ public class LazyLookupProviders {
                         }
                         Member member = memberRef.get();
                         if (member != null && WARNED.add(member)) {
-                            Logger.getLogger(LazyLookupProviders.class.getName()).log(Level.WARNING, null, new IllegalStateException("may not call Project.getLookup().lookup(...) inside " + member.getName() + " registered under @ProjectServiceProvider"));
+                            LOG.log(Level.WARNING, null, new IllegalStateException("may not call Project.getLookup().lookup(...) inside " + member.getName() + " registered under @ProjectServiceProvider"));
                         }
                     }
                 };
+                LOG.log(
+                    Level.FINE,
+                    "Additional lookup created: {0} service class: {1} for base lookup: {2}",   //NOI18N
+                    new Object[]{
+                        System.identityHashCode(result),
+                        attrs.get("class"),
+                        System.identityHashCode(lkp)
+                    });
+                return result;
             }
             
             @Override

@@ -377,6 +377,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.spi.editor.hints.projects</friend>
                 <friend>org.netbeans.spi.java.hints</friend>
+                <friend>org.netbeans.modules.csl.api</friend>
                 <package>org.netbeans.modules.options.colors</package>
                 <package>org.netbeans.modules.options.colors.spi</package>
                 <package>org.netbeans.modules.options.editor.spi</package>

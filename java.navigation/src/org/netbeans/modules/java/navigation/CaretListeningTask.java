@@ -187,7 +187,11 @@ public class CaretListeningTask implements CancellableTask<CompilationInfo> {
                 break;
             case PARAMETER:
                 element = element.getEnclosingElement(); // Take the enclosing method
-                lastEh = ElementHandle.create(element);
+                if (element != null && element.asType() != null) {
+                    lastEh = ElementHandle.create(element);
+                } else {
+                    lastEh = null;
+                }
                 setJavadoc(null, null); // NOI18N
                 break;
             case LOCAL_VARIABLE:

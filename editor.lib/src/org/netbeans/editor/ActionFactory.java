@@ -1731,7 +1731,7 @@ public class ActionFactory {
             }
 
             if (pos < stopPos) {
-                regions.addFirst(new PositionRegion(doc, pos, stopPos));
+                regions.addFirst(new PositionRegion(doc, pos, stopPos - 1));
                 pos = stopPos;
             } else {
                 pos++; //ensure to make progress
