@@ -160,7 +160,7 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel<S
                 } catch (InvalidPhpExecutableException ex) {
                     LOGGER.log(Level.INFO, null, ex);
                 }
-                final List<String> standardsRef = fetchedStandards;
+                final List<String> standardsRef = fetchedStandards == null ? null : new ArrayList<>(fetchedStandards);
                 EventQueue.invokeLater(new Runnable() {
                     @Override
                     public void run() {
