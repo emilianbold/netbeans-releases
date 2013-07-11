@@ -54,7 +54,9 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
 import org.netbeans.modules.team.ui.common.AddInstanceAction;
+import org.netbeans.modules.team.ui.common.EditInstanceAction;
 import org.netbeans.modules.team.ui.common.TeamServerComparator;
+import org.netbeans.modules.team.ui.nodes.RemoveInstanceAction;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import org.openide.awt.ActionID;
@@ -115,27 +117,19 @@ public final class TeamMenuAction extends AbstractAction implements DynamicMenuC
         return item;
     }
 
-    private List<JComponent> getItems(Action[] actions) {
-        List<JComponent> ret = new LinkedList<>();
-        for(Action a : actions) {
-            if(a == null) {
-                ret.add(new JSeparator());
-            } else {
-                ret.add(createItem(a));
-            }
-        }
-        return ret;
-    }
-    
-    private JMenu getSubMenu(TeamServer server) throws IllegalArgumentException {
+    private JMenu getSubMenu(final TeamServer server) throws IllegalArgumentException {
         JMenu subMenu = new JMenu(server.getDisplayName());
         for(Action a : server.getTeamMenuActions()) {
             if(a == null) {
-                subMenu.add(new JSeparator());
+                subMenu.addSeparator();
             } else {
                 subMenu.add(createItem(a));
             }
         }
+        subMenu.addSeparator();
+        subMenu.add(createItem(new EditInstanceAction(server)));
+        subMenu.add(createItem(new RemoveInstanceAction(server)));
+        
         return subMenu;
     }
 
