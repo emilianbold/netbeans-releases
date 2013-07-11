@@ -46,10 +46,7 @@ package org.netbeans.modules.websvc.core;
 import java.awt.Image;
 import java.beans.BeanInfo;
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import javax.swing.Action;
 import javax.swing.Icon;
@@ -251,7 +248,7 @@ public class ProjectWebServiceNodeFactory implements NodeFactory {
                     if ( Thread.interrupted() ){
                         return false;
                     }
-                    Node[] nodes = view.createView(viewType);
+                    Node[] nodes = projectWebServiceViewImpl.createView(viewType);
                     keys.add( new Pair( projectWebServiceViewImpl , nodes ));
                 }
             } 
