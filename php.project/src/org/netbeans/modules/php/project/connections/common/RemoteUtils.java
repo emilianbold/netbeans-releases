@@ -64,9 +64,6 @@ public final class RemoteUtils {
 
     private static final Logger LOGGER = Logger.getLogger(RemoteUtils.class.getName());
 
-    private static final URI URI_FOR_HTTP_PROXY = URI.create("http://oracle.com"); // NOI18N
-    private static final URI URI_FOR_SOCKS_PROXY = URI.create("socks://oracle.com"); // NOI18N
-
 
     private RemoteUtils() {
     }
@@ -181,31 +178,31 @@ public final class RemoteUtils {
         return parts.get(parts.size() - 1);
     }
 
-    public static boolean hasHttpProxy() {
-        return getHttpProxy() != null;
+    public static boolean hasHttpProxy(String host) {
+        return getHttpProxy(host) != null;
     }
 
     @CheckForNull
-    public static ProxyInfo getHttpProxy() {
-        return getProxy(Proxy.Type.HTTP);
+    public static ProxyInfo getHttpProxy(String host) {
+        return getProxy(Proxy.Type.HTTP, host);
     }
 
     @CheckForNull
-    public static ProxyInfo getSocksProxy() {
-        return getProxy(Proxy.Type.SOCKS);
+    public static ProxyInfo getSocksProxy(String host) {
+        return getProxy(Proxy.Type.SOCKS, host);
     }
 
     // #226006 - avoid nb apis, does not work correctly
-    private static ProxyInfo getProxy(Proxy.Type type) {
+    private static ProxyInfo getProxy(Proxy.Type type, String host) {
         assert type != null;
         assert type != Proxy.Type.DIRECT;
         URI uri;
         switch (type) {
             case HTTP:
-                uri = URI_FOR_HTTP_PROXY;
+                uri = URI.create("http://" + sanitizeHost(host)); // NOI18N
                 break;
             case SOCKS:
-                uri = URI_FOR_SOCKS_PROXY;
+                uri = URI.create("socks://" + sanitizeHost(host)); // NOI18N
                 break;
             default:
                 throw new IllegalStateException("Unexpected proxy type: " + type);
@@ -216,6 +213,13 @@ public final class RemoteUtils {
         }
         return new ProxyInfo(type, proxyHost, Integer.valueOf(NetworkSettings.getProxyPort(uri)),
                 NetworkSettings.getAuthenticationUsername(uri), NetworkSettings.getKeyForAuthenticationPassword(uri));
+    }
+
+    private static String sanitizeHost(String host) {
+        if (StringUtils.hasText(host)) {
+            return host;
+        }
+        return "oracle.com"; // NOI18N
     }
 
     //~ Inner classes
