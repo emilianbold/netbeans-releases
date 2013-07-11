@@ -95,7 +95,8 @@ import org.openide.windows.WindowManager;
  */
 public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImpl {
     
-    private static final String[] DEFAULT_WSIMPORT_OPTIONS = {"extension", "verbose"};  //NOI18N
+    private static final String[] DEFAULT_WSIMPORT_OPTIONS = {"extension", "verbose", "fork"};  //NOI18N
+    private static final String[] DEFAULT_WSIMPORT_VALUES = {"true", "true", "false"};  //NOI18N
     private static final String XNOCOMPILE_OPTION = "xnocompile"; //NOI18N
     private static final String XENDORSED_OPTION = "xendorsed"; //NOI18N
     private static final String PACKAGE_OPTION = "package"; //NOI18N
@@ -206,10 +207,11 @@ public abstract class ProjectJAXWSClientSupport implements JAXWSClientSupportImp
                 WsimportOptions wsimportOptions = client.getWsImportOptions();
                 WsimportOption wsimportOption = null;
                 if (wsimportOptions != null) {
+                    int i=0;
                     for (String option:DEFAULT_WSIMPORT_OPTIONS) {
                         wsimportOption = wsimportOptions.newWsimportOption();
                         wsimportOption.setWsimportOptionName(option);
-                        wsimportOption.setWsimportOptionValue("true"); //NOI18N
+                        wsimportOption.setWsimportOptionValue(DEFAULT_WSIMPORT_VALUES[i++]); //NOI18N
                         wsimportOptions.addWsimportOption(wsimportOption);
                     }
                     wsimportOption = wsimportOptions.newWsimportOption();

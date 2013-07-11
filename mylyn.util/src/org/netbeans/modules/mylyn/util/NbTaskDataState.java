@@ -68,4 +68,8 @@ public final class NbTaskDataState {
         return state.getRepositoryData();
     }
     
+    public TaskData getLocalEdits () {
+        return state.getEditsData();
+    }
+    
 }

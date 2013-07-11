@@ -139,6 +139,13 @@ made subject to such option by the copyright holder.
                                     </xsl:attribute>
                                 </binding>
                             </xsl:if>
+                            <xsl:for-each select="jaxws:jvmarg">
+                                <jvmarg>
+                                    <xsl:attribute name="value">
+                                        <xsl:text><xsl:value-of select="."/></xsl:text>
+                                    </xsl:attribute>
+                                </jvmarg>   
+                            </xsl:for-each>
                             <depends file="${{wsdl-{$wsname}}}"/>
                             <produces dir="${{build.generated.dir}}/jax-wsCache/{$wsname}"/>
                         </wsimport>

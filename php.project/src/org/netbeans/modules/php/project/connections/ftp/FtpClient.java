@@ -136,7 +136,7 @@ public class FtpClient implements RemoteClient {
         FtpConfiguration.Security security = configuration.getSecurity();
         if (!security.isPresent()) {
             LOGGER.log(Level.FINE, "No encryption used");
-            ProxyInfo proxyInfo = RemoteUtils.getHttpProxy();
+            ProxyInfo proxyInfo = RemoteUtils.getHttpProxy(configuration.getHost());
             if (proxyInfo != null) {
                 LOGGER.log(Level.FINE, "HTTP proxy will be used");
                 return new FTPHTTPClient(proxyInfo.getHost(), proxyInfo.getPort(), proxyInfo.getUsername(), proxyInfo.getPassword());

@@ -110,6 +110,8 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             sendInitCommands();
 
             return true;
+        } catch (IllegalStateException ise) {
+            throw ise;
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
             return false;

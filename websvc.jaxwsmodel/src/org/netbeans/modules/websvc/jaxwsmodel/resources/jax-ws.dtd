@@ -51,7 +51,7 @@ made subject to such option by the copyright holder.
 <!ELEMENT services (service)*>
 
 <!--- Put your DTDDoc comment here. -->
-<!ELEMENT service (implementation-class, wsdl-url?, local-wsdl-file?, service-name?, port-name?, package-name?, catalog-file?, (binding)*, handler-binding-file?, use-provider?, wsimport-options?)>
+<!ELEMENT service (implementation-class, wsdl-url?, local-wsdl-file?, service-name?, port-name?, package-name?, catalog-file?, (binding)*, handler-binding-file?, use-provider?, wsimport-options?, jvmarg*)>
 <!ATTLIST service
     name CDATA #REQUIRED
   >
@@ -92,7 +92,7 @@ made subject to such option by the copyright holder.
 <!ELEMENT clients (client)*>
 
 <!--- Put your DTDDoc comment here. -->
-<!ELEMENT client (wsdl-url,local-wsdl-file,package-name?,catalog-file?,(binding)*, handler-binding-file?, use-dispatch?, wsimport-options?)>
+<!ELEMENT client (wsdl-url,local-wsdl-file,package-name?,catalog-file?,(binding)*, handler-binding-file?, use-dispatch?, wsimport-options?, jvmarg*)>
 <!ATTLIST client
     name CDATA #REQUIRED
   >
@@ -100,6 +100,7 @@ made subject to such option by the copyright holder.
   <!ELEMENT use-dispatch (#PCDATA)>
 <!--- Put your DTDDoc comment here. -->
 <!ELEMENT catalog-file (#PCDATA)>
+<!ELEMENT jvmarg (#PCDATA)>
 
 <!ATTLIST package-name
     forceReplace (true) #IMPLIED
