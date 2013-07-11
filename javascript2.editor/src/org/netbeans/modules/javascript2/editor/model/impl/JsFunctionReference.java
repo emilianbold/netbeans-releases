@@ -100,8 +100,4 @@ public class JsFunctionReference extends JsObjectReference implements JsFunction
         return original.getParentScope();
     }
 
-    @Override
-    public List<? extends TypeUsage> getWithTypesForOffset(int offset) {
-        return original.getWithTypesForOffset(offset);
-    }
 }
