@@ -527,6 +527,12 @@ public class J2SEProjectBuilder {
             ep.put(J2SEProjectProperties.BUILD_SCRIPT, buildXmlName);
         }
         ep.setProperty(J2SEProjectProperties.MKDIST_DISABLED, isLibrary ? "true" : "false");
+        ep.setProperty(J2SEProjectProperties.DIST_ARCHIVE_EXCLUDES,""); //NOI18N
+        ep.setComment(J2SEProjectProperties.DIST_ARCHIVE_EXCLUDES,
+                new String[] {
+                    "# " + NbBundle.getMessage(J2SEProjectGenerator.class, "COMMENT_dist.archive.excludes") //NOI18N
+                },
+                false);
         h.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, ep);
         ep = h.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         ep.setProperty(ProjectProperties.COMPILE_ON_SAVE, "true"); // NOI18N
