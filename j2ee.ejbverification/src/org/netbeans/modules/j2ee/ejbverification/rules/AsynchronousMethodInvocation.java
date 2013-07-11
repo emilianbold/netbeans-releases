@@ -68,7 +68,7 @@ import org.openide.util.NbBundle.Messages;
 @Hint(displayName = "#AsynchronousMethodInvocation.display.name",
             description = "#AsynchronousMethodInvocation.description",
             id = "o.n.m.j2ee.ejbverification.AsynchronousMethodInvocation",
-            category = "JavaEE",
+            category = "javaee/ejb",
             enabled = true,
             suppressWarnings = "AsynchronousMethodInvocation")
 @Messages({

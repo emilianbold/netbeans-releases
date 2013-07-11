@@ -86,7 +86,7 @@ public final class UseInjectionInsteadOfInstantionRule {
     @Hint(id="o.n.m.j2ee.ejbverification.UseInjectionInsteadOfInstantionRule",
             displayName = "#DN_UseInjectionInsteadOfInstantion",
             description = "#DESC_UseInjectionInsteadOfInstantion",
-            category = "JavaEE",
+            category = "javaee/ejb",
             enabled = true,
             suppressWarnings = "UseInjectionInsteadOfInstantion")
     @TriggerPattern("$type $name = new $clazz()")
