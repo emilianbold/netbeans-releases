@@ -43,8 +43,11 @@ package org.netbeans.modules.php.zend2;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.php.api.framework.BadgeIcon;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
@@ -65,6 +68,8 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
 public final class Zend2PhpFrameworkProvider extends PhpFrameworkProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(Zend2PhpFrameworkProvider.class.getName());
 
     @StaticResource
     private static final String ICON_PATH = "org/netbeans/modules/php/zend2/ui/resources/zend_badge_8.png"; // NOI18N
@@ -146,10 +151,18 @@ public final class Zend2PhpFrameworkProvider extends PhpFrameworkProvider {
         PhpModuleProperties properties = new PhpModuleProperties();
         FileObject sourceDirectory = phpModule.getSourceDirectory();
         if (sourceDirectory == null) {
+            LOGGER.info("Source directory does not exist?!");
+            return properties;
+        }
+        FileObject webRoot = sourceDirectory.getFileObject("public"); // NOI18N
+        if (webRoot == null) {
+            // #228244
+            LOGGER.log(Level.INFO, "Public directory should exist in {0} but children are: {1}",
+                    new Object[] {sourceDirectory, Arrays.toString(sourceDirectory.getChildren())});
             return properties;
         }
         return properties
-                .setWebRoot(sourceDirectory.getFileObject("public")); // NOI18N
+                .setWebRoot(webRoot);
     }
 
     @Override
