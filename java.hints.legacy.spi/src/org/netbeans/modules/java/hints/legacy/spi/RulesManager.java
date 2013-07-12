@@ -59,7 +59,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
-import javax.swing.text.Document;
 import org.netbeans.spi.java.hints.CustomizerProvider;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
@@ -69,7 +68,6 @@ import org.netbeans.modules.java.hints.providers.spi.HintMetadata;
 import org.netbeans.modules.java.hints.providers.spi.HintMetadata.Options;
 import org.netbeans.modules.java.hints.providers.spi.HintProvider;
 import org.netbeans.modules.java.hints.providers.spi.Trigger.Kinds;
-import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.modules.java.hints.spi.AbstractHint;
 import org.netbeans.modules.java.hints.spi.ErrorRule;
 import org.netbeans.modules.java.hints.spi.Rule;
@@ -389,7 +387,17 @@ public class RulesManager implements FileChangeListener {
         }
     }
 
-    public static final ThreadLocal<Preferences> currentHintPreferences = new ThreadLocal<Preferences>();
+    public static final ThreadLocal<LegacyHintConfiguration> currentHintPreferences = new ThreadLocal<LegacyHintConfiguration>();
+    public static class LegacyHintConfiguration {
+        public final boolean enabled;
+        public final Severity severity;
+        public final Preferences preferences;
+        public LegacyHintConfiguration(boolean enabled, Severity severity, Preferences preferences) {
+            this.enabled = enabled;
+            this.severity = severity;
+            this.preferences = preferences;
+        }
+    }
     
     private static class WorkerImpl implements Worker {
         private final TreeRule tr;
@@ -399,7 +407,7 @@ public class RulesManager implements FileChangeListener {
         }
 
         public Collection<? extends ErrorDescription> createErrors(HintContext ctx) {
-            currentHintPreferences.set(ctx.getPreferences());
+            currentHintPreferences.set(new LegacyHintConfiguration(true, ctx.getSeverity(), ctx.getPreferences()));
             Collection<? extends ErrorDescription> result = tr.run(ctx.getInfo(), ctx.getPath());
             currentHintPreferences.set(null); //XXX: in finally
 

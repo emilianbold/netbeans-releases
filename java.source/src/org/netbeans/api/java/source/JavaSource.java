@@ -69,6 +69,7 @@ import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullUnknown;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.java.source.parsing.ClassParser;
 import org.netbeans.modules.java.source.parsing.ClasspathInfoTask;
@@ -273,6 +274,10 @@ public final class JavaSource {
             mimeType = mimeType == null ? FileUtil.getMIMEType(fileObject, supportedMIMETypes) : mimeType;
             if ("application/x-class-file".equals(mimeType) || "class".equals(fileObject.getExt())) {   //NOI18N
                 ClassPath bootPath = ClassPath.getClassPath(fileObject, ClassPath.BOOT);
+                if (bootPath == null) {
+                    //javac requires at least java.lang
+                    bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+                }
                 ClassPath compilePath = ClassPath.getClassPath(fileObject, ClassPath.COMPILE);
                 if (compilePath == null) {
                     compilePath = ClassPathSupport.createClassPath(new URL[0]);
