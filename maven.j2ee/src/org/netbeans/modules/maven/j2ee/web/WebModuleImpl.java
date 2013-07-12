@@ -222,10 +222,14 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
                         @Override
                         public void performOperation(POMModel model) {
                             Dependency javaEEDependency = ModelUtils.checkModelDependency(model, javaEEGroupID, javaEEWebArtifactID, false);
-                            result[0] = findJavaEEProfile(javaEEDependency);
+                            if (javaEEDependency != null) {
+                                result[0] = findJavaEEProfile(javaEEDependency);
+                            }
 
                             Dependency javaEEFullDependency = ModelUtils.checkModelDependency(model, javaEEGroupID, javaEEFullArtifactID, false);
-                            result[0] = findJavaEEProfile(javaEEFullDependency);
+                            if (javaEEFullDependency != null) {
+                                result[0] = findJavaEEProfile(javaEEFullDependency);
+                            }
                         }
 
                         private Profile findJavaEEProfile(Dependency javaEEDependency) {
