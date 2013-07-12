@@ -515,14 +515,16 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             }
         }
         
-        private synchronized FileLock lock() throws IOException {
-            FileLock current = getLock();
-            if (current != null) {
-                throw new FileAlreadyLockedException("File is already locked by [" + current + "]."); // NO18N
+        public FileLock lock() throws IOException {
+            synchronized (this) {
+                FileLock current = getLock();
+                if (current != null) {
+                    throw new FileAlreadyLockedException("File is already locked by [" + current + "]."); // NO18N
+                }
+                FileLock l = new FileLock();
+                lockReference = new WeakReference(l);
+                return l;
             }
-            FileLock l = new FileLock();
-            lockReference = new WeakReference(l);
-            return l;
         }
         
         private synchronized FileLock getLock() {
