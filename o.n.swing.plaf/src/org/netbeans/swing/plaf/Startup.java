@@ -231,9 +231,12 @@ public final class Startup {
             themeInstalled = true;
             NbTheme nbTheme = new NbTheme(themeURL, lf);
             MetalLookAndFeel.setCurrentTheme(nbTheme);
-        } else if( isUseDarkTheme() ) {
-            MetalLookAndFeel.setCurrentTheme( new DarkMetalTheme() );
+        } else if( isUseDarkTheme() && lf instanceof MetalLookAndFeel ) {
+            DarkMetalTheme darkTheme = new DarkMetalTheme();
+            MetalLookAndFeel.setCurrentTheme( darkTheme );
             themeInstalled = true;
+            //#232429 - make sure the theme overrides custom values from LFCustoms (if any)
+            darkTheme.addCustomEntriesToTable( UIManager.getDefaults() );
         }
         return themeInstalled;
     }
