@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
+import java.util.Collections;
+import java.util.EnumSet;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -94,7 +96,7 @@ public abstract class JsElementImpl implements JsElement {
         this.fileObject = fileObject;
         this.name = name;
         this.offsetRange = offsetRange;
-        this.modifiers = modifiers;
+        this.modifiers = modifiers == null ? Collections.EMPTY_SET: modifiers;
         this.isDeclared = isDeclared;
         assert mimeType == null || JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimeType) || JsTokenId.JSON_MIME_TYPE.equals(mimeType) : mimeType;
         this.mimeType = mimeType;
