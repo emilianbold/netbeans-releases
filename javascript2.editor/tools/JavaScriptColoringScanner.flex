@@ -122,6 +122,9 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
             case KEYWORD_RETURN:
             case KEYWORD_THROW:
             case RESERVED_YIELD:
+            // unary operators (keyword)
+            case KEYWORD_TYPEOF:
+            // end of line
             case EOL:
                 return true;
         }

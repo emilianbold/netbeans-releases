@@ -42,19 +42,18 @@
 package org.netbeans.modules.odcs.ui;
 
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.MessageFormat;
 import java.util.Set;
+import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
@@ -66,16 +65,16 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 
 @ActionID(id = "org.netbeans.modules.odcs.ui.NewProjectAction", category = "Team")
-@ActionRegistration(displayName = "#CTL_NewProjectAction.name")
-@ActionReference(path = "Menu/Versioning/Team/ODCS", position = 200)
-@Messages({"CTL_NewProjectAction.name=New Team Project...",
-    "NewProjectAction.dialogTitle=New Team Project"
+@ActionRegistration(displayName = "#CTL_NewProjectAction")
+@Messages({"CTL_NewProjectAction=New Project...",
+    "NewProjectAction.dialogTitle=New ODCS Project"
 })
-public final class NewProjectAction implements ActionListener {
+public final class NewProjectAction extends AbstractAction {
 
     private ODCSServer server;
 
     public NewProjectAction(ODCSServer server) {
+        super(Bundle.CTL_NewProjectAction());
         this.server = server;
     }
 

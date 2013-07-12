@@ -228,18 +228,6 @@ public abstract class TeamRepositories implements PropertyChangeListener {
             fireProjectsChanged(null, null);
         }
     }
-    
-    /**
-     * Returns bugtracking repositories of all Team projects.
-     *
-     * @param  includeIDEProjects  if {@code false}, search only Team projects
-     *                          that are currently open in the Team dashboard;
-     *                          if {@code true}, search also all Team projects
-     *                          currently opened in the IDE
-     * @return  array of repositories collected from the projects
-     *          (never {@code null})
-     */
-    public abstract Collection<RepositoryImpl> getRepositories(boolean includeIDEProjects);
 
     /**
      * Returns bugtracking repositories of all Team projects.
@@ -264,11 +252,6 @@ public abstract class TeamRepositories implements PropertyChangeListener {
      * in the default lookup.
      */
     private static class DefaultImpl extends TeamRepositories {
-
-        @Override
-        public Collection<RepositoryImpl> getRepositories(boolean includeIDEProjects) {
-            return getRepositories(includeIDEProjects, false);
-        }
         
         @Override
         public Collection<RepositoryImpl> getRepositories(boolean includeIDEProjects, boolean onlyDashboardOpenProjects) {

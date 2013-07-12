@@ -252,6 +252,7 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             error = "The major and minor version numbers in bytes are not supported by the VM. "+ucver.getLocalizedMessage();
         } catch (ClassFormatError cfer) {
             error = "The bytes do not represent a valid class. "+cfer.getLocalizedMessage();
+            LOGGER.log(Level.INFO, error, cfer); //#216376
         } catch (ClassCircularityError ccer) {
             error = "A circularity has been detected while initializing a class: "+ccer.getLocalizedMessage();
         }

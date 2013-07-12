@@ -464,6 +464,15 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
     }
 
     /**
+     * @return True when toolbar configuration window is showing and toolbar
+     * buttons can be rearranged usin drag and drop.
+     * @since 2.66
+     */
+    public boolean isToolbarConfigurationInProgress() {
+        return dndSupport.isButtonDragAndDropAllowed();
+    }
+
+    /**
      * @param toolbarName
      * @return Constraints for the given toolbar. If the constraints do not exist
      * yet, new ones are created and added to a suitable toolbar row.

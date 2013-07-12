@@ -351,6 +351,8 @@ class HeapView extends JComponent {
      * Image drawn on top of the ticks.
      */
     private BufferedImage gridOverlayImage;
+
+    private final RequestProcessor RP = new RequestProcessor(HeapView.class.getName());
     
     private static final String TICK_STYLE = "tickStyle";
     private static final String SHOW_TEXT = "showText";
@@ -698,7 +700,7 @@ class HeapView extends JComponent {
                     repaint();
                 }
             }
-            RequestProcessor.getDefault().post(new InitTextAndDropShadow());
+            RP.post(new InitTextAndDropShadow());
         }
     }
     

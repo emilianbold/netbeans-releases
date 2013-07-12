@@ -525,7 +525,7 @@ public class KenaiSearchPanel extends JPanel {
     }//GEN-LAST:event_searchButtonActionPerformed
 
     private void createNewProjectButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_createNewProjectButtonActionPerformed
-        new NewKenaiProjectAction().actionPerformed(evt);
+        NewKenaiProjectAction.createNewProject(kenai);
     }//GEN-LAST:event_createNewProjectButtonActionPerformed
 
     private void presentSpecialProjects(final JPanel wherePanel, final JScrollPane whereScrollPane, final JList whereList, final String type, final ProgressHandle ph) {

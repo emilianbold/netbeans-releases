@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.net.PasswordAuthentication;
 import javax.swing.Action;
 import org.netbeans.modules.odcs.api.ODCSProject;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.openide.util.Lookup;
@@ -69,6 +70,8 @@ public abstract class VCSAccessor extends SourceAccessor<ODCSProject> {
             String commitId);
     
     public abstract RepositoryInitializer getRepositoryInitializer (String repositoryKind);
+    
+    public abstract Action getOpenSourcesAction(ODCSUiServer server);
     
     public static interface RepositoryInitializer {
         

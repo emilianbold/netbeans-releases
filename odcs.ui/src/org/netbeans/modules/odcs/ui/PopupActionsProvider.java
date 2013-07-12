@@ -70,8 +70,7 @@ import org.openide.util.NbBundle.Messages;
  */
 @Messages({"CONTACTING_ISSUE_TRACKER=Contacting Issue Tracker ...",
             "ERROR_ISSUETRACKER=<html>This project does not have an issue tracker.</html>",
-            "# {0} - error description",
-            "ERROR_CONNECTION=<html>There was an error while trying to connect to the Team Server - it is not possible to get the Kenai project info.<br>Check the Internet connection and that the Team project still exists, please.<br><br>Reported error was: <b>{0}</b></html>"})
+            "# {0} - error description", "ERROR_CONNECTION=<html>There was an error while trying to connect to the Team Server - it is not possible to get the Kenai project info.<br>Check the Internet connection and that the Team project still exists, please.<br><br>Reported error was: <b>{0}</b></html>"})
 class PopupActionsProvider implements PopupMenuProvider {
     private static PopupActionsProvider inst = null;
 

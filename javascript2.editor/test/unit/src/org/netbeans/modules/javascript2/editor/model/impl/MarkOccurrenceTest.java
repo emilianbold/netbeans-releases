@@ -823,6 +823,15 @@ public class MarkOccurrenceTest extends JsTestBase {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
 
+    public void testIssue232595_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232595.js","   for (var loc2 = 30, loc3 = {}; lo^c2 < 100; loc2++) {", true);
+    }
+    
+    public void testIssue232595_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232595.js","      myl^oc1 += loc2;", true);
+    }
+
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

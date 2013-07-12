@@ -63,23 +63,29 @@ import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
 @ActionID(id = "org.netbeans.modules.odcs.versioning.GetSourcesFromODCSAction", category = "Team")
-@ActionRegistration(displayName = "#Actions/Team/org-netbeans-modules-odcs-versioning-GetSourcesFromODCSAction.instance")
-@ActionReference(path="Menu/Versioning/Team/ODCS", position=400)
-@Messages("Actions/Team/org-netbeans-modules-odcs-versioning-GetSourcesFromODCSAction.instance=&Get Sources...")
+@ActionRegistration(displayName = "#CTL_GetSourcesFromODCSAction")
+@Messages("CTL_GetSourcesFromODCSAction=&Get Sources...")
 public final class GetSourcesFromODCSAction extends AbstractAction {
 
     private ProjectAndRepository prjAndRepository;
     private SourceHandleImpl srcHandle;
 
-    private String dialogTitle = NbBundle.getMessage(GetSourcesFromODCSAction.class, "GetSourcesFromODCSTitle");
-    private String getOption = NbBundle.getMessage(GetSourcesFromODCSAction.class, "GetSourcesFromODCSAction.GetFromKenai.option");
-    private String cancelOption = NbBundle.getMessage(GetSourcesFromODCSAction.class, "GetSourcesFromODCSAction.Cancel.option");
+    private final String dialogTitle = NbBundle.getMessage(GetSourcesFromODCSAction.class, "GetSourcesFromODCSTitle");
+    private final String getOption = NbBundle.getMessage(GetSourcesFromODCSAction.class, "GetSourcesFromODCSAction.GetFromKenai.option");
+    private final String cancelOption = NbBundle.getMessage(GetSourcesFromODCSAction.class, "GetSourcesFromODCSAction.Cancel.option");
+    private ODCSUiServer server;
     
     public GetSourcesFromODCSAction () {
         this(null, null);
     }
 
+    public GetSourcesFromODCSAction (ODCSUiServer server) {
+        this(null, null);
+        this.server = server;
+    }
+    
     public GetSourcesFromODCSAction(ProjectAndRepository prjRepo, SourceHandleImpl src) {
+        super(Bundle.CTL_GetSourcesFromODCSAction());
         prjAndRepository = prjRepo;
         this.srcHandle = src;
     }
@@ -93,7 +99,9 @@ public final class GetSourcesFromODCSAction extends AbstractAction {
 
         org.netbeans.modules.team.ui.spi.TeamUIUtils.activateTeamDashboard();
 
-        GetSourcesFromODCSPanel getSourcesPanel = new GetSourcesFromODCSPanel(prjAndRepository);
+        GetSourcesFromODCSPanel getSourcesPanel = server != null ? 
+                                                    new GetSourcesFromODCSPanel(server) : 
+                                                    new GetSourcesFromODCSPanel(prjAndRepository);
 
         DialogDescriptor dialogDesc = new DialogDescriptor(getSourcesPanel, dialogTitle,
             true, options, options[0], DialogDescriptor.DEFAULT_ALIGN, null, null);

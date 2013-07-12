@@ -65,6 +65,7 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
     private FormatToken lastToken;
 
     private FormatTokenStream() {
+        super();
     }
 
     public static FormatTokenStream create(TokenSequence<? extends JsTokenId> ts, int start, int end) {
@@ -190,6 +191,10 @@ public final class FormatTokenStream implements Iterable<FormatToken> {
                 case KEYWORD_NEW:
                     ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_NEW_KEYWORD));
+                    break;
+                case KEYWORD_TYPEOF:
+                    ret.addToken(FormatToken.forText(ts.offset(), token.text(), id));
+                    ret.addToken(FormatToken.forFormat(FormatToken.Kind.AFTER_TYPEOF_KEYWORD));
                     break;
                 case OPERATOR_SEMICOLON:
                     ret.addToken(FormatToken.forFormat(FormatToken.Kind.BEFORE_SEMICOLON));

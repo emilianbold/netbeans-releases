@@ -65,11 +65,13 @@ import org.openide.util.lookup.Lookups;
  * @author Pavel Buzek
  */
 @OptionsPanelController.SubRegistration(
+    id=VcsAdvancedOptions.ID,
     displayName="#LBL_OptionsPanelName",
     keywords="#KW_VersioningOptions",
     keywordsCategory="Advanced/Versioning")
 public class VcsAdvancedOptions extends OptionsPanelController {
     
+    public static final String ID = "Versioning"; //NOI18N
     private VcsAdvancedOptionsPanel panel;
     private boolean initialized = false;
     private final Map<String, OptionsPanelController> categoryToController = new HashMap<String, OptionsPanelController>();
@@ -174,6 +176,20 @@ public class VcsAdvancedOptions extends OptionsPanelController {
                     panel.selectCategory(e.getKey());
                     break;
                 }
+            }
+        }
+    }
+
+    @Override
+    protected void setCurrentSubcategory (String subpath) {
+        Map<String, OptionsPanelController> m;
+        synchronized (categoryToController) {
+            m = new HashMap<String, OptionsPanelController>(categoryToController);
+        }
+        for (Map.Entry<String, OptionsPanelController> e : m.entrySet()) {
+            if (e.getKey().equals(subpath)) {
+                panel.selectCategory(e.getKey());
+                break;
             }
         }
     }

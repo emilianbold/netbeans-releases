@@ -301,6 +301,10 @@ public class ProjectsRootNodeTest extends NbTestCase {
                     public @Override String getDisplayName() {return "Prj";}
                     public @Override String getHtmlDisplayName() {return "Prj";}
                 }, true);
+        //cache the isMain() method and skip one display name change fire
+        node.getHtmlDisplayName();
+        Thread.sleep(500);
+        
         final AtomicInteger nameChanges = new AtomicInteger();
         final AtomicInteger iconChanges = new AtomicInteger();
         node.addNodeListener(new NodeAdapter() {

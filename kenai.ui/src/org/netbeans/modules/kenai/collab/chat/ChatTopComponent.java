@@ -77,12 +77,8 @@ import org.openide.windows.WindowManager;
  * @see ChatContainer
  * @author Jan Becicka
  */
-@TopComponent.OpenActionRegistration(
-    displayName = "#Actions/Team/org-netbeans-modules-kenai-collab-chat-SendChatMessageAction.instance",
-preferredID = "ChatTopComponent")
-@Messages({
-    "Actions/Team/org-netbeans-modules-kenai-collab-chat-SendChatMessageAction.instance=Send Chat Message..."
-})
+@TopComponent.OpenActionRegistration(displayName = "#Actions/Team/org-netbeans-modules-kenai-collab-chat-SendChatMessageAction.instance", preferredID = "ChatTopComponent")
+@Messages({"Actions/Team/org-netbeans-modules-kenai-collab-chat-SendChatMessageAction.instance=Send Chat Message..."})
 @ActionID(category="Team", id=ChatTopComponent.ACTION_ID)
 public class ChatTopComponent extends TopComponent {
     private static final String KENAI_OPEN_CHATS_PREF = ".open.chats."; // NOI18N
@@ -111,6 +107,7 @@ public class ChatTopComponent extends TopComponent {
     public void reconnect(final KenaiConnection kec) {
         Utilities.getRequestProcessor().post(new Runnable() {
 
+            @Override
             public void run() {
                 synchronized (kec) {
                     try {
@@ -147,6 +144,7 @@ public class ChatTopComponent extends TopComponent {
         if (chats.getTabCount()==1 && b) {
             SwingUtilities.invokeLater(new Runnable() {
 
+                @Override
                 public void run() {
                     if (chats.getTabCount()==1 && b && chats.isShowing()) {
                         //showPopup(null);
@@ -172,6 +170,7 @@ public class ChatTopComponent extends TopComponent {
         chatsPanel.add(chats);
 
         ChangeListener changeListener = new ChangeListener() {
+            @Override
             public void stateChanged(ChangeEvent changeEvent) {
                 int index = chats.getSelectedIndex();
                 if (index>=0) {
@@ -194,6 +193,7 @@ public class ChatTopComponent extends TopComponent {
         KenaiManager.getDefault().addPropertyChangeListener(new KenaiL());
         chats.addChangeListener(changeListener);
         chats.addPropertyChangeListener(TabbedPaneFactory.PROP_CLOSE, new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (TabbedPaneFactory.PROP_CLOSE.equals(evt.getPropertyName()) && (evt.getNewValue() instanceof ChatPanel)) {
                     removeChat(((ChatPanel) evt.getNewValue()));
@@ -226,6 +226,7 @@ public class ChatTopComponent extends TopComponent {
 
     private void putChatsScreen(final KenaiConnection kec) {
         Runnable r = new Runnable() {
+            @Override
             public void run() {
                 removeAll();
                 add(chatsPanel, BorderLayout.CENTER);
@@ -259,6 +260,7 @@ public class ChatTopComponent extends TopComponent {
     }
     private void putLoginScreen() {
         Runnable r = new Runnable() {
+            @Override
             public void run() {
                 removeAll();
                 clearChatsTabbedPane();
@@ -277,6 +279,7 @@ public class ChatTopComponent extends TopComponent {
 
     private void putErrorScreen() {
         Runnable r = new Runnable() {
+            @Override
             public void run() {
                 removeAll();
                 clearChatsTabbedPane();
@@ -296,6 +299,7 @@ public class ChatTopComponent extends TopComponent {
 
     private void putConnectingScreen() {
         Runnable r = new Runnable() {
+            @Override
             public void run() {
                 removeAll();
                 clearChatsTabbedPane();
@@ -331,7 +335,7 @@ public class ChatTopComponent extends TopComponent {
             if (muc != null) {
                 ChatPanel chatPanel = new ChatPanel(muc);
                 addChat(chatPanel);
-                indexOfTab=chats.getTabCount()-1;
+                indexOfTab=chats.getTabCount() - 1;
                 chats.setSelectedComponent(chatPanel);
             }
 
@@ -425,7 +429,7 @@ public class ChatTopComponent extends TopComponent {
                 final MultiUserChat next = chs.iterator().next();
                 ChatPanel chatPanel = new ChatPanel(next);
                 addChat(chatPanel);
-            } else if (chs.size() != 0) {
+            } else if (!chs.isEmpty()) {
                 String s = prefs.get(kec.getKenai().getUrl().getHost() + KENAI_OPEN_CHATS_PREF + kec.getKenai().getPasswordAuthentication().getUserName(), ""); // NOI18N
                 if (s.length() > 1) {
                     ChatPanel chatPanel = null;
@@ -435,7 +439,7 @@ public class ChatTopComponent extends TopComponent {
                             chatPanel = new ChatPanel(muc);
                             addChat(chatPanel);
                         } else {
-                            Logger.getLogger(ChatTopComponent.class.getName()).warning("Cannot find chat " + chat);
+                            Logger.getLogger(ChatTopComponent.class.getName()).log(Level.WARNING, "Cannot find chat {0}", chat);
                         }
                     }
                     if (chatPanel != null) {
@@ -612,6 +616,7 @@ public class ChatTopComponent extends TopComponent {
              } else {
                 Utilities.getRequestProcessor().post(new Runnable() {
 
+                    @Override
                     public void run() {
                         try {
                             PasswordAuthentication passwordAuthentication = kenai.getPasswordAuthentication();
@@ -721,6 +726,7 @@ public class ChatTopComponent extends TopComponent {
         if (instance!=null && instance.contactList!=null)
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 instance.contactList.updateContacts();
                 instance.repaint();
@@ -774,9 +780,11 @@ public class ChatTopComponent extends TopComponent {
 
     final class KenaiL implements PropertyChangeListener {
 
+        @Override
         public void propertyChange(final PropertyChangeEvent e) {
             if (TeamServer.PROP_LOGIN.equals(e.getPropertyName())) {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         Kenai.Status s = ((Kenai) e.getSource()).getStatus();
                         if (s != Kenai.Status.ONLINE) {
@@ -820,6 +828,7 @@ public class ChatTopComponent extends TopComponent {
             super(NbBundle.getMessage(ChatTopComponent.class, "LBL_CloseWindow"));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             ChatPanel panel = (ChatPanel) chats.getSelectedComponent();
             removeChat(panel);
@@ -832,6 +841,7 @@ public class ChatTopComponent extends TopComponent {
             super(NbBundle.getMessage(ChatTopComponent.class, "LBL_CloseAll"));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             for (Component c:chats.getComponents()) {
                 if (c instanceof ChatPanel) {
@@ -847,6 +857,7 @@ public class ChatTopComponent extends TopComponent {
             super(NbBundle.getMessage(ChatTopComponent.class, "LBL_CloseAllButCurrent"));
         }
 
+        @Override
         public void actionPerformed(ActionEvent e) {
             for (Component c:chats.getComponents()) {
                 if (c instanceof ChatPanel) {

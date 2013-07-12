@@ -749,18 +749,26 @@ public class JsFormatter implements Formatter {
             }
         }
 
-        // this may happen when curly bracket is on new line
         FormatToken nonVirtualNext = FormatTokenStream.getNextNonVirtual(next);
         if (nonVirtualNext != null) {
-            String nextText = nonVirtualNext.getText().toString();
-            if (JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(nextText)) {
+            // this may happen when curly bracket is on new line
+            if (JsTokenId.BRACKET_LEFT_CURLY == nonVirtualNext.getId()) {
                 FormatToken previous = nonVirtualNext.previous();
                 if (previous == null || previous.getKind() != FormatToken.Kind.BEFORE_OBJECT) {
                     return false;
                 }
-            } else if (JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(nextText)
-                    || JsTokenId.BRACKET_RIGHT_BRACKET.fixedText().equals(nextText)) {
+            } else if (JsTokenId.BRACKET_RIGHT_CURLY == nonVirtualNext.getId()
+                    || JsTokenId.BRACKET_RIGHT_BRACKET == nonVirtualNext.getId()) {
                 return false;
+            // this may happen when comma separating object memebers is on new line
+            } else if (JsTokenId.OPERATOR_COMMA == nonVirtualNext.getId()) {
+                FormatToken virtualNext = nonVirtualNext.next();
+                while (virtualNext != null && virtualNext.isVirtual()) {
+                    if (virtualNext.getKind() == FormatToken.Kind.AFTER_PROPERTY) {
+                        return false;
+                    }
+                    virtualNext = virtualNext.next();
+                }
             }
         }
 
@@ -1130,6 +1138,9 @@ public class JsFormatter implements Formatter {
                 // no option as false (removing space) would brake the code
                 return true;
             case AFTER_VAR_KEYWORD:
+                // no option as false (removing space) would brake the code
+                return true;
+            case AFTER_TYPEOF_KEYWORD:
                 // no option as false (removing space) would brake the code
                 return true;
             case BEFORE_DOT:

@@ -72,6 +72,12 @@ public interface TeamDashboardComponentProvider {
         public void setExpanded(boolean expand);
         
         /**
+         * Determines whether the section is expanded or not
+         * @return <code>true</code> in case the section is expanded, otherwise <code>false</code>
+         */
+        public boolean isExpanded();
+        
+        /**
          * Returns a sections component
          * @return 
          */
