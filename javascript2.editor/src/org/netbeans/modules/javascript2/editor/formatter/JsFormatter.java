@@ -1140,6 +1140,9 @@ public class JsFormatter implements Formatter {
             case AFTER_VAR_KEYWORD:
                 // no option as false (removing space) would brake the code
                 return true;
+            case AFTER_TYPEOF_KEYWORD:
+                // no option as false (removing space) would brake the code
+                return true;
             case BEFORE_DOT:
             case AFTER_DOT:
                 return false;
