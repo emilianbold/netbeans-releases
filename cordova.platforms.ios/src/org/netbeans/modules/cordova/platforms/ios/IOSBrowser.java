@@ -99,6 +99,11 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
         return false;
     }
     
+    @Override
+    public boolean ignoreChange(FileObject fo) {
+        return BrowserSupport.ignoreChangeDefaultImpl(fo);
+    }
+
     public static enum Kind {
         IOS_DEVICE_DEFAULT,
         IOS_SIMULATOR_DEFAULT

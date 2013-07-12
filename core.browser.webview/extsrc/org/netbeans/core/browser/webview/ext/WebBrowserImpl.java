@@ -82,6 +82,7 @@ import org.netbeans.core.browser.api.WebBrowserListener;
 import org.netbeans.core.browser.webview.BrowserCallback;
 import org.netbeans.core.browser.webview.HtmlBrowserImpl;
 import org.netbeans.core.browser.webview.MessageDispatcherImpl;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
@@ -90,6 +91,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
 import org.openide.awt.HtmlBrowser.Impl;
+import org.openide.filesystems.FileObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.util.Exceptions;
@@ -253,6 +255,11 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
         return new ProxyLookup( l, new AbstractLookup( lookupContent ) );
     }
 
+    @Override
+    public boolean ignoreChange(FileObject fo) {
+        return BrowserSupport.ignoreChangeDefaultImpl(fo);
+    }
+    
     @Override
     public void reloadDocument() {
         if( !isInitialized() )

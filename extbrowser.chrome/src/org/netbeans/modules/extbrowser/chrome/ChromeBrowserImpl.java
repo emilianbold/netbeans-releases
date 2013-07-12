@@ -59,10 +59,12 @@ import org.netbeans.modules.extbrowser.plugins.*;
 import org.netbeans.modules.extbrowser.plugins.ExternalBrowserPlugin.BrowserTabDescriptor;
 import org.netbeans.modules.extbrowser.plugins.chrome.WebKitDebuggingTransport;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.modules.web.webkit.debugging.spi.Factory;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
@@ -109,6 +111,14 @@ public class ChromeBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrows
     
     public boolean hasEnhancedMode() {
         return enhancedMode;
+    }
+
+    @Override
+    public boolean ignoreChange(FileObject fo) {
+        if (getBrowserTabDescriptor() != null && getBrowserTabDescriptor().isInitialized()) {
+            return BrowserSupport.ignoreChangeDefaultImpl(fo);
+        }
+        return false;
     }
 
     @Override
