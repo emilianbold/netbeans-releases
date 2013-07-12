@@ -242,12 +242,13 @@ public final class BrowserSupport {
      * For example CSS are handled directly by CSS support in case of "Chrome with
      * NetBeans integration" browser.
      */
-    public boolean canRefreshOnSaveThisFileType(FileObject fo) {
-        if (getWebBrowserPane().hasNetBeansIntegration()) {
-            // #217284 - ignore changes in CSS
-            return !fo.hasExt("css");
-        }
-        return true;
+    public boolean ignoreChange(FileObject fo) {
+        return getWebBrowserPane().ignoreChange(fo);
+    }
+
+    public static boolean ignoreChangeDefaultImpl(FileObject fo) {
+        // #217284 - ignore changes in CSS
+        return fo.hasExt("css");
     }
 
     /**

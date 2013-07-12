@@ -209,7 +209,7 @@ public abstract class BaseClientSideDevelopmentSupport implements
         if (bs == null) {
             return;
         }
-        if (!bs.canRefreshOnSaveThisFileType(fo)) {
+        if (bs.ignoreChange(fo)) {
             return;
         }
         URL u = bs.getBrowserURL(fo, true);
