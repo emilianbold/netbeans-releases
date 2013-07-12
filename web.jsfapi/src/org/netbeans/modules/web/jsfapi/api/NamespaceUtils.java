@@ -83,6 +83,10 @@ public final class NamespaceUtils {
      */
     @CheckForNull
     public static <T> T getForNs(Map<String, T> map, String ns) {
+        if (ns.endsWith("/")) { //NOI18N
+            ns = ns.substring(0, ns.length() - 1);
+        }
+
         T result = map.get(ns);
         if (result == null) {
             if (NS_MAPPING.containsKey(ns)) {

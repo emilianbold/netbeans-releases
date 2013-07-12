@@ -1329,7 +1329,7 @@ public final class PhpProject implements Project {
                 return false;
             }
             BrowserSupport support = getBrowserSupport();
-            if (support == null || !support.canRefreshOnSaveThisFileType(fo)) {
+            if (support == null || support.ignoreChange(fo)) {
                 return false;
             }
             // #226256

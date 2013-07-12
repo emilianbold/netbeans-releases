@@ -50,6 +50,7 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.core.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.modules.web.browser.spi.EnhancedBrowser;
 import org.netbeans.modules.web.browser.api.PageInspector;
 import org.netbeans.modules.web.browser.api.WebBrowserFeatures;
@@ -57,6 +58,7 @@ import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitUIManager;
 import org.netbeans.modules.web.webkit.debugging.spi.TransportImplementation;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ProxyLookup;
@@ -130,6 +132,14 @@ public class HtmlBrowserImpl extends HtmlBrowser.Impl implements EnhancedBrowser
         return getBrowser().getLookup();
     }
         
+    @Override
+    public boolean ignoreChange(FileObject fo) {
+        if (getEnhancedBrowser() != null) {
+            return getEnhancedBrowser().ignoreChange(fo);
+        }
+        return BrowserSupport.ignoreChangeDefaultImpl(fo);
+    }
+
     private boolean initialized = false;
 
     /**
