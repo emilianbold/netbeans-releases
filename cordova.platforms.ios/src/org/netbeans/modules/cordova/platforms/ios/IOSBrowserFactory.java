@@ -50,6 +50,7 @@ import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 
@@ -81,7 +82,7 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
 
     @Override
     public boolean canCreateHtmlBrowserImpl() {
-        return true;
+        return Utilities.isMac();
     }
 
     @Override
