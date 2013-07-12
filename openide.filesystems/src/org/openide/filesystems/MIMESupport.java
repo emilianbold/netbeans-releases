@@ -684,12 +684,13 @@ final class MIMESupport extends Object {
             internalClose();
         }
 
-       private boolean ensureBufferLength(int newLen) throws IOException {
+       private boolean ensureBufferLength(int requiredLen) throws IOException {
            int retries = 0;
-           if (!eof && newLen > len) {
+           if (!eof && requiredLen > len) {
                if (cantRead != null) {
                    throw cantRead;
                }
+               int newLen = computeNewLength(len, requiredLen);
                byte[] tmpBuffer = new byte[newLen];
                 if (len > 0) {
                    System.arraycopy(buffer, 0, tmpBuffer, 0, len);
@@ -716,7 +717,26 @@ final class MIMESupport extends Object {
                    }
                }
            }
-           return len >= newLen;
+           return len >= requiredLen;
+        }
+
+        /**
+         * Compute new buffer length.
+         *
+         * Start with buffer length 64 bytes. Then increase its size - double
+         * the original size if it is reasonably small, or add 8192 bytes. If
+         * required size is larger than the recommended size, use the required
+         * size. See bug 230305.
+         *
+         * @param currLen Current buffer length.
+         * @param required Required length.
+         *
+         * @return New buffer length.
+         */
+        static int computeNewLength(int currLen, int requiredLen) {
+            int recommendedIncrease = Math.max(64, Math.min(8192, currLen));
+            int newLen = Math.max(requiredLen, currLen + recommendedIncrease);
+            return newLen;
         }
 
         @Override
