@@ -69,6 +69,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
+import jdk.nashorn.internal.ir.Block;
 import jdk.nashorn.internal.ir.ExecuteNode;
 import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Modifier;
@@ -1241,10 +1242,13 @@ public class ModelVisitor extends PathNodeVisitor {
             if (name != null) {
                 JsObjectImpl variable = (JsObjectImpl)function.getProperty(name.getName());
                 if (variable != null) {
-                    modelBuilder.setCurrentObject(variable);
                     variable.setDeclared(true);
-                    variable.setJsKind(JsElement.Kind.OBJECT_LITERAL);
+                } else {
+                    List<Identifier> fqName = getName(varNode, parserResult);
+                    variable = ModelElementFactory.create(parserResult, (ObjectNode)varNode.getInit(), fqName, modelBuilder, true);
                 }
+                variable.setJsKind(JsElement.Kind.OBJECT_LITERAL);
+                modelBuilder.setCurrentObject(variable);
             }
         }
         return super.enter(varNode);

@@ -608,7 +608,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     getAliasesByName                : FUNCTION getAliasesByName [ANONYMOUS: false, DECLARED: true - getAliasesByName, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
                                                     Array, RESOLVED: true
-                                                    _L214.Manager@pro;maps@arr;nameToAliases, RESOLVED: false
+                                                    _L214.Manager.maps.nameToAliases, RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT name [ANONYMOUS: false, DECLARED: true - name, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
@@ -672,7 +672,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     getNameByAlias                  : FUNCTION getNameByAlias [ANONYMOUS: false, DECLARED: true - getNameByAlias, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
                                                     String, RESOLVED: true
-                                                    _L214.Manager@pro;maps@arr;aliasToName, RESOLVED: false
+                                                    _L214.Manager.maps.aliasToName, RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT alias [ANONYMOUS: false, DECLARED: true - alias, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES
@@ -680,7 +680,7 @@ _L214     : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS: 
                     getNameByAlternate              : FUNCTION getNameByAlternate [ANONYMOUS: false, DECLARED: true - getNameByAlternate, MODIFIERS: PUBLIC, METHOD]
                                                     # RETURN TYPES
                                                     String, RESOLVED: true
-                                                    _L214.Manager@pro;maps@arr;alternateToName, RESOLVED: false
+                                                    _L214.Manager.maps.alternateToName, RESOLVED: true
                                                     # PARAMETERS
                                                     OBJECT alternate [ANONYMOUS: false, DECLARED: true - alternate, MODIFIERS: PUBLIC, PARAMETER]
                                                     # PROPERTIES

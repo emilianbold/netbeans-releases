@@ -45,9 +45,7 @@ package org.netbeans.modules.html.editor.lib;
 
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -64,7 +62,7 @@ import org.netbeans.modules.html.editor.lib.api.elements.Element;
 public class ElementsParserCache {
 
     /* not private final for unit testing */ static int CACHE_BLOCK_SIZE = 1000; //number of Element-s in one cache block
-    List<CacheBlock> cacheBlocks = new ArrayList<>();
+    /* test */ final List<CacheBlock> cacheBlocks = new ArrayList<>();
     
     private final CharSequence sourceCode;
     private final TokenSequence<HTMLTokenId> tokenSequence;
@@ -92,25 +90,26 @@ public class ElementsParserCache {
             //notice: new empty block will be created at the end of the source
             //        if the number of elements modulo CACHE_BLOCK_SIZE == 0;
             private CacheBlock getCacheBlock() {
-                
-                int blockIndex = index / CACHE_BLOCK_SIZE;
 
-                CacheBlock item = cacheBlocks.size() > blockIndex ? cacheBlocks.get(blockIndex) : null;
-                if (item == null) {
-                    //no data, load
+                synchronized(cacheBlocks) {
+                    int blockIndex = index / CACHE_BLOCK_SIZE;
 
-                    //get the pointer to the offset of the block, 0 for the first one, previous
-                    //block end for subsequents
-                    int offset = blockIndex == 0 ? 0 : cacheBlocks.get(blockIndex - 1).getEndOffset();
+                    CacheBlock item = cacheBlocks.size() > blockIndex ? cacheBlocks.get(blockIndex) : null;
+                    if (item == null) {
+                        //no data, load
 
-                    item = new CacheBlock(sourceCode, tokenSequence, index, offset);
-                    
-                    assert blockIndex == cacheBlocks.size(); //always last
-                    
-                    cacheBlocks.add(blockIndex, item);
+                        //get the pointer to the offset of the block, 0 for the first one, previous
+                        //block end for subsequents
+                        int offset = blockIndex == 0 ? 0 : cacheBlocks.get(blockIndex - 1).getEndOffset();
+
+                        item = new CacheBlock(sourceCode, tokenSequence, index, offset);
+
+                        assert blockIndex == cacheBlocks.size(); //always last
+
+                        cacheBlocks.add(blockIndex, item);
+                    }
+                    return item;
                 }
-
-                return item;
             }
 
             @Override

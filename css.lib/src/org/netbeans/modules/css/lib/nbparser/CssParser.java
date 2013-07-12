@@ -150,7 +150,7 @@ public class CssParser extends Parser {
 
     @Override
     public CssParserResult getResult(Task task) throws ParseException {
-        return cancelled ? null : new CssParserResult(snapshot, tree, problems);
+        return cancelled || (tree == null) ? null : new CssParserResult(snapshot, tree, problems);
     }
 
     @Override
