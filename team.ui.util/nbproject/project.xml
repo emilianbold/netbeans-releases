@@ -70,6 +70,7 @@
                 <friend>org.netbeans.modules.odcs.versioning</friend>
                 <friend>org.netbeans.modules.team.ui</friend>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
+                <friend>oracle.jdevimpl.nbteam.ide</friend>
                 <package>org.netbeans.modules.team.ui.util.treelist</package>
                 <package>org.netbeans.modules.team.ide.spi</package>
             </friend-packages>
