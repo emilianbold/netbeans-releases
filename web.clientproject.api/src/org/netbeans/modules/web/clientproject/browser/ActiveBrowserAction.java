@@ -283,7 +283,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
                 showBrowserPickerPopup( button );
             }
         });
-        button.setDisabledIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-disabled.png")))); // NOI18N
+        button.setDisabledIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser_disabled_24x.png")))); // NOI18N
         button.setEnabled(false);
         ProjectBrowserProvider pbp = getBrowserProvider();
         toolbarButton = button;

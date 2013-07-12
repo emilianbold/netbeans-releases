@@ -138,10 +138,10 @@ public final class WebBrowser {
             im = ImageUtilities.icon2Image( icon );
         }
         if (hasNetBeansIntegration() && factoryDesc.getBrowserFamily() != BrowserFamilyId.JAVAFX_WEBVIEW) {
-            im = ImageUtilities.mergeImages(
-                im,
-                ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/nb-badge.png"),
-            12, 12);
+//            im = ImageUtilities.mergeImages(
+//                im,
+//                ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/nb-badge.png"),
+//            12, 12);
         }
         return im;
     }
@@ -254,17 +254,17 @@ public final class WebBrowser {
     private static String getIconFile(BrowserFamilyId browserFamily) {
         switch (browserFamily) {
             case CHROME:
-                return "org/netbeans/modules/web/browser/ui/resources/browser-chrome.png";
+                return "org/netbeans/modules/web/browser/ui/resources/browser_chrome_24x.png";
             case FIREFOX:
-                return "org/netbeans/modules/web/browser/ui/resources/browser-firefox.png";
+                return "org/netbeans/modules/web/browser/ui/resources/browser_firefox_24x.png";
             case CHROMIUM:
-                return "org/netbeans/modules/web/browser/ui/resources/browser-chromium.png";
+                return "org/netbeans/modules/web/browser/ui/resources/browser_chromium_24x.png";
             case IE:
-                return "org/netbeans/modules/web/browser/ui/resources/browser-ie.png";
+                return "org/netbeans/modules/web/browser/ui/resources/browser_ie_24x.png";
             case SAFARI:
-                return "org/netbeans/modules/web/browser/ui/resources/browser-safari.png";
+                return "org/netbeans/modules/web/browser/ui/resources/browser_safari_24x.png";
             default:
-                return "org/netbeans/modules/web/browser/ui/resources/browser-generic.png";
+                return "org/netbeans/modules/web/browser/ui/resources/browser_generic_24x.png";
         }
        
     }
