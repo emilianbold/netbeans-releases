@@ -1247,8 +1247,10 @@ public class ModelVisitor extends PathNodeVisitor {
                     List<Identifier> fqName = getName(varNode, parserResult);
                     variable = ModelElementFactory.create(parserResult, (ObjectNode)varNode.getInit(), fqName, modelBuilder, true);
                 }
-                variable.setJsKind(JsElement.Kind.OBJECT_LITERAL);
-                modelBuilder.setCurrentObject(variable);
+                if (variable != null) {
+                    variable.setJsKind(JsElement.Kind.OBJECT_LITERAL);
+                    modelBuilder.setCurrentObject(variable);
+                }
             }
         }
         return super.enter(varNode);
