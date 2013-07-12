@@ -507,13 +507,6 @@ public class RestUtils {
                         MiscUtilities.createBodyForGetClassesMethod(restSupport), null);
                 newTree = maker.addClassMember(newTree, methodTree);
                 
-                methodTree = maker.Method(modifiersTree,
-                        RestConstants.GET_CLASSES, wildSet,
-                        Collections.<TypeParameterTree>emptyList(),
-                        Collections.<VariableTree>emptyList(),
-                        Collections.<ExpressionTree>emptyList(),
-                        MiscUtilities.createBodyForGetClassesMethod(restSupport), null);
-                
                 newTree = MiscUtilities.createAddResourceClasses(maker, newTree, workingCopy, "{}", true);
                 
                 workingCopy.rewrite( tree, newTree);

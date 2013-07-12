@@ -352,7 +352,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
                 lastWebBrowser = null;
             }
             if (pbp == null) {
-                tb.setIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-disabled.png")))); // NOI18N
+                tb.setIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser_disabled_24x.png")))); // NOI18N
                 tb.setToolTipText(null);
             } else {
                 WebBrowser wb = pbp.getActiveBrowser();
@@ -362,7 +362,7 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
                     tb.setToolTipText(wb.getName());
                     wb.addChangeListener(ideBrowserChangeListener);
                 } else {
-                    im = ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser-generic.png"); // NOI18N
+                    im = ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser_generic_24x.png"); // NOI18N
                     tb.setToolTipText(Bundle.ActiveBrowserAction_missingProject());
                 }
                 tb.setIcon(new ImageIcon(badgeImageWithArrow(im)));

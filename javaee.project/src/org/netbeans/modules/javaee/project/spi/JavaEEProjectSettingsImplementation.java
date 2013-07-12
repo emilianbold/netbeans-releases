@@ -50,19 +50,39 @@ import org.netbeans.api.project.Project;
  * to obtain and change JavaEE projects settings.
  *
  * @author Martin Fousek <marfous@netbeans.org>
- * @since 1.24
+ * @author Martin Janicek <mjanicek@netbeans.org>
+ *
+ * @since 1.0
  */
 public interface JavaEEProjectSettingsImplementation {
 
     /**
      * Sets {@code Profile} of the JavaEE project.
      * @param profile profile to be set
+     *
+     * @since 1.0
      */
     void setProfile(Profile profile);
 
     /**
      * Gets {@code Profile} of the JavaEE project.
+     *
+     * @since 1.0
      */
     Profile getProfile();
+ 
+    /**
+     * Sets browser ID of the JavaEE project.
+     * @param browserID browser ID to be set
+     *
+     * @since 1.4
+     */
+    void setBrowserID(String browserID);
 
+    /**
+     * Gets browser ID of the JavaEE project.
+     *
+     * @since 1.4
+     */
+    String getBrowserID();
 }
