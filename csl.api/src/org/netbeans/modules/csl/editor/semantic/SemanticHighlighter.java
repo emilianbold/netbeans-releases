@@ -135,15 +135,6 @@ public class SemanticHighlighter extends IndexingAwareParserResultTask<ParserRes
                         SemanticAnalyzer task = language.getSemanticAnalyzer();
                         if (manager != null && task != null) {
                             Parser.Result r = resultIterator.getParserResult();
-                            String rmime = r.getSnapshot().getMimeType();
-                            //#161033 debug
-                            if(!rmime.equals(mimeType)) {
-                                throw new IllegalStateException("resultIterator.getSnapshot().getMimeType() [" +
-                                        mimeType + "] != resultIterator.getParserResult().getSnapshot().getMimeType() ["
-                                        + rmime + "; mimepath = " + r.getSnapshot().getMimePath() + "]");
-                            }
-                            //eof debug
-
                             if (r instanceof ParserResult) {
                                 process(language, (ParserResult) r, newColoring);
                             }
