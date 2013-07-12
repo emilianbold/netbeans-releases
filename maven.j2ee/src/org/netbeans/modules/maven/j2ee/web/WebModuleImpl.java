@@ -207,7 +207,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
     // Trying to guess the Java EE version based on the dependency in pom.xml - See issue #230447
     private Profile getProfileFromPOM() {
         final String javaEEGroupID = "javax"; //NOI18N
-        final String javaEEFullartifactID = "javaee-api"; //NOI18N
+        final String javaEEFullArtifactID = "javaee-api"; //NOI18N
         final String javaEEWebArtifactID = "javaee-web-api"; //NOI18N
         final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
         final Profile[] result = new Profile[1];
@@ -224,7 +224,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
                             Dependency javaEEDependency = ModelUtils.checkModelDependency(model, javaEEGroupID, javaEEWebArtifactID, false);
                             result[0] = findJavaEEProfile(javaEEDependency);
 
-                            Dependency javaEEFullDependency = ModelUtils.checkModelDependency(model, javaEEGroupID, javaEEFullartifactID, false);
+                            Dependency javaEEFullDependency = ModelUtils.checkModelDependency(model, javaEEGroupID, javaEEFullArtifactID, false);
                             result[0] = findJavaEEProfile(javaEEFullDependency);
                         }
 
