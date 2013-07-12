@@ -58,6 +58,9 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.util.BugtrackingOwnerSupport;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionReference;
+import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -65,6 +68,9 @@ import org.openide.util.RequestProcessor;
  * 
  * @author Tomas Stupka
  */
+@ActionID(id = "org.netbeans.modules.bugtracking.ui.issue.IssueAction", category = "Versioning")
+@ActionRegistration(lazy = false, displayName = "#CTL_IssueAction")
+@ActionReference(path = "Menu/Versioning", name = "org-netbeans-modules-bugtracking-ui-query-IssueAction", position = 300)
 public class IssueAction extends SystemAction {
 
     private static final RequestProcessor rp = new RequestProcessor("Bugtracking IssueAction"); // NOI18N

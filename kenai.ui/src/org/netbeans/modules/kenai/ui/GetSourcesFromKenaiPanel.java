@@ -116,19 +116,31 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
     private DefaultComboBoxModel comboModel;
     private Kenai kenai;
-    private PropertyChangeListener listener;
+    private final PropertyChangeListener listener;
 
-    public GetSourcesFromKenaiPanel(ProjectAndFeature prjFtr) {
+    GetSourcesFromKenaiPanel(Kenai kenai) {
+        this(kenai, null);
+    }
+    
+    GetSourcesFromKenaiPanel(ProjectAndFeature prjFtr) {
+        this(null, prjFtr);
+    }
+    
+    private GetSourcesFromKenaiPanel(Kenai kenai, ProjectAndFeature prjFtr) {
 
         this.prjAndFeature = prjFtr;
         initComponents();
-        if (prjAndFeature==null) {
-            if (kenaiCombo.getSelectedItem() instanceof KenaiServer) {
-                kenai = ((KenaiServer) kenaiCombo.getSelectedItem()).getKenai();
-            }
+        if (prjAndFeature!=null) {
+            this.kenai = prjAndFeature.kenaiProject.getKenai();
+            kenaiCombo.setSelectedItem(this.kenai);
+        } else if(kenai != null) {
+            this.kenai = kenai;
+            kenaiCombo.setSelectedItem(this.kenai);
         } else {
-            kenai = prjAndFeature.kenaiProject.getKenai();
-            kenaiCombo.setSelectedItem(kenai);
+            if (kenaiCombo.getSelectedItem() instanceof KenaiServer) {
+                this.kenai = ((KenaiServer) kenaiCombo.getSelectedItem()).getKenai();
+            }
+
         }
 
         refreshUsername();
@@ -140,9 +152,10 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         updatePanelUI();
         updateRepoPath();
         listener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (TeamServer.PROP_LOGIN.equals(evt.getPropertyName())) {
-                    if (kenai.getPasswordAuthentication() != null) {
+                    if (GetSourcesFromKenaiPanel.this.kenai.getPasswordAuthentication() != null) {
                         loginButton.setEnabled(false);
                     } else {
                         loginButton.setEnabled(true);
@@ -152,10 +165,6 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
         };
         if (kenai!=null)
             kenai.addPropertyChangeListener(WeakListeners.propertyChange(listener, kenai));
-    }
-
-    public GetSourcesFromKenaiPanel() {
-        this(null);
     }
 
     public GetSourcesInfo getSelectedSourcesInfo() {
@@ -531,6 +540,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 
         private void addOpenedProjects() {
             Utilities.getRequestProcessor().post(new Runnable() {
+                @Override
                 public void run() {
                     ProjectHandle[] openedProjects = getOpenProjects();
                         for (ProjectHandle<KenaiProject> prjHandle : openedProjects) {
@@ -544,6 +554,7 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
                                 KenaiFeature features[] = project.getFeatures(Type.SOURCE);
                                 for (final KenaiFeature feature : features) {
                                     EventQueue.invokeLater(new Runnable() {
+                                        @Override
                                         public void run() {
                                             if (KenaiService.Names.MERCURIAL.equals(feature.getService()) ||
                                                 KenaiService.Names.SUBVERSION.equals(feature.getService())) {
