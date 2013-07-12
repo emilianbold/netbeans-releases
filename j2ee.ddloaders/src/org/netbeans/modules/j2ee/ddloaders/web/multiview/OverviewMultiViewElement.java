@@ -135,13 +135,17 @@ public class OverviewMultiViewElement extends ToolBarMultiViewElement implements
     @Override
     public void componentOpened() {
         super.componentOpened();
-        dObj.getWebApp().addPropertyChangeListener(this);
+        if (dObj != null && dObj.getWebApp() != null) {
+            dObj.getWebApp().addPropertyChangeListener(this);
+        }
     }
     
     @Override
     public void componentClosed() {
         super.componentClosed();
-        dObj.getWebApp().removePropertyChangeListener(this);
+        if (dObj != null && dObj.getWebApp() != null) {
+            dObj.getWebApp().removePropertyChangeListener(this);
+        }
     }
     
     public void propertyChange(java.beans.PropertyChangeEvent evt) {

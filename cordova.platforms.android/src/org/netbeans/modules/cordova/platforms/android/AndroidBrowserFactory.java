@@ -77,11 +77,6 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
     }
 
     @Override
-    public Image getIconImage() {
-        return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androidbrowser.png", false);
-    }
-
-    @Override
     public boolean canCreateHtmlBrowserImpl() {
         return true;
     }
@@ -114,6 +109,12 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
         public boolean hasNetBeansIntegration() {
             return false;
         }
+        
+        @Override
+        public Image getIconImage() {
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androiddevice.png", false);
+        }
+        
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
@@ -138,6 +139,12 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
         public boolean hasNetBeansIntegration() {
             return true;
         }
+
+        @Override
+        public Image getIconImage() {
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androiddevice.png", false);
+        }
+        
         
     }
     
@@ -162,6 +169,11 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
         @Override
         public boolean hasNetBeansIntegration() {
             return false;
+        }
+        
+        @Override
+        public Image getIconImage() {
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androidemulator.png", false);
         }
 
     }

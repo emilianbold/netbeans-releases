@@ -52,6 +52,7 @@ import javax.swing.SwingUtilities;
 import org.netbeans.core.HtmlBrowserComponent;
 import org.netbeans.modules.web.browser.ui.DeveloperHtmlBrowserComponent;
 import org.openide.awt.HtmlBrowser;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 
 /**
@@ -234,6 +235,13 @@ public final class WebBrowserPane {
         if ( impl != null && impl instanceof EnhancedBrowser ){
             ((EnhancedBrowser) impl).setProjectContext(projectContext);
         }
+    }
+
+    public boolean ignoreChange(FileObject fo) {
+        if (impl != null && impl instanceof EnhancedBrowser) {
+            return ((EnhancedBrowser)impl).ignoreChange(fo);
+        }
+        return false;
     }
 
     /**

@@ -47,7 +47,11 @@ import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityMa
 import org.netbeans.modules.javaee.project.api.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolver;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
+import org.netbeans.modules.javaee.project.api.ClientSideDevelopmentSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
+import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
+import org.netbeans.modules.web.common.spi.ServerURLMappingImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
@@ -83,5 +87,19 @@ public final class ServiceRegistrations {
     )
     public static EntityManagerGenerationStrategyResolver createEntityManagerGenerationStrategyResolver(Project project) {
         return EntityManagerGenerationStrategyResolverFactory.createInstance(project);
+    }
+
+    @ProjectServiceProvider(
+        service = {
+            ServerURLMappingImplementation.class,
+            URLDisplayerImplementation.class,
+            PageInspectorCustomizer.class
+        },
+        projectType = {
+            "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR
+        }
+    )
+    public static ClientSideDevelopmentSupport createClientSideSupport(Project project) {
+        return ClientSideDevelopmentSupport.createInstance(project);
     }
 }

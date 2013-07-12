@@ -1663,5 +1663,15 @@ public class EjbJarProject implements Project, FileChangeListener {
         public Profile getProfile() {
             return ejbModule.getJ2eeProfile();
         }
+
+        @Override
+        public void setBrowserID(String browserID) {
+            // No-one is using it yet, implementation should be almost identical as setProfile(..)
+        }
+
+        @Override
+        public String getBrowserID() {
+            return evaluator().getProperty(EjbJarProjectProperties.SELECTED_BROWSER);
+        }
     }
 }

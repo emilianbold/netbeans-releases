@@ -55,7 +55,9 @@ import org.openide.util.Parameters;
  * An client can use this interface to change settings (profile, server, browser, ...) of the Java EE projects.
  *
  * @author Martin Fousek <marfous@netbeans.org>
- * @since 1.24
+ * @author Martin Janicek <mjanicek@netbeans.org>
+ * 
+ * @since 1.0
  */
 public final class JavaEEProjectSettings {
 
@@ -71,6 +73,8 @@ public final class JavaEEProjectSettings {
      *
      * @param project JavaEE based project
      * @param profile profile to be set
+     *
+     * @since 1.0
      */
     public static void setProfile(@NonNull Project project, @NonNull Profile profile) {
         Parameters.notNull("project", project); //NOI18N
@@ -92,6 +96,8 @@ public final class JavaEEProjectSettings {
      *
      * @param project JavaEE based project
      * @return JavaEE profile of given project or {@code null} if the profile not set or recognized
+     *
+     * @since 1.0
      */
     @CheckForNull
     public static Profile getProfile(@NonNull Project project) {
@@ -100,6 +106,54 @@ public final class JavaEEProjectSettings {
         JavaEEProjectSettingsImplementation settings = project.getLookup().lookup(JavaEEProjectSettingsImplementation.class);
         if (settings != null) {
             return settings.getProfile();
+        } else {
+            throw new UnsupportedProjectTypeException(project);
+        }
+    }
+    
+    /**
+     * Sets browser ID of the JavaEE project.
+     * <p>
+     * <b>Can acquire project's write lock since it stores project properties.</b>
+     * <p>
+     * Can throw UnsupportedOperationException in case that the project type doesn't contain in lookup implementation of
+     * {@link JavaEEProjectSettingsImplementation} so it's unsupported project type yet.
+     *
+     * @param project JavaEE based project
+     * @param browserID browser ID to be set
+     *
+     * @since 1.4
+     */
+    public static void setBrowserID(@NonNull Project project, @NonNull String browserID) {
+        Parameters.notNull("project", project); //NOI18N
+        Parameters.notNull("browserID", browserID); //NOI18N
+
+        JavaEEProjectSettingsImplementation modifier = project.getLookup().lookup(JavaEEProjectSettingsImplementation.class);
+        if (modifier != null) {
+            modifier.setBrowserID(browserID);
+        } else {
+            throw new UnsupportedProjectTypeException(project);
+        }
+    }
+
+    /**
+     * Obtains browser ID of the JavaEE project.
+     * <p>
+     * Can throw UnsupportedOperationException in case that the project type doesn't contain in lookup implementation of
+     * {@link JavaEEProjectSettingsImplementation} so it's unsupported project type yet.
+     *
+     * @param project JavaEE based project
+     * @return browser ID of given project or {@code null} if the browser not set or recognized
+     *
+     * @since 1.4
+     */
+    @CheckForNull
+    public static String getBrowserID(@NonNull Project project) {
+        Parameters.notNull("project", project); //NOI18N
+
+        JavaEEProjectSettingsImplementation settings = project.getLookup().lookup(JavaEEProjectSettingsImplementation.class);
+        if (settings != null) {
+            return settings.getBrowserID();
         } else {
             throw new UnsupportedProjectTypeException(project);
         }
@@ -118,7 +172,7 @@ public final class JavaEEProjectSettings {
         @Override
         public String getMessage() {
             ProjectInformation information = ProjectUtils.getInformation(project);
-            return "Project " + information.getDisplayName() + " doesn't support JavaEEProjectSettings." //NOI18N
+            return "Project " + information.getDisplayName() + " doesn't support JavaEEProjectSettings. " //NOI18N
                     + "Add implementation of JavaEEProjectSettingsImplementation into its Project Type lookup."; //NOI18N
         }
     }
