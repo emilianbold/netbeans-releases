@@ -2580,7 +2580,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             break;
         }
         String trailing = null;
-        if (!out.isWhitespaceLine() && conditionStartHack != (-1)) {
+        if (conditionStartHack != (-1)) {
             TokenSequence<JavaTokenId> ts = TokenHierarchy.create(toString().substring(conditionStartHack), JavaTokenId.language()).tokenSequence(JavaTokenId.language());
             boolean found;
             ts.moveEnd();

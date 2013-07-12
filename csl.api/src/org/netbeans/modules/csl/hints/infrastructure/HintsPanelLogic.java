@@ -131,17 +131,19 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
     private JPanel customizerPanel;
     private JEditorPane descriptionTextArea;
     private GsfHintsManager manager;
+    private DefaultTreeModel errModel;
     
     HintsPanelLogic(GsfHintsManager manager) {
         this.manager = manager;
         changes = new HashMap<UserConfigurableRule, ModifiedPreferences>();        
     }
     
-    void connect( JTree errorTree, JComboBox severityComboBox, 
+    void connect( JTree errorTree, DefaultTreeModel errModel, JComboBox severityComboBox, 
                   JCheckBox tasklistCheckBox, JPanel customizerPanel,
                   JEditorPane descriptionTextArea) {
         
         this.errorTree = errorTree;
+        this.errModel = errModel;
         this.severityComboBox = severityComboBox;
         this.tasklistCheckBox = tasklistCheckBox;
         this.customizerPanel = customizerPanel;
@@ -399,7 +401,7 @@ class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectionListen
 
         Object o = getUserObject(treePath);
 
-        DefaultTreeModel model = (DefaultTreeModel) errorTree.getModel();
+        DefaultTreeModel model = errModel;
         DefaultMutableTreeNode node = (DefaultMutableTreeNode) treePath.getLastPathComponent();
 
 
