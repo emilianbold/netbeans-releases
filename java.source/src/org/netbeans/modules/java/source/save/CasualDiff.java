@@ -4766,7 +4766,8 @@ public class CasualDiff {
             tokenSequence.move(getOldPos(oldT));
             moveToSrcRelevant(tokenSequence, Direction.BACKWARD);
             tokenSequence.moveNext();
-            copyTo(elementBounds[0], tokenSequence.offset());
+            if (elementBounds[0] < tokenSequence.offset())
+                copyTo(elementBounds[0], tokenSequence.offset());
             printer.printBlock(oldT, newT, parentKind);
             return getCommentCorrectedEndPos(oldT);
         } else {

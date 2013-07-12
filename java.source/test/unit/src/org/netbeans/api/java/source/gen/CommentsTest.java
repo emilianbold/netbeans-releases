@@ -87,6 +87,7 @@ public class CommentsTest extends GeneratorTestBase {
         NbTestSuite suite = new NbTestSuite();
         suite.addTestSuite(CommentsTest.class);
 //        suite.addTest(new CommentsTest("testMoveMethod171345"));
+        CasualDiff.noInvalidCopyTos = true;
         return suite;
     }
     

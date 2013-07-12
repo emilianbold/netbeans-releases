@@ -55,6 +55,7 @@ import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreeSelectionModel;
@@ -72,6 +73,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     private HintsPanelLogic logic;
     private GsfHintsManager manager;
     private OptionsFilter filter;
+    private DefaultTreeModel baseModel;
       
     public HintsPanel(OptionsFilter filter, 
             javax.swing.tree.TreeModel treeModel, GsfHintsManager manager) {        
@@ -103,6 +105,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
 
         //errorTree.setModel( RulesManager.getInstance().getHintsTreeModel() );
         errorTree.setModel(treeModel);
+        this.baseModel = (DefaultTreeModel)treeModel;
         
         if (filter != null) {
             filter.installFilteringModel(errorTree, treeModel, new AcceptorImpl());
@@ -288,7 +291,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             logic.disconnect();
         }
         logic = new HintsPanelLogic(manager);
-        logic.connect(errorTree, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
+        logic.connect(errorTree, baseModel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
     }
     
     public void cancel() {

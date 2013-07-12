@@ -39,19 +39,26 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.kenai.ui;
+package org.netbeans.modules.team.ui;
 
 import java.awt.event.ActionEvent;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.kenai.api.KenaiManager;
-import org.netbeans.modules.kenai.collab.chat.ChatTopComponent;
-import org.netbeans.modules.kenai.collab.chat.WhoIsOnlineAction;
+import javax.swing.JSeparator;
+import org.netbeans.modules.team.ui.common.AddInstanceAction;
+import org.netbeans.modules.team.ui.common.EditInstanceAction;
+import org.netbeans.modules.team.ui.common.TeamServerComparator;
+import org.netbeans.modules.team.ui.nodes.RemoveInstanceAction;
+import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
@@ -59,73 +66,71 @@ import org.openide.awt.Actions;
 import org.openide.awt.DynamicMenuContent;
 import org.openide.util.NbBundle;
 
-public final class KenaiMenuAction extends AbstractAction implements DynamicMenuContent {
+@NbBundle.Messages({"CTL_TeamServer=Team Server"})
+public final class TeamMenuAction extends AbstractAction implements DynamicMenuContent {
     private static final String CATEGORY_TEAM = "Team";
-    private static KenaiMenuAction inst;
+    private static TeamMenuAction inst;
 
-    @ActionID(category = "Team", id = "org.netbeans.modules.kenai.ui.KenaiMenuAction")
-    @ActionRegistration(displayName = "#CTL_KenaiMenuAction", lazy = false)
-    @ActionReference(path = "Menu/Versioning/Team", position = 220)
-    public static synchronized KenaiMenuAction getDefault () {
+    @ActionID(category = CATEGORY_TEAM, id = "org.netbeans.modules.team.ui.TeamMenuAction")
+    @ActionRegistration(displayName = "#CTL_TeamServer", lazy = false)
+    @ActionReference(path = "Menu/Versioning", position = 50)
+    public static synchronized TeamMenuAction getDefault () {
         if (inst == null) {
-            inst = new KenaiMenuAction();
+            inst = new TeamMenuAction();
         }
         return inst;
     }
     
     @Override
-    public void actionPerformed (ActionEvent e) {
-    }
+    public void actionPerformed (ActionEvent e) { }
 
     @Override
     public JComponent[] getMenuPresenters () {
-        return new JComponent[0];
+        return synchMenuPresenters(null);
     }
 
     @Override
     public JComponent[] synchMenuPresenters (JComponent[] items) {
-        JMenu kenaiMenu = new JMenu(getName());
-        Action action = Actions.forID(CATEGORY_TEAM, NewKenaiProjectAction.ID);
-        JMenuItem item = new JMenuItem();
-        Actions.connect(item, action, false);
-        kenaiMenu.add(item);
-
-        action = Actions.forID(CATEGORY_TEAM, OpenKenaiProjectAction.ID);
-        item = new JMenuItem();
-        Actions.connect(item, action, false);
-        kenaiMenu.add(item);
-
-        action = Actions.forID(CATEGORY_TEAM, GetSourcesFromKenaiAction.ID);
-        item = new JMenuItem();
-        Actions.connect(item, action, false);
-        kenaiMenu.add(item);
-
-        kenaiMenu.addSeparator();
-
-        action = Actions.forID(CATEGORY_TEAM, ChatTopComponent.ACTION_ID);
-        item = new JMenuItem();
-        Actions.connect(item, action, false);
-        kenaiMenu.add(item);
-
-        action = Actions.forID(CATEGORY_TEAM, WhoIsOnlineAction.ID);
-        item = new JMenuItem();
-        Actions.connect(item, action, false);
-        kenaiMenu.add(item);
-        return new JComponent[] { kenaiMenu };
+        Collection<? extends TeamServer> c = TeamServerManager.getDefault().getTeamServers();
+        List<TeamServer> servers = new ArrayList<>(c);
+        Collections.sort(servers, new TeamServerComparator());
+        
+        JMenu menu = new JMenu(Bundle.CTL_TeamServer());
+        
+        menu.add(createItem(Actions.forID(CATEGORY_TEAM, LoginAction.ID)));
+        menu.add(createItem(Actions.forID(CATEGORY_TEAM, LogoutAction.ID)));
+        menu.add(new JSeparator());
+        
+        for (TeamServer server : servers) {
+            menu.add(getSubMenu(server));
+        }
+        
+        menu.add(new JSeparator());        
+        menu.add(createItem(Actions.forID(CATEGORY_TEAM, AddInstanceAction.ID)));
+        
+        return new JComponent[] {menu};
     }
 
-    @NbBundle.Messages({
-        "CTL_MenuName_java_net=java.net",
-        "CTL_MenuName_other=Others"
-    })
-    private String getName () {
-        String name;
-        Collection<Kenai> kenais = KenaiManager.getDefault().getKenais();
-        name = Bundle.CTL_MenuName_other();
-        if (kenais.size() == 1 && kenais.iterator().next().getUrl().toString().startsWith("https://java.net")) { //NOI18N
-            name = Bundle.CTL_MenuName_java_net();
+    private JMenuItem createItem(Action a) {
+        JMenuItem item = new JMenuItem();
+        Actions.connect(item, a, false);
+        return item;
+    }
+
+    private JMenu getSubMenu(final TeamServer server) throws IllegalArgumentException {
+        JMenu subMenu = new JMenu(server.getDisplayName());
+        for(Action a : server.getTeamMenuActions()) {
+            if(a == null) {
+                subMenu.addSeparator();
+            } else {
+                subMenu.add(createItem(a));
+            }
         }
-        return name;
+        subMenu.addSeparator();
+        subMenu.add(createItem(new EditInstanceAction(server)));
+        subMenu.add(createItem(new RemoveInstanceAction(server)));
+        
+        return subMenu;
     }
 
 }

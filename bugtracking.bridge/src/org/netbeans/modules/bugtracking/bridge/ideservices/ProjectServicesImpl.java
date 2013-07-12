@@ -125,7 +125,7 @@ public class ProjectServicesImpl implements ProjectServices {
 
     @Override
     public FileObject[] getCurrentSelection() {
-        Node[] nodes = TopComponent.getRegistry().getCurrentNodes();
+        Node[] nodes = TopComponent.getRegistry().getActivatedNodes();
         if(nodes == null) {
             return null;
         }        
