@@ -76,11 +76,6 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
     }
 
     @Override
-    public Image getIconImage() {
-        return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/apple.png", false);
-    }
-
-    @Override
     public boolean canCreateHtmlBrowserImpl() {
         return Utilities.isMac();
     }
@@ -112,6 +107,11 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
         public boolean hasNetBeansIntegration() {
             return true;
         }
+        
+        @Override
+        public Image getIconImage() {
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/iossimulator.png", false);
+        }
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
@@ -135,6 +135,11 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
         @Override
         public boolean hasNetBeansIntegration() {
             return true;
+        }
+
+        @Override
+        public Image getIconImage() {
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/iosdevice.png", false);
         }
         
     }
