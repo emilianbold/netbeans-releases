@@ -108,6 +108,11 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
     public boolean canReloadPage() {
         return true;
     }
+
+    @Override
+    public boolean ignoreChange(FileObject fo) {
+        return BrowserSupport.ignoreChangeDefaultImpl(fo);
+    }
     
     public static enum Kind {
         ANDROID_DEVICE_DEFAULT,

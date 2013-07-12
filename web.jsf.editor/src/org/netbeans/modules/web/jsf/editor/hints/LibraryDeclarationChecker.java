@@ -50,6 +50,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Position;
 import org.netbeans.api.lexer.Language;
@@ -91,6 +93,8 @@ import org.openide.util.NbBundle;
  * @author marekfukala
  */
 public class LibraryDeclarationChecker extends HintsProvider {
+
+    private static final Logger LOG = Logger.getLogger(LibraryDeclarationChecker.class.getName());
 
     @Override
     public List<Hint> compute(RuleContext context) {
@@ -352,8 +356,13 @@ public class LibraryDeclarationChecker extends HintsProvider {
             int from = declAttr.nameOffset();
             int to = declAttr.valueOffset() + declAttr.value().length();
 
-            OffsetRange documentRange = JsfUtils.createOffsetRange(snapshot, docText, from, to);
-            ranges.add(documentRange);
+            if (from < to && to > 0 && to < docText.length()) {
+                OffsetRange documentRange = JsfUtils.createOffsetRange(snapshot, docText, from, to);
+                ranges.add(documentRange);
+            } else {
+                // removes issues #228866 from release builds, logging tell us more here
+                LOG.log(Level.WARNING, "Range definition out of bounds of the source: from={0},to={1},text={2}", new Object[]{from, to, docText});
+            }
         }
     }
 

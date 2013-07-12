@@ -63,7 +63,7 @@ public class CustomizerRunEar extends BaseRunCustomizer {
         initComponents();
 
         module = Ear.getEar(project.getProjectDirectory());
-        if (module != null) {
+        if (module != null && module.getJ2eeProfile() != null) {
             txtJ2EEVersion.setText(module.getJ2eeProfile().getDisplayName());
         }
 
