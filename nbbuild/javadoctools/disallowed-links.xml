@@ -92,5 +92,6 @@ made subject to such option by the copyright holder.
     <filter pattern="http://wiki.netbeans.org/.*" accept="true"/>
     <!-- Useful to point to open layer positions (see e.g. HOWTO-MIME.html): -->
     <filter pattern="http://deadlock\.netbeans\.org/hudson/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers\.txt" accept="true"/>
+    <filter pattern="http://deadlock\.netbeans\.org/job/nbms-and-javadoc/lastSuccessfulBuild/artifact/nbbuild/build/generated/layers\.txt" accept="true"/>
     <!-- forbid the rest of NetBeans sites -->
     <filter pattern="http://.*netbeans\.org/.*" accept="false"/>
