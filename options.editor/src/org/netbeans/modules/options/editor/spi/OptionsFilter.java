@@ -43,6 +43,7 @@
 package org.netbeans.modules.options.editor.spi;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,6 +57,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.spi.options.OptionsPanelController;
 
@@ -234,7 +236,14 @@ public final class OptionsFilter {
             List<Integer> childIndices = new LinkedList<Integer>();
             List<Object> children = new LinkedList<Object>();
 
-            for (Object c : e.getChildren()) {
+            Object[] ch = e.getChildren();
+            
+            // special case for root node: include all children
+            if (ch == null) {
+                List l = Collections.list(((TreeNode)e.getTreePath().getLastPathComponent()).children());
+                ch = l.toArray(new Object[l.size()]);
+            }
+            for (Object c : ch) {
                 int i = getIndexOfChild(e.getTreePath().getLastPathComponent(), e.getTreePath().getLastPathComponent());
 
                 if (i == (-1)) continue;
