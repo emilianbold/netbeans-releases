@@ -56,6 +56,7 @@ import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 
 /**
@@ -267,6 +268,49 @@ public class ElementsParserCacheTest extends CslTestBase {
         
         assertEquals(18, block3.getStartOffset());
         assertEquals(18, block3.getEndOffset());
+    }
+    
+    //Bug 230170 - AssertionError at org.netbeans.modules.html.editor.lib.ElementsParserCache$1.getCacheBlock 
+    public void testIssue230170() {
+        StringBuilder code = new StringBuilder();
+        ElementsParserCache.CACHE_BLOCK_SIZE = 10;
+        for(int i = 0; i <= 200; i++) {
+            code.append("<div id='");
+            code.append(i);
+            code.append("'/>");
+        }
+        TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
+        TokenSequence ts = th.tokenSequence(HTMLTokenId.language());
+        final ElementsParserCache parserCache = new ElementsParserCache(code, ts);
+        
+        //test concurrent access to the element iterators obtained from one shared
+        //instance of ElementsParserCache
+        RequestProcessor myrp = new RequestProcessor("test", 3);
+        myrp.post( new Runnable() {
+            @Override
+            public void run() {
+                Iterator<Element> ei = parserCache.createElementsIterator();
+                while(ei.hasNext()) {
+                }
+            }
+        });
+        myrp.post( new Runnable() {
+            @Override
+            public void run() {
+                Iterator<Element> ei = parserCache.createElementsIterator();
+                while(ei.hasNext()) {
+                }
+            }
+        });
+        myrp.post( new Runnable() {
+            @Override
+            public void run() {
+                Iterator<Element> ei = parserCache.createElementsIterator();
+                while(ei.hasNext()) {
+                }
+            }
+        });
+        
     }
 
     public void testPerformance() throws IOException {
