@@ -53,7 +53,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka
  */
 public final class HistoryOptions extends AdvancedOption {
-    public static final String OPTIONS_SUBPATH = "LocalHistory"; // NOI18N
+    public static final String OPTIONS_SUBPATH = "History"; // NOI18N
 
     public HistoryOptions() {
     }

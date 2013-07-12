@@ -59,11 +59,15 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
+import javax.swing.JMenuItem;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.api.KenaiProject;
+import org.netbeans.modules.kenai.collab.chat.ChatTopComponent;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
+import org.netbeans.modules.kenai.collab.chat.WhoIsOnlineAction;
+import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiAction;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectAction;
 import org.netbeans.modules.kenai.ui.OpenKenaiProjectAction;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
@@ -77,6 +81,7 @@ import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.spi.TeamServerProvider;
 import org.netbeans.modules.team.ui.util.treelist.SelectionList;
+import org.openide.awt.Actions;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -276,13 +281,7 @@ public final class KenaiServer implements TeamServer {
     
     @Override
     public Action getNewProjectAction() {
-        AbstractAction newProjectAction = new AbstractAction() {
-            private NewKenaiProjectAction a = new NewKenaiProjectAction(kenai);
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                a.actionPerformed(e);
-            }
-        };
+        NewKenaiProjectAction newProjectAction = new NewKenaiProjectAction(kenai);
         newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true));
         newProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_NewProject") );
         return newProjectAction;
@@ -294,5 +293,18 @@ public final class KenaiServer implements TeamServer {
         openProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_team_project.png", true));
         openProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_OpenProject") );
         return openProjectAction;
+    }
+
+    private static final String CATEGORY_TEAM = "Team";
+    @Override
+    public Action[] getTeamMenuActions() {
+        return new Action[] {
+            new NewKenaiProjectAction(kenai),
+            new OpenKenaiProjectAction(kenai),
+            new GetSourcesFromKenaiAction(kenai),
+            null,
+            Actions.forID(CATEGORY_TEAM, ChatTopComponent.ACTION_ID),
+            Actions.forID(CATEGORY_TEAM, WhoIsOnlineAction.ID)
+        };
     }
 }

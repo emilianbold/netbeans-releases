@@ -247,6 +247,9 @@ public final class TeamView {
     }
 
     private void switchContent() {
+        if(dashboardPanel == null) {
+            return;
+        }
         Runnable r = new Runnable() {
             @Override
             public void run() {
@@ -303,7 +306,7 @@ public final class TeamView {
                 lbl.setHorizontalAlignment(JLabel.CENTER);
                 LinkButton btnWhatIs = new LinkButton(LBL_WhatIsTeam(), createWhatIsTeamServerAction() ); //NOI18N
                 
-                if(Utilities.isMoreProjectsDashboard()) {
+                if(!Utilities.isMoreProjectsDashboard()) {
                     JButton connect = new JButton(new AddInstanceAction());
                     connect.setText(Bundle.LBL_Connect());
                     res.add( connect, new GridBagConstraints(0, 0, 3, 4, 1.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 0, 0) );

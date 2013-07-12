@@ -1171,6 +1171,12 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                     }
                 }
             });
+            if(node.isExpanded()) {
+                List<TreeListNode> children = node.getChildren();
+                for (int i = 0; i < children.size(); i++) {
+                    model.addRoot(i, children.get(i));
+                }
+            }
         }
 
         @Override
@@ -1195,6 +1201,11 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         public String getDisplayName() {
             return title;
         }
+
+        @Override
+        public boolean isExpanded() {
+            return node.isExpanded();
+        }
         
     }
     
@@ -1218,8 +1229,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
 
                 final Section section = sections[i];
                 
-                section.setExpanded(false);
-                
                 JPanel sp = new JPanel(new BorderLayout());
                 final JLabel titleLabel = new JLabel(section.getDisplayName());
                 titleLabel.setIcon(collapsedIcon);
@@ -1231,10 +1240,12 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 titleLabel.addMouseListener(new MouseListener() {
                     @Override
                     public void mouseClicked(MouseEvent e) {
-                        cmp.setVisible(!cmp.isVisible());
-                        section.setExpanded(cmp.isVisible());
+                        boolean expanded = section.isExpanded();
+
+                        cmp.setVisible(!expanded);
+                        section.setExpanded(!expanded);
+                        titleLabel.setIcon(!expanded ? expandedIcon : collapsedIcon);
                         
-                        titleLabel.setIcon(cmp.isVisible() ? expandedIcon : collapsedIcon);
                     }
                     @Override public void mousePressed(MouseEvent e) { }
                     @Override public void mouseReleased(MouseEvent e) { }
