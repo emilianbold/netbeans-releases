@@ -801,5 +801,15 @@ public final class EarProject implements Project, AntProjectListener {
         public Profile getProfile() {
             return project.getJ2eeProfile();
         }
+
+        @Override
+        public void setBrowserID(String browserID) {
+            // No-one is using it yet, implementation should be almost identical as setProfile(..)
+        }
+
+        @Override
+        public String getBrowserID() {
+            return evaluator().getProperty(EarProjectProperties.SELECTED_BROWSER);
+        }
     }
 }
