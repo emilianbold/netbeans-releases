@@ -70,6 +70,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.TreeMaker;
@@ -421,7 +422,11 @@ public class MiscUtilities {
     public static String createBodyForGetClassesMethod(RestSupport restSupport) {
         StringBuilder builder = new StringBuilder();
         builder.append('{');
-        builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
+        if (isSourceLevel17orHigher(restSupport.getProject())) {
+            builder.append("Set<Class<?>> resources = new java.util.HashSet<>();");// NOI18N
+        } else {
+            builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
+        }
         if (restSupport.hasJersey2(true)) {
             builder.append(getJersey2JSONFeature());
         } else {
@@ -526,6 +531,21 @@ public class MiscUtilities {
             maker.addComment(methodTree, comment, true);
         }
         return maker.addClassMember(classTree, methodTree);
+    }
+    
+    /**
+     * Is source level of a given project 1.7 or higher?
+     *
+     * @param project Project
+     * @return true if source level is 1.7 or higher; otherwise false
+     */
+    private static boolean isSourceLevel17orHigher(Project project) {
+        String srcLevel = SourceLevelQuery.getSourceLevel(project.getProjectDirectory());
+        if (srcLevel != null) {
+            double sourceLevel = Double.parseDouble(srcLevel);
+            return (sourceLevel >= 1.7);
+        } else
+            return false;
     }
 
 }
