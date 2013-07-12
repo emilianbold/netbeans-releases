@@ -4,6 +4,7 @@ cls:PARAMETER:[PUBLIC]:ESCAPED{cls}:
   $className:FIELD:[PUBLIC]:ESCAPED{$className}:
   displayName:FIELD:[PUBLIC]:ESCAPED{displayName}:
 mixins:VARIABLE:[PRIVATE]:ESCAPED{mixins}<font color="#999999">ESCAPED{ : }cls.prototype.mixinsESCAPED{|}prototype.mixins</font>:
+mixin:CLASS:[PRIVATE]:ESCAPED{mixin}:
 key:VARIABLE:[PRIVATE]:ESCAPED{key}:
 Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
   addNameAliasMappings:METHOD:[PUBLIC]:ESCAPED{addNameAliasMappings}ESCAPED{(}<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{aliases}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager</font>:
@@ -27,13 +28,13 @@ Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
   enableNamespaceParseCache:FIELD:[PUBLIC]:ESCAPED{enableNamespaceParseCache}<font color="#999999">ESCAPED{ : }Boolean</font>:
   existCache:CLASS:[PUBLIC]:ESCAPED{existCache}:
   get:METHOD:[PUBLIC]:ESCAPED{get}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.get.classesESCAPED{|}Manager.classesESCAPED{|}@arr;rootESCAPED{|}Manager.get.rootESCAPED{|}Ext.ClassManager.get.rootESCAPED{|}Ext.Class</font>:
-  getAliasesByName:METHOD:[PUBLIC]:ESCAPED{getAliasesByName}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{)}<font color="#999999">ESCAPED{ : }ArrayESCAPED{|}Manager@pro;maps@arr;nameToAliases</font>:
+  getAliasesByName:METHOD:[PUBLIC]:ESCAPED{getAliasesByName}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{)}<font color="#999999">ESCAPED{ : }ArrayESCAPED{|}Manager.maps.nameToAliases</font>:
   getByAlias:METHOD:[PUBLIC]:ESCAPED{getByAlias}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{alias}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.get.classesESCAPED{|}Manager.classesESCAPED{|}@arr;rootESCAPED{|}Manager.get.rootESCAPED{|}Ext.ClassManager.get.rootESCAPED{|}Ext.ClassESCAPED{|}unresolved</font>:
   getClass:METHOD:[PUBLIC]:ESCAPED{getClass}ESCAPED{(}<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{object}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassESCAPED{|}Ext.ClassManager.getClass.objectESCAPED{|}Object.self</font>:
   getInstantiator:METHOD:[PUBLIC]:ESCAPED{getInstantiator}ESCAPED{(}ESCAPED{length}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.getInstantiator.instantiatorESCAPED{|}Manager.getInstantiator.instantiator</font>:
   getName:METHOD:[PUBLIC]:ESCAPED{getName}ESCAPED{(}<font color="#999999">ESCAPED{Ext.Class|Object}ESCAPED{ }</font>ESCAPED{object}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.Class.$classNameESCAPED{|}Object.$classNameESCAPED{|}Ext.ClassManager.getName.objectESCAPED{|}String</font>:
-  getNameByAlias:METHOD:[PUBLIC]:ESCAPED{getNameByAlias}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{alias}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager@pro;maps@arr;aliasToNameESCAPED{|}String</font>:
-  getNameByAlternate:METHOD:[PUBLIC]:ESCAPED{getNameByAlternate}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{alternate}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager@pro;maps@arr;alternateToNameESCAPED{|}String</font>:
+  getNameByAlias:METHOD:[PUBLIC]:ESCAPED{getNameByAlias}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{alias}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.maps.aliasToNameESCAPED{|}String</font>:
+  getNameByAlternate:METHOD:[PUBLIC]:ESCAPED{getNameByAlternate}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{alternate}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.maps.alternateToNameESCAPED{|}String</font>:
   getNamesByExpression:METHOD:[PUBLIC]:ESCAPED{getNamesByExpression}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{expression}ESCAPED{)}<font color="#999999">ESCAPED{ : }String[]ESCAPED{|}Manager.getNamesByExpression.namesESCAPED{|}Ext.ClassManager.getNamesByExpression.namesESCAPED{|}Array</font>:
   instantiate:METHOD:[PUBLIC]:ESCAPED{instantiate}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager@call;@call;getInstantiator</font>:
   instantiateByAlias:METHOD:[PUBLIC]:ESCAPED{instantiateByAlias}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }ObjectESCAPED{|}Manager@pro;instantiate@call;apply</font>:
@@ -64,12 +65,15 @@ ln:VARIABLE:[PRIVATE]:ESCAPED{ln}:
 aliases:VARIABLE:[PRIVATE]:ESCAPED{aliases}:
 i:VARIABLE:[PRIVATE]:ESCAPED{i}:
 ln:VARIABLE:[PRIVATE]:ESCAPED{ln}:
+alias:CLASS:[PRIVATE]:ESCAPED{alias}:
 xtypes:VARIABLE:[PRIVATE]:ESCAPED{xtypes}:
 widgetPrefixLength:VARIABLE:[PRIVATE]:ESCAPED{widgetPrefixLength}<font color="#999999">ESCAPED{ : }String.length</font>:
 widgetPrefix:VARIABLE:[PRIVATE]:ESCAPED{widgetPrefix}<font color="#999999">ESCAPED{ : }String</font>:
+prototype:CLASS:[PRIVATE]:ESCAPED{prototype}:
 aliases:VARIABLE:[PRIVATE]:ESCAPED{aliases}:
 xtypesChain:VARIABLE:[PRIVATE]:ESCAPED{xtypesChain}:
 i:VARIABLE:[PRIVATE]:ESCAPED{i}:
+xtype:CLASS:[PRIVATE]:ESCAPED{xtype}:
 xtypesMap:VARIABLE:[PRIVATE]:ESCAPED{xtypesMap}:
 cls:PARAMETER:[PUBLIC]:ESCAPED{cls}:
   xtype:FIELD:[PUBLIC]:ESCAPED{xtype}:
