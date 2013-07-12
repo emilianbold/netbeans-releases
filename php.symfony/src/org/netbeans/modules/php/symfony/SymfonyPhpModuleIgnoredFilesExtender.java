@@ -43,7 +43,7 @@
 package org.netbeans.modules.php.symfony;
 
 import java.io.File;
-import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.spi.framework.PhpModuleIgnoredFilesExtender;
@@ -55,29 +55,36 @@ import org.openide.filesystems.FileUtil;
  */
 public class SymfonyPhpModuleIgnoredFilesExtender extends PhpModuleIgnoredFilesExtender {
     private static final String DIR_CACHE = "cache"; // NOI18N
+    private static final String DIR_LOG = "log"; // NOI18N
 
     private final PhpModule phpModule;
-    // currently, only "cache" directory can be hidden
     private final File cache;
+    private final File log;
+
 
     public SymfonyPhpModuleIgnoredFilesExtender(PhpModule phpModule) {
         assert phpModule != null;
 
         this.phpModule = phpModule;
 
+        File sources = FileUtil.toFile(phpModule.getSourceDirectory());
         FileObject cacheFO = SymfonyPhpFrameworkProvider.locate(phpModule, DIR_CACHE, true);
         if (cacheFO != null && cacheFO.isFolder()) {
             cache = FileUtil.toFile(cacheFO);
         } else {
             // cache not found, simply pretend that it's under sources
-            cache = new File(FileUtil.toFile(phpModule.getSourceDirectory()), DIR_CACHE);
+            cache = new File(sources, DIR_CACHE);
         }
+        log = new File(sources, DIR_LOG);
     }
 
     @Override
     public Set<File> getIgnoredFiles() {
-        // XXX maybe cache? let's wait for report
-        boolean cacheIgnored = SymfonyPhpModuleCustomizerExtender.isCacheDirectoryIgnored(phpModule);
-        return cacheIgnored ? Collections.singleton(cache) : Collections.<File>emptySet();
+        Set<File> ignored = new HashSet<>();
+        if (SymfonyPhpModuleCustomizerExtender.isCacheDirectoryIgnored(phpModule)) {
+            ignored.add(cache);
+        }
+        ignored.add(log);
+        return ignored;
     }
 }
