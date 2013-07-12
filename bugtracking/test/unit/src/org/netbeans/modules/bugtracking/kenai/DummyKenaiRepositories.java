@@ -55,11 +55,6 @@ import org.netbeans.modules.bugtracking.RepositoryImpl;
 public class DummyKenaiRepositories extends TeamRepositories {
 
     @Override
-    public Collection<RepositoryImpl> getRepositories(boolean includeIDEProjects) {
-        return Collections.EMPTY_LIST;
-    }
-
-    @Override
     public Collection<RepositoryImpl> getRepositories(boolean includeIDEProjects, boolean onlyDashboardOpenProjects) {
         return Collections.EMPTY_LIST;
     }
