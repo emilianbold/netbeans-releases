@@ -126,6 +126,9 @@ abstract class DefaultParser  extends DefaultHandler {
                 // ignore wrong encoding, for example
                 parser.setFeature("http://apache.org/xml/features/continue-after-fatal-error", 
                         true);  //NOI18N
+                parser.setProperty(
+                        "http://apache.org/xml/properties/input-buffer-size", //NOI18N
+                        new Integer(2048)); // #230305
             } catch (SAXException ignore) {
                 // parsing may be slower :-(
             }
