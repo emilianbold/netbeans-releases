@@ -76,4 +76,14 @@ public class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplement
         return Profile.fromPropertiesString(MavenProjectSupport.readJ2eeVersion(project));
     }
 
+    @Override
+    public void setBrowserID(String browserID) {
+        MavenProjectSupport.setBrowserID(project, browserID);
+    }
+
+    @Override
+    public String getBrowserID() {
+        return MavenProjectSupport.getBrowserID(project);
+    }
+
 }

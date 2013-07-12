@@ -74,12 +74,12 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Janicek, David Konecny
  */
-public abstract class BaseClientSideDevelopmentSupport implements
+public final class ClientSideDevelopmentSupport implements
         ServerURLMappingImplementation,
         URLDisplayerImplementation,
         PageInspectorCustomizer {
 
-    protected final Project project;
+    private final Project project;
     private volatile String projectRootURL;
     private volatile FileObject webDocumentRoot;
     // @GuardedBy("this")
@@ -87,8 +87,12 @@ public abstract class BaseClientSideDevelopmentSupport implements
     // @GuardedBy("this")
     private boolean browserSupportInitialized = false;
 
-    public BaseClientSideDevelopmentSupport(Project project) {
-        assert project != null;
+    
+    public static ClientSideDevelopmentSupport createInstance(Project project) {
+        return new ClientSideDevelopmentSupport(project);
+    }
+    
+    private ClientSideDevelopmentSupport(Project project) {
         this.project = project;
     }
 
@@ -201,8 +205,6 @@ public abstract class BaseClientSideDevelopmentSupport implements
         }
         return false;
     }
-    
-    protected abstract String getBrowserID();
 
     public void reload(FileObject fo) {
         BrowserSupport bs = getBrowserSupport();
@@ -248,7 +250,7 @@ public abstract class BaseClientSideDevelopmentSupport implements
     }
 
     @CheckForNull private WebBrowser getWebBrowser() {
-        String selectedBrowser = getBrowserID();
+        String selectedBrowser = JavaEEProjectSettings.getBrowserID(project);
         if (selectedBrowser == null) {
             return null;
         }
