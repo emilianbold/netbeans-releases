@@ -67,6 +67,11 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
 import static org.netbeans.modules.maven.apisupport.Bundle.*;
+import org.netbeans.modules.maven.model.pom.Build;
+import org.netbeans.modules.maven.model.pom.Configuration;
+import org.netbeans.modules.maven.model.pom.POMExtensibilityElement;
+import org.netbeans.modules.maven.model.pom.Plugin;
+import org.netbeans.modules.maven.model.pom.PluginManagement;
 
 /**
  * Ensures that {@code netbeans.run.params.ide} will be interpolated into {@code netbeans.run.params}.
@@ -123,6 +128,8 @@ public class NetBeansRunParamsIDEChecker implements PrerequisitesChecker {
             public @Override void performOperation(POMModel model) {
                 POMComponentFactory factory = model.getFactory();
                 Project project = model.getProject();
+                //find and remove value from additionaParameters mojo paramerer
+                String val = findAndRemoveAdditionalParameters(model);
                 Properties properties = project.getProperties();
                 if (properties == null) {
                     properties = factory.createProperties();
@@ -138,7 +145,48 @@ public class NetBeansRunParamsIDEChecker implements PrerequisitesChecker {
                 } else if (!args.contains(ref)) {
                     args += " " + ref;
                 }
+                if (val != null) {
+                    args = args + " " + val;
+                }
                 properties.setProperty(MASTER_PROPERTY, args);
+            }
+
+            private String findAndRemoveAdditionalParameters(POMModel model) {
+                Project project = model.getProject();
+                Build bld = project.getBuild();
+                if (bld != null) {
+                    Plugin plg = bld.findPluginById(MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN);
+                    if (plg != null) {
+                        Configuration conf = plg.getConfiguration();
+                        if (conf != null) {
+                            for (POMExtensibilityElement ex : conf.getConfigurationElements()) {
+                                if ("additionalArguments".equals(ex.getQName().getLocalPart())) {
+                                    String s = ex.getElementText();
+                                    conf.removeExtensibilityElement(ex);
+                                    return s;
+                                }
+                            }
+                        }
+                    }
+                    PluginManagement pm = bld.getPluginManagement();
+                    if (pm != null) {
+                        plg = pm.findPluginById(MavenNbModuleImpl.GROUPID_MOJO, MavenNbModuleImpl.NBM_PLUGIN);
+                        if (plg != null) {
+                            Configuration conf = plg.getConfiguration();
+                            if (conf != null) {
+                                for (POMExtensibilityElement ex : conf.getConfigurationElements()) {
+                                    if ("additionalArguments".equals(ex.getQName().getLocalPart())) {
+                                        String s = ex.getElementText();
+                                        conf.removeExtensibilityElement(ex);
+                                        return s;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                //we could also check profiles content but that would be a bit messy already..
+                return null;
             }
         }));
     }
