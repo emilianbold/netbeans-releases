@@ -90,7 +90,7 @@ public class ODCSClientTest extends NbTestCase  {
     protected  static String passw;
     private static String proxyHost;
     private static String proxyPort;
-    public static final String URL = "http://qa-dev.developer.us.oracle.com";
+    public static final String URL = "http://developer.us.oracle.com/qa-dev";
     private static final String MY_PROJECT = "qa-dev_netbeans-test"; //NOI18N
 
     public static Test suite() {

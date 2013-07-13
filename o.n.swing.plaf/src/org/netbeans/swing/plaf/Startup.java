@@ -232,8 +232,15 @@ public final class Startup {
             NbTheme nbTheme = new NbTheme(themeURL, lf);
             MetalLookAndFeel.setCurrentTheme(nbTheme);
         } else if( isUseDarkTheme() ) {
-            MetalLookAndFeel.setCurrentTheme( new DarkMetalTheme() );
-            themeInstalled = true;
+            //#232429 - make sure the theme overrides custom values from LFCustoms (if any)
+            if( lf instanceof MetalLookAndFeel ) {
+                DarkMetalTheme darkTheme = new DarkMetalTheme();
+                MetalLookAndFeel.setCurrentTheme( darkTheme );
+                themeInstalled = true;
+                darkTheme.addCustomEntriesToTable( UIManager.getDefaults() );
+            } else if( lf instanceof NimbusLookAndFeel || lf instanceof javax.swing.plaf.nimbus.NimbusLookAndFeel ) {
+                DarkNimbusTheme.install( lf );
+            }
         }
         return themeInstalled;
     }
