@@ -401,7 +401,7 @@ final class MIMESupport extends Object {
                 }
                 InputStream is = fileObj.getInputStream();
 
-                fixIt = new CachedInputStream(is);
+                fixIt = new CachedInputStream(is, fileObj);
             }
 
             fixIt.cacheToStart();
@@ -656,14 +656,16 @@ final class MIMESupport extends Object {
 
     private static class CachedInputStream extends InputStream {
         private InputStream inputStream;
+        private FileObject fileObject;
         private byte[] buffer = null;
         private int len = 0;
         private int pos = 0;
         private boolean eof = false;
         private IOException cantRead;
 
-        CachedInputStream(InputStream is) {
+        CachedInputStream(InputStream is, FileObject fo) {
             inputStream = is;
+            fileObject = fo;
         }
 
         /** This stream can be closed only from MIMESupport. That`s why
@@ -733,9 +735,14 @@ final class MIMESupport extends Object {
          *
          * @return New buffer length.
          */
-        static int computeNewLength(int currLen, int requiredLen) {
+        private int computeNewLength(int currLen, int requiredLen) {
             int recommendedIncrease = Math.max(64, Math.min(8192, currLen));
             int newLen = Math.max(requiredLen, currLen + recommendedIncrease);
+            if (newLen > 64) {
+                ERR.log(Level.FINE, "CachedInputStream buffer length " //NOI18N
+                        + "for {0} will be increased to {1}", //NOI18N
+                        new Object[]{fileObject, newLen});
+            }
             return newLen;
         }
 

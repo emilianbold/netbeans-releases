@@ -137,10 +137,7 @@ public abstract class AbstractODCSTestCase extends NbTestCase  {
         rc = ODCS.getInstance().getRepositoryConnector(); // reuse the only one RC instance
         
         System.setProperty("netbeans.user", getWorkDir().getAbsolutePath());
-//        taskRepository = new TaskRepository(rc.getConnectorKind(), "https://q.tasktop.com/alm/s/anagramgame/tasks");
-        taskRepository = new TaskRepository(rc.getConnectorKind(), "http://qa-dev.developer.us.oracle.com/s/qa-dev_netbeans-test/tasks");
-//        taskRepository = new TaskRepository(rc.getConnectorKind(), "http://qa-dev.developer.us.oracle.com");
-//        taskRepository.setProperty("cloud-dev-project", "qa-dev_netbeans-test");
+        taskRepository = new TaskRepository(rc.getConnectorKind(), "http://developer.us.oracle.com/qa-dev/s/qa-dev_netbeans-test/tasks");
         
         
         AuthenticationCredentials authenticationCredentials = new AuthenticationCredentials(username, passw);

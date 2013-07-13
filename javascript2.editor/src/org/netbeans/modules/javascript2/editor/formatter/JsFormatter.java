@@ -801,9 +801,8 @@ public class JsFormatter implements Formatter {
             return false;
         }
 
-        String text = result.getText().toString();
-        return !(JsTokenId.BRACKET_LEFT_CURLY.fixedText().equals(text)
-                || JsTokenId.BRACKET_RIGHT_CURLY.fixedText().equals(text)
+        return !(JsTokenId.BRACKET_LEFT_CURLY == result.getId()
+                || JsTokenId.BRACKET_RIGHT_CURLY == result.getId()
                 || formatContext.isGenerated(result));
 
     }
