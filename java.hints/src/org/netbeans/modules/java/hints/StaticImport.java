@@ -143,7 +143,7 @@ public class StaticImport {
          * @param sn simple name
          */
         public FixImpl(TreePathHandle handle, String fqn, String sn) {
-            super(handle/*, "\uFFFFa"*/);
+            super(handle, "\uFFFFa");
             this.fqn = fqn;
             this.sn = sn;
         }
