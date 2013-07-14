@@ -375,6 +375,76 @@ public class IteratorToForTest {
                 + "    }\n"
                 + "}\n");
     }
+    
+    @Test public void for232298a() throws Exception {
+        HintTest.create().input("package test;\n"
+                + "import java.util.*;"
+                + "public class Test {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        List<String> argsList = Arrays.asList(args);\n"
+                + "        for (Iterator<String> it = argsList.iterator(); it.hasNext();) {\n"
+                + "            String arg = it.next();\n"
+                + "\n"
+                + "            //a\n"
+                + "            System.err.println(arg); //b\n"
+                + "            //c\n"
+                + "            System.err.println(arg); //d\n"
+                + "            //e\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n")
+                .run(IteratorToFor.class)
+                .findWarning("4:8-4:11:verifier:" + Bundle.ERR_IteratorToFor())
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n"
+                + "import java.util.*;"
+                + "public class Test {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        List<String> argsList = Arrays.asList(args);\n"
+                + "        for (String arg : argsList) {\n"
+                + "            //a\n"
+                + "            System.err.println(arg); //b\n"
+                + "            //c\n"
+                + "            System.err.println(arg); //d\n"
+                + "            //e\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n");
+    }
+    
+    @Test public void for232298b() throws Exception {
+        HintTest.create().input("package test;\n"
+                + "import java.util.*;"
+                + "public class Test {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        for (int i = 0; i < args.length; i++) {\n"
+                + "            //a\n"
+                + "            System.err.println(args[i]); //b\n"
+                + "            //c\n"
+                + "            System.err.println(args[i]); //d\n"
+                + "            //e\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n")
+                .run(IteratorToFor.class)
+                .findWarning("3:8-3:11:verifier:" + Bundle.ERR_IteratorToForArray())
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n"
+                + "import java.util.*;"
+                + "public class Test {\n"
+                + "    public static void main(String[] args) {\n"
+                + "        for (String arg : args) {\n"
+                + "            //a\n"
+                + "            System.err.println(arg); //b\n"
+                + "            //c\n"
+                + "            System.err.println(arg); //d\n"
+                + "            //e\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n");
+    }
 
     // XXX also ought to match: for (Iterator i = coll.iterator(); i.hasNext(); ) {use((Type) i.next());}
     // XXX match final modifiers on iterator and/or element vars
