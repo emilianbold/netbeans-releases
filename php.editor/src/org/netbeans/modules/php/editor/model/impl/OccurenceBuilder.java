@@ -1855,7 +1855,9 @@ class OccurenceBuilder {
     }
 
     private void buildDocTagsForVars(ElementInfo nodeCtxInfo, FileScopeImpl fileScope, final List<Occurence> occurences) {
-        final Scope ctxScope = nodeCtxInfo.getScope() instanceof VariableName ? nodeCtxInfo.getScope().getInScope() : nodeCtxInfo.getScope();
+        final Scope ctxScope = (nodeCtxInfo.getScope() instanceof VariableName || nodeCtxInfo.getScope() instanceof VarAssignmentImpl)
+                ? nodeCtxInfo.getScope().getInScope()
+                : nodeCtxInfo.getScope();
         if (!(ctxScope instanceof VariableScope)) {
             return;
         }
