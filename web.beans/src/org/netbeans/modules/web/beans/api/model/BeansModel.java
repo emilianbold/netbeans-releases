@@ -73,4 +73,12 @@ public interface BeansModel {
      * @return all alternative stereotypes FQNs found in beans.xml files
      */
     Set<String> getAlternativeStereotypes();
+
+    /**
+     * Gets information about the Bean Archive type of the project.
+     * Introduced by CDI 1.1 with implicit bean archive.
+     * @return bean archive type, never {@code null}
+     */
+    BeanArchiveType getBeanArchiveType();
+
 }

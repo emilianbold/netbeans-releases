@@ -107,6 +107,9 @@ public class WebBeansModelImpl extends AbstractDocumentModel<WebBeansComponent>
      * @see org.netbeans.modules.xml.xam.dom.DocumentModel#getRootComponent()
      */
     public WebBeansComponent getRootComponent() {
+        if(myRoot == null) {
+            refresh();
+        }
         return myRoot;
     }
 
@@ -125,7 +128,7 @@ public class WebBeansModelImpl extends AbstractDocumentModel<WebBeansComponent>
     }
     
     public Set<QName> getQNames() {
-        return WebBeansElements.allQNames();
+        return WebBeansElements.allQNames(this);
     }
     
     private BeansImpl myRoot;

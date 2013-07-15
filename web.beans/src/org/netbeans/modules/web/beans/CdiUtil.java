@@ -158,8 +158,8 @@ public class CdiUtil {
         return false;
     }
 
-    private static boolean isCdi11(Project p) {
-        return hasResource(p, "javax/enterprise/inject/spi/AfterTypeDiscovery.class");
+    public static boolean isCdi11(Project p) {
+        return hasResource(p, "javax/enterprise/inject/spi/AfterTypeDiscovery.class"); //NOI18N
     }
 
     private static boolean hasResource(Project project, String resource) {
