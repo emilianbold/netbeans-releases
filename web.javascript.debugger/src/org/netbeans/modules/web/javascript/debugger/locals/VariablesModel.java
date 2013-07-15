@@ -411,6 +411,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     }
     
     
+    @NbBundle.Messages({"Scope_Local=Local", "Scope_Global=Global"})
     public static class ScopedRemoteObject {
 
         private RemoteObject var;
@@ -425,10 +426,10 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
             this.var = var;
             if (sc.isLocalScope()) {
                 this.scope = ViewScope.LOCAL;
-                this.objectName = "Local";
+                this.objectName = Bundle.Scope_Local();
             } else {
                 this.scope = ViewScope.GLOBAL;
-                this.objectName = "Global";
+                this.objectName = Bundle.Scope_Global();
             }
         }
 
