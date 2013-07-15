@@ -120,8 +120,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private HistoryDiffView diffView;
     
     private FileObject[] files;
-    private InstanceContent activatedNodesContent;
-    private ProxyLookup lookup;
+    private final InstanceContent activatedNodesContent;
+    private final ProxyLookup lookup;
     private Lookup context;
     private VersioningSystem versioningSystem;
     private MultiViewElementCallback callback;
@@ -131,27 +131,48 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private final Object FILE_LOCK = new Object();
     
     public HistoryComponent() {
+        activatedNodesContent = new InstanceContent();
+        lookup = new ProxyLookup(new Lookup[] {
+            new AbstractLookup(activatedNodesContent)
+        });
+        init();
+    }
+
+    public HistoryComponent(VCSFileProxy... files) {
+        activatedNodesContent = new InstanceContent();
+        lookup = new ProxyLookup(new Lookup[] {
+            new AbstractLookup(activatedNodesContent)
+        });
+        init();
+        if(files != null && files.length > 0) {
+            initFiles(files);
+        }
+        resetUI();
+    }
+    
+    public HistoryComponent(Lookup context) {
+        this.context = context;
+        activatedNodesContent = new InstanceContent();
+        if(context != null) {
+            lookup = new ProxyLookup(new Lookup[] {
+                context,
+                new AbstractLookup(activatedNodesContent)
+            });
+        } else {
+            lookup = new ProxyLookup(new Lookup[] {
+                new AbstractLookup(activatedNodesContent)
+            });
+        }
+        init();
+        initFromContext();
+    }
+
+    private void init() {
         initComponents();
         if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
             setBackground(UIManager.getColor("NbExplorerView.background"));     // NOI18N
         }
         Utils.addPropertyChangeListener(this);
-        activatedNodesContent = new InstanceContent();
-    }
-    
-    public HistoryComponent(VCSFileProxy... files) {
-        this();
-
-        if(files != null && files.length > 0) {
-            initFiles(files);
-        }
-        init();
-    }
-    
-    public HistoryComponent(Lookup context) {
-        this();
-        this.context = context;
-        initFromContext();
     }
     
     private synchronized void initFromContext() {
@@ -187,7 +208,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                init();
+                resetUI();
             }
         };
         if(EventQueue.isDispatchThread()) {
@@ -266,7 +287,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         return ret;
     }        
 
-    private void init() {   
+    private void resetUI() {   
         if(hasFiles()) {
             FileObject fo = getFile();
             this.versioningSystem = hasFiles() ? getOwner(fo) : null;
@@ -346,7 +367,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        init();
+                        resetUI();
                     }
                 });
             }
@@ -488,18 +509,6 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
 
     @Override
     public Lookup getLookup() {
-        if(lookup == null) {
-            if(context != null) {
-                lookup = new ProxyLookup(new Lookup[] {
-                    context,
-                    new AbstractLookup(activatedNodesContent)
-                });
-            } else {
-                lookup = new ProxyLookup(new Lookup[] {
-                    new AbstractLookup(activatedNodesContent)
-                });
-            }
-        }
         return lookup;
     }
 
