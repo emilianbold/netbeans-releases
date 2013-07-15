@@ -133,9 +133,9 @@ public class DocumentNode extends AbstractNode {
     static class DocumentChildren extends Children.Keys<FileObject> implements ChangeListener {
 
         private static boolean first_run = true;
-        private Filter filter;
+        private final Filter filter;
         private DocumentViewModel model;
-        private UserTask refreshKeysTask;
+        private final UserTask refreshKeysTask;
 
         private DocumentChildren(DocumentViewModel model, Filter filter) {
             this.model = model;

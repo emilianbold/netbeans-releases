@@ -123,7 +123,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      * A strong reference to the Lookup.Result must be kept! 
      * See {@link Result#addLookupListener(org.openide.util.LookupListener)}.
      */
-    private Result<FileObject> lookupFileObjectResult; 
+    private final Result<FileObject> lookupFileObjectResult; 
     
     /**
      * Filter for the tree displayed in this panel.

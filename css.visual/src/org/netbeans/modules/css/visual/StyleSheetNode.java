@@ -134,11 +134,11 @@ public class StyleSheetNode extends AbstractNode {
     static class StyleSheetChildren extends Children.Keys<RuleHandle> implements ChangeListener  {
         
         private DocumentViewModel model;
-        private FileObject stylesheet;
-        private Project project;
+        private final FileObject stylesheet;
+        private final Project project;
         
         /** Filter of the subtree of the node. */
-        private Filter filter;
+        private final Filter filter;
 
         StyleSheetChildren(DocumentViewModel model, FileObject stylesheet, Filter filter) {
             this.model = model;
