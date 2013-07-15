@@ -52,6 +52,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.EditorOptions;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -95,6 +96,15 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         this.singleQuote = singleQuote;
     }
 
+    private boolean isInsertMatchingEnabled() {
+        EditorOptions options = EditorOptions.get(language.mimeType());
+        if (options != null) {
+            return options.getMatchBrackets();
+        }
+
+        return true;
+    }
+
     @Override
     public void afterInsert(final Context context) throws BadLocationException {
         isAfter = true;
@@ -136,12 +146,15 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
         //dumpTokens(doc, dotPos);
         switch (ch) {
-        case '}':
         case '{':
+        case '(':
+        case '[':
+            if (!isInsertMatchingEnabled()) {
+                break;
+            }
+        case '}':
         case ')':
         case ']':
-        case '(':
-        case '[': {
             Token<? extends JsTokenId> token = LexUtilities.getToken(doc, dotPos, language);
             if (token == null) {
                 return;
@@ -171,9 +184,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             } else if (ch == ']') {
                 reindent(doc, dotPos, JsTokenId.BRACKET_RIGHT_BRACKET, caret);
             }
-        }
-
-        break;
+            break;
         default:
             break;
         }
