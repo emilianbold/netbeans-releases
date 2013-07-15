@@ -63,6 +63,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.TreeCellRenderer;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Rule;
@@ -80,6 +82,8 @@ import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.ExplorerUtils;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
+import org.openide.nodes.AbstractNode;
+import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -88,6 +92,8 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -110,14 +116,14 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
     /**
      * Lookup of this panel.
      */
-    private final Lookup lookup;
+    private final PanelLookup lookup;
     private final Lookup cssStylesLookup;
     
     /**
      * A strong reference to the Lookup.Result must be kept! 
      * See {@link Result#addLookupListener(org.openide.util.LookupListener)}.
      */
-    private Result<FileObject> lookupFileObjectResult; 
+    private final Result<FileObject> lookupFileObjectResult; 
     
     /**
      * Filter for the tree displayed in this panel.
@@ -173,15 +179,18 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         RuleEditorController controller = cssStylesLookup.lookup(RuleEditorController.class);
         controller.addRuleEditorListener(RULE_EDITOR_CONTROLLER_LISTENER);
 
-        lookup = ExplorerUtils.createLookup(getExplorerManager(), getActionMap());
-        Result<Node> lookupResult = lookup.lookupResult(Node.class);
+        Lookup explorerLookup = ExplorerUtils.createLookup(getExplorerManager(), getActionMap());
+        lookup = new PanelLookup(explorerLookup);        
+        Result<Node> lookupResult = explorerLookup.lookupResult(Node.class);
         lookupResult.addLookupListener(new LookupListener() {
             @Override
             public void resultChanged(LookupEvent ev) {
                 //selected node changed
                 Node[] selectedNodes = manager.getSelectedNodes();
                 Node selected = selectedNodes.length > 0 ? selectedNodes[0] : null;
-                if (selected != null) {
+                boolean empty = (selected == null);
+                lookup.emptySelection(empty);
+                if (!empty) {
                     RuleHandle ruleHandle = selected.getLookup().lookup(RuleHandle.class);
                     if (ruleHandle != null) {
                         selectRuleInRuleEditor(ruleHandle);
@@ -326,6 +335,7 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
      */
     private void contextChanged() {
         final FileObject context = getContext();
+        lookup.update(context);
 
         //update the action context
         createRuleAction.setContext(context);
@@ -588,6 +598,36 @@ public class DocumentViewPanel extends javax.swing.JPanel implements ExplorerMan
         }
         northPanel.revalidate();
         northPanel.repaint();
+    }
+
+    static class PanelLookup extends ProxyLookup {
+        private final Lookup base;
+        private Project project;
+        private boolean emptySelection = true;
+
+        PanelLookup(Lookup base) {
+            this.base = base;
+        }
+        
+        void update(FileObject file) {
+            project = (file == null) ? null : FileOwnerQuery.getOwner(file);
+            update();
+        }
+
+        void emptySelection(boolean emptySelection) {
+            if (this.emptySelection != emptySelection) {
+                this.emptySelection = emptySelection;
+                update();
+            }
+        }
+
+        private void update() {
+            if (emptySelection && (project != null)) {
+                setLookups(Lookups.fixed(new AbstractNode(Children.LEAF, Lookups.fixed(project))));
+            } else {
+                setLookups(base);
+            }
+        }
     }
 
     /**
