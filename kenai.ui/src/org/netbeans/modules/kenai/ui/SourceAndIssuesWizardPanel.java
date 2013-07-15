@@ -60,11 +60,10 @@ public class SourceAndIssuesWizardPanel implements WizardDescriptor.Panel,
         WizardDescriptor.ValidatingPanel, WizardDescriptor.FinishablePanel {
 
     private SourceAndIssuesWizardPanelGUI component;
-    private WizardDescriptor settings;
 
     private final ChangeSupport changeSupport = new ChangeSupport(this);
     private final List<SharedItem> initialItems;
-    private NewKenaiProjectWizardIterator iter;
+    private final NewKenaiProjectWizardIterator iter;
 
 
     public SourceAndIssuesWizardPanel(NewKenaiProjectWizardIterator iter, List<SharedItem> items) {
@@ -76,6 +75,7 @@ public class SourceAndIssuesWizardPanel implements WizardDescriptor.Panel,
         return initialItems;
     }
 
+    @Override
     public Component getComponent() {
         if (component == null) {
             component = new SourceAndIssuesWizardPanelGUI(this);
@@ -83,27 +83,32 @@ public class SourceAndIssuesWizardPanel implements WizardDescriptor.Panel,
         return component;
     }
 
+    @Override
     public HelpCtx getHelp() {
-        return new HelpCtx(SourceAndIssuesWizardPanel.class.getName());
+        return new HelpCtx("org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanel"); // NOI18N
     }
 
+    @Override
     public void readSettings(Object settings) {
-        this.settings = (WizardDescriptor) settings;
         component.read((WizardDescriptor) settings);
     }
 
+    @Override
     public void storeSettings(Object settings) {
         component.store((WizardDescriptor) settings);
     }
 
+    @Override
     public boolean isValid() {
         return component.valid();
     }
 
+    @Override
     public final void addChangeListener(ChangeListener l) {
         changeSupport.addChangeListener(l);
     }
 
+    @Override
     public final void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
     }
@@ -112,10 +117,12 @@ public class SourceAndIssuesWizardPanel implements WizardDescriptor.Panel,
         changeSupport.fireChange();
     }
 
+    @Override
     public void validate() throws WizardValidationException {
         component.validateWizard();
     }
 
+    @Override
     public boolean isFinishPanel() {
         return true;
     }

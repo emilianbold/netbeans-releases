@@ -107,12 +107,12 @@ import org.netbeans.modules.team.ui.spi.TeamServer;
  */
 public class NameAndLicenseWizardPanelGUI extends JPanel {
     
-    private RequestProcessor errorChecker = new RequestProcessor("Error Checker"); // NOI18N
+    private final RequestProcessor errorChecker = new RequestProcessor("Error Checker"); // NOI18N
 
     private WizardDescriptor settings;
 
     private NameAndLicenseWizardPanel panel;
-    private Pattern prjNamePattern;
+    private final Pattern prjNamePattern;
 
     private static final String PRJ_NAME_REGEXP = "[a-z]{1}[a-z0-9-]+"; // NOI18N
 
@@ -124,7 +124,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
     private boolean licensesLoaded = true;
 
-    private PropertyChangeListener kenaiListener;
+    private final PropertyChangeListener kenaiListener;
 
     public static final String getPreviewPrefix(Kenai kenai) {
         if (kenai==null) {
@@ -172,24 +172,30 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         prjNamePattern = Pattern.compile(PRJ_NAME_REGEXP);
 
         DocumentListener firingDocListener = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 panel.fireChangeEvent();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 panel.fireChangeEvent();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 panel.fireChangeEvent();
             }
         };
         
         DocumentListener updatingDocListener = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 updatePrjNamePreview();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 updatePrjNamePreview();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 updatePrjNamePreview();
             }
@@ -200,7 +206,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         projectTitleTextField.getDocument().addDocumentListener(firingDocListener);
         projectDescTextField.getDocument().addDocumentListener(firingDocListener);
         SwingUtilities.invokeLater(new Runnable() {
-
+            @Override
             public void run() {
                 projectNameTextField.requestFocus();
             }
@@ -211,6 +217,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
 
         kenaiListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (TeamServer.PROP_LOGIN.equals(evt.getPropertyName())) {
                     if (panel.getKenai().getPasswordAuthentication() != null) {
@@ -273,6 +280,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                     setLicenses(licenseList);
                 }
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         projectLicenseComboBox.setModel(model);
                         projectLicenseComboBox.setSelectedItem(EMPTY_ELEMENT);
@@ -581,6 +589,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         prjNameCheckMessage = null;
         panel.fireChangeEvent();
         errorChecker.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     prjNameCheckMessage = panel.getKenai().checkProjectName(getProjectName());
