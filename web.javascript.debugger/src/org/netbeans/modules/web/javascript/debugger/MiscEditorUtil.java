@@ -91,6 +91,7 @@ import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 
 public final class MiscEditorUtil {
 
@@ -182,8 +183,14 @@ public final class MiscEditorUtil {
                 if (fileObject == null && (filePath.startsWith("http:") || filePath.startsWith("https:"))) {    // NOI18N
                     fileObject = RemoteFileCache.getRemoteFile(url);
                 }
-            } else {
-                File file = new File(filePath);
+            }
+            if (fileObject == null) {
+                File file;
+                if (filePath.startsWith("file:/")) {
+                    file = Utilities.toFile(uri);
+                } else {
+                    file = new File(filePath);
+                }
                 fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
             }
         } catch (IOException ex) {

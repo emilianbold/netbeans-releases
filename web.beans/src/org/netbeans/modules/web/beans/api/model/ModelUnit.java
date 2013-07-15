@@ -47,6 +47,7 @@ import java.net.URISyntaxException;
 
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
+import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
 
 
@@ -57,11 +58,12 @@ import org.openide.filesystems.FileObject;
 public class ModelUnit {
     
     private ModelUnit( ClassPath bootPath, ClassPath compilePath, 
-            ClassPath sourcePath)
+            ClassPath sourcePath, Project project)
     {
         myBootPath= bootPath;
         myCompilePath = compilePath;
         mySourcePath = sourcePath;
+        myProject = project;
         myClassPathInfo = ClasspathInfo.create(bootPath, 
                 compilePath, sourcePath);
     }
@@ -76,6 +78,10 @@ public class ModelUnit {
 
     public ClassPath getSourcePath() {
         return mySourcePath;
+    }
+
+    public Project getProject() {
+        return myProject;
     }
     
     @Override
@@ -97,9 +103,9 @@ public class ModelUnit {
     }
 
     public static ModelUnit create(ClassPath bootPath, ClassPath compilePath, 
-            ClassPath sourcePath)
+            ClassPath sourcePath, Project project)
     {
-        return new ModelUnit(bootPath, compilePath, sourcePath);
+        return new ModelUnit(bootPath, compilePath, sourcePath, project);
     }
     
     public ClasspathInfo getClassPathInfo(){
@@ -147,5 +153,6 @@ public class ModelUnit {
     private final ClassPath myBootPath;
     private final ClassPath myCompilePath;
     private final ClassPath mySourcePath;
+    private final Project myProject;
     
 }

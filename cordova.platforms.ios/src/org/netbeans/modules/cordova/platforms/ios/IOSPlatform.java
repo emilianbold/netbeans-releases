@@ -75,7 +75,8 @@ public class IOSPlatform implements MobilePlatform {
     private static String IOS_PROVISIONING_PROFILE_PREF = "ios.provisioning.profile"; //NOI18N
     public static final int DEFAULT_TIMEOUT = 30000;
     
-
+    private boolean isReady = false;
+    
     private transient final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
     private String sdkLocation;
     private SDK DEFAULT = new IOSSDK("Simulator - iOS 6.0", "iphonesimulator6.0"); // NOI18N
@@ -99,9 +100,31 @@ public class IOSPlatform implements MobilePlatform {
     }
     
     @Override
-    public boolean isReady() {
-        File f = new File("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform"); // NOI18N
-        return f.exists();
+    public synchronized boolean isReady() {
+        if (!isReady) {
+            try {
+                String path = ProcessUtilities.callProcess("xcode-select", true, DEFAULT_TIMEOUT, "--print-path");
+                if (!"/Applications/Xcode.app/Contents/Developer".equals(path.trim())) {
+                    return false;
+                }
+                File f = new File("/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneSimulator.platform"); // NOI18N
+                if (!f.exists()) {
+                    return false;
+                }
+                String version = ProcessUtilities.callProcess("xcodebuild", true, DEFAULT_TIMEOUT, "-version");
+                String[] lines = version.split(System.getProperty("line.separator"));
+                if (lines.length<1) {
+                    return false;
+                }
+                if (!lines[0].startsWith("Xcode")) {
+                    return false;
+                }
+            } catch (IOException ex) {
+                return false;
+            }
+            isReady = true;
+        }
+        return isReady;
     }
     
     @Override

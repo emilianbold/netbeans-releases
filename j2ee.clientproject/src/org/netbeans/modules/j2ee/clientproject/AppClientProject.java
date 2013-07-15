@@ -1063,7 +1063,7 @@ public final class AppClientProject implements Project, FileChangeListener {
         @Override
         public String getBrowserID() {
             // Does not make sense for Application Client project - simply do nothing
-            return "";
+            return null;
         }
     }
     

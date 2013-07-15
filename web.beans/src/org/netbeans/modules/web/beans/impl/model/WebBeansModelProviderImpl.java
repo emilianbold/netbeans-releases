@@ -71,6 +71,8 @@ import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.Annotatio
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.PersistentObjectManager;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.AnnotationParser;
 import org.netbeans.modules.j2ee.metadata.model.api.support.annotation.parser.ParseResult;
+import org.netbeans.modules.web.beans.CdiUtil;
+import org.netbeans.modules.web.beans.api.model.BeanArchiveType;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
 import org.openide.util.NbBundle;
 
@@ -288,6 +290,11 @@ public class WebBeansModelProviderImpl extends DecoratorInterceptorLogic {
         
         setCachedResult( result );
         return result;
+    }
+
+    @Override
+    public BeanArchiveType getBeanArchiveType() {
+        return getModel().getBeansModel().getBeanArchiveType();
     }
     
     public static List<AnnotationMirror> getAllStereotypes( Element element ,

@@ -39,79 +39,36 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
+package org.netbeans.modules.css.prep.sass;
 
-import com.dd.plist.NSDictionary;
-import com.dd.plist.NSObject;
-import com.dd.plist.PropertyListParser;
-import java.io.IOException;
-import java.util.Objects;
-import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
-import org.netbeans.modules.cordova.platforms.spi.ProvisioningProfile;
-import org.openide.util.Exceptions;
+import org.netbeans.junit.NbTestCase;
 
-/**
- *
- * @author Jan Becicka
- */
-public class IOSProvisioningProfile implements ProvisioningProfile {
-    
-    private String displayName;
-    private String path;
-    
-    public IOSProvisioningProfile(String path) {
-        displayName = "Error"; // NOI18N
-        try {
-            this.path = path;
-            String xml = ProcessUtilities.callProcess("security", true, IOSPlatform.DEFAULT_TIMEOUT, "cms", "-D", "-i", path); // NOI18N
-            NSObject root = PropertyListParser.parse(xml.getBytes());
-            if (root instanceof NSDictionary) {
-                displayName = ((NSDictionary) root).objectForKey("Name").toString(); // NOI18N
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
+
+public class SassExecutableTest extends NbTestCase {
+
+    public SassExecutableTest(String name) {
+        super(name);
     }
 
-    @Override
-    public String getDisplayName() {
-        return displayName;
+    public void testParseValidVersions() {
+        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.2.9 (Media Mark)"));
+        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("SASS 3.2.9 (Media Mark)"));
+        assertEquals("3.3.0", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.3.0 (Media Mark)"));
+        assertEquals("3.3.0", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.3.0.alpha.198"));
+        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.2.9a (Media Mark)"));
+        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.2.9-upd10 (Media Mark)"));
+        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.2.9 patch 3 (Media Mark)"));
+        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.2.9"));
+        assertEquals("3.2.9.1.25", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 3.2.9.1.25"));
+        assertEquals("3.2.9", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass  3.2.9    (Media Mark)"));
+        assertEquals("1", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 1 (Media Mark)"));
+        assertEquals("1.0", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 1.0 (Media Mark)"));
+        assertEquals("1.0", SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass 1.0,25 (Media Mark)"));
     }
 
-    @Override
-    public String getPath() {
-        return path;
+    public void testParseInvalidVersions() {
+        assertNull(SassExecutable.VersionOutputProcessorFactory.parseVersion("3.2.9 (Media Mark)"));
+        assertNull(SassExecutable.VersionOutputProcessorFactory.parseVersion("Sass-NG 3.2.9 (Media Mark)"));
     }
 
-    @Override
-    public String toString() {
-        return displayName;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 73 * hash + Objects.hashCode(this.path);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final IOSProvisioningProfile other = (IOSProvisioningProfile) obj;
-        if (!Objects.equals(this.path, other.path)) {
-            return false;
-        }
-        return true;
-    }
-    
-    
 }

@@ -99,7 +99,7 @@ public class CommonTestCase extends JavaSourceTestCase {
         ModelUnit modelUnit = ModelUnit.create(
                 ClassPath.getClassPath(srcFO, ClassPath.BOOT),
                 ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
-                ClassPath.getClassPath(srcFO, ClassPath.SOURCE));
+                ClassPath.getClassPath(srcFO, ClassPath.SOURCE), null);
         return new TestWebBeansModelImpl(modelUnit, fullModel);
     }
     

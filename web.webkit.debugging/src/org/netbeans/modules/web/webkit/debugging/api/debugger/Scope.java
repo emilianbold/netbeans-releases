@@ -53,19 +53,31 @@ public class Scope extends AbstractObject{
 
     Scope(JSONObject scope, WebKitDebugging webkit) {
         super(scope, webkit);
-        scopeObject = new RemoteObject((JSONObject)scope.get("object"), webkit);
+        scopeObject = new RemoteObject((JSONObject)scope.get("object"), webkit);// NOI18N
     }
 
     public String getType() {
-        return (String)getObject().get("type");
+        return (String)getObject().get("type");                                 // NOI18N
     }
     
     public boolean isLocalScope() {
-        return "local".equals(getType());
+        return "local".equals(getType());                                       // NOI18N
     }
     
     public boolean isGlobalScope() {
-        return "global".equals(getType());
+        return "global".equals(getType());                                      // NOI18N
+    }
+    
+    public boolean isCatchScope() {
+        return "catch".equals(getType());                                       // NOI18N
+    }
+    
+    public boolean isClosureScope() {
+        return "closure".equals(getType());                                     // NOI18N
+    }
+    
+    public boolean isWithScope() {
+        return "with".equals(getType());                                        // NOI18N
     }
     
     public RemoteObject getScopeObject() {

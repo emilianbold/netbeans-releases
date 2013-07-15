@@ -82,7 +82,7 @@ import org.openide.util.Parameters;
  * 
  * </pre>
  * 
- * All the {@link RuleEditorController} methods may be called from a non AWT thread.
+ * All the {@link RuleEditorController} methods except {@link #getRuleEditorComponent() } may be called from a non AWT thread.
  * 
  * TODO:
  * 1) consider an ability to get the filters panel and place it to a component outside
@@ -121,7 +121,10 @@ public final class RuleEditorController {
      * @return non null value
      */
     public static RuleEditorController createInstance() {
-        return new RuleEditorController(new RuleEditorPanel());
+        return new RuleEditorController();
+    }
+    
+    private RuleEditorController() {
     }
     
     private RuleEditorController(RuleEditorPanel peer) {
@@ -130,13 +133,18 @@ public final class RuleEditorController {
     
     /**
      * Gets the rule editor UI component.
+     * Must be called in EDT.
+     * 
      * @return non null value
      */
     public JComponent getRuleEditorComponent() {
-        return peer;
+        return getRuleEditorPanel();
     }
     
-    RuleEditorPanel getRuleEditorPanel() {
+    synchronized RuleEditorPanel getRuleEditorPanel() {
+        if(peer == null) {
+            peer = new RuleEditorPanel();
+        }
         return peer;
     }
     
