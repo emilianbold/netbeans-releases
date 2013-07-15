@@ -275,7 +275,7 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
     }
 
     private static String loginKey(TeamServer server, boolean listAllProviders) {
-        return server.getUrl().toString() + "#" + listAllProviders; // NOI18N
+        return (server != null ? server.getUrl().toString() : "") + "#" + listAllProviders; // NOI18N
     }
     
     private static class LoginCallable implements Callable<TeamServer> {
