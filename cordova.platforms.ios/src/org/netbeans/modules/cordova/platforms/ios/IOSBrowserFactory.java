@@ -110,8 +110,7 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
         
         @Override
         public Image getIconImage(boolean small) {
-            // TODO: return small icon
-            return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/iossimulator.png", false);
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/iossimulator" + (small?"16.png":".png"), false);
         }
     }
 
@@ -140,8 +139,7 @@ public abstract class IOSBrowserFactory implements EnhancedBrowserFactory, HtmlB
 
         @Override
         public Image getIconImage(boolean small) {
-            // TODO: return small icon
-            return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/iosdevice.png", false);
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/ios/iosdevice" + (small?"16.png":".png"), false);
         }
         
     }

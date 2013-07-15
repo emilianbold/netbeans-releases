@@ -549,7 +549,6 @@ public class CSSStylesOperator extends TopComponentOperator {
                 if (t.getDisplayName().equalsIgnoreCase(propertyName)) {
                     if (clickToEdit) {
                         _tabTreeTable.clickOnCell(i, 1);
-                        _tabTreeTable.pressKey(KeyEvent.VK_ESCAPE); // hide suggestions
                     }
                     if (!up) {
                         for (int j = 0; j < buttonPresses; j++) {

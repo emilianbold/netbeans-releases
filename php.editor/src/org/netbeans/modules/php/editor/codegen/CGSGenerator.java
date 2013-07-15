@@ -447,23 +447,26 @@ public final class CGSGenerator implements CodeGenerator {
         // obtain the generation from project properties
         JTextComponent component = cgsInfo.getComponent();
         FileObject fo = NbEditorUtilities.getFileObject(component.getDocument());
+        Preferences preferences = null;
         Project project = FileOwnerQuery.getOwner(fo);
         if (project != null) {
-            Preferences preferences = ProjectUtils.getPreferences(project, CGSGenerator.class, false);
+            preferences = ProjectUtils.getPreferences(project, CGSGenerator.class, false);
             try {
                 cgsInfo.setHowToGenerate(GenWay.valueOf(preferences.get(GETTER_SETTER_PROJECT_PROPERTY, GenWay.AS_JAVA.name())));
             } catch (IllegalArgumentException ex) {
                 cgsInfo.setHowToGenerate(GenWay.AS_JAVA);
             }
             cgsInfo.setFluentSetter(preferences.getBoolean(FLUENT_SETTER_PROJECT_PROPERTY, false));
-            DialogDescriptor desc = new DialogDescriptor(genType.createPanel(cgsInfo), genType.getDialogTitle());
-            Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
-            dialog.setVisible(true);
-            dialog.dispose();
-            if (desc.getValue() == DialogDescriptor.OK_OPTION) {
-                CodeTemplateManager manager = CodeTemplateManager.get(component.getDocument());
-                CodeTemplate template = manager.createTemporary(genType.getTemplateText(cgsInfo));
-                template.insert(component);
+        }
+        DialogDescriptor desc = new DialogDescriptor(genType.createPanel(cgsInfo), genType.getDialogTitle());
+        Dialog dialog = DialogDisplayer.getDefault().createDialog(desc);
+        dialog.setVisible(true);
+        dialog.dispose();
+        if (desc.getValue() == DialogDescriptor.OK_OPTION) {
+            CodeTemplateManager manager = CodeTemplateManager.get(component.getDocument());
+            CodeTemplate template = manager.createTemporary(genType.getTemplateText(cgsInfo));
+            template.insert(component);
+            if (preferences != null) {
                 //save the gen type value to the project properties
                 preferences.put(GETTER_SETTER_PROJECT_PROPERTY, cgsInfo.getHowToGenerate().name());
                 preferences.putBoolean(FLUENT_SETTER_PROJECT_PROPERTY, cgsInfo.isFluentSetter());
