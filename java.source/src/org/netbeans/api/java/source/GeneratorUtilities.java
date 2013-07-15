@@ -364,6 +364,7 @@ public final class GeneratorUtilities {
         Set<Modifier> flags = mods.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(mods);
         flags.remove(Modifier.ABSTRACT);
         flags.remove(Modifier.NATIVE);
+        flags.remove(Modifier.DEFAULT);
 
         ExecutableType et = (ExecutableType) method.asType();
         try {
@@ -1174,6 +1175,10 @@ public final class GeneratorUtilities {
                    mt = make.addModifiersAnnotation(prototype.getModifiers(), make.Annotation(make.Identifier("Override"), Collections.<ExpressionTree>emptyList()));
                 }
             }
+        }
+        
+        if (clazz.getKind() == ElementKind.INTERFACE) {
+            mt = make.addModifiersModifier(mt, Modifier.DEFAULT);
         }
         
         boolean isAbstract = element.getModifiers().contains(Modifier.ABSTRACT);

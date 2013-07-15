@@ -402,7 +402,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
     public void testCreateMethod() throws Exception {
         performTest("package test;\npublic class Test { }\n", "1.5", new CreateMethodTask(34), new Validator() {
             public void validate(CompilationInfo info) {
-                assertEquals(1, info.getDiagnostics().size());
+                assertEquals(info.getDiagnostics().toString(), 1, info.getDiagnostics().size());
 
                 for (ExecutableElement ee : ElementFilter.methodsIn(info.getElements().getTypeElement("test.Test").getEnclosedElements())) {
                     assertEquals("toArray", ee.getSimpleName().toString());
@@ -1476,6 +1476,74 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         }
     }
 
+    public void test232199a() throws Exception {
+        performTest("test/Test.java",
+                    "package test; public class Test implements I { } interface I { public default void t() { } } \n",
+                    "1.8",
+                    new T2Test(true),
+                    new ContentValidator("package test; public class Test implements I { \n\n    @Override\n    public void t() {\n        I.super.t(); //To change body of generated methods, choose Tools | Templates.\n    }\n } interface I { public default void t() { } } \n"),
+                    false);
+    }
+    
+    public void test232199b() throws Exception {
+        performTest("test/Test.java",
+                    "package test; public interface Test extends I { } interface I { public void t(); } \n",
+                    "1.8",
+                    new T2Test(false),
+                    new ContentValidator("package test; public interface Test extends I { \n\n    @Override\n    public default void t() {\n        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n    }\n } interface I { public void t(); } \n"),
+                    false);
+    }
+    
+    public void test232199c() throws Exception {
+        performTest("test/Test.java",
+                    "package test; public interface Test extends I { } interface I { public default void t() { } } \n",
+                    "1.8",
+                    new T2Test(true),
+                    new ContentValidator("package test; public interface Test extends I { \n\n    @Override\n    public default void t() {\n        I.super.t(); //To change body of generated methods, choose Tools | Templates.\n    }\n } interface I { public default void t() { } } \n"),
+                    false);
+    }
+    
+    public void test232199d() throws Exception {
+        performTest("test/Test.java",
+                    "package test; public class Test implements I { } interface I { public void t(); } \n",
+                    "1.8",
+                    new T2Test(false),
+                    new ContentValidator("package test; public class Test implements I { \n\n    @Override\n    public void t() {\n        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n    }\n } interface I { public void t(); } \n"),
+                    false);
+    }
+    
+    private static final class T2Test implements Task<WorkingCopy> {
+        private final boolean override;
+        public T2Test(boolean override) {
+            this.override = override;
+        }
+        @Override
+        public void run(WorkingCopy parameter) throws Exception {
+            parameter.toPhase(Phase.RESOLVED);
+
+            TypeElement i = parameter.getElements().getTypeElement("test.I");
+            TypeElement test = parameter.getElements().getTypeElement("test.Test");
+            
+            assertNotNull(i);
+            assertNotNull(test);
+            
+            ExecutableElement t = (ExecutableElement) i.getEnclosedElements().get(0);
+            
+            ClassTree testTree = parameter.getTrees().getTree(test);
+            MethodTree newMethod;
+            
+            if (override) {
+                newMethod = GeneratorUtilities.get(parameter).createAbstractMethodImplementation(test, t);
+            } else {
+                newMethod = GeneratorUtilities.get(parameter).createAbstractMethodImplementation(test, t);
+            }
+            
+            ClassTree nueTestTree = parameter.getTreeMaker().addClassMember(testTree, newMethod);
+            
+            parameter.rewrite(testTree, nueTestTree);
+        }
+    }
+    
     private static final class ContentValidator implements Validator {
 
         private final String expectedCode;

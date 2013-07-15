@@ -852,6 +852,16 @@ public class CasualDiff {
                 int[] bodyBounds = getBounds(oldT.body);
                 copyTo(localPointer, bodyBounds[0]);
                 localPointer = diffTree(oldT.body, newT.body, bodyBounds);
+            } else if (oldT.body == null && newT.body != null) {
+                tokenSequence.move(localPointer);
+                moveToSrcRelevant(tokenSequence, Direction.FORWARD);
+                if (tokenSequence.token().id() == JavaTokenId.SEMICOLON) {
+                    localPointer = tokenSequence.offset() + tokenSequence.token().length();
+                }
+                if (diffContext.style.spaceBeforeMethodDeclLeftBrace()) {
+                    printer.print(" ");
+                }
+                printer.print(newT.body);
             }
         }
         // TODO: Missing implementation - default value matching!

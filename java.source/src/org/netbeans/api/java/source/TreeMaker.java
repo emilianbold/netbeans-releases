@@ -2157,6 +2157,7 @@ public final class TreeMaker {
             case SYNCHRONIZED: c = c | Flags.SYNCHRONIZED; break;
             case TRANSIENT: c = c | Flags.TRANSIENT; break;
             case VOLATILE: c = c | Flags.VOLATILE; break;
+            case DEFAULT: c = c | Flags.DEFAULT; break;
             default:
                 break;
         }
@@ -2177,6 +2178,7 @@ public final class TreeMaker {
             case SYNCHRONIZED: c = c & ~Flags.SYNCHRONIZED; break;
             case TRANSIENT: c = c & ~Flags.TRANSIENT; break;
             case VOLATILE: c = c & ~Flags.VOLATILE; break;
+            case DEFAULT: c = c & ~Flags.DEFAULT; break;
             default:
                 break;
         }
