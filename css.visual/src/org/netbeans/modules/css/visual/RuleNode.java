@@ -43,6 +43,7 @@ package org.netbeans.modules.css.visual;
 
 import org.netbeans.modules.css.visual.spi.RuleHandle;
 import javax.swing.Action;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.visual.actions.OpenLocationAction;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -64,8 +65,8 @@ public class RuleNode extends AbstractNode {
      * @param rule rule represented by the node.
      * @param ruleOrigin origin of the rule.
      */
-    RuleNode(RuleHandle ruleHandle) {
-        super(Children.LEAF, Lookups.fixed(ruleHandle));
+    RuleNode(RuleHandle ruleHandle, Project project) {
+        super(Children.LEAF, (project == null) ? Lookups.fixed(ruleHandle) : Lookups.fixed(ruleHandle, project));
         setDisplayName(ruleHandle.getDisplayName());
         setIconBaseWithExtension(ICON_BASE);
     }
