@@ -103,10 +103,11 @@ public class BreakpointAnnotationListener extends DebuggerManagerAdapter
     }
 
     private void addAnnotation(Breakpoint breakpoint) {
-        Line line = ((LineBreakpoint) breakpoint).getLine();
+        LineBreakpoint lineBreakpoint = (LineBreakpoint) breakpoint;
+        Line line = lineBreakpoint.getLine();
         Annotation annotation = breakpoint.isEnabled() ?
-                new BrkpntAnnotation( line, breakpoint )
-                : new DisabledBrkpntAnnotation(  line, breakpoint );
+                new BrkpntAnnotation( line, lineBreakpoint )
+                : new DisabledBrkpntAnnotation(  line, lineBreakpoint );
         myAnnotations.put( breakpoint, annotation );
         breakpoint.addPropertyChangeListener(Breakpoint.PROP_ENABLED, this);
     }

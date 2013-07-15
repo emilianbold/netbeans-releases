@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.visual;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -112,7 +113,15 @@ public class CssStylesPanel extends javax.swing.JPanel {
         
         //the bottom component
         controller = RuleEditorController.createInstance();
-        splitPane.setBottomComponent(controller.getRuleEditorComponent());
+        
+        //put of the rule editor component initialization so the whole css styles panel
+        //initialization is not done in one chunk
+        EventQueue.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                splitPane.setBottomComponent(controller.getRuleEditorComponent());
+            }
+        });
         
         //toolbar
         toolbarListener = new ActionListener() {
