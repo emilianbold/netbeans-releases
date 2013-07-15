@@ -154,7 +154,7 @@ public class UtilTestCase extends NbTestCase {
             }
         }
         
-        assertNotNull(apiRepo.newIssue);
+        assertNotNull(apiRepo.newQuery);
         if(openedTC == null) {
             fail("TopComponent with new query wasn't opened");
         }

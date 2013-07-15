@@ -170,10 +170,25 @@ final class JarBundleFile extends BundleFile implements BundleContent {
             }
 
             @Override
+            public boolean isFile() {
+                return true;
+            }
+
+            @Override
+            public boolean exists() {
+                return true;
+            }
+
+            @Override
             public File getAbsoluteFile() {
                 return this;
             }
+
+            @Override
+            public long lastModified() {
+                return data.getLastModified();
             }
+        }
         return new VFile();
     }
 

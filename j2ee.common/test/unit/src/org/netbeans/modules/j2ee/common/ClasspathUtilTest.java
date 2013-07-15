@@ -81,13 +81,13 @@ public class ClasspathUtilTest extends NbTestCase {
         };
         
         List<URL> urlClasspath1 = new LinkedList<URL>();
-        urlClasspath1.add(FileUtil.getArchiveRoot(classpath1[0].toURL()));
-        urlClasspath1.add(FileUtil.getArchiveRoot(classpath1[1].toURL()));
+        urlClasspath1.add(FileUtil.getArchiveRoot(classpath1[0].toURI().toURL()));
+        urlClasspath1.add(FileUtil.getArchiveRoot(classpath1[1].toURI().toURL()));
         
         List<URL> urlClasspath2 = new LinkedList<URL>();
-        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[0].toURL()));
-        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[1].toURL()));
-        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[2].toURL()));
+        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[0].toURI().toURL()));
+        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[1].toURI().toURL()));
+        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[2].toURI().toURL()));
         
         
         assertFalse(ClasspathUtil.containsClass(Arrays.asList(classpath1), "com.mysql.Driver"));
@@ -116,13 +116,13 @@ public class ClasspathUtilTest extends NbTestCase {
         };
 
         List<URL> urlClasspath1 = new LinkedList<URL>();
-        urlClasspath1.add(FileUtil.getArchiveRoot(classpath1[0].toURL()));
-        urlClasspath1.add(FileUtil.getArchiveRoot(classpath1[1].toURL()));
+        urlClasspath1.add(FileUtil.getArchiveRoot(classpath1[0].toURI().toURL()));
+        urlClasspath1.add(FileUtil.getArchiveRoot(classpath1[1].toURI().toURL()));
 
         List<URL> urlClasspath2 = new LinkedList<URL>();
-        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[0].toURL()));
-        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[1].toURL()));
-        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[2].toURL()));
+        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[0].toURI().toURL()));
+        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[1].toURI().toURL()));
+        urlClasspath2.add(FileUtil.getArchiveRoot(classpath2[2].toURI().toURL()));
 
 
         assertNull(ClasspathUtil.containsClass(Arrays.asList(classpath1), Collections.singletonMap(true, "com.mysql.Driver")));
