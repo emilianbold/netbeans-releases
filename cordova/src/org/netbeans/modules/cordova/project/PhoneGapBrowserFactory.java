@@ -93,7 +93,8 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
     public static class IOSDevice extends PhoneGapBrowserFactory {
 
         @Override
-        public Image getIconImage() {
+        public Image getIconImage(boolean small) {
+            // TODO: return small icon
             return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap.png", false);
         }
 
@@ -122,7 +123,8 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
     public static class IOSSimulator extends PhoneGapBrowserFactory {
 
         @Override
-        public Image getIconImage() {
+        public Image getIconImage(boolean small) {
+            // TODO: return small icon
             return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap.png", false);
         }
 
@@ -151,7 +153,8 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
     public static class AndroidEmulator extends PhoneGapBrowserFactory {
 
         @Override
-        public Image getIconImage() {
+        public Image getIconImage(boolean small) {
+            // TODO: return small icon
             return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap.png", false);
         }
 
@@ -179,7 +182,8 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
         public static class AndroidDevice extends PhoneGapBrowserFactory {
 
             @Override
-            public Image getIconImage() {
+            public Image getIconImage(boolean small) {
+                // TODO: return small icon
                 return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap.png", false);
             }
 

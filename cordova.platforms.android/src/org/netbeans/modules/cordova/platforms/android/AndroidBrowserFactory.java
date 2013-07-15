@@ -111,7 +111,8 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
         }
         
         @Override
-        public Image getIconImage() {
+        public Image getIconImage(boolean small) {
+            // TODO: return small icon
             return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androiddevice.png", false);
         }
         
@@ -141,7 +142,8 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
         }
 
         @Override
-        public Image getIconImage() {
+        public Image getIconImage(boolean small) {
+            // TODO: return small icon
             return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androiddevice.png", false);
         }
         
@@ -172,7 +174,8 @@ public abstract class AndroidBrowserFactory implements EnhancedBrowserFactory, H
         }
         
         @Override
-        public Image getIconImage() {
+        public Image getIconImage(boolean small) {
+            // TODO: return small icon
             return ImageUtilities.loadImage("org/netbeans/modules/cordova/platforms/android/androidemulator.png", false);
         }
 
