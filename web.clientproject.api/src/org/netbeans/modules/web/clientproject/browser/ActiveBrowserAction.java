@@ -65,12 +65,14 @@ import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JRadioButtonMenuItem;
 import javax.swing.JSeparator;
+import javax.swing.JToolBar;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.MenuEvent;
 import javax.swing.event.MenuListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.browser.api.BrowserPickerPopup;
@@ -81,6 +83,7 @@ import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
 import org.openide.awt.ActionRegistration;
+import org.openide.awt.ToolbarPool;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
@@ -247,13 +250,17 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         return l;
     }
 
+    private static boolean isSmallToolbarIcon() {
+        return 16 == ToolbarPool.getDefault().getPreferredIconSize();
+    }
+
     private static class SelectBrowserAction extends AbstractAction {
 
         private ProjectBrowserProvider pbp;
         private WebBrowser wb;
 
         public SelectBrowserAction(ProjectBrowserProvider pbp, WebBrowser wb) {
-            super(wb.getName(), new ImageIcon(wb.getIconImage()));
+            super(wb.getName(), new ImageIcon(wb.getIconImage(isSmallToolbarIcon())));
             this.pbp = pbp;
             this.wb = wb;
         }
@@ -274,6 +281,11 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         return super.getPopupPresenter(); //To change body of generated methods, choose Tools | Templates.
     }
 
+    private static final @StaticResource String GENERIC_SMALL = "org/netbeans/modules/web/clientproject/browser/browser_generic_16x.png"; // NOI18N
+    private static final @StaticResource String GENERIC_LARGE = "org/netbeans/modules/web/clientproject/browser/browser_generic_24x.png"; // NOI18N
+    private static final @StaticResource String DISABLED_SMALL = "org/netbeans/modules/web/clientproject/browser/browser_disabled_16x.png"; // NOI18N
+    private static final @StaticResource String DISABLED_LARGE = "org/netbeans/modules/web/clientproject/browser/browser_disabled_24x.png"; // NOI18N
+
     @Override
     public Component getToolbarPresenter() {
         final JButton button = new JButton();
@@ -283,7 +295,8 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
                 showBrowserPickerPopup( button );
             }
         });
-        button.setDisabledIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser_disabled_24x.png")))); // NOI18N
+        button.setDisabledIcon(new ImageIcon(badgeImageWithArrow(
+            ImageUtilities.loadImage(isSmallToolbarIcon() ? DISABLED_SMALL : DISABLED_LARGE))));
         button.setEnabled(false);
         ProjectBrowserProvider pbp = getBrowserProvider();
         toolbarButton = button;
@@ -352,17 +365,18 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
                 lastWebBrowser = null;
             }
             if (pbp == null) {
-                tb.setIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser_disabled_24x.png")))); // NOI18N
+                tb.setIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage(isSmallToolbarIcon() ? DISABLED_SMALL : DISABLED_LARGE)))); // NOI18N
+                tb.setDisabledIcon(new ImageIcon(badgeImageWithArrow(ImageUtilities.loadImage(isSmallToolbarIcon() ? DISABLED_SMALL : DISABLED_LARGE)))); // NOI18N
                 tb.setToolTipText(null);
             } else {
                 WebBrowser wb = pbp.getActiveBrowser();
                 Image im;
                 if (wb != null) {
-                    im = wb.getIconImage();
+                    im = wb.getIconImage(isSmallToolbarIcon());
                     tb.setToolTipText(wb.getName());
                     wb.addChangeListener(ideBrowserChangeListener);
                 } else {
-                    im = ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/browser_generic_24x.png"); // NOI18N
+                    im = ImageUtilities.loadImage(isSmallToolbarIcon() ? GENERIC_SMALL : GENERIC_LARGE); // NOI18N
                     tb.setToolTipText(Bundle.ActiveBrowserAction_missingProject());
                 }
                 tb.setIcon(new ImageIcon(badgeImageWithArrow(im)));
@@ -378,7 +392,8 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
 
     private Image badgeImageWithArrow(Image im) {
         return ImageUtilities.mergeImages(im,
-            ImageUtilities.loadImage("org/openide/awt/resources/arrow.png"), 28, 10); // NOI18N
+            ImageUtilities.loadImage("org/openide/awt/resources/arrow.png"), 
+            isSmallToolbarIcon() ? 20 : 28, isSmallToolbarIcon() ? 6 : 10); // NOI18N
     }
 
     private void showBrowserPickerPopup( JButton invoker ) {
