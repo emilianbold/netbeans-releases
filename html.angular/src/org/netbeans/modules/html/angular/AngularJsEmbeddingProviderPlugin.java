@@ -427,8 +427,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 value = value.substring(1);
                 lastPartPos = 1;
             }
-            if (value.trim().endsWith("}")) {
-                value = value.substring(0, value.length() - 1);
+            String valueTrim = value.trim();
+            if (valueTrim.endsWith("}")) {
+                value = valueTrim.substring(0, valueTrim.length() - 1);
             }
             int index = value.indexOf(':'); // are there pairs like name: expr?
             if (index > -1) {
