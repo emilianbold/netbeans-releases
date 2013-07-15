@@ -180,7 +180,7 @@ made subject to such option by the copyright holder.
             </sequential>
         </macrodef>
         <property name="test.config" value="default"/>
-        <property name="test.run.args" value="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx320m -Dnetbeans.keyring.no.master=true"/>
+        <property name="test.run.args" value="-ea -XX:PermSize=32m -XX:MaxPermSize=200m -Xmx320m -Xss2m -Dnetbeans.keyring.no.master=true"/>
         <property name="custom.jvm.args" value=""/>
         <property name="custom.jvm.executable" value="java"/>
         <property name="test.run.args.full" value="${test.run.args} ${custom.jvm.args}"/>
