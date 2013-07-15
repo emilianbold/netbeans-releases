@@ -62,7 +62,6 @@ final class WebBrowserFactoryDescriptor {
     private boolean def;
     private HtmlBrowser.Factory factory;
     private BrowserFamilyId browserFamily;
-    private Image iconImage;
     private boolean hasNetBeansIntegration;
 
     public WebBrowserFactoryDescriptor(String id, DataObject dob, boolean def, Factory factory) {
@@ -72,16 +71,13 @@ final class WebBrowserFactoryDescriptor {
         this.factory = factory;
         if (factory instanceof EnhancedBrowserFactory) {
             browserFamily = ((EnhancedBrowserFactory)factory).getBrowserFamilyId();
-            iconImage = ((EnhancedBrowserFactory)factory).getIconImage();
             name = ((EnhancedBrowserFactory)factory).getDisplayName();
             hasNetBeansIntegration = ((EnhancedBrowserFactory)factory).hasNetBeansIntegration();
         } else if (factory instanceof ExtWebBrowser) {
             browserFamily = convertBrowserFamilyId(((ExtWebBrowser)factory).getPrivateBrowserFamilyId());
-            iconImage = null;
             hasNetBeansIntegration = false;
         } else {
             browserFamily = BrowserFamilyId.UNKNOWN;
-            iconImage = null;
             hasNetBeansIntegration = false;
         }
     }
@@ -140,8 +136,11 @@ final class WebBrowserFactoryDescriptor {
         return browserFamily;
     }
 
-    public Image getIconImage() {
-        return iconImage;
+    public Image getIconImage(boolean small) {
+        if (factory instanceof EnhancedBrowserFactory) {
+            return ((EnhancedBrowserFactory)factory).getIconImage(small);
+        }
+        return null;
     }
 
     BrowserURLMapperImplementation getBrowserURLMapper() {

@@ -88,7 +88,7 @@ public class ChromeWithNetBeansIntegrationBrowserFactory extends ChromeBrowser i
     }
 
     @Override
-    public Image getIconImage() {
+    public Image getIconImage(boolean small) {
         return null;
     }
 

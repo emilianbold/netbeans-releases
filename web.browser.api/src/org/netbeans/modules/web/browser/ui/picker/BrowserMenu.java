@@ -289,7 +289,7 @@ public class BrowserMenu implements ChangeListener {
 
         @Override
         public Icon getIcon() {
-            return ImageUtilities.image2Icon( browser.getIconImage() );
+            return ImageUtilities.image2Icon( browser.getIconImage(false) );
         }
 
         @Override
