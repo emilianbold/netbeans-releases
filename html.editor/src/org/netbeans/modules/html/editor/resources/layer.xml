@@ -90,6 +90,14 @@ made subject to such option by the copyright holder.
         <folder name="text">
 
             <folder name="xhtml">
+                
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-html-editor-resources-codetemplates.xml" url="codetemplates.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
 
                 <folder name="RefactoringActions">
                     <file name="org-netbeans-modules-html-editor-refactoring-actions-ExtractInlinedStyleAction.shadow">
@@ -243,6 +251,15 @@ made subject to such option by the copyright holder.
             </folder>
 
             <folder name="html">
+                
+                <folder name="CodeTemplates">
+                    <folder name="Defaults">
+                        <file name="org-netbeans-modules-html-editor-resources-codetemplates.xml" url="codetemplates.xml">
+                            <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.editor.resources.Bundle"/>
+                        </file>
+                    </folder>
+                </folder>
+
                 <folder name="CodeGenerators">
                     <file name="org-netbeans-modules-html-editor-codegen-LoremIpsumGenerator$Factory.instance">
                         <attr name="position" intvalue="200"/>
