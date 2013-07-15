@@ -100,7 +100,7 @@ public final class MobilePlatformsOptionsPanelController extends OptionsPanelCon
 
     @Override
     public HelpCtx getHelpCtx() {
-        return null; // new HelpCtx("...ID") if you have a help set
+        return new HelpCtx("org.netbeans.modules.cordova.options.MobilePlatformsPanel");
     }
 
     @Override
