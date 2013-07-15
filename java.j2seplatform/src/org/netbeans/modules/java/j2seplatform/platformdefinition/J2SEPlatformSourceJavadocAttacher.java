@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
@@ -100,10 +101,12 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
             public void run() {
                 boolean success = false;
                 try {
+                    final J2SEPlatformCustomizer.PathModel model = new J2SEPlatformCustomizer.PathModel(platform, mode);
                     final List<? extends URI> selected;
                     if (mode == J2SEPlatformCustomizer.SOURCES) {
                         selected = SourceJavadocAttacherUtil.selectSources(
                             root,
+                            model.getRootURIs(),
                             SourceJavadocAttacherUtil.createDefaultBrowseCall(
                                 Bundle.TXT_Title(),
                                 Bundle.TXT_SourcesFilterName(),
@@ -120,8 +123,7 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
                     } else {
                         throw new IllegalStateException(Integer.toString(mode));
                     }
-                    if (selected != null) {
-                        final J2SEPlatformCustomizer.PathModel model = new J2SEPlatformCustomizer.PathModel(platform, mode);
+                    if (selected != null) {                        
                         try {
                             for (URI uri : selected) {
                                 model.addPath(Collections.singleton(uri.toURL()));

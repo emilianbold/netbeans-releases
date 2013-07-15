@@ -104,6 +104,7 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
                     if (volume == J2SELibraryTypeProvider.VOLUME_TYPE_SRC) {
                         selected = SourceJavadocAttacherUtil.selectSources(
                             root,
+                            lib.getURIContent(volume),
                             new SelectFolder(volume, lib.getName(), baseFolder),
                             new Convertor(volume, baseFolder));
                     } else if (volume == J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC) {
