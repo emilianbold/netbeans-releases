@@ -1666,12 +1666,13 @@ public class EjbJarProject implements Project, FileChangeListener {
 
         @Override
         public void setBrowserID(String browserID) {
-            // No-one is using it yet, implementation should be almost identical as setProfile(..)
+            // Does not make sense for EJB project - simply do nothing
         }
 
         @Override
         public String getBrowserID() {
-            return evaluator().getProperty(EjbJarProjectProperties.SELECTED_BROWSER);
+            // Does not make sense for EJB project - simply do nothing
+            return null;
         }
     }
 }

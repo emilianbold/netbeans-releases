@@ -196,8 +196,6 @@ final public class EjbJarProjectProperties {
     
     public static final String JAVA_SOURCE_BASED = "java.source.based";
     
-    public static final String SELECTED_BROWSER = "selected.browser"; //NOI18N
-    
     private static final Logger LOGGER = Logger.getLogger(EjbJarProjectProperties.class.getName());
     
     ClassPathSupport cs;    
