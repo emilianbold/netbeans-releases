@@ -99,6 +99,10 @@ public class DocumentViewModel implements ChangeListener {
         needsRefresh = true;
     }
 
+    FileObject getFile() {
+        return file;
+    }
+
     private synchronized void initialize() {
         if (!initialized) {
             project = FileOwnerQuery.getOwner(file);
