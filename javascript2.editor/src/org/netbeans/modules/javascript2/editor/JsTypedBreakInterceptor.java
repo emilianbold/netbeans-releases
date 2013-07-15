@@ -93,11 +93,8 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         this.multiLineLiterals = multiLineLiterals;
     }
 
-    public boolean isInsertMatchingEnabled(BaseDocument doc) {
-        // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
-        // Boolean b = ((Boolean) Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
-        // return b == null || b.booleanValue();
-        EditorOptions options = EditorOptions.get(JsTokenId.JAVASCRIPT_MIME_TYPE);
+    private boolean isInsertMatchingEnabled() {
+        EditorOptions options = EditorOptions.get(language.mimeType());
         if (options != null) {
             return options.getMatchBrackets();
         }
@@ -110,7 +107,6 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         BaseDocument doc = (BaseDocument) context.getDocument();
         TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(doc);
         int offset = context.getCaretOffset();
-        boolean insertMatching = isInsertMatchingEnabled(doc);
 
         int lineBegin = Utilities.getRowStart(doc, offset);
         int lineEnd = Utilities.getRowEnd(doc, offset);
@@ -139,7 +135,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         // Insert a missing }
         boolean insertRightBrace = isAddRightBrace(doc, offset);
 
-        if (!id.isError() && insertMatching && insertRightBrace && !isDocToken(id)) {
+        if (!id.isError() && isInsertMatchingEnabled() && insertRightBrace && !isDocToken(id)) {
             int indent = GsfUtilities.getLineIndent(doc, offset);
 
             int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, offset);
