@@ -60,14 +60,17 @@ import javax.lang.model.type.TypeMirror;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl;
+import org.netbeans.modules.java.hints.spiimpl.JavaFixImpl.EnhancedJavaFixImpl;
 import org.netbeans.modules.java.hints.spiimpl.batch.BatchUtilities;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -85,6 +88,7 @@ public abstract class JavaFix {
 
     private final TreePathHandle handle;
     private final Map<String, String> options;
+    private final String sortText;
 
     /**Create JavaFix with the given base {@link TreePath}. The base {@link TreePath}
      * will be passed back to the real implementation of the fix.
@@ -96,12 +100,25 @@ public abstract class JavaFix {
     protected JavaFix(@NonNull CompilationInfo info, @NonNull TreePath tp) {
         this(info, tp, Collections.<String, String>emptyMap());
     }
-
-    JavaFix(CompilationInfo info, TreePath tp, Map<String, String> options) {
-        this.handle = TreePathHandle.create(tp, info);
-        this.options = Collections.unmodifiableMap(new HashMap<String, String>(options));
+    
+    /**Create JavaFix with the given base {@link TreePath}. The base {@link TreePath}
+     * will be passed back to the real implementation of the fix.
+     *
+     * @param info a {@link CompilationInfo} from which the given {@link TreePath} originates
+     * @param tp a {@link TreePath} that will be passed back to the
+     *           {@link #performRewrite(org.netbeans.spi.java.hints.JavaFix.TransformationContext) } method
+     * @param sortText if non-null, fix returned from {@link #toEditorFix() } will be an {@link EnhancedFix},
+     *                 and the given {@code sortText} will be returned from its {@link EnhancedFix#getSortText() }.
+     * @since 1.18
+     */
+    protected JavaFix(@NonNull CompilationInfo info, @NonNull TreePath tp, @NullAllowed String sortText) {
+        this(TreePathHandle.create(tp, info), Collections.<String, String>emptyMap(), sortText);
     }
 
+    JavaFix(CompilationInfo info, TreePath tp, Map<String, String> options) {
+        this(TreePathHandle.create(tp, info), options, null);
+    }
+    
     /**Create JavaFix with the given base {@link TreePathHandle}. The base {@link TreePathHandle}
      * will be resolved and passed back to the real implementation of the fix.
      *
@@ -112,9 +129,27 @@ public abstract class JavaFix {
         this(handle, Collections.<String, String>emptyMap());
     }
 
+    /**Create JavaFix with the given base {@link TreePathHandle}. The base {@link TreePathHandle}
+     * will be resolved and passed back to the real implementation of the fix.
+     *
+     * @param handle a {@link TreePathHandle} that will be resolved and passed back to the
+     *              {@link #performRewrite(org.netbeans.spi.java.hints.JavaFix.TransformationContext) } method
+     * @param sortText if non-null, fix returned from {@link #toEditorFix() } will be an {@link EnhancedFix},
+     *                 and the given {@code sortText} will be returned from its {@link EnhancedFix#getSortText() }.
+     * @since 1.18
+     */
+    protected JavaFix(@NonNull TreePathHandle handle, @NullAllowed String sortText) {
+        this(handle, Collections.<String, String>emptyMap());
+    }
+
     JavaFix(TreePathHandle handle, Map<String, String> options) {
+        this(handle, options, null);
+    }
+    
+    JavaFix(TreePathHandle handle, Map<String, String> options, String sortText) {
         this.handle = handle;
         this.options = Collections.unmodifiableMap(new HashMap<String, String>(options));
+        this.sortText = sortText;
     }
 
     /**The display text of the fix.
@@ -137,7 +172,7 @@ public abstract class JavaFix {
      * method on this {@link JavaFix}.
      */
     public final Fix toEditorFix() {
-        return new JavaFixImpl(this);
+        return sortText != null ? new EnhancedJavaFixImpl(this) : new JavaFixImpl(this);
     }
 
     static {
@@ -186,6 +221,11 @@ public abstract class JavaFix {
             @Override
             public List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {
                 return ErrorDescriptionFactory.resolveDefaultFixes(ctx, provided);
+            }
+
+            @Override
+            public String getSortText(JavaFix jf) {
+                return jf.sortText;
             }
         };
     }

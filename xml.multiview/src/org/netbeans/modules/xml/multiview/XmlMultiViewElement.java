@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.xml.multiview;
 
+import java.awt.BorderLayout;
 import java.awt.Toolkit;
 import org.openide.text.NbDocument;
 import org.openide.actions.SaveAction;
@@ -52,6 +53,9 @@ import org.openide.util.lookup.ProxyLookup;
 import javax.swing.*;
 import javax.swing.text.Document;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
+import java.util.List;
+import org.openide.util.RequestProcessor;
 
 /**
  * XmlMultiviewElement.java
@@ -64,6 +68,13 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
 
     private transient XmlMultiViewEditorSupport.XmlCloneableEditor xmlEditor;
     private transient javax.swing.JComponent toolbar;
+    
+    /**
+     * Lazy initializer of a toolbar
+     */
+    private transient ToolbarInitializer initializer;
+    
+    private static final RequestProcessor INIT_RP = new RequestProcessor("XmlMultiViewElementToolbar initializer", 3); // NOI18N
 
     /** Creates a new instance of XmlMultiviewElement */
     public XmlMultiViewElement() {
@@ -113,15 +124,17 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
     public javax.swing.JComponent getToolbarRepresentation() {
         if (toolbar == null) {
             final JEditorPane editorPane = getXmlEditor().getEditorPane();
-            if (editorPane!= null) {
-                final Document doc = editorPane.getDocument();
-                if (doc instanceof NbDocument.CustomToolbar) {
-                    toolbar = ((NbDocument.CustomToolbar) doc).createToolbar(editorPane);
+            synchronized (this) {
+                if (toolbar == null) {
+                    if (initializer == null) {
+                        initializer = new ToolbarInitializer(editorPane);
+                        INIT_RP.post(initializer);
+                    }
+                    JPanel fake = new JPanel();
+                    fake.setLayout(new BorderLayout());
+                    initializer.addToolbarPlaceholder(fake);
+                    return fake;
                 }
-            }
-            if (toolbar == null) {
-                // attempt to create own toolbar??
-                toolbar = new javax.swing.JPanel();
             }
         }
         return toolbar;
@@ -142,6 +155,62 @@ public class XmlMultiViewElement extends AbstractMultiViewElement implements jav
             map.put("save", act); //NOI18N
         }
         return xmlEditor;
+    }
+    
+    /**
+     * See defect #232413 - the document is loaded in a RP, then an AWT Runnable is scheduled, which 
+     * sets the toolbar member variable for future getToolBarComponent invocations and also back-patches
+     * the existing toolbar JPanel placeholders with the real contents.
+     */
+    private class ToolbarInitializer implements Runnable {
+        private final List<JPanel>    toolbarPanels = new ArrayList<JPanel>(3);
+        private final JEditorPane     editorPane;
+        private Document doc;
+        private JComponent      realToolBar;
+
+        public ToolbarInitializer(JEditorPane editorPane) {
+            this.editorPane = editorPane;
+        }
+        
+        void addToolbarPlaceholder(JPanel p) {
+            toolbarPanels.add(p);
+        }
+        
+        @Override
+        public void run() {
+            if (SwingUtilities.isEventDispatchThread()) {
+                runInAwt();
+                return;
+            }
+            // prepare the document in RP:
+            doc = editorPane.getDocument();
+            SwingUtilities.invokeLater(this);
+        }
+        
+        private void runInAwt() {
+            if (doc instanceof NbDocument.CustomToolbar) {
+                realToolBar = ((NbDocument.CustomToolbar) doc).createToolbar(editorPane);
+            }
+            synchronized (XmlMultiViewElement.this) {
+                if (realToolBar == null) {
+                    toolbar = new JPanel();
+                } else {
+                    toolbar = realToolBar;
+                }
+                initializer = null;
+            }
+            if (realToolBar == null) {
+                return;
+            }
+            
+            // patch existing toolbars
+            for (JComponent p : toolbarPanels) {
+                if (p.isValid()) {
+                    p.add(realToolBar, BorderLayout.CENTER);
+                }
+            }
+        }
+        
     }
 
 }
