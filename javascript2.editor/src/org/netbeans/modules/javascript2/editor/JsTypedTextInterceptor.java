@@ -109,14 +109,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
     public void afterInsert(final Context context) throws BadLocationException {
         isAfter = true;
         BaseDocument doc = (BaseDocument) context.getDocument();
-        doc.runAtomicAsUser(new Runnable() {
-
-            @Override
-            public void run() {
-
-            }
-        });
-
         int dotPos = context.getOffset();
         Caret caret = context.getComponent().getCaret();
         char ch = context.getText().charAt(0);
