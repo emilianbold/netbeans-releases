@@ -118,6 +118,7 @@ public final class SourceJavadocAttacherUtil {
     })
     public static List<? extends URI> selectSources(
             @NonNull final URL root,
+            @NonNull final List<? extends URI> attachedRoots,
             @NonNull final Callable<List<? extends String>> browseCall,
             @NonNull final Function<String,Collection<? extends URI>> convertor) {
         assert root != null;
@@ -125,6 +126,7 @@ public final class SourceJavadocAttacherUtil {
         assert convertor != null;
         final SelectSourcesPanel selectSources = new SelectSourcesPanel(
                 getDisplayName(root),
+                attachedRoots,
                 browseCall,
                 convertor);
         final DialogDescriptor dd = new DialogDescriptor(selectSources, Bundle.TXT_SelectSources());

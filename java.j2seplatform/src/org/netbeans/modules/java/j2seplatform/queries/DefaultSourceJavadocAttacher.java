@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
@@ -86,23 +88,31 @@ public class DefaultSourceJavadocAttacher implements SourceJavadocAttacherImplem
             public void run() {
                 boolean success = false;
                 try {
-                    final URL[] toAttach = selectRoots(root, mode);
+                    final QueriesCache<?> cache;
+                    switch (mode) {
+                        case 0:
+                            cache = QueriesCache.getSources();
+                            break;
+                        case 1:
+                            cache = QueriesCache.getJavadoc();
+                            break;
+                        default:
+                            throw new IllegalArgumentException(Integer.toString(mode));
+                    }
+                    final QueriesCache.ResultBase rb = cache.getRoots().get(root);
+                    final List<URI> currentRoots;
+                    if (rb == null) {
+                        currentRoots = Collections.emptyList();
+                    } else {
+                        currentRoots = new ArrayList<>();
+                        currentRoots.addAll(rb.getRootURIs());
+                    }
+                    final URL[] toAttach = selectRoots(root, currentRoots, mode);
                     if (toAttach != null) {
-                        switch (mode) {
-                            case 0:
-                                QueriesCache.getSources().updateRoot(root, toAttach);
-                                break;
-                            case 1:
-                                QueriesCache.getJavadoc().updateRoot(root, toAttach);
-                                break;
-                            default:
-                                throw new IllegalArgumentException(Integer.toString(mode));
-                        }
+                        cache.updateRoot(root, toAttach);
                         success = true;
                     }
-                } catch (MalformedURLException e) {
-                    Exceptions.printStackTrace(e);
-                } catch (FileStateInvalidException e) {
+                } catch (MalformedURLException | FileStateInvalidException e) {
                     Exceptions.printStackTrace(e);
                 } finally {
                     SourceJavadocAttacherUtil.callListener(listener,success);
@@ -118,12 +128,16 @@ public class DefaultSourceJavadocAttacher implements SourceJavadocAttacherImplem
         "TXT_Javadoc=Library Javadoc (folder, ZIP or JAR file)",
         "TXT_Sources=Library Sources (folder, ZIP or JAR file)"
     })
-    private static URL[] selectRoots(final URL root, final int mode) throws MalformedURLException, FileStateInvalidException {
+    private static URL[] selectRoots(
+            @NonNull final URL root,
+            @NonNull final List<? extends URI> attachedRoots,
+            final int mode) throws MalformedURLException, FileStateInvalidException {
         final File[] cfh = new File[]{currentFolder};
         final List<? extends URI> selected;
         if (mode == 0) {
             selected = SourceJavadocAttacherUtil.selectSources(
                 root,
+                attachedRoots,
                 SourceJavadocAttacherUtil.createDefaultBrowseCall(
                     Bundle.TXT_Title(),
                     Bundle.TXT_Sources(),
