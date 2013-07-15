@@ -43,22 +43,10 @@
  */
 package org.netbeans.modules.php.dbgp.annotations;
 
-import java.util.logging.Logger;
-import javax.swing.text.Element;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.dbgp.breakpoints.LineBreakpoint;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
 import org.openide.text.Annotatable;
-import org.openide.text.DataEditorSupport;
-import org.openide.text.Line;
-import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
 
@@ -74,8 +62,9 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
 
     private Breakpoint breakpoint;
 
-    public BrkpntAnnotation( Annotatable annotatable, Breakpoint breakpoint ) {
+    public BrkpntAnnotation( Annotatable annotatable, LineBreakpoint breakpoint ) {
         this.breakpoint = breakpoint;
+        breakpoint.refreshValidity();
         attach(annotatable);
     }
 
@@ -84,7 +73,10 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
      */
     @Override
     public String getAnnotationType() {
-        return BREAKPOINT_ANNOTATION_TYPE;
+        Breakpoint.VALIDITY validity = breakpoint.getValidity();
+        return validity == Breakpoint.VALIDITY.VALID || validity == Breakpoint.VALIDITY.UNKNOWN
+                ? BREAKPOINT_ANNOTATION_TYPE
+                : BREAKPOINT_ANNOTATION_TYPE + "_broken"; //NOI18N
     }
 
     /* (non-Javadoc)
