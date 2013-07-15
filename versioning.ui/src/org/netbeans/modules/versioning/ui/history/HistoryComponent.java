@@ -429,7 +429,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }
 
     @NbBundle.Messages({
-        "MSG_SaveModified=File {0} is modified. Save?"                          // NOI18N
+        "# {0} - file name", "MSG_SaveModified=File {0} is modified. Save?"                          // NOI18N
     })
     @Override
     public CloseOperationState canCloseElement() {
@@ -565,17 +565,17 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }
     
     private class Toolbar extends JToolBar implements ActionListener {
-        private JButton nextButton;
-        private JButton prevButton;
-        private JButton refreshButton;
-        private JButton settingsButton;
+        private final JButton nextButton;
+        private final JButton prevButton;
+        private final JButton refreshButton;
+        private final JButton settingsButton;
         private JLabel modeLabel;
         private JLabel filterLabel;
         private JComboBox filterCombo;
         private JComboBox modeCombo;
         private JLabel containsLabel;
         private JTextField containsField;
-        private ShowHistoryAction showHistoryAction;
+        private final ShowHistoryAction showHistoryAction;
         private final LinkButton searchHistoryButton;
         private final Separator separator1;
         private final Separator separator2;
