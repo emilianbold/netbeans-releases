@@ -56,7 +56,6 @@ import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.tree.*;
@@ -265,20 +264,20 @@ public class RootSelectorTree extends JPanel {
         @Override
         protected void nonResponding() {
             final CountDownLatch cl = new CountDownLatch(1);
+            final SwingWorker worker = this;
             SwingUtilities.invokeLater(new Runnable() {
 
                 @Override
                 public void run() {
                     RootSelectorTree.this.setEnabled(false);
+                    pd = progress.showProgress(Bundle.MSG_ApplyingSelection(), new ProgressDisplayer.ProgressController() {
+                        @Override
+                        public boolean cancel() {
+                            worker.cancel();
+                            return true;
+                        }
+                    });
                     cl.countDown();
-                }
-            });
-            final SwingWorker worker = this;
-            pd = progress.showProgress(Bundle.MSG_ApplyingSelection(), new ProgressDisplayer.ProgressController() {
-                @Override
-                public boolean cancel() {
-                    worker.cancel();
-                    return true;
                 }
             });
 
