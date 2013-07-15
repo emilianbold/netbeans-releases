@@ -42,10 +42,16 @@
 package org.netbeans.swing.plaf.metal;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.util.concurrent.Callable;
+import javax.swing.JLabel;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.metal.DefaultMetalTheme;
+import javax.swing.text.Style;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import org.netbeans.swing.plaf.util.DarkIconFilter;
 
 /**
@@ -164,6 +170,23 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         UIManager.put( "nb.versioning.conflicted.color", new Color(255, 51, 51)); //NOI18N
         UIManager.put( "nb.versioning.ignored.color", new Color(255, 255, 255)); //NOI18N
         UIManager.put( "nb.versioning.remotemodification.color", black); //NOI18N
+
+        UIManager.put( "nb.laf.postinstall.callable", new Callable<Object>() { //NOI18N
+
+            @Override
+            public Object call() throws Exception {
+                //change the default link foreground color
+                HTMLEditorKit kit = new HTMLEditorKit();
+                StyleSheet newStyleSheet = new StyleSheet();
+                Font f = new JLabel().getFont();
+                newStyleSheet.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
+                            .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+                newStyleSheet.addRule( "a { color: #A4A4FF; text-decoration: underline}"); //NOI18N
+                newStyleSheet.addStyleSheet(kit.getStyleSheet());
+                kit.setStyleSheet(newStyleSheet);
+                return null;
+            }
+        });
     }
 
     @Override

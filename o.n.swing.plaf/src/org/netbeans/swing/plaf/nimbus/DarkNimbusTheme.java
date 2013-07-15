@@ -42,8 +42,13 @@
 package org.netbeans.swing.plaf.nimbus;
 
 import java.awt.Color;
+import java.awt.Font;
+import java.util.concurrent.Callable;
+import javax.swing.JLabel;
 import javax.swing.LookAndFeel;
 import javax.swing.UIManager;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import org.netbeans.swing.plaf.util.DarkIconFilter;
 
 /**
@@ -99,7 +104,7 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.bugtracking.table.background", new Color(18, 30, 49) ); //NOI18N
         UIManager.put( "nb.bugtracking.table.background.alternate", new Color(13, 22, 36) ); //NOI18N
 
-        UIManager.put( "nb.html.link.foreground", new Color(32,32,255) ); //NOI18N
+        UIManager.put( "nb.html.link.foreground", new Color(128,128,255) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.hover", new Color(255,216,0) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.visited", new Color(0,200,0) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.focus", new Color(255,216,0) ); //NOI18N
@@ -160,5 +165,22 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.versioning.conflicted.color", new Color(255, 51, 51)); //NOI18N
         UIManager.put( "nb.versioning.ignored.color", new Color(153, 153, 153)); //NOI18N
         UIManager.put( "nb.versioning.remotemodification.color", new Color( 230, 230, 230)); //NOI18N
+
+        UIManager.put( "nb.laf.postinstall.callable", new Callable<Object>() { //NOI18N
+
+            @Override
+            public Object call() throws Exception {
+                //change the default link foreground color
+                HTMLEditorKit kit = new HTMLEditorKit();
+                StyleSheet newStyleSheet = new StyleSheet();
+                Font f = new JLabel().getFont();
+                newStyleSheet.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
+                            .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+                newStyleSheet.addRule( "a { color: #8080FF; text-decoration: underline}"); //NOI18N
+                newStyleSheet.addStyleSheet(kit.getStyleSheet());
+                kit.setStyleSheet(newStyleSheet);
+                return null;
+            }
+        });
    }
 }
