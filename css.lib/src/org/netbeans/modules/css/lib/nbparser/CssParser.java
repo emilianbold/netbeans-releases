@@ -93,13 +93,11 @@ public class CssParser extends Parser {
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        cancelled = false;
         if (snapshot == null) {
             return;
         }
-        if (cancelled) {
-            return ;
-        }
-        
+
         this.snapshot = snapshot;
         FileObject fo = snapshot.getSource().getFileObject();
         String fileName = fo == null ? "no file" : fo.getPath(); //NOI18N
