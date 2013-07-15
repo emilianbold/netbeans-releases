@@ -467,7 +467,7 @@ public final class GeneratorUtilities {
             }
         }
         if (constructor != null) {
-            ExecutableType constructorType = clazz.getSuperclass().getKind() == TypeKind.DECLARED ? (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) clazz.getSuperclass(), constructor) : null;
+            ExecutableType constructorType = clazz.getSuperclass().getKind() == TypeKind.DECLARED && ((DeclaredType) clazz.getSuperclass()).asElement() == constructor.getEnclosingElement() ? (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) clazz.getSuperclass(), constructor) : null;
             if (!constructor.getParameters().isEmpty()) {
                 List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
                 Iterator<? extends VariableElement> parameterElements = constructor.getParameters().iterator();
