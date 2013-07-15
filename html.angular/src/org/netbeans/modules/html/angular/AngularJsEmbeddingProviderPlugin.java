@@ -182,7 +182,12 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                  if (tokenSequence.moveNext()) {
                     if (tokenSequence.token().id() == HTMLTokenId.EL_CONTENT) {
                         String value = tokenSequence.token().text().toString().trim();
-                        String name = value.startsWith("(") ? value.substring(1) : value;
+                        int indexStart = 0;
+                        String name = value;
+                        if (value.startsWith("(")) {
+                            name = value.substring(1);
+                            indexStart = 1;
+                        }
                         int parenIndex = name.indexOf('('); //NOI18N
                         if (parenIndex > -1) {
                             name = name.substring(0, parenIndex);
@@ -198,10 +203,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             processed = true;
                         } else if (name.contains("|")){
                             int indexEnd = name.indexOf('|');
-                            int indexStart = 0;
-                            name = name.substring(indexStart, indexEnd);
+                            name = name.substring(0, indexEnd);
                             if (name.startsWith("-")) {
-                                indexStart = 1;
+                                indexStart++;
                                 name = name.substring(1);
                             }
                             if(propertyToFqn.containsKey(name)) {
@@ -210,7 +214,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                                 processed = true;
                             } else {
-                                embeddings.add(snapshot.create(tokenSequence.offset(), indexEnd, Constants.JAVASCRIPT_MIMETYPE));
+                                embeddings.add(snapshot.create(tokenSequence.offset() + indexStart, name.length(), Constants.JAVASCRIPT_MIMETYPE));
                                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                                 processed = true;
                             }
