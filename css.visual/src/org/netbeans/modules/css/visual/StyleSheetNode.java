@@ -52,6 +52,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.visual.actions.OpenLocationAction;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -64,6 +66,7 @@ import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.actions.SystemAction;
 import org.openide.util.lookup.Lookups;
 
@@ -87,10 +90,16 @@ public class StyleSheetNode extends AbstractNode {
      * @param filter filter for the subtree of the node.
      */
     StyleSheetNode(DocumentViewModel model, FileObject stylesheet, Filter filter) {
-        super(new StyleSheetChildren(model, stylesheet, filter), Lookups.fixed(new Location(stylesheet)));
+        super(new StyleSheetChildren(model, stylesheet, filter), lookup(stylesheet));
         this.styleSheet = stylesheet;
         updateDisplayName();
         setIconBaseWithExtension(ICON_BASE);
+    }
+
+    private static Lookup lookup(FileObject stylesheet) {
+        Project project = FileOwnerQuery.getOwner(stylesheet);
+        Location location = new Location(stylesheet);
+        return (project == null) ? Lookups.fixed(location) : Lookups.fixed(location, project);
     }
     
      /**
@@ -126,6 +135,7 @@ public class StyleSheetNode extends AbstractNode {
         
         private DocumentViewModel model;
         private FileObject stylesheet;
+        private Project project;
         
         /** Filter of the subtree of the node. */
         private Filter filter;
@@ -134,6 +144,7 @@ public class StyleSheetNode extends AbstractNode {
             this.model = model;
             this.stylesheet = stylesheet;
             this.filter = filter;
+            this.project = FileOwnerQuery.getOwner(stylesheet);
             filter.addPropertyChangeListener(createListener());
             
             refreshKeys();
@@ -215,7 +226,7 @@ public class StyleSheetNode extends AbstractNode {
         
         @Override
         protected Node[] createNodes(RuleHandle key) {
-            return new Node[]{new RuleNode(key)};
+            return new Node[]{new RuleNode(key, project)};
         }
 
          //document model change listener

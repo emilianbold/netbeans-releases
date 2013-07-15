@@ -45,6 +45,8 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.project.FileOwnerQuery;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
@@ -56,6 +58,8 @@ import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.lookup.Lookups;
+import org.openide.util.lookup.ProxyLookup;
 
 /**
  * Root node of the document section of CSS Styles view.
@@ -81,9 +85,10 @@ public class DocumentNode extends AbstractNode {
      * @param filter filter for the subtree of the node.
      */
     DocumentNode(DocumentViewModel pageModel, Filter filter) {
-        super(new DocumentChildren(pageModel, filter));
+        super(new DocumentChildren(pageModel, filter), new DocumentLookup());
         setDisplayName(Bundle.DocumentNode_displayName());
         setIconBaseWithExtension(ICON_BASE);
+        updateLookup(pageModel);
     }
 
     void setModel(final DocumentViewModel model) {
@@ -95,6 +100,30 @@ public class DocumentNode extends AbstractNode {
             StyleSheetNode sn = (StyleSheetNode) node;
             StyleSheetNode.StyleSheetChildren snChildren = (StyleSheetNode.StyleSheetChildren) sn.getChildren();
             snChildren.setModel(model);
+        }
+        updateLookup(model);
+    }
+
+    private void updateLookup(DocumentViewModel model) {
+        DocumentLookup lookup = (DocumentLookup)getLookup();
+        lookup.update(model);
+    }
+
+    static class DocumentLookup extends ProxyLookup {
+        void update(DocumentViewModel model) {
+            FileObject file = null;
+            if (model != null) {
+                file = model.getFile();
+            }
+            Project project = null;
+            if (file != null) {
+                project = FileOwnerQuery.getOwner(file);
+            }
+            if (project == null) {
+                setLookups();
+            } else {
+                setLookups(Lookups.singleton(project));
+            }
         }
     }
 
