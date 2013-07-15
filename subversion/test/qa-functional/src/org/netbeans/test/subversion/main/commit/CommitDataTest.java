@@ -123,7 +123,7 @@ public class CommitDataTest extends JellyTestCase {
         }
         new EventTool().waitNoEvent(2000);
         TestKit.showStatusLabels();
-        VersioningOperator vo = VersioningOperator.invoke();
+        //VersioningOperator vo = VersioningOperator.invoke();
 
         org.openide.nodes.Node nodeIDE;
         long start;
@@ -178,6 +178,7 @@ public class CommitDataTest extends JellyTestCase {
 
         TestKit.waitText(mh);
 
+        VersioningOperator vo = VersioningOperator.invoke();
         vo = VersioningOperator.invoke();
         table = vo.tabFiles();
         assertEquals("Wrong row count of table.", 1, table.getRowCount());
@@ -262,7 +263,7 @@ public class CommitDataTest extends JellyTestCase {
             new NewProjectWizardOperator().invoke().close();
         }
         new EventTool().waitNoEvent(2000);
-        VersioningOperator vo = VersioningOperator.invoke();
+        //VersioningOperator vo = VersioningOperator.invoke();
 
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         comOperator = new Operator.DefaultStringComparator(true, true);
@@ -306,6 +307,7 @@ public class CommitDataTest extends JellyTestCase {
         new EventTool().waitNoEvent(2000);
         status = TestKit.getStatus(nodeIDE.getHtmlDisplayName());
         new EventTool().waitNoEvent(2000);
+        VersioningOperator vo = VersioningOperator.invoke();
         vo = VersioningOperator.invoke();
         table = vo.tabFiles();
         new EventTool().waitNoEvent(2000);
@@ -386,7 +388,7 @@ public class CommitDataTest extends JellyTestCase {
             new NewProjectWizardOperator().invoke().close();
         }
         new EventTool().waitNoEvent(2000);
-        VersioningOperator vo = VersioningOperator.invoke();
+        //VersioningOperator vo = VersioningOperator.invoke();
 
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
         comOperator = new Operator.DefaultStringComparator(true, true);
@@ -450,6 +452,7 @@ public class CommitDataTest extends JellyTestCase {
             assertEquals("Wrong color of node!!!", TestKit.NEW_COLOR, color);
         }
 
+        VersioningOperator vo = VersioningOperator.invoke();
         vo = VersioningOperator.invoke();
         TableModel model = vo.tabFiles().getModel();
         String[] actual = new String[model.getRowCount()];

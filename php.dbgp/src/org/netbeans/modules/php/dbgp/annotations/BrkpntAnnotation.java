@@ -43,22 +43,10 @@
  */
 package org.netbeans.modules.php.dbgp.annotations;
 
-import java.util.logging.Logger;
-import javax.swing.text.Element;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.debugger.Breakpoint;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.dbgp.breakpoints.LineBreakpoint;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.spi.debugger.ui.BreakpointAnnotation;
-import org.openide.cookies.EditorCookie;
-import org.openide.loaders.DataObject;
 import org.openide.text.Annotatable;
-import org.openide.text.DataEditorSupport;
-import org.openide.text.Line;
-import org.openide.text.NbDocument;
 import org.openide.util.NbBundle;
 
 
@@ -72,12 +60,11 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
 
     private static final String BREAKPOINT                = "ANTN_BREAKPOINT";// NOI18N
 
-    private static final Logger LOGGER = Logger.getLogger(BrkpntAnnotation.class.getName());
-
     private Breakpoint breakpoint;
 
-    public BrkpntAnnotation( Annotatable annotatable, Breakpoint breakpoint ) {
+    public BrkpntAnnotation( Annotatable annotatable, LineBreakpoint breakpoint ) {
         this.breakpoint = breakpoint;
+        breakpoint.refreshValidity();
         attach(annotatable);
     }
 
@@ -86,63 +73,10 @@ public class BrkpntAnnotation extends BreakpointAnnotation {
      */
     @Override
     public String getAnnotationType() {
-        if (breakpoint instanceof LineBreakpoint) {
-            LineBreakpoint lineBreakpoint = (LineBreakpoint) breakpoint;
-            Line line = lineBreakpoint.getLine();
-            DataObject dataObject = DataEditorSupport.findDataObject(line);
-            EditorCookie editorCookie = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
-            final StyledDocument document = editorCookie.getDocument();
-            if (document != null) {
-                final boolean[] isValid = new boolean[1];
-                isValid[0] = false;
-                try {
-                    int l = line.getLineNumber();
-                    Element lineElem = NbDocument.findLineRootElement(document).getElement(l);
-                    final int startOffset = lineElem.getStartOffset();
-                    final int endOffset = lineElem.getEndOffset();
-                    document.render(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            TokenHierarchy th = TokenHierarchy.get(document);
-                            TokenSequence<TokenId> ts = th.tokenSequence();
-                            if (ts != null) {
-                                ts.move(startOffset);
-                                boolean moveNext = ts.moveNext();
-                                for (; moveNext && !isValid[0] && ts.offset() < endOffset;) {
-                                    TokenId id = ts.token().id();
-                                    if (id == PHPTokenId.PHPDOC_COMMENT
-                                            || id == PHPTokenId.PHPDOC_COMMENT_END
-                                            || id == PHPTokenId.PHPDOC_COMMENT_START
-                                            || id == PHPTokenId.PHP_LINE_COMMENT
-                                            || id == PHPTokenId.PHP_COMMENT_START
-                                            || id == PHPTokenId.PHP_COMMENT_END
-                                            || id == PHPTokenId.PHP_COMMENT
-                                            ) {
-                                        break;
-                                    }
-
-                                    isValid[0] = id != PHPTokenId.T_INLINE_HTML && id != PHPTokenId.WHITESPACE;
-                                    if (!ts.moveNext()) {
-                                        break;
-                                    }
-                                }
-                            }
-                        }
-                    });
-                } catch (IndexOutOfBoundsException ex) {
-                    LOGGER.fine("Line number is no more valid.");
-                    isValid[0] = false;
-                }
-                if (!isValid[0]) {
-                    lineBreakpoint.setInvalid(null);
-                } else {
-                    lineBreakpoint.setValid(null);
-                }
-            }
-        }
-        return (breakpoint.getValidity() == Breakpoint.VALIDITY.INVALID) ?
-            BREAKPOINT_ANNOTATION_TYPE+"_broken" : BREAKPOINT_ANNOTATION_TYPE;//NOI18N
+        Breakpoint.VALIDITY validity = breakpoint.getValidity();
+        return validity == Breakpoint.VALIDITY.VALID || validity == Breakpoint.VALIDITY.UNKNOWN
+                ? BREAKPOINT_ANNOTATION_TYPE
+                : BREAKPOINT_ANNOTATION_TYPE + "_broken"; //NOI18N
     }
 
     /* (non-Javadoc)

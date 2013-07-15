@@ -74,7 +74,7 @@ public class CdiTestUtilities {
         ModelUnit modelUnit = ModelUnit.create(
                 ClassPath.getClassPath(mySourceRoot, ClassPath.BOOT),
                 ClassPath.getClassPath(mySourceRoot, ClassPath.COMPILE),
-                ClassPath.getClassPath(mySourceRoot, ClassPath.SOURCE));
+                ClassPath.getClassPath(mySourceRoot, ClassPath.SOURCE), null);
         return WebBeansModelFactory.createMetaModel(modelUnit);
     }
     

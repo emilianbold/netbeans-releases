@@ -112,7 +112,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
     private RuleEditorPanel panel;
     private final boolean isAggregatedProperty;
     private static final String CHOOSE_COLOR_ITEM = new StringBuilder().append("<html><b>").append(Bundle.choose_color_item()).append("</b></html>").toString();  //NOI18N
-    private static final JColorChooser COLOR_CHOOSER = new JColorChooser();
+    private static JColorChooser COLOR_CHOOSER;
     private PropertyDeclaration declaration;
     
     public PropertyValuesEditor(RuleEditorPanel panel, 
@@ -131,6 +131,13 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         this.pmodel = pmodel; //may be null
         this.isAggregatedProperty = pmodel != null ? Properties.isAggregatedProperty(file, pmodel) : false;
         this.declaration = declaration;
+    }
+    
+    private static JColorChooser getJColorChooser() {
+        if(COLOR_CHOOSER == null) {
+            COLOR_CHOOSER = new JColorChooser();
+        }
+        return COLOR_CHOOSER;
     }
 
     private boolean canIncrementDecrement() {
@@ -250,12 +257,12 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
         if (CHOOSE_COLOR_ITEM.equals(str)) {
             //color chooser
             final AtomicReference<Color> color_ref = new AtomicReference<>();
-            JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(), Bundle.choose_color_item(), true, COLOR_CHOOSER,
+            JDialog dialog = JColorChooser.createDialog(EditorRegistry.lastFocusedComponent(), Bundle.choose_color_item(), true, getJColorChooser(),
                     new ActionListener() {
                         @Override
                         public void actionPerformed(ActionEvent e) {
                             //disalog confirmed
-                            color_ref.set(COLOR_CHOOSER.getColor());
+                            color_ref.set(getJColorChooser().getColor());
                         }
                     }, new ActionListener() {
                 @Override
@@ -436,7 +443,7 @@ public class PropertyValuesEditor extends PropertyEditorSupport implements ExPro
                 }
 
                 if (strval.equals(CHOOSE_COLOR_ITEM)) {
-                    Color chooserColor = COLOR_CHOOSER.getColor();
+                    Color chooserColor = getJColorChooser().getColor();
                     String hexCode = chooserColor != null ? WebUtils.toHexCode(chooserColor) : null;
                     icon = WebUtils.createColorIcon(hexCode);
                 }

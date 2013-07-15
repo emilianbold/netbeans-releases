@@ -50,6 +50,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Logger;
+import org.netbeans.modules.web.beans.api.model.BeanArchiveType;
 
 import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.xml.AlternativeElement;
@@ -176,4 +177,9 @@ class TestBeansModelImpl implements BeansModel {
     }
 
     private WebBeansModel myModel;
+
+    @Override
+    public BeanArchiveType getBeanArchiveType() {
+        return BeanArchiveType.EXPLICIT;
+    }
 }

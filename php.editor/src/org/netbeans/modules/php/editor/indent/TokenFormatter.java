@@ -409,7 +409,7 @@ public class TokenFormatter {
                     int countSpaces;
                     int column = 0;
                     int indentOfOpenTag = 0;
-                    final Deque<Integer> lastBracedBlockIndent = new ArrayDeque<Integer>();
+                    final Deque<Integer> lastBracedBlockIndent = new ArrayDeque<>();
 
                     FormatToken formatToken;
                     String newText = null;

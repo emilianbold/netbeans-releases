@@ -39,79 +39,59 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.cordova.platforms.ios;
+package org.netbeans.modules.web.beans.impl.model;
 
-import com.dd.plist.NSDictionary;
-import com.dd.plist.NSObject;
-import com.dd.plist.PropertyListParser;
-import java.io.IOException;
-import java.util.Objects;
-import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
-import org.netbeans.modules.cordova.platforms.spi.ProvisioningProfile;
-import org.openide.util.Exceptions;
+import java.util.Iterator;
+import java.util.Set;
+import javax.lang.model.element.Element;
+import javax.lang.model.element.TypeElement;
+import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 
 /**
- *
- * @author Jan Becicka
+ * since cdi 1.1 behavior is based on archoe type, beans may not be discoverable
+ * @author sp153251
  */
-public class IOSProvisioningProfile implements ProvisioningProfile {
-    
-    private String displayName;
-    private String path;
-    
-    public IOSProvisioningProfile(String path) {
-        displayName = "Error"; // NOI18N
-        try {
-            this.path = path;
-            String xml = ProcessUtilities.callProcess("security", true, IOSPlatform.DEFAULT_TIMEOUT, "cms", "-D", "-i", path); // NOI18N
-            NSObject root = PropertyListParser.parse(xml.getBytes());
-            if (root instanceof NSDictionary) {
-                displayName = ((NSDictionary) root).objectForKey("Name").toString(); // NOI18N
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (Exception ex) {
-            Exceptions.printStackTrace(ex);
+public class ArchiveTypeBindingTypeFilter<T extends Element> extends Filter<T> {
+
+    static <T extends Element> ArchiveTypeBindingTypeFilter<T> get(Class<T> clazz) {
+        assertElement(clazz);
+        // could be changed to cached ThreadLocal access
+        if (clazz.equals(Element.class) || clazz.equals(TypeElement.class)) {
+            return (ArchiveTypeBindingTypeFilter<T>) new ArchiveTypeBindingTypeFilter<>();
         }
-        
+        return null;
+    }
+    private WebBeansModelImplementation myImpl;
+
+    void init(WebBeansModelImplementation impl) {
+        myImpl = impl;
     }
 
     @Override
-    public String getDisplayName() {
-        return displayName;
-    }
-
-    @Override
-    public String getPath() {
-        return path;
-    }
-
-    @Override
-    public String toString() {
-        return displayName;
-    }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 73 * hash + Objects.hashCode(this.path);
-        return hash;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
+    void filter(Set<T> set) {
+        super.filter(set);
+        switch (myImpl.getBeansModel().getBeanArchiveType()) {
+            case NONE:
+                set.clear();
+                break;
+            case IMPLICIT:
+                CompilationController compInfo = myImpl.getModel().getCompilationController();
+                for (Iterator<T> iterator = set.iterator(); iterator
+                        .hasNext();) {
+                    Element element = iterator.next();
+                    boolean isNormalScope = AnnotationUtil.hasAnnotation(element,
+                            AnnotationUtil.NORMAL_SCOPE_FQN, compInfo);
+                    if(isNormalScope) {
+                        continue;
+                    }
+                    boolean isScope = AnnotationUtil.hasAnnotation(element,
+                            AnnotationUtil.SCOPE_FQN, compInfo);
+                    if(isScope) {
+                        continue;
+                    }
+                    iterator.remove();
+                }
         }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final IOSProvisioningProfile other = (IOSProvisioningProfile) obj;
-        if (!Objects.equals(this.path, other.path)) {
-            return false;
-        }
-        return true;
     }
-    
-    
 }
