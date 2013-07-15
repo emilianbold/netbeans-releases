@@ -280,6 +280,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             sb.append("()");    //NOI18N
                         }
 
+                    } else {
+                        sb.append(" = "); //NOI18N
+                        sb.append(indexedElement.getFQN());
                     }
             }
             sb.append(";\n");   //NOI18N
