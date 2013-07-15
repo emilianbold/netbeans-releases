@@ -300,8 +300,12 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         } else {
             int parenStart = value.indexOf('('); //NOI18N
             String name = value;
+            int lenght = name.length();
             if (parenStart > -1) {
-                name = name.substring(0, parenStart);
+                name = name.substring(0, parenStart).trim();
+            }
+            if (name.indexOf('=') > -1) {
+                name = name.substring(0, name.indexOf('=')).trim();
             }
             if (propertyToFqn.containsKey(name)) {
                 embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
@@ -322,7 +326,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     }
                     embeddings.add(snapshot.create(tokenSequence.offset() + 1, parenEnd, Constants.JAVASCRIPT_MIMETYPE));
                 } else {
-                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, name.length(), Constants.JAVASCRIPT_MIMETYPE));
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, lenght, Constants.JAVASCRIPT_MIMETYPE));
                 } 
                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
             }  else {
