@@ -170,6 +170,13 @@ public class Utilities {
         return makeNameUnique(info, s, name, prefix, suffix);
     }
     
+    private static final Map<String, String> TYPICAL_KEYWORD_CONVERSIONS = new HashMap<String, String>() {{
+        put("class", "clazz");
+        put("interface", "intf");
+        put("new", "nue");
+        put("static", "statik");
+    }};
+    
     public static String makeNameUnique(CompilationInfo info, Scope s, String name, String prefix, String suffix) {
         if(prefix != null && prefix.length() > 0) {
             if(Character.isAlphabetic(prefix.charAt(prefix.length()-1))) {
@@ -186,6 +193,16 @@ public class Utilities {
             proposedName = safeString(prefix) + name + (counter != 0 ? String.valueOf(counter) : "") + safeString(suffix);
             
             cont = false;
+            
+            String converted = TYPICAL_KEYWORD_CONVERSIONS.get(proposedName);
+            
+            if (converted != null) {
+                proposedName = converted;
+            } else if (SourceVersion.isKeyword(proposedName)) {
+                counter++;
+                cont = true;
+                continue;
+            }
             
             for (Element e : info.getElementUtilities().getLocalMembersAndVars(s, new VariablesFilter())) {
                 if (proposedName.equals(e.getSimpleName().toString())) {
