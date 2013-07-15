@@ -151,17 +151,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             case ARGUMENT:
                 Directive ajsDirective = Directive.getDirective(tokenText.toString().trim().toLowerCase());
                 if(ajsDirective != null) {
-                    switch(ajsDirective) {
-                        case controller:
-                        case model:
-                        case repeat:
-                        case disabled:
-                        case click:
-                            interestedAttr = ajsDirective;
-                            break;
-                        default:
-                            interestedAttr = null;
-                    }
+                    interestedAttr = ajsDirective;
                 } else {
                     interestedAttr = null;
                 }
@@ -183,7 +173,8 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             processed = processRepeat(value);
                             stack.push(new StackItem(lastTagOpen, "}\n")); //NOI18N
                             break;
-                        default:        
+                        default:   
+                            processed = processExpression(value);
                     }
                 }
                 break;
@@ -418,6 +409,48 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 }
                 lastPartPos = lastPartPos + parts[partIndex].length() + 1;
                 partIndex++;
+            }
+        }
+        return processed;
+    }
+    
+    private boolean processExpression(String value) {
+        boolean processed = false;
+        if (value.isEmpty()) {
+            embeddings.add(snapshot.create("( function () {", Constants.JAVASCRIPT_MIMETYPE));
+            embeddings.add(snapshot.create(tokenSequence.offset(), 1, Constants.JAVASCRIPT_MIMETYPE));
+            embeddings.add(snapshot.create(";})();\n", Constants.JAVASCRIPT_MIMETYPE));
+            processed = true;
+        } else {
+            int lastPartPos = 0;
+            if (value.startsWith("{")) {
+                value = value.substring(1);
+                lastPartPos = 1;
+            }
+            if (value.trim().endsWith("}")) {
+                value = value.substring(0, value.length() - 1);
+            }
+            int index = value.indexOf(':'); // are there pairs like name: expr?
+            if (index > -1) {
+                
+                String[] parts = value.split(","); // example: ng-class="{completed: todo.completed, editing: todo == editedTodo}"
+                for (String part : parts) {
+                    index = value.indexOf(':');
+                    if (index > 0) {
+                        String[] conditionParts = part.trim().split(":");
+                        if(conditionParts.length > 1) {
+                            String propName = conditionParts[1].trim();
+                            int position = lastPartPos + part.indexOf(propName) + 1;
+                            if (propertyToFqn.containsKey(propName)) {
+                                embeddings.add(snapshot.create(propertyToFqn.get(propName) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N                            
+                            }
+                            embeddings.add(snapshot.create(tokenSequence.offset() + position, propName.length(), Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                            processed = true;
+                        }
+                    }
+                    lastPartPos = lastPartPos + part.length() + 1;
+                }
             }
         }
         return processed;
