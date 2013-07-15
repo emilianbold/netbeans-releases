@@ -619,15 +619,23 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             });
             
             nextButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-next.png"))); // NOI18N
-            prevButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-prev.png"))); // NOI18N
             nextButton.addActionListener(this);
-            prevButton.addActionListener(this);
             nextButton.setEnabled(false);
+            nextButton.setToolTipText(org.openide.util.NbBundle.getMessage(HistoryComponent.class, "LBL_NextDiff")); // NOI18N        
+        
+            prevButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-prev.png"))); // NOI18N
+            prevButton.addActionListener(this);
             prevButton.setEnabled(false);
+            prevButton.setToolTipText(org.openide.util.NbBundle.getMessage(HistoryComponent.class, "LBL_PrevDiff")); // NOI18N                    
+            
             refreshButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/refresh.png"))); // NOI18N
             refreshButton.addActionListener(this);
+            refreshButton.setToolTipText(org.openide.util.NbBundle.getMessage(HistoryComponent.class, "LBL_Refresh")); // NOI18N                    
+            
             settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/options.png"))); // NOI18N
             settingsButton.addActionListener(this);
+            settingsButton.setToolTipText(org.openide.util.NbBundle.getMessage(HistoryComponent.class, "LBL_Options")); // NOI18N                    
+            
             showHistoryAction = new ShowHistoryAction(vs);
             searchHistoryButton = new LinkButton(); // NOI18N
             searchHistoryButton.addActionListener(showHistoryAction);
