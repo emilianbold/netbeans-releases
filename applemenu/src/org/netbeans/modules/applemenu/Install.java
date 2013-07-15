@@ -64,7 +64,6 @@ public class Install extends ModuleInstall {
         listener = new CtrlClickHack();
         Toolkit.getDefaultToolkit().addAWTEventListener(listener, AWTEvent.MOUSE_EVENT_MASK | AWTEvent.FOCUS_EVENT_MASK);
         if (Utilities.isMac() ) { // NOI18N
-//            FontReferenceQueue.install();
             try {
                 Class<?> adapter = Class.forName("org.netbeans.modules.applemenu.NbApplicationAdapter");
                 Method m = adapter.getDeclaredMethod("install", new Class[0] );
