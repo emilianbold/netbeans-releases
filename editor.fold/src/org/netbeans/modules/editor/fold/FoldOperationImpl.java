@@ -297,12 +297,12 @@ public final class FoldOperationImpl {
         @Override
         public int compare(Fold a, Fold b) {
             int diff = a.getStartOffset() - b.getStartOffset();
-            if (diff < 0) {
-                return -1;
+            if (diff != 0) {
+                return diff;
             }
             int diff2 = b.getEndOffset() - a.getEndOffset();
-            if (diff2 != 0 || diff != 0) {
-                return 1;
+            if (diff2 != 0) {
+                return diff2;
             }
             ApiPackageAccessor accessor = getAccessor();
             return accessor.foldGetOperation(a).getPriority() - accessor.foldGetOperation(b).getPriority();

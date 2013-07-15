@@ -317,7 +317,7 @@ public class ComputeImports {
     
     private static class TreeVisitorImpl extends CancellableTreePathScanner<Void, Map<String, Object>> {
         
-        private CompilationInfo info;
+        private final CompilationInfo info;
         private Set<String> unresolved;
         
         private List<Hint> hints;
@@ -534,20 +534,13 @@ public class ComputeImports {
             return super.visitAnnotation(node, p);
         }
         
-        private static final Set<Kind> SAFE_KIND_FOR_SCOPE = EnumSet.of(Kind.COMPILATION_UNIT, Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE);
+        private Scope topLevelScope;
         
-        //resolving scope for each unresolved identifier is very slow, and not really necessary for Trees.isAccessible -
-        //scope for the nearest class should be OK
         private Scope getScope() {
-            TreePath tp = getCurrentPath();
-            Kind kind = tp.getLeaf().getKind();
-            
-            while (!SAFE_KIND_FOR_SCOPE.contains(kind)) {
-                tp = tp.getParentPath();
-                kind = tp.getLeaf().getKind();
+            if (topLevelScope == null) {
+                topLevelScope = info.getTrees().getScope(new TreePath(getCurrentPath().getCompilationUnit()));
             }
-            
-            return info.getTrees().getScope(tp);
+            return topLevelScope;
         }
         
         private void filterByAcceptedKind(Tree toFilter, ElementKind acceptedKind, ElementKind... otherAcceptedKinds) {
