@@ -76,10 +76,12 @@ public class IOSProvisioningProfile implements ProvisioningProfile {
         
     }
 
+    @Override
     public String getDisplayName() {
         return displayName;
     }
 
+    @Override
     public String getPath() {
         return path;
     }
