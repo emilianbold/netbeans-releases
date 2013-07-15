@@ -3,5 +3,5 @@ TestContr();
 var val;
 val;
 val;
--val;
+val;
 });
