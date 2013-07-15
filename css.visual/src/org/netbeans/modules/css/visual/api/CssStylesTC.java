@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.visual.api;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import javax.swing.JComponent;
 import org.netbeans.modules.css.visual.CssStylesPanel;
 import org.netbeans.modules.css.visual.CssStylesTCController;
@@ -119,7 +120,13 @@ public final class CssStylesTC extends TopComponent {
         }
     }
 
+    /**
+     * Sets context file to the CSSStylesTC.
+     * Must be called in EDT
+     */
     public void setContext(FileObject file) {
+        assert EventQueue.isDispatchThread();
+        
         setContent(cssStylesPanel);
 
         cssStylesPanel.setContext(file);
