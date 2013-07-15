@@ -48,16 +48,27 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Collections;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import javax.swing.SwingUtilities;
+import javax.swing.text.Element;
+import javax.swing.text.StyledDocument;
 
 import org.netbeans.api.debugger.ActionsManager;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.spi.debugger.ActionsProvider;
 import org.netbeans.spi.debugger.ActionsProviderSupport;
 import org.netbeans.spi.debugger.ui.EditorContextDispatcher;
+import org.openide.cookies.EditorCookie;
+import org.openide.loaders.DataObject;
+import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
+import org.openide.text.NbDocument;
 import org.openide.util.WeakListeners;
 
 /**
@@ -66,8 +77,9 @@ import org.openide.util.WeakListeners;
  */
 @ActionsProvider.Registration(actions={"toggleBreakpoint"}, activateForMIMETypes={Utils.MIME_TYPE})
 public class BreakpointActionProvider extends ActionsProviderSupport
-        implements PropertyChangeListener 
+        implements PropertyChangeListener
 {
+    private static final Logger LOGGER = Logger.getLogger(BreakpointActionProvider.class.getName());
 
     public BreakpointActionProvider() {
         setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, false);
@@ -86,7 +98,7 @@ public class BreakpointActionProvider extends ActionsProviderSupport
                 @Override
                 public void run() {
                     addBreakpoints();
-                } 
+                }
             });
         }
     }
@@ -95,7 +107,7 @@ public class BreakpointActionProvider extends ActionsProviderSupport
     public Set getActions() {
         return Collections.singleton(ActionsManager.ACTION_TOGGLE_BREAKPOINT );
     }
-    
+
     private void addBreakpoints() {
         Line line = Utils.getCurrentLine();
 
@@ -116,11 +128,62 @@ public class BreakpointActionProvider extends ActionsProviderSupport
                 break;
             }
         }
-
-        if ( add ) {
+        LineBreakpoint lineBreakpoint = new LineBreakpoint(line);
+        if ( add && isValid(lineBreakpoint) ) {
             DebuggerManager.getDebuggerManager().addBreakpoint(
-                    new LineBreakpoint(line));
+                    lineBreakpoint);
         }
+    }
+
+    private boolean isValid(LineBreakpoint lineBreakpoint) {
+        final boolean[] result = new boolean[1];
+        result[0] = false;
+        Line line = lineBreakpoint.getLine();
+        DataObject dataObject = DataEditorSupport.findDataObject(line);
+        EditorCookie editorCookie = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
+        final StyledDocument document = editorCookie.getDocument();
+        if (document != null) {
+            try {
+                int l = line.getLineNumber();
+                Element lineElem = NbDocument.findLineRootElement(document).getElement(l);
+                final int startOffset = lineElem.getStartOffset();
+                final int endOffset = lineElem.getEndOffset();
+                document.render(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        TokenHierarchy th = TokenHierarchy.get(document);
+                        TokenSequence<TokenId> ts = th.tokenSequence();
+                        if (ts != null) {
+                            ts.move(startOffset);
+                            boolean moveNext = ts.moveNext();
+                            for (; moveNext && !result[0] && ts.offset() < endOffset;) {
+                                TokenId id = ts.token().id();
+                                if (id == PHPTokenId.PHPDOC_COMMENT
+                                        || id == PHPTokenId.PHPDOC_COMMENT_END
+                                        || id == PHPTokenId.PHPDOC_COMMENT_START
+                                        || id == PHPTokenId.PHP_LINE_COMMENT
+                                        || id == PHPTokenId.PHP_COMMENT_START
+                                        || id == PHPTokenId.PHP_COMMENT_END
+                                        || id == PHPTokenId.PHP_COMMENT
+                                        ) {
+                                    break;
+                                }
+
+                                result[0] = id != PHPTokenId.T_INLINE_HTML && id != PHPTokenId.WHITESPACE;
+                                if (!ts.moveNext()) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (IndexOutOfBoundsException ex) {
+                LOGGER.fine("Line number is no more valid.");
+                result[0] = false;
+            }
+        }
+        return result[0];
     }
 
     @Override
