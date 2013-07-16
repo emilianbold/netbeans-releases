@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,81 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.javascript2.editor.model;
 
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.OffsetRange;
+import java.util.Collection;
 
 /**
  *
  * @author Petr Pisl
  */
-public interface JsElement extends ElementHandle {
-
-    public enum Kind {
-
-        FUNCTION(1),
-        METHOD(2),
-        CONSTRUCTOR(3),
-        OBJECT(4),
-        PROPERTY(5),
-        VARIABLE(6),
-        FIELD(7),
-        FILE(8),
-        PARAMETER(9),
-        ANONYMOUS_OBJECT(10),
-        PROPERTY_GETTER(11),
-        PROPERTY_SETTER(12),
-        OBJECT_LITERAL(13),
-        CATCH_BLOCK(14),
-        WITH_OBJECT(15);
-        
-        private final int id;
-        private static final Map<Integer, Kind> LOOKUP = new HashMap<Integer, Kind>();
-        
-        static {
-            for (Kind kind : EnumSet.allOf(Kind.class)) {
-                LOOKUP.put(kind.getId(), kind);
-            }
-        }
-        
-        private Kind(int id) {
-            this.id = id;
-        }
-        
-        public int getId() {
-            return this.id;
-        }
-        
-        public static  Kind fromId(int id) {
-            return LOOKUP.get(id);
-        }
-        
-        public boolean isFunction() {
-            return this == FUNCTION || this == METHOD || this == CONSTRUCTOR
-                    || this == PROPERTY_GETTER || this == PROPERTY_SETTER;
-        }
-        
-        public boolean isPropertyGetterSetter() {
-            return this == PROPERTY_GETTER || this == PROPERTY_SETTER;
-        }
-        
-    }
-
-    int getOffset();
-
-    OffsetRange getOffsetRange();
-
-    Kind getJSKind();
+public interface JsWith extends JsObject {
     
-    boolean isDeclared();
-
-    boolean isPlatform();
-
-    String getSourceLabel();
+    /**
+     * 
+     * @return collection types that corresponds to the expression in the with ()
+     */
+    public Collection<? extends TypeUsage> getTypes();
+    
+    public Collection<? extends JsWith> getInnerWiths();
+            
+    public JsWith getOuterWith();
 }

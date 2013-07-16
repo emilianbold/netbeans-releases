@@ -174,7 +174,9 @@ public final class Model {
         DeclarationScope scope = ModelUtils.getDeclarationScope(this, offset);
         while (scope != null) {
             for (JsObject object : ((JsObject)scope).getProperties().values()) {
-                result.add(object);
+                if (!object.isAnonymous()) {
+                    result.add(object);
+                }
             }
             for (JsObject object : ((JsFunction)scope).getParameters()) {
                 result.add(object);

@@ -53,7 +53,7 @@ import org.netbeans.modules.javascript2.editor.model.*;
  */
 public class JsObjectImpl extends JsElementImpl implements JsObject {
 
-    final private HashMap<String, JsObject> properties = new HashMap<String, JsObject>();
+    final protected HashMap<String, JsObject> properties = new HashMap<String, JsObject>();
     final private Identifier declarationName;
     private JsObject parent;
     final private List<Occurrence> occurrences = new ArrayList<Occurrence>();
@@ -473,7 +473,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         
     }
     
-    private void clearOccurrences() {
+    protected void clearOccurrences() {
         occurrences.clear();
     }
     
@@ -484,8 +484,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         Collection<JsObject> prototypeChains = findPrototypeChain(original);
         for (JsObject jsObject : prototypeChains) {
             for (JsObject origProperty : jsObject.getProperties().values()) {
-                if(origProperty.getModifiers().contains(Modifier.PUBLIC)
-                        || origProperty.getModifiers().contains(Modifier.PROTECTED)) {
+//                if(origProperty.getModifiers().contains(Modifier.PUBLIC)
+//                        || origProperty.getModifiers().contains(Modifier.PROTECTED)) {
                     JsObjectImpl usedProperty = (JsObjectImpl)created.getProperty(origProperty.getName());
                     if (usedProperty != null) {
                         ((JsObjectImpl)origProperty).addOccurrence(usedProperty.getDeclarationName().getOffsetRange());
@@ -498,7 +498,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                         }
                         moveOccurrenceOfProperties((JsObjectImpl)origProperty, usedProperty);
                     }
-                }
+//                }
             }
             JsObject prototype = jsObject.getProperty(ModelUtils.PROTOTYPE);
             if (prototype != null) {
