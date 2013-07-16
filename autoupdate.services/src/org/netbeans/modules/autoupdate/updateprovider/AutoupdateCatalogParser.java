@@ -64,6 +64,7 @@ import org.netbeans.modules.autoupdate.services.UpdateLicenseImpl;
 import org.netbeans.modules.autoupdate.services.Utilities;
 import org.netbeans.spi.autoupdate.UpdateItem;
 import org.netbeans.spi.autoupdate.UpdateLicense;
+import org.openide.util.Exceptions;
 import org.xml.sax.*;
 import org.xml.sax.helpers.DefaultHandler;
 
@@ -104,10 +105,10 @@ public class AutoupdateCatalogParser extends DefaultHandler {
                     "    org.netbeans.updater.XMLUtil is not accessible\n" +
                     "    platform dir = " + netbeansHomeFile.getAbsolutePath() + "\n" +
                     "    userdir  dir = " + userdir.getAbsolutePath() + "\n" +
-                    "    updater in platform exist = " + updaterPlatform.exists() + (updaterPlatform.exists() ? (", length = " + updaterPlatform.length() + " bytes") : "") + "\n" +
-                    "    updater in userdir  exist = " + updaterUserdir.exists() + (updaterUserdir.exists() ? (", length = " + updaterUserdir.length() + " bytes") : "") + "\n" +
-                    "    new updater in platform exist = " + newUpdaterPlatform.exists() + (newUpdaterPlatform.exists() ? (", length = " + newUpdaterPlatform.length() + " bytes") : "") + "\n" +
-                    "    new updater in userdir  exist = " + newUpdaterUserdir.exists() + (newUpdaterUserdir.exists() ? (", length = " + newUpdaterUserdir.length() + " bytes") : "") + "\n";
+                    "    updater in platform exist = " + updaterInfo(updaterPlatform) + "\n" +
+                    "    updater in userdir  exist = " + updaterInfo(updaterUserdir) + "\n" +
+                    "    new updater in platform exist = " + updaterInfo(newUpdaterPlatform) + "\n" +
+                    "    new updater in userdir  exist = " + updaterInfo(newUpdaterUserdir) + "\n";
 
             ERR.log(Level.WARNING, message);
         }
@@ -116,6 +117,22 @@ public class AutoupdateCatalogParser extends DefaultHandler {
 
     
     private static final Logger ERR = Logger.getLogger (AutoupdateCatalogParser.class.getName ());
+
+    private String updaterInfo(final File updaterLocation) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(updaterLocation.exists());
+        if (updaterLocation.exists()) {
+            try {
+                sb.append(", length = ").append(updaterLocation.length()).append(" bytes");
+                URLClassLoader url = new URLClassLoader(new URL[] { updaterLocation.toURI().toURL() });
+                sb.append(", loading resource: ").append(url.getResource("org/netbeans/updater/XMLUtil.class"));
+                sb.append(", loading class: ").append(url.loadClass("org.netbeans.updater.XMLUtil"));
+            } catch (Throwable ex) {
+                sb.append(", exception: ").append(ex.getMessage());
+            }
+        }
+        return  sb.toString();
+    }
     
     private static enum ELEMENTS {
         module_updates, module_group, notification, content_description, module, description,

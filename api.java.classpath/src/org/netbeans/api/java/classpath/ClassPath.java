@@ -921,7 +921,9 @@ public final class ClassPath {
                 if (file.getPath().startsWith(r.getPath())) {
                     while (file.getPath().length() > r.getPath().length()) {
                         file = file.getParent();
-                        sb.append("\nChildren of ").append(file).append(" are:\n  ").append(Arrays.toString(file.getChildren()));
+                        sb.append("\nChildren of ").append(file).
+                            append(" (valid: ").append(file.isValid()).append(")").
+                            append(" are:\n  ").append(Arrays.toString(file.getChildren()));
                     }
                 } else {
                     sb.append("\nRoot path is not prefix"); // NOI18N
