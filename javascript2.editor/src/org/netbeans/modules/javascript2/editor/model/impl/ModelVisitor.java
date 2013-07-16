@@ -1279,18 +1279,12 @@ public class ModelVisitor extends PathNodeVisitor {
         Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, withNode.getExpression());
         JsWithObjectImpl withObject = new JsWithObjectImpl(currentObject, modelBuilder.getUnigueNameForWithObject(), types, new OffsetRange(withNode.getStart(), withNode.getFinish()), parserResult.getSnapshot().getMimeType(), null);
         currentObject.addProperty(withObject.getName(), withObject);
+        withNode.getExpression().accept(this); // expression should be visted when the with object is the current object.
         modelBuilder.setCurrentObject(withObject);
-        return super.enter(withNode); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Node leave(WithNode withNode) {
-        Node result = super.leave(withNode);
+        withNode.getBody().accept(this);
         modelBuilder.reset();
-        return result;
+        return null;
     }
-    
-    
 
 //--------------------------------End of visit methods--------------------------------------
 
