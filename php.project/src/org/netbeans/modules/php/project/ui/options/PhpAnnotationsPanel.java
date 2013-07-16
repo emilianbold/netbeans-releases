@@ -131,10 +131,12 @@ public class PhpAnnotationsPanel extends JPanel {
     }
 
     public boolean isResolveDeprecatedElements() {
+        assert EventQueue.isDispatchThread();
         return resolveDeprecatedCheckBox.isSelected();
     }
 
     public void setResolveDeprecatedElements(boolean resolveDeprecatedElements) {
+        assert EventQueue.isDispatchThread();
         resolveDeprecatedCheckBox.setSelected(resolveDeprecatedElements);
     }
 
