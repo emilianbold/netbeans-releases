@@ -122,7 +122,7 @@ public class IgnoreTest extends JellyTestCase {
             new NewProjectWizardOperator().invoke().close();
         }
 
-        VersioningOperator vo = VersioningOperator.invoke();
+        //VersioningOperator vo = VersioningOperator.invoke();
         TestKit.showStatusLabels();
 
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
@@ -164,7 +164,7 @@ public class IgnoreTest extends JellyTestCase {
         log.addHandler(mh);
 
         Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
-        node.performPopupAction("Subversion|Ignore");
+        node.performPopupAction("Subversion|Ignore|Ignore");
         new EventTool().waitNoEvent(2000);
         TestKit.waitText(mh);
 
@@ -196,7 +196,7 @@ public class IgnoreTest extends JellyTestCase {
         new EventTool().waitNoEvent(2000);
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "javaapp|NewClass");
         new EventTool().waitNoEvent(2000);
-        node.performPopupAction("Subversion|Unignore");
+        node.performPopupAction("Subversion|Ignore|Unignore");
         TestKit.waitText(mh);
         new EventTool().waitNoEvent(2000);
 
@@ -218,6 +218,7 @@ public class IgnoreTest extends JellyTestCase {
         TestKit.waitText(mh);
 
         new EventTool().waitNoEvent(2000);
+        VersioningOperator vo = VersioningOperator.invoke();
         vo = VersioningOperator.invoke();
         TableModel model = vo.tabFiles().getModel();
         assertEquals("Versioning view should be empty", 1, model.getRowCount());
@@ -238,7 +239,7 @@ public class IgnoreTest extends JellyTestCase {
         log.addHandler(mh);
         TestKit.closeProject(PROJECT_NAME);
         new EventTool().waitNoEvent(2000);
-        VersioningOperator vo = VersioningOperator.invoke();
+        //VersioningOperator vo = VersioningOperator.invoke();
         TestKit.showStatusLabels();
 
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
@@ -281,7 +282,7 @@ public class IgnoreTest extends JellyTestCase {
         log.addHandler(mh);
 
         Node node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
-        node.performPopupAction("Subversion|Ignore");
+        node.performPopupAction("Subversion|Ignore|Ignore");
 
         TestKit.waitText(mh);
 
@@ -312,7 +313,7 @@ public class IgnoreTest extends JellyTestCase {
         new EventTool().waitNoEvent(2000);
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
         new EventTool().waitNoEvent(2000);
-        node.performPopupAction("Subversion|Unignore");
+        node.performPopupAction("Subversion|Ignore|Unignore");
         new EventTool().waitNoEvent(2000);
         TestKit.waitText(mh);
 
@@ -334,6 +335,7 @@ public class IgnoreTest extends JellyTestCase {
 
         new EventTool().waitNoEvent(4000);
 
+        VersioningOperator vo = VersioningOperator.invoke();
         vo = VersioningOperator.invoke();
         TableModel model = vo.tabFiles().getModel();
         new EventTool().waitNoEvent(2000);
@@ -355,7 +357,7 @@ public class IgnoreTest extends JellyTestCase {
         log.addHandler(mh);
         TestKit.closeProject(PROJECT_NAME);
         new EventTool().waitNoEvent(2000);
-        VersioningOperator vo = VersioningOperator.invoke();
+        //VersioningOperator vo = VersioningOperator.invoke();
         TestKit.showStatusLabels();
 
         stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
@@ -397,7 +399,7 @@ public class IgnoreTest extends JellyTestCase {
         mh = new MessageHandler("Ignoring");
         TestKit.removeHandlers(log);
         log.addHandler(mh);
-        node.performPopupAction("Subversion|Ignore");
+        node.performPopupAction("Subversion|Ignore|Ignore");
 
         TestKit.waitText(mh);
         new EventTool().waitNoEvent(6000);
@@ -417,7 +419,7 @@ public class IgnoreTest extends JellyTestCase {
         TestKit.removeHandlers(log);
         log.addHandler(mh);
         node = new Node(new SourcePackagesNode(PROJECT_NAME), "xx");
-        node.performPopupAction("Subversion|Unignore");
+        node.performPopupAction("Subversion|Ignore|Unignore");
 
         TestKit.waitText(mh);
 
@@ -443,6 +445,7 @@ public class IgnoreTest extends JellyTestCase {
         TestKit.waitText(mh);
 
         new EventTool().waitNoEvent(4000);
+        VersioningOperator vo = VersioningOperator.invoke();
         vo = VersioningOperator.invoke();
         TableModel model = vo.tabFiles().getModel();
         new EventTool().waitNoEvent(2000);
