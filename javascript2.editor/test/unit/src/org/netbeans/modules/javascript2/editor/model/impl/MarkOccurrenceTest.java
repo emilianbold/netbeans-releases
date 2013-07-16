@@ -848,6 +848,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue232776.js","with (testWi^th01) {", true);
     }
     
+    public void testIssue232777_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232777.js","app.des^cription = \"new description\";", true);
+    }
+    
+    public void testIssue232777_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232777.js","ap^p.description = \"new description\";", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
