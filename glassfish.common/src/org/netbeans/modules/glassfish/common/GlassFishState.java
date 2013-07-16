@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -41,20 +41,19 @@
  */
 package org.netbeans.modules.glassfish.common;
 
-import java.io.File;
-import java.util.Map;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.tools.ide.GlassFishStatus;
-import org.glassfish.tools.ide.admin.ResultMap;
-import org.glassfish.tools.ide.admin.ResultString;
-import org.glassfish.tools.ide.admin.TaskState;
+import static org.glassfish.tools.ide.GlassFishStatus.OFFLINE;
+import static org.glassfish.tools.ide.GlassFishStatus.UNKNOWN;
+import org.glassfish.tools.ide.GlassFishStatusListener;
+import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishServerStatus;
-import org.glassfish.tools.ide.data.GlassFishVersion;
-import org.glassfish.tools.ide.server.ServerStatus;
+import org.glassfish.tools.ide.data.GlassFishStatusCheck;
+import static org.glassfish.tools.ide.data.GlassFishStatusCheck.LOCATIONS;
+import static org.glassfish.tools.ide.data.GlassFishStatusCheck.VERSION;
+import org.glassfish.tools.ide.data.GlassFishStatusCheckResult;
+import org.glassfish.tools.ide.data.GlassFishStatusTask;
 import org.glassfish.tools.ide.utils.ServerUtils;
-import org.netbeans.modules.glassfish.common.ui.WarnPanel;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -74,6 +73,11 @@ public class GlassFishState {
      * Allows to select server state check mode.
      */
     public static enum Mode {
+
+        ////////////////////////////////////////////////////////////////////////
+        // Enum values                                                        //
+        ////////////////////////////////////////////////////////////////////////
+
         /** Default server state check mode. All special features
          *  are turned off. */
         DEFAULT,
@@ -83,13 +87,6 @@ public class GlassFishState {
         /** Refresh mode. Displays enable-secure-admin warning
          *  for remote servers. */
         REFRESH;
-
-        ////////////////////////////////////////////////////////////////////////
-        // Class attributes                                                   //
-        ////////////////////////////////////////////////////////////////////////
-
-        ///** Local logger. */
-        //private static final Logger LOGGER = GlassFishLogger.get(Mode.class);
 
         ////////////////////////////////////////////////////////////////////////
         // Methods                                                            //
@@ -112,6 +109,143 @@ public class GlassFishState {
         }
 
     }
+    /**
+     * Notification about server state check results.
+     * <p/>
+     * Handles initial period of time after adding new server into status
+     * monitoring.
+     * At least port checks are being executed periodically so this class will
+     * be called back in any situation.
+     */
+    private static class StateListener implements GlassFishStatusListener {
+
+        ////////////////////////////////////////////////////////////////////////
+        // Instance attributes                                                //
+        ////////////////////////////////////////////////////////////////////////
+
+        /** Requested wake up of checking thread. */
+        private volatile boolean wakeUp;
+
+        /** Number of verification checks passed. */
+        private short count;
+
+        ////////////////////////////////////////////////////////////////////////
+        // Constructors                                                       //
+        ////////////////////////////////////////////////////////////////////////
+
+        /**
+         * Constructs an instance of state check results notification.
+         */
+        private StateListener() {
+            wakeUp = false;
+            count = 0;
+        }
+
+        ////////////////////////////////////////////////////////////////////////
+        // Methods                                                            //
+        ////////////////////////////////////////////////////////////////////////
+
+        /**
+         * Wake up checking thread.
+         */
+        private void wakeUp() {
+            if (!wakeUp) synchronized(this) {
+                wakeUp = true;
+                this.notify();
+            }
+        }
+
+        /**
+         * Get status of wake up request of checking thread.
+         * <p/>
+         * @return Status of wake up request of checking thread.
+         */
+        private boolean isWakeUp() {
+            return wakeUp;
+        }
+
+        /**
+         * Callback to notify about current server status after every check
+         * when enabled.
+         * <p/>
+         * Wait for more checking cycles to make sure server status monitoring
+         * has settled down.
+         * <p/>
+         * @param server GlassFish server instance being monitored.
+         * @param status Current server status.
+         * @param task   Last GlassFish server status check task details.
+         */
+        @Override
+        public void currentState(final GlassFishServer server,
+                final GlassFishStatus status, final GlassFishStatusTask task) {
+            count++;
+            switch(status) {
+                case UNKNOWN:
+                    // Something should be wrong when state is UNKNOWN after
+                    // port check.
+                    if (task != null
+                            && task.getType() == GlassFishStatusCheck.PORT) {
+                        wakeUp();
+                    // Otherwise wait for 2 checks.
+                    } else if (count > 1) {
+                        wakeUp();
+                    }
+                    break;
+                // Wait for 4 internal checks in OFFLINE state.
+                case OFFLINE:
+                    // Command check failure means server is really not online.
+                    if (task != null) {
+                       switch(task.getType()) {
+                           case LOCATIONS: case VERSION:
+                               if (task.getStatus()
+                                       == GlassFishStatusCheckResult.FAILED) {
+                                   wakeUp();
+                                   // Skip 2nd wake up.
+                                   count = 0;
+                               }
+                       }
+                    }
+                    // Otherwise wait for 3 internal checks in OFFLINE state.
+                    if (count > 2) {
+                        wakeUp();
+                    }
+                    break;
+                // Wake up after 1st check in any other state.
+                default:
+                    wakeUp();
+            }
+        }
+
+        /**
+         * Callback to notify about server status change when enabled.
+         * <p/>
+         * Listens on <code>ONLINE</code>, <code>SHUTDOWN</code>
+         * and <code>STARTUP</code> state changes where we can wake up checking
+         * thread immediately.
+         * <p/>
+         * @param server GlassFish server instance being monitored.
+         * @param status Current server status.
+         * @param task   Last GlassFish server status check task details.
+         */    
+        @Override
+        public void newState(final GlassFishServer server,
+                final GlassFishStatus status, final GlassFishStatusTask task) {
+            wakeUp();
+        }
+
+        /**
+         * Callback to notify about server status check failures.
+         * <p/>
+         * @param server GlassFish server instance being monitored.
+         * @param task   GlassFish server status check task details.
+         */
+        @Override
+        public void error(final GlassFishServer server,
+                final GlassFishStatusTask task) {
+            // Not used yet.
+        }
+
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -121,327 +255,119 @@ public class GlassFishState {
     private static final Logger LOGGER
             = GlassFishLogger.get(GlassFishState.class);
 
-    /** Keep trying for up to 10 minutes while server is initializing [ms]. */
-    private static final int STARTUP_TIMEOUT = 600000;
-
-    /** Delay before next try while server is initializing [ms]. */
-    private static final int RETRY_DELAY = 2000;
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Class log messages                                                     //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /** Log message: Check retry. */
-    private static final String LOG_RETRY
-            = "Keep trying while server {0} is not yet ready. Retry {1}"
-            + " and time remaining: {2} ms";
-
-    /** Log message: Thread interrupted. */
-    private static final String LOG_THREAD_INTERRUPTED
-            = "Thread sleep interrupted while checking {0}: {1}";
-
-    /** Log message: Locations response. */
-    private static final String LOG_LOCATIONS_RESPONSE
-            = "Server {0} locations response returned {1} records";
-
-    /** Log message: Locations response item. */
-    private static final String LOG_LOCATIONS_RESPONSE_ITEM
-            = "Server {0} locations response {1} = {2}";
-
-    /** Log message: Version task failed. */
-    private static final String LOG_VERSION_TASK_FAIL
-            = "Version task failed: {0}";
-
-    /** Log message: Version response. */
-    private static final String LOG_VERSION_RESPONSE
-            = "Server {0} version response: {1}";
-
-    /** Log message: Server is still starting up. */
-    private static final String LOG_SERVER_STARTUP
-            = "Server {0} is still starting up";
-
-    /** Log message: Local locations response check against instance object. */
-    private static final String LOG_LOCAL_LOCATIONS_CHECK
-            = "Checked local instance {0} domain root {1} {2} value {3}"
-            + " from locations command";
-
-    /** Log message: Remote locations response check against instance object. */
-    private static final String LOG_REMOTE_LOCATIONS_CHECK
-            = "Checked remote instance {0} domain root value {1} from"
-            + " locations command, which is {2}";
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Static methods                                                         //
-    ////////////////////////////////////////////////////////////////////////////
+    /** Initial server status check timeout [ms]. Maximum period of time to wait
+     *  for status monitoring to settle down. */
+    private static final int INIT_MONITORING_TIMEOUT = 5000;
 
     /**
-     * Log <code>__locations</code> command response.
+     * Start monitoring GlassFish server.
      * <p/>
-     * Internal {@link #isReady(GlassfishInstance, boolean, boolean)}
-     * helper.
+     * This method may cause delay when server status was not monitored before
+     * to give status monitoring time to settle down.
      * <p/>
-     * @param instance GlassFish server instance.
-     * @param result   Location command asynchronous execution final result. 
+     * @param instance GlassFish server instance to be monitored.
      */
-    private static void logLocationsResponse(final GlassfishInstance instance,
-            final ResultMap<String, String> result) {
-        Map<String, String> values = result != null ? result.getValue() : null;
-        LOGGER.log(Level.FINEST, LOG_LOCATIONS_RESPONSE,
-                new Object[] {instance.getName(),
-                    values != null ? values.size() : 0});
-        if (values != null) {
-            for (String key : values.keySet()) {
-                String value = values.get(key);
-                LOGGER.log(Level.FINEST,
-                        LOG_LOCATIONS_RESPONSE_ITEM, new Object[] {
-                        instance.getName(), key, value});
+    public static boolean monitor(final GlassFishServer instance) {
+        boolean added;
+        // Check if server is already being monitored.
+        GlassFishServerStatus status = GlassFishStatus.get(instance);
+        if (status == null) {
+            StateListener listener = new StateListener();
+            added = GlassFishStatus.add(instance, listener, true,
+                    GlassFishStatus.ONLINE, GlassFishStatus.SHUTDOWN,
+                    GlassFishStatus.STARTUP);
+            if (added) {
+                try {
+                    long startTime = System.currentTimeMillis();
+                    synchronized (listener) {
+                        // Guard against spurious wakeup.
+                        while (!listener.isWakeUp()
+                                && (System.currentTimeMillis()
+                                - startTime < INIT_MONITORING_TIMEOUT)) {
+                            listener.wait(
+                                    System.currentTimeMillis() - startTime);
+                        }
+                    }
+                } catch (InterruptedException ie) {
+                } finally {
+                    GlassFishStatus.removeListener(instance, listener);
+                }
             }
-        }
-    }
-
-    /**
-     * Verify GlassFish server installation and domain directories and update
-     * HTTP port.
-     * <p/>
-     * Internal {@link #isReady(GlassfishInstance, boolean, boolean)}
-     * helper.
-     * <p/>
-     * @param instance GlassFish server instance.
-     * @param result   Location command asynchronous execution final result. 
-     * @return Returns <code>true</code> when server is ready or
-     *         <code>false</code> otherwise.
-     */
-    private static boolean processReadyLocationsResult(
-            final GlassfishInstance instance,
-            final ResultMap<String, String> result) {
-        boolean isReady;
-        String domainRoot = instance.getDomainsRoot()
-                + File.separator + instance.getDomainName();
-        String targetDomainRoot = result.getValue().get("Domain-Root_value");
-        // Local instance. We can check domains folder.
-        if (instance.getDomainsRoot() != null
-                && targetDomainRoot != null) {
-            File installDir = FileUtil.normalizeFile(new File(domainRoot));
-            File targetInstallDir = FileUtil.normalizeFile(
-                    new File(targetDomainRoot));
-            isReady = installDir.equals(targetInstallDir);
-             LOGGER.log(Level.FINEST,
-                     LOG_LOCAL_LOCATIONS_CHECK, new Object[] {
-                     instance.getName(), domainRoot,
-                     isReady ? "matches" : "not matches" ,targetDomainRoot});
-        // Remote instance. We don't know domains folder. We'll just trust it.
         } else {
-            isReady = null != targetDomainRoot;
-            LOGGER.log(Level.FINEST,
-                    LOG_REMOTE_LOCATIONS_CHECK, new Object[] {
-                    instance.getName(), targetDomainRoot,
-                    isReady ? "correct" : "not correct"});
+            added = false;
         }
-        if (isReady) {
-            // Make sure the http port info is corrected
-            instance.getCommonSupport().updateHttpPort();
-        }
-        return isReady;
+        return added;
     }
 
     /**
-     * Check <code>version</code> task execution result and retrieve version
-     * command response.
+     * Retrieve GlassFish server status object from status monitoring.
      * <p/>
-     * Internal {@link #isReady(GlassfishInstance, boolean, boolean)}
-     * helper.
-     * <p/>
-     * @param instance          GlassFish server instance.
-     * @param versionTaskResult Task execution result.
-     * @param mode              Check mode.
-     * @return Version command response.
+     * @param instance GlassFish server instance.
+     * @return GlassFish server status object.
+     * @throws IllegalStateException when status object is null even after 
+     *         monitoring of this instance was explicitely started.
      */
-    private static ResultString processVersionTaskResult(
-            final GlassfishInstance instance,
-            final ServerStatus.ResultVersion versionTaskResult,
-            final Mode mode) {
-        ResultString versionCommandResult;
-        switch (versionTaskResult.getStatus()) {
-            case SUCCESS:
-                versionCommandResult = versionTaskResult.getResult();
-                break;
-            // No break here, default: does the rest.
-            case TIMEOUT:
-                if (mode == Mode.REFRESH && instance.isRemote()) {
-                    String message = NbBundle.getMessage(
-                            CommonServerSupport.class, "MSG_COMMAND_SSL_ERROR",
-                            "version", instance.getName(),
-                            Integer.toString(instance.getAdminPort()));
-                    CommonServerSupport.displayPopUpMessage(
-                            instance.getCommonSupport(), message);
-                }
+    public static GlassFishServerStatus getStatus(
+            final GlassFishServer instance) {
+        GlassFishServerStatus status = GlassFishStatus.get(instance);
+        if (status == null) {
+            monitor(instance);
+            status = GlassFishStatus.get(instance);
+        }
+        if (status == null) {
+            throw new IllegalStateException(NbBundle.getMessage(
+                    GlassFishState.class,
+                    "GlassFishState.getStatus.statusNull"));
+        }
+        return status;
+    }
+
+    /**
+     * Check if GlassFish server is running in <code>DEFAULT</code> mode.
+     * <p/>
+     * Check may cause delay when server status was not monitored before
+     * to give status monitoring time to settle down.
+     * <p/>
+     * @param instance GlassFish server instance.
+     * @return Returns <code>true</code> when GlassFish server is online
+     *         or <code>false</code> otherwise.
+     */
+    public static boolean isOnline(final GlassFishServer instance) {
+        return getStatus(instance).getStatus() == GlassFishStatus.ONLINE;
+    }
+
+    /**
+     * Check if GlassFish server is offline.
+     * <p/>
+     * Check may cause delay when server status was not monitored before
+     * to give status monitoring time to settle down.
+     * <p/>
+     * @param instance GlassFish server instance.
+     * @return Returns <code>true</code> when GlassFish server offline
+     *         or <code>false</code> otherwise.
+     */
+    public static boolean isOffline(final GlassFishServer instance) {
+        return getStatus(instance).getStatus() == GlassFishStatus.OFFLINE;
+    }
+
+    /**
+     * Check if GlassFish server can be started;
+     * <p/>
+     * Server can be started only when 
+     * <p/>
+     * @param instance GlassFish server instance.
+     * @return Value of <code>true</code> when GlassFish server can be started
+     *         or <code>false</code> otherwise.
+     */
+    public static boolean canStart(final GlassFishServer instance) {
+        GlassFishServerStatus status = getStatus(instance);
+        switch(status.getStatus()) {
+            case UNKNOWN: case ONLINE: case SHUTDOWN: case STARTUP:
+                return false;
             default:
-                 LOGGER.log(Level.INFO,
-                         LOG_VERSION_TASK_FAIL, versionTaskResult.getStatus());
-                versionCommandResult = null;
+                return !ServerUtils.isDASRunning(instance);
         }
-        return versionCommandResult;
-    }
 
-    /**
-     * Check content of <code>version</code> command response and display
-     * warning for GlassFish 3.1.2 which is known to have bug in WS.
-     * <p/>
-     * Internal {@link #isReady(GlassfishInstance, boolean, boolean)}
-     * helper.
-     * <p/>
-     * @param instance GlassFish server instance.
-     * @param state   Server state checker containing check results.
-     * @param mode              Check mode.
-     */
-    private static void handleGlassFishWarnings(final GlassfishInstance instance,
-            final ServerStatus status, final Mode mode) {
-        GlassFishVersion version = status.getVersion();
-        // Remote GlassFish 3.1.2 won't crash NetBeans.
-        if (mode == Mode.STARTUP && version == GlassFishVersion.GF_3_1_2
-                && !instance.isRemote()) {
-            WarnPanel.gf312WSWarning(instance.getName());
-        }
-    }
-
-    /**
-     * Suspend thread execution for {@link #RETRY_DELAY} ms.
-     * <p/>
-     * Internal {@link #isReady(GlassfishInstance, boolean, boolean)}
-     * helper.
-     * <p/>
-     * @param instance GlassFish server instance (for logging purposes).
-     * @param begTm {@link #isReady(GlassfishInstance, boolean, boolean)}
-     *              execution start time (for logging purposes).
-     * @param actTm Actual time (for logging purposes).
-     * @param tries Number of retries (for logging purposes).
-     */
-    private static void retrySleep(final GlassfishInstance instance,
-            final long begTm, final long actTm, final int tries) {
-        LOGGER.log(Level.FINEST, LOG_RETRY, new Object[]{
-                    instance.getName(), Integer.toString(tries),
-                    Long.toString(STARTUP_TIMEOUT - actTm + begTm)});
-        try {
-            Thread.sleep(RETRY_DELAY);
-        } catch (InterruptedException ie) {
-            LOGGER.log(Level.INFO,
-                    LOG_THREAD_INTERRUPTED, new Object[]{
-                    instance.getName(), ie.getLocalizedMessage()});
-        }
-    }
-
-    /**
-     * Check if GlassFish server is ready checking it's administration port
-     * and running <code>version</code> and <code>__locations</code>
-     * administration commands.
-     * <p/>
-     * Will not display any warning pop up messages.
-     * <p/>
-     * @param instance GlassFish server instance.
-     * @param retry    Allow up to 3 retries.
-     * @return Returns <code>true</code> when GlassFish server is ready
-     *         or <code>false</code> otherwise.
-     */
-    public static boolean isReady(final GlassfishInstance instance,
-            final boolean retry) {
-        return isReady(instance, retry, Mode.DEFAULT);
-    }
-    
-    /**
-     * Check if GlassFish server is running.
-     * <p/>
-     * @param instance GlassFish server instance.
-     * @param mode     Server state check mode.
-     * @return Returns <code>true</code> when GlassFish server is ready
-     *         or <code>false</code> otherwise.
-     */
-//    public static boolean isReady2(
-//            final GlassfishInstance instance, final Mode mode) {
-//        GlassFishServerStatus status = GlassFishStatus.get(instance);
-//        if (status == null) {
-//            GlassFishStatus.add(instance);
-//        }
-//    }
-
-    /**
-     * Check if GlassFish server is ready checking it's administration port
-     * and running <code>version</code> and <code>__locations</code>
-     * administration commands.
-     * <p/>
-     * @param instance GlassFish server instance.
-     * @param retry    Allow up to 3 retries.
-     * @param startup  Trigger startup mode. Triggers longer administration
-     *                 commands execution timeouts when <code>true</code>.
-     * @param warnings Display warnings pop up messages.
-     * @return Returns <code>true</code> when GlassFish server is ready
-     *         or <code>false</code> otherwise.
-     */
-    public static boolean isReady(final GlassfishInstance instance,
-            final boolean retry, final Mode mode) {
-        boolean isReady = false;
-        int maxTries = retry ? 3 : 1;
-        int tries = 0;
-        boolean notYetReady = false;
-        long begTm = System.currentTimeMillis(), actTm = begTm;
-        ServerStatus status = new ServerStatus(instance, mode == Mode.STARTUP);
-        try {
-            while (!isReady && (tries++ < maxTries || (notYetReady
-                    && (actTm = System.currentTimeMillis()) - begTm
-                    < STARTUP_TIMEOUT))) {
-                if (tries > 1) {
-                    retrySleep(instance, begTm, actTm, tries);
-                }
-                status.check();
-                ServerStatus.Result adminPortResult
-                        = status.getAdminPortResult();
-                // GlassFish server administration port is not listening.
-                if (adminPortResult.getStatus()
-                        != ServerStatus.Status.SUCCESS) {
-                    continue;
-                }
-                ResultString versionCommandResult = processVersionTaskResult(
-                        instance, status.getVersionResult(), mode);
-                // Version command result.
-                if (versionCommandResult != null) {
-                    String value = versionCommandResult.getValue();
-                    LOGGER.log(Level.FINEST,
-                            LOG_VERSION_RESPONSE, new Object[]{
-                                instance.getName(), value});
-                    switch (versionCommandResult.getState()) {
-                        case FAILED:
-                            if (notYetReady
-                                    = ServerUtils.notYetReadyMsg(value)) {
-                                LOGGER.log(Level.FINEST,
-                                        LOG_SERVER_STARTUP, instance.getName());
-                                continue;
-                            } else {
-                                break;
-                            }
-                        case COMPLETED:
-                            isReady = true;
-                            handleGlassFishWarnings(instance, status, mode);
-                            break;
-                    }
-                }
-                // Locations task execution result.
-                ServerStatus.ResultLocations locationsTaskResult
-                        = status.getLocationsResult();
-                if (locationsTaskResult.getStatus()
-                        == ServerStatus.Status.SUCCESS) {
-                    ResultMap<String, String> locationsCommandResult
-                            = locationsTaskResult.getResult();
-                    logLocationsResponse(instance, locationsCommandResult);
-                    if (locationsCommandResult.getState()
-                            == TaskState.COMPLETED) {
-                        isReady = processReadyLocationsResult(
-                                instance, locationsCommandResult);
-                    }
-                }
-            }
-        } finally {
-            status.close();
-        }
-        return isReady;
     }
 
 }

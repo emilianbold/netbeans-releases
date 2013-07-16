@@ -54,7 +54,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.GlassFishStatus;
+import static org.glassfish.tools.ide.GlassFishStatus.OFFLINE;
+import static org.glassfish.tools.ide.GlassFishStatus.SHUTDOWN;
+import static org.glassfish.tools.ide.GlassFishStatus.STARTUP;
 import org.glassfish.tools.ide.admin.*;
+import org.glassfish.tools.ide.data.GlassFishServerStatus;
 import org.glassfish.tools.ide.data.TaskEvent;
 import org.glassfish.tools.ide.utils.Utils;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
@@ -186,15 +191,6 @@ public class CommonServerSupport
 
     /** String to return for failed {@see getHttpHostFromServer()} search. */
     private static final String FAILED_HTTP_HOST = LOCALHOST + "FAIL";
-    
-    /** Keep trying for up to 10 minutes while server is initializing [ms]. */
-    private static final int STARTUP_TIMEOUT = 600000;
-
-    /** Delay before next try while server is initializing [ms]. */
-    private static final int STARTUP_RETRY_DELAY = 2000;
-
-    /** Properties fetching timeout [ms]. */
-    public static final int PROPERTIES_FETCH_TIMEOUT = 10000;
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -798,33 +794,60 @@ public class CommonServerSupport
 
     @Override
     public RequestProcessor.Task refresh(String expected, String unexpected) {
-        // !PW FIXME we can do better here, but for now, make sure we only change
-        // server state from stopped or running states -- leave stopping or starting
-        // states alone.
         
         if(refreshRunning.compareAndSet(false, true)) {
             return RP.post(new Runnable() {
                 @Override
                 public void run() {
-                    try {
-                        // Can block for up to a few seconds...
-                        boolean isRunning = GlassFishState.isReady(
-                                instance, false, GlassFishState.Mode.REFRESH);
-                        ServerState currentState = serverState;
-
-                        if ((currentState == ServerState.STOPPED || currentState == ServerState.UNKNOWN) && isRunning) {
-                            setServerState(ServerState.RUNNING);
-                        } else if ((currentState == ServerState.RUNNING || currentState == ServerState.UNKNOWN) && !isRunning) {
-                            setServerState(ServerState.STOPPED);
-                        } else if (currentState == ServerState.STOPPED_JVM_PROFILER && isRunning) {
-                            setServerState(ServerState.RUNNING);
-                        }
-                    } catch (Exception ex) {
-                         LOGGER.log(Level.WARNING,
-                                 ex.getMessage());
-                    } finally {
-                        refreshRunning.set(false);
+                    // Get current server status.
+                    GlassFishServerStatus status
+                            = GlassFishStatus.get(instance);
+                    // Start monitoring of this GlassFish server instance
+                    // when status is null and refresh status.
+                    if (status == null) {
+                        GlassFishState.monitor(instance);
+                        status = GlassFishStatus.get(instance);
                     }
+                    ServerState currentState = serverState;
+                    switch(currentState) {
+                        case UNKNOWN:
+                            switch(status.getStatus()) {
+                                case ONLINE:
+                                    setServerState(ServerState.RUNNING);
+                                    break;
+                                case STARTUP:
+                                    setServerState(ServerState.STARTING);
+                                    break;
+                                case SHUTDOWN:
+                                    setServerState(ServerState.STOPPING);
+                                    break;
+                                case OFFLINE:
+                                    setServerState(ServerState.STOPPED);
+                            }
+                            break;
+                        case STOPPED:
+                            if (status.getStatus() == GlassFishStatus.ONLINE) {
+                                setServerState(ServerState.RUNNING);
+                            }
+                            break;
+                        case RUNNING:
+                            switch(status.getStatus()) {
+                                case STARTUP:
+                                    setServerState(ServerState.STARTING);
+                                    break;
+                                case SHUTDOWN:
+                                    setServerState(ServerState.STOPPING);
+                                    break;
+                                case OFFLINE:
+                                    setServerState(ServerState.STOPPED);
+                            }
+                            break;
+                        case STOPPED_JVM_PROFILER:
+                            if (status.getStatus() == GlassFishStatus.ONLINE) {
+                                setServerState(ServerState.RUNNING);
+                            }
+                    }
+                    refreshRunning.set(false);
                 }
             });
         } else {
@@ -900,7 +923,7 @@ public class CommonServerSupport
                 setServerState(ServerState.STARTING);
             } else if(newState == TaskState.COMPLETED) {
                 startedByIde = isRemote
-                        ? false : GlassFishState.isReady(instance, false);
+                        ? false : GlassFishState.isOnline(instance);
                 setServerState(endState);
             } else if(newState == TaskState.FAILED) {
                 setServerState(ServerState.STOPPED);
@@ -930,7 +953,7 @@ public class CommonServerSupport
         }
         try {
             ResultMap<String, String> result = CommandGetProperty.getProperties(
-                    instance, gpc, PROPERTIES_FETCH_TIMEOUT);
+                    instance, gpc, GlassfishModule.PROPERTIES_FETCH_TIMEOUT);
             boolean didSet = false;
             if (result.getState() == TaskState.COMPLETED) {
                 Map<String, String> values = result.getValue();

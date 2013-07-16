@@ -60,13 +60,14 @@ import javax.enterprise.deploy.spi.Target;
 import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.exceptions.OperationUnsupportedException;
 import javax.enterprise.deploy.spi.status.*;
-import org.glassfish.tools.ide.data.TaskEvent;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.admin.TaskStateListener;
+import org.glassfish.tools.ide.data.GlassFishServer;
+import org.glassfish.tools.ide.data.TaskEvent;
 import org.netbeans.api.server.ServerInstance;
+import org.netbeans.modules.glassfish.common.GlassFishState;
 import org.netbeans.modules.glassfish.eecommon.api.Utils;
 import org.netbeans.modules.glassfish.javaee.ide.Hk2DeploymentStatus;
-import org.netbeans.modules.glassfish.javaee.ide.Hk2PluginProperties;
 import org.netbeans.modules.glassfish.javaee.ui.DebugPortQuery;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule3;
@@ -343,17 +344,18 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     }
 
     @Override
-    public boolean isRunning() {
+    public boolean isRunning() {        
         GlassfishModule commonSupport = getCommonServerSupport();
         if(commonSupport != null) {
-            GlassfishModule.ServerState s = commonSupport.getServerState();
-            return GlassfishModule.ServerState.RUNNING.equals(s) ||
-                    GlassfishModule.ServerState.RUNNING_JVM_DEBUG.equals(s) ||
-                    GlassfishModule.ServerState.RUNNING_JVM_PROFILER.equals(s);
+            GlassFishServer server = commonSupport.getInstance();
+            return GlassFishState.isOnline(server);
         } else {
-            return Hk2PluginProperties.isRunning(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
-                    ip.getProperty(InstanceProperties.HTTP_PORT_NUMBER));
+            throw new IllegalStateException("Missing common support object");
         }
+//        } else {
+//            return Hk2PluginProperties.isRunning(ip.getProperty(GlassfishModule.HOSTNAME_ATTR),
+//                    ip.getProperty(InstanceProperties.HTTP_PORT_NUMBER));
+//        }
     }
     
     @Override

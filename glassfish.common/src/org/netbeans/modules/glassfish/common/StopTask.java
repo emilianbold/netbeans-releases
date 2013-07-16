@@ -44,11 +44,11 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import org.netbeans.modules.glassfish.common.utils.Util;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.data.TaskEvent;
+import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 
 
@@ -131,7 +131,7 @@ public class StopTask extends BasicTask<TaskState> {
         // Waiting for server to stop
         while(System.currentTimeMillis() - start < STOP_TIMEOUT) {
             // Send the 'completed' event and return when the server is stopped
-            if(!GlassFishState.isReady(instance, false)) {
+            if(!GlassFishState.isOnline(instance)) {
                 try {
                     Thread.sleep(1000); // flush the process
                 } catch (InterruptedException e) {

@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.glassfish.common;
 
-import org.netbeans.modules.glassfish.common.utils.Util;
 import java.io.*;
 import java.util.*;
 import java.util.concurrent.Future;
@@ -64,8 +63,9 @@ import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.modules.glassfish.common.ui.GlassFishPropertiesCustomizer;
 import org.netbeans.modules.glassfish.common.ui.WarnPanel;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
+import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.*;
+import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.netbeans.spi.server.ServerInstanceFactory;
 import org.netbeans.spi.server.ServerInstanceImplementation;
 import org.openide.filesystems.FileObject;
@@ -732,7 +732,14 @@ public class GlassfishInstance implements ServerInstanceImplementation,
       * <p/>
       * This is always version of local GlassFish related to JavaEE platform,
       * even when registered domain is remote. */
-    private transient GlassFishVersion version;
+    private transient volatile GlassFishVersion version;
+
+    /** Process information of local running server started from IDE.
+     *  <p/>
+     *  This value shall be <code>null</code> when there is no server started
+     *  from IDE running. But <code>null</code> <i>does not mean</i> that server
+     *  is not running at all. */
+    private transient volatile Process process;
 
     //private transient CommonServerSupport commonSupport;
     private transient InstanceContent ic;
@@ -757,6 +764,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             GlassfishInstanceProvider instanceProvider) {
         String deployerUri = ip.get(GlassfishModule.URL_ATTR);
         this.version = version;
+        this.process = null;
         ic = new InstanceContent();
         localLookup = new AbstractLookup(ic);
         full = localLookup;
@@ -800,7 +808,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * <p/>
      * @param properties GlassFish properties to set
      */
-    public void setProperties(Props properties) {
+    public void setProperties(final Props properties) {
         this.properties = properties;
     }
 
@@ -826,6 +834,35 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      */
     public GlassfishInstanceProvider getInstanceProvider() {
         return instanceProvider;
+    }
+
+    /**
+     * Get process information of local running server started from IDE.
+     * <p/>
+     * @return Process information of local running server started from IDE.
+     */
+    public Process getProcess() {
+        return process;
+    }
+
+    /**
+     * Set process information of local running server started from IDE.
+     * <p/>
+     * @param process Process information of local running server started
+     *                from IDE.
+     */
+    public void setProcess(final Process process) {
+        this.process = process;
+    }
+
+    /**
+     * Reset process information of local running server started from IDE.
+     * <p/>
+     * Value of process information of local running server started from IDE
+     * is set to <code>null</code>.
+     */
+    public void resetProcess() {
+        this.process = null;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -995,6 +1032,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      * @return Value of <code>true</code> when this GlassFish server instance
      *         is remote or <code>false</code> otherwise.
      */
+    @Override
     public boolean isRemote() {
         return properties.get(GlassfishModule.DOMAINS_FOLDER_ATTR) == null;
     }
@@ -1112,6 +1150,24 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             properties.put(GlassfishModule.JAVA_PLATFORM_ATTR, javahome);
         else
             properties.remove(GlassfishModule.JAVA_PLATFORM_ATTR);
+    }
+
+    /**
+     * Check if local running server started from IDE is still running.
+     * <p/>
+     * @returns Value of <code>true</code> when process information is stored
+     *          and process is still running or <code>false</code> otherwise.
+     */
+    public boolean isProcessRunning() {
+        if (process == null) {
+            return false;
+        }
+        try {
+            process.exitValue();
+        } catch (IllegalThreadStateException itse) {
+            return true;
+        }
+        return false;
     }
 
     /**
@@ -1279,7 +1335,7 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             ServerState state = commonSupport.getServerState();
             if(state == ServerState.STARTING ||
                     (state == ServerState.RUNNING
-                    && GlassFishState.isReady(this, false))) {
+                    && GlassFishState.isOnline(this))) {
                 try {
                     Future<TaskState> stopServerTask = commonSupport.stopServer(null);
                     if(timeout > 0) {
