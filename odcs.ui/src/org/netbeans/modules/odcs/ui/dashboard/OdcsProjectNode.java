@@ -404,7 +404,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
             @Override
             public void run() {
                 if (buildAccessor != null) {
-                    if (buildAccessor.isEnabled(project)) {
+                    if (buildAccessor.hasBuilds(project)) {
                         if (buildHandleStatusListener == null) {
                             initBuildHandleStatusListener();
                         }

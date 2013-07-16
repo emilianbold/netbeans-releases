@@ -107,7 +107,7 @@ public class ODCSBuilderAccessor extends BuilderAccessor<ODCSProject> {
             new WeakHashMap<BuildsListener, Object>());
 
     @Override
-    public boolean isEnabled(ProjectHandle<ODCSProject> projectHandle) {
+    public boolean hasBuilds(ProjectHandle<ODCSProject> projectHandle) {
         return projectHandle.getTeamProject().hasBuild();
     }
 

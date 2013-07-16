@@ -21,6 +21,14 @@ import org.netbeans.modules.team.ide.spi.IDEProject;
 public abstract class SourceAccessor<P> {
 
     public abstract Class<P> type();
+
+    /**
+     * Determines whether this project has a source service or not
+     * 
+     * @param project
+     * @return <code>true</code> in case the given project has a source service otherwise <code>false</code>
+     */    
+    public abstract boolean hasSources(ProjectHandle<P> project);
     
     /**
      * 
