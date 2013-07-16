@@ -182,7 +182,12 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                  if (tokenSequence.moveNext()) {
                     if (tokenSequence.token().id() == HTMLTokenId.EL_CONTENT) {
                         String value = tokenSequence.token().text().toString().trim();
-                        String name = value.startsWith("(") ? value.substring(1) : value;
+                        int indexStart = 0;
+                        String name = value;
+                        if (value.startsWith("(")) {
+                            name = value.substring(1);
+                            indexStart = 1;
+                        }
                         int parenIndex = name.indexOf('('); //NOI18N
                         if (parenIndex > -1) {
                             name = name.substring(0, parenIndex);
@@ -198,10 +203,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             processed = true;
                         } else if (name.contains("|")){
                             int indexEnd = name.indexOf('|');
-                            int indexStart = 0;
-                            name = name.substring(indexStart, indexEnd);
+                            name = name.substring(0, indexEnd);
                             if (name.startsWith("-")) {
-                                indexStart = 1;
+                                indexStart++;
                                 name = name.substring(1);
                             }
                             if(propertyToFqn.containsKey(name)) {
@@ -210,7 +214,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                                 processed = true;
                             } else {
-                                embeddings.add(snapshot.create(tokenSequence.offset(), indexEnd, Constants.JAVASCRIPT_MIMETYPE));
+                                embeddings.add(snapshot.create(tokenSequence.offset() + indexStart, name.length(), Constants.JAVASCRIPT_MIMETYPE));
                                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                                 processed = true;
                             }
@@ -276,6 +280,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             sb.append("()");    //NOI18N
                         }
 
+                    } else {
+                        sb.append(" = "); //NOI18N
+                        sb.append(indexedElement.getFQN());
                     }
             }
             sb.append(";\n");   //NOI18N
@@ -293,8 +300,12 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         } else {
             int parenStart = value.indexOf('('); //NOI18N
             String name = value;
+            int lenght = name.length();
             if (parenStart > -1) {
-                name = name.substring(0, parenStart);
+                name = name.substring(0, parenStart).trim();
+            }
+            if (name.indexOf('=') > -1) {
+                name = name.substring(0, name.indexOf('=')).trim();
             }
             if (propertyToFqn.containsKey(name)) {
                 embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
@@ -315,7 +326,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     }
                     embeddings.add(snapshot.create(tokenSequence.offset() + 1, parenEnd, Constants.JAVASCRIPT_MIMETYPE));
                 } else {
-                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, name.length(), Constants.JAVASCRIPT_MIMETYPE));
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, lenght, Constants.JAVASCRIPT_MIMETYPE));
                 } 
                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
             }  else {
