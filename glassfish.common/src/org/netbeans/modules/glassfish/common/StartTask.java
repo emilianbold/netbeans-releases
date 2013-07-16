@@ -426,9 +426,8 @@ public class StartTask extends BasicTask<TaskState> {
                         "MSG_START_SERVER_FAILED_DASDOWN", instanceName);
             }
         // Local server.
-        } else
-            // Our server is offline.
-            if (GlassFishState.isOffline(instance)) {
+        } else // Our server is offline.
+        if (GlassFishState.isOffline(instance)) {
             // But administrator port is occupied.
             if (ServerUtils.isDASRunning(instance)) {
                 ResultString version;
@@ -446,13 +445,13 @@ public class StartTask extends BasicTask<TaskState> {
                                 "StartTask.call.matchVersion",
                                 version.getValue());
                         return startClusterOrInstance(adminHost, adminPort);
-                    // There is server with non matching version.
+                        // There is server with non matching version.
                     } else {
                         if (!version.isAuth()) {
                             return fireOperationStateChanged(TaskState.FAILED,
                                     TaskEvent.CMD_FAILED,
                                     "StartTask.call.authFailed",
-                                    instanceName, version.getValue());                           
+                                    instanceName, version.getValue());
                         } else {
                             return fireOperationStateChanged(TaskState.FAILED,
                                     TaskEvent.CMD_FAILED,
@@ -460,7 +459,7 @@ public class StartTask extends BasicTask<TaskState> {
                                     instanceName, version.getValue());
                         }
                     }
-                // Got no version response from DAS.
+                    // Got no version response from DAS.
                 } else {
                     return fireOperationStateChanged(TaskState.FAILED,
                             TaskEvent.CMD_FAILED,
@@ -469,7 +468,7 @@ public class StartTask extends BasicTask<TaskState> {
             } else {
                 return startDAS(adminHost, adminPort);
             }
-        // Our server is online.
+            // Our server is online.
         } else {
             return startClusterOrInstance(adminHost, adminPort);
         }
