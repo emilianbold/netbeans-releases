@@ -53,9 +53,11 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
@@ -242,6 +244,7 @@ class SelectRootsPanel extends javax.swing.JPanel {
 
 private void browse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browse
     try {
+        final Collection<Integer> added = new ArrayList<>();
         final List<? extends String> paths = browseCall.call();
         if (paths != null) {
             final DefaultListModel<URI> lm = (DefaultListModel<URI>) sources.getModel();
@@ -251,11 +254,14 @@ private void browse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browse
             for (String path : paths) {
                 for (URI uri : convertor.call(path)) {
                     if (!contained.contains(uri)) {
-                        lm.add(index++, uri);
+                        lm.add(index, uri);
+                        added.add(index);
+                        index++;
                     }
                 }
             }
         }
+        select(added);
     } catch (Exception ex) {
         Exceptions.printStackTrace(ex);
     }
@@ -306,7 +312,9 @@ private void browse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browse
             try {
                 URI uri = new URI(inputText);
                 if (!contained.contains(uri)) {
-                    lm.add(index++, uri);
+                    lm.add(index, uri);
+                    select(Collections.<Integer>singleton(index));
+                    index++;
                 }
             } catch (URISyntaxException ex) {
                 DialogDisplayer.getDefault().notify(
@@ -322,6 +330,15 @@ private void browse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browse
         remove.setEnabled(indices.length > 0);
         up.setEnabled(indices.length > 0 && indices[0] != 0);
         down.setEnabled(indices.length > 0 && indices[indices.length-1] != sources.getModel().getSize()-1);
+    }
+
+    private void select(@NonNull final Collection<? extends Integer> toSelect) {
+        final int[] indexes = new int[toSelect.size()];
+        final Iterator<? extends Integer> it = toSelect.iterator();
+        for (int i=0; it.hasNext(); i++) {
+            indexes[i] = it.next();
+        }
+        sources.setSelectedIndices(indexes);
     }
 
     @NonNull
