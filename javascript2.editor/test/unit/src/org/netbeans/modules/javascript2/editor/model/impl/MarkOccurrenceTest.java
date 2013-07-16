@@ -830,7 +830,23 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue232595_02() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue232595.js","      myl^oc1 += loc2;", true);
     }
-
+    
+    // testing with statement
+    public void testIssue232776_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232776.js","p^rop01 = prop01 + prop02;", true);
+    }
+    
+    public void testIssue232776_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232776.js","prop01 = prop01 + pro^p02;", true);
+    }
+    
+    public void testIssue232776_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232776.js","metho^d01();", true);
+    }
+    
+    public void testIssue232776_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232776.js","with (testWi^th01) {", true);
+    }
     
     private String getTestName() {
         String name = getName();

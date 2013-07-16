@@ -484,8 +484,8 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         Collection<JsObject> prototypeChains = findPrototypeChain(original);
         for (JsObject jsObject : prototypeChains) {
             for (JsObject origProperty : jsObject.getProperties().values()) {
-//                if(origProperty.getModifiers().contains(Modifier.PUBLIC)
-//                        || origProperty.getModifiers().contains(Modifier.PROTECTED)) {
+                if(origProperty.getModifiers().contains(Modifier.PUBLIC)
+                        || origProperty.getModifiers().contains(Modifier.PROTECTED)) {
                     JsObjectImpl usedProperty = (JsObjectImpl)created.getProperty(origProperty.getName());
                     if (usedProperty != null) {
                         ((JsObjectImpl)origProperty).addOccurrence(usedProperty.getDeclarationName().getOffsetRange());
@@ -498,7 +498,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                         }
                         moveOccurrenceOfProperties((JsObjectImpl)origProperty, usedProperty);
                     }
-//                }
+                }
             }
             JsObject prototype = jsObject.getProperty(ModelUtils.PROTOTYPE);
             if (prototype != null) {
