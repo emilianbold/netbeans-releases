@@ -235,4 +235,8 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testCCinWith01() throws Exception {
         checkCompletion("testfiles/markoccurences/issue232792.js", "    ^ // try here", false);
     }
+    
+    public void testIssue232798() throws Exception {
+        checkCompletion("testfiles/markoccurences/issue232792.js", "        this.^c // issue 232798", false);
+    }
 }

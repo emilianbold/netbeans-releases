@@ -25,6 +25,7 @@ with(A) {
     getName();
     B.getName = function () {
         console.log("B");
+        this.c // issue 232798
     };     
     B.createBuf = function () {
         console.log("create buf");
