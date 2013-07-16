@@ -75,12 +75,14 @@ public class PhpAnnotationsPanelController extends BaseOptionsPanelController {
     protected void updateInternal() {
         assert EventQueue.isDispatchThread();
         panel.setAnnotations(UserAnnotations.getInstance().getAnnotations());
+        panel.setResolveDeprecatedElements(PhpOptions.getInstance().isAnnotationsResolveDeprecatedElements());
     }
 
     @Override
     protected void applyChangesInternal() {
         assert EventQueue.isDispatchThread();
         UserAnnotations.getInstance().setAnnotations(panel.getAnnotations());
+        PhpOptions.getInstance().setAnnotationsResolveDeprecatedElements(panel.isResolveDeprecatedElements());
     }
 
     @Override
