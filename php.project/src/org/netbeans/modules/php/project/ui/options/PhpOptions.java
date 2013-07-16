@@ -74,6 +74,7 @@ public final class PhpOptions {
     public static final boolean DEFAULT_DEBUGGER_SHOW_CONSOLE = false;
     public static final boolean DEFAULT_DEBUGGER_STOP_AT_FIRST_LINE = true;
     public static final boolean DEFAULT_DEBUGGER_WATCHES_AND_EVAL = false;
+    public static final boolean DEFAULT_ANNOTATIONS_RESOLVE_DEPRECATED_ELEMENTS = false;
 
     // php cli
     public static final String PHP_INTERPRETER = "phpInterpreter"; // NOI18N
@@ -91,6 +92,9 @@ public final class PhpOptions {
     public static final String PHP_DEBUGGER_WATCHES_AND_EVAL = "phpDebuggerWatchesAndEval"; // NOI18N
     public static final String PHP_DEBUGGER_SHOW_URLS = "phpDebuggerShowUrls"; // NOI18N
     public static final String PHP_DEBUGGER_SHOW_CONSOLE = "phpDebuggerShowConsole"; // NOI18N
+
+    // annotations
+    public static final String PHP_ANNOTATIONS_RESOLVE_DEPRECATED_ELEMENTS = "phpAnnottationsResolveDeprecetatedElements"; // NOI18N
 
     // global include path
     public static final String PHP_GLOBAL_INCLUDE_PATH = "phpGlobalIncludePath"; // NOI18N
@@ -233,6 +237,14 @@ public final class PhpOptions {
 
     public void setDebuggerShowConsole(boolean debuggerShowConsole) {
         getPreferences().putBoolean(PHP_DEBUGGER_SHOW_CONSOLE, debuggerShowConsole);
+    }
+
+    public boolean isAnnotationsResolveDeprecatedElements() {
+        return getPreferences().getBoolean(PHP_ANNOTATIONS_RESOLVE_DEPRECATED_ELEMENTS, DEFAULT_ANNOTATIONS_RESOLVE_DEPRECATED_ELEMENTS);
+    }
+
+    public void setAnnotationsResolveDeprecatedElements(boolean resolveDeprecatedElements) {
+        getPreferences().putBoolean(PHP_ANNOTATIONS_RESOLVE_DEPRECATED_ELEMENTS, resolveDeprecatedElements);
     }
 
     /**
