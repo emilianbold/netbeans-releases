@@ -41,11 +41,14 @@
  */
 package org.netbeans.swing.plaf.nimbus;
 
+import com.sun.imageio.plugins.common.ImageUtil;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.concurrent.Callable;
+import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 import javax.swing.LookAndFeel;
+import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
@@ -189,5 +192,9 @@ public class DarkNimbusTheme {
                 return null;
             }
         });
+
+        UIManager.put( "nb.close.tab.icon.enabled.name", "org/openide/awt/resources/vista_close_enabled.png");
+        UIManager.put( "nb.close.tab.icon.pressed.name", "org/openide/awt/resources/vista_close_pressed.png");
+        UIManager.put( "nb.close.tab.icon.rollover.name", "org/openide/awt/resources/vista_close_rollover.png");
    }
 }
