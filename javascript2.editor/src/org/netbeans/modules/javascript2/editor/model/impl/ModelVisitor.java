@@ -87,6 +87,7 @@ import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.JsWith;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
@@ -165,17 +166,27 @@ public class ModelVisitor extends PathNodeVisitor {
                 if (name != null) {
                     List<Identifier> fqname = new ArrayList<Identifier>();
                     fqname.add(name); 
-                    Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
-                    fromAN = null;
-                    for(JsObject variable : variables) {
-                        if (variable.getName().equals(name.getName())) {
-                            fromAN = (JsObjectImpl)variable;
-                            break;
+                    if (!(modelBuilder.getCurrentObject() instanceof JsWith)) {
+                        Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
+                        fromAN = null;
+                        for(JsObject variable : variables) {
+                            if (variable.getName().equals(name.getName())) {
+                                fromAN = (JsObjectImpl)variable;
+                                break;
+                            }
+                        }
+                        if (fromAN == null) {
+                            fromAN = ModelUtils.getJsObject(modelBuilder, fqname, false);
+                        }
+                    } else {
+                        JsObject withObject = modelBuilder.getCurrentObject();
+                        fromAN = (JsObjectImpl)withObject.getProperty(name.getName());
+                        if (fromAN == null) {
+                            fromAN = new JsObjectImpl(withObject, name, name.getOffsetRange(), false, parserResult.getSnapshot().getMimeType(), null);
+                            withObject.addProperty(name.getName(), fromAN);
                         }
                     }
-                    if (fromAN == null) {
-                        fromAN = ModelUtils.getJsObject(modelBuilder, fqname, false);
-                    }
+                    
                     fromAN.addOccurrence(name.getOffsetRange());
                 }
             } else {
@@ -396,14 +407,6 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         return super.enter(callNode);
-    }
-
-    @Override
-    public Node leave(WithNode withNode) {
-        Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, withNode.getExpression());
-        modelBuilder.getCurrentDeclarationScope().addWithTypes(
-                new OffsetRange(withNode.getStart(), withNode.getFinish()), types);
-        return super.leave(withNode);
     }
 
     @Override
@@ -660,6 +663,10 @@ public class ModelVisitor extends PathNodeVisitor {
                 // exp: this.pro = new function () { this.field = "";}
                 parent = resolveThis(fncScope);
             }
+//            if (modelBuilder.getCurrentObject() instanceof JsWithObjectImpl) {
+//                parent = modelBuilder.getCurrentObject();
+//            }
+            
             fncScope = ModelElementFactory.create(parserResult, functionNode, name, modelBuilder, isAnonymous, parent);
             if (fncScope != null) {
                 Set<Modifier> modifiers = fncScope.getModifiers();
@@ -1266,6 +1273,25 @@ public class ModelVisitor extends PathNodeVisitor {
         return super.leave(varNode);
     }
 
+    @Override
+    public Node enter(WithNode withNode) {
+        JsObjectImpl currentObject = modelBuilder.getCurrentObject();
+        Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, withNode.getExpression());
+        JsWithObjectImpl withObject = new JsWithObjectImpl(currentObject, modelBuilder.getUnigueNameForWithObject(), types, new OffsetRange(withNode.getStart(), withNode.getFinish()), parserResult.getSnapshot().getMimeType(), null);
+        currentObject.addProperty(withObject.getName(), withObject);
+        modelBuilder.setCurrentObject(withObject);
+        return super.enter(withNode); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public Node leave(WithNode withNode) {
+        Node result = super.leave(withNode);
+        modelBuilder.reset();
+        return result;
+    }
+    
+    
+
 //--------------------------------End of visit methods--------------------------------------
 
     public Map<FunctionInterceptor, Collection<FunctionCall>> getCallsForProcessing() {
@@ -1490,20 +1516,25 @@ public class ModelVisitor extends PathNodeVisitor {
         DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
         JsObject property = null;
         JsObject parameter = null;
-        while (scope != null && property == null && parameter == null) {
-            JsFunction function = (JsFunction)scope;
-            property = function.getProperty(iNode.getName());
-            parameter = function.getParameter(iNode.getName());
-            scope = scope.getParentScope();
-        }
-        if(parameter != null) {
-            if (property == null) {
-                property = parameter;
-            } else {
-                if(property.getJSKind() != JsElement.Kind.VARIABLE) {
+        JsObject parent = modelBuilder.getCurrentObject();
+        if (!(parent instanceof JsWith)) {
+            while (scope != null && property == null && parameter == null) {
+                JsFunction function = (JsFunction)scope;
+                property = function.getProperty(iNode.getName());
+                parameter = function.getParameter(iNode.getName());
+                scope = scope.getParentScope();
+            }
+            if(parameter != null) {
+                if (property == null) {
                     property = parameter;
+                } else {
+                    if(property.getJSKind() != JsElement.Kind.VARIABLE) {
+                        property = parameter;
+                    }
                 }
             }
+        } else {
+            property = parent.getProperty(iNode.getName());
         }
 
         if (property != null) {
@@ -1527,7 +1558,10 @@ public class ModelVisitor extends PathNodeVisitor {
                             parserResult.getSnapshot().getMimeType(), null);
                 }
                 newObject.addOccurrence(name.getOffsetRange());
-                modelBuilder.getGlobal().addProperty(name.getName(), newObject);
+                if (!(parent instanceof JsWith)) {
+                    parent = modelBuilder.getGlobal();
+                }
+                parent.addProperty(name.getName(), newObject);
             }
         }
     }

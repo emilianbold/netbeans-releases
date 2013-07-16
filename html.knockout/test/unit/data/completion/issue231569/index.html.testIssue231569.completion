@@ -3,6 +3,8 @@ Code completion result for source line:
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CONSTRUCTO TestModel(lists, selectedList)  [PUBLIC]   index.html
+CLASS      $context                        [PRIVATE]  index.html
+CLASS      $parentContext                  [PRIVATE]  index.html
 CLASS      UNKNOWN                         [PUBLIC]   index.html
 CLASS      ko                              [PUBLIC]   Knockout
 FIELD      savedLists                      [PUBLIC]   index.html

@@ -67,6 +67,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import jdk.nashorn.internal.ir.TernaryNode;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
@@ -83,6 +84,7 @@ import org.netbeans.modules.javascript2.editor.model.JsArray;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.JsWith;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
@@ -170,7 +172,8 @@ public class ModelUtils {
             for (JsObject property : jsObject.getProperties().values()) {
                 JsElement.Kind kind = property.getJSKind();
                 if (kind == JsElement.Kind.OBJECT || kind == JsElement.Kind.ANONYMOUS_OBJECT || kind == JsElement.Kind.OBJECT_LITERAL
-                        || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR) {
+                        || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR
+                        || kind == JsElement.Kind.WITH_OBJECT) {
                     tmpObject = findJsObject(property, offset);
                 }
                 if (tmpObject != null) {
@@ -227,6 +230,7 @@ public class ModelUtils {
         return (DeclarationScope)result;
     }
 
+    @NonNull
     public static DeclarationScope getDeclarationScope(Model model, int offset) {
         DeclarationScope result = null;
         JsObject global = model.getGlobalObject();
@@ -623,7 +627,6 @@ public class ModelUtils {
         List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
         List<TypeUsage> lastResolvedTypes = new ArrayList<TypeUsage>();
         
-        
             for (int i = exp.size() - 1; i > -1; i--) {
                 String kind = exp.get(i);
                 String name = exp.get(--i);
@@ -649,6 +652,25 @@ public class ModelUtils {
                     // find possible variables from local context, index contains only 
                     // public definition, we are interested in the private here as well
                     int index = name.lastIndexOf('.');
+                    // needs to look, whether the expression is in a with statement
+                    Collection<? extends TypeUsage> typeFromWith = getTypeFromWith(model, offset);
+                    if (!typeFromWith.isEmpty()) {
+                        String firstNamePart = index == -1 ? name : name.substring(0, index);
+                        for (TypeUsage type : typeFromWith) {
+                            //Collection<TypeUsage> resolveTypeFromSemiType = ModelUtils.resolveTypeFromSemiType(model.getGlobalObject(), type);
+                            String sType = type.getType();
+//                            if (sType.startsWith("@exp;")) {
+//                                sType = sType.substring(5);
+//                                sType = sType.replace("@pro;", ".");
+//                            }
+                            localObject = ModelUtils.findJsObjectByName(model, sType);
+                            if (localObject != null && localObject.getProperty(firstNamePart) != null) {
+                                name = localObject.getFullyQualifiedName() + "." + name;
+                                break;
+                            }
+                        }
+                    }
+                    
                     if (index > -1) { // the first part is a fqn
                         localObject = ModelUtils.findJsObjectByName(model, name);
                         if (localObject != null) {
@@ -704,6 +726,22 @@ public class ModelUtils {
                         } 
 //                        }
                         lastResolvedTypes.addAll(fromAssignments);
+                        if (!typeFromWith.isEmpty()) {
+//                            Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(typeFromWith, parserRestult);
+                            
+                            for (TypeUsage typeUsage : typeFromWith) {
+                                String sType = typeUsage.getType();
+                            if (sType.startsWith("@exp;")) {
+                                sType = sType.substring(5);
+                                sType = sType.replace("@pro;", ".");
+                            }   
+                                ModelUtils.resolveAssignments(model, jsIndex, sType, fromAssignments);
+                                for (TypeUsage typeUsage1 : fromAssignments) {
+                                    lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name, typeUsage.getOffset(), false));
+                                }
+                                
+                            }
+                        }
                     }
                     
                     if(!localObjects.isEmpty()){
@@ -912,7 +950,7 @@ public class ModelUtils {
                     if (nExp.size() > 1) {
                         // passing original prevents the unresolved return types
                         // when recursion in place
-                        ModelUtils.addUniqueType(resolved, original, ModelUtils.resolveTypeFromExpression(model, jsIndex, nExp, typeUsage.getOffset()));
+                        ModelUtils.addUniqueType(resolved, original, ModelUtils.resolveTypeFromExpression(parserResult.getModel(), jsIndex, nExp, typeUsage.getOffset()));
                     } else {
                         ModelUtils.addUniqueType(resolved, new TypeUsageImpl(typeUsage.getType(), typeUsage.getOffset(), true));
                     }
@@ -1046,6 +1084,38 @@ public class ModelUtils {
             } 
         } 
         return result;
+    }
+    
+    /**
+     * 
+     * @param model
+     * @param offset
+     * @return types from with expressions. The collection has the order of items from most inner with to
+     *      the outer with.
+     */
+    public static Collection <? extends TypeUsage> getTypeFromWith(Model model, int offset) {
+        JsObject jsObject = ModelUtils.findJsObject(model, offset);
+        while(jsObject != null && jsObject.getJSKind() != JsElement.Kind.WITH_OBJECT) {
+            jsObject = jsObject.getParent();
+        }
+        if (jsObject != null && jsObject.getJSKind() == JsElement.Kind.WITH_OBJECT) {
+            List<TypeUsage> types = new ArrayList<TypeUsage>();
+            Map<String, List<JsElement>> properties = new HashMap<String, List<JsElement>>();
+            JsWith wObject = (JsWith)jsObject;
+            Collection<? extends TypeUsage> unresolvedTypes = wObject.getTypes();
+            for (TypeUsage type : unresolvedTypes) {
+                types.addAll(ModelUtils.resolveTypeFromSemiType(wObject, type));
+            }
+            while (wObject.getOuterWith() != null) {
+                wObject = wObject.getOuterWith();
+                unresolvedTypes = wObject.getTypes();
+                for (TypeUsage type : unresolvedTypes) {
+                    types.addAll(ModelUtils.resolveTypeFromSemiType(wObject, type));
+                }
+            }
+            return types;
+        }
+        return Collections.EMPTY_LIST;
     }
     
     public static void addUniqueType(Collection <TypeUsage> where, Set<String> forbidden, TypeUsage type) {
