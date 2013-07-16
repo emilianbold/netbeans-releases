@@ -45,6 +45,8 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
@@ -62,6 +64,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.table.AbstractTableModel;
@@ -71,6 +74,7 @@ import org.netbeans.modules.php.project.annotations.UserAnnotationPanel;
 import org.netbeans.modules.php.project.annotations.UserAnnotationTag;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
+import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
 @OptionsPanelController.Keywords(keywords={"php", "annotations", "#KW_AnnotationsOptions"}, location=UiUtils.OPTIONS_PATH, tabTitle= "#LBL_AnnotationsOptions")
@@ -87,19 +91,32 @@ public class PhpAnnotationsPanel extends JPanel {
         Bundle.PhpAnnotationsPanel_table_column_for_title(),
     };
 
-
     final AnnotationsTableModel tableModel;
-
     // @GuardedBy(EDT)
     List<UserAnnotationTag> annotations = Collections.emptyList();
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
     public PhpAnnotationsPanel() {
         tableModel = new AnnotationsTableModel();
 
         initComponents();
+        init();
+    }
+
+    private void init() {
+        resolveDeprecatedCheckBox.addItemListener(new DefaultItemListener());
         initTable();
         initButtons();
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     public List<UserAnnotationTag> getAnnotations() {
@@ -218,6 +235,10 @@ public class PhpAnnotationsPanel extends JPanel {
                     NbBundle.getMessage(PhpAnnotationsPanel.class, "SampleTag.documentation"));
         }
         return annotations.get(index.intValue());
+    }
+
+    void fireChange() {
+        changeSupport.fireChange();
     }
 
     /**
@@ -364,10 +385,12 @@ public class PhpAnnotationsPanel extends JPanel {
             for (int i = 0; i < TABLE_COLUMNS.length; i++) {
                 fireTableCellUpdated(row, i);
             }
+            fireChange();
         }
 
         public void fireAnnotationsChange() {
             fireTableDataChanged();
+            fireChange();
         }
 
         @NbBundle.Messages("PhpAnnotationsPanel.value.delimiter=, ")
@@ -377,6 +400,15 @@ public class PhpAnnotationsPanel extends JPanel {
                 list.add(type.getTitle());
             }
             return StringUtils.implode(list, Bundle.PhpAnnotationsPanel_value_delimiter());
+        }
+
+    }
+
+    private final class DefaultItemListener implements ItemListener {
+
+        @Override
+        public void itemStateChanged(ItemEvent e) {
+            fireChange();
         }
 
     }
