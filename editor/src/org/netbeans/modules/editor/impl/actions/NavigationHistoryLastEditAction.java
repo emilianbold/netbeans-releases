@@ -113,7 +113,7 @@ public final class NavigationHistoryLastEditAction extends BaseAction implements
      */ 
     public static final class MainMenu extends MainMenuAction {
         public MainMenu () {
-            super(true, BLANK_ICON);
+            super(true, null);
             postSetMenu();
         }
         

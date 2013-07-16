@@ -103,6 +103,7 @@ import org.netbeans.modules.editor.lib2.EditorPreferencesDefaults;
 import org.netbeans.modules.editor.lib2.EditorPreferencesKeys;
 import org.netbeans.modules.editor.lib.KitsTracker;
 import org.netbeans.api.editor.NavigationHistory;
+import org.netbeans.lib.editor.util.swing.PositionRegion;
 import org.netbeans.modules.editor.lib.SettingsConversions;
 import org.netbeans.modules.editor.lib2.RectangularSelectionUtils;
 import org.netbeans.modules.editor.lib2.actions.KeyBindingsUpdater;
@@ -378,7 +379,13 @@ public class BaseKit extends DefaultEditorKit {
     
     private boolean keyBindingsUpdaterInited;
 
-
+    /**
+     * Navigational boundaries for "home" and "end" actions. If defined on the target component,
+     * home/end will move the caret first to the boundary, and only after that proceeds as usual (to the start/end of line).
+     * The property must contain {@link PositionRegion} instance
+     */
+    private static final String PROP_NAVIGATE_BOUNDARIES = "NetBeansEditor.navigateBoundaries"; // NOI18N
+    
     /**
      * Gets an editor kit from its implemetation class.
      * 
@@ -2628,20 +2635,37 @@ public class BaseKit extends DefaultEditorKit {
                 BaseDocument doc = (BaseDocument)target.getDocument();
                 try {
                     int dot = caret.getDot();
-                    int lineStartPos = Utilities.getRowStart(target, dot);
-                    if (homeKeyColumnOne) { // to first column
-                        dot = lineStartPos;
-                    } else { // either to line start or text start
-                        int textStartPos = Utilities.getRowFirstNonWhite(doc, lineStartPos);
-                        if (textStartPos < 0) { // no text on the line
-                            textStartPos = Utilities.getRowEnd(target, lineStartPos);
-                        }
-                        if (dot == lineStartPos) { // go to the text start pos
-                            dot = textStartPos;
-                        } else if (dot <= textStartPos) {
-                            dot = lineStartPos;
+                    // #232675: if bounds are defined, use them rather than line start/end
+                    Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
+                    PositionRegion bounds = null;
+                    if (o instanceof PositionRegion) {
+                        bounds = (PositionRegion)o;
+                        int start = bounds.getStartOffset();
+                        int end = bounds.getEndOffset();
+                        if (dot > start && dot <= end) {
+                            // move to the region start
+                            dot = start;
                         } else {
-                            dot = textStartPos;
+                            bounds = null;
+                        }
+                    }
+                    
+                    if (bounds == null) {
+                        int lineStartPos = Utilities.getRowStart(target, dot);
+                        if (homeKeyColumnOne) { // to first column
+                            dot = lineStartPos;
+                        } else { // either to line start or text start
+                            int textStartPos = Utilities.getRowFirstNonWhite(doc, lineStartPos);
+                            if (textStartPos < 0) { // no text on the line
+                                textStartPos = Utilities.getRowEnd(target, lineStartPos);
+                            }
+                            if (dot == lineStartPos) { // go to the text start pos
+                                dot = textStartPos;
+                            } else if (dot <= textStartPos) {
+                                dot = lineStartPos;
+                            } else {
+                                dot = textStartPos;
+                            }
                         }
                     }
                     // For partial view hierarchy check bounds
@@ -2678,7 +2702,25 @@ public class BaseKit extends DefaultEditorKit {
             if (target != null) {
                 Caret caret = target.getCaret();
                 try {
-                    int dot = Utilities.getRowEnd(target, caret.getDot());
+                    // #232675: if bounds are defined, use them rather than line start/end
+                    Object o = target.getClientProperty(PROP_NAVIGATE_BOUNDARIES);
+                    int dot = -1;
+                    
+                    if (o instanceof PositionRegion) {
+                        PositionRegion bounds = (PositionRegion)o;
+                        int start = bounds.getStartOffset();
+                        int end = bounds.getEndOffset();
+                        int d = caret.getDot();
+                        if (d >= start && d < end) {
+                            // move to the region start
+                            dot = end;
+                        }
+                    }
+
+                    if (dot == -1) {
+                        dot = Utilities.getRowEnd(target, caret.getDot());
+                    }
+                    
                     // For partial view hierarchy check bounds
                     dot = Math.min(dot, target.getUI().getRootView(target).getEndOffset());
                     boolean select = selectionEndLineAction.equals(getValue(Action.NAME));

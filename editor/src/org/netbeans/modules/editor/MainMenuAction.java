@@ -436,7 +436,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     
     public static class GoToSourceAction extends MainMenuAction{
         public GoToSourceAction(){
-            super(true, BLANK_ICON);
+            super(true, null);
             postSetMenu();
         }
         
@@ -453,7 +453,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
     
     public static class GoToSuperAction extends MainMenuAction{
         public GoToSuperAction(){
-            super(true, BLANK_ICON);
+            super(true, null);
             postSetMenu();
         }
         
@@ -487,7 +487,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
      */ 
     public static final class JumpBackAction extends MainMenuAction {
         public JumpBackAction () {
-            super(true, BLANK_ICON);
+            super(true, null);
             postSetMenu();
         }
         
@@ -505,7 +505,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
      */ 
     public static final class JumpForwardAction extends MainMenuAction {
         public JumpForwardAction () {
-            super(true, BLANK_ICON);
+            super(true, null);
             postSetMenu();
         }
         
@@ -696,7 +696,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
      */ 
     public static final class FindNextAction extends MainMenuAction {
         public FindNextAction () {
-            super(true, BLANK_ICON);
+            super(true, null);
             postSetMenu();
         }
         
@@ -715,7 +715,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
      */ 
     public static final class FindPreviousAction extends MainMenuAction {
         public FindPreviousAction () {
-            super(true, BLANK_ICON);
+            super(true, null);
             postSetMenu();
         }
         
@@ -733,7 +733,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
      */ 
     public static final class FindSelectionAction extends MainMenuAction {
         public FindSelectionAction () {
-            super(true, BLANK_ICON);
+            super(true, null);
             postSetMenu();
         }
         
@@ -757,7 +757,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
      */ 
     public static final class StartMacroRecordingAction extends MainMenuAction {
         public StartMacroRecordingAction () {
-            super(true, BLANK_ICON);
+            super(true, null);
             postSetMenu();
         }
         
@@ -774,7 +774,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
    
     public static final class SelectAllAction extends MainMenuAction {
         public SelectAllAction() {
-            super(true, BLANK_ICON);
+            super(true, null);
             postSetMenu();
         }
         
@@ -790,7 +790,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
 
     public static final class SelectIdentifierAction extends MainMenuAction {
         public SelectIdentifierAction() {
-            super(true, BLANK_ICON);
+            super(true, null);
             postSetMenu();
         }
         
@@ -808,7 +808,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
      */ 
     public static final class StopMacroRecordingAction extends MainMenuAction {
         public StopMacroRecordingAction () {
-            super(true, BLANK_ICON);
+            super(true, null);
             postSetMenu();
         }
         
@@ -844,7 +844,7 @@ public abstract class MainMenuAction implements Presenter.Menu, ChangeListener, 
      */ 
     public static final class PasteFormattedAction extends MainMenuAction {
         public PasteFormattedAction() {
-            super(true, BLANK_ICON);
+            super(true, null);
             postSetMenu();
         }
 
