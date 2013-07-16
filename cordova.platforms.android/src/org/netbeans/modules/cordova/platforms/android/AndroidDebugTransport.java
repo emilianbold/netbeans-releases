@@ -44,16 +44,14 @@ package org.netbeans.modules.cordova.platforms.android;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.net.InetSocketAddress;
 import java.net.Proxy;
-import java.net.Socket;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.net.UnknownHostException;
 import java.nio.channels.SelectionKey;
 import java.nio.charset.Charset;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -144,30 +142,6 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
             Exceptions.printStackTrace(ex);
         }
         
-        for (long stop = System.nanoTime() + TimeUnit.MINUTES.toNanos(2); stop > System.nanoTime();) {
-            try {
-                Socket socket = new Socket(Proxy.NO_PROXY); // NOI18N
-                socket.connect(new InetSocketAddress("localhost", 9222));
-                break;
-            } catch (java.net.ConnectException ex) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException ex1) {
-                    Exceptions.printStackTrace(ex1);
-                }
-                continue;
-            } catch (UnknownHostException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        
         try {
             webSocket = createWebSocket(this);
             webSocket.start();
@@ -186,41 +160,43 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
     }
 
     private URI getURI() {
-        JSONArray array;
-        try {
-            JSONParser parser = new JSONParser();
+        JSONArray array = null;
+        for (long stop = System.nanoTime() + TimeUnit.MINUTES.toNanos(2); stop > System.nanoTime();) {
+            try {
+                JSONParser parser = new JSONParser();
 
-            URL chromeJson = new URL("http://localhost:9222/json");
-            try (BufferedReader reader = new BufferedReader(new InputStreamReader(chromeJson.openConnection(Proxy.NO_PROXY).getInputStream()))) {
-                Object obj = parser.parse(reader);
-                array = (JSONArray) obj;
-                if (array.size()==0) {
-                    try (BufferedReader r = new BufferedReader(new InputStreamReader(chromeJson.openConnection(Proxy.NO_PROXY).getInputStream()))) {
-                        while (r.ready()) {
-                            LOGGER.info(r.readLine());
+                URL chromeJson = new URL("http://localhost:9222/json");
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(chromeJson.openConnection(Proxy.NO_PROXY).getInputStream()))) {
+                    Object obj = parser.parse(reader);
+                    array = (JSONArray) obj;
+                    if (array.size() == 0) {
+                        try (BufferedReader r = new BufferedReader(new InputStreamReader(chromeJson.openConnection(Proxy.NO_PROXY).getInputStream()))) {
+                            while (r.ready()) {
+                                LOGGER.info(r.readLine());
+                            }
+                        }
+                    }
+                    for (int i = 0; i < array.size(); i++) {
+                        JSONObject object = (JSONObject) array.get(i);
+                        String urlFromBrowser = object.get("url").toString(); // NOI18N
+                        int hash = urlFromBrowser.indexOf("#"); // NOI18N
+                        if (hash != -1) {
+                            urlFromBrowser = urlFromBrowser.substring(0, hash);
+                        }
+                        if (urlFromBrowser.endsWith("/")) { // NOI18N
+                            urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length() - 1);
+                        }
+                        final String connectionUrl = getConnectionURL().toExternalForm();
+                        final String shortenedUrl = connectionUrl.replace(":80/", "/"); // NOI18N
+
+                        if (connectionUrl.equals(urlFromBrowser) || shortenedUrl.equals(urlFromBrowser)) {
+                            return new URI(object.get("webSocketDebuggerUrl").toString()); // NOI18N
                         }
                     }
                 }
-                for (int i = 0; i < array.size(); i++) {
-                    JSONObject object = (JSONObject) array.get(i);
-                    String urlFromBrowser = object.get("url").toString(); // NOI18N
-                    int hash = urlFromBrowser.indexOf("#"); // NOI18N
-                    if (hash != -1) {
-                        urlFromBrowser = urlFromBrowser.substring(0, hash);
-                    }
-                    if (urlFromBrowser.endsWith("/")) { // NOI18N
-                        urlFromBrowser = urlFromBrowser.substring(0, urlFromBrowser.length() - 1);
-                    }
-                    final String connectionUrl = getConnectionURL().toExternalForm();
-                    final String shortenedUrl = connectionUrl.replace(":80/", "/"); // NOI18N
-
-                    if (connectionUrl.equals(urlFromBrowser) || shortenedUrl.equals(urlFromBrowser)) {
-                        return new URI(object.get("webSocketDebuggerUrl").toString()); // NOI18N
-                    }
-                }
+            } catch (IOException | ParseException | URISyntaxException ex) {
+                LOGGER.log(Level.FINE, "Cannot get websocket address, trying again...", ex);
             }
-        } catch (IOException | ParseException | URISyntaxException ex) {
-            throw new IllegalStateException("Cannot get websocket address", ex); // NOI18N
         }
         LOGGER.info(array.toJSONString());
         throw new IllegalStateException("Cannot get websocket address"); // NOI18N
