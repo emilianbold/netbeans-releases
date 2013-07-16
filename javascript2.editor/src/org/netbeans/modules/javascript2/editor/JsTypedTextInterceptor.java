@@ -184,35 +184,27 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
     @Override
     public boolean beforeInsert(Context context) throws BadLocationException {
+        return false;
+    }
+
+    @Override
+    public void insert(MutableContext context) throws BadLocationException {
         isAfter = false;
-        JTextComponent target = context.getComponent();
-        Caret caret = target.getCaret();
+        //JTextComponent target = context.getComponent();
+        //Caret caret = target.getCaret();
         int caretOffset = context.getOffset();
         char ch = context.getText().charAt(0);
         BaseDocument doc = (BaseDocument) context.getDocument();
+        String selection = context.getReplacedText();
+        boolean isTemplate = GsfUtilities.isCodeTemplateEditing(doc);
 
-        if (target.getSelectionStart() != -1) {
-            if (GsfUtilities.isCodeTemplateEditing(doc)) {
-                int start = target.getSelectionStart();
-                int end = target.getSelectionEnd();
-                if (start < end) {
-                    target.setSelectionStart(start);
-                    target.setSelectionEnd(start);
-                    caretOffset = start;
-                    caret.setDot(caretOffset);
-                    doc.remove(start, end-start);
-                }
-                // Fall through to do normal insert matching work
-            } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[') {
-                // Bracket the selection
-                String selection = target.getSelectedText();
-                if (selection != null && selection.length() > 0) {
+        if (selection != null && selection.length() > 0) {    
+            if (!isTemplate && (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[')) {
+                    // Bracket the selection
                     char firstChar = selection.charAt(0);
                     if (firstChar != ch) {
-                        int start = target.getSelectionStart();
-                        int end = target.getSelectionEnd();
                         TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
-                                doc, start, language);
+                                doc, caretOffset, language);
                         if (ts != null
                                 && ts.token().id() != JsTokenId.LINE_COMMENT
                                 && ts.token().id() != JsTokenId.DOC_COMMENT
@@ -224,22 +216,18 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                                     ((firstChar == '"' || firstChar == '\'' || firstChar == '(' ||
                                     firstChar == '{' || firstChar == '[' || firstChar == '/') &&
                                     lastChar == matching(firstChar))) {
-                                doc.remove(end-1, 1);
-                                doc.insertString(end-1, ""+matching(ch), null);
-                                doc.remove(start, 1);
-                                doc.insertString(start, ""+ch, null);
-                                target.getCaret().setDot(end);
+                                String innerText = selection.substring(1, selection.length() - 1);
+                                String text = Character.toString(ch) + innerText + Character.toString(matching(ch));
+                                context.setText(text, text.length());
                             } else {
                                 // No, insert around
-                                doc.remove(start,end-start);
-                                doc.insertString(start, ch + selection + matching(ch), null);
-                                target.getCaret().setDot(start+selection.length()+2);
+                                String text = ch + selection + matching(ch);
+                                context.setText(text, text.length());
                             }
 
-                            return true;
+                            return;
                         }
                     }
-                }
             }
         }
 
@@ -247,13 +235,13 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 doc, caretOffset, language);
 
         if (ts == null) {
-            return false;
+            return;
         }
 
         ts.move(caretOffset);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
-            return false;
+            return;
         }
 
         Token<? extends JsTokenId> token = ts.token();
@@ -266,7 +254,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             // "//" and now they're typing "*" (e.g. to type "/*", but ended up with "/*/".
             // Remove the auto-matched /.
             doc.remove(caretOffset, 1);
-            return false; // false: continue to insert the "*"
+            return; // false: continue to insert the "*"
         }
 
         // "/" is handled AFTER the character has been inserted since we need the lexer's help
@@ -274,8 +262,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             stringTokens = STRING_TOKENS;
             beginTokenId = JsTokenId.STRING_BEGIN;
         } else if (id.isError()) {
-            //String text = token.text().toString();
-
             ts.movePrevious();
 
             TokenId prevId = ts.token().id();
@@ -304,23 +290,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         }
 
         if (stringTokens != null) {
-            boolean inserted =
-                completeQuote(doc, caretOffset, caret, ch, stringTokens, beginTokenId);
-
-            if (inserted) {
-                caret.setDot(caretOffset + 1);
-
-                return true;
-            } else {
-                return false;
-            }
+            completeQuote(context, ch, stringTokens, beginTokenId, isTemplate);
         }
-
-        return false;
-    }
-
-    @Override
-    public void insert(MutableContext context) throws BadLocationException {
     }
 
     @Override
@@ -400,29 +371,35 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
      * @param caret caret
      * @param bracket the character that was inserted
      */
-    private boolean completeQuote(BaseDocument doc, int dotPos, Caret caret, char bracket,
-        TokenId[] stringTokens, TokenId beginToken) throws BadLocationException {
+    private void completeQuote(MutableContext context, char bracket,
+            TokenId[] stringTokens, TokenId beginToken, boolean isTemplate) throws BadLocationException {
+        if (isTemplate) {
+            String text = context.getText() + bracket;
+            context.setText(text, text.length() - 1);
+            return;
+        }
+        int dotPos = context.getOffset();
+        BaseDocument doc = (BaseDocument) context.getDocument();
         if (isEscapeSequence(doc, dotPos)) { // \" or \' typed
-
-            return false;
+            return;
         }
 
         // Examine token at the caret offset
         if (doc.getLength() < dotPos) {
-            return false;
+            return;
         }
 
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
                 doc, dotPos, language);
 
         if (ts == null) {
-            return false;
+            return;
         }
 
         ts.move(dotPos);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
-            return false;
+            return;
         }
 
         Token<? extends JsTokenId> token = ts.token();
@@ -441,13 +418,13 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 || (token.id() == JsTokenId.DOC_COMMENT)
                 || (token.id() == JsTokenId.LINE_COMMENT)
                 || (previousToken != null && previousToken.id() == JsTokenId.LINE_COMMENT && token.id() == JsTokenId.EOL)) {
-            return false;
+            return;
         } else if ((token.id() == JsTokenId.WHITESPACE) && eol && ((dotPos - 1) > 0)) {
             // check if the caret is at the very end of the line comment
             token = LexUtilities.getToken(doc, dotPos - 1, language);
 
             if (token.id() == JsTokenId.LINE_COMMENT) {
-                return false;
+                return;
             }
         }
 
@@ -494,34 +471,26 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
         if (insideString) {
             if (eol) {
-                return false; // do not complete
+                return; // do not complete
             } else {
                 //#69524
                 char chr = doc.getChars(dotPos, 1)[0];
 
                 if (chr == bracket) {
                     if (!isAfter) {
-                        doc.insertString(dotPos, "" + bracket, null); //NOI18N
-                    } else {
-                        if (!(dotPos < doc.getLength()-1 && doc.getText(dotPos+1,1).charAt(0) == bracket)) {
-                            return true;
-                        }
+                        context.setText(Character.toString(bracket), 1);
                     }
-
                     doc.remove(dotPos, 1);
 
-                    return true;
+                    return;
                 }
             }
         }
 
         if ((completablePosition && !insideString) || eol) {
-            doc.insertString(dotPos, "" + bracket + (isAfter ? "" : matching(bracket)), null); //NOI18N
-
-            return true;
+            String text = "" + bracket + (isAfter ? "" : matching(bracket));
+            context.setText(text, isAfter ? text.length() : text.length() - 1);
         }
-
-        return false;
     }
 
     /**

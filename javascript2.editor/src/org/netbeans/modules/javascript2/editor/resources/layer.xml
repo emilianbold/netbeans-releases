@@ -27,6 +27,13 @@
                             </file>
                         </folder>
                     </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="fontsColors-citylights.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
 
                 <!-- custom editor folding -->
