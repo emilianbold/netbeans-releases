@@ -132,8 +132,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public static final EnumSet<ColoringAttributes> METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.CUSTOM1);
     public static final EnumSet<ColoringAttributes> STATIC_METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.CUSTOM1);
 
-    // @GuarderBy("this")
-    private boolean cancelled;
+    private volatile boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
 
     public SemanticAnalysis() {
@@ -146,7 +145,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     }
 
     @Override
-    public synchronized void cancel() {
+    public void cancel() {
         cancelled = true;
     }
 
@@ -174,11 +173,11 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
     }
 
-    protected final synchronized boolean isCancelled() {
+    protected final boolean isCancelled() {
         return cancelled;
     }
 
-    protected final synchronized void resume() {
+    protected final void resume() {
         cancelled = false;
     }
 
