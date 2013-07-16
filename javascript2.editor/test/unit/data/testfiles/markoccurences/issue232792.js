@@ -20,6 +20,7 @@ var A = {
   
 with(A) {
     getInfo();
+     // try here
     getGlobal();
     getName();
     B.getName = function () {
