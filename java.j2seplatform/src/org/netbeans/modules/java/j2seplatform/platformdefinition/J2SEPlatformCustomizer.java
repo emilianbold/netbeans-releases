@@ -605,23 +605,26 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             }
             java.util.List<URL> data = getData();
             int oldSize = data.size ();
-            for (URL url : urls) {
-                if (FileUtil.isArchiveFile(url)) {
-                    url = FileUtil.getArchiveRoot (url);
-                }
-                else if (!url.toExternalForm().endsWith("/")){
-                    try {
-                        url = new URL (url.toExternalForm()+"/");
-                    } catch (MalformedURLException mue) {
-                        Exceptions.printStackTrace(mue);
-                    }
-                }
-                data.add (url);
+            for (URL url : urls) {                
+                data.add (safeRoot(url));
             }
             updatePlatform();
             fireIntervalAdded(this,oldSize,oldSize+urls.size()-1);
             return true;
         }
+
+       void update(@NonNull final List<? extends URL> paths) {
+            java.util.List<URL> data = getData();
+            int oldSize = data.size();
+            data.clear();
+            for (URL url : paths) {
+                data.add (safeRoot(url));
+            }
+            updatePlatform();
+            fireContentsChanged(this, 0, Math.max(
+               Math.max(oldSize, data.size())-1,
+               0));
+       }
 
         @NonNull
         List<URI> getRootURIs() {
@@ -638,6 +641,19 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 }
             }
             return Collections.unmodifiableList(roots);
+        }
+
+        private static URL safeRoot(@NonNull URL url) {
+            if (FileUtil.isArchiveFile(url)) {
+                url = FileUtil.getArchiveRoot (url);
+            } else if (!url.toExternalForm().endsWith("/")){    //NOI18N
+                try {
+                    url = new URL (url.toExternalForm()+"/");
+                } catch (MalformedURLException mue) {
+                    Exceptions.printStackTrace(mue);
+                }
+            }
+            return url;
         }
 
         @NbBundle.Messages({

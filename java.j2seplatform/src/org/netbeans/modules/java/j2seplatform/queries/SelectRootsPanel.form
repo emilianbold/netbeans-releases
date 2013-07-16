@@ -24,7 +24,7 @@
                           <Component id="attachTo" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="lblSources" alignment="0" min="-2" max="-2" attributes="0"/>
                       </Group>
-                      <EmptySpace min="0" pref="165" max="32767" attributes="0"/>
+                      <EmptySpace min="0" pref="131" max="32767" attributes="0"/>
                   </Group>
                   <Component id="jScrollPane1" alignment="0" max="32767" attributes="0"/>
               </Group>
@@ -34,6 +34,7 @@
                   <Component id="add" alignment="0" max="32767" attributes="0"/>
                   <Component id="down" alignment="0" max="32767" attributes="0"/>
                   <Component id="up" max="32767" attributes="0"/>
+                  <Component id="addURL" alignment="0" max="32767" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
@@ -50,6 +51,8 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
                       <Component id="add" min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
+                      <Component id="addURL" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="remove" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -71,7 +74,7 @@
     <Component class="javax.swing.JLabel" name="attachTo">
       <Properties>
         <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
-          <Connection code="NbBundle.getMessage(SelectSourcesPanel.class, &quot;TXT_AttachSourcesTo&quot;,displayName)" type="code"/>
+          <Connection code="getDescription()" type="code"/>
         </Property>
       </Properties>
     </Component>
@@ -80,8 +83,8 @@
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
           <ComponentRef name="sources"/>
         </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/java/j2seplatform/queries/Bundle.properties" key="TXT_LocalSources" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+          <Connection code="getLabel()" type="code"/>
         </Property>
       </Properties>
       <AuxValues>
@@ -157,6 +160,19 @@
       </Properties>
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="moveDown"/>
+      </Events>
+      <AuxValues>
+        <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>
+      </AuxValues>
+    </Component>
+    <Component class="javax.swing.JButton" name="addURL">
+      <Properties>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/j2seplatform/queries/Bundle.properties" key="TXT_AddURL" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="addURL"/>
       </Events>
       <AuxValues>
         <AuxValue name="generateMnemonicsCode" type="java.lang.Boolean" value="true"/>

@@ -48,7 +48,11 @@
 package org.netbeans.modules.java.j2seplatform.queries;
 
 import java.awt.Component;
+import java.io.File;
+import java.net.MalformedURLException;
 import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -63,28 +67,39 @@ import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.j2seplatform.queries.SourceJavadocAttacherUtil.Function;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
  * @author Tomas Zezula
  */
-class SelectSourcesPanel extends javax.swing.JPanel {
+class SelectRootsPanel extends javax.swing.JPanel {
 
+    static final int SOURCES = 0;
+    static final int JAVADOC = 1;
+
+    private final int mode;
     private final String displayName;
     private final Callable<List<? extends String>> browseCall;
     private final Function<String,Collection<? extends URI>> convertor;
 
     /** Creates new form SelectSourcesPanel */
-    SelectSourcesPanel (
+    SelectRootsPanel (
+            final int mode,
             @NonNull final String displayName,
             @NonNull final List<? extends URI> roots,
             @NonNull final Callable<List<? extends String>> browseCall,
             @NonNull final Function<String, Collection<? extends URI>> convertor) {
+        assert (mode & ~1) == 0;
         assert displayName != null;
         assert browseCall != null;
         assert convertor != null;
+        this.mode = mode;
         this.displayName = displayName;
         this.browseCall = browseCall;
         this.convertor = convertor;
@@ -101,11 +116,12 @@ class SelectSourcesPanel extends javax.swing.JPanel {
         for (URI root : roots)  {
             model.addElement(root);
         }
+        addURL.setVisible(mode != 0);
         enableActions();
     }
 
     @CheckForNull
-    List<? extends URI> getSources() throws Exception {
+    List<? extends URI> getRoots() throws Exception {
         final DefaultListModel<URI> lm = (DefaultListModel<URI>) sources.getModel();
         return Collections.unmodifiableList(Collections.list(lm.elements()));
     }
@@ -127,13 +143,14 @@ class SelectSourcesPanel extends javax.swing.JPanel {
         remove = new javax.swing.JButton();
         up = new javax.swing.JButton();
         down = new javax.swing.JButton();
+        addURL = new javax.swing.JButton();
 
-        attachTo.setText(NbBundle.getMessage(SelectSourcesPanel.class, "TXT_AttachSourcesTo",displayName));
+        attachTo.setText(getDescription());
 
         lblSources.setLabelFor(sources);
-        org.openide.awt.Mnemonics.setLocalizedText(lblSources, org.openide.util.NbBundle.getMessage(SelectSourcesPanel.class, "TXT_LocalSources")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblSources, getLabel());
 
-        org.openide.awt.Mnemonics.setLocalizedText(add, org.openide.util.NbBundle.getMessage(SelectSourcesPanel.class, "TXT_Browse")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(add, org.openide.util.NbBundle.getMessage(SelectRootsPanel.class, "TXT_Browse")); // NOI18N
         add.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 browse(evt);
@@ -147,24 +164,31 @@ class SelectSourcesPanel extends javax.swing.JPanel {
         });
         jScrollPane1.setViewportView(sources);
 
-        org.openide.awt.Mnemonics.setLocalizedText(remove, org.openide.util.NbBundle.getMessage(SelectSourcesPanel.class, "TXT_Remove")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(remove, org.openide.util.NbBundle.getMessage(SelectRootsPanel.class, "TXT_Remove")); // NOI18N
         remove.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 remove(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(up, org.openide.util.NbBundle.getMessage(SelectSourcesPanel.class, "TXT_MoveUp")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(up, org.openide.util.NbBundle.getMessage(SelectRootsPanel.class, "TXT_MoveUp")); // NOI18N
         up.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moveUp(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(down, org.openide.util.NbBundle.getMessage(SelectSourcesPanel.class, "TXT_MoveDown")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(down, org.openide.util.NbBundle.getMessage(SelectRootsPanel.class, "TXT_MoveDown")); // NOI18N
         down.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 moveDown(evt);
+            }
+        });
+
+        org.openide.awt.Mnemonics.setLocalizedText(addURL, org.openide.util.NbBundle.getMessage(SelectRootsPanel.class, "TXT_AddURL")); // NOI18N
+        addURL.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                addURL(evt);
             }
         });
 
@@ -179,14 +203,15 @@ class SelectSourcesPanel extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(attachTo)
                             .addComponent(lblSources))
-                        .addGap(0, 165, Short.MAX_VALUE))
+                        .addGap(0, 131, Short.MAX_VALUE))
                     .addComponent(jScrollPane1))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(remove, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(add, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(down, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(up, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(up, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(addURL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -200,6 +225,8 @@ class SelectSourcesPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(add)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(addURL)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(remove)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -264,11 +291,61 @@ private void browse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browse
         sources.setSelectedIndices(index);
     }//GEN-LAST:event_moveDown
 
+    private void addURL(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addURL
+        final NotifyDescriptor.InputLine nd = new NotifyDescriptor.InputLine(
+            NbBundle.getMessage(SelectRootsPanel.class,"TXT_RemoteJavadoc"),
+            NbBundle.getMessage(SelectRootsPanel.class,"TXT_RemoteJavadoc_Title"),
+            NotifyDescriptor.OK_CANCEL_OPTION,
+            NotifyDescriptor.PLAIN_MESSAGE);
+        if (DialogDisplayer.getDefault().notify(nd) == NotifyDescriptor.OK_OPTION) {
+            final String inputText = nd.getInputText();
+            final DefaultListModel<URI> lm = (DefaultListModel<URI>) sources.getModel();
+            final Set<URI> contained = new HashSet<>(Collections.list(lm.elements()));
+            int index = sources.getSelectedIndex();
+            index = index < 0 ? lm.getSize() : index + 1;
+            try {
+                URI uri = new URI(inputText);
+                if (!contained.contains(uri)) {
+                    lm.add(index++, uri);
+                }
+            } catch (URISyntaxException ex) {
+                DialogDisplayer.getDefault().notify(
+                    new NotifyDescriptor.Message(
+                        NbBundle.getMessage(SelectRootsPanel.class, "TXT_InvalidRoot", inputText),
+                        NotifyDescriptor.ERROR_MESSAGE));
+            }
+        }
+    }//GEN-LAST:event_addURL
+
     private void enableActions() {
         final int[] indices = sources.getSelectedIndices();
         remove.setEnabled(indices.length > 0);
         up.setEnabled(indices.length > 0 && indices[0] != 0);
         down.setEnabled(indices.length > 0 && indices[indices.length-1] != sources.getModel().getSize()-1);
+    }
+
+    @NonNull
+    private String getDescription() {
+        switch (mode) {
+            case 0:
+                return NbBundle.getMessage(SelectRootsPanel.class, "TXT_AttachSourcesTo",displayName);
+            case 1:
+                return NbBundle.getMessage(SelectRootsPanel.class, "TXT_AttachJavadocTo",displayName);
+            default:
+                throw new IllegalStateException(Integer.toString(mode));
+        }
+    }
+
+    @NonNull
+    private String getLabel() {
+        switch (mode) {
+            case 0:
+                return NbBundle.getMessage(SelectRootsPanel.class, "TXT_LocalSources");
+            case 1:
+                return NbBundle.getMessage(SelectRootsPanel.class, "TXT_LocalJavadoc");
+            default:
+                throw new IllegalStateException(Integer.toString(mode));
+        }
     }
 
     private static class RootRenderer extends DefaultListCellRenderer {
@@ -280,14 +357,38 @@ private void browse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browse
                 final boolean isSelected,
                 final boolean cellHasFocus) {
             if (value instanceof URI) {
-                value = value.toString();
+                try {
+                    URL url = ((URI)value).toURL();
+                    String offset = null;
+                    if ("jar".equals(url.getProtocol())) {  //NOI18N
+                        final String surl = url.toExternalForm();
+                        int offsetPos = surl.lastIndexOf("!/"); //NOI18N
+                        if (offsetPos > 0 && offsetPos < surl.length()-3) {
+                            offset = surl.substring(offsetPos+2);
+                        }
+                        url = FileUtil.getArchiveFile(url);
+                    }
+                    if ("file".equals(url.getProtocol())) { //NOI18N
+                        final File file = Utilities.toFile(url.toURI());
+                        value = offset == null ?
+                            file.getAbsolutePath() :
+                            NbBundle.getMessage(
+                                SelectRootsPanel.class,
+                                "PATTERN_RELPATH_IN_FILE",
+                                offset,
+                                file.getAbsolutePath());
+                    }
+                } catch (MalformedURLException | URISyntaxException ex) {
+                    //pass - value unchanged
+                }
             }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus); //To change body of generated methods, choose Tools | Templates.
+            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
         }
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton add;
+    private javax.swing.JButton addURL;
     private javax.swing.JLabel attachTo;
     private javax.swing.JButton down;
     private javax.swing.JScrollPane jScrollPane1;
