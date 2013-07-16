@@ -227,4 +227,8 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testIssue224650() throws Exception {
         checkCompletion("testfiles/completion/issue224650.js", "this.^ // cc here", false);
     }
+    
+    public void testIssue23277() throws Exception {
+        checkCompletion("testfiles/markoccurences/issue232792.js", "A.B.^getName();", false);
+    }
 }
