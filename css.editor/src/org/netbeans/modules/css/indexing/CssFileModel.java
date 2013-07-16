@@ -91,21 +91,18 @@ public class CssFileModel {
     private final Snapshot topLevelSnapshot;
 
     public static CssFileModel create(Source source) throws ParseException {
-        final AtomicReference<CssParserResult> result = new AtomicReference<CssParserResult>();
-        final AtomicReference<Snapshot> snapshot = new AtomicReference<Snapshot>();
+        final AtomicReference<CssFileModel> model = new AtomicReference<>();
         ParserManager.parse(Collections.singletonList(source), new UserTask() {
-
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, CssLanguage.CSS_MIME_TYPE);
-                snapshot.set(resultIterator.getSnapshot());
-                result.set(cssRi == null ? null : (CssParserResult) cssRi.getParserResult());
+                Snapshot topLevelSnapshot = resultIterator.getSnapshot();
+                model.set(cssRi == null 
+                        ? new CssFileModel(topLevelSnapshot) 
+                        : new CssFileModel((CssParserResult)cssRi.getParserResult(), topLevelSnapshot));
             }
         });
-
-        assert snapshot.get() != null; //at least the top level snapshot should always be available
-
-        return result.get() == null ? new CssFileModel(snapshot.get()) : new CssFileModel(result.get(), snapshot.get());
+        return model.get();
     }
 
     public static CssFileModel create(CssParserResult result) {
