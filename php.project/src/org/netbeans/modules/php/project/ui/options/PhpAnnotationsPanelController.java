@@ -90,6 +90,7 @@ public class PhpAnnotationsPanelController extends BaseOptionsPanelController {
         assert EventQueue.isDispatchThread();
         if (panel == null) {
             panel = new PhpAnnotationsPanel();
+            panel.addChangeListener(this);
         }
         return panel;
     }
