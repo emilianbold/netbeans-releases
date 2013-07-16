@@ -47,7 +47,6 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -115,6 +114,7 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
                     } else if (mode == J2SEPlatformCustomizer.JAVADOC) {
                         selected = SourceJavadocAttacherUtil.selectJavadoc(
                             root,
+                            model.getRootURIs(),
                             SourceJavadocAttacherUtil.createDefaultBrowseCall(
                                 Bundle.TXT_Title(),
                                 Bundle.TXT_JavadocFilterName(),
@@ -123,15 +123,9 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
                     } else {
                         throw new IllegalStateException(Integer.toString(mode));
                     }
-                    if (selected != null) {                        
-                        try {
-                            for (URI uri : selected) {
-                                model.addPath(Collections.singleton(uri.toURL()));
-                            }
-                            success = true;
-                        } catch (MalformedURLException e) {
-                            Exceptions.printStackTrace(e);
-                        }
+                    if (selected != null) {
+                        model.update(toURLList(selected));
+                        success = true;                        
                     }
                 } finally {
                     SourceJavadocAttacherUtil.callListener(listener, success);
@@ -140,6 +134,19 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
         };
         Mutex.EVENT.writeAccess(call);
         return true;
+    }
+
+    @NonNull
+    private static List<? extends URL> toURLList(@NonNull final List<? extends URI> uris) {
+        final List<URL> result = new ArrayList<>(uris.size());
+        for (URI uri : uris) {
+            try {
+                result.add(uri.toURL());
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return result;
     }
 
     private J2SEPlatformImpl findOwner(final URL root) {

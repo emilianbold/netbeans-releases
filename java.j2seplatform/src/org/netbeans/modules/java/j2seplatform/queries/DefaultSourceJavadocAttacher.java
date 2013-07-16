@@ -146,6 +146,7 @@ public class DefaultSourceJavadocAttacher implements SourceJavadocAttacherImplem
         } else if (mode == 1) {
             selected = SourceJavadocAttacherUtil.selectJavadoc(
                 root,
+                attachedRoots,
                 SourceJavadocAttacherUtil.createDefaultBrowseCall(
                     Bundle.TXT_Title(),
                     Bundle.TXT_Javadoc(),
