@@ -196,6 +196,11 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
                 }
             } catch (IOException | ParseException | URISyntaxException ex) {
                 LOGGER.log(Level.FINE, "Cannot get websocket address, trying again...", ex);
+                try {
+                    Thread.sleep(500);
+                } catch (InterruptedException ex1) {
+                    Exceptions.printStackTrace(ex1);
+                }
             }
         }
         LOGGER.info(array.toJSONString());
