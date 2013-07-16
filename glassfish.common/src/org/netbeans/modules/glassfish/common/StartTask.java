@@ -56,19 +56,31 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.GlassFishStatus;
+import static org.glassfish.tools.ide.GlassFishStatus.OFFLINE;
+import static org.glassfish.tools.ide.GlassFishStatus.ONLINE;
+import static org.glassfish.tools.ide.GlassFishStatus.SHUTDOWN;
+import static org.glassfish.tools.ide.GlassFishStatus.STARTUP;
+import org.glassfish.tools.ide.GlassFishStatusListener;
 import org.glassfish.tools.ide.admin.*;
+import org.glassfish.tools.ide.data.GlassFishServer;
+import org.glassfish.tools.ide.data.GlassFishServerStatus;
+import org.glassfish.tools.ide.data.GlassFishStatusCheckResult;
+import org.glassfish.tools.ide.data.GlassFishStatusTask;
+import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.data.StartupArgs;
 import org.glassfish.tools.ide.data.StartupArgsEntity;
+import org.glassfish.tools.ide.data.TaskEvent;
 import org.glassfish.tools.ide.server.FetchLogSimple;
 import org.glassfish.tools.ide.server.ServerTasks;
 import org.glassfish.tools.ide.utils.ServerUtils;
 import org.netbeans.api.extexecution.startup.StartupExtender;
+import static org.netbeans.modules.glassfish.common.BasicTask.START_TIMEOUT;
 import org.netbeans.modules.glassfish.common.ui.JavaSEPlatformPanel;
 import org.netbeans.modules.glassfish.common.utils.AdminKeyFile;
 import org.netbeans.modules.glassfish.common.utils.JavaUtils;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.*;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -82,25 +94,196 @@ import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
- * @author Ludovic Chamenois
- * @author Peter Williams
+ * Asynchronous Glassfish server startup command execution.
+ * <p/>
+ * @author Ludovic Chamenois, Peter Williams, Tomas Kraus
  */
 public class StartTask extends BasicTask<TaskState> {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Inner classes                                                          //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Notification about server state check results.
+     * <p/>
+     * Handles initial period of time after starting server.
+     * At least port checks are being executed periodically so this class will
+     * be called back in any situation.
+     */
+    private static class StartStateListener implements GlassFishStatusListener {
+
+        /** Server is starting in profiling mode? */
+        private final boolean profile;
+
+        /** Requested wake up of checking thread. */
+        private volatile boolean wakeUp;
+
+        /** Number of verification checks passed. */
+        private short count;
+
+        /**
+         * Constructs an instance of state check results notification.
+         */
+        private StartStateListener(final boolean profile) {
+            this.profile = profile;
+            wakeUp = false;
+            count = 0;
+        }
+
+        /**
+         * Wake up checking thread.
+         */
+        private void wakeUp() {
+            if (!wakeUp) synchronized(this) {
+                wakeUp = true;
+                this.notify();
+            }
+        }
+
+        /**
+         * Get status of wake up request of checking thread.
+         * <p/>
+         * @return Status of wake up request of checking thread.
+         */
+        private boolean isWakeUp() {
+            return wakeUp;
+        }
+
+        /**
+         * Callback to notify about current server status after every check
+         * when enabled.
+         * <p/>
+         * Wake up startup thread when administrator port is active
+         * in profiling mode or when illegal state was detected.
+         * <p/>
+         * @param server GlassFish server instance being monitored.
+         * @param status Current server status.
+         * @param task   Last GlassFish server status check task details.
+         */
+        @Override
+        public void currentState(final GlassFishServer server,
+                final GlassFishStatus status, final GlassFishStatusTask task) {
+            switch(status) {
+                // Consider server as ready when administrator port is active
+                // in profiling mode.
+                case OFFLINE: case STARTUP:
+                    if (profile && task.getStatus()
+                            == GlassFishStatusCheckResult.SUCCESS) {
+                        wakeUp();
+                    }
+                    break;
+                // Interrupt waiting for illegal states.
+                case ONLINE: case SHUTDOWN:
+                    wakeUp();
+                    break;
+            }
+        }
+
+        /**
+         * Callback to notify about server status change when enabled.
+         * <p/>
+         * Listens on <code>ONLINE</code>, <code>SHUTDOWN</code>
+         * state changes where we can wake up checking startup thread 
+         * immediately.
+         * <p/>
+         * @param server GlassFish server instance being monitored.
+         * @param status Current server status.
+         * @param task   Last GlassFish server status check task details.
+         */    
+        @Override
+        public void newState(final GlassFishServer server,
+                final GlassFishStatus status, final GlassFishStatusTask task) {
+            wakeUp();
+        }
+
+        /**
+         * Callback to notify about server status check failures.
+         * <p/>
+         * @param server GlassFish server instance being monitored.
+         * @param event  Failure event.
+         * @param task   GlassFish server status check task details.
+         */
+        @Override
+        public void error(final GlassFishServer server,
+                final GlassFishStatusTask task) {
+            // Not used yet.
+        }
+
+    }
+
+    /**
+     * State change request data.
+     */
+    private static class StateChange {
+
+        /** Command execution task. */
+        private final BasicTask task;
+
+        /** New state of current command execution. */
+        private final TaskState result;
+
+        /** Event that caused  state change. */
+        private final TaskEvent event;
+
+        /** Message bundle key. */
+        private final String msgKey;
+
+        /** Message arguments. */
+        private final String[] msgArgs;
+
+        /**
+         * Constructs an instance of state change request data.
+         * <p/>
+         * @param task   Command execution task.
+         * @param result New state of current command execution.
+         * @param event  Event that caused  state change.
+         * @param msgKey Message bundle key.
+         */
+        StateChange(final BasicTask task, final TaskState result,
+                final TaskEvent event, final String msgKey) {
+            this.task = task;
+            this.result = result;
+            this.event = event;
+            this.msgKey = msgKey;
+            this.msgArgs = null;
+        }
+
+        /**
+         * Constructs an instance of state change request data.
+         * <p/>
+         * @param task    Command execution task.
+         * @param result  New state of current command execution.
+         * @param event   Event that caused  state change.
+         * @param msgKey  Message bundle key.
+         * @param msgArgs Message arguments.
+         */
+        StateChange(final BasicTask task, final TaskState result,
+                final TaskEvent event, final String msgKey,
+                final String... msgArgs) {
+            this.task = task;
+            this.result = result;
+            this.event = event;
+            this.msgKey = msgKey;
+            this.msgArgs = msgArgs;
+        }
+
+        TaskState fireOperationStateChanged() {
+            return task.fireOperationStateChanged(
+                    result, event, msgKey, msgArgs);
+        }
+    }
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Class attributes                                                       //
+    ////////////////////////////////////////////////////////////////////////////
 
     /** Local logger. */
     private static final Logger LOGGER
             = GlassFishLogger.get(StartTask.class);
 
     private static final String MAIN_CLASS = "com.sun.enterprise.glassfish.bootstrap.ASMain"; // NOI18N
-    private final CommonServerSupport support;
-    private List<Recognizer> recognizers;
-    private List<String> jvmArgs = null;
-    static final private int LOWEST_USER_PORT = org.openide.util.Utilities.isWindows() ? 1 : 1025;
-    private final VMIntrospector vmi;
     private static RequestProcessor NODE_REFRESHER = new RequestProcessor("nodes to refresh");
-
-    /** internal Java SE platform home cache. */
-    private FileObject jdkHome;
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
@@ -124,15 +307,31 @@ public class StartTask extends BasicTask<TaskState> {
     }
 
     ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    private final CommonServerSupport support;
+    private List<Recognizer> recognizers;
+    private List<String> jvmArgs = null;
+    static final private int LOWEST_USER_PORT
+            = org.openide.util.Utilities.isWindows() ? 1 : 1025;
+    private final VMIntrospector vmi;
+
+    /** internal Java SE platform home cache. */
+    private FileObject jdkHome;
+
+    ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     *
-     * @param support common support object for the server instance being
-     * started
-     * @param recognizers output recognizers to pass to log processors, if any
-     * @param stateListener state monitor to track start progress
+     * Constructs an instance of asynchronous GlassFish server startup command
+     * execution support object.
+     * <p/>
+     * @param support       Common support object for the server instance being
+     *                      started.
+     * @param recognizers   Output recognizers to pass to log processors, if any.
+     * @param stateListener State monitor to track start progress.
      */
     public StartTask(CommonServerSupport support, List<Recognizer> recognizers,
             VMIntrospector vmi,
@@ -141,13 +340,17 @@ public class StartTask extends BasicTask<TaskState> {
     }
 
     /**
-     *
-     * @param support common support object for the server instance being
-     * started
-     * @param recognizers output recognizers to pass to log processors, if any
-     * @param jdkRoot used for starting in profile mode
-     * @param jvmArgs used for starting in profile mode
-     * @param stateListener state monitor to track start progress
+     * Constructs an instance of asynchronous GlassFish server startup command
+     * execution support object.
+     * <p/>
+     * @param support       Common support object for the server instance being
+     *                      started.
+     * @param recognizers   Output recognizers to pass to log processors, if any.
+     * @param jdkRoot       Java SE Development Kit to start server in profiling
+     *                      mode.
+     * @param jvmArgs       JVM arguments used to start server in profiling
+     *                      mode.
+     * @param stateListener State monitor to track start progress.
      */
     public StartTask(final CommonServerSupport support,
             List<Recognizer> recognizers, VMIntrospector vmi, String[] jvmArgs,
@@ -159,7 +362,7 @@ public class StartTask extends BasicTask<TaskState> {
 
             @Override
             public void operationStateChanged(TaskState newState,
-            TaskEvent event, String... args) {
+                    TaskEvent event, String... args) {
                 if (TaskState.COMPLETED.equals(newState)) {
                     // attempt to sync the comet support
                     RequestProcessor.getDefault().post(
@@ -181,7 +384,9 @@ public class StartTask extends BasicTask<TaskState> {
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     *
+     * Asynchronous task method started by {@link Executors}.
+     * <p/>
+     * @return Task execution result.
      */
     @Override
     public TaskState call() {
@@ -209,7 +414,7 @@ public class StartTask extends BasicTask<TaskState> {
         }
 
         if (support.isRemote()) {
-            if (GlassFishStatus.isReady(instance, false)) {
+            if (GlassFishState.isOnline(instance)) {
                 if (Util.isDefaultOrServerTarget(instance.getProperties())) {
                     return restartDAS(adminHost, adminPort, start);
                 } else {
@@ -220,8 +425,50 @@ public class StartTask extends BasicTask<TaskState> {
                         TaskEvent.CMD_FAILED,
                         "MSG_START_SERVER_FAILED_DASDOWN", instanceName);
             }
-        } else if (!GlassFishStatus.isReady(instance, false)) {
-            return startDASAndClusterOrInstance(adminHost, adminPort);
+        // Local server.
+        } else // Our server is offline.
+        if (GlassFishState.isOffline(instance)) {
+            // But administrator port is occupied.
+            if (ServerUtils.isDASRunning(instance)) {
+                ResultString version;
+                try {
+                    version = CommandVersion.getVersion(instance);
+                } catch (CommandException ce) {
+                    version = null;
+                }
+                // Got version response from DAS.
+                if (version != null) {
+                    // There is server with matching version.
+                    if (CommandVersion.verifyResult(version, instance)) {
+                        fireOperationStateChanged(TaskState.RUNNING,
+                                TaskEvent.CMD_COMPLETED,
+                                "StartTask.call.matchVersion",
+                                version.getValue());
+                        return startClusterOrInstance(adminHost, adminPort);
+                        // There is server with non matching version.
+                    } else {
+                        if (!version.isAuth()) {
+                            return fireOperationStateChanged(TaskState.FAILED,
+                                    TaskEvent.CMD_FAILED,
+                                    "StartTask.call.authFailed",
+                                    instanceName, version.getValue());
+                        } else {
+                            return fireOperationStateChanged(TaskState.FAILED,
+                                    TaskEvent.CMD_FAILED,
+                                    "StartTask.call.anotherVersion",
+                                    instanceName, version.getValue());
+                        }
+                    }
+                    // Got no version response from DAS.
+                } else {
+                    return fireOperationStateChanged(TaskState.FAILED,
+                            TaskEvent.CMD_FAILED,
+                            "StartTask.call.unknownVersion", instanceName);
+                }
+            } else {
+                return startDAS(adminHost, adminPort);
+            }
+            // Our server is online.
         } else {
             return startClusterOrInstance(adminHost, adminPort);
         }
@@ -257,15 +504,15 @@ public class StartTask extends BasicTask<TaskState> {
                                 }
                             }
                             long startTime = System.currentTimeMillis();
-                            OperationState state = OperationState.RUNNING;
+                            TaskState state = TaskState.RUNNING;
                             try {
                                 Thread.sleep(2000);
                             } catch (InterruptedException e) {
                                 // no op
                             }
-                            while (OperationState.RUNNING == state && System.currentTimeMillis() - start < START_TIMEOUT) {
+                            while (TaskState.RUNNING == state && System.currentTimeMillis() - start < START_TIMEOUT) {
                                 // Send the 'completed' event and return when the server is running
-                                boolean httpLive = GlassFishStatus.isReady(instance, false); //CommonServerSupport.isRunning(host, port,instance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR));
+                                boolean httpLive = GlassFishState.isOnline(instance); //CommonServerSupport.isRunning(host, port,instance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR));
 
                                 // Sleep for a little so that we do not make our checks too often
                                 //
@@ -284,10 +531,10 @@ public class StartTask extends BasicTask<TaskState> {
                                     } catch (InterruptedException e) {
                                         // no op
                                     }
-                                    state = OperationState.COMPLETED;
+                                    state = TaskState.COMPLETED;
                                 }
                             }
-                            if (state == OperationState.COMPLETED) { //support.isReady(false, 120, TimeUnit.SECONDS)) {
+                            if (state == TaskState.COMPLETED) { //support.isReady(false, 120, TimeUnit.SECONDS)) {
                                 support.setServerState(ServerState.RUNNING);
                             } else {
                                 support.setServerState(ServerState.STOPPED);
@@ -313,15 +560,16 @@ public class StartTask extends BasicTask<TaskState> {
         }
         support.restartServer(debugPort,
                 support.supportsRestartInDebug() && debugPort >= 0, listeners);
-        return fireOperationStateChanged(TaskState.RUNNING,
-                TaskEvent.CMD_FAILED,
-                "MSG_START_SERVER_IN_PROGRESS", instanceName); // NOI18N
+        return fireOperationStateChanged(
+                TaskState.RUNNING, TaskEvent.CMD_FAILED,
+                "StartTask.restartDAS.inProgress", instanceName);
 
     }
 
-    @SuppressWarnings("SleepWhileInLoop")
-    private TaskState startDASAndClusterOrInstance(String adminHost, int adminPort) {
-        Process serverProcess;
+    /**
+     * Reset administrator password when needed.
+     */
+    private void resetPassword() {
         AdminKeyFile keyFile = new AdminKeyFile(instance);
         keyFile.read();
         if (keyFile.isReset()) {
@@ -336,13 +584,16 @@ public class StartTask extends BasicTask<TaskState> {
                         "Could not store GlassFish server attributes", ex);
             }
             keyFile.write();
-// Password change dialog disabled.
-//            String password = GlassFishPassword.setPassword(instance);
-//            if (password != null) {
-//                keyFile.setPassword(password);
-//                keyFile.write();
-//            }
         }
+    }
+
+    /**
+     * Initialize JDK used to start GlassFish server.
+     * <p/>
+     * @return State change request data when JDK could not be initialized
+     *         or <code>null</code> otherwise.
+     */
+    private StateChange initJDK() {
         try {
             if (null == jdkHome) {
                 jdkHome = getJavaPlatformRoot();
@@ -353,17 +604,127 @@ public class StartTask extends BasicTask<TaskState> {
                 }
             }
             if (jdkHome == null) {
-                return fireOperationStateChanged(TaskState.FAILED,
-                        TaskEvent.CMD_FAILED, null , instanceName);
+                return new StateChange(this, TaskState.FAILED,
+                        TaskEvent.CMD_FAILED, "StartTask.initJDK.null",
+                        instanceName);
             }
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex); // NOI18N
-            return fireOperationStateChanged(TaskState.FAILED,
-                    TaskEvent.CMD_FAILED, "MSG_PASS_THROUGH",
-                    ex.getLocalizedMessage());
+            return new StateChange(this, TaskState.FAILED,
+                    TaskEvent.CMD_FAILED, "StartTask.initJDK.exception",
+                    new String[] {instanceName, ex.getLocalizedMessage()});
+        }
+        return null;
+    }
+
+    /**
+     * Verify GlassFish server status before starting it.
+     * <p/>
+     * @return State change request data when server shall not be started
+     *         and listeners should be notified about it or <code>null</code>
+     *         otherwise.
+     */
+    private StateChange checkBeforeStart() {
+        GlassFishServerStatus status = GlassFishState.getStatus(instance);
+        String msgKey = null;
+        switch (status.getStatus()) {
+            case ONLINE:
+                TaskState result;
+                TaskEvent event;
+                if (GlassfishModule.PROFILE_MODE.equals(
+                        instance.getProperty(GlassfishModule.JVM_MODE))) {
+                    result = TaskState.FAILED;
+                    event = TaskEvent.CMD_FAILED;
+                } else {
+                    result = TaskState.COMPLETED;
+                    event = TaskEvent.CMD_COMPLETED;
+                }
+                return new StateChange(this, result, event,
+                        "StartTask.startDAS.alreadyRunning");
+            case OFFLINE:
+                if (ServerUtils.isDASRunning(instance)) {
+                    msgKey = "StartTask.startDAS.portOccupied";
+                }
+                break;
+            case SHUTDOWN:
+                msgKey = "StartTask.startDAS.shutdown";
+                break;
+            case STARTUP:
+                msgKey = "StartTask.startDAS.startup";
+        }
+        return msgKey != null
+                ? new StateChange(this, TaskState.FAILED,
+                TaskEvent.CMD_FAILED, msgKey)
+                : null;
+    }
+
+    /**
+     * Check for server status in profiling mode during startup.
+     * <p/>
+     * @return State change request about server startup success.
+     */
+    @SuppressWarnings("SleepWhileInLoop")
+    private StateChange profilingServerStatus() {
+        LOGGER.log(Level.FINE,
+                "Profiling mode status hack for {0}",
+                new Object[]{instance.getName()});
+        // Save process to be able to stop process waiting for profiler
+        // to attach.
+        support.setLocalStartProcess(instance.getProcess());
+        // Try to sync the states after the profiler attaches.
+        NODE_REFRESHER.post(new Runnable() {
+            @Override
+            public void run() {
+                while (!GlassFishState.isOnline(instance)) {
+                    try {
+                        Thread.sleep(200);
+                    } catch (InterruptedException ex) {
+                    }
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        support.refresh();
+
+                    }
+                });
+            }
+        });
+        return new StateChange(this, TaskState.COMPLETED,
+                TaskEvent.CMD_COMPLETED,
+                "MSG_SERVER_STARTED", instanceName);
+    }
+
+    /**
+     * Initialize GlassFisg server startup monitoring.
+     * <p/>
+     * Creates and registers listener to monitor server status during startup.
+     * Switches server status monitoring into startup mode.
+     * <p/>
+     * @return Listener instance when server startup monitoring was successfully
+     *         initialized or  <code>null</code> when something failed.
+     */
+    private StartStateListener prepareStartMonitoring() {
+        StartStateListener listener = new StartStateListener(null != jvmArgs);
+        if (GlassFishStatus.addListener(instance, listener, true,
+                GlassFishStatus.ONLINE, GlassFishStatus.SHUTDOWN)
+                && GlassFishStatus.start(instance)) {
+            return listener;
+        } else {
+            GlassFishStatus.removeListener(instance, listener);
+            return null;
+        }
+    }
+
+    private TaskState startDAS(String adminHost, int adminPort) {
+        StateChange change;
+        resetPassword();
+        if ((change = initJDK()) != null) {
+            return change.fireOperationStateChanged();
         }
         // Time must be measured after Java SE platform selection is done.
         long start = System.currentTimeMillis();
+        StartStateListener listener;
         try {
             // lookup the javadb start service and use it here.
             RegisteredDerbyServer db
@@ -372,47 +733,28 @@ public class StartTask extends BasicTask<TaskState> {
                     instance.getProperty(GlassfishModule.START_DERBY_FLAG))) { // NOI18N
                 db.start();
             }
-            int testPort = 0;
-            String portCandidate = Integer.toString(instance.getAdminPort());
-            try {
-                testPort = Integer.parseInt(portCandidate);
-            } catch (NumberFormatException nfe) {
-                LOGGER.log(Level.INFO,
-                        "could not parse {0} as an Inetger", portCandidate); // NOI18N
-            }
-            // this may be an autheticated server... so we will say it is started.
-            // other operations will fail if the process on the port is not a
-            // GF v3 server.
+            // This may be an autheticated server... so we will say it is
+            // started. Other operations will fail if the process on the port
+            // is not a GF v3 server.
             LOGGER.log(Level.FINEST,
-                    "Checking if GlassFish {0} is running. Timeout set to 20000 ms",
+                    "Checking if GlassFish {0} is running.",
                     instance.getName());
-            if (GlassFishStatus.isReady(instance, false)) {
-                TaskState result = TaskState.COMPLETED;
-                TaskEvent event = TaskEvent.CMD_COMPLETED;
-                if (GlassfishModule.PROFILE_MODE.equals(
-                        instance.getProperty(GlassfishModule.JVM_MODE))) {
-                    result = TaskState.FAILED;
-                    event = TaskEvent.CMD_FAILED;
-                }
-                return fireOperationStateChanged(result, event,
-                        "MSG_START_SERVER_OCCUPIED_PORT", instanceName);
-            } else if (testPort != 0 && Utils.isLocalPortOccupied(testPort)) {
+            if ((change = checkBeforeStart()) != null) {
+                return change.fireOperationStateChanged();
+            } else if (upgradeFailed()) {
                 return fireOperationStateChanged(TaskState.FAILED,
                         TaskEvent.CMD_FAILED,
-                        "MSG_START_SERVER_OCCUPIED_PORT", instanceName);
+                        "StartTask.startDAS.domainUpgrade", instanceName);
             }
-            if (upgradeFailed()) {
+            // We should be listening for reaching ONLINE state before process
+            // is started.
+            listener = prepareStartMonitoring();
+            if (listener == null) {
                 return fireOperationStateChanged(TaskState.FAILED,
                         TaskEvent.CMD_FAILED,
-                        "MSG_DOMAIN_UPGRADE_FAILED", instanceName);
+                        "StartTask.startDAS.startupMonitoring", instanceName);                
             }
-            serverProcess = createProcess();
-        } catch (NumberFormatException nfe) {
-            LOGGER.log(Level.INFO, instance.getProperty(
-                    GlassfishModule.HTTPPORT_ATTR), nfe); // NOI18N
-            return fireOperationStateChanged(TaskState.FAILED,
-                    TaskEvent.CMD_FAILED,
-                    "MSG_START_SERVER_FAILED_BADPORT", instanceName);
+            instance.setProcess(createProcess());
         } catch (ProcessCreationException ex) {
             Logger.getLogger("glassfish").log(Level.INFO,
                     "Could not start process for " + instanceName, ex);
@@ -422,105 +764,46 @@ public class StartTask extends BasicTask<TaskState> {
         }
 
         fireOperationStateChanged(TaskState.RUNNING, TaskEvent.CMD_RUNNING,
-                "MSG_START_SERVER_IN_PROGRESS", instanceName); // NOI18N
-
+                "StartTask.startDAS.inProgress", instanceName);
         // create a logger to the server's output stream so that a user
         // can observe the progress
         LogViewMgr logger = LogViewMgr.getInstance(instance.getProperty(
                 GlassfishModule.URL_ATTR));
         String debugPort = instance.getProperty(GlassfishModule.DEBUG_PORT);
         logger.readInputStreams(recognizers, false, null,
-                new FetchLogSimple(serverProcess.getInputStream()),
-                new FetchLogSimple(serverProcess.getErrorStream()));
+                new FetchLogSimple(instance.getProcess().getInputStream()),
+                new FetchLogSimple(instance.getProcess().getErrorStream()));
 
         // Waiting for server to start
         LOGGER.log(Level.FINER, "Waiting for server to start for {0} ms",
                 new Object[] {Integer.toString(START_TIMEOUT)});
-        while (System.currentTimeMillis() - start < START_TIMEOUT) {
-            // Send the 'completed' event and return when the server is running
-            boolean httpLive = CommonServerSupport.isRunning("localhost", adminPort, "localhost"); // Utils.isLocalPortOccupied(adminPort);
-            LOGGER.log(Level.FINEST, "{0} DAS port {1} {2} alive",
-                    new Object[] {instance.getName(), Integer.toString(adminPort), httpLive ? "is" : "is not"}); 
-            // Sleep for a little so that we do not make our checks too often
-            //
-            // Doing this before we check httpAlive also prevents us from
-            // pinging the server too quickly after the ports go live.
-            //
-            try {
-                Thread.sleep(DELAY);
-            } catch (InterruptedException e) {
-                // no op
-            }
-
-            if (httpLive) {
-                if (!GlassFishStatus.isReady(
-                        instance, true, GlassFishStatus.Mode.STARTUP)) {
-//                    TaskState  state = TaskState.FAILED;
-                    String messageKey = "MSG_START_SERVER_FAILED"; // NOI18N
-                    LOGGER.log(Level.INFO,
-                            "{0} is not responding, killing the process.",
-                            new Object[] {instance.getName()});
-                    LogViewMgr.removeLog(instance);
-                    serverProcess.destroy();
-                    logger.stopReaders();
-                    return fireOperationStateChanged(TaskState.FAILED,
-                            TaskEvent.CMD_FAILED, messageKey, instanceName);
+        try {
+            synchronized(listener) {
+                while (!listener.isWakeUp()
+                        && (System.currentTimeMillis()
+                        - start < START_TIMEOUT)) {
+                    listener.wait(System.currentTimeMillis() - start);
                 }
-                return startClusterOrInstance(adminHost, adminPort);
             }
-
-            // if we are profiling, we need to lie about the status?
-            if (null != jvmArgs) {
-                LOGGER.log(Level.FINE,
-                        "Profiling mode status hack for {0}",
-                        new Object[] {instance.getName()});
-                // save process to be able to stop process waiting for profiler to attach
-                support.setLocalStartProcess(serverProcess);
-                // try to sync the states after the profiler attaches
-                NODE_REFRESHER.post(new Runnable() {
-
-                    @Override
-                    public void run() {
-                        while (!GlassFishStatus.isReady(instance, false)) { // !CommonServerSupport.isRunning(support.getHostName(), support.getAdminPortNumber(),                                instance.getProperty(GlassfishModule.DISPLAY_NAME_ATTR))) {
-                            try {
-                                Thread.sleep(200);
-                            } catch (InterruptedException ex) {
-                            }
-                        }
-                        SwingUtilities.invokeLater(new Runnable() {
-
-                            @Override
-                            public void run() {
-                                support.refresh();
-
-                            }
-                        });
-                    }
-                });
-                return fireOperationStateChanged(TaskState.COMPLETED,
-                        TaskEvent.CMD_COMPLETED,
-                        "MSG_SERVER_STARTED", instanceName);
-            }
-            // if the user is at a bp somewhere in the startup process we may 
-            //   not be finished with the start but 'not dead yet' all the same.
-            if (null != vmi && null != debugPort && vmi.isSuspended(adminHost, debugPort)) {
-                start = System.currentTimeMillis();
-            }
+        } catch (InterruptedException ie) {
+            LOGGER.log(Level.INFO,
+                    "Caught InterruptedException while waiting for {0} to start: {1}",
+                    new Object[] {instance.getName(), ie.getLocalizedMessage()});
+            
+        } finally {
+            GlassFishStatus.removeListener(instance, listener);
         }
-
-        // If the server did not start in the designated time limits
-        // We consider the startup as failed and warn the user
-        LOGGER.log(Level.INFO,
-                "{0} Failed to start, killing process {1} after {2} ms",
-                new Object[]{instance.getName(), serverProcess,
-                System.currentTimeMillis() - start});
-        LogViewMgr.removeLog(instance);
-        serverProcess.destroy();
-        logger.stopReaders();
-        return fireOperationStateChanged(
-                TaskState.FAILED, TaskEvent.CMD_FAILED,
-                "MSG_START_SERVER_FAILED2", instanceName,
-                adminHost, adminPort + "");
+        // We need to lie about server status in profiling mode.
+        if (null != jvmArgs && (change = profilingServerStatus()) != null) {
+            return change.fireOperationStateChanged();
+        }
+        if (!GlassFishState.isOnline(instance)) {
+              return fireOperationStateChanged(
+                      TaskState.FAILED, TaskEvent.CMD_FAILED,
+                      "StartTask.startDAS.startFailed", instanceName);
+        } else {
+            return startClusterOrInstance(adminHost, adminPort);
+        }
     }
 
     private TaskState startClusterOrInstance(String adminHost, int adminPort) {
