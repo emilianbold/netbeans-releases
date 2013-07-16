@@ -96,6 +96,15 @@ public final class PhpAnnotations implements PropertyChangeListener {
         return providers;
     }
 
+    /**
+     * Check whether the deprecated elements should be resolved.
+     * @return {@code true} if the deprecated elements should be resolved, {@code false} otherwise
+     * @since 2.93
+     */
+    public boolean isResolveDeprecatedElements() {
+        return org.netbeans.modules.php.project.ui.options.PhpOptions.getInstance().isAnnotationsResolveDeprecatedElements();
+    }
+
     private List<AnnotationCompletionTagProvider> computeProviders(FileObject fileObject) {
         assert Thread.holdsLock(this);
 
