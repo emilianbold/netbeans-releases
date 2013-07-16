@@ -64,6 +64,7 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.source.util.TreeScanner;
 
+import java.awt.Color;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -100,6 +101,7 @@ import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.options.CodeCompletionPanel;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
 import org.openide.util.WeakListeners;
@@ -409,6 +411,15 @@ public final class Utilities {
         else if (fqn.startsWith("sun") || fqn.startsWith("sunw") || fqn.startsWith("netscape")) // NOI18N
             weight += 30;
         return weight;
+    }
+    
+    public static String getHTMLColor(int r, int g, int b) {
+        Color c = LFCustoms.shiftColor(new Color(r, g, b));
+        return "<font color=#" //NOI18N
+                + LFCustoms.getHexString(c.getRed())
+                + LFCustoms.getHexString(c.getGreen())
+                + LFCustoms.getHexString(c.getBlue())
+                + ">"; //NOI18N
     }
     
     public static boolean hasAccessibleInnerClassConstructor(Element e, Scope scope, Trees trees) {
