@@ -164,7 +164,7 @@ public final class RuleEditorController {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                peer.setModel(cssSourceModel);
+                getRuleEditorPanel().setModel(cssSourceModel);
             }
         });
     }
@@ -180,7 +180,7 @@ public final class RuleEditorController {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                peer.setRule(rule);
+                getRuleEditorPanel().setRule(rule);
             }
         });
     }
@@ -194,7 +194,7 @@ public final class RuleEditorController {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                peer.setNoRuleState();
+                getRuleEditorPanel().setNoRuleState();
             }
         });
     }
@@ -213,7 +213,7 @@ public final class RuleEditorController {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                peer.setDeclarationInfo(declaration, declarationInfo);
+                getRuleEditorPanel().setDeclarationInfo(declaration, declarationInfo);
             }
         });
     }
@@ -227,7 +227,7 @@ public final class RuleEditorController {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                peer.setMessage(message);
+                getRuleEditorPanel().setMessage(message);
             }
         });        
     }
@@ -238,7 +238,7 @@ public final class RuleEditorController {
      * @param viewMode 
      */
     public void setViewMode(ViewMode sortMode) {
-        peer.setViewMode(sortMode);
+        getRuleEditorPanel().setViewMode(sortMode);
     }
     
     /**
@@ -246,7 +246,7 @@ public final class RuleEditorController {
      * @param listener
      */
     public void addRuleEditorListener(PropertyChangeListener listener) {
-        peer.addRuleEditorListener(listener);
+        getRuleEditorPanel().addRuleEditorListener(listener);
     }
     
     /**
@@ -254,7 +254,7 @@ public final class RuleEditorController {
      * @param listener
      */
     public void removeRuleEditorListener(PropertyChangeListener listener) {
-        peer.removeRuleEditorListener(listener);
+        getRuleEditorPanel().removeRuleEditorListener(listener);
     }
     
     

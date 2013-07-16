@@ -47,6 +47,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.Action;
@@ -184,27 +185,32 @@ public class StyleSheetNode extends AbstractNode {
         }
 
         private void refreshKeys() {
-            final AtomicReference<Collection<RuleHandle>> result = new AtomicReference<>();
-            try {
-                ParserManager.parse("text/css", new UserTask() {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        Collection<RuleHandle> keys = new ArrayList<>();
-                        List<RuleHandle> ruleHandles = model.getFilesToRulesMap().get(stylesheet);
-                        if(ruleHandles != null) {
-                            for(RuleHandle handle : ruleHandles) {
-                                if(includeKey(handle)) {
-                                    keys.add(handle);
+            final DocumentViewModel dvm = model;
+            if(dvm == null) {
+                setKeys(Collections.<RuleHandle>emptyList());
+            } else {
+                final AtomicReference<Collection<RuleHandle>> result = new AtomicReference<>();
+                try {
+                    ParserManager.parse("text/css", new UserTask() {
+                        @Override
+                        public void run(ResultIterator resultIterator) throws Exception {
+                            Collection<RuleHandle> keys = new ArrayList<>();
+                            List<RuleHandle> ruleHandles = dvm.getFilesToRulesMap().get(stylesheet);
+                            if(ruleHandles != null) {
+                                for(RuleHandle handle : ruleHandles) {
+                                    if(includeKey(handle)) {
+                                        keys.add(handle);
+                                    }
                                 }
                             }
+                            result.set(keys);
                         }
-                        result.set(keys);
-                    }
-                });
-            } catch (ParseException ex) {
-                Exceptions.printStackTrace(ex);
+                    });
+                    setKeys(result.get());
+                } catch (ParseException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
-            setKeys(result.get());
         }
         
         /**
