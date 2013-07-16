@@ -418,14 +418,21 @@ public class WSUtils {
     private  static final String ENDORSED = "classpath/endorsed"; //NOI18N
 
     public static void addJaxWsApiEndorsed(Project project, FileObject srcRoot) throws IOException {
-        ClassPath classPath = ClassPath.getClassPath(srcRoot, ENDORSED);
-        if (classPath == null || classPath.findResource("javax/xml/ws/Service.class") == null) { //NOI18N
-            Library jaxWsApiLib = LibraryManager.getDefault().getLibrary(JAX_WS_ENDORSED);
-            if (jaxWsApiLib == null) {
-                jaxWsApiLib = createJaxWsApiLibrary();
+        if (!isJaxWs22InJDK(srcRoot)) {
+            ClassPath classPath = ClassPath.getClassPath(srcRoot, ENDORSED);
+            if (classPath == null || classPath.findResource("javax/xml/ws/Service.class") == null) { //NOI18N
+                Library jaxWsApiLib = LibraryManager.getDefault().getLibrary(JAX_WS_ENDORSED);
+                if (jaxWsApiLib == null) {
+                    jaxWsApiLib = createJaxWsApiLibrary();
+                }
+                ProjectClassPathModifier.addLibraries(new Library[]{jaxWsApiLib}, srcRoot, ENDORSED);
             }
-            ProjectClassPathModifier.addLibraries(new Library[]{jaxWsApiLib}, srcRoot, ENDORSED);
         }
+    }
+    
+    private static boolean isJaxWs22InJDK(FileObject srcRoot) {
+        ClassPath cp = ClassPath.getClassPath(srcRoot, ClassPath.BOOT);
+        return cp != null && cp.findResource("javax/xml/ws/EndpointContext.class") != null;
     }
 
     public static Library createJaxWsApiLibrary() throws IOException {
@@ -450,7 +457,7 @@ public class WSUtils {
         }
         apiJar = InstalledFileLocator.getDefault().locate("modules/ext/jaxb/api/jaxb-api.jar", null, false); // NOI18N
         if (apiJar != null) {
-            URL url = new URL("jar:nbinst://org.netbeans.libs.jaxb/modules/ext/jaxb/jaxb-impl.jar!/");
+            URL url = new URL("jar:nbinst://org.netbeans.libs.jaxb/modules/ext/jaxb/api/jaxb-api.jar!/");
             /*URL url = apiJar.toURI().toURL();
             if (FileUtil.isArchiveFile(url)) {
                 urls.add(FileUtil.getArchiveRoot(url));
