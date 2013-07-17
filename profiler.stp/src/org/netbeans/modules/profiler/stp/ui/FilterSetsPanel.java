@@ -983,23 +983,15 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
         activeFiltersTable.setRowSelectionInterval(selectedIndex, selectedIndex);
         activeFiltersTable.repaint();
     }
+    
+    private boolean wasEmpty = true;
 
     private void updateSelectedFilterSetProperties() {
         if (selectedFilterSet == null) {
             filterSetPropertiesPanel.setVisible(false);
             selectedFilterSetChecks = new Boolean[0];
         } else {
-            if (!filterSetPropertiesPanel.isVisible()) {
-                filterSetPropertiesPanel.setVisible(true);
-                final Window w = SwingUtilities.getWindowAncestor(filterSetPropertiesPanel);
-                if (w != null) {
-                    final Dimension d = w.getSize();
-                    d.height += filterSetPropertiesPanel.getPreferredSize().height;
-                    SwingUtilities.invokeLater(new Runnable() {
-                        public void run() { w.setSize(d); }
-                    });
-                }
-            }
+            filterSetPropertiesPanel.setVisible(true);
 
             filterNameTextField.setText(selectedFilterSet.getFilterSetName());
 
@@ -1022,6 +1014,29 @@ public final class FilterSetsPanel extends JPanel implements ActionListener, Hel
 
         ((AbstractTableModel) (activeFiltersTable.getModel())).fireTableDataChanged();
         activeFiltersTable.repaint();
+        
+        int size = definedFilterSetsList.getModel().getSize();
+        if (!wasEmpty && size == 0) {
+            final Window w = SwingUtilities.getWindowAncestor(filterSetPropertiesPanel);
+            if (w != null) {
+                final Dimension d = w.getSize();
+                d.height -= filterSetPropertiesPanel.getPreferredSize().height;
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() { w.setSize(d); }
+                });
+            }
+        } else if (wasEmpty && size > 0) {
+            final Window w = SwingUtilities.getWindowAncestor(filterSetPropertiesPanel);
+            if (w != null) {
+                final Dimension d = w.getSize();
+                d.height += filterSetPropertiesPanel.getPreferredSize().height;
+                SwingUtilities.invokeLater(new Runnable() {
+                    public void run() { w.setSize(d); }
+                });
+            }
+        }
+        
+        wasEmpty = size == 0;
     }
 
     private void updateSelection() {

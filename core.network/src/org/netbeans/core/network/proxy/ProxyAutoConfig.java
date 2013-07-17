@@ -301,6 +301,7 @@ public class ProxyAutoConfig {
                 line = line.trim();
                 if( line.startsWith("var pacUtils =") ) { //NOI18N
                     doAppend = true;
+                    continue;
                 }
                 if( !doAppend )
                     continue;
