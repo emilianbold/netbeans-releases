@@ -224,6 +224,10 @@ public class ModelUtils {
         if (result.getParent() != null && result.getParent() instanceof DeclarationScope) {
             result = result.getParent();
         } 
+        if (!(result instanceof DeclarationScope)) {
+            // this shouldn't happened, basically it means that the model is broken and has an object without parent
+            result = getGlobalObject(object);
+        }
         return (DeclarationScope)result;
     }
 
