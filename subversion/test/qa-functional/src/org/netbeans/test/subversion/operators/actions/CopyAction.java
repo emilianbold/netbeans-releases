@@ -48,18 +48,22 @@ package org.netbeans.test.subversion.operators.actions;
 public class CopyAction extends SvnAction {
 
     /**
+     * "Copy" menu item
+     */
+    public static final String COPY_MENU_ITEM = "Copy";
+    /**
      * "Copy..." menu item.
      */
-    public static final String COPY_MENU_ITEM = "Copy to...";
+    public static final String COPY_MENU_SUBITEM = "Copy to...";
     /**
      * "Copy..." popup item.
      */
-    public static final String COPY_POPUP_ITEM = "Copy To...";
+    public static final String COPY_POPUP_SUBITEM = "Copy To...";
 
     /**
      * Creates a new instance of CopyAction
      */
     public CopyAction() {
-        super(TEAM_ITEM + "|" + COPY_MENU_ITEM, SVN_ITEM + "|" + COPY_POPUP_ITEM);
+        super(TEAM_ITEM + "|" + COPY_MENU_ITEM + "|" + COPY_MENU_SUBITEM, SVN_ITEM + "|" + COPY_MENU_ITEM + "|" + COPY_POPUP_SUBITEM);
     }
 }

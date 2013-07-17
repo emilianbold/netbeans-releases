@@ -189,7 +189,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
             mh = new MessageHandler("Exporting");
             TestKit.removeHandlers(log);
             log.addHandler(mh);
-            node.performMenuActionNoBlock("Team|Patches|Export Diff Patch...");
+            node.performMenuActionNoBlock("Team|Patches|Export Uncommitted Changes...");
             //Operator.setDefaultStringComparator(oldOperator);
             
             nbdialog = new NbDialogOperator("Export Diff Patch");
