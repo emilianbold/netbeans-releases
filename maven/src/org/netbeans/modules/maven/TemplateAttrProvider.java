@@ -43,9 +43,7 @@
 package org.netbeans.modules.maven;
 
 import java.io.File;
-import java.net.MalformedURLException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.Collections;
@@ -58,12 +56,15 @@ import java.util.logging.Logger;
 import org.apache.maven.model.License;
 import org.apache.maven.model.Organization;
 import org.apache.maven.project.MavenProject;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluationException;
+import org.codehaus.plexus.component.configurator.expression.ExpressionEvaluator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.spi.project.AuxiliaryProperties;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.queries.FileEncodingQueryImplementation;
@@ -94,6 +95,16 @@ public class TemplateAttrProvider implements CreateFromTemplateAttributesProvide
         AuxiliaryProperties auxProps = project.getLookup().lookup(AuxiliaryProperties.class);
         String licensePath = auxProps.get(Constants.HINT_LICENSE_PATH, true); //NOI18N
         if (licensePath != null) {
+            ExpressionEvaluator eval = PluginPropertyUtils.createEvaluator(project);
+            
+            try {
+                Object no = eval.evaluate(licensePath);
+                if (no != null) {
+                    licensePath = no.toString();
+                }
+            } catch (ExpressionEvaluationException ex) {
+                Exceptions.printStackTrace(ex);
+            }
             File path = FileUtil.normalizeFile(FileUtilities.resolveFilePath(FileUtil.toFile(project.getProjectDirectory()), licensePath));
             if (path.exists() && path.isAbsolute()) { //is this necessary? should prevent failed license header inclusion
                 URI uri = Utilities.toURI(path);

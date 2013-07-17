@@ -157,6 +157,9 @@ public class ProjectUtilities {
 
         private void doClose(Project[] projects, boolean notifyUI, Wrapper wr) {
             List<Project> listOfProjects = Arrays.asList(projects);
+            for (Project p : listOfProjects) { //#232668 all projects need an entry in the map - to handle projects without files correctly
+                wr.urls4project.put(p, new LinkedHashSet<String>());
+            }
             Set<DataObject> openFiles = new HashSet<DataObject>();
             final Set<TopComponent> tc2close = new HashSet<TopComponent>();
             WindowManager wm = WindowManager.getDefault();
@@ -182,10 +185,6 @@ public class ProjectUtilities {
                         } else if (!dobj.isModified()) {
                             // when not called from UI, only include TCs that arenot modified
                             tc2close.add(tc);
-                        }
-                        if (!wr.urls4project.containsKey(owner)) {
-                            // add project
-                            wr.urls4project.put(owner, new LinkedHashSet<String>());
                         }
                         wr.urls4project.get(owner).add(dobj.getPrimaryFile().toURL().toExternalForm());
                     }

@@ -721,7 +721,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             children.add( new MemberListNode(null, project, provider) );
         }
         BuilderAccessor builds = provider.getBuilderAccessor();
-        if (builds != null && builds.isEnabled(project)) {
+        if (builds != null) {
             children.add(new BuildListNode(null, project, builds));
         }
         if( null != provider.getQueryAccessor() ) {
