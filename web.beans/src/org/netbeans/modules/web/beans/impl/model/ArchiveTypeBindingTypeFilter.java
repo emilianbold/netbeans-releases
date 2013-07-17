@@ -50,6 +50,7 @@ import org.netbeans.modules.web.beans.analysis.analyzer.AnnotationUtil;
 
 /**
  * since cdi 1.1 behavior is based on archoe type, beans may not be discoverable
+ *
  * @author sp153251
  */
 public class ArchiveTypeBindingTypeFilter<T extends Element> extends Filter<T> {
@@ -71,27 +72,29 @@ public class ArchiveTypeBindingTypeFilter<T extends Element> extends Filter<T> {
     @Override
     void filter(Set<T> set) {
         super.filter(set);
-        switch (myImpl.getBeansModel().getBeanArchiveType()) {
-            case NONE:
-                set.clear();
-                break;
-            case IMPLICIT:
-                CompilationController compInfo = myImpl.getModel().getCompilationController();
-                for (Iterator<T> iterator = set.iterator(); iterator
-                        .hasNext();) {
-                    Element element = iterator.next();
-                    boolean isNormalScope = AnnotationUtil.hasAnnotation(element,
-                            AnnotationUtil.NORMAL_SCOPE_FQN, compInfo);
-                    if(isNormalScope) {
-                        continue;
+        if (myImpl.getBeansModel() != null) {
+            switch (myImpl.getBeansModel().getBeanArchiveType()) {
+                case NONE:
+                    set.clear();
+                    break;
+                case IMPLICIT:
+                    CompilationController compInfo = myImpl.getModel().getCompilationController();
+                    for (Iterator<T> iterator = set.iterator(); iterator
+                            .hasNext();) {
+                        Element element = iterator.next();
+                        boolean isNormalScope = AnnotationUtil.hasAnnotation(element,
+                                AnnotationUtil.NORMAL_SCOPE_FQN, compInfo);
+                        if (isNormalScope) {
+                            continue;
+                        }
+                        boolean isScope = AnnotationUtil.hasAnnotation(element,
+                                AnnotationUtil.SCOPE_FQN, compInfo);
+                        if (isScope) {
+                            continue;
+                        }
+                        iterator.remove();
                     }
-                    boolean isScope = AnnotationUtil.hasAnnotation(element,
-                            AnnotationUtil.SCOPE_FQN, compInfo);
-                    if(isScope) {
-                        continue;
-                    }
-                    iterator.remove();
-                }
+            }
         }
     }
 }
