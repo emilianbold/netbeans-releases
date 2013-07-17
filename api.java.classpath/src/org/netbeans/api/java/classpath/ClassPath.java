@@ -801,9 +801,18 @@ public final class ClassPath {
                                 String fileState = null;
                                 try {
                                     final File file = Utilities.toFile(this.url.toURI());
-                                    fileState = "(exists: " + file.exists() +           //NOI18N
+                                    final boolean exists = file.exists();
+                                    final boolean isDirectory = file.isDirectory();
+                                    if (exists && !isDirectory) {
+                                        LOG.log(
+                                            Level.WARNING,
+                                            "Ignoring non folder root : {0} on classpath ", //NOI18N
+                                            file);
+                                        return null;
+                                    }
+                                    fileState = "(exists: " +  exists +           //NOI18N
                                                 " file: " + file.isFile() +             //NOI18N
-                                                " directory: "+ file.isDirectory() +    //NOI18N
+                                                " directory: "+ isDirectory +    //NOI18N
                                                 " read: "+ file.canRead() +             //NOI18N
                                                 " write: "+ file.canWrite()+        //NOI18N
                                                 " root: "+ root +        //NOI18N
