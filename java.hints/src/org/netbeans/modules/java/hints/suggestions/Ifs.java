@@ -80,7 +80,7 @@ import org.openide.util.NbBundle.Messages;
     "DN_JoinElseIf=Join consecutive ifs into if-else",
     "DESC_JoinElseIf=Converts cases like <code>if - else { if }</code> info <code>if - else if</code>",
     "DN_ToOrIf=Join if conditions using ||",
-    "DESC_ToOrIf=Converts cases like <code>if (cond1) statement; else if (cond2} statement;</code> into <code>if (cond1 || cond2) statement;</code>",
+    "DESC_ToOrIf=Converts cases like <code>if (cond1) statement; else if (cond2) statement;</code> into <code>if (cond1 || cond2) statement;</code>",
     "DN_org.netbeans.modules.java.hints.suggestions.Tiny.mergeIfs=Combine nested if",
     "DESC_org.netbeans.modules.java.hints.suggestions.Tiny.mergeIfs=Combine nested if",
     "ERR_org.netbeans.modules.java.hints.suggestions.Tiny.mergeIfs=",

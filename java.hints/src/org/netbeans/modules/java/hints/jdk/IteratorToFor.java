@@ -85,7 +85,7 @@ import org.openide.util.NbBundle.Messages;
     "DN_IteratorToFor=Use JDK 5 for-loop",
     "DESC_IteratorToFor=Replaces simple uses of Iterator with a corresponding for-loop.",
     "ERR_IteratorToFor=Use of Iterator for simple loop",
-    "ERR_IteratorToForArray=Use enhanced for loop to interate over the array",
+    "ERR_IteratorToForArray=Use enhanced for loop to iterate over the array",
     "FIX_IteratorToFor=Convert to for-loop"
 })
 public class IteratorToFor {

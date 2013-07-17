@@ -75,8 +75,8 @@ import org.openide.util.NbBundle.Messages;
            "DESC_assertEqualsMismatchedConstantVSReal=Incorrect order of parameters of Assert.assertEquals",
            "ERR_assertEqualsMismatchedConstantVSReal=Order of parameters of Assert.assertEquals incorrect",
            "FIX_assertEqualsMismatchedConstantVSReal=Flip parameters of Assert.assertEquals",
-           "DN_assertEqualsIncovertibleTypes=Incovertible parameters of Assert.assertEquals",
-           "DESC_assertEqualsIncovertibleTypes=Incovertible parameters of Assert.assertEquals",
+           "DN_assertEqualsIncovertibleTypes=Inconvertible parameters of Assert.assertEquals",
+           "DESC_assertEqualsIncovertibleTypes=Inconvertible parameters of Assert.assertEquals",
            "ERR_assertEqualsIncovertibleTypes=The parameters of Assert.assertEquals are of inconvertible types"
 })
 public class Tiny {
