@@ -189,14 +189,34 @@ public class BeansModelImpl implements BeansModel {
     public BeanArchiveType getBeanArchiveType() {
         if(beanArchType == null) {
             Project project = getUnit().getProject();
-            if (!CdiUtil.isCdiEnabled(project)) {
-                // no CDI
-                beanArchType = BeanArchiveType.NONE;
-            } else if (!CdiUtil.isCdi11(project)) {
-                // CDI 1.0 behaves like explicit bean archive
-                beanArchType = BeanArchiveType.EXPLICIT;
+            if(project != null) {
+                //
+                CdiUtil lookup = project.getLookup().lookup( CdiUtil.class );
+                //
+                if( lookup == null ) {
+                    if (!CdiUtil.isCdiEnabled(project)) {
+                        // no CDI
+                        beanArchType = BeanArchiveType.NONE;
+                    } else if (!CdiUtil.isCdi11OrLater(project)) {
+                        // CDI 1.0 behaves like explicit bean archive
+                        beanArchType = BeanArchiveType.EXPLICIT;
+                    } else {
+                        beanArchType = getBeansArchiveType();
+                    } 
+                } else {
+                    if (!lookup.isCdiEnabled()) {
+                        // no CDI
+                        beanArchType = BeanArchiveType.NONE;
+                    } else if (!lookup.isCdi11OrLater()) {
+                        // CDI 1.0 behaves like explicit bean archive
+                        beanArchType = BeanArchiveType.EXPLICIT;
+                    } else {
+                        beanArchType = getBeansArchiveType();
+                    } 
+                }
             } else {
-                beanArchType = getBeansArchiveType();
+                //there is no perfect solution. may happens in tests and may be in stand alone file opening, default as in cdi1.0
+                beanArchType = BeanArchiveType.EXPLICIT;
             }
         }
         return beanArchType;
@@ -402,7 +422,7 @@ public class BeansModelImpl implements BeansModel {
 
         String attribute = model.getRootComponent().getAttribute(BeansAttributes.BEAN_DISCOVERY_MODE);
         if(attribute == null) {
-            attribute = "all";//NOI18N, got this for cdi 1.0, but there should be a better place for check, CdiUtil.isCdi11 isn't good for ee7 server wih 1.0 beans.xml
+            attribute = "all";//NOI18N, got this for cdi 1.0, but there should be a better place for check, CdiUtil.isCdi11OrLater isn't good for ee7 server wih 1.0 beans.xml
         }
         switch(attribute) {
             case "none":        //NOI18N
