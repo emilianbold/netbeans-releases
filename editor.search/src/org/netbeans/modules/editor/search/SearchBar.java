@@ -874,7 +874,7 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                 // text field with red foreground
                 incSearchTextField.setForeground(NOT_FOUND);
                 org.netbeans.editor.Utilities.setStatusText(getActualTextComponent(), NbBundle.getMessage(
-                        SearchBar.class, "incremental-search-not-found", incrementalSearchText),
+                        SearchBar.class, "find-not-found", incrementalSearchText),
                         StatusDisplayer.IMPORTANCE_INCREMENTAL_FIND); //NOI18N
                 if (lastIncrementalSearchWasSuccessful) {
                     Toolkit.getDefaultToolkit().beep();
