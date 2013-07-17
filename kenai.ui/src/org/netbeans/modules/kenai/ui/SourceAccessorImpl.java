@@ -153,6 +153,11 @@ public class SourceAccessorImpl extends SourceAccessor<KenaiProject> {
         };
     }
 
+    @Override
+    public boolean hasSources(ProjectHandle<KenaiProject> project) {
+        return true;
+    }
+
     public static class ProjectAndFeature {
 
         public KenaiProject kenaiProject;

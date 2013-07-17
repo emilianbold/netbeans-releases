@@ -51,6 +51,7 @@ import java.awt.Insets;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -92,13 +93,16 @@ public class BuildListNode extends SectionNode {
 
     @Override
     protected List<TreeListNode> createChildren() {
-        ArrayList<TreeListNode> res = getBuilds();
+        List<TreeListNode> res = getBuilds();
         res.add( new NewBuildNode(this) );
         return res;
     }
 
-    private ArrayList<TreeListNode> getBuilds() {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
+    private List<TreeListNode> getBuilds() {
+        if(!accessor.hasBuilds(project)) {
+            return Arrays.asList(new TreeListNode[] {new NANode(this)});
+        }
+        ArrayList<TreeListNode> res = new ArrayList<>(20);
         synchronized (BUILDS_LOCK) {
             if(builds == null) {
                 builds = accessor.getJobs(project);

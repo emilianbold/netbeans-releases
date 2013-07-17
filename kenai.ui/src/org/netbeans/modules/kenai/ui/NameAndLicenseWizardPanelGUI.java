@@ -107,12 +107,12 @@ import org.netbeans.modules.team.ui.spi.TeamServer;
  */
 public class NameAndLicenseWizardPanelGUI extends JPanel {
     
-    private RequestProcessor errorChecker = new RequestProcessor("Error Checker"); // NOI18N
+    private final RequestProcessor errorChecker = new RequestProcessor("Error Checker"); // NOI18N
 
     private WizardDescriptor settings;
 
     private NameAndLicenseWizardPanel panel;
-    private Pattern prjNamePattern;
+    private final Pattern prjNamePattern;
 
     private static final String PRJ_NAME_REGEXP = "[a-z]{1}[a-z0-9-]+"; // NOI18N
 
@@ -124,7 +124,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
     private boolean licensesLoaded = true;
 
-    private PropertyChangeListener kenaiListener;
+    private final PropertyChangeListener kenaiListener;
 
     public static final String getPreviewPrefix(Kenai kenai) {
         if (kenai==null) {
@@ -141,55 +141,43 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         panel = pnl;
         initComponents();
-
-        kenaiCombo.setSelectedItem(KenaiServer.forKenai(panel.getKenai()));
-        kenaiCombo.addActionListener(new ActionListener() {
-
-            @Override
-            public void actionPerformed(final ActionEvent e) {
-                if (kenaiCombo.getSelectedItem() instanceof KenaiServer) {
-                    panel.setKenai(((KenaiServer) kenaiCombo.getSelectedItem()).getKenai());
-                    refreshUsername();
-                    updatePrjNamePreview();
-                } else if (kenaiCombo.getSelectedItem() instanceof String) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            new AddInstanceAction(TeamServerProviderImpl.getDefault(), Bundle.CTL_AddInstance()).actionPerformed(e);
-                            panel.setKenai(((KenaiServer) kenaiCombo.getSelectedItem()).getKenai());
-                            refreshUsername();
-                            updatePrjNamePreview();
-                        }
-                    });
-                } 
-                setupLicensesListModel();
-            }
-        });
-
+        
+        Kenai kenai = panel.getKenai();
+        assert kenai != null;
+        if(kenai != null) {
+            serverLabel.setText(kenai.getName());
+            serverLabel.setIcon(kenai.getIcon());
+        } 
 
         refreshUsername();
 
         prjNamePattern = Pattern.compile(PRJ_NAME_REGEXP);
 
         DocumentListener firingDocListener = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 panel.fireChangeEvent();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 panel.fireChangeEvent();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 panel.fireChangeEvent();
             }
         };
         
         DocumentListener updatingDocListener = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 updatePrjNamePreview();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 updatePrjNamePreview();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 updatePrjNamePreview();
             }
@@ -200,7 +188,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         projectTitleTextField.getDocument().addDocumentListener(firingDocListener);
         projectDescTextField.getDocument().addDocumentListener(firingDocListener);
         SwingUtilities.invokeLater(new Runnable() {
-
+            @Override
             public void run() {
                 projectNameTextField.requestFocus();
             }
@@ -211,6 +199,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         setPreferredSize(new Dimension(Math.max(700, getPreferredSize().width), 450));
 
         kenaiListener = new PropertyChangeListener() {
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 if (TeamServer.PROP_LOGIN.equals(evt.getPropertyName())) {
                     if (panel.getKenai().getPasswordAuthentication() != null) {
@@ -231,9 +220,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         root.setEnabled(enabled);
         if (root instanceof java.awt.Container) {
             for (Component c : ((java.awt.Container) root).getComponents()) {
-                if (c != kenaiCombo) {
-                    setChildrenEnabled(c, enabled);
-                }
+                setChildrenEnabled(c, enabled);
             }
         }
     }
@@ -273,6 +260,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
                     setLicenses(licenseList);
                 }
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         projectLicenseComboBox.setModel(model);
                         projectLicenseComboBox.setSelectedItem(EMPTY_ELEMENT);
@@ -342,9 +330,10 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         proxyConfigButton = new JButton();
         lowercaseLabel = new JLabel();
         licenseDescription = new JLabel();
-        kenaiCombo = org.netbeans.modules.team.ui.spi.TeamUIUtils.createTeamCombo(TeamServerProviderImpl.getDefault(), true);
+        serverLabel = new JLabel();
 
         setLayout(new GridBagLayout());
+
         Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loggedInLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -353,6 +342,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(0, 0, 5, 0);
         add(loggedInLabel, gridBagConstraints);
         loggedInLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loggedInLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.notLoggedIn")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -363,6 +353,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         add(usernameLabel, gridBagConstraints);
         usernameLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.usernameLabel.AccessibleContext.accessibleName")); // NOI18N
         usernameLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.usernameLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         Mnemonics.setLocalizedText(loginButton, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.loginButton.text")); // NOI18N
         loginButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -406,6 +397,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         add(projectNameTextField, gridBagConstraints);
         projectNameTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleName")); // NOI18N
         projectNameTextField.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectNameTextField.AccessibleContext.accessibleDescription")); // NOI18N
+
         Mnemonics.setLocalizedText(kenaiURLPreviewLabel, getPreviewPrefix() + "...");
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -477,12 +469,12 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
             }
         });
         projectLicenseComboBox.addPopupMenuListener(new PopupMenuListener() {
-            public void popupMenuCanceled(PopupMenuEvent evt) {
+            public void popupMenuWillBecomeVisible(PopupMenuEvent evt) {
+                projectLicenseComboBoxPopupMenuWillBecomeVisible(evt);
             }
             public void popupMenuWillBecomeInvisible(PopupMenuEvent evt) {
             }
-            public void popupMenuWillBecomeVisible(PopupMenuEvent evt) {
-                projectLicenseComboBoxPopupMenuWillBecomeVisible(evt);
+            public void popupMenuCanceled(PopupMenuEvent evt) {
             }
         });
         gridBagConstraints = new GridBagConstraints();
@@ -495,6 +487,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         add(projectLicenseComboBox, gridBagConstraints);
         projectLicenseComboBox.getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectLicenseComboBox.AccessibleContext.accessibleName")); // NOI18N
         projectLicenseComboBox.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.projectLicenseComboBox.AccessibleContext.accessibleDescription")); // NOI18N
+
         Mnemonics.setLocalizedText(multiLicensesLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.multiLicensesLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -505,6 +498,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(0, 6, 0, 0);
         add(multiLicensesLabel, gridBagConstraints);
         multiLicensesLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.multiLicensesLabel.AccessibleContext.accessibleDescription")); // NOI18N
+
         Mnemonics.setLocalizedText(proxyConfigButton, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.proxyConfigButton.text")); // NOI18N
         proxyConfigButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -519,6 +513,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.weighty = 1.0;
         add(proxyConfigButton, gridBagConstraints);
         proxyConfigButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.proxyConfigButton.AccessibleContext.accessibleDescription")); // NOI18N
+
         Mnemonics.setLocalizedText(lowercaseLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.lowercaseLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 3;
@@ -526,7 +521,8 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.insets = new Insets(0, 4, 0, 0);
         add(lowercaseLabel, gridBagConstraints);
         lowercaseLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.lowercaseLabel.AccessibleContext.accessibleDescription")); // NOI18N
-        Mnemonics.setLocalizedText(licenseDescription, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.licenseDescription.text", new Object[]{})); // NOI18N
+
+        Mnemonics.setLocalizedText(licenseDescription, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.licenseDescription.text", new Object[] {})); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 8;
@@ -534,11 +530,13 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         gridBagConstraints.anchor = GridBagConstraints.WEST;
         gridBagConstraints.insets = new Insets(14, 0, 0, 0);
         add(licenseDescription, gridBagConstraints);
+
+        Mnemonics.setLocalizedText(serverLabel, NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.serverLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 2;
         gridBagConstraints.anchor = GridBagConstraints.WEST;
-        add(kenaiCombo, gridBagConstraints);
+        add(serverLabel, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameAndLicenseWizardPanelGUI.class, "NameAndLicenseWizardPanelGUI.AccessibleContext.accessibleDescription")); // NOI18N
@@ -581,6 +579,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
         prjNameCheckMessage = null;
         panel.fireChangeEvent();
         errorChecker.post(new Runnable() {
+            @Override
             public void run() {
                 try {
                     prjNameCheckMessage = panel.getKenai().checkProjectName(getProjectName());
@@ -605,7 +604,6 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     }//GEN-LAST:event_projectNameTextFieldKeyPressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JComboBox kenaiCombo;
     private JLabel kenaiURLPreviewLabel;
     private JLabel licenseDescription;
     private JLabel loggedInLabel;
@@ -621,6 +619,7 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
     private JLabel projectTitleLabel;
     private JTextField projectTitleTextField;
     private JButton proxyConfigButton;
+    private JLabel serverLabel;
     private JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
 
