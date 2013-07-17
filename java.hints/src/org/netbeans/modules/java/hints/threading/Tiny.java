@@ -92,8 +92,10 @@ import org.openide.util.NbBundle.Messages;
  * @author lahvac
  */
 @Messages({"DN_CanBeFinal=Field Can Be Final",
-           "DESC_CanBeFinal=Finds fields that can be made final, which can simplify sychronization and clarity",
+           "DESC_CanBeFinal=Finds fields that can be made final, which can simplify synchronization and clarity",
+           "# {0} - the name of the field",
            "ERR_CanBeFinal=Field {0} can be final",
+           "# {0} - the name of the field to be made final",
            "FIX_CanBeFinal=Make {0} final"})
 public class Tiny {
 
