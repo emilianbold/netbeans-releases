@@ -60,6 +60,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
@@ -388,6 +389,7 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
 
     private static boolean isDarkLaF() {
         Preferences prefs = NbPreferences.root().node( "laf" ); //NOI18N
-        return prefs.getBoolean( "theme.dark", false ) && MetalLookAndFeel.class.getName().equals( prefs.get( "laf", "" ) ); //NOI18N
+        return prefs.getBoolean( "theme.dark", false ) && (MetalLookAndFeel.class.getName().equals( prefs.get( "laf", "" ))
+                                                        || NimbusLookAndFeel.class.getName().equals( prefs.get( "laf", "" )) ); //NOI18N
     }
 }
