@@ -208,6 +208,27 @@ public class AbstractLookupBaseHid extends NbTestCase {
         assertSame("The result is cached", r1, r2);
     }
     
+    public void testCompareUsingEquals() {
+        Integer i1 = new Integer(10);
+        Integer i2 = new Integer(10);
+        assertEquals(i1, i2);
+        assertNotSame(i1, i2);
+        
+        ic.add(i1);
+        
+        Template<Integer> t1 = new Lookup.Template<Integer>(Integer.class, null, i1);
+        Template<Integer> t2 = new Lookup.Template<Integer>(Integer.class, null, i2);
+        
+        Lookup.Result<Integer> r2 = lookup.lookup(t2);
+        assertEquals("One item", 1, r2.allInstances().size());
+        assertEquals(i1, r2.allInstances().iterator().next());
+        
+        Lookup.Result<Integer> r1 = lookup.lookup(t1);
+        
+        assertEquals("One item", 1, r1.allInstances().size());
+        assertEquals(i1, r1.allInstances().iterator().next());
+    }
+    
     public void testAddFirstWithExecutorBeforeLookupAssociationFails() {
         doAddFirstWithExecutorBeforeLookupAssociationFails(false);
     }
