@@ -22,7 +22,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.httpclient.HostConfiguration;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.HttpMethodBase;
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.httpclient.methods.DeleteMethod;
@@ -39,7 +38,6 @@ import org.eclipse.mylyn.commons.net.AuthenticationType;
 import org.eclipse.mylyn.commons.net.WebUtil;
 import org.eclipse.mylyn.internal.commons.net.AuthenticatedProxy;
 import org.netbeans.api.keyring.Keyring;
-import org.netbeans.modules.odcs.api.ODCSManager;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.openide.util.NetworkSettings;
@@ -109,7 +107,7 @@ public class ODCSClientImpl implements ODCSClient {
             if(content != null) {
                 method.setRequestEntity(new StringRequestEntity(mapper.writeValueAsString(content), "application/json", "UTF-8"));
             }
-        } catch (Exception e) {
+        } catch (IOException e) {
             throw new ODCSException(e);
         } 
         try {
