@@ -40,4 +40,5 @@ Covered-Packages: META-INF,/MANIFEST.MF
  org.apache.xerces.xs,
  org.apache.xerces.xs.datatypes,
  org.apache.xml.serialize,
- org.w3c.dom.html
+ org.w3c.dom.html,
+ org.netbeans.libs.xerces
