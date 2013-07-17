@@ -165,7 +165,11 @@ public class NamespacesTest extends GeneralJSF {
         startTest();
         EditorOperator eo = new EditorOperator("ns.xhtml");
         int original = (getAnnotations(eo, 0)).length;
-        this.insertElementAndNS(eo, "<div jsf:id=\"1\"></div>", "xmlns:jsf=http://xmlns.jcp.org/jsf\"");
+        eo.setCaretPositionToEndOfLine(9);
+        type(eo, "<div jsf:id=1");
+        eo.setCaretPositionToEndOfLine(9);
+        type(eo, ">");
+        this.insertElementAndNS(eo, "</div>", "xmlns:jsf=http://xmlns.jcp.org/jsf\"");
         int modified = (getAnnotations(eo, 0)).length;
         assertEquals("Unexpected number of annotations", original, modified);
         endTest();
