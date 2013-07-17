@@ -298,6 +298,14 @@ public class ActiveBrowserAction extends CallableSystemAction implements LookupL
         button.setDisabledIcon(new ImageIcon(badgeImageWithArrow(
             ImageUtilities.loadImage(isSmallToolbarIcon() ? DISABLED_SMALL : DISABLED_LARGE))));
         button.setEnabled(false);
+        button.addPropertyChangeListener(new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+               if ("PreferredIconSize".equals(evt.getPropertyName())) { // NOI18N
+                   refreshViewLater(true);
+               }
+            }
+        });
         ProjectBrowserProvider pbp = getBrowserProvider();
         toolbarButton = button;
         updateButton(pbp);

@@ -153,11 +153,16 @@ final class ProjectServerPanel extends javax.swing.JPanel implements DocumentLis
         serverLibraryCheckbox.setVisible(false);
     }
 
+    private boolean firstTimeOnly = true;
+
     @Override
     public void addNotify() {
         super.addNotify();
-        // init list of servers when the panel is going to be shown:
-        initServers(UserProjectSettings.getDefault().getLastUsedServer());
+        if (firstTimeOnly) {
+            firstTimeOnly = false;
+            // init list of servers when the panel is going to be shown:
+            initServers(UserProjectSettings.getDefault().getLastUsedServer());
+        }
     }
 
 
