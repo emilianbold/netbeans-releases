@@ -764,7 +764,12 @@ public final class StartTomcat extends StartServer implements ProgressObject {
     }
     
     private JavaPlatform getJavaPlatform() {
-        return tm.getTomcatProperties().getJavaPlatform();
+        JavaPlatform platform = tm.getTomcatProperties().getJavaPlatform();
+        if (platform.getInstallFolders().size() <= 0) {
+            LOGGER.log(Level.INFO, "The Java Platform used by Tomcat is broken; using the default one");
+            return JavaPlatform.getDefault();
+        }
+        return platform;
     }
     
     /** enable/disable ${catalina.home}/common/endorsed/*.jar in the catalina class
