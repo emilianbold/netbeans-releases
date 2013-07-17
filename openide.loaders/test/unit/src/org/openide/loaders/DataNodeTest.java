@@ -126,6 +126,7 @@ public class DataNodeTest extends NbTestCase {
         FSWithStatus fs = new FSWithStatus ();
         fs.setRootDirectory(org.openide.filesystems.FileUtil.toFile(lfs.getRoot()));
         
+        TwoPartLoader.get ().primary = 0;
         DataObject obj = DataObject.find (fs.findResource("F.java"));
         
         String n = obj.getNodeDelegate ().getHtmlDisplayName ();
