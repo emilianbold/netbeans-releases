@@ -210,6 +210,11 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiProject> {
         return Collections.emptyList();
     }
 
+    @Override
+    public boolean hasTasks(ProjectHandle<KenaiProject> project) {
+        return true;
+    }
+
     private static class ActionWrapper extends AbstractAction {
         private final ActionListener al;
 

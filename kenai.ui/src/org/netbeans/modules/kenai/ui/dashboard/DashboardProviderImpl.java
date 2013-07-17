@@ -144,34 +144,7 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiProject> {
 
     @Override
     public BuilderAccessor<KenaiProject> getBuilderAccessor() {
-        return new BuilderAccessor() {
-            @Override
-            public boolean isEnabled(ProjectHandle project) {
-                return false;
-            }
-            public List<BuildHandle> getBuilds(ProjectHandle project) {
-                return Collections.emptyList();
-            }
-            @Override
-            public Action getNewBuildAction(ProjectHandle project) {
-                return null;
-            };
-
-            @Override
-            public Class type() {
-                return Object.class;
-            }
-
-            @Override
-            public JobHandle getJob(ProjectHandle project, String jobName) {
-                return null;
-            }
-
-            @Override
-            public List getJobs(ProjectHandle project) {
-                return Collections.emptyList();
-            }
-        };
+        return null;
     }
 
     @Override

@@ -3204,6 +3204,7 @@ public class WizardDescriptor extends DialogDescriptor {
         public FixedHeightPane () {
             super ();
             setEditable(false);
+            putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
             HTMLEditorKit htmlkit = new HTMLEditorKit();
             // override the Swing default CSS to make the HTMLEditorKit use the
             // same font as the rest of the UI.
@@ -3228,11 +3229,12 @@ public class WizardDescriptor extends DialogDescriptor {
                     //#213031
                     Logger.getLogger( WizardDescriptor.class.getName()).log( Level.INFO, "Error while setting up text pane.", ex );
                 }
+            } else {
+                setFont( new JLabel().getFont() );
             }
 
             setEditorKit(htmlkit);
             setOpaque(false);
-            putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
             if( "Nimbus".equals( UIManager.getLookAndFeel().getID() ) ) //NOI18N
                 setBackground(new Color( 0, 0, 0, 0) );
             addHyperlinkListener(new HyperlinkListener() {

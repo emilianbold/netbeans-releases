@@ -44,8 +44,10 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.GridBagConstraints;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -63,6 +65,8 @@ import java.util.logging.Logger;
 import javax.swing.JButton;
 import javax.swing.JComponent;
 import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
@@ -199,6 +203,7 @@ public final class DefaultProjectOperationsImplementation {
         
         handler.showConfirmationDialog(deletePanel, project, caption, "Yes_Button", "No_Button", true, new Executor() { // NOI18N
             public @Override void execute() throws Exception {
+                deletePanel.addProgressBar();
                 close(project);
                 
                 if (deletePanel.isDeleteSources()) {
@@ -206,6 +211,7 @@ public final class DefaultProjectOperationsImplementation {
                 } else {
                     performDelete(project, metadataFiles, handle);
                 }
+                deletePanel.removeProgressBar();
             }
         });
         

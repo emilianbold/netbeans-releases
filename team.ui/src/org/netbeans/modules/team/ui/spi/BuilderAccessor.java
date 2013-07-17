@@ -24,9 +24,12 @@ public abstract class BuilderAccessor<P> {
     public abstract Class<P> type();
     
     /**
-     * Checks whether build-related UI should even be shown for this project.
-     */
-    public abstract boolean isEnabled( ProjectHandle<P> project);
+     * Determines whether this project has a build service or not
+     * 
+     * @param project
+     * @return <code>true</code> in case the given project has a build service otherwise <code>false</code>
+     */    
+    public abstract boolean hasBuilds(ProjectHandle<P> project);
     
     /**
      * Retrieve the list of jobs in given project. Only watched jobs are

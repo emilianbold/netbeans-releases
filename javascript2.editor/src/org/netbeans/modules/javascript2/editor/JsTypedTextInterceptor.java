@@ -44,7 +44,6 @@ package org.netbeans.modules.javascript2.editor;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;

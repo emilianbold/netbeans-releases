@@ -82,7 +82,7 @@ import org.openide.util.NbBundle;
  */
 public class KenaiProjectsListRenderer extends javax.swing.JPanel {
 
-    private URL url;
+    private final URL url;
 
     public KenaiProjectsListRenderer(JList jlist, Object value, int index, boolean isSelected, boolean cellHasFocus) {
         

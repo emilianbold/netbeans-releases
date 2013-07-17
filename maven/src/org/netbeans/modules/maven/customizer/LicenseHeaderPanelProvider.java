@@ -164,6 +164,9 @@ public class LicenseHeaderPanelProvider implements ProjectCustomizer.CompositeCa
         public void setProjectLicenseLocation(String newLocation) {
             licensePath = newLocation;
             handle.setRawAuxiliaryProperty(Constants.HINT_LICENSE_PATH, newLocation, true);
+            if (newLocation != null) {
+                handle.setRawAuxiliaryProperty(Constants.HINT_LICENSE, null, true);
+            }
         }
 
         @Override
