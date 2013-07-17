@@ -196,5 +196,8 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.close.tab.icon.enabled.name", "org/openide/awt/resources/vista_close_enabled.png");
         UIManager.put( "nb.close.tab.icon.pressed.name", "org/openide/awt/resources/vista_close_pressed.png");
         UIManager.put( "nb.close.tab.icon.rollover.name", "org/openide/awt/resources/vista_close_rollover.png");
+        UIManager.put( "nb.bigclose.tab.icon.enabled.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
+        UIManager.put( "nb.bigclose.tab.icon.pressed.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
+        UIManager.put( "nb.bigclose.tab.icon.rollover.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
    }
 }
