@@ -10,7 +10,7 @@ var |>CLASS:testWith02<| = {
 }
    
 with (testWith02) {
-    |>GLOBAL:app<|.|>FIELD:description<| = "new description";
+    app.|>FIELD:description<| = "new description";
     console.log(app.|>FIELD:description<|);
 }
 })();

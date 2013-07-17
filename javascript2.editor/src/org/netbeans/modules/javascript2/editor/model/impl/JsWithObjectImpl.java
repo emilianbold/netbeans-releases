@@ -72,9 +72,9 @@ public class JsWithObjectImpl extends JsObjectImpl implements JsWith {
             OffsetRange offsetRange, String mimeType, String sourceLabel) {
         super(parent, name, false, offsetRange, EnumSet.of(Modifier.PUBLIC), mimeType, sourceLabel);
         this.withTypes = withTypes;
-        while (parent != null && !(parent instanceof JsWithObjectImpl)) {
-            parent = parent.getParent();
-        }
+//        while (parent != null && !(parent instanceof JsWithObjectImpl)) {
+//            parent = parent.getParent();
+//        }
         if (parent instanceof JsWith) {
             outerWith = (JsWith)parent;
             ((JsWithObjectImpl)outerWith).addInnerWith(this);
@@ -120,8 +120,8 @@ public class JsWithObjectImpl extends JsObjectImpl implements JsWith {
                 if (fromType != null) {
                     JsObject propertyFromType = fromType.getProperty(property.getName());
                     if (propertyFromType == null && withObject.getOuterWith() == null) {
-                            propertyFromType = global.getProperty(property.getName());
-                        }
+                        propertyFromType = global.getProperty(property.getName());
+                    }
                     if (propertyFromType != null) {
                         moveOccurrenceOfObject((JsObjectImpl)propertyFromType, (JsObjectImpl)property);
                         moveFromWith((JsObjectImpl)propertyFromType, (JsObjectImpl)property);

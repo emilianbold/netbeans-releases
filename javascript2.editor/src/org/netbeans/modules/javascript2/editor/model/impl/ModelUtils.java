@@ -125,15 +125,20 @@ public class ModelUtils {
             }
         }
         if (tmpObject == null) {
-            DeclarationScope scope = builder.getCurrentDeclarationFunction();
-            while (scope != null && tmpObject == null && scope.getParentScope() != null) {
-                tmpObject = ((JsFunction)scope).getParameter(firstName);
-                scope = scope.getParentScope();
-            }
-            if (tmpObject == null) {
-                tmpObject = builder.getGlobal();
+            JsObject current = builder.getCurrentObject();
+            if (current instanceof JsWith) {
+                tmpObject = current;
             } else {
-                result = tmpObject;
+                DeclarationScope scope = builder.getCurrentDeclarationFunction();
+                while (scope != null && tmpObject == null && scope.getParentScope() != null) {
+                    tmpObject = ((JsFunction)scope).getParameter(firstName);
+                    scope = scope.getParentScope();
+                }
+                if (tmpObject == null) {
+                    tmpObject = builder.getGlobal();
+                } else {
+                    result = tmpObject;
+                }
             }
         }
         for (int index = (tmpObject instanceof ParameterObject ? 1 : 0); index < fqName.size() ; index++) {
