@@ -306,6 +306,12 @@ public class WebProjectUtilities {
         ep.setProperty(WebProjectProperties.LIBRARIES_DIR, "${" + WebProjectProperties.WEB_DOCBASE_DIR + "}/" + WEB_INF + "/lib"); //NOI18N
         
         ep.setProperty(WebProjectProperties.WEBINF_DIR, DEFAULT_DOC_BASE_FOLDER + "/" + WEB_INF);
+        ep.setProperty(WebProjectProperties.DIST_ARCHIVE_EXCLUDES,""); //NOI18N
+        ep.setComment(WebProjectProperties.DIST_ARCHIVE_EXCLUDES,
+                  new String[] {
+                      "# " + NbBundle.getMessage(WebProject.class, "COMMENT_dist.archive.excludes") //NOI18N
+                  },
+                  false);
 
         WebProject p = (WebProject)ProjectManager.getDefault().findProject(h.getProjectDirectory());
         UpdateHelper updateHelper = ((WebProject) p).getUpdateHelper();

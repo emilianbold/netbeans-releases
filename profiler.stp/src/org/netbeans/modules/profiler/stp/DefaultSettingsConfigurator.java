@@ -602,7 +602,7 @@ final class DefaultSettingsConfigurator implements SelectProfilingTask.SettingsC
             // basicSettingsPanel
             settings.setThreadsMonitoringEnabled(basicSettingsPanel.getThreadsMonitoring());
             settings.setThreadsSamplingEnabled(basicSettingsPanel.getThreadsSampling());
-            settings.setThreadsSamplingEnabled(basicSettingsPanel.getThreadsSampling());
+            settings.setLockContentionMonitoringEnabled(basicSettingsPanel.getLockContentionMonitoring());
 
             // advancedSettingsPanel
         }
