@@ -4,4 +4,4 @@ jasmine:CLASS:[PUBLIC]:ESCAPED{jasmine}:
       createDom:METHOD:[PUBLIC]:ESCAPED{createDom}ESCAPED{(}ESCAPED{type}ESCAPED{, }ESCAPED{attrs}ESCAPED{, }ESCAPED{childrenVarArgs}ESCAPED{)}<font color="#999999">ESCAPED{ : }Number</font>:
   document:FIELD:[PUBLIC]:ESCAPED{document}<font color="#999999">ESCAPED{ : }document</font>:
   logRunningSpecs:FIELD:[PUBLIC]:ESCAPED{logRunningSpecs}<font color="#999999">ESCAPED{ : }Boolean</font>:
-  suiteDivs:FIELD:[PUBLIC]:ESCAPED{suiteDivs}:
+  suiteDivs:CLASS:[PUBLIC]:ESCAPED{suiteDivs}:
