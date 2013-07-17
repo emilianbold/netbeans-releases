@@ -42,16 +42,30 @@
 
 package org.netbeans.modules.extbrowser;
 
+import java.awt.EventQueue;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.util.Locale;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.extexecution.ExecutionDescriptor;
+import org.netbeans.api.extexecution.ExecutionService;
+import org.netbeans.api.extexecution.ExternalProcessBuilder;
+import org.netbeans.api.extexecution.input.InputProcessor;
+import org.netbeans.api.extexecution.input.InputProcessors;
+import org.netbeans.api.extexecution.input.LineProcessor;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
+import org.openide.windows.InputOutput;
 
 /**
  * Basic support for default browser funcionality on Unix system,
@@ -67,6 +81,7 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
 
     private static final String XDG_COMMAND = "xdg-open"; // NOI18N
     private static final String XBROWSER_COMMAND = "x-www-browser"; // NOI18N
+    private static final String XDG_DEFAULT_WEB_BROWSER;
     
     private static final RequestProcessor REQUEST_PROCESSOR = 
         new RequestProcessor( NbDefaultUnixBrowserImpl.class );
@@ -79,6 +94,7 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
         // TODO Find some better way to ensure it is there.
         XDG_AVAILABLE = new File("/usr/bin/" + XDG_COMMAND).exists(); // NOI18N
         XBROWSER_AVAILABLE = new File("/usr/bin/" + XBROWSER_COMMAND).exists(); // NOI18N
+        XDG_DEFAULT_WEB_BROWSER = detectDefaultWebBrowser();
     }
     
     static boolean isAvailable() {
@@ -103,40 +119,48 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
         return super.getDefaultPrivateBrowserFamilyId();
     }
 
+    @CheckForNull
     private PrivateBrowserFamilyId detectBrowserFamily() {
-        String realPath;
-        try {
-            realPath = Paths.get("/usr/bin/x-www-browser").toRealPath().getFileName().toString().toLowerCase(); // NOI18N
-        } catch (Exception ex) {
-            LOGGER.log(Level.INFO, "Could not detect browser", ex);
+        String browserIdent = XDG_DEFAULT_WEB_BROWSER;
+        if (browserIdent == null
+                && XBROWSER_AVAILABLE) {
+            // fallback
+            try {
+                browserIdent = Paths.get("/usr/bin/x-www-browser").toRealPath().getFileName().toString().toLowerCase(Locale.US); // NOI18N
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, "Could not detect browser", ex);
+            }
+        }
+        if (browserIdent == null) {
             return null;
         }
-        if (realPath.indexOf("chrome") != -1) { // NOI18N
+        if (browserIdent.indexOf("chrome") != -1) { // NOI18N
             return PrivateBrowserFamilyId.CHROME;
         }
-        if (realPath.indexOf("chromium") != -1) { // NOI18N
+        if (browserIdent.indexOf("chromium") != -1) { // NOI18N
             return PrivateBrowserFamilyId.CHROMIUM;
         }
-        if (realPath.indexOf("firefox") != -1) { // NOI18N
+        if (browserIdent.indexOf("firefox") != -1) { // NOI18N
             return PrivateBrowserFamilyId.FIREFOX;
         }
-        if (realPath.indexOf("opera") != -1) { // NOI18N
+        if (browserIdent.indexOf("opera") != -1) { // NOI18N
             return PrivateBrowserFamilyId.OPERA;
         }
-        if (realPath.indexOf("mozilla") != -1) { // NOI18N
+        if (browserIdent.indexOf("mozilla") != -1) { // NOI18N
             return PrivateBrowserFamilyId.MOZILLA;
         }
         return null;
     }
 
+    @Override
     protected void loadURLInBrowser(URL url) {
         if (ExtWebBrowser.getEM().isLoggable(Level.FINE)) {
             ExtWebBrowser.getEM().log(Level.FINE, "" + System.currentTimeMillis() + "NbDeaultUnixBrowserImpl.setUrl: " + url); // NOI18N
         }
         url = URLUtil.createExternalURL(url, false);
         String urlArg = url.toExternalForm();
-        // go with x-www-browser if available
-        String command = XBROWSER_AVAILABLE ? XBROWSER_COMMAND : XDG_COMMAND;
+        // prefer xdg-open, then x-www-browser
+        String command = XDG_AVAILABLE ? XDG_COMMAND : XBROWSER_COMMAND;
 
         ProcessBuilder pb = new ProcessBuilder(new String[] { command, urlArg });
         try {
@@ -145,6 +169,35 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+    }
+
+    private static String detectDefaultWebBrowser() {
+        assert !EventQueue.isDispatchThread();
+        if (!XDG_AVAILABLE) {
+            return null;
+        }
+        OutputProcessorFactory outputProcessorFactory = new OutputProcessorFactory();
+        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder("xdg-settings") // NOI18N
+                .addArgument("get") // NOI18N
+                .addArgument("default-web-browser"); // NOI18N
+        ExecutionDescriptor silentDescriptor = new ExecutionDescriptor()
+                .inputOutput(InputOutput.NULL)
+                .inputVisible(false)
+                .frontWindow(false)
+                .showProgress(false)
+                .outProcessorFactory(outputProcessorFactory);
+        Future<Integer> result = ExecutionService.newService(processBuilder, silentDescriptor, "Detecting default web browser") // NOI18N
+                .run();
+        try {
+            result.get(5, TimeUnit.SECONDS);
+        } catch (InterruptedException | ExecutionException | TimeoutException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        String output = outputProcessorFactory.getOutput();
+        if (output == null) {
+            return null;
+        }
+        return output.toLowerCase(Locale.US);
     }
 
     private static final class ProcessWatcher implements Runnable {
@@ -198,4 +251,37 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
     private static void log(Exception e) {
         Logger.getLogger(NbDefaultUnixBrowserImpl.class.getName()).log(Level.INFO, null, e);
     }
+
+    static final class OutputProcessorFactory implements ExecutionDescriptor.InputProcessorFactory {
+
+        private volatile String output;
+
+
+        @Override
+        public InputProcessor newInputProcessor(InputProcessor defaultProcessor) {
+            return InputProcessors.bridge(new LineProcessor() {
+
+                @Override
+                public void processLine(String line) {
+                    assert output == null : output + " :: " + line;
+                    output = line;
+                }
+
+                @Override
+                public void reset() {
+                }
+
+                @Override
+                public void close() {
+                }
+
+            });
+        }
+
+        public String getOutput() {
+            return output;
+        }
+
+    }
+
 }
