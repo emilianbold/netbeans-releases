@@ -48,6 +48,10 @@ package org.netbeans.test.subversion.operators.actions;
 public class MergeAction extends SvnAction {
 
     /**
+     * "Copy" menu item
+     */
+    public static final String COPY_MENU_ITEM = "Copy";
+    /**
      * "Merge" menu item.
      */
     public static final String MERGE_MENU_ITEM = "Merge to...";
@@ -60,6 +64,6 @@ public class MergeAction extends SvnAction {
      * Creates a new instance of MergeAction
      */
     public MergeAction() {
-        super(TEAM_ITEM + "|" + MERGE_MENU_ITEM, SVN_ITEM + "|" + MERGE_POPUP_ITEM);
+        super(TEAM_ITEM + "|" + COPY_MENU_ITEM + "|" + MERGE_MENU_ITEM, SVN_ITEM + "|" + COPY_MENU_ITEM + "|" + MERGE_POPUP_ITEM);
     }
 }

@@ -53,11 +53,14 @@ public class RelocateAction extends ActionNoBlock {
     /** "Team" menu item. */
     public static final String TEAM_ITEM = "Team";
 
+    /** "Working Copy" menu item */
+    public static final String WORKING_COPY_ITEM = "Working Copy";
+    
     /** "Relocate..." menu item. */
     public static final String RELOCATE_ITEM = "Relocate...";
 
     /** Creates a new instance of RelocateAction */
     public RelocateAction() {
-        super(TEAM_ITEM + "|" + RELOCATE_ITEM, null);
+        super(TEAM_ITEM + "|" + WORKING_COPY_ITEM + "|" + RELOCATE_ITEM, null);
     }
 }
