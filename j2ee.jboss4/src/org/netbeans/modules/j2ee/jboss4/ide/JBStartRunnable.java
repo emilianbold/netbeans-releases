@@ -123,6 +123,8 @@ class JBStartRunnable implements Runnable {
     private static final SpecificationVersion 
         JDK_14 = new SpecificationVersion("1.4");       // NOI18N
 
+    private static final Logger LOGGER = Logger.getLogger(JBStartRunnable.class.getName());
+
     private JBDeploymentManager dm;
     private String instanceName;
     private JBStartServer startServer;
@@ -257,6 +259,15 @@ class JBStartRunnable implements Runnable {
         } else {
             return StartupExtender.StartMode.NORMAL;
         }
+    }
+
+    private JavaPlatform getJavaPlatform(JBProperties properties) {
+        JavaPlatform platform = properties.getJavaPlatform();
+        if (platform.getInstallFolders().size() <= 0) {
+            LOGGER.log(Level.INFO, "The Java Platform used by JBoss is broken; using the default one");
+            return JavaPlatform.getDefault();
+        }
+        return platform;
     }
 
     private boolean checkPorts(final InstanceProperties ip) {

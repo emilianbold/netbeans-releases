@@ -152,7 +152,7 @@ class OpenProjectNode<P> extends TreeListNode {
             children.add( new MemberListNode(this, project, provider) );
         }
         BuilderAccessor builds = provider.getBuilderAccessor();
-        if (builds != null && builds.isEnabled(project)) {
+        if (builds != null) {
             children.add(new BuildListNode(this, project, builds));
         }
         if( null != provider.getQueryAccessor() ) {

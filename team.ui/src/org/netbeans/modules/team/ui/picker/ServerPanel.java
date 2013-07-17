@@ -341,14 +341,8 @@ class ServerPanel extends JPanel {
     private void doLogin() {
         final MegaMenu menu = MegaMenu.getCurrent();
         if( TeamUIUtils.showLogin( server ) ) {
-            SwingUtilities.invokeLater( new Runnable() {
-
-                @Override
-                public void run() {
-                    if( null != menu )
-                        menu.showAgain();
-                }
-            });
+            if( null != menu )
+                menu.showAgain();
         }
     }
 

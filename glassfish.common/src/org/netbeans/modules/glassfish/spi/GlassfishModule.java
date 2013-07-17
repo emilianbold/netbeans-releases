@@ -143,16 +143,6 @@ public interface GlassfishModule {
         UNKNOWN}
     
     /**
-     * Enum for the current state of a server operation (e.g start, stop, deploy)
-     */
-    public static enum OperationState {
-        RUNNING,
-        COMPLETED,
-        FAILED
-    }
-    
-
-    /**
      * Returns a read-only map of the current instance properties.  Use the 
      * attribute constants defined in this file to locate specific properties.
      * 

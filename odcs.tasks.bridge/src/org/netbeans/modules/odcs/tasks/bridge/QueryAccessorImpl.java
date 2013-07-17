@@ -97,21 +97,6 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
     @NbBundle.Messages({"LBL_NA=N/A"})
     @Override
     public List<QueryHandle> getQueries (ProjectHandle<ODCSProject> projectHandle) {
-        if (!projectHandle.getTeamProject().hasTasks()) {
-            if(naQueryHandle == null) {
-                naQueryHandle = new QueryHandle() {
-                    @Override
-                    public String getDisplayName() {
-                        return Bundle.LBL_NA();
-                    }
-                    @Override
-                    public void addPropertyChangeListener(PropertyChangeListener l) { }
-                    @Override
-                    public void removePropertyChangeListener(PropertyChangeListener l) { }
-                };
-            }
-            return Collections.unmodifiableList(Arrays.asList(naQueryHandle));
-        }
         Repository repo = TeamUtil.getRepository(TeamProjectImpl.getInstance(projectHandle.getTeamProject()));
         assert repo != null;
 
@@ -180,6 +165,11 @@ public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
 
     void fireQueriesChanged (ProjectHandle project, List<QueryHandle> newQueryList) {
         fireQueryListChanged(project, newQueryList);
+    }
+
+    @Override
+    public boolean hasTasks(ProjectHandle<ODCSProject> project) {
+        return project.getTeamProject().hasTasks();
     }
 
     private static class ActionWrapper extends AbstractAction {
