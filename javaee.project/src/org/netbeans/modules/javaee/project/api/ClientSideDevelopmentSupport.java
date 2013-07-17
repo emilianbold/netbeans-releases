@@ -268,10 +268,11 @@ public final class ClientSideDevelopmentSupport implements
                 @Override
                 public Void run(WebAppMetadata metadata) throws Exception {
                     List<String> l = new ArrayList<String>();
+                    l.add("faces/");
                     for (ServletInfo si : metadata.getServlets()) {
                         for (String pattern : si.getUrlPatterns()) {
                             // only some patterns are currently handled;
-                            // see comments in convertServerURLToLocalFile method
+                            // see comments in convertServerURLToProjectFile method
                             if (!pattern.endsWith("*")) { // NOI18N
                                 continue;
                             } else {
@@ -339,7 +340,23 @@ public final class ClientSideDevelopmentSupport implements
                 }
             }
         }
-        return webDocumentRoot.getFileObject(name);
+        FileObject result = webDocumentRoot.getFileObject(name);
+        if (result == null) {
+            String tryName = null;
+            if (name.endsWith(".jsf")) { // NOI18N
+                tryName = name.substring(0, name.length()-3);
+            }
+            if (name.endsWith(".faces")) { // NOI18N
+                tryName = name.substring(0, name.length()-5);
+            }
+            if (tryName != null) {
+                result = webDocumentRoot.getFileObject(tryName + "xhtml"); // NOI18N
+                if (result == null) {
+                    result = webDocumentRoot.getFileObject(tryName + "jsp"); // NOI18N
+                }
+            }
+        }
+        return result;
     }
 
     private boolean isWelcomeFile(FileObject context) {

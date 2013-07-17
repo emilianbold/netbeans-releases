@@ -53,7 +53,7 @@ import java.util.List;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.LookAndFeel;
-import javax.swing.event.ChangeEvent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.team.ui.TeamServerManager;
 import org.netbeans.modules.team.ui.common.TeamServerComparator;
@@ -128,10 +128,20 @@ public class MegaMenu {
     }
 
     public void showAgain() {
-        if( null != invoker && invoker.isShowing() ) {
-            PopupWindow.hidePopup();
-            show( invoker );
-        }
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                if( null != invoker && invoker.isShowing() ) {
+                    PopupWindow.hidePopup();
+                    show( invoker );
+                }
+            }
+        };
+        if(SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+    }
     }
 
     public void addChangeListener(ChangeListener l) {

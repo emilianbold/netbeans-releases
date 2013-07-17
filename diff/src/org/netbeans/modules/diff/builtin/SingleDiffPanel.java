@@ -118,8 +118,11 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
                 onNext();
             }
         };
-        nextAction.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/diff/builtin/visualizer/editable/diff-next.png", false)); // NOI18N
         bNext.setAction(nextAction);
+        // setAction sets the properties from action, so init tooltip & co. afterwards
+        bNext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/diff/builtin/visualizer/editable/diff-next.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bNext, org.openide.util.NbBundle.getMessage(SingleDiffPanel.class, "SingleDiffPanel.bNext.text")); // NOI18N
+        bNext.setToolTipText(org.openide.util.NbBundle.getMessage(SingleDiffPanel.class, "SingleDiffPanel.bNext.toolTipText")); // NOI18N        
             
         prevAction = new AbstractAction() {
             @Override
@@ -127,8 +130,11 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
                 onPrev();
             }
         };
-        prevAction.putValue(Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/diff/builtin/visualizer/editable/diff-prev.png", false)); // NOI18N
         bPrevious.setAction(prevAction);
+        // setAction sets the properties from action, so init tooltip & co. afterwards
+        bPrevious.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/diff/builtin/visualizer/editable/diff-prev.png"))); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(bPrevious, org.openide.util.NbBundle.getMessage(SingleDiffPanel.class, "SingleDiffPanel.bPrevious.text")); // NOI18N
+        bPrevious.setToolTipText(org.openide.util.NbBundle.getMessage(SingleDiffPanel.class, "SingleDiffPanel.bPrevious.toolTipText")); // NOI18N
         
         getActionMap().put("jumpNext", nextAction);  // NOI18N
         getActionMap().put("jumpPrev", prevAction); // NOI18N
@@ -254,17 +260,13 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         actionsToolbar.setFloatable(false);
         actionsToolbar.setRollover(true);
 
-        bNext.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/diff/builtin/visualizer/editable/diff-next.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(bNext, org.openide.util.NbBundle.getMessage(SingleDiffPanel.class, "SingleDiffPanel.bNext.text")); // NOI18N
-        bNext.setToolTipText(org.openide.util.NbBundle.getMessage(SingleDiffPanel.class, "SingleDiffPanel.bNext.toolTipText")); // NOI18N
         bNext.setFocusable(false);
         bNext.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         bNext.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);
         actionsToolbar.add(bNext);
 
-        bPrevious.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/diff/builtin/visualizer/editable/diff-prev.png"))); // NOI18N
         org.openide.awt.Mnemonics.setLocalizedText(bPrevious, org.openide.util.NbBundle.getMessage(SingleDiffPanel.class, "SingleDiffPanel.bPrevious.text")); // NOI18N
-        bPrevious.setToolTipText(org.openide.util.NbBundle.getMessage(SingleDiffPanel.class, "SingleDiffPanel.bPrevious.toolTipText")); // NOI18N
         bPrevious.setFocusable(false);
         bPrevious.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
         bPrevious.setVerticalTextPosition(javax.swing.SwingConstants.BOTTOM);

@@ -94,7 +94,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
         @Override
         public Image getIconImage(boolean small) {
-            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap"+ (small?"16.png":".png"), false);
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/iosdevice"+ (small?"16.png":".png"), false);
         }
 
         @Override
@@ -123,7 +123,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
         @Override
         public Image getIconImage(boolean small) {
-            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap" + (small?"16.png":".png"), false);
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/iossimulator" + (small?"16.png":".png"), false);
         }
 
         @Override
@@ -152,7 +152,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
         @Override
         public Image getIconImage(boolean small) {
-            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap" + (small?"16.png":".png"), false);
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/androidemulator" + (small?"16.png":".png"), false);
         }
 
         @Override
@@ -180,7 +180,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
             @Override
             public Image getIconImage(boolean small) {
-                return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap" + (small?"16.png":".png"), false);
+                return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/androiddevice" + (small?"16.png":".png"), false);
             }
 
             @Override

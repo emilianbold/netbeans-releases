@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2011-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,19 +42,15 @@
 
 package org.netbeans.modules.glassfish.javaee.ide;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.ServerSocket;
-import java.net.URL;
-import java.util.List;
+import org.glassfish.tools.ide.utils.ServerUtils;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import static org.junit.Assert.*;
-import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 
 /**
  *
@@ -91,33 +87,35 @@ public class Hk2PluginPropertiesTest {
         if ("localhost".equals(host) || "127.0.0.1".equals(host)) {
             System.out.println("isRunning");
             ServerSocket ss = new ServerSocket(0);
-            String port = ss.getLocalPort() + "";
+            int port = ss.getLocalPort();
             boolean expResult = true;
-            boolean result = Hk2PluginProperties.isRunning(host, port);
+            boolean result = ServerUtils.isRunningRemote(host, port);
             assertEquals(expResult, result);
             ss.close();
-            result = Hk2PluginProperties.isRunning(host, port);
+            result = ServerUtils.isRunningRemote(host, port);
             expResult = false;
             assertEquals(expResult, result);
-            port = "4848";
+            port = 4848;
             try {
-                ss = new ServerSocket(Integer.parseInt(port));
+                ss = new ServerSocket(port);
             } catch (IOException ioe) {
                 // it looks like there is an app server running... let's pound on it
                 System.out.println("isRunning "+host+":4848");
                 poundOnIt(host, port, true);
+            } finally {
+                ss.close();
             }
         } else {
             System.out.println("isRunning "+host+":4848");
-            poundOnIt(host, "4848", Hk2PluginProperties.isRunning(host, "4848"));
+            poundOnIt(host, 4848, ServerUtils.isRunningRemote(host, 4848));
         }
     }
 
-    private void poundOnIt(String host, String port, boolean expResult) {
-        boolean result = Hk2PluginProperties.isRunning(host, port);
+    private void poundOnIt(String host, int port, boolean expResult) {
+        boolean result = ServerUtils.isRunningRemote(host, port);
         assertEquals(expResult, result);
         for (int i = 0; result && i < 4000; i++) {
-            Hk2PluginProperties.isRunning(host, port);
+            ServerUtils.isRunningRemote(host, port);
         }
     }
 

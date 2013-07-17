@@ -64,6 +64,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.ResourceBundle;
 import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
 import org.netbeans.swing.plaf.metal.DarkMetalTheme;
 import org.netbeans.swing.plaf.nimbus.DarkNimbusTheme;
 import org.netbeans.swing.plaf.nimbus.NimbusLFCustoms;
@@ -256,6 +258,9 @@ public final class Startup {
         }
         installPerLFDefaults();
         installTheme(UIManager.getLookAndFeel());
+
+        runPostInstall();
+
         attachListener();
     }
 
@@ -351,6 +356,23 @@ public final class Startup {
             defaults.putDefaults (customs.getLookAndFeelCustomizationKeysAndValues());
         }
         
+    }
+
+    private void runPostInstall() {
+        final Object postInit = UIManager.get( "nb.laf.postinstall.callable" ); //NOI18N
+        if( postInit instanceof Callable ) {
+            SwingUtilities.invokeLater( new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        ((Callable)postInit).call();
+                    } catch( Exception ex ) {
+                        Logger.getLogger( Startup.class.getName() ).log( Level.INFO, null, ex );
+                    }
+                }
+            });
+        }
     }
     
     private static ClassLoader loader;

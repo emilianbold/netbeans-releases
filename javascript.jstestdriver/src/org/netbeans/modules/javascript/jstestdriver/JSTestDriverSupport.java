@@ -51,11 +51,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.extexecution.print.ConvertedLine;
 import org.netbeans.api.extexecution.print.LineConvertor;
 import org.netbeans.api.project.Project;
@@ -65,6 +67,8 @@ import org.netbeans.libs.jstestdriver.api.ServerListener;
 import org.netbeans.libs.jstestdriver.api.TestListener;
 import org.netbeans.modules.gsf.testrunner.api.Manager;
 import org.netbeans.modules.gsf.testrunner.api.Report;
+import org.netbeans.modules.gsf.testrunner.api.RerunHandler;
+import org.netbeans.modules.gsf.testrunner.api.RerunType;
 import org.netbeans.modules.gsf.testrunner.api.Status;
 import org.netbeans.modules.gsf.testrunner.api.TestSession;
 import org.netbeans.modules.gsf.testrunner.api.TestSuite;
@@ -76,6 +80,7 @@ import org.netbeans.modules.web.browser.api.WebBrowserPane;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.api.WebUtils;
+import org.openide.LifecycleManager;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.MIMEResolver;
@@ -305,7 +310,7 @@ public class JSTestDriverSupport {
             }
         }
         updateJsDebuggerProjectContext(project);
-        TestListener listener = new Listener(project);
+        TestListener listener = new Listener(project, new Rerun(project, baseFolder, configFile));
         LineConvertor convertor = new LineConvertorImpl(project);
         td.runTests(serverURL, strictMode, baseFolder, configFile, testsToRun, listener, convertor);
     }
@@ -538,11 +543,12 @@ public class JSTestDriverSupport {
         private Manager manager;
         private Report report;
 
-        public Listener(Project project) {
+        public Listener(Project project, Rerun rerun) {
             manager = Manager.getInstance();
             testSession = new TestSession(
                     NbBundle.getMessage(JSTestDriverSupport.class, "TESTING", ProjectUtils.getInformation(project).getDisplayName()),
                     project, TestSession.SessionType.TEST);
+            testSession.setRerunHandler(rerun);
             manager.testStarted(testSession);
         }
         
@@ -621,6 +627,49 @@ public class JSTestDriverSupport {
             return r.toArray(new String[r.size()]);
         }
         
+    }
+
+    private static class Rerun implements RerunHandler {
+
+        private Project project;
+        private File baseFolder;
+        private File configFile;
+        private RequestProcessor RP = new RequestProcessor("js-test-driver rerun", 5); //NOI18N
+
+        public Rerun(Project project, File baseFolder, File configFile) {
+            this.project = project;
+            this.baseFolder = baseFolder;
+            this.configFile = configFile;
+        }
+
+        @Override
+        public void rerun() {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    LifecycleManager.getDefault().saveAll();
+                    JSTestDriverSupport.getDefault().runAllTests(project, baseFolder, configFile, "all"); //NOI18N
+                }
+            });
+        }
+
+        @Override
+        public void rerun(Set<Testcase> tests) {
+        }
+
+        @Override
+        public boolean enabled(RerunType type) {
+            return RerunType.ALL.equals(type);
+        }
+
+        @Override
+        public void addChangeListener(ChangeListener listener) {
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener listener) {
+        }
+
     }
 
     public static void logUsage(Class srcClass, String message, Object[] params) {

@@ -181,7 +181,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
         Project[] projects = new Project[] {project1};
         
         if (ProjectUtilities.closeAllDocuments(projects, false, null)) {
-            OpenProjectList.getDefault().close(projects, false);
+           // OpenProjectList.getDefault().close(projects, false);
         }
         
         openFilesEl = aux.getConfigurationFragment (ProjectUtilities.OPEN_FILES_ELEMENT, ProjectUtilities.OPEN_FILES_NS2, false);
@@ -232,7 +232,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
         Project[] projects = new Project[] {project1};
         
         if (ProjectUtilities.closeAllDocuments(projects, true, null)) {
-            OpenProjectList.getDefault().close(projects, true);
+     //       OpenProjectList.getDefault().close(projects, true);
         }
         
         assertFalse("the do1_4_close not modified", do1_4_close.isModified());
@@ -275,7 +275,7 @@ public class ProjectUtilitiesTest extends NbTestCase {
         }
         
         if (ProjectUtilities.closeAllDocuments(new Project[] {project1}, false, null)) {
-            OpenProjectList.getDefault().close(new Project[] {project1}, false);
+ //           OpenProjectList.getDefault().close(new Project[] {project1}, false);
         }
 
         AuxiliaryConfiguration aux = project1.getLookup().lookup(AuxiliaryConfiguration.class);
