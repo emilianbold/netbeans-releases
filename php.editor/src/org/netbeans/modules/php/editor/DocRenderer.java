@@ -348,7 +348,7 @@ class DocRenderer {
             }
 
             phpDoc.append(composeFunctionDoc(processDescription(
-                    processPhpDoc(pHPDocBlock.getDescription())),
+                    processPhpDoc(pHPDocBlock.getDescription(), "")), //NOI18N
                     params.toString(),
                     returnValue.toString(),
                     links.toString(),
