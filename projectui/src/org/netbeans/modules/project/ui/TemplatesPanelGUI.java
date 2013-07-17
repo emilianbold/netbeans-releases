@@ -776,6 +776,7 @@ public class TemplatesPanelGUI extends javax.swing.JPanel implements PropertyCha
             HTMLEditorKit htmlkit = (HTMLEditorKit) description.getEditorKit();
             StyleSheet css = htmlkit.getStyleSheet();
             if (css.getStyleSheets() != null) {
+                description.setFont( jLabel1.getFont() );
                 return;
             }
 

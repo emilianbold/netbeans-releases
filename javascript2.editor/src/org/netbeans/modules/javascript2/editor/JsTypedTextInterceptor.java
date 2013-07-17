@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
@@ -82,9 +82,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
      */
     private int previousAdjustmentOffset = -1;
 
-    /** True iff we're processing bracket matching AFTER the key has been inserted rather than before  */
-    private boolean isAfter;
-
     /**
      * The indentation to revert to when previousAdjustmentOffset is set and the token
      * changed
@@ -107,78 +104,91 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
     @Override
     public void afterInsert(final Context context) throws BadLocationException {
-        isAfter = true;
-        BaseDocument doc = (BaseDocument) context.getDocument();
-        int dotPos = context.getOffset();
-        Caret caret = context.getComponent().getCaret();
-        char ch = context.getText().charAt(0);
+        final BaseDocument doc = (BaseDocument) context.getDocument();
+        final AtomicReference<BadLocationException> ex = new AtomicReference<BadLocationException>();
+        doc.runAtomicAsUser(new Runnable() {
 
-        // See if our automatic adjustment of indentation when typing (for example) "end" was
-        // premature - if you were typing a longer word beginning with one of my adjustment
-        // prefixes, such as "endian", then put the indentation back.
-        if (previousAdjustmentOffset != -1) {
-            if (dotPos == previousAdjustmentOffset) {
-                // Revert indentation iff the character at the insert position does
-                // not start a new token (e.g. the previous token that we reindented
-                // was not complete)
-                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
-                        doc, dotPos, language);
+            @Override
+            public void run() {
+                int dotPos = context.getOffset();
+                Caret caret = context.getComponent().getCaret();
+                char ch = context.getText().charAt(0);
 
-                if (ts != null) {
-                    ts.move(dotPos);
+                try {
+                    // See if our automatic adjustment of indentation when typing (for example) "end" was
+                    // premature - if you were typing a longer word beginning with one of my adjustment
+                    // prefixes, such as "endian", then put the indentation back.
+                    if (previousAdjustmentOffset != -1) {
+                        if (dotPos == previousAdjustmentOffset) {
+                            // Revert indentation iff the character at the insert position does
+                            // not start a new token (e.g. the previous token that we reindented
+                            // was not complete)
+                            TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                                    doc, dotPos, language);
 
-                    if (ts.moveNext() && (ts.offset() < dotPos)) {
-                        GsfUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
+                            if (ts != null) {
+                                ts.move(dotPos);
+
+                                if (ts.moveNext() && (ts.offset() < dotPos)) {
+                                    GsfUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
+                                }
+                            }
+                        }
+
+                        previousAdjustmentOffset = -1;
                     }
+
+                    switch (ch) {
+                        case '{':
+                        case '(':
+                        case '[':
+                            if (!isInsertMatchingEnabled()) {
+                            break;
+                        }
+                        case '}':
+                        case ')':
+                        case ']':
+                            Token<? extends JsTokenId> token = LexUtilities.getToken(doc, dotPos, language);
+                            if (token == null) {
+                                return;
+                            }
+                            TokenId id = token.id();
+
+                            if (((id == JsTokenId.IDENTIFIER) && (token.length() == 1))
+                                    || (id == JsTokenId.BRACKET_LEFT_BRACKET) || (id == JsTokenId.BRACKET_RIGHT_BRACKET)
+                                    || (id == JsTokenId.BRACKET_LEFT_CURLY) || (id == JsTokenId.BRACKET_RIGHT_CURLY)
+                                    || (id == JsTokenId.BRACKET_LEFT_PAREN) || (id == JsTokenId.BRACKET_RIGHT_PAREN)) {
+                                if (ch == ']') {
+                                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_BRACKET);
+                                } else if (ch == ')') {
+                                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_PAREN);
+                                } else if (ch == '}') {
+                                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_CURLY);
+                                    // the curly is not completed intentionally see #189443
+                                    // java and php don't do that as well
+                                } else if ((ch == '[') || (ch == '(')) {
+                                    completeOpeningBracket(doc, dotPos, caret, ch);
+                                }
+                            }
+
+                            // Reindent blocks (won't do anything if } is not at the beginning of a line
+                            if (ch == '}') {
+                                reindent(doc, dotPos, JsTokenId.BRACKET_RIGHT_CURLY, caret);
+                            } else if (ch == ']') {
+                                reindent(doc, dotPos, JsTokenId.BRACKET_RIGHT_BRACKET, caret);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                } catch (BadLocationException blex) {
+                    ex.set(blex);
                 }
             }
-
-            previousAdjustmentOffset = -1;
-        }
-
-        //dumpTokens(doc, dotPos);
-        switch (ch) {
-        case '{':
-        case '(':
-        case '[':
-            if (!isInsertMatchingEnabled()) {
-                break;
-            }
-        case '}':
-        case ')':
-        case ']':
-            Token<? extends JsTokenId> token = LexUtilities.getToken(doc, dotPos, language);
-            if (token == null) {
-                return;
-            }
-            TokenId id = token.id();
-
-            if (((id == JsTokenId.IDENTIFIER) && (token.length() == 1)) ||
-                    (id == JsTokenId.BRACKET_LEFT_BRACKET) || (id == JsTokenId.BRACKET_RIGHT_BRACKET) ||
-                    (id == JsTokenId.BRACKET_LEFT_CURLY) || (id == JsTokenId.BRACKET_RIGHT_CURLY) ||
-                    (id == JsTokenId.BRACKET_LEFT_PAREN) || (id == JsTokenId.BRACKET_RIGHT_PAREN)) {
-                if (ch == ']') {
-                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_BRACKET);
-                } else if (ch == ')') {
-                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_PAREN);
-                } else if (ch == '}') {
-                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_CURLY);
-                // the curly is not completed intentionally see #189443
-                // java and php don't do that as well
-                } else if ((ch == '[') || (ch == '(')) {
-                    completeOpeningBracket(doc, dotPos, caret, ch);
-                }
-            }
-
-            // Reindent blocks (won't do anything if } is not at the beginning of a line
-            if (ch == '}') {
-                reindent(doc, dotPos, JsTokenId.BRACKET_RIGHT_CURLY, caret);
-            } else if (ch == ']') {
-                reindent(doc, dotPos, JsTokenId.BRACKET_RIGHT_BRACKET, caret);
-            }
-            break;
-        default:
-            break;
+        });
+        BadLocationException blex = ex.get();
+        if (blex != null) {
+            throw blex;
         }
     }
 
@@ -189,9 +199,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
     @Override
     public void insert(MutableContext context) throws BadLocationException {
-        isAfter = false;
-        //JTextComponent target = context.getComponent();
-        //Caret caret = target.getCaret();
         int caretOffset = context.getOffset();
         char ch = context.getText().charAt(0);
         BaseDocument doc = (BaseDocument) context.getDocument();
@@ -477,9 +484,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 char chr = doc.getChars(dotPos, 1)[0];
 
                 if (chr == bracket) {
-                    if (!isAfter) {
-                        context.setText(Character.toString(bracket), 1);
-                    }
+                    context.setText(Character.toString(bracket), 1);
                     doc.remove(dotPos, 1);
 
                     return;
@@ -488,8 +493,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         }
 
         if ((completablePosition && !insideString) || eol) {
-            String text = "" + bracket + (isAfter ? "" : matching(bracket));
-            context.setText(text, isAfter ? text.length() : text.length() - 1);
+            String text = Character.toString(bracket) + matching(bracket);
+            context.setText(text, text.length() - 1);
         }
     }
 

@@ -99,6 +99,7 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
         jep.setOpaque(false);
         jep.getAccessibleContext().setAccessibleName( NbBundle.getMessage(DescriptionComponent.class, "ACS_Description") );
         jep.getAccessibleContext().setAccessibleDescription( NbBundle.getMessage(DescriptionComponent.class, "ACSD_Description") );
+        jep.putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
 
         HTMLEditorKit htmlKit = new HTMLEditorKit();
         if (htmlKit.getStyleSheet().getStyleSheets() == null) {
@@ -108,10 +109,11 @@ class DescriptionComponent extends JComponent implements ActionListener, MouseLi
                         .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
             css.addStyleSheet(htmlKit.getStyleSheet());
             htmlKit.setStyleSheet(css);
+        } else {
+            jep.setFont( new JLabel().getFont() );
         }
         jep.setEditorKit( htmlKit );
 
-        jep.putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
 
 
         //We use a JScrollPane to suppress the changes in layout that will be

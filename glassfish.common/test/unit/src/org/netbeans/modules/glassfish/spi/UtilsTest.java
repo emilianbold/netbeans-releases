@@ -203,23 +203,18 @@ public class UtilsTest extends NbTestCase {
             String hostname =  //"127.0.0.1";
                  "10.229.117.91";
             int port = 4848;
-            if (false)
-                System.out.println(Utils.getHttpListenerProtocol(
-                        hostname, port));
-            else {
-                Map<String,String> ip = new HashMap<String,String>();
-                ip.put(GlassfishModule.HOSTNAME_ATTR, hostname);
-                ip.put(GlassfishModule.ADMINPORT_ATTR, port+"");
-                GlassfishInstance instance = GlassfishInstance.create(ip, null);
-                ResultMap<String, String> result
-                        = CommandGetProperty.getProperties(
-                    instance, "*.server-config.*.http-listener-1.port");
-                if (result.getState() == TaskState.COMPLETED) {
-                    System.out.println(result.getValue());
-                } else {
-                    System.out.println(
-                            "Could not retrieve properties from server.");
-                }
+            Map<String,String> ip = new HashMap<String,String>();
+            ip.put(GlassfishModule.HOSTNAME_ATTR, hostname);
+            ip.put(GlassfishModule.ADMINPORT_ATTR, port+"");
+            GlassfishInstance instance = GlassfishInstance.create(ip, null);
+            ResultMap<String, String> result
+                    = CommandGetProperty.getProperties(
+                instance, "*.server-config.*.http-listener-1.port");
+            if (result.getState() == TaskState.COMPLETED) {
+                System.out.println(result.getValue());
+            } else {
+                System.out.println(
+                        "Could not retrieve properties from server.");
             }
         }
         System.exit(0);

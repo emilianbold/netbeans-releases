@@ -39,18 +39,23 @@
 
 package org.netbeans.installer.wizard.components.actions;
 
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.installer.Installer;
-import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
-import org.netbeans.installer.utils.helper.Status;
-import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileUtils;
 import org.netbeans.installer.utils.LogManager;
 import org.netbeans.installer.utils.ResourceUtils;
 import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.UninstallUtils;
 import org.netbeans.installer.utils.exceptions.UninstallationException;
+import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.progress.CompositeProgress;
 import org.netbeans.installer.utils.progress.Progress;
 import org.netbeans.installer.wizard.components.WizardAction;
@@ -77,12 +82,12 @@ public class UninstallAction extends WizardAction {
     public static final String UNINSTALL_DEPENDENT_FAILED_PROPERTY =
             "uninstall.dependent.failed";
     public static final int UNINSTALLATION_ERROR_CODE = 
-            126;//NOMAGI
+            126;//NOMAGI     
     
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
     private CompositeProgress overallProgress;
-    private Progress          currentProgress;
+    private Progress          currentProgress;        
     
     public UninstallAction() {
         setProperty(TITLE_PROPERTY, DEFAULT_TITLE);
@@ -93,6 +98,7 @@ public class UninstallAction extends WizardAction {
                 DEFAULT_UNINSTALL_DEPENDENT_FAILED_MESSAGE);
     }
     
+    @Override
     public void execute() {
         LogManager.logIndent("Start products uninstallation");
         final Registry registry = Registry.getInstance();
@@ -105,10 +111,7 @@ public class UninstallAction extends WizardAction {
         overallProgress.synchronizeDetails(true);
         
         getWizardUi().setProgress(overallProgress);
-        for (int i = 0; i < products.size(); i++) {
-            // get the handle of the current item
-            final Product product = products.get(i);
-            
+        for (Product product : products) {         
             // initiate the progress for the current element
             currentProgress = new Progress();
             
@@ -157,7 +160,19 @@ public class UninstallAction extends WizardAction {
             }
         }
         LogManager.logUnindent("... finished products uninstallation");
-    }
+                
+        LogManager.logUnindent("... starting updates and plugins uninstallation");        
+        try {
+            // delete updated files and downloaded plugins in installation folder
+            FileUtils.deleteFiles(new ArrayList<File>(UninstallUtils.getFilesToDeteleAfterUninstallation()));            
+            
+            // delete all empty folders in installation directory                          
+            FileUtils.deleteFiles(UninstallUtils.getEmptyFolders());
+        } catch (IOException ex) {
+            LogManager.log(ex);
+        }
+        LogManager.logUnindent("... finished updates and plugins uninstallation");        
+    }        
     
     @Override
     public boolean canExecuteForward() {

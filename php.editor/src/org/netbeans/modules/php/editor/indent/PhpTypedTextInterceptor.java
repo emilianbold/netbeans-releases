@@ -42,6 +42,8 @@
 package org.netbeans.modules.php.editor.indent;
 
 import java.util.Arrays;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -66,7 +68,7 @@ import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class PhpTypedTextInterceptor implements TypedTextInterceptor {
-
+    private static final Logger LOGGER = Logger.getLogger(PhpTypedTextInterceptor.class.getName());
     /**
      * When != -1, this indicates that we previously adjusted the indentation of
      * the line to the given offset, and if it turns out that the user changes
@@ -163,7 +165,22 @@ public class PhpTypedTextInterceptor implements TypedTextInterceptor {
     }
 
     @Override
-    public void afterInsert(Context context) throws BadLocationException {
+    public void afterInsert(final Context context) throws BadLocationException {
+        final BaseDocument doc = (BaseDocument) context.getDocument();
+        doc.runAtomicAsUser(new Runnable() {
+
+            @Override
+            public void run() {
+                try {
+                    afterInsertUnderWriteLock(context);
+                } catch (BadLocationException ex) {
+                    LOGGER.log(Level.FINE, null, ex);
+                }
+            }
+        });
+    }
+
+    private void afterInsertUnderWriteLock(Context context) throws BadLocationException {
         isAfter = true;
         JTextComponent target = context.getComponent();
         Caret caret = target.getCaret();

@@ -120,8 +120,8 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private HistoryDiffView diffView;
     
     private FileObject[] files;
-    private InstanceContent activatedNodesContent;
-    private ProxyLookup lookup;
+    private final InstanceContent activatedNodesContent;
+    private final ProxyLookup lookup;
     private Lookup context;
     private VersioningSystem versioningSystem;
     private MultiViewElementCallback callback;
@@ -131,27 +131,48 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     private final Object FILE_LOCK = new Object();
     
     public HistoryComponent() {
+        activatedNodesContent = new InstanceContent();
+        lookup = new ProxyLookup(new Lookup[] {
+            new AbstractLookup(activatedNodesContent)
+        });
+        init();
+    }
+
+    public HistoryComponent(VCSFileProxy... files) {
+        activatedNodesContent = new InstanceContent();
+        lookup = new ProxyLookup(new Lookup[] {
+            new AbstractLookup(activatedNodesContent)
+        });
+        init();
+        if(files != null && files.length > 0) {
+            initFiles(files);
+        }
+        resetUI();
+    }
+    
+    public HistoryComponent(Lookup context) {
+        this.context = context;
+        activatedNodesContent = new InstanceContent();
+        if(context != null) {
+            lookup = new ProxyLookup(new Lookup[] {
+                context,
+                new AbstractLookup(activatedNodesContent)
+            });
+        } else {
+            lookup = new ProxyLookup(new Lookup[] {
+                new AbstractLookup(activatedNodesContent)
+            });
+        }
+        init();
+        initFromContext();
+    }
+
+    private void init() {
         initComponents();
         if( "Aqua".equals( UIManager.getLookAndFeel().getID() ) ) {             // NOI18N
             setBackground(UIManager.getColor("NbExplorerView.background"));     // NOI18N
         }
         Utils.addPropertyChangeListener(this);
-        activatedNodesContent = new InstanceContent();
-    }
-    
-    public HistoryComponent(VCSFileProxy... files) {
-        this();
-
-        if(files != null && files.length > 0) {
-            initFiles(files);
-        }
-        init();
-    }
-    
-    public HistoryComponent(Lookup context) {
-        this();
-        this.context = context;
-        initFromContext();
     }
     
     private synchronized void initFromContext() {
@@ -187,7 +208,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                init();
+                resetUI();
             }
         };
         if(EventQueue.isDispatchThread()) {
@@ -266,7 +287,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
         return ret;
     }        
 
-    private void init() {   
+    private void resetUI() {   
         if(hasFiles()) {
             FileObject fo = getFile();
             this.versioningSystem = hasFiles() ? getOwner(fo) : null;
@@ -346,7 +367,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
                 SwingUtilities.invokeLater(new Runnable() {
                     @Override
                     public void run() {
-                        init();
+                        resetUI();
                     }
                 });
             }
@@ -408,7 +429,7 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }
 
     @NbBundle.Messages({
-        "MSG_SaveModified=File {0} is modified. Save?"                          // NOI18N
+        "# {0} - file name", "MSG_SaveModified=File {0} is modified. Save?"                          // NOI18N
     })
     @Override
     public CloseOperationState canCloseElement() {
@@ -488,18 +509,6 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
 
     @Override
     public Lookup getLookup() {
-        if(lookup == null) {
-            if(context != null) {
-                lookup = new ProxyLookup(new Lookup[] {
-                    context,
-                    new AbstractLookup(activatedNodesContent)
-                });
-            } else {
-                lookup = new ProxyLookup(new Lookup[] {
-                    new AbstractLookup(activatedNodesContent)
-                });
-            }
-        }
         return lookup;
     }
 
@@ -556,17 +565,17 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
     }
     
     private class Toolbar extends JToolBar implements ActionListener {
-        private JButton nextButton;
-        private JButton prevButton;
-        private JButton refreshButton;
-        private JButton settingsButton;
+        private final JButton nextButton;
+        private final JButton prevButton;
+        private final JButton refreshButton;
+        private final JButton settingsButton;
         private JLabel modeLabel;
         private JLabel filterLabel;
         private JComboBox filterCombo;
         private JComboBox modeCombo;
         private JLabel containsLabel;
         private JTextField containsField;
-        private ShowHistoryAction showHistoryAction;
+        private final ShowHistoryAction showHistoryAction;
         private final LinkButton searchHistoryButton;
         private final Separator separator1;
         private final Separator separator2;
@@ -619,15 +628,23 @@ final public class HistoryComponent extends JPanel implements MultiViewElement, 
             });
             
             nextButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-next.png"))); // NOI18N
-            prevButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-prev.png"))); // NOI18N
             nextButton.addActionListener(this);
-            prevButton.addActionListener(this);
             nextButton.setEnabled(false);
+            nextButton.setToolTipText(org.openide.util.NbBundle.getMessage(HistoryComponent.class, "LBL_NextDiff")); // NOI18N        
+        
+            prevButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/diff-prev.png"))); // NOI18N
+            prevButton.addActionListener(this);
             prevButton.setEnabled(false);
+            prevButton.setToolTipText(org.openide.util.NbBundle.getMessage(HistoryComponent.class, "LBL_PrevDiff")); // NOI18N                    
+            
             refreshButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/refresh.png"))); // NOI18N
             refreshButton.addActionListener(this);
+            refreshButton.setToolTipText(org.openide.util.NbBundle.getMessage(HistoryComponent.class, "LBL_Refresh")); // NOI18N                    
+            
             settingsButton = new JButton(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/versioning/ui/resources/icons/options.png"))); // NOI18N
             settingsButton.addActionListener(this);
+            settingsButton.setToolTipText(org.openide.util.NbBundle.getMessage(HistoryComponent.class, "LBL_Options")); // NOI18N                    
+            
             showHistoryAction = new ShowHistoryAction(vs);
             searchHistoryButton = new LinkButton(); // NOI18N
             searchHistoryButton.addActionListener(showHistoryAction);

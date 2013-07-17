@@ -66,9 +66,9 @@ import org.openide.util.NbPreferences;
     "CloudSDKHelper.wrong.folder=Wrong folder selected for Oracle Cloud SDK. File {0} does not exist."})
 public final class CloudSDKHelper {
 
-    private static final String SDK_WELLKNOWN_FILE = "lib/oracle.cloud.paas.api.jar";
+    private static final String SDK_WELLKNOWN_FILE = "lib/oracle.cloud.paas.api.jar"; // NOI18N
     
-    public static final String SDK_FOLDER = "oracle.cloud.sdk.installation.folder";
+    public static final String SDK_FOLDER = "oracle.cloud.sdk.installation.folder"; // NOI18N
 
     public static Preferences getSDKFolderPreferences() {
         return NbPreferences.forModule(CloudSDKHelper.class);
@@ -85,7 +85,7 @@ public final class CloudSDKHelper {
     public static File showConfigureSDKDialog(JComponent parent) {
         JFileChooser chooser = new JFileChooser();
         chooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        chooser.setDialogTitle(NbBundle.getMessage(CloudSDKHelper.class, "CloudSDKHelper.title"));
+        chooser.setDialogTitle(NbBundle.getMessage(CloudSDKHelper.class, "CloudSDKHelper.title")); // NOI18N
         String folder = getSDKFolder();
         if (folder.trim().length() != 0) {
             File f = new File(folder);
@@ -101,7 +101,7 @@ public final class CloudSDKHelper {
                 return selected;
             } else {
                 DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(NbBundle.getMessage(CloudSDKHelper.class, "CloudSDKHelper.wrong.folder", sdkFile.getAbsolutePath())));
+                        new NotifyDescriptor.Message(NbBundle.getMessage(CloudSDKHelper.class, "CloudSDKHelper.wrong.folder", sdkFile.getAbsolutePath()))); // NOI18N
                 return null;
             }
         }
@@ -116,13 +116,13 @@ public final class CloudSDKHelper {
         ClassLoader cl = getClassLoader(sdkDirectory);
         try {
             if (cl != null) {
-                Class impl = cl.loadClass("org.netbeans.libs.oracle.cloud.ext.ApplicationManagerConnectionFactoryImpl");
+                Class impl = cl.loadClass("org.netbeans.libs.oracle.cloud.ext.ApplicationManagerConnectionFactoryImpl"); // NOI18N
                 Constructor c = impl.getConstructor(new Class[] {ClassLoader.class});
                 ApplicationManagerConnectionFactory f = (ApplicationManagerConnectionFactory)c.newInstance(new Object[] {cl});
                 return f;
             }
         } catch (Throwable ex) {
-            throw new SDKException("cannot instantiate ApplicationManagerConnectionFactoryImpl", ex);
+            throw new SDKException("cannot instantiate ApplicationManagerConnectionFactoryImpl", ex); // NOI18N
         }
         return null;
     }
@@ -131,13 +131,13 @@ public final class CloudSDKHelper {
         ClassLoader cl = getClassLoader(sdkDirectory);
         try {
             if (cl != null) {
-                Class impl = cl.loadClass("org.netbeans.libs.oracle.cloud.ext.ConfigurationFactoryImpl");
+                Class impl = cl.loadClass("org.netbeans.libs.oracle.cloud.ext.ConfigurationFactoryImpl"); // NOI18N
                 Constructor c = impl.getConstructor(new Class[] {ClassLoader.class});
                 ConfigurationFactory f = (ConfigurationFactory)c.newInstance(new Object[] {cl});
                 return f.getDefaultClassConfiguration();
             }
         } catch (Throwable ex) {
-            throw new SDKException("cannot instantiate ApplicationManagerConnectionFactoryImpl", ex);
+            throw new SDKException("cannot instantiate ApplicationManagerConnectionFactoryImpl", ex); // NOI18N
         }
         return null;
     }
@@ -145,18 +145,21 @@ public final class CloudSDKHelper {
     private static ClassLoader getClassLoader(String sdkDirectory) {
         File extjar = InstalledFileLocator.getDefault().locate("modules/ext/libs.oracle.cloud-ext.jar", "org.netbeans.libs.oracle.cloud", false); // NOI18N
         if (extjar == null) {
-            throw new SDKException("libs.oracle.cloud-ext.jar not found");
+            throw new SDKException("libs.oracle.cloud-ext.jar not found"); // NOI18N
         }
         List<URL> urls = new ArrayList<URL>();
         try {
             urls.add(extjar.toURI().toURL());
-            urls.add(new File(sdkDirectory, "lib/oracle.cloud.paas.api.jar").toURI().toURL());
-            urls.add(new File(sdkDirectory, "lib/whitelist.jar").toURI().toURL());
+            urls.add(new File(sdkDirectory, "lib/oracle.cloud.paas.api.jar").toURI().toURL()); // NOI18N
+            urls.add(new File(sdkDirectory, "lib/whitelist.jar").toURI().toURL()); // NOI18N
+            urls.add(new File(sdkDirectory, "lib/jersey-client.jar").toURI().toURL()); // NOI18N
+            urls.add(new File(sdkDirectory, "lib/jersey-core.jar").toURI().toURL()); // NOI18N
+            urls.add(new File(sdkDirectory, "lib/jersey-multipart.jar").toURI().toURL()); // NOI18N
             ClassLoader classLoader = new URLClassLoader(urls.toArray(new URL[] {}), 
                     CloudSDKHelper.class.getClassLoader()/*ClassLoader.getSystemClassLoader()*/);
             return classLoader;
         } catch (MalformedURLException m) {
-            throw new SDKException("cannot create classloader", m);
+            throw new SDKException("cannot create classloader", m); // NOI18N
         }
     }
     

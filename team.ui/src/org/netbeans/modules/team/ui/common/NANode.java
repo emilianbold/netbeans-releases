@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,22 +34,53 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.team.ui.common;
 
-package org.netbeans.modules.glassfish.spi;
-
-import org.netbeans.modules.glassfish.spi.GlassfishModule.OperationState;
+import java.awt.Color;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import javax.swing.Action;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import org.netbeans.modules.team.ui.util.treelist.LeafNode;
+import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.openide.util.NbBundle;
 
 /**
  *
- * @author Peter Williams
+ * @author Tomas Stupka
  */
-public interface OperationStateListener {
+@NbBundle.Messages({"LBL_NA=N/A"})
+public class NANode extends LeafNode {
 
-    public void operationStateChanged(OperationState newState, String message);
-    
+    private JPanel panel;
+    private final Object LOCK = new Object();
+
+    public NANode( TreeListNode parent ) {
+        super( parent );
+    }
+
+    @Override
+    protected JComponent getComponent(Color foreground, Color background, boolean isSelected, boolean hasFocus, int maxWidth) {
+        synchronized (LOCK) {
+            if (null == panel) {
+                panel = new JPanel(new GridBagLayout());
+                panel.setOpaque(false);
+                panel.add(new JLabel(Bundle.LBL_NA()), new GridBagConstraints(0, 0, 1, 1, 1.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(0, 0, 0, 0), 0, 0));
+            }
+            return panel;
+        }
+    }
+
+    @Override
+    public Action getDefaultAction() {
+        return null;
+    }
 }
