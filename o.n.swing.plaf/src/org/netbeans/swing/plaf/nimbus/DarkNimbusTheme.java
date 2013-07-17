@@ -108,7 +108,7 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.bugtracking.table.background", new Color(18, 30, 49) ); //NOI18N
         UIManager.put( "nb.bugtracking.table.background.alternate", new Color(13, 22, 36) ); //NOI18N
 
-        UIManager.put( "nb.html.link.foreground", new Color(128,128,255) ); //NOI18N
+        UIManager.put( "nb.html.link.foreground", new Color(164,164,255) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.hover", new Color(255,216,0) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.visited", new Color(0,200,0) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.focus", new Color(255,216,0) ); //NOI18N
@@ -186,7 +186,7 @@ public class DarkNimbusTheme {
                 Font f = new JLabel().getFont();
                 newStyleSheet.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
                             .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
-                newStyleSheet.addRule( "a { color: #8080FF; text-decoration: underline}"); //NOI18N
+                newStyleSheet.addRule( "a { color: #A4A4FF; text-decoration: underline}"); //NOI18N
                 newStyleSheet.addStyleSheet(kit.getStyleSheet());
                 kit.setStyleSheet(newStyleSheet);
                 return null;
