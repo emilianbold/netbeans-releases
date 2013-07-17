@@ -635,13 +635,18 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 if( darkTheme ) {
                     if( MetalLookAndFeel.class.getName().equals( lafClassName ) ) {
                         currentLaf = DARK_METAL;
-                    } else if( NimbusLookAndFeel.class.getName().equals( UIManager.getLookAndFeel().getID() ) ) { //NOI18N
+                    } else if( NimbusLookAndFeel.class.getName().equals( lafClassName ) ) {
                         currentLaf = DARK_NIMBUS;
                     }
                 }
                 break;
             }
         }
+        if( null == currentLaf
+                && com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel.class.getName().equals( lafClassName )
+                && darkTheme ) {
+            currentLaf = DARK_NIMBUS;
+    }
         return currentLaf;
     }
 
