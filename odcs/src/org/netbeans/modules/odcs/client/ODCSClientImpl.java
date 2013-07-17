@@ -62,6 +62,7 @@ public class ODCSClientImpl implements ODCSClient {
         this.url = url;
         this.pa = pa;
         WebUtil.configureHttpClient(httpClient, "");
+        httpClient.getParams().setAuthenticationPreemptive(true);
     }
 
     public <T> T runGet(Class<T> t, String service) throws ODCSException {
