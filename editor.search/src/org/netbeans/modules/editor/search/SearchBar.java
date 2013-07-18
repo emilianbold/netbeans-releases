@@ -363,6 +363,9 @@ public final class SearchBar extends JPanel implements PropertyChangeListener {
                         SearchPattern sp = SearchPattern.create(spw.getSearchExpression(),
                                 spw.isWholeWords(), spw.isMatchCase(), spw.isRegExp());
                         SearchHistory.getDefault().add(sp);
+                        if (!SearchBar.getInstance().incSearchTextField.getText().equals(sp.getSearchExpression())) {
+                            SearchBar.getInstance().incSearchTextField.setText(sp.getSearchExpression());
+                        }
                         break;
                     case EditorFindSupport.FIND_HISTORY_CHANGED_PROP:
                         EditorFindSupport.getInstance().setHistory(
