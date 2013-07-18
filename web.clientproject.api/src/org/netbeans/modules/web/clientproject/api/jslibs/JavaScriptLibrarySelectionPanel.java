@@ -366,8 +366,9 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     @NbBundle.Messages({
         "# {0} - date or n/a",
         "JavaScriptLibrarySelectionPanel.update.default=<html><a href=\"#\">Updated: {0}</a>",
-        "# {0} - date with time",
+        "# {0} - date with time or 'never' (see next message)",
         "JavaScriptLibrarySelectionPanel.update.default.tooltip=Updated: {0}",
+        "# T13Y: If the lib has not been updated yet, this label is used instead of a date (see previous message)",
         "JavaScriptLibrarySelectionPanel.update.never=never",
         "JavaScriptLibrarySelectionPanel.update.running=Updating...",
     })
