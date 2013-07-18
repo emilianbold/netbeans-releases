@@ -44,6 +44,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.model.Model;
@@ -59,18 +60,22 @@ public class JsParserResult extends ParserResult {
     private static final Logger LOGGER = Logger.getLogger(JsParserResult.class.getName());
 
     private final FunctionNode root;
+    private final boolean embedded;
     private List<? extends Error> errors;
     private Model model;
     private JsDocumentationHolder docHolder;
-    
+
     public JsParserResult(Snapshot snapshot, FunctionNode root) {
         super(snapshot);
         this.root = root;
         this.errors = Collections.<Error>emptyList();
         this.model = null;
         this.docHolder = null;
+
+        this.embedded = !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(snapshot.getMimePath().getPath())
+                && !JsTokenId.JSON_MIME_TYPE.equals(snapshot.getMimePath().getPath());
     }
-    
+
     @Override
     public List<? extends Error> getDiagnostics() {
         return errors;
@@ -78,9 +83,9 @@ public class JsParserResult extends ParserResult {
 
     @Override
     protected void invalidate() {
-        
+
     }
-    
+
     public FunctionNode getRoot() {
         return root;
     }
@@ -88,7 +93,7 @@ public class JsParserResult extends ParserResult {
     public void setErrors(List<? extends Error> errors) {
         this.errors = errors;
     }
-    
+
     public Model getModel() {
         synchronized (this) {
             if (model == null) {
@@ -106,14 +111,18 @@ public class JsParserResult extends ParserResult {
             return model;
         }
     }
-    
+
     public JsDocumentationHolder getDocumentationHolder() {
-        synchronized(this) {
+        synchronized (this) {
             if (docHolder == null) {
                 docHolder = JsDocumentationSupport.getDocumentationHolder(this);
             }
             return docHolder;
         }
+    }
+
+    public boolean isEmbedded() {
+        return embedded;
     }
 
 }
