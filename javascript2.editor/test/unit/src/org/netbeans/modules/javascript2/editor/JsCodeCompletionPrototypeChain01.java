@@ -56,7 +56,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JsCodeCompletionPrototypeChain01 extends JsCodeComplationBase {
+public class JsCodeCompletionPrototypeChain01 extends JsCodeCompletionBase {
     
     public JsCodeCompletionPrototypeChain01(String testName) {
         super(testName);

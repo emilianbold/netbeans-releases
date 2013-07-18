@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
  */
 public class GlobalIsNotDefined extends JsAstRule {
 
-    private static List<String> knownGlobalObjects = Arrays.asList("window", "document", "console",
+    private static final List<String> KNOWN_GLOBAL_OBJECTS = Arrays.asList("window", "document", "console",
             "clearInterval", "clearTimeout", "event", "frames", "history",
             "Image", "location", "name", "navigator", "Option", "parent", "screen", "setInterval", "setTimeout",
             "XMLHttpRequest", "JSON", "Date", "undefined", "Math",  //NOI18N
@@ -81,7 +81,7 @@ public class GlobalIsNotDefined extends JsAstRule {
         Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)globalObject);
         for (JsObject variable : variables) {
             if(!variable.isDeclared() 
-                    && !knownGlobalObjects.contains(variable.getName()) 
+                    && !KNOWN_GLOBAL_OBJECTS.contains(variable.getName())
                     && (variable.getJSKind() == JsElement.Kind.VARIABLE
                     || variable.getJSKind() == JsElement.Kind.OBJECT)) {
                 String varName = variable.getName();
