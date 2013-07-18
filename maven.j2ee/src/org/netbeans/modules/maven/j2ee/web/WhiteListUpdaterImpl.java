@@ -39,65 +39,36 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.project.spi;
 
-import org.netbeans.api.j2ee.core.Profile;
+package org.netbeans.modules.maven.j2ee.web;
+
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javaee.project.api.WhiteListUpdater;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
- * An SPI for JavaEE project's setting access independently to the project type.
- * Projects can provide implementation of this interface in its {@link Project#getLookup lookup} to allow clients
- * to obtain and change JavaEE projects settings.
  *
- * @author Martin Fousek <marfous@netbeans.org>
- * @author Martin Janicek <mjanicek@netbeans.org>
- *
- * @since 1.0
+ * @author Martin Janicek
  */
-public interface JavaEEProjectSettingsImplementation {
+@ProjectServiceProvider(
+    service = {
+        WhiteListUpdater.class
+    },
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB
+    }
+)
+public final class WhiteListUpdaterImpl extends WhiteListUpdater {
 
-    /**
-     * Sets {@code Profile} of the JavaEE project.
-     * @param profile profile to be set
-     *
-     * @since 1.0
-     */
-    void setProfile(Profile profile);
+    public WhiteListUpdaterImpl(Project project) {
+        super(project);
+    }
 
-    /**
-     * Gets {@code Profile} of the JavaEE project.
-     *
-     * @since 1.0
-     */
-    Profile getProfile();
- 
-    /**
-     * Sets browser ID of the JavaEE project.
-     * @param browserID browser ID to be set
-     *
-     * @since 1.4
-     */
-    void setBrowserID(String browserID);
-
-    /**
-     * Gets browser ID of the JavaEE project.
-     *
-     * @since 1.4
-     */
-    String getBrowserID();
- 
-    /**
-     * Sets server instance ID of the JavaEE project.
-     * @param serverInstanceID server instance ID to be set
-     *
-     * @since 1.5
-     */
-    void setServerInstanceID(String serverInstanceID);
-
-    /**
-     * Gets server instance ID of the JavaEE project.
-     *
-     * @since 1.5
-     */
-    String getServerInstanceID();
+    @Override
+    protected void addSettingListener() {
+        // I can't access preferences here because this is called from @PSP constructor
+        // Listener is added in ProjectOpenedHook.projectOpened
+    }
 }

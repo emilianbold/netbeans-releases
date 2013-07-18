@@ -39,65 +39,40 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javaee.project.spi;
+package org.netbeans.modules.javaee.project.api;
 
 import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.browser.api.WebBrowser;
+import org.netbeans.modules.web.browser.api.WebBrowsers;
 
 /**
- * An SPI for JavaEE project's setting access independently to the project type.
- * Projects can provide implementation of this interface in its {@link Project#getLookup lookup} to allow clients
- * to obtain and change JavaEE projects settings.
+ * General constants used by Java EE project types.
  *
- * @author Martin Fousek <marfous@netbeans.org>
  * @author Martin Janicek <mjanicek@netbeans.org>
- *
- * @since 1.0
+ * @since 1.5
  */
-public interface JavaEEProjectSettingsImplementation {
+public final class JavaEEProjectSettingConstants {
+    
+    private JavaEEProjectSettingConstants() {
+    }
 
     /**
-     * Sets {@code Profile} of the JavaEE project.
-     * @param profile profile to be set
+     * Values according to the {@link Profile} class.
      *
-     * @since 1.0
+     * @see Profile
      */
-    void setProfile(Profile profile);
+    public static final String J2EE_PLATFORM = "j2ee.platform";               //NOI18N
 
     /**
-     * Gets {@code Profile} of the JavaEE project.
-     *
-     * @since 1.0
+     * Server instance ID. Typically path to the location where certain server instance is installed.
      */
-    Profile getProfile();
- 
-    /**
-     * Sets browser ID of the JavaEE project.
-     * @param browserID browser ID to be set
-     *
-     * @since 1.4
-     */
-    void setBrowserID(String browserID);
+    public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
 
     /**
-     * Gets browser ID of the JavaEE project.
+     * Selected browser. Typically gets via {@link WebBrowser#getId()}.
      *
-     * @since 1.4
+     * @see WebBrowsers
+     * @see WebBrowser#getId()
      */
-    String getBrowserID();
- 
-    /**
-     * Sets server instance ID of the JavaEE project.
-     * @param serverInstanceID server instance ID to be set
-     *
-     * @since 1.5
-     */
-    void setServerInstanceID(String serverInstanceID);
-
-    /**
-     * Gets server instance ID of the JavaEE project.
-     *
-     * @since 1.5
-     */
-    String getServerInstanceID();
+    public static final String SELECTED_BROWSER = "selected.browser";         //NOI18N
 }

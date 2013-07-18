@@ -43,6 +43,7 @@ package org.netbeans.modules.javaee.project.api;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -158,6 +159,54 @@ public final class JavaEEProjectSettings {
             throw new UnsupportedProjectTypeException(project);
         }
     }
+    
+    /**
+     * Sets server instance ID of the JavaEE project.
+     * <p>
+     * <b>Can acquire project's write lock since it stores project properties.</b>
+     * <p>
+     * Can throw UnsupportedOperationException in case that the project type doesn't contain in lookup implementation of
+     * {@link JavaEEProjectSettingsImplementation} so it's unsupported project type yet.
+     *
+     * @param project JavaEE based project
+     * @param serverInstanceID server instance ID to be set or {@code null} if no server instance is available
+     *
+     * @since 1.5
+     */
+    public static void setServerInstanceID(@NonNull Project project, @NullAllowed String serverInstanceID) {
+        Parameters.notNull("project", project); //NOI18N
+
+        JavaEEProjectSettingsImplementation modifier = project.getLookup().lookup(JavaEEProjectSettingsImplementation.class);
+        if (modifier != null) {
+            modifier.setServerInstanceID(serverInstanceID);
+        } else {
+            throw new UnsupportedProjectTypeException(project);
+        }
+    }
+
+    /**
+     * Obtains server instance ID of the JavaEE project.
+     * <p>
+     * Can throw UnsupportedOperationException in case that the project type doesn't contain in lookup implementation of
+     * {@link JavaEEProjectSettingsImplementation} so it's unsupported project type yet.
+     *
+     * @param project JavaEE based project
+     * @return server instance ID of given project or {@code null} if the server instance not set or recognized
+     *
+     * @since 1.5
+     */
+    @CheckForNull
+    public static String getServerInstanceID(@NonNull Project project) {
+        Parameters.notNull("project", project); //NOI18N
+
+        JavaEEProjectSettingsImplementation settings = project.getLookup().lookup(JavaEEProjectSettingsImplementation.class);
+        if (settings != null) {
+            return settings.getServerInstanceID();
+        } else {
+            throw new UnsupportedProjectTypeException(project);
+        }
+    }
+
 
     private static final class UnsupportedProjectTypeException extends UnsupportedOperationException {
 

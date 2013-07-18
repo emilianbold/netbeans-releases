@@ -146,8 +146,6 @@ public final class AddDependencyPanel extends JPanel {
     @NbBundle.Messages({
         "# {0} - project name",
         "AddDependencyPanel.panel.title=Composer Packages ({0})",
-        "AddDependencyPanel.panel.require.label=Require",
-        "AddDependencyPanel.panel.requireDev.label=Require (dev)"
     })
     public static void open(PhpModule phpModule) {
         assert EventQueue.isDispatchThread();

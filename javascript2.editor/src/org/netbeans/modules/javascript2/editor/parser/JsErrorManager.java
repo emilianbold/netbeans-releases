@@ -254,9 +254,7 @@ public class JsErrorManager extends ErrorManager {
         List<JsParserError> ret = new ArrayList<JsParserError>(errors.size());
         final FileObject file = snapshot != null ? snapshot.getSource().getFileObject() : null;
 
-        String mimepath = snapshot != null ? snapshot.getMimePath().getPath() : null;
-        if (snapshot != null && !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimepath)
-            && !JsTokenId.JSON_MIME_TYPE.equals(mimepath)) {
+        if (snapshot != null && JsParserResult.isEmbedded(snapshot)) {
                 int nextCorrect = -1;
                 boolean afterGeneratedIdentifier = false;
                 for (SimpleError error : errors) {
@@ -270,7 +268,8 @@ public class JsErrorManager extends ErrorManager {
                                 snapshot, error.getPosition());
                         if (ts != null && ts.movePrevious()) {
                             // check also a previous token - is it generated ?
-                            org.netbeans.api.lexer.Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
+                            org.netbeans.api.lexer.Token<? extends JsTokenId> token =
+                                    LexUtilities.findPreviousNonWsNonComment(ts);
                             if (JsEmbeddingProvider.containsGeneratedIdentifier(token.text().toString())) {
                                 // usually we may expect a group of errors
                                 // so we disable them until next } .... \n

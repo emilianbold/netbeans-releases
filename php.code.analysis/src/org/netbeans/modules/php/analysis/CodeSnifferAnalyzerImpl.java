@@ -125,7 +125,7 @@ public class CodeSnifferAnalyzerImpl implements Analyzer {
 
     @NbBundle.Messages({
         "CodeSnifferAnalyzerImpl.analyze.error=Code sniffer analysis error",
-        "CodeSnifferAnalyzerImpl.analyze.error.description=Error occured during code sniffer analysis, review Output window for more information.",
+        "CodeSnifferAnalyzerImpl.analyze.error.description=Error occurred during code sniffer analysis, review Output window for more information.",
     })
     private Iterable<? extends ErrorDescription> doAnalyze(Scope scope, CodeSniffer codeSniffer, String codeSnifferStandard, Map<FileObject, Integer> fileCount) {
         List<ErrorDescription> errors = new ArrayList<>();
