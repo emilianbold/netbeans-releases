@@ -321,14 +321,16 @@ public class JsConventionRule extends JsAstRule {
                         case BEFORE_COLON:
                             if (id == JsTokenId.IDENTIFIER || id == JsTokenId.STRING) {
                                 String name = ts.token().text().toString();
-                                if ("set".equals(name) || "get".equals(name)) {
-                                    isGetterSetter = true;
-                                } else if (!names.add(name) && !isGetterSetter) {
-                                    int docOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
-                                    if (docOffset >= 0) {
-                                        hints.add(new Hint(duplicatePropertyName, Bundle.DuplicateName(name),
-                                                context.getJsParserResult().getSnapshot().getSource().getFileObject(),
-                                                new OffsetRange(docOffset, docOffset + ts.token().length()), null, 500));
+                                if (!context.getJsParserResult().isEmbedded() || !JsEmbeddingProvider.isGeneratedIdentifier(name)) {
+                                    if ("set".equals(name) || "get".equals(name)) { // NOI18N
+                                        isGetterSetter = true;
+                                    } else if (!names.add(name) && !isGetterSetter) {
+                                        int docOffset = context.parserResult.getSnapshot().getOriginalOffset(ts.offset());
+                                        if (docOffset >= 0) {
+                                            hints.add(new Hint(duplicatePropertyName, Bundle.DuplicateName(name),
+                                                    context.getJsParserResult().getSnapshot().getSource().getFileObject(),
+                                                    new OffsetRange(docOffset, docOffset + ts.token().length()), null, 500));
+                                        }
                                     }
                                 }
                             } else if (id == JsTokenId.OPERATOR_COLON) {

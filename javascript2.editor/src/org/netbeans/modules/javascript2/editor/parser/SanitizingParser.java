@@ -37,12 +37,14 @@
  */
 package org.netbeans.modules.javascript2.editor.parser;
 
+import java.util.Collections;
 import jdk.nashorn.internal.ir.FunctionNode;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.lexer.Language;
+import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -274,6 +276,28 @@ public abstract class SanitizingParser extends Parser {
         } else if (sanitizing == Sanitize.EDITED_LINE) {
             int offset = context.getCaretOffset();
             return sanitizeLine(sanitizing, context, offset);
+        } else if (sanitizing == Sanitize.PREVIOUS_LINES) {
+            StringBuilder result = new StringBuilder(context.getOriginalSource());
+            for (org.netbeans.modules.csl.api.Error error : errorManager.getErrors()) {
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                        context.getSnapshot(), error.getStartPosition(), language);
+                if (ts != null) {
+                    ts.move(error.getStartPosition());
+                    if (ts.movePrevious()) {
+                        LexUtilities.findPreviousIncluding(ts, Collections.singletonList(JsTokenId.EOL));
+                        if (!sanitizeLine(context.getOriginalSource(), result, ts.offset())) {
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return false;
+                }
+            }
+            context.setSanitizedSource(result.toString());
+            context.setSanitization(sanitizing);
+            return true;
         }
         return false;
     }
@@ -308,6 +332,20 @@ public abstract class SanitizingParser extends Parser {
     private boolean sanitizeLine(Sanitize sanitizing, Context context, int offset) {
         if (offset > -1) {
             String source = context.getOriginalSource();
+
+            StringBuilder builder = new StringBuilder(source);
+            if (!sanitizeLine(source, builder, offset)) {
+                return false;
+            }
+            context.setSanitizedSource(builder.toString());
+            context.setSanitization(sanitizing);
+            return true;
+        }
+        return false;
+    }
+
+    private boolean sanitizeLine(String source, StringBuilder result, int offset) {
+        if (offset > -1 && !source.isEmpty()) {
             int start = offset > 0 ? offset - 1 : offset;
             int end = start + 1;
             // fix until new line or }
@@ -340,10 +378,7 @@ public abstract class SanitizingParser extends Parser {
                 end--;
             }
 
-            StringBuilder builder = new StringBuilder(context.getOriginalSource());
-            erase(builder, start, end);
-            context.setSanitizedSource(builder.toString());
-            context.setSanitization(sanitizing);
+            erase(result, start, end);
             return true;
         }
         return false;
@@ -551,24 +586,6 @@ public abstract class SanitizingParser extends Parser {
 
             @Override
             public Sanitize next() {
-                return SYNTAX_ERROR_PREVIOUS_LINE;
-            }
-        },
-
-        /** remove line with error */
-        SYNTAX_ERROR_PREVIOUS_LINE {
-
-            @Override
-            public Sanitize next() {
-                return SYNTAX_ERROR_BLOCK;
-            }
-        },
-        
-        /** try to delete the whole block, where is the error*/
-        SYNTAX_ERROR_BLOCK {
-
-            @Override
-            public Sanitize next() {
                 return EDITED_DOT;
             }
         },
@@ -590,18 +607,6 @@ public abstract class SanitizingParser extends Parser {
 
             @Override
             public Sanitize next() {
-                return BLOCK_START;
-            }
-        },
-
-        /** 
-         * Try to remove the initial "if" or "unless" on the block
-         * in case it's not terminated
-         */
-        BLOCK_START {
-
-            @Override
-            public Sanitize next() {
                 return ERROR_LINE;
             }
         },
@@ -617,6 +622,14 @@ public abstract class SanitizingParser extends Parser {
         
         /** Try to cut out the current edited line, if known */
         EDITED_LINE {
+
+            @Override
+            public Sanitize next() {
+                return PREVIOUS_LINES;
+            }
+        },
+
+        PREVIOUS_LINES {
 
             @Override
             public Sanitize next() {
