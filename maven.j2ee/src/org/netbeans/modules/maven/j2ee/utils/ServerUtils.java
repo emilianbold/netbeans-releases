@@ -61,6 +61,19 @@ public final class ServerUtils {
 
 
     /**
+     * Sets {@link Server} for the given {@link Project}.
+     */
+    public static void setServer(Project project, Server server) {
+        if (server == Server.NO_SERVER_SELECTED) {
+            MavenProjectSupport.setServerID(project, null);
+            MavenProjectSupport.setServerInstanceID(project, null);
+        } else {
+            MavenProjectSupport.setServerID(project, server.getServerID());
+            MavenProjectSupport.setServerInstanceID(project, server.getServerInstanceID());
+        }
+    }
+
+    /**
      * Finds {@link Server} assigned to the given {@link Project}.
      *
      * @param project

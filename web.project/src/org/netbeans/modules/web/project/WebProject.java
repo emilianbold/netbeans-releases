@@ -163,6 +163,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.support.EjbJarSupport;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettingConstants;
 import org.netbeans.modules.javaee.project.api.ant.AntProjectUtil;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
@@ -422,7 +423,7 @@ public final class WebProject implements Project {
         webPagesFileWatch = new FileWatch(WebProjectProperties.WEB_DOCBASE_DIR);
         webInfFileWatch = new FileWatch(WebProjectProperties.WEBINF_DIR);
         // whitelist updater listens on project properties and pays attention to whitelist changes
-        whiteListUpdater = WhiteListUpdater.createWhiteListUpdater(this, evaluator());
+        whiteListUpdater = new WhiteListUpdaterImpl(this);
     }
 
     public void setProjectPropertiesSave(boolean value) {
@@ -2409,6 +2410,30 @@ public final class WebProject implements Project {
 
     }
 
+    private final class WhiteListUpdaterImpl extends WhiteListUpdater {
+
+        public WhiteListUpdaterImpl(Project project) {
+            super(project);
+        }
+
+        @Override
+        public void addSettingListener() {
+            evaluator().addPropertyChangeListener(new PropertyChangeListener() {
+
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(JavaEEProjectSettingConstants.J2EE_SERVER_INSTANCE)){
+                        checkWhiteLists();
+                    }
+                    if (evt.getPropertyName().equals(ProjectProperties.JAVAC_CLASSPATH)){
+                        // if classpath changes refresh whitelists as well:
+                        updateWhitelist(null, getServerWhiteList());
+                    }
+                }
+            });
+        }
+    }
+
     private class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplementation {
 
         private final WebProject project;
@@ -2416,6 +2441,7 @@ public final class WebProject implements Project {
 
         public JavaEEProjectSettingsImpl(WebProject project) {
             this.project = project;
+            
             evaluator().addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
@@ -2428,15 +2454,7 @@ public final class WebProject implements Project {
 
         @Override
         public void setProfile(Profile profile) {
-            try {
-                UpdateHelper helper = project.getUpdateHelper();
-                EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                projectProperties.setProperty(WebProjectProperties.J2EE_PLATFORM, profile.toPropertiesString());
-                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-                ProjectManager.getDefault().saveProject(project);
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Project properties couldn't be saved.", ex);
-            }
+            setInSharedProperties(JavaEEProjectSettingConstants.J2EE_PLATFORM, profile.toPropertiesString());
         }
 
         @Override
@@ -2446,13 +2464,34 @@ public final class WebProject implements Project {
 
         @Override
         public void setBrowserID(String browserID) {
-            // No-one is using it yet, implementation should be almost identical as setProfile(..)
-            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+            setInSharedProperties(JavaEEProjectSettingConstants.SELECTED_BROWSER, browserID);
         }
 
         @Override
         public String getBrowserID() {
-            return evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
+            return evaluator().getProperty(JavaEEProjectSettingConstants.SELECTED_BROWSER);
+        }
+
+        @Override
+        public void setServerInstanceID(String serverInstanceID) {
+            setInSharedProperties(JavaEEProjectSettingConstants.J2EE_SERVER_INSTANCE, serverInstanceID);
+        }
+
+        @Override
+        public String getServerInstanceID() {
+            return evaluator().getProperty(JavaEEProjectSettingConstants.J2EE_SERVER_INSTANCE);
+        }
+
+        private void setInSharedProperties(String key, String value) {
+            try {
+                UpdateHelper helper = project.getUpdateHelper();
+                EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                projectProperties.setProperty(key, value);
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
+                ProjectManager.getDefault().saveProject(project);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Project properties couldn't be saved.", ex);
+            }
         }
     }
 }

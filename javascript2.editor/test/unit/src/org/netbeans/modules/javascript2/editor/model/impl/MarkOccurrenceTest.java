@@ -843,6 +843,26 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/structure/issue232920.js","console.log(aaa.description.na^me);", true);
     }
     
+    public void testIssue232993_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue215757.js","   this.document = win^dow.document;", true);
+    }
+    
+    public void testIssue232993_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue215757.js","   this.docume^nt = window.document;", true);
+    }
+    
+    public void testIssue232993_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue215757.js","this.browser = brow^ser.browser;", true);
+    }
+    
+    public void testIssue232993_04() throws Exception {
+        checkOccurrences("testfiles/coloring/issue215757.js","this.browser = browser.brow^ser;", true);
+    }
+    
+    public void testIssue217769_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217769.js","a.i^n();", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

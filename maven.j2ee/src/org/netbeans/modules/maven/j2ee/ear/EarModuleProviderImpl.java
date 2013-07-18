@@ -157,6 +157,10 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
         return earimpl;
     }
 
+    public EarImpl getEarImpl() {
+        return earimpl;
+    }
+
     /**
      * Returns source deployment configuration file path for the given deployment 
      * configuration file name. 

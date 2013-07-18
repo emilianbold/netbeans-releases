@@ -47,7 +47,7 @@ package org.openide.awt;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 import javax.swing.BorderFactory;
-import javax.swing.ImageIcon;
+import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.UIManager;
 import org.openide.util.ImageUtilities;
@@ -60,12 +60,12 @@ import org.openide.util.ImageUtilities;
  */
 public final class CloseButtonFactory{
 
-    private static ImageIcon closeTabImage;
-    private static ImageIcon closeTabPressedImage;
-    private static ImageIcon closeTabMouseOverImage;
-    private static ImageIcon bigCloseTabImage;
-    private static ImageIcon bigCloseTabPressedImage;
-    private static ImageIcon bigCloseTabMouseOverImage;
+    private static Icon closeTabImage;
+    private static Icon closeTabPressedImage;
+    private static Icon closeTabMouseOverImage;
+    private static Icon bigCloseTabImage;
+    private static Icon bigCloseTabPressedImage;
+    private static Icon bigCloseTabMouseOverImage;
 
     private CloseButtonFactory() {
     }
@@ -155,7 +155,13 @@ public final class CloseButtonFactory{
         return "GTK".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
     }
 
-    private static ImageIcon getCloseTabImage() {
+    private static Icon getCloseTabImage() {
+        if( null == closeTabImage ) {
+            String path = UIManager.getString("nb.close.tab.icon.enabled.name" ); //NOI18N
+            if( null != path ) {
+                closeTabImage = ImageUtilities.loadImageIcon(path, true); // NOI18N
+            }
+        }
         if( null == closeTabImage ) {
             if( isWindows8LaF() ) {
                 closeTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_enabled.png", true); // NOI18N
@@ -176,7 +182,13 @@ public final class CloseButtonFactory{
         return closeTabImage;
     }
 
-    private static ImageIcon getCloseTabPressedImage() {
+    private static Icon getCloseTabPressedImage() {
+        if( null == closeTabPressedImage ) {
+            String path = UIManager.getString("nb.close.tab.icon.pressed.name" ); //NOI18N
+            if( null != path ) {
+                closeTabPressedImage = ImageUtilities.loadImageIcon(path, true); // NOI18N
+            }
+        }
         if( null == closeTabPressedImage ) {
             if( isWindows8LaF() ) {
                 closeTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_pressed.png", true); // NOI18N
@@ -197,7 +209,13 @@ public final class CloseButtonFactory{
         return closeTabPressedImage;
     }
 
-    private static ImageIcon getCloseTabRolloverImage() {
+    private static Icon getCloseTabRolloverImage() {
+        if( null == closeTabMouseOverImage ) {
+            String path = UIManager.getString("nb.close.tab.icon.rollover.name" ); //NOI18N
+            if( null != path ) {
+                closeTabMouseOverImage = ImageUtilities.loadImageIcon(path, true); // NOI18N
+            }
+        }
         if( null == closeTabMouseOverImage ) {
             if( isWindows8LaF() ) {
                 closeTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_rollover.png", true); // NOI18N
@@ -219,7 +237,13 @@ public final class CloseButtonFactory{
     }
 
 
-    private static ImageIcon getBigCloseTabImage() {
+    private static Icon getBigCloseTabImage() {
+        if( null == bigCloseTabImage ) {
+            String path = UIManager.getString("nb.bigclose.tab.icon.enabled.name" ); //NOI18N
+            if( null != path ) {
+                bigCloseTabImage = ImageUtilities.loadImageIcon(path, true); // NOI18N
+            }
+        }
         if( null == bigCloseTabImage ) {
             if( isWindows8LaF() ) {
                 bigCloseTabImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_enabled.png", true); // NOI18N
@@ -240,7 +264,13 @@ public final class CloseButtonFactory{
         return bigCloseTabImage;
     }
 
-    private static  ImageIcon getBigCloseTabPressedImage() {
+    private static  Icon getBigCloseTabPressedImage() {
+        if( null == bigCloseTabPressedImage ) {
+            String path = UIManager.getString("nb.bigclose.tab.icon.pressed.name" ); //NOI18N
+            if( null != path ) {
+                bigCloseTabPressedImage = ImageUtilities.loadImageIcon(path, true); // NOI18N
+            }
+        }
         if( null == bigCloseTabPressedImage ) {
             if( isWindows8LaF() ) {
                 bigCloseTabPressedImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_pressed.png", true); // NOI18N
@@ -261,7 +291,13 @@ public final class CloseButtonFactory{
         return bigCloseTabPressedImage;
     }
 
-    private static ImageIcon getBigCloseTabRolloverImage() {
+    private static Icon getBigCloseTabRolloverImage() {
+        if( null == bigCloseTabMouseOverImage ) {
+            String path = UIManager.getString("nb.bigclose.tab.icon.rollover.name" ); //NOI18N
+            if( null != path ) {
+                bigCloseTabMouseOverImage = ImageUtilities.loadImageIcon(path, true); // NOI18N
+            }
+        }
         if( null == bigCloseTabMouseOverImage ) {
             if( isWindows8LaF() ) {
                 bigCloseTabMouseOverImage = ImageUtilities.loadImageIcon("org/openide/awt/resources/win8_bigclose_rollover.png", true); // NOI18N

@@ -138,14 +138,11 @@ public class JsHintsProvider implements HintsProvider {
 
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        ParserResult parserResult = context.parserResult;
+        JsParserResult parserResult = (JsParserResult) context.parserResult;
         if (parserResult != null) {
             List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
             // if in embedded
-            String mimepath = parserResult.getSnapshot().getMimePath().getPath();
-            //XXX this condition is a duplicated from JsParserError
-            if (!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimepath)
-                && !JsTokenId.JSON_MIME_TYPE.equals(mimepath)) {
+            if (parserResult.isEmbedded()) {
                     for (Error error : errors) {
                         if (!(error instanceof Error.Badging) || ((Error.Badging) error).showExplorerBadge()) {
                             unhandled.add(error);

@@ -101,6 +101,7 @@ public class BrowserConsoleLogger implements Console.Listener {
     /** The last logged message. */
     private ConsoleMessage lastMessage;
     private Console.InputCallback input;
+    private ConsoleReader reader;
     private boolean isFoldingSupported;
     //private Color colorErrBrighter;
     private final AtomicBoolean shownOnError = new AtomicBoolean(false);
@@ -135,11 +136,13 @@ public class BrowserConsoleLogger implements Console.Listener {
         isFoldingSupported = IOFolding.isSupported(io);
         //io.getOut().print(PROMPT);
         Reader r = io.getIn();
-        rp.post(new ConsoleReader(r));
+        reader = new ConsoleReader(r);
+        rp.post(reader);
     }
 
     public void close() {
         LOG.fine("close() closing IO");
+        reader.closing();
         io.getErr().close();
         io.getOut().close();
         try {
@@ -577,23 +580,34 @@ public class BrowserConsoleLogger implements Console.Listener {
     private class ConsoleReader implements Runnable {
         
         private final BufferedReader r;
+        private volatile boolean closing = false;
         
         public ConsoleReader(Reader r) {
             this.r = new BufferedReader(r);
+        }
+        
+        void closing() {
+            closing = true;
         }
 
         @Override
         public void run() {
             try {
                 String line;
-                while((line = r.readLine()) != null) {
+                while (!closing) {
+                    line = r.readLine();
                     LOG.log(Level.FINE, "Got line from Console Reader: \"{0}\"", line);
-                    input.line(line);
-                    io.getOut().print(PROMPT);
+                    if (line != null) {
+                        input.line(line);
+                        io.getOut().print(PROMPT);
+                    }
                 }
             } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
+                if (!closing) {
+                    Exceptions.printStackTrace(ex);
+                }
             }
+            LOG.log(Level.FINE, "ConsoleReader has finished. Bye.");
         }
         
     }

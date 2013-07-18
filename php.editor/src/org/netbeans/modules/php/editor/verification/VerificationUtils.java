@@ -69,7 +69,7 @@ public final class VerificationUtils {
             try {
                 int lineBegin = caretOffset > 0 ? Utilities.getRowStart(doc, caretOffset) : -1;
                 int lineEnd = (lineBegin != -1) ? Utilities.getRowEnd(doc, caretOffset) : -1;
-                if (lineBegin != -1 && lineEnd != -1 && lineBegin <= lineEnd) {
+                if (lineBegin > -1 && lineEnd != -1 && lineBegin <= lineEnd) {
                     result = new OffsetRange(lineBegin, lineEnd);
                 }
             } catch (BadLocationException ex) {

@@ -192,9 +192,6 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         variablesCache.put(prop, res);
         if (prop.getType() == RemoteObject.Type.OBJECT) {
             for (PropertyDescriptor desc : prop.getProperties()) {
-                if (desc.getValue() == null || desc.getValue().getType() == RemoteObject.Type.FUNCTION) {
-                    continue;
-                }
                 res.add(new ScopedRemoteObject(desc.getValue(), desc.getName(), scope));
             }
         }
@@ -306,20 +303,26 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
             RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
             if (LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
                 String value = var.getValueAsString();
-                if (value.isEmpty() && var.getType() == RemoteObject.Type.OBJECT) {
-                    value = var.getDescription();
+                if (value.isEmpty()) {
+                    RemoteObject.Type type = var.getType();
+                    if (type == RemoteObject.Type.OBJECT ||
+                        type == RemoteObject.Type.FUNCTION) {
+                        
+                        value = var.getDescription();
+                    }
                 }
                 return value;
             } else if (LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
-                if (var.getType() == RemoteObject.Type.OBJECT) {
+                RemoteObject.Type type = var.getType();
+                if (type == RemoteObject.Type.OBJECT) {
                     String clazz = var.getClassName();
                     if (clazz == null) {
-                        return var.getType().getName();
+                        return type.getName();
                     } else {
                         return clazz;
                     }
                 } else {
-                    return var.getType().getName();
+                    return type.getName();
                 }
             } else if (LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
                 return var.getValueAsString();
