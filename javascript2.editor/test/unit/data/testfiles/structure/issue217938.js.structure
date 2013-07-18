@@ -1,4 +1,4 @@
 Core:CLASS:[PUBLIC]:ESCAPED{Core}:
   ItemsCache:METHOD:[PUBLIC]:ESCAPED{ItemsCache}ESCAPED{(}ESCAPED{par1}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
   par1:FIELD:[PUBLIC]:ESCAPED{par1}:
-  par2:FIELD:[PUBLIC]:ESCAPED{par2}:
+  par2:CLASS:[PUBLIC]:ESCAPED{par2}:
