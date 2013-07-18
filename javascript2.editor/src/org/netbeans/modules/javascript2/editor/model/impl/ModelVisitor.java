@@ -718,6 +718,12 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
 
+        // mark constructors 
+        if (fncScope != null && functionNode.getKind() != FunctionNode.Kind.SCRIPT && docHolder.isClass(functionNode)) {
+            // needs to be marked before going through the nodes
+            fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
+        }
+        
         // go through all function statements
         for (Node node : functionNode.getStatements()) {
             node.accept(this);
@@ -768,27 +774,6 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
 
-            // mark constructors
-            if (functionNode.getKind() != FunctionNode.Kind.SCRIPT && docHolder.isClass(functionNode)) {
-                fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
-            }
-//            Set<JsModifier> modifiers = docHolder.getModifiers(functionNode);
-//            for(JsModifier modifier : modifiers) {
-//                switch(modifier) {
-//                    case PUBLIC:
-//                        fncScope.getModifiers().add(Modifier.PUBLIC);
-//                        fncScope.getModifiers().remove(Modifier.PRIVATE);
-//                        break;
-//                    case PRIVATE:
-//                        fncScope.getModifiers().add(Modifier.PRIVATE);
-//                        fncScope.getModifiers().remove(Modifier.PUBLIC);
-//                        break;
-//                    case STATIC:
-//                        fncScope.getModifiers().add(Modifier.STATIC);
-//                        break;
-//                }
-//                
-//            }
         }
 
         for (FunctionNode fn : functions) {
@@ -943,6 +928,7 @@ public class ModelVisitor extends PathNodeVisitor {
             List<Identifier> fqName = null;
             int pathSize = getPath().size();
             boolean isDeclaredInParent = false;
+            boolean isDeclaredThroughThis = false;
             boolean isPrivate = false;
             boolean treatAsAnonymous = false;
             
@@ -972,8 +958,9 @@ public class ModelVisitor extends PathNodeVisitor {
                 isDeclaredInParent = true;
             } else if (lastVisited instanceof BinaryNode) {
                 BinaryNode binNode = (BinaryNode) lastVisited;
-                if (binNode.lhs() instanceof IndexNode) {
-                    Node index =  ((IndexNode)binNode.lhs()).getIndex();
+                Node binLhs = binNode.lhs();
+                if (binLhs instanceof IndexNode) {
+                    Node index =  ((IndexNode)binLhs).getIndex();
                     if (!(index instanceof LiteralNode && ((LiteralNode)index).isString())) {
                         treatAsAnonymous = true;
                     }
@@ -986,10 +973,13 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                     }
                     fqName = getName(binNode, parserResult);
-                    if (binNode.lhs() instanceof IdentNode || (binNode.lhs() instanceof AccessNode
-                            && ((AccessNode) binNode.lhs()).getBase() instanceof IdentNode
-                            && ((IdentNode) ((AccessNode) binNode.lhs()).getBase()).getName().equals("this"))) {
+                    if (binLhs instanceof IdentNode || (binLhs instanceof AccessNode
+                            && ((AccessNode) binLhs).getBase() instanceof IdentNode
+                            && ((IdentNode) ((AccessNode) binLhs).getBase()).getName().equals("this"))) {
                         isDeclaredInParent = true;
+                        if (binLhs instanceof AccessNode) {
+                            isDeclaredThroughThis = true;
+                        }
                     }
                 }
             }
@@ -1009,7 +999,14 @@ public class ModelVisitor extends PathNodeVisitor {
                     objectScope = modelBuilder.getCurrentObject();
                 } else {
                     Identifier name = fqName.get(fqName.size() - 1);
-                    JsObject alreadyThere = ModelUtils.getJsObjectByName(modelBuilder.getCurrentDeclarationFunction(),  name.getName());
+                    JsObject alreadyThere = null;
+                    if (isDeclaredThroughThis) {
+                        JsObject thisIs = resolveThis(modelBuilder.getCurrentObject());
+                        alreadyThere = thisIs.getProperty(name.getName());
+                    } else {
+                        alreadyThere = ModelUtils.getJsObjectByName(modelBuilder.getCurrentDeclarationFunction(), name.getName());
+                    }
+                     
                     objectScope = (alreadyThere == null) 
                             ? ModelElementFactory.create(parserResult, objectNode, fqName, modelBuilder, isDeclaredInParent)
                             : (JsObjectImpl)alreadyThere;
@@ -1590,6 +1587,9 @@ public class ModelVisitor extends PathNodeVisitor {
         if (ModelUtils.PROTOTYPE.equals(parent.getName())) {
             // this is used in a function defined in prototype object
             return where.getParent().getParent();
+        }
+        if (whereKind == JsElement.Kind.CONSTRUCTOR) {
+            return where;
         }
         if (whereKind.isFunction() && !where.getModifiers().contains(Modifier.PRIVATE) && !where.isAnonymous()) {
             // public or protected method

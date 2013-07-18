@@ -246,6 +246,8 @@ public final class GlobalFormatAction extends AbstractAction {
                     }
 
                     ec.saveDocument();
+                } catch (UserQuestionException uqe) {
+                    uqe.confirmed();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } finally {

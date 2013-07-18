@@ -66,7 +66,7 @@ import org.openide.util.WeakListeners;
  */
 @ActionsProvider.Registration(actions={"toggleBreakpoint"}, activateForMIMETypes={Utils.MIME_TYPE})
 public class BreakpointActionProvider extends ActionsProviderSupport
-        implements PropertyChangeListener 
+        implements PropertyChangeListener
 {
 
     public BreakpointActionProvider() {
@@ -86,7 +86,7 @@ public class BreakpointActionProvider extends ActionsProviderSupport
                 @Override
                 public void run() {
                     addBreakpoints();
-                } 
+                }
             });
         }
     }
@@ -95,7 +95,7 @@ public class BreakpointActionProvider extends ActionsProviderSupport
     public Set getActions() {
         return Collections.singleton(ActionsManager.ACTION_TOGGLE_BREAKPOINT );
     }
-    
+
     private void addBreakpoints() {
         Line line = Utils.getCurrentLine();
 
@@ -116,10 +116,11 @@ public class BreakpointActionProvider extends ActionsProviderSupport
                 break;
             }
         }
-
+        LineBreakpoint lineBreakpoint = new LineBreakpoint(line);
+        lineBreakpoint.refreshValidity();
         if ( add ) {
             DebuggerManager.getDebuggerManager().addBreakpoint(
-                    new LineBreakpoint(line));
+                    lineBreakpoint);
         }
     }
 

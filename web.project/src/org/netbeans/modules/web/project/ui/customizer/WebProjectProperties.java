@@ -215,7 +215,10 @@ final public class WebProjectProperties {
     
     public static final String ANT_DEPLOY_BUILD_SCRIPT = "nbproject/ant-deploy.xml"; // NOI18N
     public static final String SELECTED_BROWSER = "selected.browser"; //NOI18N
-    
+
+    //Files excluded from WAR:
+    public static final String DIST_ARCHIVE_EXCLUDES = "dist.archive.excludes";   //NOI18N
+
     private static Logger LOGGER = Logger.getLogger(WebProjectProperties.class.getName());
     private static RequestProcessor RP = new RequestProcessor("WebProjectProperties", 5);
 

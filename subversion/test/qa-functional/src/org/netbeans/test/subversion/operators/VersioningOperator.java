@@ -88,7 +88,8 @@ public class VersioningOperator extends TopComponentOperator {
      * VersioningOperator.
      * @return new instance of VersioningOperator */
     public static VersioningOperator invoke() {
-        new Action("Window|" + VERSIONING_TITLE + "|" + SUBVERSION_TITLE, null).perform();
+        //new Action("Window|" + VERSIONING_TITLE + "|" + SUBVERSION_TITLE, null).perform();
+        new Action("Team|Show Changes", null).perform();
         return new VersioningOperator();
     }
     

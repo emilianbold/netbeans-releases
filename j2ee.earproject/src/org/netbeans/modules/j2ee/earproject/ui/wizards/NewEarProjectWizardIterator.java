@@ -229,7 +229,7 @@ public class NewEarProjectWizardIterator implements WizardDescriptor.ProgressIns
             FileObject webAppDirFO = FileUtil.toFileObject(webAppDir);
             webProject = ProjectManager.getDefault().findProject(webAppDirFO);
             WebModule wm = WebModule.getWebModule(webAppDirFO);
-            WebProjectUtilities.ensureWelcomePage(wm.getDocumentBase(), wm.getDeploymentDescriptor());
+            WebProjectUtilities.ensureWelcomePage(wm.getDocumentBase(), wm.getDeploymentDescriptor(), j2eeProfile);
             
             EarProjectProperties.addJ2eeSubprojects(earProject, new Project[] { webProject });
             resultSet.add(webAppDirFO);

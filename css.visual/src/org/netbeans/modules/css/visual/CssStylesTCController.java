@@ -46,6 +46,7 @@ package org.netbeans.modules.css.visual;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.css.visual.api.CssStylesTC;
 import org.netbeans.modules.web.browser.api.Page;
@@ -57,6 +58,7 @@ import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
+import org.openide.windows.Mode;
 import org.openide.windows.TopComponent;
 import org.openide.windows.TopComponent.Registry;
 import org.openide.windows.TopComponentGroup;
@@ -65,7 +67,8 @@ import org.openide.windows.WindowSystemEvent;
 import org.openide.windows.WindowSystemListener;
 
 /**
- * Class responsible for management (for example, opening and closing) of CSS Styles view.
+ * Class responsible for management (for example, opening and closing) of CSS
+ * Styles view.
  *
  * @author mfukala@netbeans.org
  * @author Jan Stola
@@ -73,16 +76,17 @@ import org.openide.windows.WindowSystemListener;
 public class CssStylesTCController implements PropertyChangeListener, LookupListener {
 
     private static final RequestProcessor RP = new RequestProcessor(CssStylesTCController.class);
-    
     private static CssStylesTCController STATIC_INSTANCE;
     
+    public static final String CSS_TC_MODE = "properties"; //NOI18N
+
     //called from CssCaretAwareSourceTask constructor
     static synchronized void init() {
         if (STATIC_INSTANCE == null) {
             STATIC_INSTANCE = new CssStylesTCController();
         }
     }
-    
+
     public CssStylesTCController() {
         //register a weak property change listener to the window manager registry
         //XXX is the weak listener really necessary? Is the registry ever GCed?
@@ -97,7 +101,7 @@ public class CssStylesTCController implements PropertyChangeListener, LookupList
         //called from CssCaretAwareSourceTask constructor when the caret is set to a css source code
         //for the first time, which means if we initialize the window listener now, we won't get the component
         //activated event since it happened just before the caret was set.
-    
+
         //fire an artificial even so the rule editor possibly opens
         //the active TC should be the editor which triggered the css caret event
         propertyChange(new PropertyChangeEvent(this, TopComponent.Registry.PROP_ACTIVATED, null,
@@ -129,9 +133,11 @@ public class CssStylesTCController implements PropertyChangeListener, LookupList
                     EventQueue.invokeLater(new Runnable() {
                         @Override
                         public void run() {
-                            CssStylesTC cssStylesTC = getCssStylesTC();
-                            if(cssStylesTC != null) {
-                                cssStylesTC.setContext(file);
+                            if (isCSSStylesTCOpened()) {
+                                CssStylesTC cssStylesTC = getCssStylesTC();
+                                if (cssStylesTC != null) {
+                                    cssStylesTC.setContext(file);
+                                }
                             }
                         }
                     });
@@ -161,11 +167,29 @@ public class CssStylesTCController implements PropertyChangeListener, LookupList
         }
         return tc.getLookup().lookup(FileObject.class);
     }
+    
+    /**
+     * Checks if the CssStylesTC TopComponent is opened but does not initialize it.
+     */
+    private boolean isCSSStylesTCOpened() {
+        WindowManager wm = WindowManager.getDefault();
+        for(Mode mode : wm.getModes()) {
+            if(CssStylesTCController.CSS_TC_MODE.equals(mode.getName())) {
+                for(TopComponent tc : wm.getOpenedTopComponents(mode)) {
+                    if(tc instanceof CssStylesTC) {
+                        return true;
+                    }
+                }
+                break;
+            }
+        }
+        return false;
+    }
 
     private CssStylesTC getCssStylesTC() {
-        return (CssStylesTC)WindowManager.getDefault().findTopComponent("CssStylesTC"); // NOI18N
+        return (CssStylesTC) WindowManager.getDefault().findTopComponent("CssStylesTC"); // NOI18N
     }
-    
+
     static TopComponentGroup getCssStylesTCGroup() {
         return WindowManager.getDefault().findTopComponentGroup("CssStyles"); //NOI18N
     }
@@ -174,7 +198,7 @@ public class CssStylesTCController implements PropertyChangeListener, LookupList
     public final void resultChanged(LookupEvent ev) {
         PageInspector pageInspector = PageInspector.getDefault();
         if (pageInspector != null) {
-            Lookup.Result lookupResult = (Lookup.Result)ev.getSource();
+            Lookup.Result lookupResult = (Lookup.Result) ev.getSource();
             lookupResult.removeLookupListener(this);
             pageInspector.addPropertyChangeListener(this);
         }
@@ -185,7 +209,11 @@ public class CssStylesTCController implements PropertyChangeListener, LookupList
      */
     @OnStop
     public static class ShutdownHook implements Callable<Boolean>, WindowSystemListener {
-        /** Determines whether the window system listener has been installed already. */
+
+        /**
+         * Determines whether the window system listener has been installed
+         * already.
+         */
         private boolean listenerInstalled;
 
         @Override
@@ -209,7 +237,7 @@ public class CssStylesTCController implements PropertyChangeListener, LookupList
         public void beforeSave(WindowSystemEvent event) {
             // Close the group before window system saves its state (during IDE shutdown)
             TopComponentGroup group = getCssStylesTCGroup();
-            if(group != null) {
+            if (group != null) {
                 group.close();
             }
         }
@@ -217,7 +245,5 @@ public class CssStylesTCController implements PropertyChangeListener, LookupList
         @Override
         public void afterSave(WindowSystemEvent event) {
         }
-
     }
-
 }

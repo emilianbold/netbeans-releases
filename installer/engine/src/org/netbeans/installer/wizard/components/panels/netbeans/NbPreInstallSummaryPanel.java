@@ -45,7 +45,15 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.IOException;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.installer.Installer;
@@ -55,12 +63,23 @@ import org.netbeans.installer.product.RegistryType;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.filters.OrFilter;
 import org.netbeans.installer.product.filters.ProductFilter;
-import org.netbeans.installer.utils.*;
+import org.netbeans.installer.utils.BrowserUtils;
+import org.netbeans.installer.utils.ErrorManager;
+import org.netbeans.installer.utils.FileUtils;
+import org.netbeans.installer.utils.LogManager;
+import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
+import org.netbeans.installer.utils.SystemUtils;
+import org.netbeans.installer.utils.UninstallUtils;
 import org.netbeans.installer.utils.applications.NetBeansUtils;
 import org.netbeans.installer.utils.exceptions.InitializationException;
 import org.netbeans.installer.utils.exceptions.NativeException;
 import org.netbeans.installer.utils.exceptions.XMLException;
-import org.netbeans.installer.utils.helper.*;
+import org.netbeans.installer.utils.helper.Dependency;
+import org.netbeans.installer.utils.helper.ErrorLevel;
+import org.netbeans.installer.utils.helper.FilesList;
+import org.netbeans.installer.utils.helper.Pair;
+import org.netbeans.installer.utils.helper.Status;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiLabel;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
@@ -212,8 +231,21 @@ public class NbPreInstallSummaryPanel extends ErrorMessagePanel {
                 }
             }
         }
-        boolean result = !installedFiles.containsAll(existentFilesList);
-        existentFilesList.removeAll(installedFiles);
+        
+        //add all updated files and downloaded plugins
+        installedFiles.addAll(UninstallUtils.getFilesToDeteleAfterUninstallation());
+                                      
+        existentFilesList.removeAll(installedFiles);        
+        
+        //remove folders - there still might be some empty folders
+        Iterator<File> eflIterator = existentFilesList.iterator();
+        while (eflIterator.hasNext()) {
+            if (eflIterator.next().isDirectory()) {
+                eflIterator.remove();
+            }
+        }
+        
+        boolean result = !existentFilesList.isEmpty();
         LogManager.log(ErrorLevel.DEBUG, "installedFiles " + Arrays.toString(installedFiles.toArray()));
         LogManager.log(ErrorLevel.DEBUG, "existentFilesList after removal " + Arrays.toString(existentFilesList.toArray()));
         LogManager.log("areThereNewFiles returned " + result);

@@ -31,6 +31,10 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
     initGuiSingle:METHOD:[PRIVATE]:ESCAPED{initGuiSingle}ESCAPED{(}ESCAPED{)}:
     leftSelectOptionsData:VARIABLE:[PRIVATE]:ESCAPED{leftSelectOptionsData}<font color="#999999">ESCAPED{ : }Array</font>:
     moveSelectOptions:METHOD:[PRIVATE]:ESCAPED{moveSelectOptions}ESCAPED{(}ESCAPED{target}ESCAPED{)}:
+      data:CLASS:[PRIVATE]:ESCAPED{data}:
+        index:FIELD:[PUBLIC]:ESCAPED{index}<font color="#999999">ESCAPED{ : }@var;index</font>:
+        text:FIELD:[PUBLIC]:ESCAPED{text}<font color="#999999">ESCAPED{ : }@var;text</font>:
+        value:FIELD:[PUBLIC]:ESCAPED{value}<font color="#999999">ESCAPED{ : }@var;value</font>:
     plugin:CLASS:[PRIVATE]:ESCAPED{plugin}:
       init:METHOD:[PUBLIC]:ESCAPED{init}ESCAPED{(}ESCAPED{)}:
       settings:CLASS:[PUBLIC]:ESCAPED{settings}:
@@ -40,4 +44,8 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
       val:METHOD:[PUBLIC]:ESCAPED{val}ESCAPED{(}ESCAPED{values}ESCAPED{)}<font color="#999999">ESCAPED{ : }$.multicombo.val.returnArray</font>:
     resetSearchWidth:METHOD:[PRIVATE]:ESCAPED{resetSearchWidth}ESCAPED{(}ESCAPED{)}:
     resizeSelect:METHOD:[PRIVATE]:ESCAPED{resizeSelect}ESCAPED{(}ESCAPED{target}ESCAPED{, }ESCAPED{options}ESCAPED{)}:
+      defaultOptions:CLASS:[PRIVATE]:ESCAPED{defaultOptions}:
+        sizeAttr:FIELD:[PUBLIC]:ESCAPED{sizeAttr}<font color="#999999">ESCAPED{ : }Boolean</font>:
+        toggle:FIELD:[PUBLIC]:ESCAPED{toggle}<font color="#999999">ESCAPED{ : }Boolean</font>:
+        width:FIELD:[PUBLIC]:ESCAPED{width}<font color="#999999">ESCAPED{ : }Boolean</font>:
     rightSelectOptionsData:VARIABLE:[PRIVATE]:ESCAPED{rightSelectOptionsData}<font color="#999999">ESCAPED{ : }Array</font>:

@@ -46,6 +46,7 @@ package org.openide.util;
 
 import java.lang.ref.*;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Handler;
@@ -144,6 +145,45 @@ public class RequestProcessorTest extends NbTestCase {
         }).waitFinished();
         assertTrue("Inner created task finished", executed[0]);
     }
+    
+    public void testWaitFinishedByVladimir() throws Exception {
+        final RequestProcessor RP = new RequestProcessor("BrokenRP", 2);
+        final Logger LOG = Logger.getLogger("test.waitFinishedByVladimir");
+        final AtomicBoolean outerDone = new AtomicBoolean(false);
+        RequestProcessor.Task outerTask;
+        outerTask = RP.post(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final AtomicBoolean innerDone = new AtomicBoolean(false);
+                    RequestProcessor.Task innerTask = RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            LOG.info("Task1 start");
+                            try {
+                                Thread.sleep(5000);
+                            } catch (InterruptedException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                            LOG.info("Task1 finished 1");
+                            innerDone.set(true);
+                            LOG.info("Task1 finished marked");
+                        }
+                    });
+                    LOG.info("wait Task1");
+                    Thread.sleep(1000);
+                    innerTask.waitFinished();
+                    LOG.info("after wait Task1 " + innerDone);
+                    outerDone.set(innerDone.get());
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        });
+        outerTask.waitFinished();
+        LOG.info("after wait Post " + outerDone);
+        assertTrue(outerDone.get());
+    }    
     
     public void testNonParallelReSchedule() throws Exception {
         final AtomicInteger counter = new AtomicInteger();

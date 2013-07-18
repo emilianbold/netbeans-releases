@@ -22,6 +22,14 @@ public abstract class QueryAccessor<P> {
     public abstract Class<P> type();
     
     /**
+     * Determines whether this project has a tasks service or not
+     * 
+     * @param project
+     * @return <code>true</code> in case the given project has a tasks service otherwise <code>false</code>
+     */
+    public abstract boolean hasTasks(ProjectHandle<P> project);
+    
+    /**
      * Retrieve the handle for a query listing all new or changed issues in
      * the given project
      *

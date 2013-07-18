@@ -384,7 +384,7 @@ class LicenseHeadersPanel extends javax.swing.JPanel {
         category.setErrorMessage(null);
         String path = txtProject.getText();
         FileObject fo = handler.resolveProjectLocation(path);
-        if (fo != null) {
+        if (fo != null && fo.isData()) {
             try {
                 epLicense.setText(fo.asText());
             } catch (IOException ex) {

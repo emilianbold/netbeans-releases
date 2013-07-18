@@ -97,6 +97,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.UseStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultTreePathVisitor;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.netbeans.modules.php.project.api.PhpAnnotations;
 
 /**
  *
@@ -132,11 +133,16 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public static final EnumSet<ColoringAttributes> METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.CUSTOM1);
     public static final EnumSet<ColoringAttributes> STATIC_METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.CUSTOM1);
 
-    // @GuarderBy("this")
-    private boolean cancelled;
+    private volatile boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
+    private final boolean isResolveDeprecatedElements;
 
     public SemanticAnalysis() {
+        this(PhpAnnotations.getDefault().isResolveDeprecatedElements());
+    }
+
+    public SemanticAnalysis(boolean isResolveDeprecatedElements) {
+        this.isResolveDeprecatedElements = isResolveDeprecatedElements;
         semanticHighlights = null;
     }
 
@@ -146,7 +152,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     }
 
     @Override
-    public synchronized void cancel() {
+    public void cancel() {
         cancelled = true;
     }
 
@@ -174,12 +180,16 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         }
     }
 
-    protected final synchronized boolean isCancelled() {
+    protected final boolean isCancelled() {
         return cancelled;
     }
 
-    protected final synchronized void resume() {
+    protected final void resume() {
         cancelled = false;
+    }
+
+    private boolean isResolveDeprecatedElements() {
+        return isResolveDeprecatedElements;
     }
 
     @Override
@@ -382,7 +392,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private boolean isDeprecatedTypeDeclaration(Identifier typeName) {
             boolean isDeprecated = false;
-            if (!isCancelled()) {
+            if (!isCancelled() && isResolveDeprecatedElements()) {
                 VariableScope variableScope = model.getVariableScope(typeName.getStartOffset());
                 QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), typeName.getStartOffset(), variableScope);
                 for (TypeElement typeElement : getDeprecatedTypes()) {
@@ -409,7 +419,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private boolean isDeprecatedFunctionDeclaration(Identifier functionName) {
             boolean isDeprecated = false;
-            if (!isCancelled()) {
+            if (!isCancelled() && isResolveDeprecatedElements()) {
                 for (FunctionElement functionElement : getDeprecatedFunctions()) {
                     if (functionElement.getName().equals(functionName.getName())) {
                         isDeprecated = true;
@@ -461,7 +471,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private boolean isDeprecatedMethodDeclaration(Identifier methodName) {
             boolean isDeprecated = false;
-            if (!isCancelled()) {
+            if (!isCancelled() && isResolveDeprecatedElements()) {
                 VariableScope variableScope = model.getVariableScope(methodName.getStartOffset());
                 QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
                         QualifiedName.create(typeDeclaration.getName()),
@@ -577,7 +587,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private boolean isDeprecatedFieldDeclaration(Variable variable) {
             boolean isDeprecated = false;
-            if (!isCancelled()) {
+            if (!isCancelled() && isResolveDeprecatedElements()) {
                 String variableName = CodeUtils.extractVariableName(variable);
                 VariableScope variableScope = model.getVariableScope(variable.getStartOffset());
                 QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
@@ -684,7 +694,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private boolean isDeprecatedConstantDeclaration(Identifier constantName) {
             boolean isDeprecated = false;
-            if (!isCancelled()) {
+            if (!isCancelled() && isResolveDeprecatedElements()) {
                 VariableScope variableScope = model.getVariableScope(constantName.getStartOffset());
                 QualifiedName typeFullyQualifiedName = VariousUtils.getFullyQualifiedName(
                         QualifiedName.create(typeDeclaration.getName()),
@@ -742,7 +752,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
         private boolean isDeprecatedType(QualifiedName qualifiedName, int offset) {
             boolean isDeprecated = false;
-            if (!isCancelled()) {
+            if (!isCancelled() && isResolveDeprecatedElements()) {
                 VariableScope variableScope = model.getVariableScope(offset);
                 QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(qualifiedName, offset, variableScope);
                 for (TypeElement typeElement : getDeprecatedTypes()) {

@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.GlassFishStatus;
 import org.glassfish.tools.ide.admin.CommandSetProperty;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.netbeans.api.server.ServerInstance;
@@ -252,7 +253,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 }
             }
         }
-
+        GlassFishStatus.remove(si);
         if(result) {
             ConfigBuilderProvider.destroyBuilder(si);
             support.fireChange();

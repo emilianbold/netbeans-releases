@@ -75,7 +75,12 @@ public class Issue226152Test  extends JsTestBase{
     public void testIssue226152_03() throws Exception {
         checkDeclaration("/testfiles/navigation/226152/issue226152B.js", "cc = new Test22^6152(33);", "issue226152A.js", 9);
     }
-    
+
+    @Override
+    protected boolean cleanCacheDir() {
+        return false;
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

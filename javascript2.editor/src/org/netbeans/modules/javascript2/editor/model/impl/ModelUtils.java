@@ -224,6 +224,10 @@ public class ModelUtils {
         if (result.getParent() != null && result.getParent() instanceof DeclarationScope) {
             result = result.getParent();
         } 
+        if (!(result instanceof DeclarationScope)) {
+            // this shouldn't happened, basically it means that the model is broken and has an object without parent
+            result = getGlobalObject(object);
+        }
         return (DeclarationScope)result;
     }
 
@@ -389,7 +393,7 @@ public class ModelUtils {
                             JsFunction function = rObject instanceof JsFunctionImpl
                                     ? (JsFunctionImpl) rObject
                                     : rObject instanceof JsFunctionReference ? ((JsFunctionReference) rObject).getOriginal() : null;
-                            if (function != null && function != object.getParent()) {
+                            if (function != null && function.getParent().equals(object.getParent())) {
                                 // creates reference to the original function
                                 object.getParent().addProperty(object.getName(), new JsFunctionReference(
                                         object.getParent(), object.getDeclarationName(), function, true, null));

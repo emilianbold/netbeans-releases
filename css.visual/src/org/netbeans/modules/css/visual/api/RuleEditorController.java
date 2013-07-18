@@ -82,7 +82,7 @@ import org.openide.util.Parameters;
  * 
  * </pre>
  * 
- * All the {@link RuleEditorController} methods may be called from a non AWT thread.
+ * All the {@link RuleEditorController} methods except {@link #getRuleEditorComponent() } may be called from a non AWT thread.
  * 
  * TODO:
  * 1) consider an ability to get the filters panel and place it to a component outside
@@ -121,7 +121,10 @@ public final class RuleEditorController {
      * @return non null value
      */
     public static RuleEditorController createInstance() {
-        return new RuleEditorController(new RuleEditorPanel());
+        return new RuleEditorController();
+    }
+    
+    private RuleEditorController() {
     }
     
     private RuleEditorController(RuleEditorPanel peer) {
@@ -130,13 +133,18 @@ public final class RuleEditorController {
     
     /**
      * Gets the rule editor UI component.
+     * Must be called in EDT.
+     * 
      * @return non null value
      */
     public JComponent getRuleEditorComponent() {
-        return peer;
+        return getRuleEditorPanel();
     }
     
-    RuleEditorPanel getRuleEditorPanel() {
+    synchronized RuleEditorPanel getRuleEditorPanel() {
+        if(peer == null) {
+            peer = new RuleEditorPanel();
+        }
         return peer;
     }
     
@@ -156,7 +164,7 @@ public final class RuleEditorController {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                peer.setModel(cssSourceModel);
+                getRuleEditorPanel().setModel(cssSourceModel);
             }
         });
     }
@@ -172,7 +180,7 @@ public final class RuleEditorController {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                peer.setRule(rule);
+                getRuleEditorPanel().setRule(rule);
             }
         });
     }
@@ -186,7 +194,7 @@ public final class RuleEditorController {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                peer.setNoRuleState();
+                getRuleEditorPanel().setNoRuleState();
             }
         });
     }
@@ -205,7 +213,7 @@ public final class RuleEditorController {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                peer.setDeclarationInfo(declaration, declarationInfo);
+                getRuleEditorPanel().setDeclarationInfo(declaration, declarationInfo);
             }
         });
     }
@@ -219,7 +227,7 @@ public final class RuleEditorController {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run() {
-                peer.setMessage(message);
+                getRuleEditorPanel().setMessage(message);
             }
         });        
     }
@@ -230,7 +238,7 @@ public final class RuleEditorController {
      * @param viewMode 
      */
     public void setViewMode(ViewMode sortMode) {
-        peer.setViewMode(sortMode);
+        getRuleEditorPanel().setViewMode(sortMode);
     }
     
     /**
@@ -238,7 +246,7 @@ public final class RuleEditorController {
      * @param listener
      */
     public void addRuleEditorListener(PropertyChangeListener listener) {
-        peer.addRuleEditorListener(listener);
+        getRuleEditorPanel().addRuleEditorListener(listener);
     }
     
     /**
@@ -246,7 +254,7 @@ public final class RuleEditorController {
      * @param listener
      */
     public void removeRuleEditorListener(PropertyChangeListener listener) {
-        peer.removeRuleEditorListener(listener);
+        getRuleEditorPanel().removeRuleEditorListener(listener);
     }
     
     

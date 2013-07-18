@@ -47,6 +47,7 @@ import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.project.Project;
@@ -179,9 +180,13 @@ public class AndroidDevice implements Device {
     @Override
     public void addProperties(Properties props) {
         final MobilePlatform android = getPlatform();
-        props.put("android.build.target", android.getPrefferedTarget().getName());//NOI18N
-        props.put("android.sdk.home", android.getSdkLocation());//NOI18N
-        props.put("android.target.device.arg", isEmulator() ? "-e" : "-d");//NOI18N
+        if (android.isReady()) {
+            props.put("android.build.target", android.getPrefferedTarget().getName());//NOI18N
+            props.put("android.sdk.home", android.getSdkLocation());//NOI18N
+            props.put("android.target.device.arg", isEmulator() ? "-e" : "-d");//NOI18N
+        } else {
+            Logger.getLogger(AndroidDevice.class.getName()).fine("Android not configured.");
+        }
     }
 
     @Override

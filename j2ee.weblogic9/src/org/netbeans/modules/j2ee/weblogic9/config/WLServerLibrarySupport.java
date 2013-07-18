@@ -470,7 +470,7 @@ public class WLServerLibrarySupport {
                 }
             }
             if (config.exists() && config.isFile() && config.canRead()) {
-                return config;
+                return FileUtil.normalizeFile(config);
             }
             return null;
         }

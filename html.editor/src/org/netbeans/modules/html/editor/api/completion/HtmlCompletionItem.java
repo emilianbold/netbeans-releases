@@ -71,6 +71,7 @@ import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.util.ImageUtilities;
 import org.openide.xml.XMLUtil;
 
@@ -421,7 +422,9 @@ public class HtmlCompletionItem implements CompletionItem {
                 ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/class.png", false); // NOI18N
         private static final ImageIcon MATHML_TAG_ICON =
                 ImageUtilities.loadImageIcon("org/netbeans/modules/html/editor/resources/mathml.png", false); // NOI18N
-        private String GRAY_COLOR_CODE = hexColorCode(Color.GRAY);
+        
+        private static final Color GRAY_COLOR = Color.GRAY;
+        private static final Color DEFAULT_FG_COLOR = new Color(0,0,0xFF);
         private boolean possible;
         private HtmlTag tag;
 
@@ -456,12 +459,14 @@ public class HtmlCompletionItem implements CompletionItem {
         protected String getLeftHtmlText() {
             StringBuilder b = new StringBuilder();
             if(possible) {
-                b.append("<font color=#0000ff>&lt;");
+                b.append("<font color=#");
+                b.append(hexColorCode(DEFAULT_FG_COLOR));
+                b.append(">&lt;");
                 b.append(getItemText());
                 b.append("&gt;</font>");
             } else {
                 b.append("<font color=#");
-                b.append(GRAY_COLOR_CODE);
+                b.append(hexColorCode(GRAY_COLOR));
                 b.append(">&lt;");
                 b.append(getItemText());
                 b.append("&gt;</font>");
@@ -506,21 +511,23 @@ public class HtmlCompletionItem implements CompletionItem {
 
         public enum Type {
 
-            DEFAULT(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY), //NOI18N
-            OPTIONAL_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
-            OPTIONAL_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY - 10), //NOI18N
-            REQUIRED_EXISTING(hexColorCode(Color.GRAY), false, DEFAULT_SORT_PRIORITY),
-            REQUIRED_MISSING(hexColorCode(Color.BLUE), false, DEFAULT_SORT_PRIORITY - 10); //NOI18N
-            private String colorCode;
+            DEFAULT(Color.BLUE, false, DEFAULT_SORT_PRIORITY), //NOI18N
+            OPTIONAL_EXISTING(Color.GRAY, false, DEFAULT_SORT_PRIORITY),
+            OPTIONAL_MISSING(Color.BLUE, false, DEFAULT_SORT_PRIORITY - 10), //NOI18N
+            REQUIRED_EXISTING(Color.GRAY, false, DEFAULT_SORT_PRIORITY),
+            REQUIRED_MISSING(Color.BLUE, false, DEFAULT_SORT_PRIORITY - 10); //NOI18N
+            
+            private Color color;
             private boolean bold;
             private int sortPriority;
 
-            private Type(String colorCode, boolean bold, int sortPriority) {
-                this.colorCode = colorCode;
+            private Type(Color color, boolean bold, int sortPriority) {
+                this.color = color;
                 this.bold = bold;
                 this.sortPriority = sortPriority;
             }
         }
+        
         private int orderIndex;
         private Type type;
         private HtmlTag tag;
@@ -565,7 +572,7 @@ public class HtmlCompletionItem implements CompletionItem {
         @Override
         protected String getLeftHtmlText() {
             return (type.bold ? "<b>" : "") + //NOI18N
-                    "<font color=#" + type.colorCode + ">&lt;/" + getItemText() + "&gt;</font>" + //NOI18N
+                    "<font color=#" + hexColorCode(type.color) + ">&lt;/" + getItemText() + "&gt;</font>" + //NOI18N
                     (type.bold ? "</b>" : ""); //NOI18N
         }
 
@@ -598,7 +605,8 @@ public class HtmlCompletionItem implements CompletionItem {
     public static class CharRefItem extends HtmlCompletionItem {
 
         private char value;
-
+        private static final Color FG = new Color(0x99,0,0);
+        
         CharRefItem(String name, char value, int substitutionOffset, String helpId) {
             super(name, substitutionOffset, helpId);
             this.value = value;
@@ -628,7 +636,9 @@ public class HtmlCompletionItem implements CompletionItem {
                 strVal = Character.toString(value);
             }
             return new StringBuilder()
-                    .append("<b><font color=#990000>")
+                    .append("<b><font color=#")
+                    .append(hexColorCode(FG))
+                    .append(">")
                     .append(strVal)
                     .append("</font></b>").toString(); //NOI18N
         }
@@ -665,8 +675,7 @@ public class HtmlCompletionItem implements CompletionItem {
         private boolean required;
         private boolean autocompleteQuotes;
         private HtmlTagAttribute attr;
-        private String attrNameColor;
-
+        
         public Attribute(HtmlTagAttribute attr, String value, int offset, boolean required, String helpId) {
             super(attr != null ? attr.getHelp() : null, value, offset, helpId);
             this.attr = attr;
@@ -725,13 +734,6 @@ public class HtmlCompletionItem implements CompletionItem {
             return super.getSortPriority() - (required ? 1 : 0);
         }
 
-        private String getAttributeNameColor() {
-            if(attrNameColor == null) {
-                attrNameColor = hexColorCode(getAttributeColor());
-            }
-            return attrNameColor;
-        }
-        
         @Override
         protected String getLeftHtmlText() {
             StringBuilder sb = new StringBuilder();
@@ -739,7 +741,7 @@ public class HtmlCompletionItem implements CompletionItem {
                 sb.append("<b>"); //NOI18N
             }
             sb.append("<font color=#"); //NOI18N
-            sb.append(getAttributeNameColor());
+            sb.append(hexColorCode(getAttributeColor()));
             sb.append(">"); //NOI18N
             sb.append(getItemText());
             sb.append("</font>"); //NOI18N
@@ -759,7 +761,7 @@ public class HtmlCompletionItem implements CompletionItem {
     public static class BooleanAttribute extends HtmlCompletionItem {
 
         private boolean required;
-        protected static final String ATTR_NAME_COLOR = hexColorCode(Color.green.darker());
+        private static final Color ATTR_NAME_COLOR = Color.green.darker();
 
         public BooleanAttribute(String value, int offset, boolean required, String helpId) {
             super(value, offset, helpId);
@@ -773,7 +775,7 @@ public class HtmlCompletionItem implements CompletionItem {
                 sb.append("<b>"); //NOI18N
             }
             sb.append("<font color=#"); //NOI18N
-            sb.append(ATTR_NAME_COLOR);
+            sb.append(hexColorCode(ATTR_NAME_COLOR));
             sb.append(">"); //NOI18N
             sb.append(getItemText());
             sb.append("</font>"); //NOI18N
@@ -871,9 +873,10 @@ public class HtmlCompletionItem implements CompletionItem {
     }
 
     public static String hexColorCode(Color c) {
-        return Integer.toHexString(c.getRGB()).substring(2);
+        Color tweakedToLookAndFeel = LFCustoms.shiftColor(c);
+        return Integer.toHexString(tweakedToLookAndFeel.getRGB()).substring(2);
     }
-
+    
     private static String escape(String s) {
         if (s != null) {
             try {

@@ -45,6 +45,7 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.csl.api.SemanticAnalyzer;
 import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -63,6 +64,11 @@ public class DeprTypeUsageSemanticAnalysisTest extends PHPCodeCompletionTestBase
 
     public void testDeprecatedTypeUsages() throws Exception {
         checkSemantic("testfiles/semantic/deprecatedTypeUsages/deprecatedTypeUsages.php");
+    }
+
+    @Override
+    protected SemanticAnalyzer getSemanticAnalyzer() {
+        return new SemanticAnalysis(true);
     }
 
     @Override
