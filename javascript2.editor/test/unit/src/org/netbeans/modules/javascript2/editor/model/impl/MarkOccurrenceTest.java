@@ -831,6 +831,17 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue232595.js","      myl^oc1 += loc2;", true);
     }
 
+    public void testIssue232920_01() throws Exception {
+        checkOccurrences("testfiles/structure/issue232920.js","var aaa = new MyCtx.A^uto();", true);
+    }
+    
+    public void testIssue232920_02() throws Exception {
+        checkOccurrences("testfiles/structure/issue232920.js","console.log(aaa.descri^ption.name);", true);
+    }
+    
+    public void testIssue232920_03() throws Exception {
+        checkOccurrences("testfiles/structure/issue232920.js","console.log(aaa.description.na^me);", true);
+    }
     
     private String getTestName() {
         String name = getName();
