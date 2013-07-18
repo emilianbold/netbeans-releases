@@ -132,6 +132,9 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
     private static final Pattern JERSEY_PATTERN = Pattern.compile(
             "^.*com\\.sun\\.jersey.*\\.jar$");
 
+    private static final Pattern GLASSFISH_JAXWS_PATTERN = Pattern.compile(
+            "^.*glassfish\\.jaxws\\.rt.*\\.jar$");
+
     private static final Pattern OEPE_CONTRIBUTIONS_PATTERN = Pattern.compile("^.*oepe-contributions\\.jar.*$"); // NOI18N
 
     private static final FilenameFilter PATCH_DIR_FILTER = new PrefixesFilter("patch_wls"); // NOI18N    
@@ -216,7 +219,7 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
             }
 
             addPersistenceLibrary(list, platformRoot, mwHome, j2eePlatform);
-            addJerseyLibrary(list, platformRoot, mwHome, j2eePlatform);
+            addWebserviceLibrary(list, platformRoot, mwHome, j2eePlatform);
 
             // file needed for jsp parsing WL9 and WL10
             addFileToList(list, new File(platformRoot, "server/lib/wls-api.jar")); // NOI18N
@@ -359,28 +362,28 @@ public class WLJ2eePlatformFactory extends J2eePlatformFactory {
 
     //XXX there seems to be a bug in api.jar - it does not contain link to javax.ws
     // method checks whether there is already persistence API present in the list
-    private static void addJerseyLibrary(List<URL> list, @NonNull File serverRoot,
+    private static void addWebserviceLibrary(List<URL> list, @NonNull File serverRoot,
             @NullAllowed File middleware, @NullAllowed J2eePlatformImplImpl j2eePlatform) throws MalformedURLException {
 
         if (middleware != null) {
             File modules = getMiddlewareModules(middleware);
             if (modules.exists() && modules.isDirectory()) {
-                Version serverVersion = null;
+                final Version serverVersion;
                 if (j2eePlatform != null) {
                     serverVersion = j2eePlatform.dm.getServerVersion();
                 } else {
                     serverVersion = WLPluginProperties.getServerVersion(serverRoot);
                 }
-                if (serverVersion != null && JAX_RS_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion)) {
-                    FilenameFilter filter = new FilenameFilter() {
-                        @Override
-                        public boolean accept(File dir, String name) {
-                            return JERSEY_PATTERN.matcher(name).matches();
-                        }
-                    };
-                    for (File jerseyFile : modules.listFiles(filter)) {
-                        addFileToList(list, jerseyFile);
+                FilenameFilter filter = new FilenameFilter() {
+                    @Override
+                    public boolean accept(File dir, String name) {
+                        return (JERSEY_PATTERN.matcher(name).matches() && serverVersion != null
+                                && JAX_RS_SUPPORTED_SERVER_VERSION.isBelowOrEqual(serverVersion))
+                                        || GLASSFISH_JAXWS_PATTERN.matcher(name).matches();
                     }
+                };
+                for (File jerseyFile : modules.listFiles(filter)) {
+                    addFileToList(list, jerseyFile);
                 }
             }
         }
