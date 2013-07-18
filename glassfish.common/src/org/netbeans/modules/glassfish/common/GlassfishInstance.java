@@ -225,13 +225,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                     value = delegate.get(key);
                 }
                 if (value == null) {
-                    char[] passwordChars = Keyring.read(
-                            GlassfishInstance.passwordKey(
+                    value = getPasswordFromKeyring(
                             delegate.get(GlassfishModule.DISPLAY_NAME_ATTR),
-                            delegate.get(GlassfishModule.USERNAME_ATTR)));
-                    value = passwordChars != null
-                            ? new String(passwordChars)
-                            : DEFAULT_ADMIN_PASSWORD;
+                            delegate.get(GlassfishModule.USERNAME_ATTR));
                     synchronized(delegate) {
                         delegate.put((String)key, value);
                     }
@@ -629,7 +625,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                     instanceFO.getPath()); // NOI18N
             instanceFO.delete();
         }
-
         return instance;
     }
 
