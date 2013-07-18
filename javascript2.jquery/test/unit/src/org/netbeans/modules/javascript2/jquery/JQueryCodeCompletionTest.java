@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.javascript2.jquery;
 
-import org.netbeans.modules.javascript2.editor.JsCodeComplationBase;
+import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
 
 /**
  *
  * @author Petr Hejl, Petr Pisl
  */
-public class JQueryCodeCompletionTest extends JsCodeComplationBase {
+public class JQueryCodeCompletionTest extends JsCodeCompletionBase {
 
     public JQueryCodeCompletionTest(String testName) {
         super(testName);

@@ -201,7 +201,8 @@ public class ToolTipAnnotation extends Annotation
                         value = "\"" + value + "\"";
                         break;
                     case FUNCTION:
-                        return ; // No tooltip for functions
+                        value = var.getDescription();
+                        break;
                     case OBJECT:
                         String clazz = var.getClassName();
                         if (clazz == null) {

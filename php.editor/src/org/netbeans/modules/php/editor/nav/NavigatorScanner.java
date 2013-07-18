@@ -102,7 +102,11 @@ public final class NavigatorScanner {
 
     public List<? extends StructureItem> scan() {
         final List<StructureItem> items = new ArrayList<>();
-        Collection<? extends NamespaceScope> declaredNamespaces = fileScope.getDeclaredNamespaces();
+        processNamespaces(items, fileScope.getDeclaredNamespaces());
+        return items;
+    }
+
+    private void processNamespaces(List<StructureItem> items, Collection<? extends NamespaceScope> declaredNamespaces) {
         for (NamespaceScope nameScope : declaredNamespaces) {
             List<StructureItem> namespaceChildren = nameScope.isDefaultNamespace() ? items : new ArrayList<StructureItem>();
             if (!nameScope.isDefaultNamespace()) {
@@ -125,51 +129,53 @@ public final class NavigatorScanner {
             for (ConstantElement constant : declaredConstants) {
                 namespaceChildren.add(new PHPConstantStructureItem(constant, "const"));
             }
-            Collection<? extends TypeScope> declaredTypes = nameScope.getDeclaredTypes();
-            for (TypeScope type : declaredTypes) {
-                List<StructureItem> children = new ArrayList<>();
-                if (type instanceof ClassScope) {
-                    namespaceChildren.add(new PHPClassStructureItem((ClassScope) type, children));
-                } else if (type instanceof InterfaceScope) {
-                    namespaceChildren.add(new PHPInterfaceStructureItem((InterfaceScope) type, children));
-                } else if (type instanceof TraitScope) {
-                    namespaceChildren.add(new PHPTraitStructureItem((TraitScope) type, children));
-                }
-                Collection<? extends MethodScope> declaredMethods = type.getDeclaredMethods();
-                for (MethodScope method : declaredMethods) {
-                    // The method name doesn't have to be always defined during parsing.
-                    // For example when user writes in  a php doc @method and parsing is
-                    // started when there is no name yet.
-                    if (method.getName() != null && !method.getName().isEmpty()) {
-                        List<StructureItem> variables = new ArrayList<>();
-                        if (method.isConstructor()) {
-                            children.add(new PHPConstructorStructureItem(method, variables));
-                        } else {
-                            children.add(new PHPMethodStructureItem(method, variables));
-                        }
-                    }
-                }
-                Collection<? extends ClassConstantElement> declaredClsConstants = type.getDeclaredConstants();
-                for (ClassConstantElement classConstant : declaredClsConstants) {
-                    children.add(new PHPConstantStructureItem(classConstant, "con")); //NOI18N
-                }
-                if (type instanceof ClassScope) {
-                    ClassScope cls = (ClassScope) type;
-                    Collection<? extends FieldElement> declaredFields = cls.getDeclaredFields();
-                    for (FieldElement field : declaredFields) {
-                        children.add(new PHPFieldStructureItem(field));
-                    }
-                }
-                if (type instanceof TraitScope) {
-                    TraitScope trait = (TraitScope) type;
-                    Collection<? extends FieldElement> declaredFields = trait.getDeclaredFields();
-                    for (FieldElement field : declaredFields) {
-                        children.add(new PHPFieldStructureItem(field));
+            processTypes(items, namespaceChildren, nameScope.getDeclaredTypes());
+        }
+    }
+
+    private void processTypes(List<StructureItem> items, List<StructureItem> namespaceChildren, Collection<? extends TypeScope> declaredTypes) {
+        for (TypeScope type : declaredTypes) {
+            List<StructureItem> children = new ArrayList<>();
+            if (type instanceof ClassScope) {
+                namespaceChildren.add(new PHPClassStructureItem((ClassScope) type, children));
+            } else if (type instanceof InterfaceScope) {
+                namespaceChildren.add(new PHPInterfaceStructureItem((InterfaceScope) type, children));
+            } else if (type instanceof TraitScope) {
+                namespaceChildren.add(new PHPTraitStructureItem((TraitScope) type, children));
+            }
+            Collection<? extends MethodScope> declaredMethods = type.getDeclaredMethods();
+            for (MethodScope method : declaredMethods) {
+                // The method name doesn't have to be always defined during parsing.
+                // For example when user writes in  a php doc @method and parsing is
+                // started when there is no name yet.
+                if (method.getName() != null && !method.getName().isEmpty()) {
+                    List<StructureItem> variables = new ArrayList<>();
+                    if (method.isConstructor()) {
+                        children.add(new PHPConstructorStructureItem(method, variables));
+                    } else {
+                        children.add(new PHPMethodStructureItem(method, variables));
                     }
                 }
             }
+            Collection<? extends ClassConstantElement> declaredClsConstants = type.getDeclaredConstants();
+            for (ClassConstantElement classConstant : declaredClsConstants) {
+                children.add(new PHPConstantStructureItem(classConstant, "con")); //NOI18N
+            }
+            if (type instanceof ClassScope) {
+                ClassScope cls = (ClassScope) type;
+                Collection<? extends FieldElement> declaredFields = cls.getDeclaredFields();
+                for (FieldElement field : declaredFields) {
+                    children.add(new PHPFieldStructureItem(field));
+                }
+            }
+            if (type instanceof TraitScope) {
+                TraitScope trait = (TraitScope) type;
+                Collection<? extends FieldElement> declaredFields = trait.getDeclaredFields();
+                for (FieldElement field : declaredFields) {
+                    children.add(new PHPFieldStructureItem(field));
+                }
+            }
         }
-        return items;
     }
 
     private boolean isDeprecatedType(String type, ModelElement modelElement) {
@@ -324,65 +330,73 @@ public final class NavigatorScanner {
             formatter.appendText("(");   //NOI18N
             List<? extends ParameterElement> parameters = function.getParameters();
             if (parameters != null && parameters.size() > 0) {
-                boolean first = true;
-                for (ParameterElement formalParameter : parameters) {
-                    String name = formalParameter.getName();
-                    Set<TypeResolver> types = formalParameter.getTypes();
-                    if (name != null) {
-                        if (!first) {
-                            formatter.appendText(", "); //NOI18N
-                        }
-                        if (!types.isEmpty()) {
-                            formatter.appendHtml(FONT_GRAY_COLOR);
-                            int i = 0;
-                            for (TypeResolver typeResolver : types) {
-                                i++;
-                                if (typeResolver.isResolved()) {
-                                    QualifiedName typeName = typeResolver.getTypeName(false);
-                                    if (typeName != null) {
-                                        if (i > 1) {
-                                            formatter.appendText("|"); //NOI18N
-                                        }
-                                        boolean deprecatedType = isDeprecatedType(typeName.toString(), function);
-                                        if (deprecatedType) {
-                                            formatter.deprecated(true);
-                                        }
-                                        formatter.appendText(typeName.toString());
-                                        if (deprecatedType) {
-                                            formatter.deprecated(false);
-                                        }
-                                    }
-                                }
-                            }
-                            formatter.appendText(" ");   //NOI18N
-                            formatter.appendHtml(CLOSE_FONT);
-                        }
-                        formatter.appendText(name);
-                        first = false;
-                    }
-                }
+                processParameters(function, formatter, parameters);
             }
             formatter.appendText(")");   //NOI18N
             Collection<? extends String> returnTypes = function.getReturnTypeNames();
             if (!returnTypes.isEmpty()) {
-                formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
-                int i = 0;
-                for (String type : returnTypes) {
-                    i++;
-                    if (i > 1) {
+                processReturnTypes(function, formatter, returnTypes);
+            }
+        }
+
+        private void processParameters(FunctionScope function, HtmlFormatter formatter, List<? extends ParameterElement> parameters) {
+            boolean first = true;
+            for (ParameterElement formalParameter : parameters) {
+                String name = formalParameter.getName();
+                Set<TypeResolver> types = formalParameter.getTypes();
+                if (name != null) {
+                    if (!first) {
                         formatter.appendText(", "); //NOI18N
                     }
-                    boolean deprecatedType = isDeprecatedType(type.toString(), function);
-                    if (deprecatedType) {
-                        formatter.deprecated(true);
+                    if (!types.isEmpty()) {
+                        formatter.appendHtml(FONT_GRAY_COLOR);
+                        int i = 0;
+                        for (TypeResolver typeResolver : types) {
+                            i++;
+                            if (typeResolver.isResolved()) {
+                                QualifiedName typeName = typeResolver.getTypeName(false);
+                                if (typeName != null) {
+                                    if (i > 1) {
+                                        formatter.appendText("|"); //NOI18N
+                                    }
+                                    boolean deprecatedType = isDeprecatedType(typeName.toString(), function);
+                                    if (deprecatedType) {
+                                        formatter.deprecated(true);
+                                    }
+                                    formatter.appendText(typeName.toString());
+                                    if (deprecatedType) {
+                                        formatter.deprecated(false);
+                                    }
+                                }
+                            }
+                        }
+                        formatter.appendText(" ");   //NOI18N
+                        formatter.appendHtml(CLOSE_FONT);
                     }
-                    formatter.appendText(type);
-                    if (deprecatedType) {
-                        formatter.deprecated(false);
-                    }
+                    formatter.appendText(name);
+                    first = false;
                 }
-                formatter.appendHtml(CLOSE_FONT);
             }
+        }
+
+        private void processReturnTypes(FunctionScope function, HtmlFormatter formatter, Collection<? extends String> returnTypes) {
+            formatter.appendHtml(FONT_GRAY_COLOR + ":"); //NOI18N
+            int i = 0;
+            for (String type : returnTypes) {
+                i++;
+                if (i > 1) {
+                    formatter.appendText(", "); //NOI18N
+                }
+                boolean deprecatedType = isDeprecatedType(type.toString(), function);
+                if (deprecatedType) {
+                    formatter.deprecated(true);
+                }
+                formatter.appendText(type);
+                if (deprecatedType) {
+                    formatter.deprecated(false);
+                }
+            }
+            formatter.appendHtml(CLOSE_FONT);
         }
     }
 

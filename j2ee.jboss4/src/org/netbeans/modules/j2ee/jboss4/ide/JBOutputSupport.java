@@ -86,7 +86,7 @@ public final class JBOutputSupport {
 
     private static final ExecutorService LOG_FILE_SERVICE = Executors.newCachedThreadPool();
 
-    private static final Pattern JBOSS_7_STARTED_ML = Pattern.compile("JBoss AS 7(\\..*)* \\d+ms .*");
+    private static final Pattern JBOSS_7_STARTED_ML = Pattern.compile(".*JBoss AS 7(\\..*)* \\d+ms .*");
 
     private final InstanceProperties props;
 

@@ -309,18 +309,20 @@ public class FileComponentDeclarations extends FileComponent implements Persiste
         try {
             declarationsLock.readLock().lock();
             res = getDeclarationsByOffset(startOffset-1);
-            OffsetSortedKey fromKey = new OffsetSortedKey(startOffset,0);
-            OffsetSortedKey toKey = new OffsetSortedKey(endOffset,0);
-            SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> map = declarations.subMap(fromKey, toKey);
-            for(Map.Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> entry : map.entrySet()){
-                CsmUID<CsmOffsetableDeclaration> anUid = entry.getValue();
-                int start = UIDUtilities.getStartOffset(anUid);
-                int end = UIDUtilities.getEndOffset(anUid);
-                if (start >= endOffset) {
-                    break;
-                }
-                if(end >= startOffset && start < endOffset) {
-                    res.add(anUid);
+            if (startOffset < endOffset) {
+                OffsetSortedKey fromKey = new OffsetSortedKey(startOffset,0);
+                OffsetSortedKey toKey = new OffsetSortedKey(endOffset,0);
+                SortedMap<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> map = declarations.subMap(fromKey, toKey);
+                for(Map.Entry<OffsetSortedKey, CsmUID<CsmOffsetableDeclaration>> entry : map.entrySet()){
+                    CsmUID<CsmOffsetableDeclaration> anUid = entry.getValue();
+                    int start = UIDUtilities.getStartOffset(anUid);
+                    int end = UIDUtilities.getEndOffset(anUid);
+                    if (start >= endOffset) {
+                        break;
+                    }
+                    if(end >= startOffset && start < endOffset) {
+                        res.add(anUid);
+                    }
                 }
             }
         } finally {

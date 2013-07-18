@@ -75,9 +75,9 @@ import org.openide.util.test.MockLookup;
  *
  * @author Petr Pisl
  */
-public class JsCodeComplationBase extends JsTestBase {
+public class JsCodeCompletionBase extends JsTestBase {
 
-    public JsCodeComplationBase(String testName) {
+    public JsCodeCompletionBase(String testName) {
         super(testName);
     }
 
