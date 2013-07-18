@@ -56,7 +56,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Hejl
  */
-public class JsCodeCompletionWith extends JsCodeComplationBase {
+public class JsCodeCompletionWith extends JsCodeCompletionBase {
     
     public JsCodeCompletionWith(String testName) {
         super(testName);
