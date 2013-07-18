@@ -645,8 +645,16 @@ public class ODCSIssue {
     }
 
     public String[] getSubtasks() {
-        List<String> l = getFieldValues(IssueField.SUBTASK);
-        return l.toArray(new String[l.size()]);
+        String value = getFieldValue(IssueField.SUBTASK);
+        if(value != null) {
+            String[] ret = value.split(",");
+            for (int i = 0; i < ret.length; i++) {
+                ret[i] = ret[i].trim();
+            }
+            return ret;
+        } else {
+            return new String[0];
+        }
     }
     
     public boolean isSubtask() {
