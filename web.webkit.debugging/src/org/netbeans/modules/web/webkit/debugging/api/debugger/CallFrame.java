@@ -101,20 +101,34 @@ public class CallFrame extends AbstractObject {
         params.put("expression", expression);
         params.put("returnByValue", false);
         params.put("objectGroup", TransportHelper.OBJECT_GROUP_NAME);
-        params.put("includeCommandLineAPI", true);
-        Response response = transport.sendBlockingCommand(new Command("Debugger.evaluateOnCallFrame", params));
-        if (response != null) {
-            JSONObject jresponse = response.getResponse();
-            if (jresponse != null) {
-                JSONObject result = (JSONObject)jresponse.get("result");
-                if (result != null) {
-                    result = (JSONObject) result.get("result");
+        boolean includeCommandLineAPI = true;
+        do {
+            params.put("includeCommandLineAPI", includeCommandLineAPI);
+            Response response = transport.sendBlockingCommand(new Command("Debugger.evaluateOnCallFrame", params));
+            if (response != null) {
+                JSONObject jresponse = response.getResponse();
+                if (jresponse != null) {
+                    JSONObject result = (JSONObject)jresponse.get("result");
                     if (result != null) {
-                        return new RemoteObject(result, getWebkit());
+                        result = (JSONObject) result.get("result");
+                        if (result != null) {
+                            if (includeCommandLineAPI &&
+                                "Error".equals(result.get("className")) &&
+                                result.get("description") instanceof String &&
+                                ((String) result.get("description")).startsWith(
+                                    "SyntaxError: \'with\' statements are not valid")) {
+                                
+                                includeCommandLineAPI = false;
+                                // Try to evaluate it again, whithout command line API
+                                continue;
+                            }
+                            return new RemoteObject(result, getWebkit());
+                        }
                     }
                 }
             }
-        }
+            break;
+        } while (true);
         return null; // Evaluation failed
     }
 }
