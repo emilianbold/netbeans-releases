@@ -180,6 +180,7 @@ public class CommitDataTest extends JellyTestCase {
 
         VersioningOperator vo = VersioningOperator.invoke();
         vo = VersioningOperator.invoke();
+        new EventTool().waitNoEvent(2000);
         table = vo.tabFiles();
         assertEquals("Wrong row count of table.", 1, table.getRowCount());
         assertEquals("Wrong color of node!!!", TestKit.NEW_COLOR, color);

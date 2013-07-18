@@ -176,6 +176,12 @@ class ModelElementFactory {
         if (!belongsToParent) {
             List<Identifier> objectName = fqName.size() > 1 ? fqName.subList(0, fqName.size() - 1) : fqName;
             parent = ModelUtils.getJsObject(modelBuilder, objectName, false);
+            if (parent != null) {
+                parent = parent.getParent();
+            }
+            if (parent == null) {
+                parent = modelBuilder.getGlobal();
+            }
         }
         result = parent.getProperty(name.getName());
         newObject = new JsObjectImpl(parent, name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()),

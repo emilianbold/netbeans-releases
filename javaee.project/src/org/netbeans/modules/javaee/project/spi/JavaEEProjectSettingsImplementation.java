@@ -85,4 +85,19 @@ public interface JavaEEProjectSettingsImplementation {
      * @since 1.4
      */
     String getBrowserID();
+ 
+    /**
+     * Sets server instance ID of the JavaEE project.
+     * @param serverInstanceID server instance ID to be set
+     *
+     * @since 1.5
+     */
+    void setServerInstanceID(String serverInstanceID);
+
+    /**
+     * Gets server instance ID of the JavaEE project.
+     *
+     * @since 1.5
+     */
+    String getServerInstanceID();
 }

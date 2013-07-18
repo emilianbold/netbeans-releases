@@ -88,12 +88,13 @@ import org.openide.util.Exceptions;
  * Editor kit implementation for HTML content type
  *
  * @author Miloslav Metelka, mfukala@netbeans.org
- * 
+ *
  */
 public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Provider {
 
-    public @Override org.openide.util.HelpCtx getHelpCtx() {
-        return new org.openide.util.HelpCtx(HtmlKit.class);
+    public @Override
+    org.openide.util.HelpCtx getHelpCtx() {
+        return new org.openide.util.HelpCtx("org.netbeans.modules.html.editor.api.HtmlKit"); //NOI18N
     }
     static final long serialVersionUID = -1381945567613910297L;
     public static final String HTML_MIME_TYPE = "text/html"; // NOI18N
@@ -116,17 +117,19 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         return new HtmlKit();
     }
 
-    /** Called after the kit is installed into JEditorPane */
+    /**
+     * Called after the kit is installed into JEditorPane
+     */
     @Override
     public void install(javax.swing.JEditorPane c) {
         super.install(c);
         c.setTransferHandler(new HtmlTransferHandler());
     }
-    
+
     protected DeleteCharAction createDeletePrevAction() {
         return new HtmlDeleteCharAction(deletePrevCharAction, false);
     }
-    
+
     protected ExtDefaultKeyTypedAction createDefaultKeyTypedAction() {
         return new HtmlDefaultKeyTypedAction();
     }
@@ -134,7 +137,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     protected InsertBreakAction createInsertBreakAction() {
         return new HtmlInsertBreakAction();
     }
-    
+
     @Override
     protected Action[] createActions() {
         Action[] HtmlActions = new Action[]{
@@ -174,32 +177,32 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
         HtmlNextWordAction(String name) {
             super(name, BaseAction.MAGIC_POSITION_RESET | BaseAction.ABBREV_RESET | BaseAction.UNDO_MERGE_RESET
-                  | BaseAction.WORD_MATCH_RESET | BaseAction.CLEAR_STATUS_TEXT);
+                    | BaseAction.WORD_MATCH_RESET | BaseAction.CLEAR_STATUS_TEXT);
         }
 
         protected int getNextWordOffset(JTextComponent target, int dotPos) throws BadLocationException {
             TokenHierarchy hi = TokenHierarchy.get(target.getDocument());
             TokenSequence<HTMLTokenId> ts = hi.tokenSequence(HTMLTokenId.language());
-            if(ts == null) {
+            if (ts == null) {
                 return -1;
             }
 
             int diff = ts.move(dotPos);
-            if(!ts.moveNext()) {
+            if (!ts.moveNext()) {
                 return -1;
             }
 
             Token<HTMLTokenId> token = ts.token();
             int offset = -1;
-            switch(token.id()) {
+            switch (token.id()) {
                 case ARGUMENT:
                     //jump from attribute name into its value
                     Token next = LexerUtils.followsToken(ts,
                             Arrays.asList(new HTMLTokenId[]{HTMLTokenId.VALUE, HTMLTokenId.VALUE_CSS, HTMLTokenId.VALUE_JAVASCRIPT}),
                             false, false, HTMLTokenId.WS, HTMLTokenId.OPERATOR);
-                    if(next != null) {
+                    if (next != null) {
                         offset = ts.offset();
-                        if(WebUtils.isValueQuoted(ts.token().text())) {
+                        if (WebUtils.isValueQuoted(ts.token().text())) {
                             offset++; //jump after the leading quote
                         }
                     }
@@ -207,9 +210,9 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 case TAG_OPEN_SYMBOL:
                     //jump from tag open symbol "<" or "</" after its name
                     next = LexerUtils.followsToken(ts,
-                            Arrays.asList(new HTMLTokenId[]{HTMLTokenId.TAG_OPEN,HTMLTokenId.TAG_CLOSE}),
+                            Arrays.asList(new HTMLTokenId[]{HTMLTokenId.TAG_OPEN, HTMLTokenId.TAG_CLOSE}),
                             false, false);
-                    if(next != null) {
+                    if (next != null) {
                         offset = ts.offset() + next.length();
                     }
                     break;
@@ -224,7 +227,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 case VALUE_JAVASCRIPT:
                     // <div align="center|" > ... <div align="center"| >
                     char c = token.text().charAt(diff);
-                    if((token.length() - 1 == diff) && c == '"' || c == '\'') {
+                    if ((token.length() - 1 == diff) && c == '"' || c == '\'') {
                         offset = ts.offset() + token.length();
                     }
 
@@ -234,83 +237,89 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
 
         @Override
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
             if (target != null) {
-                Caret caret = target.getCaret();
-                try {
-                    int originalDotPos = caret.getDot();
-                    int dotPos = getNextWordOffset(target, originalDotPos);
-                    if(dotPos == -1) {
-                        //delegate to the default finder-s
-                        dotPos = Utilities.getNextWord(target, originalDotPos);
-                    }
-                    boolean select = selectionNextWordAction.equals(getValue(Action.NAME));
-                    if (caret instanceof BaseCaret){
-                        BaseCaret bCaret = (BaseCaret) caret;
-                        if (select) {
-                            bCaret.moveDot(dotPos);
-                        } else {
-                            bCaret.setDot(dotPos, false);
+                Document doc = target.getDocument();
+                doc.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        Caret caret = target.getCaret();
+                        try {
+                            int originalDotPos = caret.getDot();
+                            int dotPos = getNextWordOffset(target, originalDotPos);
+                            if (dotPos == -1) {
+                                //delegate to the default finder-s
+                                dotPos = Utilities.getNextWord(target, originalDotPos);
+                            }
+                            boolean select = selectionNextWordAction.equals(getValue(Action.NAME));
+                            if (caret instanceof BaseCaret) {
+                                BaseCaret bCaret = (BaseCaret) caret;
+                                if (select) {
+                                    bCaret.moveDot(dotPos);
+                                } else {
+                                    bCaret.setDot(dotPos, false);
+                                }
+                            } else {
+                                if (select) {
+                                    caret.moveDot(dotPos);
+                                } else {
+                                    caret.setDot(dotPos);
+                                }
+                            }
+                        } catch (BadLocationException ex) {
+                            target.getToolkit().beep();
                         }
-                    }else {
-                        if (select) {
-                            caret.moveDot(dotPos);
-                        } else {
-                            caret.setDot(dotPos);
-                        }
                     }
-                } catch (BadLocationException ex) {
-                    target.getToolkit().beep();
-                }
+                });
+
             }
         }
     }
 
-      public static class HtmlPreviousWordAction extends BaseAction {
-
+    public static class HtmlPreviousWordAction extends BaseAction {
 
         HtmlPreviousWordAction(String name) {
             super(name, BaseAction.MAGIC_POSITION_RESET | BaseAction.ABBREV_RESET | BaseAction.UNDO_MERGE_RESET
-                  | BaseAction.WORD_MATCH_RESET | BaseAction.CLEAR_STATUS_TEXT);
+                    | BaseAction.WORD_MATCH_RESET | BaseAction.CLEAR_STATUS_TEXT);
         }
 
         protected int getPreviousWordOffset(JTextComponent target, int dotPos) throws BadLocationException {
             TokenHierarchy hi = TokenHierarchy.get(target.getDocument());
             TokenSequence<HTMLTokenId> ts = hi.tokenSequence(HTMLTokenId.language());
-            if(ts == null) {
+            if (ts == null) {
                 return -1;
             }
 
             int diff = ts.move(dotPos);
-            if(diff == 0) {
-                if(!ts.movePrevious()) {
+            if (diff == 0) {
+                if (!ts.movePrevious()) {
                     return -1;
                 }
             } else {
-                if(!ts.moveNext()) {
+                if (!ts.moveNext()) {
                     return -1;
                 }
             }
-            
+
             Token<HTMLTokenId> token = ts.token();
             int offset = -1;
-            switch(token.id()) {
+            switch (token.id()) {
                 case VALUE:
                 case VALUE_CSS:
                 case VALUE_JAVASCRIPT:
-                    if(diff == 0) {
+                    if (diff == 0) {
                         //we are just after an attribute value, jump to the end of its value if quoted
-                        if(WebUtils.isValueQuoted(ts.token().text())) {
+                        if (WebUtils.isValueQuoted(ts.token().text())) {
                             offset = ts.offset() + token.length() - 1;
                         }
 
-                    } else if (diff == 1 && WebUtils.isValueQuoted(token.text())){
+                    } else if (diff == 1 && WebUtils.isValueQuoted(token.text())) {
                         //jump from attribute value to its name if we are just after the
                         //opening quote
                         Token prev = LexerUtils.followsToken(ts,
                                 HTMLTokenId.ARGUMENT,
                                 true, false, HTMLTokenId.WS, HTMLTokenId.OPERATOR);
-                        if(prev != null) {
+                        if (prev != null) {
                             offset = ts.offset();
                         }
                     }
@@ -321,7 +330,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                     Token prev = LexerUtils.followsToken(ts,
                             HTMLTokenId.TAG_OPEN_SYMBOL,
                             true, false);
-                    if(prev != null) {
+                    if (prev != null) {
                         offset = ts.offset();
                     }
                     break;
@@ -337,39 +346,45 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
 
         @Override
-        public void actionPerformed(ActionEvent evt, JTextComponent target) {
+        public void actionPerformed(ActionEvent evt, final JTextComponent target) {
             if (target != null) {
-                Caret caret = target.getCaret();
-                try {
-                    int originalDotPos = caret.getDot();
-                    int dot = getPreviousWordOffset(target, originalDotPos);
-                    if(dot == -1) {
-                        //delegate to the default finder-s
-                        dot = Utilities.getPreviousWord(target, originalDotPos);
-                    }
+                Document doc = target.getDocument();
+                doc.render(new Runnable() {
+                    @Override
+                    public void run() {
+                        Caret caret = target.getCaret();
+                        try {
+                            int originalDotPos = caret.getDot();
+                            int dot = getPreviousWordOffset(target, originalDotPos);
+                            if (dot == -1) {
+                                //delegate to the default finder-s
+                                dot = Utilities.getPreviousWord(target, originalDotPos);
+                            }
 
-                    boolean select = selectionPreviousWordAction.equals(getValue(Action.NAME));
-                    if (caret instanceof BaseCaret){
-                        BaseCaret bCaret = (BaseCaret) caret;
-                        if (select) {
-                            bCaret.moveDot(dot);
-                        } else {
-                            bCaret.setDot(dot, false);
-                        }
-                    }else {
-                        if (select) {
-                            caret.moveDot(dot);
-                        } else {
-                            caret.setDot(dot);
+                            boolean select = selectionPreviousWordAction.equals(getValue(Action.NAME));
+                            if (caret instanceof BaseCaret) {
+                                BaseCaret bCaret = (BaseCaret) caret;
+                                if (select) {
+                                    bCaret.moveDot(dot);
+                                } else {
+                                    bCaret.setDot(dot, false);
+                                }
+                            } else {
+                                if (select) {
+                                    caret.moveDot(dot);
+                                } else {
+                                    caret.setDot(dot);
+                                }
+                            }
+                        } catch (BadLocationException ex) {
+                            target.getToolkit().beep();
                         }
                     }
-                } catch (BadLocationException ex) {
-                    target.getToolkit().beep();
-                }
+                });
+
             }
         }
     }
-
 
     public class HtmlInsertBreakAction extends InsertBreakAction {
 
@@ -432,7 +447,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         protected void insertString(BaseDocument doc, int dotPos,
                 Caret caret, String str,
                 boolean overwrite) throws BadLocationException {
-                
+
             if (completionSettingEnabled()) {
                 KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
@@ -443,10 +458,9 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                             str.charAt(0));
 
                     if (!handled) {
-                            super.insertString(doc, dotPos, caret, str, overwrite);
-                            handled = bracketCompletion.afterCharInserted(doc, dotPos, currentTarget,
-                                    str.charAt(0));
-                        }
+                        super.insertString(doc, dotPos, caret, str, overwrite);
+                        bracketCompletion.afterCharInserted(doc, dotPos, currentTarget, str.charAt(0));
+                    }
 
 
                     return;
@@ -459,16 +473,16 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         @Override
         protected void replaceSelection(JTextComponent target, int dotPos, Caret caret,
                 String str, boolean overwrite) throws BadLocationException {
-            
+
             //workaround for #209019 - regression of issue 
             //#204450 - Rewrite actions to use TypingHooks SPI
-            if(str.length() == 0) {
+            if (str.length() == 0) {
                 //called from BaseKit.actionPerformed():1160 with empty str argument
                 //==> ignore this call since we are going to be called a bit later
                 //from HtmlKit.performTextInsertion() properly with the text typed
-                return ;
+                return;
             }
-            
+
             char insertedChar = str.charAt(0);
             Document document = target.getDocument();
 
@@ -494,7 +508,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                             }
 
                             if (!handled) {
-                                if ((str != null) && (str.length() > 0)) {
+                                if (str.length() > 0) {
                                     doc.insertString(p0, str, null);
                                 }
 
@@ -503,7 +517,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
                             }
                         } catch (BadLocationException e) {
-                            e.printStackTrace();
+                            Exceptions.printStackTrace(e);
                         }
 
                         return;
@@ -513,17 +527,16 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
             super.replaceSelection(target, dotPos, caret, str, overwrite);
         }
-
     }
 
     public static class HtmlDeleteCharAction extends DeleteCharAction {
 
         private JTextComponent currentTarget;
-        
+
         public HtmlDeleteCharAction(String name, boolean nextChar) {
             super(name, nextChar);
         }
-        
+
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             try {
@@ -536,7 +549,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
         @Override
         protected void charBackspaced(BaseDocument doc, int dotPos, Caret caret, char ch) throws BadLocationException {
-              if (completionSettingEnabled()) {
+            if (completionSettingEnabled()) {
                 KeystrokeHandler bracketCompletion = UiUtils.getBracketCompletion(doc, dotPos);
 
                 if (bracketCompletion != null) {
@@ -544,8 +557,8 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                     return;
                 }
             }
-            
-            
+
+
             super.charBackspaced(doc, dotPos, caret, ch);
         }
 
@@ -569,15 +582,15 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         private int p1;
 
         /**
-         * Try to find a flavor that can be used to import a Transferable.
-         * The set of usable flavors are tried in the following order:
+         * Try to find a flavor that can be used to import a Transferable. The
+         * set of usable flavors are tried in the following order:
          * <ol>
-         *     <li>First, an attempt is made to find a flavor matching the content type
-         *         of the EditorKit for the component.
-         *     <li>Second, an attempt to find a text/plain flavor is made.
-         *     <li>Third, an attempt to find a flavor representing a String reference
-         *         in the same VM is made.
-         *     <li>Lastly, DataFlavor.stringFlavor is searched for.
+         * <li>First, an attempt is made to find a flavor matching the content
+         * type of the EditorKit for the component.
+         * <li>Second, an attempt to find a text/plain flavor is made.
+         * <li>Third, an attempt to find a flavor representing a String
+         * reference in the same VM is made.
+         * <li>Lastly, DataFlavor.stringFlavor is searched for.
          * </ol>
          */
         protected DataFlavor getImportFlavor(DataFlavor[] flavors, JTextComponent c) {
@@ -713,16 +726,17 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
         // --- TransferHandler methods ------------------------------------
         /**
-         * This is the type of transfer actions supported by the source.  Some models are
-         * not mutable, so a transfer operation of COPY only should
+         * This is the type of transfer actions supported by the source. Some
+         * models are not mutable, so a transfer operation of COPY only should
          * be advertised in that case.
          *
-         * @param c  The component holding the data to be transfered.  This
-         *  argument is provided to enable sharing of TransferHandlers by
-         *  multiple components.
-         * @return  This is implemented to return NONE if the component is a JPasswordField
-         *  since exporting data via user gestures is not allowed.  If the text component is
-         *  editable, COPY_OR_MOVE is returned, otherwise just COPY is allowed.
+         * @param c The component holding the data to be transfered. This
+         * argument is provided to enable sharing of TransferHandlers by
+         * multiple components.
+         * @return This is implemented to return NONE if the component is a
+         * JPasswordField since exporting data via user gestures is not allowed.
+         * If the text component is editable, COPY_OR_MOVE is returned,
+         * otherwise just COPY is allowed.
          */
         @Override
         public int getSourceActions(JComponent c) {
@@ -740,10 +754,10 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         /**
          * Create a Transferable to use as the source for a data transfer.
          *
-         * @param comp  The component holding the data to be transfered.  This
-         *  argument is provided to enable sharing of TransferHandlers by
-         *  multiple components.
-         * @return  The representation of the data to be transfered.
+         * @param comp The component holding the data to be transfered. This
+         * argument is provided to enable sharing of TransferHandlers by
+         * multiple components.
+         * @return The representation of the data to be transfered.
          *
          */
         @Override
@@ -756,12 +770,12 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
 
         /**
-         * This method is called after data has been exported.  This method should remove
-         * the data that was transfered if the action was MOVE.
+         * This method is called after data has been exported. This method
+         * should remove the data that was transfered if the action was MOVE.
          *
          * @param source The component that was the source of the data.
-         * @param data   The data that was transferred or possibly null
-         *               if the action is <code>NONE</code>.
+         * @param data The data that was transferred or possibly null if the
+         * action is <code>NONE</code>.
          * @param action The actual action that was performed.
          */
         @Override
@@ -778,14 +792,15 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
         /**
          * This method causes a transfer to a component from a clipboard or a
-         * DND drop operation.  The Transferable represents the data to be
+         * DND drop operation. The Transferable represents the data to be
          * imported into the component.
          *
-         * @param comp  The component to receive the transfer.  This
-         *  argument is provided to enable sharing of TransferHandlers by
-         *  multiple components.
-         * @param t     The data to import
-         * @return  true if the data was inserted into the component, false otherwise.
+         * @param comp The component to receive the transfer. This argument is
+         * provided to enable sharing of TransferHandlers by multiple
+         * components.
+         * @param t The data to import
+         * @return true if the data was inserted into the component, false
+         * otherwise.
          */
         @Override
         public boolean importData(JComponent comp, Transferable t) {
@@ -819,7 +834,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                     Reader r = importFlavor.getReaderForText(t);
                     handleReaderImport(r, c, useRead);
                     imported = true;
-                } catch (        UnsupportedFlavorException | BadLocationException | IOException ufe) {
+                } catch (UnsupportedFlavorException | BadLocationException | IOException ufe) {
                     //just ignore
                 }
             }
@@ -827,14 +842,15 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
 
         /**
-         * This method indicates if a component would accept an import of the given
-         * set of data flavors prior to actually attempting to import it.
+         * This method indicates if a component would accept an import of the
+         * given set of data flavors prior to actually attempting to import it.
          *
-         * @param comp  The component to receive the transfer.  This
-         *  argument is provided to enable sharing of TransferHandlers by
-         *  multiple components.
-         * @param flavors  The data formats available
-         * @return  true if the data can be inserted into the component, false otherwise.
+         * @param comp The component to receive the transfer. This argument is
+         * provided to enable sharing of TransferHandlers by multiple
+         * components.
+         * @param flavors The data formats available
+         * @return true if the data can be inserted into the component, false
+         * otherwise.
          */
         @Override
         public boolean canImport(JComponent comp, DataFlavor[] flavors) {
@@ -846,12 +862,11 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
 
         /**
-         * A possible implementation of the Transferable interface
-         * for text components.  For a JEditorPane with a rich set
-         * of EditorKit implementations, conversions could be made
-         * giving a wider set of formats.  This is implemented to
-         * offer up only the active content type and text/plain
-         * (if that is not the active format) since that can be
+         * A possible implementation of the Transferable interface for text
+         * components. For a JEditorPane with a rich set of EditorKit
+         * implementations, conversions could be made giving a wider set of
+         * formats. This is implemented to offer up only the active content type
+         * and text/plain (if that is not the active format) since that can be
          * extracted from other formats.
          */
         static class HtmlTransferable extends BasicTransferable {
@@ -887,7 +902,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                             richText = sw.toString();
                         }
                     }
-                } catch (        BadLocationException | IOException ble) {
+                } catch (BadLocationException | IOException ble) {
                 }
             }
 
@@ -904,7 +919,8 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
             // ---- EditorKit other than plain or HTML text -----------------------
             /**
              * If the EditorKit is not for text/plain or text/html, that format
-             * is supported through the "richer flavors" part of BasicTransferable.
+             * is supported through the "richer flavors" part of
+             * BasicTransferable.
              */
             @Override
             protected DataFlavor[] getRicherFlavors() {
@@ -958,7 +974,6 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         private static DataFlavor[] htmlFlavors;
         private static DataFlavor[] stringFlavors;
         private static DataFlavor[] plainFlavors;
-        
 
         static {
             try {
@@ -987,10 +1002,13 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
 
         /**
-         * Returns an array of DataFlavor objects indicating the flavors the data
-         * can be provided in.  The array should be ordered according to preference
-         * for providing the data (from most richly descriptive to least descriptive).
-         * @return an array of data flavors in which this data can be transferred
+         * Returns an array of DataFlavor objects indicating the flavors the
+         * data can be provided in. The array should be ordered according to
+         * preference for providing the data (from most richly descriptive to
+         * least descriptive).
+         *
+         * @return an array of data flavors in which this data can be
+         * transferred
          */
         @Override
         public DataFlavor[] getTransferDataFlavors() {
@@ -1026,8 +1044,10 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         /**
          * Returns whether or not the specified data flavor is supported for
          * this object.
+         *
          * @param flavor the requested flavor for the data
-         * @return boolean indicating whether or not the data flavor is supported
+         * @return boolean indicating whether or not the data flavor is
+         * supported
          */
         @Override
         public boolean isDataFlavorSupported(DataFlavor flavor) {
@@ -1041,15 +1061,16 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
 
         /**
-         * Returns an object which represents the data to be transferred.  The class
-         * of the object returned is defined by the representation class of the flavor.
+         * Returns an object which represents the data to be transferred. The
+         * class of the object returned is defined by the representation class
+         * of the flavor.
          *
          * @param flavor the requested flavor for the data
          * @see DataFlavor#getRepresentationClass
-         * @exception IOException                if the data is no longer available
-         *              in the requested flavor.
+         * @exception IOException if the data is no longer available in the
+         * requested flavor.
          * @exception UnsupportedFlavorException if the requested data flavor is
-         *              not supported.
+         * not supported.
          */
         @Override
         public Object getTransferData(DataFlavor flavor) throws UnsupportedFlavorException, IOException {
@@ -1066,7 +1087,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 } else if (InputStream.class.equals(flavor.getRepresentationClass())) {
                     return new ByteArrayInputStream(data.getBytes());
                 }
-            // fall through to unsupported
+                // fall through to unsupported
             } else if (isPlainFlavor(flavor)) {
                 String data = getPlainData();
                 data = (data == null) ? "" : data;
@@ -1077,7 +1098,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
                 } else if (InputStream.class.equals(flavor.getRepresentationClass())) {
                     return new ByteArrayInputStream(data.getBytes());
                 }
-            // fall through to unsupported
+                // fall through to unsupported
 
             } else if (isStringFlavor(flavor)) {
                 String data = getPlainData();
@@ -1101,7 +1122,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
         /**
          * Some subclasses will have flavors that are more descriptive than HTML
-         * or plain text.  If this method returns a non-null value, it will be
+         * or plain text. If this method returns a non-null value, it will be
          * placed at the start of the array of supported flavors.
          */
         protected DataFlavor[] getRicherFlavors() {
@@ -1114,10 +1135,12 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
         // --- html flavors ----------------------------------------------------------
         /**
-         * Returns whether or not the specified data flavor is an HTML flavor that
-         * is supported.
+         * Returns whether or not the specified data flavor is an HTML flavor
+         * that is supported.
+         *
          * @param flavor the requested flavor for the data
-         * @return boolean indicating whether or not the data flavor is supported
+         * @return boolean indicating whether or not the data flavor is
+         * supported
          */
         protected boolean isHTMLFlavor(DataFlavor flavor) {
             DataFlavor[] flavors = htmlFlavors;
@@ -1130,8 +1153,8 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
 
         /**
-         * Should the HTML flavors be offered?  If so, the method
-         * getHTMLData should be implemented to provide something reasonable.
+         * Should the HTML flavors be offered? If so, the method getHTMLData
+         * should be implemented to provide something reasonable.
          */
         protected boolean isHTMLSupported() {
             return htmlData != null;
@@ -1146,10 +1169,12 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
         // --- plain text flavors ----------------------------------------------------
         /**
-         * Returns whether or not the specified data flavor is an plain flavor that
-         * is supported.
+         * Returns whether or not the specified data flavor is an plain flavor
+         * that is supported.
+         *
          * @param flavor the requested flavor for the data
-         * @return boolean indicating whether or not the data flavor is supported
+         * @return boolean indicating whether or not the data flavor is
+         * supported
          */
         protected boolean isPlainFlavor(DataFlavor flavor) {
             DataFlavor[] flavors = plainFlavors;
@@ -1162,7 +1187,7 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
         }
 
         /**
-         * Should the plain text flavors be offered?  If so, the method
+         * Should the plain text flavors be offered? If so, the method
          * getPlainData should be implemented to provide something reasonable.
          */
         protected boolean isPlainSupported() {
@@ -1178,10 +1203,12 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
 
         // --- string flavorss --------------------------------------------------------
         /**
-         * Returns whether or not the specified data flavor is a String flavor that
-         * is supported.
+         * Returns whether or not the specified data flavor is a String flavor
+         * that is supported.
+         *
          * @param flavor the requested flavor for the data
-         * @return boolean indicating whether or not the data flavor is supported
+         * @return boolean indicating whether or not the data flavor is
+         * supported
          */
         protected boolean isStringFlavor(DataFlavor flavor) {
             DataFlavor[] flavors = stringFlavors;
@@ -1195,4 +1222,3 @@ public class HtmlKit extends NbEditorKit implements org.openide.util.HelpCtx.Pro
     }
     // END of fix of issue #43309
 }
-

@@ -46,15 +46,14 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * The AST root node for PHP program (meaning a PHP file).
- * The program holds array of statements such as Class, Function and evaluation statement.
- * The program also holds the PHP file comments.
+ * The AST root node for PHP program (meaning a PHP file). The program holds
+ * array of statements such as Class, Function and evaluation statement. The
+ * program also holds the PHP file comments.
  *
  */
 public class Program extends ASTNode {
 
     private final ArrayList<Statement> statements = new ArrayList<>();
-
     /**
      * Comments array of the php program
      */
@@ -64,7 +63,6 @@ public class Program extends ASTNode {
         super(start, end);
         this.statements.addAll(Arrays.asList(statements));
         for (Comment comment : commentsList) {
-//            comment.setParent(this);
             this.comments.add((Comment) comment);
         }
 
@@ -75,10 +73,12 @@ public class Program extends ASTNode {
     }
 
     public List<Comment> getComments() {
-            return comments;
+        return comments;
     }
+
     /**
-     * Retrieves the statement list of this program
+     * Retrieves the statement list of this program.
+     *
      * @return statement parts of this program
      */
     public List<Statement> getStatements() {
@@ -102,5 +102,4 @@ public class Program extends ASTNode {
         }
         return sbComments.toString() + " *** " + sbStatements.toString(); //NOI18N
     }
-
 }

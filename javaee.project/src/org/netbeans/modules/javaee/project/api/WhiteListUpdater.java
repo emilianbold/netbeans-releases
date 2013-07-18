@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.javaee.project.api;
 
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -55,9 +53,7 @@ import org.netbeans.api.whitelist.index.WhiteListIndex;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
-import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.spi.project.SubprojectProvider;
-import org.netbeans.spi.project.support.ant.PropertyEvaluator;
 import org.netbeans.spi.whitelist.WhiteListQueryImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -68,33 +64,35 @@ import org.openide.util.RequestProcessor;
 /**
  * Support for propagating whitelist changes to subprojects.
  */
-// TODO: either refactor this class to be usable for Maven or move it to Ant API subpackage
-public final class WhiteListUpdater  implements PropertyChangeListener {
+public abstract class WhiteListUpdater {
 
-    public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
-    
     private static final RequestProcessor rp = new RequestProcessor();
-    private Project p;
-    private PropertyEvaluator eval;
+    protected Project project;
     private String lastWhiteList;
 
-    private WhiteListUpdater(Project p, PropertyEvaluator eval) {
-        this.p = p;
-        this.eval = eval;
+    public WhiteListUpdater(Project project) {
+        this.project = project;
         // initialize lastWhiteList lazily to avoid 232272
         // lastWhiteList = getServerWhiteList();
-        eval.addPropertyChangeListener(this);
+        addSettingListener();
     }
 
-    public static WhiteListUpdater createWhiteListUpdater(Project p, PropertyEvaluator e) {
-        return new WhiteListUpdater(p, e);
-    }
+    /**
+     * Adds listener on project setting changes. 
+     * <p>
+     * 
+     * Implementors need to take care about two event types:<br/>
+     * 
+     * 1) When server instance ID is changed, {@link #checkWhiteLists()} should be called<br/>
+     * 2) When javac classpath is changed, {@link #updateWhitelist(java.lang.String, java.lang.String)} should be called<br/>
+     */
+    protected abstract void addSettingListener();
 
-    private void updateWhitelist(final String oldWhiteListId, final String newWhiteListId) {
+    protected void updateWhitelist(final String oldWhiteListId, final String newWhiteListId) {
         rp.post(new Runnable() {
             @Override
             public void run() {
-                updateWhitelist(p, oldWhiteListId, newWhiteListId);
+                updateWhitelist(project, oldWhiteListId, newWhiteListId);
             }
         });
     }
@@ -119,7 +117,7 @@ public final class WhiteListUpdater  implements PropertyChangeListener {
     }
 
 
-    private void checkWhiteLists() {
+    public void checkWhiteLists() {
         String newWhiteList = getServerWhiteList();
         if ((newWhiteList == null && lastWhiteList == null) ||
             (newWhiteList != null && lastWhiteList != null && newWhiteList.equals(lastWhiteList))) {
@@ -129,8 +127,8 @@ public final class WhiteListUpdater  implements PropertyChangeListener {
         lastWhiteList = newWhiteList;
     }
 
-    private String getServerWhiteList() {
-        String servInstID = eval.getProperty(J2EE_SERVER_INSTANCE);
+    protected String getServerWhiteList() {
+        String servInstID = JavaEEProjectSettings.getServerInstanceID(project);
         if (servInstID != null) {
             J2eePlatform platform;
             try {
@@ -144,17 +142,6 @@ public final class WhiteListUpdater  implements PropertyChangeListener {
             }
         }
         return null;
-    }
-
-    @Override
-    public void propertyChange(PropertyChangeEvent evt) {
-        if (evt.getPropertyName().equals(J2EE_SERVER_INSTANCE)){
-            checkWhiteLists();
-        }
-        if (evt.getPropertyName().equals(ProjectProperties.JAVAC_CLASSPATH)){
-            // if classpath changes refresh whitelists as well:
-            updateWhitelist(null, getServerWhiteList());
-        }
     }
 
     /**

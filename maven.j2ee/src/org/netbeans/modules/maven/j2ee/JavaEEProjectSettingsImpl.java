@@ -86,4 +86,13 @@ public class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplement
         return MavenProjectSupport.getBrowserID(project);
     }
 
+    @Override
+    public void setServerInstanceID(String serverInstanceID) {
+        MavenProjectSupport.setServerInstanceID(project, serverInstanceID);
+    }
+
+    @Override
+    public String getServerInstanceID() {
+        return MavenProjectSupport.readServerInstanceID(project);
+    }
 }
