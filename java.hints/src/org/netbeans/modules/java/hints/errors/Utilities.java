@@ -137,6 +137,8 @@ import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 
 import static com.sun.source.tree.Tree.Kind.*;
+import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.CodeStyleUtils;
 import org.openide.util.Pair;
 
 /**
@@ -947,6 +949,8 @@ public class Utilities {
             method = null;
         }
         
+        CodeStyle codeStyle = CodeStyle.getDefault(info.getFileObject());
+        
         for (ExpressionTree arg : realArguments) {
             TreePath argPath = new TreePath(invocation, arg);
             TypeMirror tm = info.getTrees().getTypeMirror(argPath);
@@ -986,19 +990,19 @@ public class Utilities {
             if (proposedName == null) {
                 proposedName = "arg"; // NOI18N
             }
+            
+            String augmentedName = CodeStyleUtils.addPrefixSuffix(proposedName, codeStyle.getParameterNamePrefix(), codeStyle.getParameterNameSuffix());
 
-            if (usedArgumentNames.contains(proposedName)) {
+            if (usedArgumentNames.contains(augmentedName)) {
                 int num = 0;
 
-                while (usedArgumentNames.contains(proposedName + num)) {
+                while (usedArgumentNames.contains(augmentedName = CodeStyleUtils.addPrefixSuffix(proposedName + num, codeStyle.getParameterNamePrefix(), codeStyle.getParameterNameSuffix()))) {
                     num++;
                 }
-
-                proposedName = proposedName + num;
             }
 
-            argumentNames.add(proposedName);
-            usedArgumentNames.add(proposedName);
+            argumentNames.add(augmentedName);
+            usedArgumentNames.add(augmentedName);
         }
         
         List<TypeMirror> typeParamTypes = new LinkedList<TypeMirror>();
