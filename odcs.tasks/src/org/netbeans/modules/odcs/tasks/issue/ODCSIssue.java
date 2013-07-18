@@ -646,14 +646,15 @@ public class ODCSIssue {
 
     public String[] getSubtasks() {
         String value = getFieldValue(IssueField.SUBTASK);
-        if(value != null) {
-            String[] ret = value.split(",");
+        value = value != null ? value.trim() : ""; // NOI18N
+        if("".equals(value)) { // NOI18N
+            return new String[0];
+        } else {
+            String[] ret = value.split(","); // NOI18N
             for (int i = 0; i < ret.length; i++) {
                 ret[i] = ret[i].trim();
             }
             return ret;
-        } else {
-            return new String[0];
         }
     }
     
