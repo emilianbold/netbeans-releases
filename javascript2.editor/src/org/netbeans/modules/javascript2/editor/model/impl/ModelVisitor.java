@@ -718,6 +718,12 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
 
+        // mark constructors 
+        if (fncScope != null && functionNode.getKind() != FunctionNode.Kind.SCRIPT && docHolder.isClass(functionNode)) {
+            // needs to be marked before going through the nodes
+            fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
+        }
+        
         // go through all function statements
         for (Node node : functionNode.getStatements()) {
             node.accept(this);
@@ -768,27 +774,6 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
 
-            // mark constructors
-            if (functionNode.getKind() != FunctionNode.Kind.SCRIPT && docHolder.isClass(functionNode)) {
-                fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
-            }
-//            Set<JsModifier> modifiers = docHolder.getModifiers(functionNode);
-//            for(JsModifier modifier : modifiers) {
-//                switch(modifier) {
-//                    case PUBLIC:
-//                        fncScope.getModifiers().add(Modifier.PUBLIC);
-//                        fncScope.getModifiers().remove(Modifier.PRIVATE);
-//                        break;
-//                    case PRIVATE:
-//                        fncScope.getModifiers().add(Modifier.PRIVATE);
-//                        fncScope.getModifiers().remove(Modifier.PUBLIC);
-//                        break;
-//                    case STATIC:
-//                        fncScope.getModifiers().add(Modifier.STATIC);
-//                        break;
-//                }
-//                
-//            }
         }
 
         for (FunctionNode fn : functions) {
