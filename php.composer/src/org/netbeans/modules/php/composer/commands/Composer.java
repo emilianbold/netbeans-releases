@@ -204,7 +204,7 @@ public final class Composer {
         List<String> params = new ArrayList<>(packages.length + 1);
         params.add(DEV_PARAM);
         params.addAll(Arrays.asList(packages));
-        return runCommand(phpModule, REQUIRE_COMMAND, Bundle.Composer_run_require(), params);
+        return runCommand(phpModule, REQUIRE_COMMAND, Bundle.Composer_run_requireDev(), params);
     }
 
     @NbBundle.Messages("Composer.run.validate=Composer (validate)")
