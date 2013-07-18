@@ -191,6 +191,8 @@ public class J2SEProjectProperties {
     public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
     //Disables copying of dependencies to dist folder
     public static final String MKDIST_DISABLED = "mkdist.disabled"; //NOI18N
+    //Files excluded from dist.jar
+    public static final String DIST_ARCHIVE_EXCLUDES = "dist.archive.excludes";   //NOI18N
     
     ClassPathSupport cs;
     

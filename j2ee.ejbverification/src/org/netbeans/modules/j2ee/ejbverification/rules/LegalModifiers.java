@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
 @Hint(displayName = "#LegalModifiers.display.name",
         description = "#LegalModifiers.desc",
         id = "o.n.m.j2ee.ejbverification.LegalModifiers",
-        category = "JavaEE",
+        category = "javaee/ejb",
         enabled = true,
         suppressWarnings = "LegalModifiers")
 @NbBundle.Messages({

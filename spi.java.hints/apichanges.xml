@@ -46,6 +46,20 @@ Portions Copyrighted 2012 Sun Microsystems, Inc.
         <apidef name="JavaHintsSPI">Java Hints SPI</apidef>
     </apidefs>
     <changes>
+        <change id="EnhancedJavaFix">
+            <api name="JavaHintsSPI"/>
+            <summary>Added ability to specify sort text for JavaFix</summary>
+            <version major="1" minor="18"/>
+            <date day="14" month="7" year="2013"/>
+            <author login="jlahoda"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>
+                    Adding to new constructors to <code>JavaFix</code> to define
+                    the sort text for the fix.
+                </p>    
+            </description>
+        </change>
         <change id="ProjectHintsJava">
             <api name="JavaHintsSPI"/>
             <summary>Defining system filesystem folder for per-project Java hints customizers</summary>

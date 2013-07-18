@@ -321,7 +321,7 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
             if (id != null) {
                 for (WebBrowser browser : WebBrowsers.getInstance().getAll(true, true, true, false)) {
                     if (browser.hasNetBeansIntegration() && (id == browser.getBrowserFamily())) {
-                        Image image = browser.getIconImage();
+                        Image image = browser.getIconImage(true);
                         if (image != null) {
                             Icon icon = new ImageIcon(image);
                             urlLabel.setIcon(icon);

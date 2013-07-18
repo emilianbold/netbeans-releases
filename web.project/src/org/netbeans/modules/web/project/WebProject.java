@@ -117,7 +117,7 @@ import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.javaee.project.api.ant.ArtifactCopyOnSaveSupport;
-import org.netbeans.modules.javaee.project.api.BaseClientSideDevelopmentSupport;
+import org.netbeans.modules.javaee.project.api.ClientSideDevelopmentSupport;
 import org.netbeans.modules.j2ee.persistence.spi.entitymanagergenerator.EntityManagerGenerationStrategyResolverFactory;
 import org.netbeans.modules.javaee.project.api.PersistenceProviderSupplierImpl;
 import org.netbeans.modules.javaee.project.api.ant.AntProjectConstants;
@@ -413,7 +413,7 @@ public final class WebProject implements Project {
             new ClassPathSupportCallbackImpl(helper), createClassPathModifierCallback(), getClassPathUiSupportCallback());
         libMod = new WebProjectLibrariesModifierImpl(this, this.updateHelper, eval, refHelper);
         cpMod = new DelagatingProjectClassPathModifierImpl(cpModTemp, libMod);
-        easelSupport = new ClientSideDevelopmentSupport();
+        easelSupport = ClientSideDevelopmentSupport.createInstance(this);
         cssSupport = new CssPreprocessorsSupport(this);
         lookup = createLookup(aux, cpProvider);
         copyOnSaveSupport = new CopyOnSaveSupport();
@@ -2409,34 +2409,21 @@ public final class WebProject implements Project {
 
     }
 
-    private class ClientSideDevelopmentSupport extends BaseClientSideDevelopmentSupport {
-
-        public ClientSideDevelopmentSupport() {
-            super (WebProject.this);
-            evaluator().addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (WebProjectProperties.SELECTED_BROWSER.equals(evt.getPropertyName())) {
-                        resetBrowserSupport();
-                    }
-                }
-            });
-        }
-
-        @Override
-        protected String getBrowserID() {
-            return evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
-        }
-
-
-    }
-
     private class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplementation {
 
         private final WebProject project;
 
+
         public JavaEEProjectSettingsImpl(WebProject project) {
             this.project = project;
+            evaluator().addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (WebProjectProperties.SELECTED_BROWSER.equals(evt.getPropertyName())) {
+                        easelSupport.resetBrowserSupport();
+                    }
+                }
+            });
         }
 
         @Override
@@ -2455,6 +2442,17 @@ public final class WebProject implements Project {
         @Override
         public Profile getProfile() {
             return webModule.getJ2eeProfile();
+        }
+
+        @Override
+        public void setBrowserID(String browserID) {
+            // No-one is using it yet, implementation should be almost identical as setProfile(..)
+            throw new UnsupportedOperationException("Not supported yet."); //NOI18N
+        }
+
+        @Override
+        public String getBrowserID() {
+            return evaluator().getProperty(WebProjectProperties.SELECTED_BROWSER);
         }
     }
 }

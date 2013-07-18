@@ -63,6 +63,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
@@ -215,6 +216,7 @@ public class IteratorToFor {
 
         @Override
         protected void performRewrite(TransformationContext ctx) throws Exception {
+            Tree loop = GeneratorUtilities.get(ctx.getWorkingCopy()).importComments(ctx.getPath().getLeaf(), ctx.getPath().getCompilationUnit());
             TreePath $arr = arr.resolve(ctx.getWorkingCopy());
             
             if ($arr == null) {
@@ -251,7 +253,7 @@ public class IteratorToFor {
             TreeMaker make = ctx.getWorkingCopy().getTreeMaker();
             EnhancedForLoopTree newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(((ArrayType) arrType).getComponentType()), null), (ExpressionTree) $arr.getLeaf(), ((ForLoopTree) ctx.getPath().getLeaf()).getStatement());
             
-            ctx.getWorkingCopy().rewrite(ctx.getPath().getLeaf(), newLoop);
+            ctx.getWorkingCopy().rewrite(loop, newLoop);
             
             for (TreePathHandle tr : toReplace) {
                 TreePath tp = tr.resolve(ctx.getWorkingCopy());

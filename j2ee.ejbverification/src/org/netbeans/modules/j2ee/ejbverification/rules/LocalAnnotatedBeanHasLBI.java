@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
 @Hint(displayName = "#LocalAnnotatedBeanHasLBI.display.name",
         description = "#LocalAnnotatedBeanHasLBI.err",
         id = "o.n.m.j2ee.ejbverification.LocalAnnotatedBeanHasLBI",
-        category = "JavaEE",
+        category = "javaee/ejb",
         enabled = true,
         suppressWarnings = "LocalAnnotatedBeanHasLBI")
 @NbBundle.Messages({

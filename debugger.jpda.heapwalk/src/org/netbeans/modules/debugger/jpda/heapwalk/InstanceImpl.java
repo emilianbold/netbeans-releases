@@ -52,6 +52,7 @@ import org.netbeans.lib.profiler.heap.Value;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -60,6 +61,7 @@ import org.netbeans.api.debugger.jpda.JPDAArrayType;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.lib.profiler.heap.ObjectFieldValue;
 import org.openide.util.Exceptions;
 
 /**
@@ -154,8 +156,27 @@ public class InstanceImpl implements Instance {
     }
 
     public Object getValueOfField(String name) {
-        // TODO
-        return null;
+        Iterator fIt = getFieldValues().iterator();
+        FieldValue matchingFieldValue = null;
+
+        while (fIt.hasNext()) {
+            FieldValue fieldValue = (FieldValue) fIt.next();
+
+            if (fieldValue.getField().getName().equals(name)) {
+                matchingFieldValue = fieldValue;
+            }
+        }
+
+        if (matchingFieldValue == null) {
+            return null;
+        }
+
+        if (matchingFieldValue instanceof ObjectFieldValue) {
+            return ((ObjectFieldValue) matchingFieldValue).getInstance();
+        } else {
+            return ((FieldValue) matchingFieldValue).getValue();
+        }
+
    }
 
     public List<FieldValue> getStaticFieldValues() {

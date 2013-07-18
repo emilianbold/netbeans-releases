@@ -73,22 +73,24 @@ public class J2EEComponentDropProvider implements NewComponentDropProvider {
      */
     @Override
     public NewComponentDrop processTransferable(FormModel formModel, Transferable transferable) {
-        try {
-            if (transferable.isDataFlavorSupported(DatabaseMetaDataTransfer.CONNECTION_FLAVOR)) {
-                DatabaseMetaDataTransfer.Connection connection = (DatabaseMetaDataTransfer.Connection)transferable.getTransferData(DatabaseMetaDataTransfer.CONNECTION_FLAVOR);
-                return new DBConnectionDrop(formModel, connection);
-            } else if (transferable.isDataFlavorSupported(DatabaseMetaDataTransfer.COLUMN_FLAVOR)) {
-                DatabaseMetaDataTransfer.Column column = (DatabaseMetaDataTransfer.Column)transferable.getTransferData(DatabaseMetaDataTransfer.COLUMN_FLAVOR);
-                return new DBColumnDrop(formModel, column);
-            } else if (transferable.isDataFlavorSupported(DatabaseMetaDataTransfer.TABLE_FLAVOR)) {
-                DatabaseMetaDataTransfer.Table table = (DatabaseMetaDataTransfer.Table)transferable.getTransferData(DatabaseMetaDataTransfer.TABLE_FLAVOR);
-                return new DBTableDrop(formModel, table);
+        if (J2EEUtils.supportsJPA(formModel)) {
+            try {
+                if (transferable.isDataFlavorSupported(DatabaseMetaDataTransfer.CONNECTION_FLAVOR)) {
+                    DatabaseMetaDataTransfer.Connection connection = (DatabaseMetaDataTransfer.Connection)transferable.getTransferData(DatabaseMetaDataTransfer.CONNECTION_FLAVOR);
+                    return new DBConnectionDrop(formModel, connection);
+                } else if (transferable.isDataFlavorSupported(DatabaseMetaDataTransfer.COLUMN_FLAVOR)) {
+                    DatabaseMetaDataTransfer.Column column = (DatabaseMetaDataTransfer.Column)transferable.getTransferData(DatabaseMetaDataTransfer.COLUMN_FLAVOR);
+                    return new DBColumnDrop(formModel, column);
+                } else if (transferable.isDataFlavorSupported(DatabaseMetaDataTransfer.TABLE_FLAVOR)) {
+                    DatabaseMetaDataTransfer.Table table = (DatabaseMetaDataTransfer.Table)transferable.getTransferData(DatabaseMetaDataTransfer.TABLE_FLAVOR);
+                    return new DBTableDrop(formModel, table);
+                }
+            } catch (Exception ex) {
+                // should not happen
+                Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
             }
-        } catch (Exception ex) {
-            // should not happen
-            Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
         }
         return null;
     }
-    
+
 }

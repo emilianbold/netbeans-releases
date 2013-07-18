@@ -60,6 +60,7 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
+import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.spi.VCSAccessor;
 import org.netbeans.modules.odcs.versioning.spi.ApiProvider;
 import org.netbeans.modules.odcs.versioning.spi.ApiProvider.LocalRepositoryInitializer;
@@ -210,6 +211,16 @@ public class SourceAccessorImpl extends VCSAccessor {
         }
         
         return handlesList.isEmpty() ? Collections.<SourceHandle>emptyList() : handlesList;
+    }
+
+    @Override
+    public Action getOpenSourcesAction(ODCSUiServer server) {
+        return new GetSourcesFromODCSAction(server);
+    }
+
+    @Override
+    public boolean hasSources(ProjectHandle<ODCSProject> project) {
+        return project.getTeamProject().hasScm();
     }
 
     public static class ProjectAndRepository {

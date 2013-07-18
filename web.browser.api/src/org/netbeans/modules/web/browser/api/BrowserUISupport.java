@@ -308,7 +308,7 @@ public final class BrowserUISupport {
             Component c = defaultRenderer.getListCellRendererComponent(list, value.getName(), index, isSelected, cellHasFocus);
             if (c instanceof JLabel) {
                 JLabel l = (JLabel)c;
-                l.setIcon(new ImageIcon(value.getIconImage()));
+                l.setIcon(new ImageIcon(value.getIconImage(true)));
             }
             return c;
         }

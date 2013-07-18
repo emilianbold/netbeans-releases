@@ -110,8 +110,13 @@ public class CndIndexer extends CustomIndexer {
             }
             FileObject root = context.getRoot();
             Collection<CsmProject> projects = CsmUtilities.getOwnerCsmProjects(root);
-            for (CsmProject csmProject : projects) {
-                ((ProjectBase)csmProject).checkForRemoved();
+            for (final CsmProject csmProject : projects) {
+                ModelSupport.instance().getModel().enqueueModelTask(new Runnable() {
+                    @Override
+                    public void run() {
+                        ((ProjectBase)csmProject).checkForRemoved();
+                    }
+                }, "External File Updater"); // NOI18N
             }
         }
 

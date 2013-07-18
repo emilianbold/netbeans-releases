@@ -61,6 +61,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.modules.java.source.save.CasualDiff;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -82,6 +83,7 @@ public class ConstructorTest extends GeneratorTestBase {
     
     protected void setUp() throws Exception {
         super.setUp();
+        CasualDiff.noInvalidCopyTos = true;
     }
 
     public void testAddConstructor() throws IOException {
@@ -174,7 +176,7 @@ public class ConstructorTest extends GeneratorTestBase {
             "package hierbas.del.litoral;\n" +
             "\n" +
             "public class Test {\n" +
-            "    public void Test() {\n" +
+            "    public void    Test() {\n" +
             "    }\n" +
             "}\n"
             );

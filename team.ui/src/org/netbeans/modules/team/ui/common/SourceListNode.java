@@ -48,6 +48,7 @@ import java.util.List;
 import org.netbeans.modules.team.ide.spi.IDEProject;
 import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.SourceAccessor;
 import org.netbeans.modules.team.ui.spi.SourceHandle;
 import org.netbeans.modules.team.ui.util.treelist.LeafNode;
@@ -71,8 +72,11 @@ public class SourceListNode<P> extends SectionNode {
 
     @Override
     protected List<TreeListNode> createChildren() {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
         SourceAccessor<P> accessor = dashboard.getSourceAccessor();
+        if(!accessor.hasSources(project)) {
+            return Arrays.asList(new TreeListNode[] {new NANode(this)});
+        }        
+        ArrayList<TreeListNode> res = new ArrayList<>(20);
         List<SourceHandle> sources = accessor.getSources(project);
         if(sources.isEmpty() && nodes != null) {
             res.addAll(Arrays.asList(nodes));

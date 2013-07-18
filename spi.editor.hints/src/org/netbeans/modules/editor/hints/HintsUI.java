@@ -45,6 +45,7 @@
 package org.netbeans.modules.editor.hints;
 
 import java.awt.AWTEvent;
+import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -58,6 +59,8 @@ import java.awt.Point;
 import java.awt.Rectangle;
 import java.awt.Toolkit;
 import java.awt.event.AWTEventListener;
+import java.awt.event.FocusEvent;
+import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
@@ -144,7 +147,7 @@ import org.openide.util.TaskListener;
  *
  * @author Tim Boudreau
  */
-public final class HintsUI implements MouseListener, MouseMotionListener, KeyListener, PropertyChangeListener, AWTEventListener, CaretListener  {
+public final class HintsUI implements MouseListener, MouseMotionListener, KeyListener, PropertyChangeListener, AWTEventListener, CaretListener, FocusListener  {
 
     //-J-Dorg.netbeans.modules.editor.hints.HintsUI.always.show.error=true
     private static final boolean ALWAYS_SHOW_ERROR_MESSAGE = Boolean.getBoolean(HintsUI.class.getName() + ".always.show.error");
@@ -182,7 +185,10 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
     private ScrollCompletionPane subhintListComponent;
     private JTextArea errorTooltip;
     private AtomicBoolean cancel;
-    
+
+    private boolean altEnterPressed = false;
+    private boolean altReleased = false;
+
     @SuppressWarnings("LeakingThisInConstructor")
     private HintsUI() {
         EditorRegistry.addPropertyChangeListener(this);
@@ -512,13 +518,9 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
       if (gs.length == 0 || gs.length == 1) {
           return new Rectangle(Toolkit.getDefaultToolkit().getScreenSize());
       }
-
-      for (int j = 0; j < gs.length; j++) {
-          GraphicsDevice gd = gs[j];
-          GraphicsConfiguration[] gc = gd.getConfigurations();
-          for (int i=0; i < gc.length; i++) {
-              virtualBounds = virtualBounds.union(gc[i].getBounds());
-          }
+     
+      for (GraphicsDevice gd : gs) {
+          virtualBounds = virtualBounds.union(gd.getDefaultConfiguration().getBounds());
       }
 
       return virtualBounds;
@@ -595,6 +597,18 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
 
             if (wasSelected != view.getSelectedIndex() && view == hintListComponent.getView()) {
                 closeSubList();
+            }
+
+            if (sublistPopup != null && e.getSource() == hintListComponent.getView()
+                    && hintListComponent.getView().getSize().width - ListCompletionView.arrowSpan() > e.getPoint().x) {
+                closeSubList();
+            }
+
+            if (sublistPopup == null && e.getSource() == hintListComponent.getView()
+                    && hintListComponent.getView().getSize().width - ListCompletionView.arrowSpan() <= e.getPoint().x) {
+                if (hintListComponent.getView().right()) {
+                    e.consume();
+                }
             }
         }
     }
@@ -728,6 +742,12 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
         if ( e.getKeyCode() == KeyEvent.VK_ENTER ) {
             if (e.getModifiersEx() == KeyEvent.ALT_DOWN_MASK) {
                 if ( !popupShowing) {
+                    if (org.openide.util.Utilities.isWindows()
+                            && !Boolean.getBoolean("HintsUI.disable.AltEnter.hack")) { // NOI18N
+                        // Fix (workaround) for issue #186557
+                        altEnterPressed = true;
+                        altReleased = false;
+                    }
                     invokeDefaultAction(false);
                     e.consume();
                 }
@@ -771,6 +791,27 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
     }    
 
     public void keyReleased(KeyEvent e) {
+        // Fix (workaround) for issue #186557
+        if (org.openide.util.Utilities.isWindows()) {
+            if (Boolean.getBoolean("HintsUI.disable.AltEnter.hack")) { // NOI18N
+                return;
+            }
+
+            if (altEnterPressed && e.getKeyCode() == KeyEvent.VK_ALT) {
+                e.consume();
+                altReleased = true;
+            } else if (altEnterPressed && e.getKeyCode() == KeyEvent.VK_ENTER) {
+                altEnterPressed = false;
+                if (altReleased) {
+                    try {
+                        java.awt.Robot r = new java.awt.Robot();
+                        r.keyRelease(KeyEvent.VK_ALT);
+                    } catch (AWTException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
     }
 
     public void keyTyped(KeyEvent e) {
@@ -891,6 +932,14 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
         if (getComponent() != active) {
             removeHints();
             setComponent(active);
+
+            if (getComponent() != null) {
+                getComponent().removeFocusListener(this);
+            }
+
+            if (active != null) {
+                active.addFocusListener(this);
+            }
         }
     }
     
@@ -1038,6 +1087,15 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
                 });
             }
         });
+    }
+
+    @Override
+    public void focusGained(FocusEvent e) {
+    }
+
+    @Override
+    public void focusLost(FocusEvent e) {
+        removePopups();
     }
 
     private static final class CaretLocationAndMessage {

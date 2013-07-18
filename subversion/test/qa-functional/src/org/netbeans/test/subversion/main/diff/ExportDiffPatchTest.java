@@ -124,7 +124,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
             
             TestKit.TIME_OUT = 25;
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-            VersioningOperator vo = VersioningOperator.invoke();
+            //VersioningOperator vo = VersioningOperator.invoke();
             TestKit.showStatusLabels();
             CheckoutWizardOperator.invoke();
             RepositoryStepOperator rso = new RepositoryStepOperator();
@@ -170,6 +170,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
             node.performPopupAction("Subversion|Show Changes");
             TestKit.waitText(mh);
             Thread.sleep(1000);
+            VersioningOperator vo = VersioningOperator.invoke();
             vo = VersioningOperator.invoke();
             //Save action should change the file annotations
             org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
@@ -188,7 +189,7 @@ public class ExportDiffPatchTest extends JellyTestCase {
             mh = new MessageHandler("Exporting");
             TestKit.removeHandlers(log);
             log.addHandler(mh);
-            node.performMenuActionNoBlock("Team|Subversion|Export Diff Patch...");
+            node.performMenuActionNoBlock("Team|Patches|Export Uncommitted Changes...");
             //Operator.setDefaultStringComparator(oldOperator);
             
             nbdialog = new NbDialogOperator("Export Diff Patch");

@@ -311,6 +311,8 @@ private void globalButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-
         pf.getPreferences("").parent().put(USED_PROFILE, DEFAULT_PROFILE); //NOI18N
         loadButton.setEnabled(false);
         setEnabled(jScrollPane1, false);
+    } else {
+        projectButton.setSelected(true);
     }
 
 }//GEN-LAST:event_globalButtonActionPerformed

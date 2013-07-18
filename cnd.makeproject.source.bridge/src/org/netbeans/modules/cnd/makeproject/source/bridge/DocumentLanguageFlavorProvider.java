@@ -126,10 +126,16 @@ public final class DocumentLanguageFlavorProvider implements CndSourceProperties
     private static void setLanguage(NativeFileItem nfi, StyledDocument doc) {
         Language<?> language = null;
         Filter<?> filter = null;
-        Lookup lookup = nfi.getNativeProject().getProject().getLookup();
-        CndDocumentCodeStyleProvider cs = lookup.lookup(CndDocumentCodeStyleProvider.class);
-        if (cs != null) {
-            doc.putProperty(CndDocumentCodeStyleProvider.class, cs);
+        final NativeProject nativeProject = nfi.getNativeProject();
+        if (nativeProject != null) {
+            final Lookup.Provider project = nativeProject.getProject();
+            if (project != null) {
+                Lookup lookup = project.getLookup();
+                CndDocumentCodeStyleProvider cs = lookup.lookup(CndDocumentCodeStyleProvider.class);
+                if (cs != null) {
+                    doc.putProperty(CndDocumentCodeStyleProvider.class, cs);
+                }
+            }
         }
         switch (nfi.getLanguage()) {
             case C:

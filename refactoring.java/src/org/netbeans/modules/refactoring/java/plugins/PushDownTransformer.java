@@ -47,6 +47,7 @@ package org.netbeans.modules.refactoring.java.plugins;
 import com.sun.source.tree.*;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
+import com.sun.source.util.Trees;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -148,6 +149,7 @@ public class PushDownTransformer extends RefactoringVisitor {
             //target type
             TypeMirror tm = el.asType();
             Types types = workingCopy.getTypes();
+            Trees trees = workingCopy.getTrees();
             if (types.isSubtype(types.erasure(tm), types.erasure(p.asType()))) {
                 List<String> imports = new ArrayList<String>();
                 boolean makeClassAbstract = false;
@@ -204,6 +206,34 @@ public class PushDownTransformer extends RefactoringVisitor {
                                     oldOne.getTypeParameters(),
                                     oldOne.getParameters(),
                                     oldOne.getThrows(),
+                                    oldOne.getBody(),
+                                    (ExpressionTree) oldOne.getDefaultValue());
+                            genUtils.copyComments(memberTree, m, true);
+                            genUtils.copyComments(memberTree, m, false);
+                            njuClass = genUtils.insertClassMember(njuClass, m);
+                        } else if(memberTree.getKind() == Tree.Kind.METHOD) {
+                            MethodTree oldOne = (MethodTree) memberTree;
+                            Tree returnType = oldOne.getReturnType();
+                            TreePath returnTypePath = new TreePath(path, returnType);
+                            Element returnEl = trees.getElement(returnTypePath);
+                            if(returnEl != null && returnEl.getKind() != ElementKind.TYPE_PARAMETER) {
+                                returnType = make.QualIdent(returnEl);
+                            }
+                            List<ExpressionTree> aThrows = new ArrayList<>(oldOne.getThrows().size());
+                            for (ExpressionTree thrw : oldOne.getThrows()) {
+                                TreePath thrwPath = new TreePath(path, thrw);
+                                Element thrwEl = trees.getElement(thrwPath);
+                                if(thrwEl != null && thrwEl.getKind() != ElementKind.TYPE_PARAMETER) {
+                                    aThrows.add(make.QualIdent(thrwEl));
+                                } else {
+                                    aThrows.add(thrw);
+                                }
+                            }
+                            MethodTree m = make.Method(
+                                    oldOne.getModifiers(),
+                                    oldOne.getName(), returnType,
+                                    oldOne.getTypeParameters(),
+                                    oldOne.getParameters(), aThrows,
                                     oldOne.getBody(),
                                     (ExpressionTree) oldOne.getDefaultValue());
                             genUtils.copyComments(memberTree, m, true);

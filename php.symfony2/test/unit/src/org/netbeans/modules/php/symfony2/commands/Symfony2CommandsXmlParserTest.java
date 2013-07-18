@@ -116,4 +116,42 @@ public class Symfony2CommandsXmlParserTest extends NbTestCase {
         assertEquals("twig:lint", command.getCommand());
     }
 
+    public void testIssue232490() throws Exception {
+        Reader reader = new BufferedReader(new FileReader(new File(getDataDir(), "issue232490.xml")));
+
+        List<Symfony2CommandVO> commands = new ArrayList<>();
+        Symfony2CommandsXmlParser.parse(reader, commands);
+
+        assertFalse(commands.isEmpty());
+        assertSame(60, commands.size());
+
+        Symfony2CommandVO command = commands.get(0);
+        assertEquals("help", command.getCommand());
+        assertEquals("Displays help for a command", command.getDescription());
+
+        command = findCommand(commands, "pl:update-files");
+        assertNotNull(command);
+        assertEquals("pl:update-files", command.getCommand());
+        assertEquals("Update assetic + translations", command.getDescription());
+        assertEquals("<html>Usage:<br>"
+                + "<i>pl:update-files</i><br><br>"
+                + "The <i>pl:update-files -e=prod</i> command executes these commands:<br> <br>"
+                + " <i>php app/console assets:install --ansi</i><br>"
+                + " <i>php app/console assetic:dump --env=prod --ansi</i><br>"
+                + " <i>ITT FRISSÍTI A SZERVERRŐL A FÁJLOKAT</i><br>"
+                + " <i>php app/console translation:extract --dir=./src/ --dir=./app/Resources/ --output-dir=./app/Resources/translations --keep en_US --ansi</i>", command.getHelp());
+
+        command = commands.get(59);
+        assertEquals("twig:lint", command.getCommand());
+    }
+
+    private Symfony2CommandVO findCommand(List<Symfony2CommandVO> commands, String commandName) {
+        for (Symfony2CommandVO command : commands) {
+            if (command.getCommand().equals(commandName)) {
+                return command;
+            }
+        }
+        return null;
+    }
+
 }

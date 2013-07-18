@@ -39,7 +39,7 @@ public class SvnPropertiesAction extends SvnAction {
     /**
      * "Copy..." menu item.
      */
-    public static final String SVN_PROPERTIES_ITEM = "Svn Properties";
+    public static final String SVN_PROPERTIES_ITEM = "Properties";
 
     public SvnPropertiesAction() {
         super(TEAM_ITEM + "|" + SVN_PROPERTIES_ITEM, SVN_ITEM + "|" + SVN_PROPERTIES_ITEM);

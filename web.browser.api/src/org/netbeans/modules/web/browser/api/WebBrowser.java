@@ -50,6 +50,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.ImageIcon;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.core.IDESettings;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
@@ -131,17 +132,17 @@ public final class WebBrowser {
         return factoryDesc.getName();
     }
 
-    public Image getIconImage() {
-        Image im = factoryDesc.getIconImage();
+    public Image getIconImage(boolean small) {
+        Image im = factoryDesc.getIconImage(small);
         if (im == null) {
-            ImageIcon icon = ImageUtilities.loadImageIcon( getIconFile(getBrowserFamily()), true );
+            ImageIcon icon = ImageUtilities.loadImageIcon( getIconFile(getBrowserFamily(), small), true );
             im = ImageUtilities.icon2Image( icon );
         }
         if (hasNetBeansIntegration() && factoryDesc.getBrowserFamily() != BrowserFamilyId.JAVAFX_WEBVIEW) {
-            im = ImageUtilities.mergeImages(
-                im,
-                ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/nb-badge.png"),
-            12, 12);
+//            im = ImageUtilities.mergeImages(
+//                im,
+//                ImageUtilities.loadImage("org/netbeans/modules/web/browser/ui/resources/nb-badge.png"),
+//            12, 12);
         }
         return im;
     }
@@ -251,20 +252,33 @@ public final class WebBrowser {
         return factoryDesc;
     }
 
-    private static String getIconFile(BrowserFamilyId browserFamily) {
+    private static final @StaticResource String CHROME_SMALL = "org/netbeans/modules/web/browser/ui/resources/browser_chrome_16x.png"; // NOI18N
+    private static final @StaticResource String CHROME_LARGE = "org/netbeans/modules/web/browser/ui/resources/browser_chrome_24x.png"; // NOI18N
+    private static final @StaticResource String FIREFOX_SMALL = "org/netbeans/modules/web/browser/ui/resources/browser_firefox_16x.png"; // NOI18N
+    private static final @StaticResource String FIREFOX_LARGE = "org/netbeans/modules/web/browser/ui/resources/browser_firefox_24x.png"; // NOI18N
+    private static final @StaticResource String CHROMIUM_SMALL = "org/netbeans/modules/web/browser/ui/resources/browser_chromium_16x.png"; // NOI18N
+    private static final @StaticResource String CHROMIUM_LARGE = "org/netbeans/modules/web/browser/ui/resources/browser_chromium_24x.png"; // NOI18N
+    private static final @StaticResource String IE_SMALL = "org/netbeans/modules/web/browser/ui/resources/browser_ie_16x.png"; // NOI18N
+    private static final @StaticResource String IE_LARGE = "org/netbeans/modules/web/browser/ui/resources/browser_ie_24x.png"; // NOI18N
+    private static final @StaticResource String SAFARI_SMALL = "org/netbeans/modules/web/browser/ui/resources/browser_safari_16x.png"; // NOI18N
+    private static final @StaticResource String SAFARI_LARGE = "org/netbeans/modules/web/browser/ui/resources/browser_safari_24x.png"; // NOI18N
+    private static final @StaticResource String GENERIC_SMALL = "org/netbeans/modules/web/browser/ui/resources/browser_generic_16x.png"; // NOI18N
+    private static final @StaticResource String GENERIC_LARGE = "org/netbeans/modules/web/browser/ui/resources/browser_generic_24x.png"; // NOI18N
+
+    private static String getIconFile(BrowserFamilyId browserFamily, boolean small) {
         switch (browserFamily) {
             case CHROME:
-                return "org/netbeans/modules/web/browser/ui/resources/browser-chrome.png";
+                return small ? CHROME_SMALL : CHROME_LARGE;
             case FIREFOX:
-                return "org/netbeans/modules/web/browser/ui/resources/browser-firefox.png";
+                return small ? FIREFOX_SMALL : FIREFOX_LARGE;
             case CHROMIUM:
-                return "org/netbeans/modules/web/browser/ui/resources/browser-chromium.png";
+                return small ? CHROMIUM_SMALL : CHROMIUM_LARGE;
             case IE:
-                return "org/netbeans/modules/web/browser/ui/resources/browser-ie.png";
+                return small ? IE_SMALL : IE_LARGE;
             case SAFARI:
-                return "org/netbeans/modules/web/browser/ui/resources/browser-safari.png";
+                return small ? SAFARI_SMALL : SAFARI_LARGE;
             default:
-                return "org/netbeans/modules/web/browser/ui/resources/browser-generic.png";
+                return small ? GENERIC_SMALL : GENERIC_LARGE;
         }
        
     }

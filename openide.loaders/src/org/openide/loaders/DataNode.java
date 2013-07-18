@@ -584,17 +584,26 @@ public class DataNode extends AbstractNode {
         }
 
         @Override
-        public void setValue(String newExt) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        public void setValue(final String newExt) throws IllegalAccessException, IllegalArgumentException, InvocationTargetException {
             if (getValue().equals(newExt)) {
                 // #164819 - no change when string editor canceled
-                return;
-            }
-            try {
+            } else {
                 if (obj.isModified()) {
                     String message = DataObject.getString("ERROR_extension");  //NOI18N
                     DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message));
                     return;
                 }
+                DataNodeUtils.reqProcessor().post(new Runnable() { // #232671
+                    @Override
+                    public void run() {
+                        setNewExt(newExt);
+                    }
+                });
+            }
+        }
+
+        private void setNewExt(String newExt) {
+            try {
                 FileObject prim = obj.getPrimaryFile();
                 FileLock lock = prim.lock();
                 try {

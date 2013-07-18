@@ -246,6 +246,35 @@ public class JsParserTest extends JsTestBase {
             + "}", 1, SanitizingParser.Sanitize.MISSING_PAREN);
     }
 
+    public void testPreviousLines() throws Exception {
+        parse("$('#selectorId').SomePlugin({ \n"
+            + "    inline: true, \n"
+            + "    calendars: 3,\n"
+            + "    mode: 'range',\n"
+            + "  _UNKNOWN_\n"
+            + "    date: [c_from, c_to],\n"
+            + "    current: new Date(c_to.getFullYear(), c_to.getMonth(), 1),\n"
+            + "  _UNKNOWN_\n"
+            + "    onChange: function(dates,el) {\n"
+            + "        a\n"
+            + "      }\n"
+            + "});",
+            "$('#selectorId').SomePlugin({ \n"
+            + "    inline: true, \n"
+            + "    calendars: 3,\n"
+            + "    mode: 'range',\n"
+            + "           \n"
+            + "    date: [c_from, c_to],\n"
+            + "    current: new Date(c_to.getFullYear(), c_to.getMonth(), 1),\n"
+            + "           \n"
+            + "    onChange: function(dates,el) {\n"
+            + "         \n"
+            + "      }\n"
+            + "});",
+            3,
+            SanitizingParser.Sanitize.PREVIOUS_LINES);
+    }
+
     public void testRegexp() throws Exception {
         parse("$?c.onreadystatechange=function(){/loaded|complete/.test(c.readyState)&&d()}:c.onload=c.onerror=d;\n",
                 null, 0, null);

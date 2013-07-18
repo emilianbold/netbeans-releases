@@ -43,7 +43,7 @@
  */
 package org.netbeans.modules.php.dbgp.annotations;
 
-import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.modules.php.dbgp.breakpoints.LineBreakpoint;
 import org.openide.text.Annotatable;
 import org.openide.util.NbBundle;
 
@@ -54,13 +54,13 @@ import org.openide.util.NbBundle;
  */
 public class DisabledBrkpntAnnotation extends BrkpntAnnotation {
 
-    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE 
+    public static final String DISABLED_BREAKPOINT_ANNOTATION_TYPE
                                     = "DisabledBreakpoint";         // NOI18N
-    
-    private static final String DISABLED_BREAKPOINT                
+
+    private static final String DISABLED_BREAKPOINT
                                     = "ANTN_DISABLED_BREAKPOINT";   // NOI18N
 
-    public DisabledBrkpntAnnotation( Annotatable annotatable, Breakpoint breakpoint ) {
+    public DisabledBrkpntAnnotation( Annotatable annotatable, LineBreakpoint breakpoint ) {
         super(annotatable, breakpoint);
     }
 

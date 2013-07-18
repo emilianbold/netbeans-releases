@@ -43,6 +43,7 @@
 package org.netbeans.modules.options.editor.spi;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,6 +57,7 @@ import javax.swing.event.TreeModelListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.tree.TreeModel;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import org.netbeans.spi.options.OptionsPanelController;
 
@@ -103,7 +105,6 @@ public final class OptionsFilter {
         private final Document filter;
         private final Acceptor acceptor;
         private final Map<Object, List<Object>> category2Nodes = new HashMap<Object, List<Object>>();
-        private final List<Object> categories;
 
         public FilteringTreeModel(TreeModel delegate, Document filter, Acceptor acceptor) {
             this.delegate = delegate;
@@ -113,7 +114,6 @@ public final class OptionsFilter {
             this.delegate.addTreeModelListener(this);
             this.filter.addDocumentListener(this);
 
-            this.categories = new ArrayList<Object>(delegate.getChildCount(delegate.getRoot()));
             filter();
         }
 
@@ -124,22 +124,12 @@ public final class OptionsFilter {
 
         @Override
         public Object getChild(Object parent, int index) {
-            if (parent == getRoot()) {
-                return categories.get(index);
-            }
-
             return category2Nodes.get(parent).get(index);
         }
 
         @Override
         public int getChildCount(Object parent) {
-            if (parent == getRoot()) {
-                return categories.size();
-            }
-            if (category2Nodes.get(parent) != null)
-                return category2Nodes.get(parent).size();
-            else
-                return 0;
+            return category2Nodes.get(parent).size();
         }
 
         @Override
@@ -154,10 +144,6 @@ public final class OptionsFilter {
 
         @Override
         public int getIndexOfChild(Object parent, Object child) {
-            if (parent == getRoot()) {
-                return categories.indexOf(child);
-            }
-
             List<Object> catNodes = category2Nodes.get(parent);
 
             if (catNodes == null) return -1;
@@ -195,31 +181,35 @@ public final class OptionsFilter {
             });
 
             category2Nodes.clear();
-            categories.clear();
 
-            Object root = delegate.getRoot();
-
-            for (int c = 0; c < delegate.getChildCount(root); c++) {
-                Object cat = delegate.getChild(root, c);
-                List<Object> filtered = new ArrayList<Object>(delegate.getChildCount(cat));
-
-                for (int h = 0; h < delegate.getChildCount(cat); h++) {
-                    Object hint = delegate.getChild(cat, h);
-
-                    if (term[0].isEmpty() || acceptor.accept(hint, term[0])) {
-                        filtered.add(hint);
-                    }
-                }
-
-                if (term[0].isEmpty() || !filtered.isEmpty()) {
-                    category2Nodes.put(cat, filtered);
-                    categories.add(cat);
-                }
-            }
+            filterNodes(delegate.getRoot(), term[0]);
 
             for (TreeModelListener l : getListeners()) {
                 l.treeStructureChanged(new TreeModelEvent(this, new Object[] {getRoot()}));
             }
+        }
+        
+        private boolean filterNodes(Object currentNode, String term) {
+            boolean accepted = term.isEmpty() || acceptor.accept(currentNode, term);
+            
+            if (delegate.isLeaf(currentNode)) return accepted;
+            
+            List<Object> filtered = new ArrayList<Object>(delegate.getChildCount(currentNode));
+            
+            for (int c = 0; c < delegate.getChildCount(currentNode); c++) {
+                Object child = delegate.getChild(currentNode, c);
+
+                if (filterNodes(child, term)) {
+                    filtered.add(child);
+                    accepted |= true;
+                }
+            }
+
+            if (term.isEmpty() || accepted || currentNode == delegate.getRoot()) {
+                category2Nodes.put(currentNode, filtered);
+            }
+            
+            return accepted;
         }
 
         @Override
@@ -246,7 +236,14 @@ public final class OptionsFilter {
             List<Integer> childIndices = new LinkedList<Integer>();
             List<Object> children = new LinkedList<Object>();
 
-            for (Object c : e.getChildren()) {
+            Object[] ch = e.getChildren();
+            
+            // special case for root node: include all children
+            if (ch == null) {
+                List l = Collections.list(((TreeNode)e.getTreePath().getLastPathComponent()).children());
+                ch = l.toArray(new Object[l.size()]);
+            }
+            for (Object c : ch) {
                 int i = getIndexOfChild(e.getTreePath().getLastPathComponent(), e.getTreePath().getLastPathComponent());
 
                 if (i == (-1)) continue;

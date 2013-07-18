@@ -2046,7 +2046,7 @@ exists or setup the property manually. For example like this:
                 <dirname property="dist.jar.dir" file="${{dist.ear.war}}"/>
                 <mkdir dir="${{dist.jar.dir}}"/>
                 <jar jarfile="${{dist.ear.war}}" compress="${{jar.compress}}" manifest="${{build.web.dir}}/META-INF/MANIFEST.MF">
-                    <fileset dir="${{build.web.dir}}" excludes="WEB-INF/classes/.netbeans_*"/>
+                    <fileset dir="${{build.web.dir}}" excludes="WEB-INF/classes/.netbeans_*,${{dist.archive.excludes}}"/>
                 </jar>
             </target>
             
@@ -2855,14 +2855,14 @@ exists or setup the property manually. For example like this:
         <dirname property="dist.jar.dir" file="${{dist.war}}"/>
         <mkdir dir="${{dist.jar.dir}}"/>
         <jar jarfile="${{dist.war}}" compress="${{jar.compress}}">
-            <fileset dir="${{build.web.dir}}" excludes="WEB-INF/classes/.netbeans_*"/>
+            <fileset dir="${{build.web.dir}}" excludes="WEB-INF/classes/.netbeans_*,${{dist.archive.excludes}}"/>
         </jar>
     </xsl:template>
     <xsl:template name="distWithCustomManifest">
         <dirname property="dist.jar.dir" file="${{dist.war}}"/>
         <mkdir dir="${{dist.jar.dir}}"/>
         <jar manifest="${{build.meta.inf.dir}}/MANIFEST.MF" jarfile="${{dist.war}}" compress="${{jar.compress}}">
-            <fileset dir="${{build.web.dir}}" excludes="WEB-INF/classes/.netbeans_*"/>
+            <fileset dir="${{build.web.dir}}" excludes="WEB-INF/classes/.netbeans_*,${{dist.archive.excludes}}"/>
         </jar>
     </xsl:template>
     

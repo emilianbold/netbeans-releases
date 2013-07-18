@@ -230,6 +230,8 @@ implements PropertyChangeListener, ContextAwareAction {
         }
         if (Action.MNEMONIC_KEY.equals(name)) {
             String actionName = (String) fo.get("displayName"); // NOI18N
+            if( null == actionName )
+                return null;
             // NOI18N
             int position = Mnemonics.findMnemonicAmpersand(actionName);
             if (position == -1) {

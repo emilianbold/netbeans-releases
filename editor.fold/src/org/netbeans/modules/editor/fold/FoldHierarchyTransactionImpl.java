@@ -335,6 +335,10 @@ public final class FoldHierarchyTransactionImpl {
                         LOG.warning("Document event was: " + evt + " offset: " + insertOffset + ", len: " + evt.getLength());
                     }
                     api.foldStateChangeEndOffsetChanged(state, childFoldEndOffset);
+                    if (fold.getStartOffset() > fold.getEndOffset()) {
+                        LOG.warning("Updated fold is inconsistent, dumping fold hierarchy: " + execution);
+                        LOG.warning("Document event was: " + evt + " offset: " + insertOffset + ", len: " + evt.getLength());
+                    }
                     
                 } else { // not right at the end of the fold -> check damaged
                     int dmg = FoldUtilitiesImpl.isFoldDamagedByInsert(childFold, evt);

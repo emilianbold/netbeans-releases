@@ -253,7 +253,7 @@ public class TooStrongCast {
                 // TODO: varargs
                 continue;
             }
-            ExecutableType exType = (ExecutableType)info.getTypes().asMemberOf(translateTo, ex);
+            ExecutableType exType = (ExecutableType)(translateTo != null ? info.getTypes().asMemberOf(translateTo, ex) : ex.asType());
             boolean matches = true;
             TypeMirror theArgType = null;
             for (int j = 0; j < mtypes.size(); j++) {

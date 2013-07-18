@@ -49,6 +49,7 @@ import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.openide.awt.HtmlBrowser;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -65,11 +66,6 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
     private CordovaURLMapper mapper;
     
-    @Override
-    public boolean canCreateHtmlBrowserImpl() {
-        return true;
-    }
-
     @Override
     public HtmlBrowser.Impl createHtmlBrowserImpl() {
         return new CordovaBrowser();
@@ -97,8 +93,8 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
     public static class IOSDevice extends PhoneGapBrowserFactory {
 
         @Override
-        public Image getIconImage() {
-            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap.png", false);
+        public Image getIconImage(boolean small) {
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/iosdevice"+ (small?"16.png":".png"), false);
         }
 
         @Override
@@ -115,14 +111,19 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
         public boolean hasNetBeansIntegration() {
             return true;
         }
+
+        @Override
+        public boolean canCreateHtmlBrowserImpl() {
+            return Utilities.isMac();
+        }
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
     public static class IOSSimulator extends PhoneGapBrowserFactory {
 
         @Override
-        public Image getIconImage() {
-            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap.png", false);
+        public Image getIconImage(boolean small) {
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/iossimulator" + (small?"16.png":".png"), false);
         }
 
         @Override
@@ -139,14 +140,19 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
         public boolean hasNetBeansIntegration() {
             return true;
         }
+
+        @Override
+        public boolean canCreateHtmlBrowserImpl() {
+            return Utilities.isMac();
+        }
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
     public static class AndroidEmulator extends PhoneGapBrowserFactory {
 
         @Override
-        public Image getIconImage() {
-            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap.png", false);
+        public Image getIconImage(boolean small) {
+            return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/androidemulator" + (small?"16.png":".png"), false);
         }
 
         @Override
@@ -164,12 +170,17 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
             return false;
         }
 
+        @Override
+        public boolean canCreateHtmlBrowserImpl() {
+            return true;
+        }
+
         @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
         public static class AndroidDevice extends PhoneGapBrowserFactory {
 
             @Override
-            public Image getIconImage() {
-                return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/phonegap.png", false);
+            public Image getIconImage(boolean small) {
+                return ImageUtilities.loadImage("org/netbeans/modules/cordova/resources/androiddevice" + (small?"16.png":".png"), false);
             }
 
             @Override
@@ -185,6 +196,11 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
             @Override
             public boolean hasNetBeansIntegration() {
                 return false;
+            }
+
+            @Override
+            public boolean canCreateHtmlBrowserImpl() {
+                return true;
             }
         }
     }

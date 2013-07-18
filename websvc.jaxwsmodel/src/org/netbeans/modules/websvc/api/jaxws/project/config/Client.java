@@ -92,6 +92,18 @@ public final class Client {
     public String getPackageName() {
         return client.getPackageName();
     }
+    
+    public void setJvmArgs(String[] jvmArgs) {
+        client.setJvmArg(jvmArgs);
+    }
+
+    public String[] getJvmArgs() {
+        return client.getJvmArg();
+    }
+    
+    public int sizeJvmArgs() {
+        return client.sizeJvmArg();
+    }
 
     public Binding newBinding(){
         return new Binding(client.newBinding());

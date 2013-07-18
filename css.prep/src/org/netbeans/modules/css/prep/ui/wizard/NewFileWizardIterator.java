@@ -205,7 +205,6 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         return bottomPanel;
     }
 
-
     //~ Inner classes
 
     private interface BottomPanel extends WizardDescriptor.Panel<WizardDescriptor> {
@@ -279,7 +278,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
 
         @Override
         public HelpCtx getHelp() {
-            return null;
+            return new HelpCtx("org.netbeans.modules.css.prep.ui.wizard.NewFileWizardIterator." + type.name()); // NOI18N
         }
 
         @Override

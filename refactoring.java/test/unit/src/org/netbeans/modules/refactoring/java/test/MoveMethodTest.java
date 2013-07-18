@@ -295,6 +295,45 @@ public class MoveMethodTest extends MoveBaseTest {
                 + "\n"
                 + "}\n"));
     }
+    
+    public void testMoveImportsb() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "import java.util.Random;\n"
+                + "public class SourceClass {\n"
+                + "\n"
+                + "    public Random movedMethod() {\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        TargetClass tClass = new TargetClass();\n"
+                + "        Random r = movedMethod();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/TargetClass.java", "package t;\n"
+                + "public class TargetClass {\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/SourceClass.java"), new int[]{1}, src.getFileObject("t/TargetClass.java"), Visibility.PUBLIC, false);
+        verifyContent(src,
+                new File("t/SourceClass.java", "package t;\n"
+                + "import java.util.Random;\n"
+                + "public class SourceClass {\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        TargetClass tClass = new TargetClass();\n"
+                + "        Random r = tClass.movedMethod();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/TargetClass.java", "package t;\n"
+                + "import java.util.Random;\n"
+                + "public class TargetClass {\n"
+                + "    public Random movedMethod() {\n"
+                + "        return null;\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"));
+    }
 
     public void testMoveParameterNotNeeded() throws Exception {
         writeFilesAndWaitForScan(src,

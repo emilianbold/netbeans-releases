@@ -300,6 +300,9 @@ public final class TreePathHandle {
     }
 
     private static boolean isSupported(Element el) {
+        if (el == null) {
+            return false;
+        }
         switch (el.getKind()) {
             case PACKAGE:
             case CLASS:

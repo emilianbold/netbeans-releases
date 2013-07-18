@@ -276,6 +276,7 @@ public class InspectionTest extends GeneralHTMLProject {
         runFile("simpleProject", "index.html");
 
         EmbeddedBrowserOperator eb = new EmbeddedBrowserOperator("Web Browser");
+        evt.waitNoEvent(2000);
         eb.checkInspectModeButton(true);
 
         DomOperator no = new DomOperator();
@@ -333,6 +334,7 @@ public class InspectionTest extends GeneralHTMLProject {
         createSampleProject("Responsive Rabbits", InspectionTest.current_project);
         setRunConfiguration("Embedded WebKit Browser", true, true);
         runFile(InspectionTest.current_project, "index.html");
+        evt.waitNoEvent(1000);
         DomOperator no = new DomOperator();
         no.focusElement("html|body|div|div|div|div|h1", "0|0|1|0|0|0|0");
         CSSStylesOperator co = new CSSStylesOperator("h1");

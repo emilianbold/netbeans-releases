@@ -85,7 +85,7 @@ public class MetaModelSupport {
             if ( boot == null || compile == null || src == null ){
                 return null;
             }
-            ModelUnit modelUnit = ModelUnit.create( boot, compile , src);
+            ModelUnit modelUnit = ModelUnit.create( boot, compile , src, myProject);
             metadataModel = WebBeansModelFactory.getMetaModel( modelUnit );
             MODELS.put( myProject, metadataModel );
             return metadataModel;

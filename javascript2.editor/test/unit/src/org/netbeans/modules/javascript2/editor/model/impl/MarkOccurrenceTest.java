@@ -803,10 +803,46 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue231913.js","return recurs^ion();", true);
     }
     
+    public void testIssue232570_01() throws Exception {
+        checkOccurrences("testfiles/completion/issue232570.js", "Test.modules.moduleA.na^me;", true);
+    }
+    
+    public void testIssue232570_02() throws Exception {
+        checkOccurrences("testfiles/completion/issue232570.js", "Test.modules.modul^eA.name;", true);
+    }
+    
+    public void testIssue232570_03() throws Exception {
+        checkOccurrences("testfiles/completion/issue232570.js", "Test.modul^es.moduleA.name;", true);
+    }
+    
+    public void testIssue232570_04() throws Exception {
+        checkOccurrences("testfiles/completion/issue232570.js", "Te^st.modules.moduleA.name;", true);
+    }
+    
     private String getTestPath() {
         return getTestFolderPath() + "/" + getTestName() + ".js";//NOI18N
     }
 
+    public void testIssue232595_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232595.js","   for (var loc2 = 30, loc3 = {}; lo^c2 < 100; loc2++) {", true);
+    }
+    
+    public void testIssue232595_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232595.js","      myl^oc1 += loc2;", true);
+    }
+
+    public void testIssue232920_01() throws Exception {
+        checkOccurrences("testfiles/structure/issue232920.js","var aaa = new MyCtx.A^uto();", true);
+    }
+    
+    public void testIssue232920_02() throws Exception {
+        checkOccurrences("testfiles/structure/issue232920.js","console.log(aaa.descri^ption.name);", true);
+    }
+    
+    public void testIssue232920_03() throws Exception {
+        checkOccurrences("testfiles/structure/issue232920.js","console.log(aaa.description.na^me);", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

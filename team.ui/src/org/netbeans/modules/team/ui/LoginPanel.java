@@ -275,7 +275,7 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
     }
 
     private static String loginKey(TeamServer server, boolean listAllProviders) {
-        return server.getUrl().toString() + "#" + listAllProviders; // NOI18N
+        return (server != null ? server.getUrl().toString() : "") + "#" + listAllProviders; // NOI18N
     }
     
     private static class LoginCallable implements Callable<TeamServer> {
@@ -328,13 +328,13 @@ public class LoginPanel extends javax.swing.JPanel implements org.netbeans.modul
             return null;
         }
 
-        private boolean r = false;
+        private boolean alreadyCalled = false;
         
         @Override
         public synchronized TeamServer call() {
-            if(!r) {
+            if(!alreadyCalled) {
+                alreadyCalled = true;
                 res = showLogin(preselectedServer, listAllProviders);
-                r = true;
                 synchronized ( map ) {
                     map.remove(loginKey(preselectedServer, listAllProviders));
                 }                

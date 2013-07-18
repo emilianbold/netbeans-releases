@@ -60,6 +60,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.DialogDisplayer;
@@ -365,7 +366,7 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
     private void showDarkLaFNotification( String profileName ) {
         if( null != previousProfileName && !previousProfileName.equals( profileName ) ) { //NOI18N
             if( DARK_COLOR_PROFILE_NAME.equals( profileName ) ) {
-                if( !isDarkLaF() && null == changeLaFNotification ) {
+                if( !isDarkLaF() && null == changeLaFNotification && !isForcedLaF() ) {
                     changeLaFNotification = NotificationDisplayer.getDefault().notify( NbBundle.getMessage(FontAndColorsPanel.class, "Title_DarkLaF"),
                             ImageUtilities.loadImageIcon( "org/netbeans/modules/options/colors/darklaf.png", true), //NOI18N
                             NbBundle.getMessage(FontAndColorsPanel.class, "Hint_DarkLaF"), new ActionListener() {
@@ -388,6 +389,12 @@ public class FontAndColorsPanel extends JPanel implements ActionListener {
 
     private static boolean isDarkLaF() {
         Preferences prefs = NbPreferences.root().node( "laf" ); //NOI18N
-        return prefs.getBoolean( "theme.dark", false ) && MetalLookAndFeel.class.getName().equals( prefs.get( "laf", "" ) ); //NOI18N
+        return prefs.getBoolean( "theme.dark", false ) && (MetalLookAndFeel.class.getName().equals( prefs.get( "laf", "" ))
+                                                        || NimbusLookAndFeel.class.getName().equals( prefs.get( "laf", "" ))
+                                                        || com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel.class.getName().equals( prefs.get( "laf", "" )) ); //NOI18N
+    }
+
+    private boolean isForcedLaF() {
+        return null != System.getProperty( "nb.laf.forced" ); //NOI18N
     }
 }

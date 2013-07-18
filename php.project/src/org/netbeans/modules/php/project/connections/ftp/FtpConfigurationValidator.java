@@ -100,7 +100,7 @@ public class FtpConfigurationValidator {
             result.addError(new ValidationResult.Message("keepAliveInterval", err)); // NOI18N
         }
 
-        validateProxy(passiveMode);
+        validateProxy(host, passiveMode);
         return this;
     }
 
@@ -120,12 +120,12 @@ public class FtpConfigurationValidator {
         "FtpConfigurationValidator.error.proxyAndNotPassive=Only passive mode is supported with HTTP proxy.",
         "FtpConfigurationValidator.warning.proxy=Configured HTTP proxy will be used only for Pure FTP. To avoid problems, do not use any SOCKS proxy."
     })
-    private void validateProxy(boolean passiveMode) {
+    private void validateProxy(final String host, boolean passiveMode) {
         final AtomicBoolean hasProxy = new AtomicBoolean();
         ProgressUtils.runOffEventDispatchThread(new Runnable() {
             @Override
             public void run() {
-                hasProxy.set(RemoteUtils.hasHttpProxy());
+                hasProxy.set(RemoteUtils.hasHttpProxy(host));
             }
         }, Bundle.FtpConfigurationValidator_proxy_detecting(), new AtomicBoolean(), false);
         if (hasProxy.get()) {

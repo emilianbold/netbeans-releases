@@ -1113,6 +1113,32 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "    }\n" +
 		           "}\n");
     }
+
+    public void testComments232298() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    public void z() {\n" +
+                           "        while (true) {\n" +
+                           "            int i = 0;\n" +
+                           "            \n" +
+                           "            //a\n" +
+                           "            System.err.println(1); //b\n" +
+                           "            //c\n" +
+                           "        }\n" +
+                           "    }\n" +
+                           "}\n",
+                           "while (true) { int i = 0; $statements$; } => for (; ;) { $statements$; }",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    public void z() {\n" +
+                           "        for (;;) {\n" +
+                           "            //a\n" +
+                           "            System.err.println(1); //b\n" +
+                           "            //c\n" +
+                           "        }\n" +
+                           "    }\n" +
+		           "}\n");
+    }
     
     public void performRewriteTest(String code, String rule, String golden) throws Exception {
 	prepareTest("test/Test.java", code);

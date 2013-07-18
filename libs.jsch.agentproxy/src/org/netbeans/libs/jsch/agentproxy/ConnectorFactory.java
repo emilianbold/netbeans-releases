@@ -41,7 +41,6 @@
  */
 package org.netbeans.libs.jsch.agentproxy;
 
-import com.jcraft.jsch.agentproxy.AgentProxyException;
 import com.jcraft.jsch.agentproxy.Connector;
 import com.jcraft.jsch.agentproxy.USocketFactory;
 import com.jcraft.jsch.agentproxy.connector.PageantConnector;
@@ -84,16 +83,16 @@ public class ConnectorFactory {
                 USocketFactory usf = new JNAUSocketFactory();
                 con = new SSHAgentConnector(usf);
             }
-        } catch (AgentProxyException ex) {
-            LOG.log(Level.INFO, null, ex);
+        } catch (Throwable ex) {
+            LOG.log(Level.FINE, null, ex);
         }
         try {
             if ((preferredKind == ConnectorKind.ANY || preferredKind == ConnectorKind.PAGEANT)
                     && PageantConnector.isConnectorAvailable()) {
                 con = new PageantConnector();
             }
-        } catch (AgentProxyException ex) {
-            LOG.log(Level.INFO, null, ex);
+        } catch (Throwable ex) {
+            LOG.log(Level.FINE, null, ex);
         }
         return con;
     }

@@ -98,8 +98,10 @@ public class LoginConfigPanel extends SectionInnerPanel {
             
             if (authMethod.equals(FORM)) {
                 FormLoginConfig formLoginConfig = loginConfig.getFormLoginConfig();
-                loginPageTF.setText(formLoginConfig.getFormLoginPage());
-                errorPageTF.setText(formLoginConfig.getFormErrorPage());
+                if (formLoginConfig != null) {
+                    loginPageTF.setText(formLoginConfig.getFormLoginPage());
+                    errorPageTF.setText(formLoginConfig.getFormErrorPage());
+                }
             }
 
             if (!authMethod.equals(NONE)) {

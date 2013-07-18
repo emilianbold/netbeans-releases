@@ -211,4 +211,20 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     public void testIssue231293_01() throws Exception {
         checkCompletion("testfiles/completion/issue231293.js", "_self.form.e^", false);
     }
+    
+    public void testIssue232570_01() throws Exception {
+        checkCompletion("testfiles/completion/issue232570.js", "Test.modules.moduleA.n^ame;", false);
+    }
+    
+    public void testIssue232178_01() throws Exception {
+        checkCompletion("testfiles/completion/issue232178.js", "               ^ // here", false);
+    }
+    
+    public void testIssue238986() throws Exception {
+        checkCompletion("testfiles/completion/issue228986.js", "var a = $^.parent(); ", false);
+    }
+    
+    public void testIssue224650() throws Exception {
+        checkCompletion("testfiles/completion/issue224650.js", "this.^ // cc here", false);
+    }
 }

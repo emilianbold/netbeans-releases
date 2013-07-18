@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.eclipse.osgi.launch.EquinoxFactory;
 import org.netbeans.core.netigso.spi.NetigsoArchive;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.Constants;
@@ -150,6 +151,10 @@ public class NetbinoxFactory implements FrameworkFactory {
     }
 
     static int findCommonPrefix(String s1, String s2) {
+        if (Utilities.isWindows() || Utilities.isMac()) {
+            s1 = s1.toUpperCase();
+            s2 = s2.toUpperCase();
+        }
         int len = Math.min(s1.length(), s2.length());
         int max = 0;
         for (int i = 0; i < len; i++) {

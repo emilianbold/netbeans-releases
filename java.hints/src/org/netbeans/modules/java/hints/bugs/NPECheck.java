@@ -34,6 +34,7 @@ import com.sun.source.util.TreePath;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
@@ -743,6 +744,11 @@ public class NPECheck {
         @Override
         public State visitWhileLoop(WhileLoopTree node, Void p) {
             return handleGeneralizedFor(null, node.getCondition(), null, node.getStatement(), p);
+        }
+
+        @Override
+        public State visitDoWhileLoop(DoWhileLoopTree node, Void p) {
+            return handleGeneralizedFor(Collections.singletonList(node.getStatement()), node.getCondition(), null, node.getStatement(), p);
         }
 
         @Override

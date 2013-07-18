@@ -228,9 +228,15 @@ public class ServerSelectionHelper {
         Server wrapper = getSelectedServer();
         Profile profile = getSelectedProfile();
 
-        String instanceID = wrapper.getServerInstanceID();
-        String serverID = wrapper.getServerID();
+        String instanceID = null;
+        String serverID = null;
         String version = null;
+
+        if (wrapper != null) {
+            instanceID = wrapper.getServerInstanceID();
+            serverID = wrapper.getServerID();
+        }
+
         if (profile != null) {
             version = profile.toPropertiesString();
         }
