@@ -91,10 +91,7 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
      */
     public JLabelOperator lblProjectName() {
         if(_lblProjectName == null) {
-            _lblProjectName = new JLabelOperator(this,
-                    Bundle.getStringTrimmed(
-                    "org.netbeans.modules.j2ee.common.project.ui.Bundle",
-                    "LBL_NWP1_ProjectName_Label"));
+            _lblProjectName = new JLabelOperator(this, "Project Name:");
         }
         return _lblProjectName;
     }
@@ -127,10 +124,7 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
      */
     public JLabelOperator lblProjectLocation() {
         if(_lblProjectLocation == null) {
-            _lblProjectLocation = new JLabelOperator(this,
-                    Bundle.getStringTrimmed(
-                    "org.netbeans.modules.j2ee.common.project.ui.Bundle",
-                    "LBL_NWP1_ProjectLocation_Label"));
+            _lblProjectLocation = new JLabelOperator(this, "Project Location:");
         }
         return _lblProjectLocation;
     }
@@ -155,10 +149,7 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
      */
     public JButtonOperator btBrowseProjectLocation() {
         if ( _btBrowseProjectLocation==null ) {
-            _btBrowseProjectLocation = new JButtonOperator(this,
-                    Bundle.getStringTrimmed(
-                    "org.netbeans.modules.j2ee.common.project.ui.Bundle",
-                    "LBL_NWP1_BrowseLocation_Button"));
+            _btBrowseProjectLocation = new JButtonOperator(this, "Browse...");
         }
         return _btBrowseProjectLocation;
     }
@@ -170,15 +161,13 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
         txtProjectLocation().setText(location);
     }
     
-    /** Returns operator for label Project Location
+    /** Returns operator for label Location when creating project with
+     *  existing sources.
      * @return JLabelOperator
      */
     public JLabelOperator lblLocation() {
         if(_lblLocation == null) {
-            _lblLocation = new JLabelOperator(this,
-                    Bundle.getStringTrimmed(
-                    "org.netbeans.modules.j2ee.common.project.ui.Bundle",
-                    "LBL_IW_LocationSrc_Label"));
+            _lblLocation = new JLabelOperator(this, "Location:");
         }
         return _lblLocation;
     }
@@ -203,10 +192,7 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
      */
     public JButtonOperator btBrowseLocation() {
         if ( _btBrowseProjectLocation==null ) {
-            _btBrowseProjectLocation = new JButtonOperator(this,
-                    Bundle.getStringTrimmed(
-                    "org.netbeans.modules.j2ee.common.project.ui.Bundle",
-                    "LBL_NWP1_BrowseLocation_Button"));
+            _btBrowseProjectLocation = new JButtonOperator(this, "Browse...");
         }
         return _btBrowseProjectLocation;
     }
@@ -223,10 +209,7 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
      */
     public JLabelOperator lblProjectFolder() {
         if(_lblProjectFolder == null) {
-            _lblProjectFolder = new JLabelOperator(this,
-                    Bundle.getStringTrimmed(
-                    "org.netbeans.modules.j2ee.common.project.ui.Bundle",
-                    "LBL_NWP1_CreatedProjectFolder_Label"));
+            _lblProjectFolder = new JLabelOperator(this, "Project Folder:");
         }
         return _lblProjectFolder;
     }
@@ -245,29 +228,12 @@ public class NewWebProjectNameLocationStepOperator extends NewProjectWizardOpera
         return _txtProjectFolder;
     }
     
-    /** Returns operator for checkbox 'Set as Main Project'
-     * @return JCheckBoxOperator
-     */
-    public JCheckBoxOperator cbSetAsMainProject() {
-        if ( _cbSetAsMainProject==null ) {
-            _cbSetAsMainProject = new JCheckBoxOperator(this,
-                    Bundle.getString(
-                    "org.netbeans.modules.j2ee.common.project.ui.Bundle",
-                    "LBL_NWP1_SetAsMain_CheckBox"));
-        }
-        return _cbSetAsMainProject;
-    }
-    
-    
     /** Returns operator for browse project folder button
      * @return JButtonOperator
      */
     public JButtonOperator btBrowseFolder() {
         if ( _btBrowseFolder==null ) {
-            _btBrowseFolder = new JButtonOperator(this,
-                    Bundle.getStringTrimmed(
-                    "org.netbeans.modules.j2ee.common.project.ui.Bundle",
-                    "LBL_NWP1_BrowseLocation_Button"), 1);
+            _btBrowseFolder = new JButtonOperator(this, "Browse:", 1);
         }
         return _btBrowseFolder;
     }
