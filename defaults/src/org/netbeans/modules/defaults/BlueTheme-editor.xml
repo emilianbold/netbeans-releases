@@ -76,4 +76,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="hyperlinks" foreColor="blue" underline="blue"/>
     <fontcolor name="synchronized-text-blocks-ext" foreColor="ffcc0099"/>
     <fontcolor name="synchronized-text-blocks-ext-slave" foreColor="ff996600"/>
+    <fontcolor name="indent-whitespace"/>
+    <fontcolor name="trailing-whitespace"/>
+    <fontcolor name="nbeditor-bracesMatching-sidebar"/>
  </fontscolors>

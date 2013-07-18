@@ -224,7 +224,7 @@ public class CopyClassesRefactoringPlugin extends JavaRefactoringPlugin {
 
         @Override
         public FileObject getParentFile() {
-            return refactoring.getRefactoringSource().lookup(FileObject.class);
+            return fileobject;
         }
     }
 

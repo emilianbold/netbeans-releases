@@ -627,7 +627,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class KeywordItem extends JavaCompletionItem {
 
         private static final String JAVA_KEYWORD = "org/netbeans/modules/java/editor/resources/javakw_16.png"; //NOI18N
-        private static final String KEYWORD_COLOR = getHTMLColor(64, 64, 217);
+        private static final String KEYWORD_COLOR = Utilities.getHTMLColor(64, 64, 217);
         private static ImageIcon icon;
 
         private String kwd;
@@ -737,7 +737,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class PackageItem extends JavaCompletionItem {
 
         private static final String PACKAGE = "org/netbeans/modules/java/editor/resources/package.gif"; // NOI18N
-        private static final String PACKAGE_COLOR = getHTMLColor(64, 150, 64);
+        private static final String PACKAGE_COLOR = Utilities.getHTMLColor(64, 150, 64);
         private static ImageIcon icon;
 
         private boolean inPackageStatement;
@@ -813,8 +813,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class ClassItem extends WhiteListJavaCompletionItem<TypeElement> {
 
         private static final String CLASS = "org/netbeans/modules/editor/resources/completion/class_16.png"; //NOI18N
-        private static final String CLASS_COLOR = getHTMLColor(150, 64, 64);
-        private static final String PKG_COLOR = getHTMLColor(192, 192, 192);
+        private static final String CLASS_COLOR = Utilities.getHTMLColor(150, 64, 64);
+        private static final String PKG_COLOR = Utilities.getHTMLColor(192, 192, 192);
         private static ImageIcon icon;
 
         protected TypeMirrorHandle<DeclaredType> typeHandle;
@@ -1107,7 +1107,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class InterfaceItem extends ClassItem {
 
         private static final String INTERFACE = "org/netbeans/modules/editor/resources/completion/interface.png"; // NOI18N
-        private static final String INTERFACE_COLOR = getHTMLColor(128, 128, 128);
+        private static final String INTERFACE_COLOR = Utilities.getHTMLColor(128, 128, 128);
         private static ImageIcon icon;
 
         private InterfaceItem(CompilationInfo info, TypeElement elem, DeclaredType type, int dim, int substitutionOffset, ReferencesCount referencesCount, boolean isDeprecated, boolean insideNew, boolean addTypeVars, boolean addSimpleName, boolean smartType, boolean autoImport, WhiteListQuery.WhiteList whiteList) {
@@ -1206,7 +1206,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class VariableItem extends JavaCompletionItem {
 
         private static final String LOCAL_VARIABLE = "org/netbeans/modules/editor/resources/completion/localVariable.gif"; //NOI18N
-        private static final String PARAMETER_COLOR = getHTMLColor(64, 64, 188);
+        private static final String PARAMETER_COLOR = Utilities.getHTMLColor(64, 64, 188);
         private static ImageIcon icon;
 
         private String varName;
@@ -1293,7 +1293,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String FIELD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/field_static_protected_16.png"; //NOI18N
         private static final String FIELD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/field_static_package_private_16.png"; //NOI18N
         private static final String FIELD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/field_static_private_16.png"; //NOI18N
-        private static final String FIELD_COLOR = getHTMLColor(64, 198, 88);
+        private static final String FIELD_COLOR = Utilities.getHTMLColor(64, 198, 88);
         private static ImageIcon icon[][] = new ImageIcon[2][4];
 
         private boolean isInherited;
@@ -1493,7 +1493,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String METHOD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_static_protected_16.png"; //NOI18N
         private static final String METHOD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_static_private_16.png"; //NOI18N
         private static final String METHOD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/method_static_package_private_16.png"; //NOI18N
-        private static final String PARAMETER_NAME_COLOR = getHTMLColor(224, 160, 65);
+        private static final String PARAMETER_NAME_COLOR = Utilities.getHTMLColor(224, 160, 65);
         private static ImageIcon icon[][] = new ImageIcon[2][4];
 
         private boolean isInherited;
@@ -1908,7 +1908,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String METHOD_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_16.png"; //NOI18N
         private static final String GETTER_BADGE_PATH = "org/netbeans/modules/java/editor/resources/getter_badge.png"; //NOI18N
         private static final String SETTER_BADGE_PATH = "org/netbeans/modules/java/editor/resources/setter_badge.png"; //NOI18N
-        private static final String PARAMETER_NAME_COLOR = getHTMLColor(224, 160, 65);
+        private static final String PARAMETER_NAME_COLOR = Utilities.getHTMLColor(224, 160, 65);
 
         private static ImageIcon superIcon;
         private static ImageIcon[] merged_icons = new ImageIcon[2];
@@ -2094,8 +2094,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String CONSTRUCTOR_PROTECTED = "org/netbeans/modules/editor/resources/completion/constructor_protected_16.png"; //NOI18N
         private static final String CONSTRUCTOR_PACKAGE = "org/netbeans/modules/editor/resources/completion/constructor_package_private_16.png"; //NOI18N
         private static final String CONSTRUCTOR_PRIVATE = "org/netbeans/modules/editor/resources/completion/constructor_private_16.png"; //NOI18N
-        private static final String CONSTRUCTOR_COLOR = getHTMLColor(242, 203, 64);
-        private static final String PARAMETER_NAME_COLOR = getHTMLColor(224, 160, 65);
+        private static final String CONSTRUCTOR_COLOR = Utilities.getHTMLColor(242, 203, 64);
+        private static final String PARAMETER_NAME_COLOR = Utilities.getHTMLColor(224, 160, 65);
         private static ImageIcon icon[] = new ImageIcon[4];
 
         private boolean isDeprecated;
@@ -2340,7 +2340,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class DefaultConstructorItem extends JavaCompletionItem {
 
         private static final String CONSTRUCTOR = "org/netbeans/modules/java/editor/resources/new_constructor_16.png"; //NOI18N
-        private static final String CONSTRUCTOR_COLOR = getHTMLColor(242, 203, 64);
+        private static final String CONSTRUCTOR_COLOR = Utilities.getHTMLColor(242, 203, 64);
         private static ImageIcon icon;
 
         private boolean smartType;
@@ -2462,7 +2462,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
     static class ParametersItem extends JavaCompletionItem {
 
-        private static final String PARAMETERS_COLOR = getHTMLColor(192, 192, 192);
+        private static final String PARAMETERS_COLOR = Utilities.getHTMLColor(192, 192, 192);
 
         protected ElementHandle<ExecutableElement> elementHandle;
         private boolean isDeprecated;
@@ -2690,7 +2690,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class AttributeItem extends JavaCompletionItem {
 
         private static final String ATTRIBUTE = "org/netbeans/modules/java/editor/resources/attribute_16.png"; // NOI18N
-        private static final String ATTRIBUTE_COLOR = getHTMLColor(128, 128, 128);
+        private static final String ATTRIBUTE_COLOR = Utilities.getHTMLColor(128, 128, 128);
         private static ImageIcon icon;
 
         private ElementHandle<ExecutableElement> elementHandle;
@@ -2788,7 +2788,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class AttributeValueItem extends WhiteListJavaCompletionItem<TypeElement> {
 
         private static final String ATTRIBUTE_VALUE = "org/netbeans/modules/java/editor/resources/attribute_value_16.png"; // NOI18N
-        private static final String ATTRIBUTE_VALUE_COLOR = getHTMLColor(128, 128, 128);
+        private static final String ATTRIBUTE_VALUE_COLOR = Utilities.getHTMLColor(128, 128, 128);
         private static ImageIcon icon;
 
         private JavaCompletionItem delegate;
@@ -2929,13 +2929,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String FIELD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/field_static_protected_16.png"; //NOI18N
         private static final String FIELD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/field_static_package_private_16.png"; //NOI18N
         private static final String FIELD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/field_static_private_16.png"; //NOI18N
-        private static final String FIELD_COLOR = getHTMLColor(64, 64, 242);
+        private static final String FIELD_COLOR = Utilities.getHTMLColor(64, 64, 242);
         private static final String METHOD_ST_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_static_16.png"; //NOI18N
         private static final String METHOD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_static_protected_16.png"; //NOI18N
         private static final String METHOD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/method_static_package_private_16.png"; //NOI18N
         private static final String METHOD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_static_private_16.png"; //NOI18N
-        private static final String METHOD_COLOR = getHTMLColor(188, 64, 64);
-        private static final String PARAMETER_NAME_COLOR = getHTMLColor(242, 64, 242);
+        private static final String METHOD_COLOR = Utilities.getHTMLColor(188, 64, 64);
+        private static final String PARAMETER_NAME_COLOR = Utilities.getHTMLColor(242, 64, 242);
         private static ImageIcon icon[][] = new ImageIcon[2][4];
 
         private TypeMirrorHandle<DeclaredType> typeHandle;
@@ -3275,13 +3275,13 @@ public abstract class JavaCompletionItem implements CompletionItem {
         private static final String FIELD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/field_static_protected_16.png"; //NOI18N
         private static final String FIELD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/field_static_package_private_16.png"; //NOI18N
         private static final String FIELD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/field_static_private_16.png"; //NOI18N
-        private static final String FIELD_COLOR = getHTMLColor(64, 64, 242);
+        private static final String FIELD_COLOR = Utilities.getHTMLColor(64, 64, 242);
         private static final String METHOD_ST_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_static_16.png"; //NOI18N
         private static final String METHOD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_static_protected_16.png"; //NOI18N
         private static final String METHOD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/method_static_package_private_16.png"; //NOI18N
         private static final String METHOD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_static_private_16.png"; //NOI18N
-        private static final String METHOD_COLOR = getHTMLColor(188, 64, 64);
-        private static final String PARAMETER_NAME_COLOR = getHTMLColor(242, 64, 242);
+        private static final String METHOD_COLOR = Utilities.getHTMLColor(188, 64, 64);
+        private static final String PARAMETER_NAME_COLOR = Utilities.getHTMLColor(242, 64, 242);
         private static ImageIcon icon[][] = new ImageIcon[2][4];
 
         private List<MemberDesc> members;
@@ -3571,8 +3571,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
     static class InitializeAllConstructorItem extends JavaCompletionItem {
 
         private static final String CONSTRUCTOR_PUBLIC = "org/netbeans/modules/java/editor/resources/new_constructor_16.png"; //NOI18N
-        private static final String CONSTRUCTOR_COLOR = getHTMLColor(242, 203, 64);
-        private static final String PARAMETER_NAME_COLOR = getHTMLColor(242, 64, 242);
+        private static final String CONSTRUCTOR_COLOR = Utilities.getHTMLColor(242, 203, 64);
+        private static final String PARAMETER_NAME_COLOR = Utilities.getHTMLColor(242, 64, 242);
         private static ImageIcon icon;
 
         private boolean isDefault;
@@ -3968,15 +3968,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
         }
     }
     
-    private static String getHTMLColor(int r, int g, int b) {
-        Color c = LFCustoms.shiftColor(new Color(r, g, b));
-        return "<font color=#" //NOI18N
-                + LFCustoms.getHexString(c.getRed())
-                + LFCustoms.getHexString(c.getGreen())
-                + LFCustoms.getHexString(c.getBlue())
-                + ">"; //NOI18N
-    }
-
     static class MemberDesc {
         private final ElementKind kind;
         private final String name;

@@ -152,6 +152,76 @@ public class UtilitiesTest extends NbTestCase {
                     "<not resolved>");
     }
     
+    public void testFuzzyResolve203476a() throws Exception {
+        performTest("package test;\n" +
+                    "import static test.Aux.getName;\n" +
+                    "public class Main {\n" +
+                    "    public void test() {\n" +
+                    "        getName(undef);\n" +
+                    "    }\n" +
+                    "}\n" +
+                    "class Aux {\n" +
+                    "    public static void getName(String str) { }\n" +
+                    "}\n",
+                    "getName(java.lang.String)");
+    }
+    
+    public void testFuzzyResolve203476b() throws Exception {
+        performTest("package test;\n" +
+                    "import static test.Aux.*;\n" +
+                    "public class Main {\n" +
+                    "    public void test() {\n" +
+                    "        getName(undef);\n" +
+                    "    }\n" +
+                    "}\n" +
+                    "class Aux {\n" +
+                    "    public static void getName(String str) { }\n" +
+                    "}\n",
+                    "getName(java.lang.String)");
+    }
+    
+    public void testFuzzyResolve203476c() throws Exception {
+        performTest("package test;\n" +
+                    "import static test.Aux.other;\n" +
+                    "public class Main {\n" +
+                    "    public void test() {\n" +
+                    "        getName(undef);\n" +
+                    "    }\n" +
+                    "}\n" +
+                    "class Aux {\n" +
+                    "    public static void getName(String str) { }\n" +
+                    "    public static void other(String str) { }\n" +
+                    "}\n",
+                    "<not resolved>");
+    }
+    
+    public void testFuzzyResolve203476d() throws Exception {
+        performTest("package test;\n" +
+                    "import static test.Aux.getName;\n" +
+                    "public class Main {\n" +
+                    "    public void test() {\n" +
+                    "        getName(undef);\n" +
+                    "    }\n" +
+                    "}\n" +
+                    "class Aux {\n" +
+                    "    public void getName(String str) { }\n" +
+                    "}\n",
+                    "<not resolved>");
+    }
+    
+    public void testFuzzyResolve203476e() throws Exception {
+        performTest("package test;\n" +
+                    "public class Main {\n" +
+                "        public static void getName(String str) { }\n" +
+                    "    class Aux {\n" +
+                    "        public void test() {\n" +
+                    "            getName(undef);\n" +
+                    "        }\n" +
+                    "    }\n" +
+                    "}\n",
+                    "getName(java.lang.String)");
+    }
+    
     private FileObject source;
     
     private void performTest(String sourceCode, String... golden) throws Exception {

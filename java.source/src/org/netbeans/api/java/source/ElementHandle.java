@@ -163,6 +163,7 @@ public final class ElementHandle<T extends Element> {
                 } else  {
                     log.log(Level.INFO, "Resolved type is null for kind = {0}", this.kind);  // NOI18N
                 }
+                break;
             }
             case OTHER:
                 assert signatures.length == 1;

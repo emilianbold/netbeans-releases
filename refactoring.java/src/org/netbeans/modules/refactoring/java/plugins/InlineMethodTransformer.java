@@ -42,42 +42,16 @@
 package org.netbeans.modules.refactoring.java.plugins;
 
 import com.sun.source.tree.*;
-import static com.sun.source.tree.Tree.Kind.ASSERT;
-import static com.sun.source.tree.Tree.Kind.ASSIGNMENT;
-import static com.sun.source.tree.Tree.Kind.BLOCK;
-import static com.sun.source.tree.Tree.Kind.BREAK;
-import static com.sun.source.tree.Tree.Kind.CLASS;
-import static com.sun.source.tree.Tree.Kind.CONTINUE;
-import static com.sun.source.tree.Tree.Kind.DO_WHILE_LOOP;
-import static com.sun.source.tree.Tree.Kind.EMPTY_STATEMENT;
-import static com.sun.source.tree.Tree.Kind.ENHANCED_FOR_LOOP;
-import static com.sun.source.tree.Tree.Kind.EXPRESSION_STATEMENT;
-import static com.sun.source.tree.Tree.Kind.FOR_LOOP;
-import static com.sun.source.tree.Tree.Kind.IF;
-import static com.sun.source.tree.Tree.Kind.LABELED_STATEMENT;
-import static com.sun.source.tree.Tree.Kind.METHOD_INVOCATION;
-import static com.sun.source.tree.Tree.Kind.NEW_ARRAY;
-import static com.sun.source.tree.Tree.Kind.NEW_CLASS;
-import static com.sun.source.tree.Tree.Kind.POSTFIX_DECREMENT;
-import static com.sun.source.tree.Tree.Kind.POSTFIX_INCREMENT;
-import static com.sun.source.tree.Tree.Kind.PREFIX_DECREMENT;
-import static com.sun.source.tree.Tree.Kind.PREFIX_INCREMENT;
-import static com.sun.source.tree.Tree.Kind.RETURN;
-import static com.sun.source.tree.Tree.Kind.SWITCH;
-import static com.sun.source.tree.Tree.Kind.SYNCHRONIZED;
-import static com.sun.source.tree.Tree.Kind.THROW;
-import static com.sun.source.tree.Tree.Kind.TRY;
-import static com.sun.source.tree.Tree.Kind.VARIABLE;
-import static com.sun.source.tree.Tree.Kind.WHILE_LOOP;
+import static com.sun.source.tree.Tree.Kind.*;
 import com.sun.source.util.*;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.modules.refactoring.api.Problem;
-import org.netbeans.modules.refactoring.java.RefactoringUtils;
 import org.netbeans.modules.refactoring.java.api.JavaRefactoringUtils;
 import org.netbeans.modules.refactoring.java.spi.RefactoringVisitor;
 import org.openide.filesystems.FileUtil;
@@ -89,6 +63,8 @@ import org.openide.util.Pair;
  * @author Ralph Ruijs
  */
 public class InlineMethodTransformer extends RefactoringVisitor {
+    
+    private static final EnumSet<Tree.Kind> LITERALS = EnumSet.of(LAMBDA_EXPRESSION, PRIMITIVE_TYPE, PREFIX_INCREMENT, PREFIX_DECREMENT, BITWISE_COMPLEMENT, LEFT_SHIFT, RIGHT_SHIFT, UNSIGNED_RIGHT_SHIFT, MULTIPLY_ASSIGNMENT, DIVIDE_ASSIGNMENT, REMAINDER_ASSIGNMENT, PLUS_ASSIGNMENT, MINUS_ASSIGNMENT, LEFT_SHIFT_ASSIGNMENT, RIGHT_SHIFT_ASSIGNMENT, UNSIGNED_RIGHT_SHIFT_ASSIGNMENT, AND_ASSIGNMENT, XOR_ASSIGNMENT, OR_ASSIGNMENT, INT_LITERAL, LONG_LITERAL, FLOAT_LITERAL, DOUBLE_LITERAL, BOOLEAN_LITERAL, CHAR_LITERAL, STRING_LITERAL, NULL_LITERAL, ERRONEOUS);
 
     private Trees trees;
     private MethodTree methodTree;
@@ -98,6 +74,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     private final Deque<Map<Tree, List<StatementTree>>> newStatsQueue;
     private final Deque<Map<Tree, Tree>> translateQueue;
     private final LinkedList<String> definedIds;
+    private final HashSet<Element> changedParamters;
     private final TreePathHandle tph;
 
     public InlineMethodTransformer(TreePathHandle tph) {
@@ -105,6 +82,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         newStatsQueue = new LinkedList<>();
         translateQueue = new LinkedList<>();
         definedIds = new LinkedList<>();
+        changedParamters = new HashSet<>();
     }
 
     public Problem getProblem() {
@@ -142,7 +120,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             return super.visitClass(node, p);
         }
 
-        original2Translated = new HashMap<Tree, Tree>();
+        original2Translated = new HashMap<>();
         Tree value = super.visitClass(node, p);
 
         classTree = (ClassTree) workingCopy.getTreeUtilities().translate(classTree, original2Translated);
@@ -216,7 +194,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             }
 
             if (hasParameters) {
-                replaceParametersWithArguments(original2TranslatedBody, method, node, body);
+                replaceParametersWithArguments(original2TranslatedBody, method, node, methodInvocationPath, body, newStatementList);
             }
 
             body = (BlockTree) workingCopy.getTreeUtilities().translate(body, original2TranslatedBody);
@@ -317,7 +295,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
     }
 
     private Tree fixReferences(Tree tree, TreePath treePath, final ExecutableElement method, final Scope scope, final ExpressionTree methodSelect) {
-        final HashMap<Tree, Tree> orig2trans = new HashMap<Tree, Tree>();
+        final HashMap<Tree, Tree> orig2trans = new HashMap<>();
 
         final ElementUtilities elementUtilities = workingCopy.getElementUtilities();
         final TypeElement bodyEnclosingTypeElement = elementUtilities.enclosingTypeElement(method);
@@ -455,7 +433,7 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                         String varName = node.getName().toString();
                         String uniqueName = JavaPluginUtils.makeNameUnique(workingCopy,
                                                        workingCopy.getTrees().getScope(methodInvocationPath), varName, definedIds);
-                        if(uniqueName != varName) {
+                        if(uniqueName == null ? varName != null : !uniqueName.equals(varName)) {
                             original2TranslatedBody.put(node, make.setLabel(node, uniqueName));
                             renames.add(Pair.of(variable, uniqueName));
                             definedIds.add(uniqueName);
@@ -466,6 +444,36 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 }
                 return super.visitVariable(node, p);
             }
+
+            @Override
+            public Void visitAssignment(AssignmentTree node, ExecutableElement p) {
+                checkParameter(node.getVariable());
+                return super.visitAssignment(node, p);
+            }
+
+            @Override
+            public Void visitCompoundAssignment(CompoundAssignmentTree node, ExecutableElement p) {
+                checkParameter(node.getVariable());
+                return super.visitCompoundAssignment(node, p);
+            }
+
+            @Override
+            public Void visitUnary(UnaryTree node, ExecutableElement p) {
+                checkParameter(node.getExpression());
+                return super.visitUnary(node, p);
+            }
+
+            private void checkParameter(Tree node) {
+                TreePath path = trees.getPath(compilationUnitTree, node);
+                if (path != null) {
+                    Element variable = trees.getElement(path);
+                    if(variable != null && variable.getKind() == ElementKind.PARAMETER) {
+                        changedParamters.add(variable);
+                    }
+                }
+            }
+            
+            
         };
         nameClashScanner.scan(body, (ExecutableElement) p);
         TreeScanner<Void, Pair<Element, String>> idScan = new TreeScanner<Void, Pair<Element, String>>() {
@@ -502,12 +510,15 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         return statementPath;
     }
 
-    private void replaceParametersWithArguments(final HashMap<Tree, Tree> original2TranslatedBody, ExecutableElement el, MethodInvocationTree node, BlockTree body) {
+    @SuppressWarnings("string-comparison-by-operator")
+    private void replaceParametersWithArguments(final HashMap<Tree, Tree> original2TranslatedBody, ExecutableElement el, MethodInvocationTree node, final TreePath methodInvocationPath, BlockTree body, List<StatementTree> newVars) {
         Element resolved = tph.getElementHandle().resolve(workingCopy);
         final CompilationUnitTree compilationUnitTree = workingCopy.getTrees().getPath(resolved).getCompilationUnit();
-        TreeScanner<Void, Pair<Element, ExpressionTree>> idScan = new TreeScanner<Void, Pair<Element, ExpressionTree>>() {
+        final LinkedList<Pair<Element, String>> renames = new LinkedList<>();
+        
+        TreeScanner<Void, Pair<VariableElement, ExpressionTree>> idScan = new TreeScanner<Void, Pair<VariableElement, ExpressionTree>>() {
             @Override
-            public Void visitIdentifier(IdentifierTree node, Pair<Element, ExpressionTree> p) {
+            public Void visitIdentifier(IdentifierTree node, Pair<VariableElement, ExpressionTree> p) {
                 TreePath currentPath = trees.getPath(compilationUnitTree, node);
                 Element el = null;
                 if(currentPath != null) {
@@ -520,10 +531,62 @@ public class InlineMethodTransformer extends RefactoringVisitor {
             }
         };
         for (int i = 0; i < el.getParameters().size(); i++) {
-            ExpressionTree argument = node.getArguments().get(i);
-            Element element = el.getParameters().get(i);
-            final Pair<Element, ExpressionTree> pair = Pair.of(element, argument);
-            idScan.scan(body, pair);
+            VariableElement element = el.getParameters().get(i);
+            if(el.isVarArgs() && el.getParameters().size() == i+1) {
+                ArrayType asType = (ArrayType) element.asType();
+                Tree type = make.Type(asType.getComponentType());
+                Tree arraytype = make.Type(asType);
+                List<ExpressionTree> arguments = new LinkedList<>();
+                if(node.getArguments().size() > i) {
+                    arguments.addAll(node.getArguments().subList(i, node.getArguments().size()));
+                }
+                String varName = element.getSimpleName().toString();
+                String uniqueName = JavaPluginUtils.makeNameUnique(workingCopy,
+                                               workingCopy.getTrees().getScope(methodInvocationPath), varName, definedIds);
+                if(uniqueName == null ? varName != null : !uniqueName.equals(varName)) {
+                    renames.add(Pair.of((Element)element, uniqueName));
+                    definedIds.add(uniqueName);
+                } else {
+                    definedIds.add(varName);
+                }
+                newVars.add(make.Variable(make.Modifiers(element.getModifiers()), (uniqueName == null ? varName != null : !uniqueName.equals(varName))? uniqueName : varName, arraytype, make.NewArray(type, Collections.EMPTY_LIST, arguments)));
+            } else {
+                ExpressionTree argument = node.getArguments().get(i);
+                if(LITERALS.contains(argument.getKind()) && changedParamters.contains(element)) {
+                    Tree arraytype = make.Type(element.asType());
+                    String varName = element.getSimpleName().toString();
+                    String uniqueName = JavaPluginUtils.makeNameUnique(workingCopy,
+                                                   workingCopy.getTrees().getScope(methodInvocationPath), varName, definedIds);
+                    if(uniqueName == null ? varName != null : !uniqueName.equals(varName)) {
+                        renames.add(Pair.of((Element)element, uniqueName));
+                        definedIds.add(uniqueName);
+                    } else {
+                        definedIds.add(varName);
+                    }
+                    newVars.add(make.Variable(make.Modifiers(element.getModifiers()), (uniqueName == null ? varName != null : !uniqueName.equals(varName))? uniqueName : varName, arraytype, argument));
+                } else {
+                    final Pair<VariableElement, ExpressionTree> pair = Pair.of(element, argument);
+                    idScan.scan(body, pair);
+                }
+            }
+        }
+
+        TreeScanner<Void, Pair<Element, String>> renameScan = new TreeScanner<Void, Pair<Element, String>>() {
+            @Override
+            public Void visitIdentifier(IdentifierTree node, Pair<Element, String> p) {
+                TreePath path = trees.getPath(compilationUnitTree, node);
+                Element el = null;
+                if(path != null) {
+                    el = trees.getElement(path);
+                }
+                if (p.first().equals(el)) {
+                    original2TranslatedBody.put(node, make.setLabel(node, p.second()));
+                }
+                return super.visitIdentifier(node, p);
+            }
+        };
+        for (Pair<Element, String> pair : renames) {
+            renameScan.scan(body, pair);
         }
     }
 

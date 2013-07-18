@@ -58,9 +58,13 @@ import java.util.Arrays;
 import java.net.URL;
 import java.net.URI;
 import java.net.MalformedURLException;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractListModel;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -74,6 +78,7 @@ import javax.swing.JTextField;
 import javax.swing.filechooser.FileFilter;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.event.ListSelectionEvent;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileStateInvalidException;
@@ -98,6 +103,8 @@ import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 public class J2SEPlatformCustomizer extends JTabbedPane {
+
+    private static final Logger LOG = Logger.getLogger(J2SEPlatformCustomizer.class.getName());
 
     private static final String CUSTOMIZERS_PATH =
         "org-netbeans-api-java/platform/j2seplatform/customizers/";  //NOI18N
@@ -598,22 +605,55 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
             }
             java.util.List<URL> data = getData();
             int oldSize = data.size ();
-            for (URL url : urls) {
-                if (FileUtil.isArchiveFile(url)) {
-                    url = FileUtil.getArchiveRoot (url);
-                }
-                else if (!url.toExternalForm().endsWith("/")){
-                    try {
-                        url = new URL (url.toExternalForm()+"/");
-                    } catch (MalformedURLException mue) {
-                        Exceptions.printStackTrace(mue);
-                    }
-                }
-                data.add (url);
+            for (URL url : urls) {                
+                data.add (safeRoot(url));
             }
             updatePlatform();
             fireIntervalAdded(this,oldSize,oldSize+urls.size()-1);
             return true;
+        }
+
+       void update(@NonNull final List<? extends URL> paths) {
+            java.util.List<URL> data = getData();
+            int oldSize = data.size();
+            data.clear();
+            for (URL url : paths) {
+                data.add (safeRoot(url));
+            }
+            updatePlatform();
+            fireContentsChanged(this, 0, Math.max(
+               Math.max(oldSize, data.size())-1,
+               0));
+       }
+
+        @NonNull
+        List<URI> getRootURIs() {
+            final List<URI> roots = new ArrayList<>();
+            java.util.List<URL> data = getData();
+            for (URL url : data) {
+                try {
+                    roots.add(url.toURI());
+                } catch (URISyntaxException ex) {
+                    LOG.log(
+                        Level.WARNING,
+                        "Cannot convert: {0} to URI.",  //NOI18N
+                        url);
+                }
+            }
+            return Collections.unmodifiableList(roots);
+        }
+
+        private static URL safeRoot(@NonNull URL url) {
+            if (FileUtil.isArchiveFile(url)) {
+                url = FileUtil.getArchiveRoot (url);
+            } else if (!url.toExternalForm().endsWith("/")){    //NOI18N
+                try {
+                    url = new URL (url.toExternalForm()+"/");
+                } catch (MalformedURLException mue) {
+                    Exceptions.printStackTrace(mue);
+                }
+            }
+            return url;
         }
 
         @NbBundle.Messages({

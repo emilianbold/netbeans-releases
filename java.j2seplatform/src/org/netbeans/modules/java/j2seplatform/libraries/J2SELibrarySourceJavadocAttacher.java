@@ -104,11 +104,13 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
                     if (volume == J2SELibraryTypeProvider.VOLUME_TYPE_SRC) {
                         selected = SourceJavadocAttacherUtil.selectSources(
                             root,
+                            lib.getURIContent(volume),
                             new SelectFolder(volume, lib.getName(), baseFolder),
                             new Convertor(volume, baseFolder));
                     } else if (volume == J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC) {
                         selected = SourceJavadocAttacherUtil.selectJavadoc(
                             root,
+                            lib.getURIContent(volume),
                             new SelectFolder(volume, lib.getName(), baseFolder),
                             new Convertor(volume, baseFolder));
                     } else {
@@ -122,9 +124,7 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
                         for (String currentVolume : J2SELibraryTypeProvider.VOLUME_TYPES) {
                             List<URI> content = lib.getURIContent(currentVolume);
                             if (volume == currentVolume) {
-                                final List<URI> newContent = new ArrayList<URI>(content.size()+selected.size());
-                                newContent.addAll(content);
-                                newContent.addAll(selected);
+                                final List<URI> newContent = new ArrayList<>(selected);
                                 content = newContent;
                             }
                             volumes.put(currentVolume,content);

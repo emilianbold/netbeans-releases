@@ -1213,9 +1213,9 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
 
         DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        Map<HintCategory, DefaultMutableTreeNode> category2Node = new IdentityHashMap<>();
+        Map<HintCategory, TreePath> category2Node = new IdentityHashMap<>();
         
-        category2Node.put(rootCategory, root);
+        category2Node.put(rootCategory, new TreePath(root));
         
         List<HintCategory> hints = new LinkedList<>();
         
@@ -1223,7 +1223,8 @@ public final class HintsPanel extends javax.swing.JPanel   {
         
         while (!hints.isEmpty()) {
             HintCategory cat = hints.remove(0);
-            DefaultMutableTreeNode node = category2Node.get(cat);
+            TreePath currentPath = category2Node.get(cat);
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) currentPath.getLastPathComponent();
             
             Collections.sort(cat.subCategories, new Comparator<HintCategory>() {
                 @Override public int compare(HintCategory o1, HintCategory o2) {
@@ -1234,7 +1235,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             for (HintCategory sub : cat.subCategories) {
                 DefaultMutableTreeNode subNode = new DefaultMutableTreeNode(sub);
                 
-                category2Node.put(sub, subNode);
+                category2Node.put(sub, currentPath.pathByAddingChild(subNode));
                 node.add(subNode);
             }
             
@@ -1247,7 +1248,9 @@ public final class HintsPanel extends javax.swing.JPanel   {
             });
             
             for (HintMetadata hm : cat.hints) {
-                node.add(new DefaultMutableTreeNode(hm));
+                DefaultMutableTreeNode hintNode = new DefaultMutableTreeNode(hm);
+                node.add(hintNode);
+                hint2Path.put(hm, currentPath.pathByAddingChild(hintNode));
             }
         }
 

@@ -446,6 +446,22 @@ public class IteratorToForTest {
                 + "}\n");
     }
 
+    @Test public void forSingularName232718() throws Exception {
+        HintTest.create().input("package test;\n"
+                + "import java.util.*;"
+                + "public class Test {\n"
+                + "    public static void main(String[] interfaces) {\n"
+                + "        for (int i = 0; i < interfaces.length; i++) {\n"
+                + "            System.err.println(interfaces[i]);\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n")
+                .run(IteratorToFor.class)
+                .findWarning("3:8-3:11:verifier:" + Bundle.ERR_IteratorToForArray())
+                .applyFix()
+                .assertCompilable();//intentionally not testing the exact name
+    }
+    
     // XXX also ought to match: for (Iterator i = coll.iterator(); i.hasNext(); ) {use((Type) i.next());}
     // XXX match final modifiers on iterator and/or element vars
     // XXX remove import of java.util.Iterator if present

@@ -68,8 +68,12 @@ import org.openide.util.NbBundle.Messages;
     "DN_FlipOperands=Flip operands of the binary operator",
     "DESC_FlipOperands=Flip operands of the binary operator",
     "ERR_FlipOperands=",
+    "# {0} - one of the following Java operands: ==, !=, *, +, &, |, ^, &&, ||",
     "FIX_FlipOperands1=Flip operands of ''{0}''",
+    "# {0} - one of the following Java operands (source): <, >, >=, <=",
+    "# {1} - one of the following Java operands (target): >=, <=, <, >",
     "FIX_FlipOperands2=Flip ''{0}'' to ''{1}''",
+    "# {0} - one of the following Java operands: /, %, -, <<, >>, >>>",
     "FIX_FlipOperands3=Flip operands of ''{0}'' (may alter semantics)",
 })
 @Hint(displayName = "#DN_FlipOperands", description = "#DESC_FlipOperands", category = "suggestions", hintKind = Kind.ACTION, severity = Severity.HINT)
