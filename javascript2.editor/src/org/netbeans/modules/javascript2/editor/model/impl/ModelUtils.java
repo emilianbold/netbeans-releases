@@ -285,17 +285,22 @@ public class ModelUtils {
      * @return 
      */
     public static Collection<? extends JsObject> getVariables(DeclarationScope inScope) {
-        List<JsObject> result = new ArrayList<JsObject>();
+        HashMap<String, JsObject> result = new HashMap<String, JsObject>();
         while (inScope != null) {
-            for (JsObject object : ((JsObject)inScope).getProperties().values()) {
-                result.add(object);
-            }
             for (JsObject object : ((JsFunction)inScope).getParameters()) {
-                result.add(object);
+                if (!result.containsKey(object.getName())) {
+                    result.put(object.getName(), object);
+                }
             }
+            for (JsObject object : ((JsObject)inScope).getProperties().values()) {
+                if (!result.containsKey(object.getName())) {
+                    result.put(object.getName(), object);
+                }
+            }
+            
             inScope = inScope.getParentScope();
         }
-        return result;
+        return result.values();
     }
     
 

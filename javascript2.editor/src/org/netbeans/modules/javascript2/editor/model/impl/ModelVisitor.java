@@ -168,13 +168,18 @@ public class ModelVisitor extends PathNodeVisitor {
                     Collection<? extends JsObject> variables = ModelUtils.getVariables(modelBuilder.getCurrentDeclarationFunction());
                     fromAN = null;
                     for(JsObject variable : variables) {
-                        if (variable.getName().equals(name.getName())) {
+                        if (variable.getName().equals(name.getName()) && (variable.getModifiers().contains(Modifier.PRIVATE) || variable instanceof ParameterObject)) {
                             fromAN = (JsObjectImpl)variable;
                             break;
                         }
                     }
                     if (fromAN == null) {
-                        fromAN = ModelUtils.getJsObject(modelBuilder, fqname, false);
+                        JsObject global = modelBuilder.getGlobal();
+                        fromAN = (JsObjectImpl)global.getProperty(name.getName());
+                        if (fromAN == null) {
+                            fromAN = new JsObjectImpl(global, name, name.getOffsetRange(), false, global.getMimeType(), global.getSourceLabel());
+                            global.addProperty(name.getName(), fromAN);
+                        }
                     }
                     fromAN.addOccurrence(name.getOffsetRange());
                 }
@@ -976,8 +981,10 @@ public class ModelVisitor extends PathNodeVisitor {
                     if (binLhs instanceof IdentNode || (binLhs instanceof AccessNode
                             && ((AccessNode) binLhs).getBase() instanceof IdentNode
                             && ((IdentNode) ((AccessNode) binLhs).getBase()).getName().equals("this"))) {
-                        isDeclaredInParent = true;
+                        // if it's not declared throgh the var node, then the variable doesn't have to be declared here
+                        isDeclaredInParent = (binLhs instanceof IdentNode &&  varNode != null);
                         if (binLhs instanceof AccessNode) {
+                            isDeclaredInParent = true;
                             isDeclaredThroughThis = true;
                         }
                     }
@@ -1004,7 +1011,11 @@ public class ModelVisitor extends PathNodeVisitor {
                         JsObject thisIs = resolveThis(modelBuilder.getCurrentObject());
                         alreadyThere = thisIs.getProperty(name.getName());
                     } else {
-                        alreadyThere = ModelUtils.getJsObjectByName(modelBuilder.getCurrentDeclarationFunction(), name.getName());
+                        if (isDeclaredInParent) {
+                            alreadyThere = ModelUtils.getJsObjectByName(modelBuilder.getCurrentDeclarationFunction(), name.getName());
+                        } else {
+                            alreadyThere = ModelUtils.getJsObject(modelBuilder, fqName, true);
+                        }
                     }
                      
                     objectScope = (alreadyThere == null) 
@@ -1016,6 +1027,10 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
                 if (objectScope != null) {
                     objectScope.setJsKind(JsElement.Kind.OBJECT_LITERAL);
+                    if (!objectScope.isDeclared()) {
+                        // the objec literal is always declared
+                        objectScope.setDeclared(true);
+                    }
                     modelBuilder.setCurrentObject(objectScope);
                     if (isPrivate) {
                         objectScope.getModifiers().remove(Modifier.PUBLIC);
