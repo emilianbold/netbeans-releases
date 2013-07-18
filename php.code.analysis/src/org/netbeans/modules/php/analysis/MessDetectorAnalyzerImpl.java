@@ -124,7 +124,7 @@ public class MessDetectorAnalyzerImpl implements Analyzer {
 
     @NbBundle.Messages({
         "MessDetectorAnalyzerImpl.analyze.error=Mess detector analysis error",
-        "MessDetectorAnalyzerImpl.analyze.error.description=Error occured during mess detector analysis, review Output window for more information.",
+        "MessDetectorAnalyzerImpl.analyze.error.description=Error occurred during mess detector analysis, review Output window for more information.",
     })
     private Iterable<? extends ErrorDescription> doAnalyze(Scope scope, MessDetector messDetector, List<String> messDetectorRuleSets, Map<FileObject, Integer> fileCount) {
         List<ErrorDescription> errors = new ArrayList<>();

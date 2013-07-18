@@ -235,6 +235,19 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                                 if(start != end) {
                                     embeddings.add(snapshot.create(prefix, CSS_MIME_TYPE)); //NOI18N
 
+//                                    //escape slash char if present - Bug 216489 - Attribute 'id' shows an error with forward slash in it
+//                                    int mark = start;
+//                                    for(int i = start; i < end; i++) {
+//                                        char c = text.charAt(i);
+//                                        if(c == '/' || c == '$') {
+//                                            //create document embedding for the prefix part
+//                                            embeddings.add(snapshot.create(sourceStart + i, i - sourceStart, CSS_MIME_TYPE));
+//                                            
+//                                            embeddings.add(snapshot.create("/", CSS_MIME_TYPE));
+//                                            
+//                                        }
+//                                    }
+//                                    
                                     //compute the token's document offset
                                     int start_in_document = sourceStart + start;
                                     int length = end - start;

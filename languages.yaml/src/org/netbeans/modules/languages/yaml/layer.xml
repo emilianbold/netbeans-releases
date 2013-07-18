@@ -86,6 +86,13 @@ made subject to such option by the copyright holder.
             </folder>
         </folder>
     </folder>
+    <folder name="OptionsDialog">
+        <folder name="PreviewExamples">
+            <folder name="text">
+                <file name="x-yaml" url="YamlExample.yaml"/>
+            </folder>
+        </folder>
+    </folder>
     <folder name="Templates">
         <folder name="Other">
             <file name="EmptyYAML.yml" url="EmptyYAML.yml">

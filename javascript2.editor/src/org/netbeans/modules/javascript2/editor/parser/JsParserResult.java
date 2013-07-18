@@ -42,6 +42,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -65,14 +67,18 @@ public class JsParserResult extends ParserResult {
     private Model model;
     private JsDocumentationHolder docHolder;
 
-    public JsParserResult(Snapshot snapshot, FunctionNode root) {
+    public JsParserResult(@NonNull Snapshot snapshot, @NullAllowed FunctionNode root) {
         super(snapshot);
         this.root = root;
         this.errors = Collections.<Error>emptyList();
         this.model = null;
         this.docHolder = null;
 
-        this.embedded = !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(snapshot.getMimePath().getPath())
+        this.embedded = isEmbedded(snapshot);
+    }
+
+    public static boolean isEmbedded(@NonNull Snapshot snapshot) {
+        return !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(snapshot.getMimePath().getPath())
                 && !JsTokenId.JSON_MIME_TYPE.equals(snapshot.getMimePath().getPath());
     }
 

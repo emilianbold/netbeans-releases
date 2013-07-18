@@ -399,9 +399,12 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                                 }
                             }
                             if (jsObject != null) {
-                                int index = rType.lastIndexOf('.');
-                                int typeLength = (index > -1) ? rType.length() - index - 1 : rType.length();
-                                ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(typeHere.getOffset(), typeHere.getOffset() + typeLength));
+                                if (typeHere.isResolved()) {
+                                    int index = rType.lastIndexOf('.');
+                                    int typeLength = (index > -1) ? rType.length() - index - 1 : rType.length();
+                                    int offset = typeHere.getOffset();
+                                    ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(offset, offset + typeLength));
+                                }
                                 moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
                             }
                         }

@@ -44,27 +44,40 @@
 
 package org.netbeans.core.windows.options;
 
-import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.JCheckBox;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.windows.FloatingWindowTransparencyManager;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.LifecycleManager;
+import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
@@ -452,8 +465,10 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             }
         }
 
-        defaultLookAndFeelIndex = lafs.indexOf( getCurrentLaF() );
+        boolean isForcedLaF = isForcedLaF();
+        defaultLookAndFeelIndex = lafs.indexOf( isForcedLaF ? getCurrentLaF() : getPreferredLaF() );
         comboLaf.setSelectedIndex( defaultLookAndFeelIndex );
+        comboLaf.setEnabled( !isForcedLaF );
     }
 
     protected boolean store() {
@@ -487,10 +502,11 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         needsWinsysRefresh |= tabPlacement != defTabPlacement;
 
         int selLaFIndex = comboLaf.getSelectedIndex();
-        if( selLaFIndex != defaultLookAndFeelIndex ) {
+        if( selLaFIndex != defaultLookAndFeelIndex && !isForcedLaF() ) {
             LookAndFeelInfo li = lafs.get( comboLaf.getSelectedIndex() );
             NbPreferences.root().node( "laf" ).put( "laf", li.getClassName() ); //NOI18N
-            NbPreferences.root().node( "laf" ).putBoolean( "theme.dark", li == DARK_METAL || li == DARK_NIMBUS ); //NOI18N
+            boolean darkTheme = li == DARK_METAL || li == DARK_NIMBUS;
+            NbPreferences.root().node( "laf" ).putBoolean( "theme.dark", darkTheme ); //NOI18N
             askForRestart();
         }
 
@@ -593,6 +609,10 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         }
     }
 
+    private boolean isForcedLaF() {
+        return null != System.getProperty( "nb.laf.forced" ); //NOI18N
+    }
+
     private LookAndFeelInfo getCurrentLaF() {
         boolean darkTheme = Boolean.getBoolean("netbeans.plaf.dark.theme"); //NOI18N
         LookAndFeelInfo currentLaf = null;
@@ -615,24 +635,48 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return currentLaf;
     }
 
+    private LookAndFeelInfo getPreferredLaF() {
+        String lafClassName = NbPreferences.root().node( "laf" ).get( "laf", null ); //NOI18N
+        if( null == lafClassName )
+            return getCurrentLaF();
+        LookAndFeelInfo currentLaf = null;
+        boolean darkTheme = NbPreferences.root().node( "laf" ).getBoolean( "theme.dark", false ); //NOI18N
+        boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
+        for( LookAndFeelInfo li : lafs ) {
+            if( lafClassName.equals( li.getClassName() )
+                    || (isAqua && li.getClassName().contains("apple.laf.AquaLookAndFeel")) ) { //NOI18N
+                currentLaf = li;
+                if( darkTheme ) {
+                    if( MetalLookAndFeel.class.getName().equals( lafClassName ) ) {
+                        currentLaf = DARK_METAL;
+                    } else if( NimbusLookAndFeel.class.getName().equals( lafClassName ) ) {
+                        currentLaf = DARK_NIMBUS;
+                    }
+                }
+                break;
+            }
+        }
+        if( null == currentLaf
+                && com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel.class.getName().equals( lafClassName )
+                && darkTheme ) {
+            currentLaf = DARK_NIMBUS;
+    }
+        return currentLaf;
+    }
+
     static final LookAndFeelInfo DARK_METAL = new UIManager.LookAndFeelInfo( NbBundle.getMessage(WinSysPanel.class, "Laf_DARK_METAL"), MetalLookAndFeel.class.getName() );
     static final LookAndFeelInfo DARK_NIMBUS = new UIManager.LookAndFeelInfo( NbBundle.getMessage(WinSysPanel.class, "Laf_DARK_NIMBUS"), NimbusLookAndFeel.class.getName() );
 
-    private static boolean askedAlready = false;
-    private void askForRestart() {
-        if( askedAlready )
-            return;
-        askedAlready = true;
-        NotificationDisplayer.getDefault().notify( NbBundle.getMessage(WinSysPanel.class, "Hint_RESTART_IDE"),
-                ImageUtilities.loadImageIcon( "org/netbeans/core/windows/resources/restart.png", true ), //NOI18N
-                NbBundle.getMessage(WinSysPanel.class, "Descr_Restart"), new ActionListener() {
+    private static Notification restartNotification;
 
-            @Override
-            public void actionPerformed( ActionEvent e ) {
-                LifecycleManager.getDefault().markForRestart();
-                LifecycleManager.getDefault().exit();
-            }
-        }, NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.WARNING);
+    private void askForRestart() {
+        if( null != restartNotification ) {
+            restartNotification.clear();
+        }
+        restartNotification = NotificationDisplayer.getDefault().notify( NbBundle.getMessage(WinSysPanel.class, "Hint_RESTART_IDE"),
+                ImageUtilities.loadImageIcon( "org/netbeans/core/windows/resources/restart.png", true ), //NOI18N
+                createRestartNotificationDetails(), createRestartNotificationDetails(),
+                NotificationDisplayer.Priority.HIGH, NotificationDisplayer.Category.INFO);
     }
 
     void selectDarkLookAndFeel() {
@@ -645,5 +689,74 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
                 comboLaf.setPopupVisible( true );
             }
         });
+    }
+
+    //Use reflection to instantiate ColorModel class and get/set the current profile
+    private static final String COLOR_MODEL_CLASS_NAME = "org.netbeans.modules.options.colors.ColorModel"; //NOI18N
+    private static final String DARK_COLOR_THEME_NAME = "Norway Today"; //NOI18N
+
+    private boolean isChangeEditorColorsPossible() {
+        if( !NbPreferences.root().node( "laf" ).getBoolean( "theme.dark", false ) ) //NOI18N
+            return false;
+        ClassLoader cl = Lookup.getDefault().lookup( ClassLoader.class );
+        if( null == cl )
+            cl = WinSysPanel.class.getClassLoader();
+        try {
+            Class klz = cl.loadClass( COLOR_MODEL_CLASS_NAME );
+            Object colorModel = klz.newInstance();
+            Method m = klz.getDeclaredMethod( "getCurrentProfile", new Class[0] ); //NOI18N
+            Object res = m.invoke( colorModel, new Object[0] );
+            return res != null && !DARK_COLOR_THEME_NAME.equals( res );
+        } catch( Exception ex ) {
+            //ignore
+        }
+        return false;
+    }
+
+    private void switchEditorColorsProfile() {
+        if( !isChangeEditorColorsPossible() )
+            return;
+
+        ClassLoader cl = Lookup.getDefault().lookup( ClassLoader.class );
+        if( null == cl )
+            cl = WinSysPanel.class.getClassLoader();
+        try {
+            Class klz = cl.loadClass( COLOR_MODEL_CLASS_NAME );
+            Object colorModel = klz.newInstance();
+            Method m = klz.getDeclaredMethod( "setCurrentProfile", String.class ); //NOI18N
+            m.invoke( colorModel, DARK_COLOR_THEME_NAME );
+        } catch( Exception ex ) {
+            //ignore
+            Logger.getLogger( WinSysPanel.class.getName() ).log( Level.INFO, "Cannot change editor colors profile.", ex ); //NOI18N
+        }
+    }
+
+    private JComponent createRestartNotificationDetails() {
+        JPanel res = new JPanel( new BorderLayout( 10, 10) );
+        res.setOpaque( false );
+        JLabel lbl = new JLabel( NbBundle.getMessage( WinSysPanel.class, "Descr_Restart") ); //NOI18N
+        lbl.setCursor( Cursor.getPredefinedCursor( Cursor.HAND_CURSOR ) );
+        res.add( lbl, BorderLayout.CENTER );
+        final JCheckBox checkEditorColors = new JCheckBox( NbBundle.getMessage( WinSysPanel.class, "Hint_ChangeEditorColors" ) ); //NOI18N
+        if( isChangeEditorColorsPossible() ) {
+            checkEditorColors.setSelected( true );
+            checkEditorColors.setOpaque( false );
+            res.add( checkEditorColors, BorderLayout.SOUTH );
+        }
+        lbl.addMouseListener( new MouseAdapter() {
+            @Override
+            public void mouseClicked( MouseEvent e ) {
+                if( null != restartNotification ) {
+                    restartNotification.clear();
+                    restartNotification = null;
+                }
+                if( checkEditorColors.isSelected() ) {
+                    switchEditorColorsProfile();
+                }
+                LifecycleManager.getDefault().markForRestart();
+                LifecycleManager.getDefault().exit();
+            }
+        });
+        return res;
     }
 }

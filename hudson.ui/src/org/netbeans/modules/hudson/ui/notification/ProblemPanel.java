@@ -54,7 +54,7 @@ class ProblemPanel extends JPanel {
         // UI roughly copied from org.netbeans.core.ui.notifications.NotificationDisplayerImpl
         // XXX could add links to show changes, etc.
         initComponents();
-        showFailure.setText("<html><u><a href=\"#\">" + notification.showFailureText()); //NOI18N
+        showFailure.setText("<html><a href=\"#\">" + notification.showFailureText()); //NOI18N
         // XXX #171445: not available from form editor
         showFailure.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         ignore.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));

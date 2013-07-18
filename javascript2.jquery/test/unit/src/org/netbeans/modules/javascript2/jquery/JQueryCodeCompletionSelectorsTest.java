@@ -62,7 +62,7 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.modules.javascript2.editor.JsCodeComplationBase;
+import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -76,7 +76,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JQueryCodeCompletionSelectorsTest extends JsCodeComplationBase {
+public class JQueryCodeCompletionSelectorsTest extends JsCodeCompletionBase {
 
     public JQueryCodeCompletionSelectorsTest(String testName) {
         super(testName);

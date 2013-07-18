@@ -31,6 +31,20 @@ Microsystems, Inc. All Rights Reserved.
                             </file>
                         </folder>
                     </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="FontAndColors-citylights.xml" url="FontAndColors-citylights.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.ini.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="FontAndColors-bluetheme.xml" url="FontAndColors-bluetheme.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.ini.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
         </folder>

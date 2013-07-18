@@ -70,6 +70,7 @@ import org.netbeans.modules.web.browser.spi.MessageDispatcher;
 import org.netbeans.modules.web.browser.spi.MessageDispatcher.MessageListener;
 import org.netbeans.modules.web.browser.spi.PageInspectionHandle;
 import org.netbeans.modules.web.browser.spi.PageInspectorCustomizer;
+import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.ui.DomTCController;
 import org.netbeans.modules.web.inspect.webkit.WebKitPageModel;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
@@ -144,6 +145,7 @@ public class PageInspectorImpl extends PageInspector {
                 pageInspectorCustomizer = null;
                 pageInspectorCustomizerListener = null;
             }
+            Resource.clearCache();
             WebKitDebugging webKit = pageContext.lookup(WebKitDebugging.class);
             if (webKit != null) {
                 PageModel newModel = new WebKitPageModel(pageContext);
