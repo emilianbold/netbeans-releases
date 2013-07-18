@@ -68,7 +68,7 @@ made subject to such option by the copyright holder.
     
     <fontcolor name="markup-element" default="keyword"/>
     <fontcolor name="markup-attribute" default="field"/>
-    <fontcolor name="markup-attribute-value" default="string"/>
+    <fontcolor name="markup-attribute-value" default="string" foreColor="C10087"/>
     <fontcolor name="entity-reference" default="default"/>
     
 </fontscolors>
