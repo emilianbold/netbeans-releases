@@ -148,12 +148,12 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     // Private implementation
     // ------------------------------------------------------------------------
     private static final Logger LOG = Logger.getLogger(JsEmbeddingProvider.class.getName());
-    private static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
-    private static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
+//    private static final String JSP_MIME_TYPE = "text/x-jsp"; // NOI18N
+//    private static final String TAG_MIME_TYPE = "text/x-tag"; // NOI18N
     private static final String RHTML_MIME_TYPE = "application/x-httpd-eruby"; // NOI18N
-    private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
-    private static final String XHTML_MIME_TYPE = "text/xhtml"; // NOI18N
-    private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
+//    private static final String HTML_MIME_TYPE = "text/html"; // NOI18N
+//    private static final String XHTML_MIME_TYPE = "text/xhtml"; // NOI18N
+//    private static final String PHP_MIME_TYPE = "text/x-php5"; // NOI18N
     private static final String TPL_MIME_TYPE = "text/x-tpl"; // NOI18N
     private static final String TWIG_MIME_TYPE = "text/x-twig"; // NOI18N
     private static final String LATTE_MIME_TYPE = "text/x-latte"; // NOI18N
@@ -161,14 +161,14 @@ public final class JsEmbeddingProvider extends EmbeddingProvider {
     private static final Map<String, Translator> translators = new HashMap<String, Translator>();
 
     static {
-        translators.put(JSP_MIME_TYPE, new JspTranslator());
-        translators.put(TAG_MIME_TYPE, new JspTranslator());
+//        translators.put(JSP_MIME_TYPE, new JspTranslator());
+//        translators.put(TAG_MIME_TYPE, new JspTranslator());
         translators.put(RHTML_MIME_TYPE, new RhtmlTranslator());
         //the creation of javascript virtual source for files with text/html mimetype
         //is now handled by o.n.m.html.editor.embedding.JsEmbeddingProvider
 //        translators.put(HTML_MIME_TYPE, new HtmlTranslator());
-        translators.put(XHTML_MIME_TYPE, new XhtmlTranslator());
-        translators.put(PHP_MIME_TYPE, new PhpTranslator());
+//        translators.put(XHTML_MIME_TYPE, new XhtmlTranslator());
+//        translators.put(PHP_MIME_TYPE, new PhpTranslator());
         translators.put(TPL_MIME_TYPE, new TplTranslator());
         translators.put(TWIG_MIME_TYPE, new TwigTranslator());
         translators.put(LATTE_MIME_TYPE, new LatteTranslator());
