@@ -1,0 +1,39 @@
+|>GLOBAL:google<|.load('maps', '2.x');
+var |>GLOBAL:gmap<| = {
+    |>FIELD:map<|: false,
+    |>FIELD:markers<|: [],
+    |>FIELD:bounds<|: false,
+    |>METHOD:addMarker<|: function(m) {
+        if (!|>GLOBAL:gmap<|.|>FIELD:bounds<|) |>GLOBAL:gmap<|.|>FIELD:bounds<| = new
+                    |>GLOBAL:google<|.maps.LatLngBounds();
+        m.|>FIELD:lat<| = m.|>FIELD:lat<| * 57.2957795;
+        m.|>FIELD:lng<| = m.|>FIELD:lng<| * 57.2957795;
+        var coords = new |>GLOBAL:google<|.maps.LatLng(m.|>FIELD:lat<|, m.|>FIELD:lng<|);
+        var marker = new |>GLOBAL:google<|.maps.Marker(coords);
+        marker.bindInfoWindowHtml(m.label);
+        |>GLOBAL:gmap<|.|>FIELD:markers<|.push(marker);
+        |>GLOBAL:gmap<|.|>FIELD:bounds<|.extend(coords);
+    },
+    |>METHOD:renderMap<|: function(map_id) {
+        |>GLOBAL:gmap<|.|>FIELD:map<| = new
+                |>GLOBAL:google<|.maps.Map2(|>GLOBAL:document<|.getElementById(map_id));
+        var zoom = |>GLOBAL:gmap<|.|>FIELD:map<|.getBoundsZoomLevel(|>GLOBAL:gmap<|.|>FIELD:bounds<|);
+        if (zoom > 15) zoom = 15;
+        |>GLOBAL:gmap<|.|>FIELD:map<|.setCenter(|>GLOBAL:gmap<|.|>FIELD:bounds<|.getCenter(), zoom);
+        var i = 0;
+        for (i = 0; i < |>GLOBAL:gmap<|.|>FIELD:markers<|.length; i++) {
+            |>GLOBAL:gmap<|.|>FIELD:map<|.addOverlay(|>GLOBAL:gmap<|.|>FIELD:markers<|[i]);
+        }
+        |>GLOBAL:gmap<|.|>FIELD:map<|.setUIToDefault();
+    }
+}
+
+function |>METHOD:initialize<|() {
+    if (GBrowserIsCompatible()) {
+        |>GLOBAL:gmap<|.renderMap('map');
+    }
+}
+
+$(|>GLOBAL:document<|).ready(function() {
+    |>GLOBAL:google<|.setOnLoadCallback(initialize);
+});
