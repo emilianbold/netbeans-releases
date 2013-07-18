@@ -77,7 +77,8 @@
     "StpLimitDepthTooltip=Limit the depth of the recorded call stack to lower profiling overhead.",
     "StpRunGcTooltip=Invoke garbage collection when taking memory snapshot to collect only live objects.",
     "StpSamplingFrequencyLabel=Sampling frequency:",
-    "StpSamplingFrequencyTooltip=Customize sampling frequency of the profiler."
+    "StpSamplingFrequencyTooltip=Customize sampling frequency of the profiler.",
+    "StpSamplingFrequencyMs=&ms"
 })
 package org.netbeans.modules.profiler.stp;
 
