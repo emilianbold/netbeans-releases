@@ -65,6 +65,12 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.web.beans.analysis.CdiAnalysisResult;
+import org.netbeans.modules.web.beans.xml.BeansAttributes;
+import org.netbeans.modules.web.beans.xml.WebBeansModel;
+import org.netbeans.modules.web.beans.xml.WebBeansModelFactory;
+import org.netbeans.modules.xml.retriever.catalog.Utilities;
+import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -89,8 +95,8 @@ public class CdiUtil {
     public static final String WEB_INF = "WEB-INF";                      // NOI18N
     
     public CdiUtil(Project project){
-        myProject = new WeakReference<Project>( project );
-        myMessages = new CopyOnWriteArraySet<String>();
+        myProject = new WeakReference<>( project );
+        myMessages = new CopyOnWriteArraySet<>();
     }
     
     public void log(String message , Class<?> clazz, Object[] params){
@@ -124,16 +130,27 @@ public class CdiUtil {
      * @return 
      */
     public static boolean isCdiEnabled(Project project){
-        if (isCdi11(project)) {
-            return true;
-        }
+        return (getBeansXmlExists(project)!=null) || isCdi11OrLater(project);
+    }
+    
+    private static FileObject getBeansXmlExists(Project project){
         Collection<FileObject> beansTargetFolder = getBeansTargetFolder(project, false);
         for (FileObject fileObject : beansTargetFolder) {
             if ( fileObject != null && fileObject.getFileObject(BEANS_XML)!=null){
-                return true;
+                return fileObject.getFileObject(BEANS_XML);
             }
         }
-        return false;
+        return null;
+    }
+    
+    private  FileObject getBeansXmlExists(){
+        Collection<FileObject> beansTargetFolder = getBeansTargetFolder(false);
+        for (FileObject fileObject : beansTargetFolder) {
+            if ( fileObject != null && fileObject.getFileObject(BEANS_XML)!=null){
+                return fileObject.getFileObject(BEANS_XML);
+            }
+        }
+        return null;
     }
     
     /**
@@ -145,23 +162,78 @@ public class CdiUtil {
         if ( project == null ){
             return false;
         }
-        // #229078 - since CDI 1.1 beans.xml is optional in case of 'implicit bean archive'
-        if (isCdi11(project)) {
-            return true;
-        }
         Collection<FileObject> beansTargetFolder = getBeansTargetFolder(false);
         for (FileObject fileObject : beansTargetFolder) {
             if ( fileObject != null && fileObject.getFileObject(BEANS_XML)!=null){
                 return true;
             }
         }
+        // #229078 - since CDI 1.1 beans.xml is optional in case of 'implicit bean archive'
+        if (isCdi11OrLater()) {
+            return true;
+        }
         return false;
     }
 
-    private static boolean isCdi11(Project p) {
-        return hasResource(p, "javax/enterprise/inject/spi/AfterTypeDiscovery.class");
-    }
+    /**
+     * Avoid static methods usage as much as possible, use isCdi11OrLater() instead
+     * @param p
+     * @return 
+     */
+    public static boolean isCdi11OrLater(Project p) {
+        if(! hasResource(p, "javax/enterprise/inject/spi/AfterTypeDiscovery.class") ) {
+            return false;
+        } else {
+            FileObject beans = getBeansXmlExists(p);
+            if(beans == null) {
+                return true;//no beans.xml and ee7 environment, default cdi 1.1 behavior
+            }
+            WebBeansModel model = WebBeansModelFactory.getInstance().getModel(getModelSource(beans, true));
+            if (model == null) {
+                return false;//???
+            }
 
+            String attribute = model.getRootComponent().getAttribute(BeansAttributes.VERSION);
+            if(attribute == null || attribute.equals("1.0")) {
+                return false;//no version attribute in cdi1.0 or equal to "1.0" in cdi 1.1.
+            }
+            return true;
+        }
+    }
+    
+    public boolean isCdi11OrLater() {
+        if(! hasResource(getProject(), "javax/enterprise/inject/spi/AfterTypeDiscovery.class") ) {
+            return false;
+        } else {
+            FileObject beans = getBeansXmlExists();
+            if(beans == null) {
+                return true;//no beans.xml and ee7 environment, default cdi 1.1 behavior
+            }
+            WebBeansModel model = WebBeansModelFactory.getInstance().getModel(getModelSource(beans, true));
+            if (model == null) {
+                return false;//???
+            }
+
+            String attribute = model.getRootComponent().getAttribute(BeansAttributes.VERSION);
+            if(attribute == null || attribute.equals("1.0")) {
+                return false;//no version attribute in cdi1.0 or equal to "1.0" in cdi 1.1.
+            }
+            return true;
+        }
+    }
+    
+    private static ModelSource getModelSource( FileObject fileObject , 
+            boolean isEditable )
+    {
+        try {
+            return Utilities.createModelSource( fileObject,isEditable);
+        } catch (CatalogModelException ex) {
+            Logger.getLogger("global").log(java.util.logging.Level.SEVERE,
+                ex.getMessage(), ex);   // NOI18N
+        }
+        return null;
+    }
+    
     private static boolean hasResource(Project project, String resource) {
         SourceGroup[] sgs = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sgs.length < 1) {
@@ -223,8 +295,8 @@ public class CdiUtil {
     public static Collection<FileObject> getBeansTargetFolder(Project project, 
             boolean create) 
     {
-        Sources sources = project.getLookup().lookup(Sources.class);
-        Collection<FileObject> result = new ArrayList<FileObject>(2);
+        Sources sources = ProjectUtils.getSources(project);
+        Collection<FileObject> result = new ArrayList<>(2);
         SourceGroup[] sourceGroups = sources.getSourceGroups(
                     JavaProjectConstants.SOURCES_TYPE_RESOURCES );
         if (sourceGroups != null && sourceGroups.length > 0) {
@@ -241,7 +313,7 @@ public class CdiUtil {
                 result.add(fileObject);
             }
         }
-        if ( result.size() == 0 && create ){
+        if ( result.isEmpty() && create ){
             SourceGroup resourcesSourceGroup = SourceGroupModifier.createSourceGroup(
                     project, JavaProjectConstants.SOURCES_TYPE_RESOURCES, 
                     JavaProjectConstants.SOURCES_HINT_MAIN);

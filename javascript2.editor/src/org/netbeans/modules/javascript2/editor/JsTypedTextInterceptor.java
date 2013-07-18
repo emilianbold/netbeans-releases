@@ -41,9 +41,9 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
-import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
@@ -52,6 +52,7 @@ import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.api.EditorOptions;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
@@ -81,9 +82,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
      */
     private int previousAdjustmentOffset = -1;
 
-    /** True iff we're processing bracket matching AFTER the key has been inserted rather than before  */
-    private boolean isAfter;
-
     /**
      * The indentation to revert to when previousAdjustmentOffset is set and the token
      * changed
@@ -95,121 +93,125 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         this.singleQuote = singleQuote;
     }
 
+    private boolean isInsertMatchingEnabled() {
+        EditorOptions options = EditorOptions.get(language.mimeType());
+        if (options != null) {
+            return options.getMatchBrackets();
+        }
+
+        return true;
+    }
+
     @Override
     public void afterInsert(final Context context) throws BadLocationException {
-        isAfter = true;
-        BaseDocument doc = (BaseDocument) context.getDocument();
+        final BaseDocument doc = (BaseDocument) context.getDocument();
+        final AtomicReference<BadLocationException> ex = new AtomicReference<BadLocationException>();
         doc.runAtomicAsUser(new Runnable() {
 
             @Override
             public void run() {
+                int dotPos = context.getOffset();
+                Caret caret = context.getComponent().getCaret();
+                char ch = context.getText().charAt(0);
 
+                try {
+                    // See if our automatic adjustment of indentation when typing (for example) "end" was
+                    // premature - if you were typing a longer word beginning with one of my adjustment
+                    // prefixes, such as "endian", then put the indentation back.
+                    if (previousAdjustmentOffset != -1) {
+                        if (dotPos == previousAdjustmentOffset) {
+                            // Revert indentation iff the character at the insert position does
+                            // not start a new token (e.g. the previous token that we reindented
+                            // was not complete)
+                            TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
+                                    doc, dotPos, language);
+
+                            if (ts != null) {
+                                ts.move(dotPos);
+
+                                if (ts.moveNext() && (ts.offset() < dotPos)) {
+                                    GsfUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
+                                }
+                            }
+                        }
+
+                        previousAdjustmentOffset = -1;
+                    }
+
+                    switch (ch) {
+                        case '{':
+                        case '(':
+                        case '[':
+                            if (!isInsertMatchingEnabled()) {
+                            break;
+                        }
+                        case '}':
+                        case ')':
+                        case ']':
+                            Token<? extends JsTokenId> token = LexUtilities.getToken(doc, dotPos, language);
+                            if (token == null) {
+                                return;
+                            }
+                            TokenId id = token.id();
+
+                            if (((id == JsTokenId.IDENTIFIER) && (token.length() == 1))
+                                    || (id == JsTokenId.BRACKET_LEFT_BRACKET) || (id == JsTokenId.BRACKET_RIGHT_BRACKET)
+                                    || (id == JsTokenId.BRACKET_LEFT_CURLY) || (id == JsTokenId.BRACKET_RIGHT_CURLY)
+                                    || (id == JsTokenId.BRACKET_LEFT_PAREN) || (id == JsTokenId.BRACKET_RIGHT_PAREN)) {
+                                if (ch == ']') {
+                                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_BRACKET);
+                                } else if (ch == ')') {
+                                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_PAREN);
+                                } else if (ch == '}') {
+                                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_CURLY);
+                                    // the curly is not completed intentionally see #189443
+                                    // java and php don't do that as well
+                                } else if ((ch == '[') || (ch == '(')) {
+                                    completeOpeningBracket(doc, dotPos, caret, ch);
+                                }
+                            }
+
+                            // Reindent blocks (won't do anything if } is not at the beginning of a line
+                            if (ch == '}') {
+                                reindent(doc, dotPos, JsTokenId.BRACKET_RIGHT_CURLY, caret);
+                            } else if (ch == ']') {
+                                reindent(doc, dotPos, JsTokenId.BRACKET_RIGHT_BRACKET, caret);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                } catch (BadLocationException blex) {
+                    ex.set(blex);
+                }
             }
         });
-
-        int dotPos = context.getOffset();
-        Caret caret = context.getComponent().getCaret();
-        char ch = context.getText().charAt(0);
-
-        // See if our automatic adjustment of indentation when typing (for example) "end" was
-        // premature - if you were typing a longer word beginning with one of my adjustment
-        // prefixes, such as "endian", then put the indentation back.
-        if (previousAdjustmentOffset != -1) {
-            if (dotPos == previousAdjustmentOffset) {
-                // Revert indentation iff the character at the insert position does
-                // not start a new token (e.g. the previous token that we reindented
-                // was not complete)
-                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
-                        doc, dotPos, language);
-
-                if (ts != null) {
-                    ts.move(dotPos);
-
-                    if (ts.moveNext() && (ts.offset() < dotPos)) {
-                        GsfUtilities.setLineIndentation(doc, dotPos, previousAdjustmentIndent);
-                    }
-                }
-            }
-
-            previousAdjustmentOffset = -1;
-        }
-
-        //dumpTokens(doc, dotPos);
-        switch (ch) {
-        case '}':
-        case '{':
-        case ')':
-        case ']':
-        case '(':
-        case '[': {
-            Token<? extends JsTokenId> token = LexUtilities.getToken(doc, dotPos, language);
-            if (token == null) {
-                return;
-            }
-            TokenId id = token.id();
-
-            if (((id == JsTokenId.IDENTIFIER) && (token.length() == 1)) ||
-                    (id == JsTokenId.BRACKET_LEFT_BRACKET) || (id == JsTokenId.BRACKET_RIGHT_BRACKET) ||
-                    (id == JsTokenId.BRACKET_LEFT_CURLY) || (id == JsTokenId.BRACKET_RIGHT_CURLY) ||
-                    (id == JsTokenId.BRACKET_LEFT_PAREN) || (id == JsTokenId.BRACKET_RIGHT_PAREN)) {
-                if (ch == ']') {
-                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_BRACKET);
-                } else if (ch == ')') {
-                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_PAREN);
-                } else if (ch == '}') {
-                    skipClosingBracket(doc, caret, ch, JsTokenId.BRACKET_RIGHT_CURLY);
-                // the curly is not completed intentionally see #189443
-                // java and php don't do that as well
-                } else if ((ch == '[') || (ch == '(')) {
-                    completeOpeningBracket(doc, dotPos, caret, ch);
-                }
-            }
-
-            // Reindent blocks (won't do anything if } is not at the beginning of a line
-            if (ch == '}') {
-                reindent(doc, dotPos, JsTokenId.BRACKET_RIGHT_CURLY, caret);
-            } else if (ch == ']') {
-                reindent(doc, dotPos, JsTokenId.BRACKET_RIGHT_BRACKET, caret);
-            }
-        }
-
-        break;
-        default:
-            break;
+        BadLocationException blex = ex.get();
+        if (blex != null) {
+            throw blex;
         }
     }
 
     @Override
     public boolean beforeInsert(Context context) throws BadLocationException {
-        isAfter = false;
-        JTextComponent target = context.getComponent();
-        Caret caret = target.getCaret();
+        return false;
+    }
+
+    @Override
+    public void insert(MutableContext context) throws BadLocationException {
         int caretOffset = context.getOffset();
         char ch = context.getText().charAt(0);
         BaseDocument doc = (BaseDocument) context.getDocument();
+        String selection = context.getReplacedText();
+        boolean isTemplate = GsfUtilities.isCodeTemplateEditing(doc);
 
-        if (target.getSelectionStart() != -1) {
-            if (GsfUtilities.isCodeTemplateEditing(doc)) {
-                int start = target.getSelectionStart();
-                int end = target.getSelectionEnd();
-                if (start < end) {
-                    target.setSelectionStart(start);
-                    target.setSelectionEnd(start);
-                    caretOffset = start;
-                    caret.setDot(caretOffset);
-                    doc.remove(start, end-start);
-                }
-                // Fall through to do normal insert matching work
-            } else if (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[') {
-                // Bracket the selection
-                String selection = target.getSelectedText();
-                if (selection != null && selection.length() > 0) {
+        if (selection != null && selection.length() > 0) {    
+            if (!isTemplate && (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[')) {
+                    // Bracket the selection
                     char firstChar = selection.charAt(0);
                     if (firstChar != ch) {
-                        int start = target.getSelectionStart();
-                        int end = target.getSelectionEnd();
                         TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
-                                doc, start, language);
+                                doc, caretOffset, language);
                         if (ts != null
                                 && ts.token().id() != JsTokenId.LINE_COMMENT
                                 && ts.token().id() != JsTokenId.DOC_COMMENT
@@ -221,22 +223,18 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                                     ((firstChar == '"' || firstChar == '\'' || firstChar == '(' ||
                                     firstChar == '{' || firstChar == '[' || firstChar == '/') &&
                                     lastChar == matching(firstChar))) {
-                                doc.remove(end-1, 1);
-                                doc.insertString(end-1, ""+matching(ch), null);
-                                doc.remove(start, 1);
-                                doc.insertString(start, ""+ch, null);
-                                target.getCaret().setDot(end);
+                                String innerText = selection.substring(1, selection.length() - 1);
+                                String text = Character.toString(ch) + innerText + Character.toString(matching(ch));
+                                context.setText(text, text.length());
                             } else {
                                 // No, insert around
-                                doc.remove(start,end-start);
-                                doc.insertString(start, ch + selection + matching(ch), null);
-                                target.getCaret().setDot(start+selection.length()+2);
+                                String text = ch + selection + matching(ch);
+                                context.setText(text, text.length());
                             }
 
-                            return true;
+                            return;
                         }
                     }
-                }
             }
         }
 
@@ -244,13 +242,13 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 doc, caretOffset, language);
 
         if (ts == null) {
-            return false;
+            return;
         }
 
         ts.move(caretOffset);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
-            return false;
+            return;
         }
 
         Token<? extends JsTokenId> token = ts.token();
@@ -263,7 +261,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             // "//" and now they're typing "*" (e.g. to type "/*", but ended up with "/*/".
             // Remove the auto-matched /.
             doc.remove(caretOffset, 1);
-            return false; // false: continue to insert the "*"
+            return; // false: continue to insert the "*"
         }
 
         // "/" is handled AFTER the character has been inserted since we need the lexer's help
@@ -271,8 +269,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             stringTokens = STRING_TOKENS;
             beginTokenId = JsTokenId.STRING_BEGIN;
         } else if (id.isError()) {
-            //String text = token.text().toString();
-
             ts.movePrevious();
 
             TokenId prevId = ts.token().id();
@@ -301,23 +297,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         }
 
         if (stringTokens != null) {
-            boolean inserted =
-                completeQuote(doc, caretOffset, caret, ch, stringTokens, beginTokenId);
-
-            if (inserted) {
-                caret.setDot(caretOffset + 1);
-
-                return true;
-            } else {
-                return false;
-            }
+            completeQuote(context, ch, stringTokens, beginTokenId, isTemplate);
         }
-
-        return false;
-    }
-
-    @Override
-    public void insert(MutableContext context) throws BadLocationException {
     }
 
     @Override
@@ -397,29 +378,35 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
      * @param caret caret
      * @param bracket the character that was inserted
      */
-    private boolean completeQuote(BaseDocument doc, int dotPos, Caret caret, char bracket,
-        TokenId[] stringTokens, TokenId beginToken) throws BadLocationException {
+    private void completeQuote(MutableContext context, char bracket,
+            TokenId[] stringTokens, TokenId beginToken, boolean isTemplate) throws BadLocationException {
+        if (isTemplate) {
+            String text = context.getText() + bracket;
+            context.setText(text, text.length() - 1);
+            return;
+        }
+        int dotPos = context.getOffset();
+        BaseDocument doc = (BaseDocument) context.getDocument();
         if (isEscapeSequence(doc, dotPos)) { // \" or \' typed
-
-            return false;
+            return;
         }
 
         // Examine token at the caret offset
         if (doc.getLength() < dotPos) {
-            return false;
+            return;
         }
 
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(
                 doc, dotPos, language);
 
         if (ts == null) {
-            return false;
+            return;
         }
 
         ts.move(dotPos);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
-            return false;
+            return;
         }
 
         Token<? extends JsTokenId> token = ts.token();
@@ -438,13 +425,13 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 || (token.id() == JsTokenId.DOC_COMMENT)
                 || (token.id() == JsTokenId.LINE_COMMENT)
                 || (previousToken != null && previousToken.id() == JsTokenId.LINE_COMMENT && token.id() == JsTokenId.EOL)) {
-            return false;
+            return;
         } else if ((token.id() == JsTokenId.WHITESPACE) && eol && ((dotPos - 1) > 0)) {
             // check if the caret is at the very end of the line comment
             token = LexUtilities.getToken(doc, dotPos - 1, language);
 
             if (token.id() == JsTokenId.LINE_COMMENT) {
-                return false;
+                return;
             }
         }
 
@@ -491,34 +478,24 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
 
         if (insideString) {
             if (eol) {
-                return false; // do not complete
+                return; // do not complete
             } else {
                 //#69524
                 char chr = doc.getChars(dotPos, 1)[0];
 
                 if (chr == bracket) {
-                    if (!isAfter) {
-                        doc.insertString(dotPos, "" + bracket, null); //NOI18N
-                    } else {
-                        if (!(dotPos < doc.getLength()-1 && doc.getText(dotPos+1,1).charAt(0) == bracket)) {
-                            return true;
-                        }
-                    }
-
+                    context.setText(Character.toString(bracket), 1);
                     doc.remove(dotPos, 1);
 
-                    return true;
+                    return;
                 }
             }
         }
 
         if ((completablePosition && !insideString) || eol) {
-            doc.insertString(dotPos, "" + bracket + (isAfter ? "" : matching(bracket)), null); //NOI18N
-
-            return true;
+            String text = Character.toString(bracket) + matching(bracket);
+            context.setText(text, text.length() - 1);
         }
-
-        return false;
     }
 
     /**

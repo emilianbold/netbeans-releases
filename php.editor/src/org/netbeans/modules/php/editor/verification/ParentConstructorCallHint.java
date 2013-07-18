@@ -275,7 +275,7 @@ public class ParentConstructorCallHint extends HintRule {
 
     @Override
     @NbBundle.Messages(
-        "ParentConstructorCallHintDesc=Constructor of parent class should be called if exists (it ensures the right initialization of instanciated object)."
+        "ParentConstructorCallHintDesc=Constructor of parent class should be called if exists (it ensures the right initialization of instantiated object)."
     )
     public String getDescription() {
         return Bundle.ParentConstructorCallHintDesc();

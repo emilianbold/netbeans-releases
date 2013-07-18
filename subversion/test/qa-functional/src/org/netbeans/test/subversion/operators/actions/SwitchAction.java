@@ -48,6 +48,10 @@ package org.netbeans.test.subversion.operators.actions;
 public class SwitchAction extends SvnAction {
 
     /**
+     * "Copy" menu item
+     */
+    public static final String COPY_MENU_ITEM = "Copy";
+    /**
      * "Switch" menu item.
      */
     public static final String SWITCH_MENU_ITEM = "Switch to...";
@@ -60,6 +64,6 @@ public class SwitchAction extends SvnAction {
      * Creates a new instance of SwitchAction
      */
     public SwitchAction() {
-        super(TEAM_ITEM + "|" + SWITCH_MENU_ITEM, SVN_ITEM + "|" + SWITCH_POPUP_ITEM);
+        super(TEAM_ITEM + "|" + COPY_MENU_ITEM + "|" + SWITCH_MENU_ITEM, SVN_ITEM + "|" + COPY_MENU_ITEM + "|" + SWITCH_POPUP_ITEM);
     }
 }

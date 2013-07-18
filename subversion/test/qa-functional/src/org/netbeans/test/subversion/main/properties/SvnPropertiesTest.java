@@ -101,7 +101,7 @@ public class SvnPropertiesTest extends JellyTestCase {
                 new NewProjectWizardOperator().invoke().close();
             
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-            VersioningOperator.invoke();
+            //VersioningOperator.invoke();
             TestKit.showStatusLabels();
             CheckoutWizardOperator.invoke();
             RepositoryStepOperator rso = new RepositoryStepOperator();

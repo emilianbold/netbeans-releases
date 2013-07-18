@@ -84,7 +84,19 @@ public class MatchedPropertyNode extends AbstractNode {
         super(Children.LEAF, Lookups.fixed(rule, ruleOrigin, property));
         this.property = property;
         setDisplayName(property.getName());
-        String stylesheet = Utilities.relativeResourceName(rule.getSourceURL(), ruleOrigin.getProject());
+        RuleInfo ruleInfo = new RuleInfo();
+        ruleInfo.fillMetaSourceInfo(rule);
+        String sourceURL;
+        if (ruleInfo.getMetaSourceFile() != null && ruleInfo.getMetaSourceLine() != -1) {
+            sourceURL = ruleInfo.getMetaSourceFile();
+            if (sourceURL.startsWith("file://") && !sourceURL.startsWith("file:///")) { // NOI18N
+                // file://C:/file is understood as file on host C, should be file:///C:/file
+                sourceURL = "file:/" + sourceURL.substring(5); // NOI18N
+            }
+        } else {
+            sourceURL = rule.getSourceURL();
+        }
+        String stylesheet = Utilities.relativeResourceName(sourceURL, ruleOrigin.getProject());
         String description = NbBundle.getMessage(MatchedPropertyNode.class,
             "MatchedPropertyNode.description", rule.getSelector(), stylesheet); // NOI18N
         setShortDescription(description);

@@ -72,6 +72,7 @@ import org.jivesoftware.smack.MessageListener;
 import org.jivesoftware.smack.XMPPException;
 import org.jivesoftware.smackx.muc.MultiUserChat;
 import org.jivesoftware.smack.PacketListener;
+import org.jivesoftware.smack.XMPPConnection;
 import org.jivesoftware.smack.packet.Message;
 import org.jivesoftware.smack.packet.Packet;
 import org.jivesoftware.smack.packet.Presence;
@@ -384,7 +385,8 @@ public class ChatPanel extends javax.swing.JPanel {
         setName(muc.getRoom()); //NOI18N
         kc = KenaiConnection.getDefault(kenai);
         init();
-        if (!kenai.getXMPPConnection().isConnected()) {
+        XMPPConnection xmppConnection = kenai.getXMPPConnection();
+        if (xmppConnection != null && !xmppConnection.isConnected()) {
             try {
                 kc.reconnect(muc);
             } catch (XMPPException ex) {

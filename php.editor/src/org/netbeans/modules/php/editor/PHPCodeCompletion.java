@@ -226,7 +226,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
     @Override
     public CodeCompletionResult complete(CodeCompletionContext completionContext) {
         long startTime = 0;
-
         if (LOGGER.isLoggable(Level.FINE)) {
             startTime = System.currentTimeMillis();
         }

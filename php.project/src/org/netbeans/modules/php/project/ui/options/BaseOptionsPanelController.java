@@ -55,7 +55,7 @@ abstract class BaseOptionsPanelController extends OptionsPanelController impleme
 
     private final PropertyChangeSupport propertyChangeSupport = new PropertyChangeSupport(this);
 
-    private volatile boolean changed;
+    volatile boolean changed = false;
 
 
     /**
@@ -77,7 +77,7 @@ abstract class BaseOptionsPanelController extends OptionsPanelController impleme
     @Override
     public final void update() {
         updateInternal();
-        changed = false;
+        changed = true;
     }
 
     @Override
@@ -92,8 +92,8 @@ abstract class BaseOptionsPanelController extends OptionsPanelController impleme
     }
 
     @Override
-    public void cancel() {
-        // usually nothing to do, can be overriden
+    public final void cancel() {
+        changed = false;
     }
 
     @Override
@@ -118,8 +118,7 @@ abstract class BaseOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public final void stateChanged(ChangeEvent e) {
-        if (!changed) {
-            changed = true;
+        if (changed) {
             propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);

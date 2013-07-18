@@ -129,8 +129,10 @@ class WebBeansComponentBuildVisitor implements WebBeansVisitor {
     WebBeansComponent create( WebBeansComponent context, Element element )
     {
         QName qName = AbstractDocumentComponent.getQName(element);
-        if ( !WebBeansComponent.WEB_BEANS_NAMESPACE.equals( 
-                qName.getNamespaceURI() ))
+        if ( !(WebBeansComponent.WEB_BEANS_NAMESPACE.equals( 
+                qName.getNamespaceURI() ) || 
+                WebBeansComponent.WEB_BEANS_NAMESPACE_OLD.equals( 
+                qName.getNamespaceURI() )))
         {
             return null;
         }

@@ -85,7 +85,7 @@ public class DocumentViewModel implements ChangeListener {
     private Project project;
     private CssIndex index;
     private boolean needsRefresh;
-    private ChangeSupport changeSupport;
+    private final ChangeSupport changeSupport;
     private boolean initialized;
     /**
      * Map of stylesheet -> list of rules
@@ -97,6 +97,10 @@ public class DocumentViewModel implements ChangeListener {
         this.file = file;
         changeSupport = new ChangeSupport(this);
         needsRefresh = true;
+    }
+
+    FileObject getFile() {
+        return file;
     }
 
     private synchronized void initialize() {

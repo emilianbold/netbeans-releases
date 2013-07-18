@@ -55,6 +55,8 @@ import org.netbeans.modules.web.beans.xml.Decorators;
 import org.netbeans.modules.web.beans.xml.Interceptors;
 import org.netbeans.modules.web.beans.xml.Stereotype;
 import org.netbeans.modules.web.beans.xml.WebBeansComponent;
+import static org.netbeans.modules.web.beans.xml.WebBeansComponent.WEB_BEANS_NAMESPACE_OLD;
+import org.netbeans.modules.xml.xam.dom.AbstractDocumentComponent;
 
 
 /**
@@ -78,16 +80,20 @@ public enum WebBeansElements {
         return myName;
     }
 
-    public QName getQName() {
-        return new QName( WebBeansComponent.WEB_BEANS_NAMESPACE, getName() );
+    public QName getQName(WebBeansModelImpl model) {
+        String ns = WebBeansComponent.WEB_BEANS_NAMESPACE;
+        if( model.getRootComponent()!=null && model.getRootComponent() instanceof AbstractDocumentComponent) {
+            ns = ((AbstractDocumentComponent)model.getRootComponent()).getQName().getNamespaceURI();
+        }
+        return new QName( ns, getName() );
     }
 
     
-    public static Set<QName> allQNames() {
+    public static Set<QName> allQNames(WebBeansModelImpl model) {
         if ( myQNames.get() == null ) {
             Set<QName> set = new HashSet<QName>( values().length );
             for (WebBeansElements element : values() ) {
-                set.add( element.getQName() );
+                set.add( element.getQName(model) );
             }
             myQNames.compareAndSet( null, set );
         }

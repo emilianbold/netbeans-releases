@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -44,7 +44,7 @@ package org.netbeans.modules.glassfish.common.actions;
 
 import java.awt.event.ActionEvent;
 import org.netbeans.modules.glassfish.common.CommonServerSupport;
-import org.netbeans.modules.glassfish.common.GlassFishStatus;
+import org.netbeans.modules.glassfish.common.GlassFishState;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
@@ -100,7 +100,7 @@ public class StopServerAction extends NodeAction {
                 && (null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR)
                 // there is a target part of this server's url AND the das is running
                 || (!Util.isDefaultOrServerTarget(commonSupport.getInstanceProperties())
-                && GlassFishStatus.isReady(((CommonServerSupport)commonSupport).getInstance(), false)));
+                && GlassFishState.isOnline(((CommonServerSupport)commonSupport).getInstance())));
     }
     
     @Override

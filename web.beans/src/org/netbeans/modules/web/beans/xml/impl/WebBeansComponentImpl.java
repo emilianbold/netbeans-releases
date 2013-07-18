@@ -81,7 +81,11 @@ abstract class WebBeansComponentImpl extends
     }
     
     protected static Element createNewElement(String name, WebBeansModelImpl model){
-        return model.getDocument().createElementNS( WEB_BEANS_NAMESPACE, name );
+        String ns = WebBeansComponent.WEB_BEANS_NAMESPACE;
+        if( model.getRootComponent()!=null && model.getRootComponent() instanceof AbstractDocumentComponent) {
+            ns = ((AbstractDocumentComponent)model.getRootComponent()).getQName().getNamespaceURI();
+        }
+        return model.getDocument().createElementNS( ns, name );
     }
 
     /* (non-Javadoc)

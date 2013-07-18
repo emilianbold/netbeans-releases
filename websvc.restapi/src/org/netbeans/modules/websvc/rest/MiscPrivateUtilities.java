@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -77,6 +78,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
 import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
@@ -98,6 +100,9 @@ import org.openide.util.MutexException;
 public class MiscPrivateUtilities {
     // copy pasted from Maven project:
     public static final String DEVNULL = "DEV-NULL"; //NOI18N
+    
+    private static final String JACKSON_JSON_PROVIDER =
+            "org.codehaus.jackson.jaxrs.JacksonJsonProvider"; // NOI18N
 
     public static void setProjectProperty(final Project project, final AntProjectHelper helper, final String name, final String value, final String propertyPath) {
         if (helper == null) {
@@ -394,6 +399,61 @@ public class MiscPrivateUtilities {
         MiscUtilities.copyFile(testdir, "images/pbmou.png");
         MiscUtilities.copyFile(testdir, "images/tbuns.png");
         return testFO;
+    }
+    
+    public static String collectRestResources( Collection<String> classes,
+            RestSupport restSupport, final boolean oldVersion) throws IOException
+    {
+        StringBuilder builder = new StringBuilder();
+        builder.append('{');
+        if (oldVersion) {
+            builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
+        }
+        for (String clazz : classes) {
+            handleResource(clazz, builder);
+        }
+        if (oldVersion && !restSupport.hasJersey2(true)) {
+            builder.append(getJacksonProviderSnippet(restSupport));
+        }
+        if (oldVersion) {
+            builder.append("return resources;");                // NOI18N
+        }
+        builder.append('}');
+        return builder.toString();
+    }
+    
+    public static String getJacksonProviderSnippet(RestSupport restSupport){
+        boolean addJacksonProvider = MiscPrivateUtilities.hasResource(restSupport.getProject(),
+                "org/codehaus/jackson/jaxrs/JacksonJsonProvider.class");    // NOI18N
+        if( !addJacksonProvider) {
+            JaxRsStackSupport support = restSupport.getJaxRsStackSupport();
+            if (support != null){
+                addJacksonProvider = support.isBundled(JACKSON_JSON_PROVIDER);
+            }
+        }
+        StringBuilder builder = new StringBuilder();
+        if ( addJacksonProvider ){
+            builder.append("\n// following code can be used to customize Jersey 1.x JSON provider: \n");
+            builder.append("try {");
+            builder.append("Class jacksonProvider = Class.forName(");
+            builder.append('"');
+            builder.append(JACKSON_JSON_PROVIDER);
+            builder.append("\");");
+            builder.append("resources.add(jacksonProvider);");
+            builder.append("} catch (ClassNotFoundException ex) {");
+            builder.append("java.util.logging.Logger.getLogger(getClass().getName())");
+            builder.append(".log(java.util.logging.Level.SEVERE, null, ex);}\n");
+            return builder.toString();
+        }
+        else {
+            return builder.toString();
+        }
+    }
+    
+    private static void handleResource(String className, StringBuilder builder) throws IllegalArgumentException {
+        builder.append("resources.add(");       // NOI18N
+        builder.append( className );
+        builder.append(".class);");             // NOI18N
     }
 
 

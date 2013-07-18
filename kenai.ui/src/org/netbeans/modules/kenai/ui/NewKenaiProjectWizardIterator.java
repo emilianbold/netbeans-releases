@@ -83,7 +83,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     private WizardDescriptor wizard;
     private WizardDescriptor.Panel[] panels;
     private transient int index;
-    private File[] initialDirectories;
+    private final File[] initialDirectories;
 
     public static final String PROP_PRJ_NAME = "projectName"; // NOI18N
     public static final String PROP_PRJ_TITLE = "projectTitle"; // NOI18N
@@ -107,7 +107,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     public static final String NO_ISSUES = "none"; // NOI18N
     private Kenai kenai;
 
-    private Logger logger = Logger.getLogger("org.netbeans.modules.kenai"); // NOI18N
+    private static final Logger logger = Logger.getLogger("org.netbeans.modules.kenai"); // NOI18N
 
     public NewKenaiProjectWizardIterator(File[] initialDirs, Kenai kenai) {
         this.initialDirectories = initialDirs != null ? initialDirs : new File[]{};
@@ -156,8 +156,8 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
             handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
                 "NewKenaiProject.progress.creatingProject"), 1); // NOI18N
 
-            logger.log(Level.FINE, "Creating Kenai Project - Name: " + newPrjName + // NOI18N
-                    ", Title: " + newPrjTitle + ", Description: " + newPrjDesc + ", License: " + newPrjLicense); // NOI18N
+            logger.log(Level.FINE, "Creating Kenai Project - Name: {0}, Title: {1}, Description: {2}, License: {3}", // NOI18N
+                                    new Object[]{newPrjName, newPrjTitle, newPrjDesc, newPrjLicense}); 
 
             kenai.createProject(newPrjName, newPrjTitle,
                     newPrjDesc, new String[] { newPrjLicense }, /*no tags*/ null);
@@ -179,8 +179,8 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                 String description = getScmDescription(newPrjScmType);
                 String extScmUrl = (KenaiService.Names.EXTERNAL_REPOSITORY.equals(newPrjScmType) ? newPrjScmUrl : null);
 
-                logger.log(Level.FINE, "Creating SCM Repository - Name: " + newPrjScmName + // NOI18N
-                        ", Type: " + newPrjScmType + ", Ext. URL: " + newPrjScmUrl + ", Local Folder: " + newPrjScmLocal); // NOI18N
+                logger.log(Level.FINE, "Creating SCM Repository - Name: {0}, Type: {1}, Ext. URL: {2}, Local Folder: {3}", // NOI18N 
+                                        new Object[]{newPrjScmName, newPrjScmType, newPrjScmUrl, newPrjScmLocal});
 
                 kenai.getProject(newPrjName).createProjectFeature(newPrjScmName,
                         displayName, description, newPrjScmType, /*ext issues URL*/ null, extScmUrl, /*browse repo URL*/ null);
@@ -206,7 +206,8 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                 String description = getIssuesDescription(newPrjIssues);
                 String extIssuesUrl = (KenaiService.Names.EXTERNAL_ISSUES.equals(newPrjIssues) ? newPrjIssuesUrl : null);
 
-                logger.log(Level.FINE, "Creating Issue Tracking - Name: " + newPrjIssues + ", Ext. URL: " + newPrjIssuesUrl); // NOI18N
+                logger.log(Level.FINE, "Creating Issue Tracking - Name: {0}, Ext. URL: {1}", // NOI18N 
+                            new Object[]{newPrjIssues, newPrjIssuesUrl});
 
                 // XXX issue tracking name not clear !!!
                 kenai.getProject(newPrjName).createProjectFeature(newPrjName + newPrjIssues,
@@ -232,14 +233,13 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
                     if (newPrjScmName.equals(feature.getName())) {
                         scmLoc = feature.getLocation();
                         featureService = feature.getService();
-                        continue;
                     }
                 }
                 if (scmLoc != null) {
                     handle.progress(NbBundle.getMessage(NewKenaiProjectWizardIterator.class,
                             "NewKenaiProject.progress.repositoryCheckout"),4); // NOI18N
-                    logger.log(Level.FINE, "Checking out repository - Location: " + scmLoc + // NOI18N
-                            ", Local Folder: " + newPrjScmLocal + ", Service: " + featureService); // NOI18N
+                    logger.log(Level.FINE, "Checking out repository - Location: {0}, Local Folder: {1}, Service: {2}", // NOI18N
+                                new Object[]{scmLoc, newPrjScmLocal, featureService});
                     PasswordAuthentication passwdAuth = kenai.getPasswordAuthentication();
                     if (passwdAuth != null) {
                         final File localScmRoot = new File(newPrjScmLocal);
@@ -416,36 +416,44 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         return true;
     }
 
+    @Override
     public Set<?> instantiate() throws IOException {
         assert false;
         return null;
     }
 
+    @Override
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
         this.panels = getPanels();
     }
 
+    @Override
     public void uninitialize(WizardDescriptor wizard) {
         // XXX set properties to null ???
     }
 
+    @Override
     public Panel current() {
         return panels[index];
     }
 
+    @Override
     public String name() {
         return NbBundle.getMessage(NewKenaiProjectWizardIterator.class, "NewKenaiProjectWizardIterator.name");
     }
 
+    @Override
     public boolean hasNext() {
         return index < panels.length - 1;
     }
 
+    @Override
     public boolean hasPrevious() {
         return index > 0;
     }
 
+    @Override
     public void nextPanel() {
         if (!hasNext()) {
             throw new NoSuchElementException();
@@ -453,6 +461,7 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         index++;
     }
 
+    @Override
     public void previousPanel() {
         if (!hasPrevious()) {
             throw new NoSuchElementException();
@@ -460,8 +469,10 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
         index--;
     }
 
+    @Override
     public void addChangeListener(ChangeListener l) { }
 
+    @Override
     public void removeChangeListener(ChangeListener l) { }
 
     Kenai getKenai() {
@@ -489,19 +500,21 @@ public class NewKenaiProjectWizardIterator implements WizardDescriptor.ProgressI
     // ----------
 
     private String getErrorMessage(KenaiException kex, String prepend) {
-        String errMsg = null;
+        String errMsg;
         if (kex instanceof KenaiException) {
             KenaiException kem = (KenaiException) kex;
             Map<String,String> errMap = kem.getErrors();
-            StringBuffer sb = new StringBuffer();
+            StringBuilder sb = new StringBuilder();
             if (prepend != null) {
-                sb.append(prepend + " "); // NOI18N
+                sb.append(prepend); 
+                sb.append(" "); // NOI18N
             }
             boolean sepAdded = false;
             if (errMap != null) {
                 for (Iterator<String> it = errMap.keySet().iterator(); it.hasNext(); ) {
                     String fld = it.next();
-                    sb.append(errMap.get(fld) + ". "); // NOI18N
+                    sb.append(errMap.get(fld));
+                    sb.append(". "); // NOI18N
                     sepAdded = true;
                 }
             }

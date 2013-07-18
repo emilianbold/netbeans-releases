@@ -68,7 +68,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.test.MockLookup;
 
@@ -76,9 +75,9 @@ import org.openide.util.test.MockLookup;
  *
  * @author Petr Pisl
  */
-public class JsCodeComplationBase extends JsTestBase {
+public class JsCodeCompletionBase extends JsTestBase {
 
-    public JsCodeComplationBase(String testName) {
+    public JsCodeCompletionBase(String testName) {
         super(testName);
     }
 
@@ -95,6 +94,11 @@ public class JsCodeComplationBase extends JsTestBase {
         MockLookup.setInstances(new ClassPathProviderImpl());
         MockLookup.setInstances(lookupAll.toArray());
         OpenProjects.getDefault().getOpenProjects();
+    }
+
+    @Override
+    protected boolean cleanCacheDir() {
+        return false;
     }
 
     public static final class IFL extends InstalledFileLocator {

@@ -103,30 +103,59 @@ public class JsEmbeddingProviderTest extends CslTestBase {
         assertEmbedding("<div>{{hello}}</div>",
                 null);
     }
-    
+
     public void testIssue231633() {
         assertEmbedding(
-                  "<script type=\"text/javascript\">\n"
+                "<script type=\"text/javascript\">\n"
                 + "   <!--   \n"
                 + "   window.alert(\"Hello World!\");\n"
                 + "   -->\n"
-                + " </script>", 
-                
-                  "\n" 
-                + "      window.alert(\"Hello World!\");\n" 
+                + " </script>",
+                "\n"
+                + "      window.alert(\"Hello World!\");\n"
                 + " \n");
-        
+
         assertEmbedding(
-                  "<script type=\"text/javascript\">\n"
+                "<script type=\"text/javascript\">\n"
                 + "   <!--//-->   \n"
                 + "   window.alert(\"Hello World!\");\n"
                 + "   <!--//-->\n"
-                + " </script>", 
-                
-                  "\n" 
-                + "      window.alert(\"Hello World!\");\n" 
-                + "   \n" 
+                + " </script>",
+                "\n"
+                + "      window.alert(\"Hello World!\");\n"
+                + "   \n"
                 + " \n");
+    }
+
+    /*
+     * Tests conversion of the generic templating mark "@@@"
+     * to its JS counterpart.
+     */
+    public void testConvertGenericMarksToJSMark() {
+        assertEmbedding("<script>hello @@@ word</script>",
+                "hello __UNKNOWN__ word\n");
+
+        //this needs some more "fine tuning" :-)
+        //so far works only if the pattern is surrounded by sg.
+
+//        assertEmbedding("<script>x@@@</script>",
+//                "x__UNKNOWN__\n");
+//        
+//        assertEmbedding("<script>@@@x</script>",
+//                "__UNKNOWN__x\n");
+//        
+//        assertEmbedding("<script>@@@</script>",
+//                "__UNKNOWN__\n");
+
+//        assertEmbedding("<div onclick=\"@@@\">",
+//                "");
+
+        assertEmbedding("<div onclick=\"a@@@b\">",
+                "(function(){\n"
+                + "a__UNKNOWN__b;\n"
+                + "});\n"
+                + "");
+
     }
 
     @MimeRegistration(mimeType = "text/html", service = HtmlLexerPlugin.class)
@@ -159,7 +188,7 @@ public class JsEmbeddingProviderTest extends CslTestBase {
     private void assertEmbedding(String code, String expectedJsVirtualSource) {
         assertEmbedding(getDocument(code, "text/html"), expectedJsVirtualSource);
     }
-    
+
     public static void assertEmbedding(Document doc, String expectedJsVirtualSource) {
         try {
             Source source = Source.create(doc);
@@ -168,7 +197,7 @@ public class JsEmbeddingProviderTest extends CslTestBase {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     ResultIterator jsRi = WebUtils.getResultIterator(resultIterator, "text/javascript");
-                    if(jsRi != null) {
+                    if (jsRi != null) {
                         jsCodeRef.set(jsRi.getSnapshot().getText().toString());
                     } else {
                         //no js embedded code
@@ -176,7 +205,7 @@ public class JsEmbeddingProviderTest extends CslTestBase {
                 }
             });
             String jsCode = jsCodeRef.get();
-            if(expectedJsVirtualSource != null) {
+            if (expectedJsVirtualSource != null) {
                 assertNotNull(jsCode);
                 assertEquals(expectedJsVirtualSource, jsCode);
             } else {

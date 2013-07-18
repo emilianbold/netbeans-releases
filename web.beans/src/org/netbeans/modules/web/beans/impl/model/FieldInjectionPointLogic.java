@@ -70,6 +70,7 @@ import org.openide.util.NbBundle;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
+import org.netbeans.modules.web.beans.api.model.BeanArchiveType;
 
 /**
  * @author ads
@@ -213,6 +214,7 @@ abstract class FieldInjectionPointLogic {
                  *  should contain @Default.  
                  */
                 filterBindingsByDefault( assignableTypes );
+                filterBindingByArchiveType( assignableTypes );
             }
             types.addAll( assignableTypes );
         }
@@ -603,6 +605,12 @@ abstract class FieldInjectionPointLogic {
                 TypeElement.class);
         filter.init( getModel() );
         filter.filter( assignableTypes );
+    }
+    
+    private void filterBindingByArchiveType(Set<TypeElement> assignableTypes) {
+        ArchiveTypeBindingTypeFilter<TypeElement> filter = ArchiveTypeBindingTypeFilter.get(TypeElement.class);
+        filter.init(getModel());
+        filter.filter(assignableTypes);
     }
 
     private Set<TypeElement> getAssignableTypes( VariableElement element,
