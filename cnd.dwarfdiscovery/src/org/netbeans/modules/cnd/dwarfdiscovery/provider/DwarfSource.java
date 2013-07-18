@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.dwarfdump.CompilationUnitInterface;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoEntry;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfMacinfoTable;
 import org.netbeans.modules.cnd.dwarfdump.dwarf.DwarfStatementList;
+import org.netbeans.modules.cnd.dwarfdump.dwarfconsts.MACINFO;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptorProvider;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
@@ -767,28 +768,30 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         List<DwarfMacinfoEntry> table = dwarfTable.getCommandLineMarcos();
         for (Iterator<DwarfMacinfoEntry> it = table.iterator(); it.hasNext();) {
             DwarfMacinfoEntry entry = it.next();
-            String def = entry.definition;
-            int i = def.indexOf(' ');
-            String macro;
-            String value = null;
-            if (i>0){
-                macro = PathCache.getString(def.substring(0,i));
-                value = PathCache.getString(def.substring(i+1).trim());
-            } else {
-                macro = PathCache.getString(def);
-            }
-            if (firstMacroLine == entry.lineNum) {
-                if (macro.equals(grepSourceFile(fullName).firstMacro)){
-                    break;
+            if (entry.type == MACINFO.DW_MACINFO_define && entry.definition != null) {
+                String def = entry.definition;
+                int i = def.indexOf(' ');
+                String macro;
+                String value = null;
+                if (i>0){
+                    macro = PathCache.getString(def.substring(0,i));
+                    value = PathCache.getString(def.substring(i+1).trim());
+                } else {
+                    macro = PathCache.getString(def);
                 }
-            }
-            if (haveSystemMacros && systemMacros.containsKey(macro)){
-                String sysValue = systemMacros.get(macro);
-                if (equalValues(sysValue, value)) {
-                    continue;
+                if (firstMacroLine == entry.lineNum) {
+                    if (macro.equals(grepSourceFile(fullName).firstMacro)){
+                        break;
+                    }
                 }
+                if (haveSystemMacros && systemMacros.containsKey(macro)){
+                    String sysValue = systemMacros.get(macro);
+                    if (equalValues(sysValue, value)) {
+                        continue;
+                    }
+                }
+                userMacros.put(macro,value);
             }
-            userMacros.put(macro,value);
         }
         if (DwarfSource.LOG.isLoggable(Level.FINE)) {
             DwarfSource.LOG.log(Level.FINE, "Macros:{0}", userMacros); // NOI18N
