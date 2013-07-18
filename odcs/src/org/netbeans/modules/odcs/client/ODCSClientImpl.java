@@ -241,7 +241,7 @@ public class ODCSClientImpl implements ODCSClient {
             LOG.log(Level.WARNING, "{0} returned http code : {1}", new Object[]{service, result});
             LOG.log(Level.WARNING, ew.error.getMessage());
             if(ew.error.getException() != null) {
-                LOG.log(Level.OFF, service, ew.error.getException());
+                LOG.log(Level.WARNING, service, ew.error.getException());
             }
             throw new ODCSException(ew.error.getMessage());
         } finally {

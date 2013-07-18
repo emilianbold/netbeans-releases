@@ -54,8 +54,6 @@ import javax.swing.JOptionPane;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
-import org.netbeans.modules.odcs.ui.NewProjectAction;
-import org.netbeans.modules.odcs.ui.OpenProjectAction;
 import org.netbeans.modules.odcs.ui.Utilities;
 import org.netbeans.modules.team.ui.spi.LoginHandle;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
@@ -78,7 +76,8 @@ import org.openide.util.NbBundle.Messages;
  */
 // XXX not properly implemented yet
 public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {
-    
+
+    private static final Logger LOG = Logger.getLogger(ProjectAccessorImpl.class.getName());
     private final ODCSUiServer uiServer;
 
     ProjectAccessorImpl(ODCSUiServer uiServer) {
@@ -109,9 +108,8 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {
             }
         } catch (ODCSException ex) {
             Level lvl = ex instanceof ODCSException.ODCSCanceledException ? Level.FINE : Level.INFO;
-            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(lvl, null, ex);
-            Logger.getLogger(ProjectAccessorImpl.class.getName()).log(lvl, "getting a project {0} from {1}", //NOI18N
-                    new Object[] { projectId, uiServer.getUrl().toString() } );
+            LOG.log(lvl, null, ex);
+            LOG.log(lvl, "getting a project {0} from {1}", new Object[] { projectId, uiServer.getUrl().toString() } ); // NOI18N
         }
         return null;
     }
@@ -199,7 +197,7 @@ public class ProjectAccessorImpl extends ProjectAccessor<ODCSProject> {
                             server.watch(prj);
                         }
                     } catch (ODCSException ex) {
-                        Exceptions.printStackTrace(ex);
+                        Utils.logException(ex, false);
                     } finally {
                         EventQueue.invokeLater(new Runnable() {
                             @Override
