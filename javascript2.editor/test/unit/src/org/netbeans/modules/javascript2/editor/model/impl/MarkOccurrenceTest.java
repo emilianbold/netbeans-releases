@@ -859,6 +859,10 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/coloring/issue215757.js","this.browser = browser.brow^ser;", true);
     }
     
+    public void testIssue217769_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217769.js","a.i^n();", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
