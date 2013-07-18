@@ -238,7 +238,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
                         }
                     });
                 } catch (ODCSException ex) {
-                    Utils.getLogger().log(Level.SEVERE, ex.getMessage());
+                    Utils.logException(ex, true);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {
