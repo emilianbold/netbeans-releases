@@ -80,8 +80,19 @@ public class ScriptingCreateFromTemplateHandler extends CreateFromTemplateHandle
                                             Map<String, Object> values) throws IOException {
         boolean noExt = Boolean.TRUE.equals(values.get(FREE_FILE_EXTENSION)) && name.indexOf('.') != -1;
         
+        String extWithDot;
+        if (noExt) {
+            extWithDot = null;
+        } else {
+            extWithDot = '.' + template.getExt();
+            if (name.endsWith(extWithDot)) { // Test whether the extension happens to be there already
+                // And remove it if yes, it will be appended to the unique name.
+                name = name.substring(0, name.length() - extWithDot.length());
+            }
+        }
+        
         String nameUniq = FileUtil.findFreeFileName(f, name, noExt ? null : template.getExt());
-        FileObject output = FileUtil.createData(f, noExt ? nameUniq : nameUniq + '.' + template.getExt());
+        FileObject output = FileUtil.createData(f, noExt ? nameUniq : nameUniq + extWithDot);
         Charset targetEnc = FileEncodingQuery.getEncoding(output);
         Charset sourceEnc = FileEncodingQuery.getEncoding(template);
         
