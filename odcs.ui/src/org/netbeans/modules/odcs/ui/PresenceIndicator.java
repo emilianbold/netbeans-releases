@@ -55,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSManager;
@@ -78,13 +79,18 @@ public class PresenceIndicator {
 
     @Messages({"LBL_LoggedIn=Logged in Team Server",
         "LBL_Offline_Tooltip=Not Logged in Team Server"})
-    private void setLoggedIn (boolean loggedIn) {
-        if (loggedIn) {
-            label.setToolTipText(Bundle.LBL_LoggedIn());
-        } else {
-            label.setToolTipText(Bundle.LBL_Offline_Tooltip());
-        }
-        label.setVisible(loggedIn);
+    private void setLoggedIn (final boolean loggedIn) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                if (loggedIn) {
+                    label.setToolTipText(Bundle.LBL_LoggedIn());
+                } else {
+                    label.setToolTipText(Bundle.LBL_Offline_Tooltip());
+                }
+                label.setVisible(loggedIn);
+            }
+        });
     }
 
     private static boolean isLoggedIn () {
