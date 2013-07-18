@@ -179,7 +179,7 @@ public class LoadGenProfilingPointFactory extends CodeProfilingPointFactory {
     }
 
     protected String getServerHandlerClassName() {
-        return "org.netbeans.lib.profiler.global.ProfilingPointServerHandler"; // NOI18N
+        return "org.netbeans.lib.profiler.server.ProfilingPointServerHandler"; // NOI18N
     }
 
     protected ValidityAwarePanel createCustomizer() {
