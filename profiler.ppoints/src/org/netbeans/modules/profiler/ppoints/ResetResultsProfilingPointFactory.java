@@ -135,8 +135,8 @@ public class ResetResultsProfilingPointFactory extends CodeProfilingPointFactory
     }
 
     protected String getServerHandlerClassName() {
-        return "org.netbeans.lib.profiler.server.ResetResultsProfilingPointHandler";
-    } // NOI18N
+        return "org.netbeans.lib.profiler.server.ResetResultsProfilingPointHandler"; // NOI18N
+    }
 
     protected ResetResultsCustomizer createCustomizer() {
         return new ResetResultsCustomizer(getType(), getIcon());
