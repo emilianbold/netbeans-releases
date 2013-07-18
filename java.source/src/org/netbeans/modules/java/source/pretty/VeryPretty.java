@@ -1434,7 +1434,12 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     @Override
     public void visitUnary(JCUnary tree) {
 	int ownprec = TreeInfo.opPrec(tree.getTag());
-	Name opname = treeinfo.operatorName(tree.getTag());
+	Name opname;
+        switch (tree.getTag()) {
+            case POS: opname = names.fromString("+"); break;
+            case NEG: opname = names.fromString("-"); break;
+            default: opname = treeinfo.operatorName(tree.getTag()); break;
+        }
 	if (tree.getTag().ordinal() <= JCTree.Tag.PREDEC.ordinal()) { //XXX: comparing ordinals!
             if (cs.spaceAroundUnaryOps()) {
                 needSpace();
