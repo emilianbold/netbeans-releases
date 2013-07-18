@@ -89,6 +89,7 @@ import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettingConstants;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
@@ -786,15 +787,7 @@ public final class EarProject implements Project, AntProjectListener {
 
         @Override
         public void setProfile(Profile profile) {
-            try {
-                UpdateHelper helper = project.getUpdateHelper();
-                EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                projectProperties.setProperty(EarProjectProperties.J2EE_PLATFORM, profile.toPropertiesString());
-                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-                ProjectManager.getDefault().saveProject(project);
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Project properties couldn't be saved.", ex);
-            }
+            setInSharedProperties(JavaEEProjectSettingConstants.J2EE_PLATFORM, profile.toPropertiesString());
         }
 
         @Override
@@ -804,12 +797,42 @@ public final class EarProject implements Project, AntProjectListener {
 
         @Override
         public void setBrowserID(String browserID) {
-            // No-one is using it yet, implementation should be almost identical as setProfile(..)
+            setInPrivateProperties(JavaEEProjectSettingConstants.SELECTED_BROWSER, browserID);
         }
 
         @Override
         public String getBrowserID() {
-            return evaluator().getProperty(EarProjectProperties.SELECTED_BROWSER);
+            return evaluator().getProperty(JavaEEProjectSettingConstants.SELECTED_BROWSER);
+        }
+
+        @Override
+        public void setServerInstanceID(String serverInstanceID) {
+            setInPrivateProperties(JavaEEProjectSettingConstants.J2EE_SERVER_INSTANCE, serverInstanceID);
+        }
+
+        @Override
+        public String getServerInstanceID() {
+            return evaluator().getProperty(JavaEEProjectSettingConstants.J2EE_SERVER_INSTANCE);
+        }
+
+        private void setInSharedProperties(String key, String value) {
+            setInProperties(key, value, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        }
+
+        private void setInPrivateProperties(String key, String value) {
+            setInProperties(key, value, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        }
+
+        private void setInProperties(String key, String value, String propertiesPath) {
+            try {
+                UpdateHelper helper = project.getUpdateHelper();
+                EditableProperties projectProperties = helper.getProperties(propertiesPath);
+                projectProperties.setProperty(key, value);
+                helper.putProperties(propertiesPath, projectProperties);
+                ProjectManager.getDefault().saveProject(project);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Project properties couldn't be saved.", ex);
+            }
         }
     }
 }
