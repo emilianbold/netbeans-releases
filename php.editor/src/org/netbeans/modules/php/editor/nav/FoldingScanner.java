@@ -325,7 +325,7 @@ public final class FoldingScanner {
         }
 
         private void addFold(final OffsetRange offsetRange) {
-            if (offsetRange.getLength() > 1) {
+            if (offsetRange != null && offsetRange.getLength() > 1) {
                 getRanges(folds, TYPE_CODE_BLOCKS).add(offsetRange);
             }
         }
