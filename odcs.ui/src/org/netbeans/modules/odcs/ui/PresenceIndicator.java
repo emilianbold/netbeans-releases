@@ -74,8 +74,8 @@ public class PresenceIndicator {
     private static final String ICON_LOGGED_IN = "org/netbeans/modules/odcs/ui/resources/odcs.png"; //NOI18N
     private static PresenceIndicator instance;
 
-    private JLabel label;
-    private MouseL helper;
+    private final JLabel label;
+    private final MouseL helper;
 
     @Messages({"LBL_LoggedIn=Logged in Team Server",
         "LBL_Offline_Tooltip=Not Logged in Team Server"})
