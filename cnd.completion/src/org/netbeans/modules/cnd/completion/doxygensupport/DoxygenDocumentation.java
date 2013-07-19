@@ -279,42 +279,6 @@ public class DoxygenDocumentation {
         TokenHierarchy<?> h = TokenHierarchy.create(containingFile.getText(), CppTokenId.languageHeader());
         TokenSequence<CppTokenId> ts = h.tokenSequence(CppTokenId.languageHeader());
 
-        // check right after declaration on the same line
-        TokenSequence<CppTokenId> ts2 = ts;
-        ts2.move(csmOffsetable.getEndOffset());
-        while (ts2.moveNext()) {
-            switch (ts2.token().id()) {
-                case NEW_LINE:
-                    break;
-                case LINE_COMMENT:
-                case BLOCK_COMMENT:
-                case DOXYGEN_COMMENT:
-                case DOXYGEN_LINE_COMMENT:
-                    list.add(new DocCandidate(ts2.token().text().toString(), ts2.token().id()));
-                    break;
-                case PREPROCESSOR_DIRECTIVE:
-                    ts2 = ts2.embedded(CppTokenId.languagePreproc());      
-                    
-                    if (csmOffsetable instanceof CsmMacro) {
-                        ts2.move(csmOffsetable.getEndOffset());
-                        ts2.movePrevious();
-                        ts2.movePrevious();
-                    } else {
-                        ts2.move(csmOffsetable.getStartOffset());
-                        ts2.moveNext();
-                        switch (ts2.token().id()) {
-                            case BLOCK_COMMENT:
-                            case DOXYGEN_COMMENT:
-                                list.add(new DocCandidate(ts2.token().text().toString(), ts2.token().id()));
-                                break;
-                        }                        
-                    }
-                default:
-                    continue;
-            }
-            break;
-        }
-        
         // check the line before the declaration
         ts.move(csmOffsetable.getStartOffset());
         boolean newLineOccured = false;
@@ -416,6 +380,43 @@ public class DoxygenDocumentation {
             }
             break;
         }
+        
+        // check right after declaration on the same line
+        TokenSequence<CppTokenId> ts2 = ts;
+        ts2.move(csmOffsetable.getEndOffset());
+        while (ts2.moveNext()) {
+            switch (ts2.token().id()) {
+                case NEW_LINE:
+                    break;
+                case LINE_COMMENT:
+                case BLOCK_COMMENT:
+                case DOXYGEN_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
+                    list.add(new DocCandidate(ts2.token().text().toString(), ts2.token().id()));
+                    break;
+                case PREPROCESSOR_DIRECTIVE:
+                    ts2 = ts2.embedded(CppTokenId.languagePreproc());      
+                    
+                    if (csmOffsetable instanceof CsmMacro) {
+                        ts2.move(csmOffsetable.getEndOffset());
+                        ts2.movePrevious();
+                        ts2.movePrevious();
+                    } else {
+                        ts2.move(csmOffsetable.getStartOffset());
+                        ts2.moveNext();
+                        switch (ts2.token().id()) {
+                            case BLOCK_COMMENT:
+                            case DOXYGEN_COMMENT:
+                                list.add(new DocCandidate(ts2.token().text().toString(), ts2.token().id()));
+                                break;
+                        }                        
+                    }
+                default:
+                    continue;
+            }
+            break;
+        }
+        
         if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
             // K&K does not supported by model
             //CsmFunctionDefinition def = (CsmFunctionDefinition) csmObject;
