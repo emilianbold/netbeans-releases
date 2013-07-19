@@ -828,9 +828,15 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
             Library library = libraryProvider.getJaxRsLibrary();
             if ( library!= null ){
                 try {
+                    String classPathType;
+                    if (hasJee6Profile()) {
+                        classPathType = JavaClassPathConstants.COMPILE_ONLY;
+                    } else {
+                        classPathType = ClassPath.COMPILE;
+                    }
                     return ProjectClassPathModifier.addLibraries(
                             new Library[] { library }, getSourceRoot(project), 
-                            ClassPath.COMPILE);
+                            classPathType);
                 }
                 catch (UnsupportedOperationException ex) {
                     return false;

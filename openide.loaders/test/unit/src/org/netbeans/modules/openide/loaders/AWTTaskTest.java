@@ -101,6 +101,25 @@ public class AWTTaskTest extends NbTestCase {
         assertEquals("Executed once", 1, run.run);
     }
     
+    public void testWaitForItself() {
+        class R implements Runnable {
+            int cnt;
+            Task waitFor;
+
+            @Override
+            public void run() {
+                cnt++;
+                waitFor.waitFinished();
+            }
+        }
+        
+        R r = new R();
+        r.waitFor = new AWTTask(r, null);
+        r.waitFor.waitFinished();
+        
+        assertEquals("Executed once", 1, r.cnt);
+    }
+    
     public void testInvokedOnce() {
         assertInvokedOnce(false);
     }

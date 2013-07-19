@@ -644,8 +644,6 @@ public class CSSStylesSelectionPanel extends JPanel {
         MatchedStyles matchedStyles = css.getMatchedStyles(node, pseudoClasses, true, true);
         Map<String,PropertyInfo> propertyInfos = css.getSupportedCSSProperties();
         if (matchedStyles != null) {
-            final Node[] selectedRules = rulePaneManager.getSelectedNodes();
-            final Node[] selectedProperties = propertyPaneManager.getSelectedNodes();
             Project project = pageModel.getProject();
             final Node rulePaneRoot = new MatchedRulesNode(project, selectedNode, matchedStyles);
             final Node propertyPaneRoot = new MatchedPropertiesNode(project, matchedStyles, propertyInfos);
@@ -653,6 +651,8 @@ public class CSSStylesSelectionPanel extends JPanel {
             EventQueue.invokeLater(new Runnable() {
                 @Override
                 public void run() {
+                    Node[] selectedRules = rulePaneManager.getSelectedNodes();
+                    Node[] selectedProperties = propertyPaneManager.getSelectedNodes();
                     rulePaneManager.setRootContext(rulePaneRoot);
                     propertyPaneManager.setRootContext(propertyPaneRoot);
                     if (keepSelection) {

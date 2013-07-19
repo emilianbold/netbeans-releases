@@ -102,8 +102,9 @@ public final class AWTTask extends org.openide.util.Task {
     @Override
     public void waitFinished () {
         if (EventQueue.isDispatchThread ()) {
-            PENDING.remove(this);
-            run ();
+            if (PENDING.remove(this)) {
+                run ();
+            }
         } else {
             WAKE_UP.wakeUp();
             super.waitFinished ();

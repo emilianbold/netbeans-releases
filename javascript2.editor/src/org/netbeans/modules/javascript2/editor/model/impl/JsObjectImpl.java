@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.*;
+import jdk.nashorn.internal.objects.PrototypeObject;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -154,7 +155,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     
     private boolean hasOnlyVirtualProperties() {
         for(JsObject property: getProperties().values()) {
-            if (property.isDeclared()) {
+            if (property.isDeclared() || ModelUtils.PROTOTYPE.equals(property.getName())) {
                 return false;
             }
         }

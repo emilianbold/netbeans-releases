@@ -888,6 +888,27 @@ class R extends Object implements Runnable {
         x.assertCnt ("Wait does not wait for finish of scheduled tasks, that already has been posted", 1);
     }
     
+    public void testWaitFinishedFromItself() {
+        class R implements Runnable {
+
+            int cnt;
+            RequestProcessor.Task waitFor;
+
+            @Override
+            public void run() {
+                cnt++;
+                waitFor.waitFinished();
+            }
+        }
+
+        R r = new R();
+        r.waitFor = RequestProcessor.getDefault().create(r);
+        r.waitFor.schedule(0);
+        r.waitFor.waitFinished();
+
+        assertEquals("Executed once", 1, r.cnt);
+    }
+    
     /** Ensure that it is safe to call schedule() while the task is running
      * (should finish the task and run it again).
      */
