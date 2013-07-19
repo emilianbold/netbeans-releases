@@ -50,8 +50,7 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.parser.JsParserError;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 
 /**
@@ -59,7 +58,7 @@ import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
  * @author Petr Pisl
  */
 public class JsHintsProvider implements HintsProvider {
-    
+
     private volatile boolean cancel = false;
 
     @org.netbeans.api.annotations.common.SuppressWarnings("BC_UNCONFIRMED_CAST")
@@ -111,7 +110,7 @@ public class JsHintsProvider implements HintsProvider {
     @Override
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
         Map<?, List<? extends Rule.AstRule>> allSuggestions = manager.getHints(true, context);
-        
+
         List<? extends Rule.AstRule> otherHints = allSuggestions.get(WeirdAssignment.JS_OTHER_HINTS);
         if (otherHints != null && !cancel) {
             for (Rule.AstRule astRule : otherHints) {
@@ -127,10 +126,10 @@ public class JsHintsProvider implements HintsProvider {
         try {
             rule.computeHints((JsRuleContext)context, suggestions, caretOffset, manager);
         } catch (BadLocationException ble) {
-            
+
         }
     }
-    
+
     @Override
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
 
@@ -139,18 +138,16 @@ public class JsHintsProvider implements HintsProvider {
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
         JsParserResult parserResult = (JsParserResult) context.parserResult;
-        if (parserResult != null) {
-            List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
-            // if in embedded
-            if (parserResult.isEmbedded()) {
-                    for (Error error : errors) {
-                        if (!(error instanceof Error.Badging) || ((Error.Badging) error).showExplorerBadge()) {
-                            unhandled.add(error);
-                        }
-                    }
-            } else {
-                unhandled.addAll(errors);
+        List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
+        // if in embedded
+        if (parserResult.isEmbedded()) {
+            for (Error error : errors) {
+                if (!(error instanceof JsParserError) || ((JsParserError) error).showInEditor()) {
+                    unhandled.add(error);
+                }
             }
+        } else {
+            unhandled.addAll(errors);
         }
     }
 
@@ -179,6 +176,6 @@ public class JsHintsProvider implements HintsProvider {
             }
             return jsParserResult;
         }
-        
+
     }
 }
