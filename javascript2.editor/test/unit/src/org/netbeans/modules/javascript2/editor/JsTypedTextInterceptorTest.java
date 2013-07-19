@@ -262,21 +262,21 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("x = 10 ^", '/', "x = 10 /^");
     }
 
-    public void testRegexpToComment1() throws Exception {
-        insertChar("/^/", '*', "/*^");
-    }
-
-    public void testRegexpToComment2() throws Exception {
-        insertChar("/^/\n", '*', "/*^\n");
-    }
-
-    public void testRegexpToComment3() throws Exception {
-        insertChar("x = /^/", '*', "x = /*^");
-    }
-
-    public void testRegexpToComment4() throws Exception {
-        insertChar("x = /^/\n", '*', "x = /*^\n");
-    }
+//    public void testRegexpToComment1() throws Exception {
+//        insertChar("/^/", '*', "/*^");
+//    }
+//
+//    public void testRegexpToComment2() throws Exception {
+//        insertChar("/^/\n", '*', "/*^\n");
+//    }
+//
+//    public void testRegexpToComment3() throws Exception {
+//        insertChar("x = /^/", '*', "x = /*^");
+//    }
+//
+//    public void testRegexpToComment4() throws Exception {
+//        insertChar("x = /^/\n", '*', "x = /*^\n");
+//    }
 
     public void testNotRegexp2() throws Exception {
         insertChar("x = 3.14 ^", '/', "x = 3.14 /^");
@@ -324,6 +324,10 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
 
     public void testReplaceSelectionNotInTemplateMode1() throws Exception {
         insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
+    }
+
+    public void testIssue233067() throws Exception {
+        insertChar("window.console.log(\"^\")", 'a', "window.console.log(\"a^\")", null, true);
     }
 
     public void testIssue189443() throws Exception {
