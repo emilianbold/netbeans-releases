@@ -99,6 +99,10 @@ public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplemen
     }
 
     @Override
+    public void close() {
+    }
+
+    @Override
     public boolean isHighlightSelectionEnabled() {
         return true;
     }

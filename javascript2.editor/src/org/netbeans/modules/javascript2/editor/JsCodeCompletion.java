@@ -67,6 +67,9 @@ import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import static org.netbeans.modules.javascript2.editor.spi.CompletionContext.EXPRESSION;
+import static org.netbeans.modules.javascript2.editor.spi.CompletionContext.OBJECT_MEMBERS;
+import static org.netbeans.modules.javascript2.editor.spi.CompletionContext.OBJECT_PROPERTY;
 import org.netbeans.modules.javascript2.editor.spi.CompletionProvider;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
@@ -123,30 +126,35 @@ class JsCodeCompletion implements CodeCompletionHandler {
             request.prefix = pref;
             
         final List<CompletionProposal> resultList = new ArrayList<CompletionProposal>();
+        HashMap<String, List<JsElement>> added = new HashMap<String, List<JsElement>>();
         if (ccContext.getQueryType() == QueryType.ALL_COMPLETION) {
             switch (context) {
                 case GLOBAL:
                     Collection<IndexedElement> fromIndex = JsIndex.get(fileObject).getGlobalVar(request.prefix);
-                    HashMap<String, List<JsElement>> addedGlobal = new HashMap<String, List<JsElement>>();
                     for (IndexedElement indexElement : fromIndex) {
-                        addPropertyToMap(request, addedGlobal, indexElement);
-                    }
-                    addedGlobal.putAll(getWithCompletionResults(request, null));
-                    JsCompletionItem.Factory.create(addedGlobal, request, resultList);
-                    break;    
-                case EXPRESSION:    
-                case OBJECT_MEMBERS:    
-                case OBJECT_PROPERTY:
-                    Collection<? extends IndexResult> indexResults = JsIndex.get(fileObject).query(JsIndex.FIELD_BASE_NAME, request.prefix, QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
-                    HashMap<String, List<JsElement>> added = new HashMap<String, List<JsElement>>();
-                    for (IndexResult indexResult : indexResults) {
-                        IndexedElement indexElement = IndexedElement.create(indexResult);
                         addPropertyToMap(request, added, indexElement);
                     }
-                    JsCompletionItem.Factory.create(added, request, resultList);
+                    added.putAll(getWithCompletionResults(request, null));
+                    break;    
+                case EXPRESSION:
+                    completeKeywords(request, resultList);
+                    completeExpression(request, added);
+                    break;
+                case OBJECT_PROPERTY:
+                    completeObjectProperty(request, added);
+                    break;
+                case OBJECT_MEMBERS:
+                    completeObjectMember(request, added);
                     break;
                 default:
                     break;
+            }
+            if (context == CompletionContext.EXPRESSION || context == CompletionContext.OBJECT_MEMBERS || context == CompletionContext.OBJECT_PROPERTY) {
+                Collection<? extends IndexResult> indexResults = JsIndex.get(fileObject).query(JsIndex.FIELD_BASE_NAME, request.prefix, QuerySupport.Kind.PREFIX, JsIndex.TERMS_BASIC_INFO);
+                for (IndexResult indexResult : indexResults) {
+                    IndexedElement indexElement = IndexedElement.create(indexResult);
+                    addPropertyToMap(request, added, indexElement);
+                }
             }
         } else {
             switch (context) {
@@ -188,13 +196,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     break;
                 case EXPRESSION:
                     completeKeywords(request, resultList);
-                    completeExpression(request, resultList);
+                    completeExpression(request, added);
                     break;
                 case OBJECT_PROPERTY:
-                    completeObjectProperty(request, resultList);
+                    completeObjectProperty(request, added);
                     break;
                 case OBJECT_MEMBERS:
-                    completeObjectMember(request, resultList);
+                    completeObjectMember(request, added);
                     break;
                 case DOCUMENTATION:
                     JsDocumentationCodeCompletion.complete(request, resultList);
@@ -203,6 +211,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     break;
             }
         }
+        JsCompletionItem.Factory.create(added, request, resultList);
         
         long end = System.currentTimeMillis();
         LOGGER.log(Level.FINE, "Counting JS CC took {0}ms ",  (end - start));
@@ -418,22 +427,21 @@ class JsCodeCompletion implements CodeCompletionHandler {
         return ParameterInfo.NONE;
     }
 
-    private void completeExpression(CompletionRequest request, List<CompletionProposal> resultList) {
-        HashMap <String, List<JsElement>> addedProperties = new HashMap<String, List<JsElement>>();
+    private void completeExpression(CompletionRequest request, HashMap <String, List<JsElement>> addedItems) {
         
         FileObject fo = request.info.getSnapshot().getSource().getFileObject();
-        addedProperties.putAll(getDomCompletionResults(request));
+        addedItems.putAll(getDomCompletionResults(request));
         // from index
         JsIndex index = JsIndex.get(fo);
         Collection<IndexedElement> fromIndex = index.getGlobalVar(request.prefix);
         for (IndexedElement indexedElement : fromIndex) {
-            addPropertyToMap(request, addedProperties, indexedElement);
+            addPropertyToMap(request, addedItems, indexedElement);
         }
         
         // from libraries
         for (JsObject libGlobal : ModelExtender.getDefault().getExtendingGlobalObjects()) {
             for (JsObject object : libGlobal.getProperties().values()) {
-                addPropertyToMap(request, addedProperties, object);
+                addPropertyToMap(request, addedItems, object);
             }
         }
         
@@ -441,26 +449,23 @@ class JsCodeCompletion implements CodeCompletionHandler {
         //int offset = request.info.getSnapshot().getEmbeddedOffset(request.anchor);
         for(JsObject object : request.result.getModel().getVariables(request.anchor)) {
             if (!(object instanceof JsFunction && ((JsFunction) object).isAnonymous())) {
-                addPropertyToMap(request, addedProperties, object);
+                addPropertyToMap(request, addedItems, object);
             }
         }
 
-        addedProperties.putAll(getWithCompletionResults(request, null));
-        JsCompletionItem.Factory.create(addedProperties, request, resultList);
+        addedItems.putAll(getWithCompletionResults(request, null));
     }
 
     private int checkRecursion;
 
-    private void completeObjectProperty(CompletionRequest request, List<CompletionProposal> resultList) {
+    private void completeObjectProperty(CompletionRequest request, Map<String, List<JsElement>> addedItems) {
         List<String> expChain = resolveExpressionChain(request, request.anchor, false);
         Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
         Map<String, List<JsElement>> toAddWith = getWithCompletionResults(request, expChain);
+        addedItems.putAll(toAdd);
         if (!toAddWith.isEmpty()) {
-            toAdd = new HashMap<String, List<JsElement>>(toAdd);
-            toAdd.putAll(toAddWith);
+            addedItems.putAll(toAddWith);
         }
-        // create code completion results
-        JsCompletionItem.Factory.create(toAdd, request, resultList);
     }
 
     private Map<String, List<JsElement>> getWithCompletionResults(CompletionRequest request, @NullAllowed List<String> expChain) {
@@ -766,22 +771,19 @@ class JsCodeCompletion implements CodeCompletionHandler {
         return Collections.<String>emptyList();
     }
 
-    private void completeObjectMember(CompletionRequest request, List<CompletionProposal> resultList) {
+    private void completeObjectMember(CompletionRequest request, Map<String, List<JsElement>> addedItems) {
         JsParserResult result = (JsParserResult)request.info;
         JsObject jsObject = (JsObject)ModelUtils.getDeclarationScope(result.getModel(), request.anchor);
-        Map<String, List<JsElement>> properties = new HashMap<String, List<JsElement>>();
         
         if (jsObject.getJSKind() == JsElement.Kind.METHOD) {
             jsObject = jsObject.getParent();
         }
         
-        completeObjectMembers(jsObject, request, properties);
+        completeObjectMembers(jsObject, request, addedItems);
         
         if (ModelUtils.PROTOTYPE.equals(jsObject.getName())) {  //NOI18N
-            completeObjectMembers(jsObject.getParent(), request, properties);
+            completeObjectMembers(jsObject.getParent(), request, addedItems);
         }
-        
-        JsCompletionItem.Factory.create(properties, request, resultList);
     }
     
     private void completeObjectMembers(JsObject jsObject, CompletionRequest request, Map<String, List<JsElement>> properties) {

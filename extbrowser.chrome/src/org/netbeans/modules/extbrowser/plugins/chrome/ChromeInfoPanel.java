@@ -45,9 +45,13 @@ import java.io.File;
 import java.net.MalformedURLException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JEditorPane;
+import javax.swing.JLabel;
+import javax.swing.UIManager;
 
 import org.netbeans.modules.extbrowser.plugins.ExtensionManager.ExtensitionStatus;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -74,17 +78,20 @@ class ChromeInfoPanel extends javax.swing.JPanel {
         }
         String path = "";
         try {
-            path = parent.toURI().toURL().toExternalForm();
+            path = Utilities.toURI(parent).toURL().toExternalForm();
         }
         catch( MalformedURLException e ){
             LOGGER.log(Level.WARNING, null, e);
         }
         text.append(NbBundle.getMessage(ChromeInfoPanel.class,
                 "TXT_PluginIstallationIssue" ,                          // NOI18N
-                path, name ));      
+                path, name, Integer.toHexString(UIManager.getDefaults().getColor("nb.errorForeground").getRGB() & 0xffffff))); // NOI18N
         text.append("</html>");         // NOI18N
         myEditorPane.setText(text.toString());
         myEditorPane.setCaretPosition(0);
+        // tweak ui (text readability in dark theme + proper font)
+        myEditorPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        myEditorPane.setFont(new JLabel().getFont());
         
         myEditorPane.addHyperlinkListener(new LinkListener());
     }
