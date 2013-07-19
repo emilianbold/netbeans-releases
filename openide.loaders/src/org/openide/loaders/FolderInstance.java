@@ -776,6 +776,9 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
     */
     private final HoldInstance[] defaultProcessObjects (Collection<DataObject> arr) {
         err.fine("defaultProcessObjects");
+        if (err.isLoggable(Level.FINEST)) {
+            err.finest("  objects to process:" + Arrays.toString(arr.toArray())); //NOI18N
+        }
         HashSet<FileObject> toRemove;
         ArrayList<HoldInstance> cookies = new ArrayList<HoldInstance> ();
 
