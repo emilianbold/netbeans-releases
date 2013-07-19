@@ -51,13 +51,15 @@ package org.netbeans.modules.bugzilla.repository;
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import javax.swing.SwingUtilities;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 
 /**
  *
  * @author Tomas Stupka, Jan Stola
  */
 public class RepositoryPanel extends javax.swing.JPanel implements ActionListener {
-    private BugzillaRepositoryController controller;
+    private final BugzillaRepositoryController controller;
 
     /** Creates new form RepositoryPanel */
     public RepositoryPanel(BugzillaRepositoryController controller) {
@@ -286,20 +288,26 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
     final javax.swing.JLabel validateLabel = new javax.swing.JLabel();
     // End of variables declaration//GEN-END:variables
 
-    void enableFields(boolean bl) {
-        psswdLabel.setEnabled(bl);
-        psswdField.setEnabled(bl);
-        userField.setEnabled(bl);
-        userLabel.setEnabled(bl);
-        nameField.setEnabled(bl);
-        nameLabel.setEnabled(bl);
-        urlField.setEnabled(bl);
-        urlLabel.setEnabled(bl);
-        httpCheckBox.setEnabled(bl);
-        cbEnableLocalUsers.setEnabled(bl);
-        enableHttpFields();
+    void enableFields(final boolean bl) {
+        BugzillaUtil.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                psswdLabel.setEnabled(bl);
+                psswdField.setEnabled(bl);
+                userField.setEnabled(bl);
+                userLabel.setEnabled(bl);
+                nameField.setEnabled(bl);
+                nameLabel.setEnabled(bl);
+                urlField.setEnabled(bl);
+                urlLabel.setEnabled(bl);
+                httpCheckBox.setEnabled(bl);
+                cbEnableLocalUsers.setEnabled(bl);
+                enableHttpFields();
+            }
+        });
     }
 
+    @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource() == httpCheckBox) {
             enableHttpFields();
@@ -309,5 +317,14 @@ public class RepositoryPanel extends javax.swing.JPanel implements ActionListene
     private void enableHttpFields() {
         httpUserField.setEnabled(httpCheckBox.isSelected());
         httpPsswdField.setEnabled(httpCheckBox.isSelected());
+    }
+
+    void setValidateEnabled(final boolean b) {
+        BugzillaUtil.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                validateButton.setEnabled(b);
+            }
+        });
     }
 }
