@@ -88,6 +88,7 @@ public class SortColumnHeaderRenderer implements TableCellRenderer, UIResource {
             } else {
                 label.setIcon ( null);
             }
+            label.setToolTipText(label.getText());
         }
         return text;
     }
@@ -134,4 +135,5 @@ public class SortColumnHeaderRenderer implements TableCellRenderer, UIResource {
     private static Preferences getPreferences() {
         return NbPreferences.forModule(SortColumnHeaderRenderer.class);
     }    
+
 }
