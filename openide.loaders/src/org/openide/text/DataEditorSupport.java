@@ -45,6 +45,7 @@
 package org.openide.text;
 
 
+import java.awt.EventQueue;
 import org.netbeans.modules.openide.loaders.SimpleES;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -73,6 +74,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -80,6 +82,7 @@ import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.openide.loaders.DataObjectAccessor;
 import org.netbeans.modules.openide.loaders.UIException;
@@ -939,6 +942,43 @@ public class DataEditorSupport extends CloneableEditorSupport {
         */
         @Override
         public void markModified() throws java.io.IOException {
+            if (EventQueue.isDispatchThread()) {
+                class Mark implements Runnable {
+                    final AtomicBoolean cancel = new AtomicBoolean();
+                    IOException error;
+                    
+                    Mark(FileObject fo) {
+                        error = new IOException("Operation cancelled");
+                        Exceptions.attachLocalizedMessage(error, 
+                            NbBundle.getMessage(DataObject.class, "MSG_MarkModifiedCancel", fo.getPath())
+                        );
+                    }
+                    
+                    @Override
+                    public void run() {
+                        try {
+                            markModifiedImpl(cancel);
+                            error = null;
+                        } catch (IOException ex) {
+                            error = ex;
+                        }
+                    }
+                }
+                Mark m = new Mark(fileObject);
+                ProgressUtils.runOffEventDispatchThread(m, 
+                    NbBundle.getMessage(DataObject.class, "MSG_MarkModified", fileObject.getPath()),
+                    m.cancel, false, 1000, 3000
+                );
+                IOException err = m.error;
+                if (err != null) {
+                    throw err;
+                }
+            } else {
+                markModifiedImpl(null);
+            }
+        }
+        
+        private void markModifiedImpl(AtomicBoolean cancel) throws IOException {
             // XXX This shouldn't be here. But it is due to the 'contract',
             // see javadoc to this method.
             if (fileLock == null || !fileLock.isValid()) {
@@ -953,8 +993,9 @@ public class DataEditorSupport extends CloneableEditorSupport {
                 throw new IOException("File " // NOI18N
                     + getFileImpl().getNameExt() + " is read-only!"); // NOI18N
             }
-
-            this.getDataObject ().setModified (true);
+            if (cancel == null || !cancel.get()) {
+                this.getDataObject ().setModified (true);
+            }
         }
         
         /** Reverse method that can be called to make the environment 
