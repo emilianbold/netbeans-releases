@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.autoupdate.ui;
 
-import com.sun.istack.internal.logging.Logger;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationSupport;
 import org.netbeans.modules.autoupdate.ui.wizards.UninstallUnitWizard;
@@ -72,6 +71,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
