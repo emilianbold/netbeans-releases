@@ -44,15 +44,10 @@ package org.netbeans.modules.php.editor.js;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-//import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-//import org.netbeans.modules.php.smarty.editor.TplKit;
-//import org.netbeans.modules.php.smarty.editor.indent.TplIndentTaskFactory;
-//import org.netbeans.modules.php.smarty.editor.lexer.TplTokenId;
 
 public class JsFormatterEmbeddedTest extends PHPCodeCompletionTestBase {
 
@@ -82,27 +77,31 @@ public class JsFormatterEmbeddedTest extends PHPCodeCompletionTestBase {
         }
     }
 
-    public void testEmbeddedSimple1() throws Exception {
-        reformatFileContents("testfiles/js/embeddedSimple1.php", new IndentPrefs(4,4));
+    public void testPlaceHolder() {
+
     }
 
-    public void testEmbeddedSimple2() throws Exception {
-        reformatFileContents("testfiles/js/embeddedSimple2.php", new IndentPrefs(4,4));
-    }
-
-    public void testEmbeddedSimple3() throws Exception {
-        reformatFileContents("testfiles/js/embeddedSimple3.php", new IndentPrefs(4,4));
-    }
-
-    public void testEmbeddedSimple4() throws Exception {
-        reformatFileContents("testfiles/js/embeddedSimple4.php", new IndentPrefs(4,4));
-    }
-
-    public void testEmbeddedSimple5() throws Exception {
-        reformatFileContents("testfiles/js/embeddedSimple5.php", new IndentPrefs(4,4));
-    }
-
-    public void testEmbeddedMultipleSections1() throws Exception {
-        reformatFileContents("testfiles/js/embeddedMultipleSections1.php", new IndentPrefs(4,4));
-    }
+//    public void testEmbeddedSimple1() throws Exception {
+//        reformatFileContents("testfiles/js/embeddedSimple1.php", new IndentPrefs(4,4));
+//    }
+//
+//    public void testEmbeddedSimple2() throws Exception {
+//        reformatFileContents("testfiles/js/embeddedSimple2.php", new IndentPrefs(4,4));
+//    }
+//
+//    public void testEmbeddedSimple3() throws Exception {
+//        reformatFileContents("testfiles/js/embeddedSimple3.php", new IndentPrefs(4,4));
+//    }
+//
+//    public void testEmbeddedSimple4() throws Exception {
+//        reformatFileContents("testfiles/js/embeddedSimple4.php", new IndentPrefs(4,4));
+//    }
+//
+//    public void testEmbeddedSimple5() throws Exception {
+//        reformatFileContents("testfiles/js/embeddedSimple5.php", new IndentPrefs(4,4));
+//    }
+//
+//    public void testEmbeddedMultipleSections1() throws Exception {
+//        reformatFileContents("testfiles/js/embeddedMultipleSections1.php", new IndentPrefs(4,4));
+//    }
 }
