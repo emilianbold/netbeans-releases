@@ -234,7 +234,7 @@ public final class DefaultLibraryImplementation implements LibraryImplementation
     public void setProperties(@NonNull final Map<String,String> props) {
         Parameters.notNull("props", props); //NOI18N
         final Map<String,String> oldProps = properties;
-        properties = props;
+        properties = new HashMap<String, String>(props);
         firePropertyChange (PROP_PROPERTIES, oldProps, properties);
     }
 }

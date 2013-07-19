@@ -129,13 +129,15 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
                             }
                             volumes.put(currentVolume,content);
                         }
+                        final Map<String,String> props = lib.getProperties();
                         lm.removeLibrary(lib);
                         lm.createURILibrary(
                             J2SELibraryTypeProvider.LIBRARY_TYPE,
                             name,
                             displayName,
                             desc,
-                            volumes);
+                            volumes,
+                            props);
                         success = true;
                     }
                 } catch (IOException ioe) {
