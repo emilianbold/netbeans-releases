@@ -333,7 +333,7 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
 
             Task t = creationTask;
             if (isLog) {
-                err.fine("creationTask: " + creationTask); // NOI18N
+                err.fine("creationTask: " + t); // NOI18N
             }
             if (t != null) {
                 if (EventQueue.isDispatchThread()) {
