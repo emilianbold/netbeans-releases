@@ -77,8 +77,8 @@ public class DarkNimbusTheme {
         UIManager.put( "nimbusSelectionBackground", new Color( 104, 93, 156) );
         UIManager.put( "text", new Color( 230, 230, 230) );
 //        UIManager.put( "nb.imageicon.filter", new DarkIconFilter() );
-        UIManager.put( "nb.errorForeground", new Color(220,0,0) ); //NOI18N
-        UIManager.put( "nb.warningForeground", new Color(255,255,255) ); //NOI18N
+        UIManager.put( "nb.errorForeground", new Color(127,0,0) ); //NOI18N
+        UIManager.put( "nb.warningForeground", new Color(255,216,0) ); //NOI18N
 
         UIManager.put( "nb.heapview.border1", new Color( 128, 128, 128) ); //NOI18N
         UIManager.put( "nb.heapview.border2", new Color( 128, 128, 128).darker() ); //NOI18N
@@ -199,5 +199,10 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.bigclose.tab.icon.enabled.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
         UIManager.put( "nb.bigclose.tab.icon.pressed.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
         UIManager.put( "nb.bigclose.tab.icon.rollover.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
+
+        //#232854 - menu item accelerators are too dark
+        UIManager.put( "MenuItem.acceleratorForeground", new Color(198,198,198) );
+        UIManager.put( "CheckBoxMenuItem.acceleratorForeground", new Color(198,198,198) );
+        UIManager.put( "RadioButtonMenuItem.acceleratorForeground", new Color(198,198,198) );
    }
 }
