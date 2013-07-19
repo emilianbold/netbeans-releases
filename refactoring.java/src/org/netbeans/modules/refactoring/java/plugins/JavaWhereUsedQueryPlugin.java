@@ -113,6 +113,15 @@ public class JavaWhereUsedQueryPlugin extends JavaRefactoringPlugin implements F
         if (handle.getKind() == Tree.Kind.ARRAY_TYPE) {
             return new Problem(true, NbBundle.getMessage(FindVisitor.class, "ERR_FindUsagesArrayType"));
         }
+        return super.preCheck();
+    }
+
+    @Override
+    protected Problem preCheck(CompilationController javac) throws IOException {
+        TreePathHandle handle = refactoring.getRefactoringSource().lookup(TreePathHandle.class);
+        if (handle.resolveElement(javac) == null) {
+            return new Problem(true, NbBundle.getMessage(FindVisitor.class, "DSC_ElNotAvail")); // NOI18N
+        }
         return null;
     }
     
