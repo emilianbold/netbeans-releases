@@ -282,6 +282,7 @@
                 <package>org.netbeans.modules.nativeexecution.api.pty</package>
                 <package>org.netbeans.modules.nativeexecution.api.util</package>
                 <package>org.netbeans.modules.nativeexecution.spi</package>
+                <package>org.netbeans.modules.nativeexecution.spi.support</package>
                 <package>org.netbeans.modules.nativeexecution.support.ui.api</package>
             </friend-packages>
         </data>
