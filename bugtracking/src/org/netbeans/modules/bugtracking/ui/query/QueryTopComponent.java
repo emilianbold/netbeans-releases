@@ -371,7 +371,7 @@ public final class QueryTopComponent extends TopComponent
                 // well, looks like there should be only one repository available
                 return;
             }
-            SwingUtilities.invokeLater(new Runnable() {
+            runInAWT(new Runnable() {
                 @Override
                 public void run() {
                     if(rs != null) {
@@ -398,7 +398,7 @@ public final class QueryTopComponent extends TopComponent
         if(c instanceof JComponent) {
             Point p = SwingUtilities.convertPoint(c.getParent(), c.getLocation(), repoPanel);
             final Rectangle r = new Rectangle(p, c.getSize());
-            SwingUtilities.invokeLater(new Runnable() {
+            runInAWT(new Runnable() {
                 @Override
                 public void run() {
                     repoPanel.scrollRectToVisible(r);
@@ -413,7 +413,7 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private void closeInAwt() {
-        SwingUtilities.invokeLater(new Runnable() {
+        runInAWT(new Runnable() {
             @Override
             public void run() {
                 close();
@@ -493,7 +493,7 @@ public final class QueryTopComponent extends TopComponent
                     query.addPropertyChangeListener(QueryTopComponent.this);
 
                     final QueryController addController = getController(query);
-                    SwingUtilities.invokeLater(new Runnable() {
+                    runInAWT(new Runnable() {
                         @Override
                         public void run() {
                             addQueryComponent(addController);
@@ -535,7 +535,7 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private void setNameAndTooltip() throws MissingResourceException {
-        SwingUtilities.invokeLater(new Runnable() {
+        runInAWT(new Runnable() {
             @Override
             public void run() {
                 if(query != null && query.getDisplayName() != null) {
@@ -550,10 +550,15 @@ public final class QueryTopComponent extends TopComponent
     }
 
     private void setSaved() {
-        headerPanel.setVisible(false);
-        mainPanel.revalidate();
-        mainPanel.repaint();
-        setNameAndTooltip();
+        runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                headerPanel.setVisible(false);
+                mainPanel.revalidate();
+                mainPanel.repaint();
+                setNameAndTooltip();
+            }
+        });
     }
 
     @Override
@@ -650,4 +655,13 @@ public final class QueryTopComponent extends TopComponent
     private javax.swing.JPanel queryPanel;
     private javax.swing.JLabel title;
     // End of variables declaration//GEN-END:variables
+
+    private static void runInAWT(Runnable r) {
+        if(SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
+    }
+
 }
