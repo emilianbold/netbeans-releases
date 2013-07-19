@@ -41,13 +41,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.modules.cnd.debugger.dbx;
 
 import com.sun.tools.swdev.glue.Glue;
 import com.sun.tools.swdev.glue.Keyring;
 import com.sun.tools.swdev.glue.SecurityStyle;
 import org.netbeans.modules.cnd.debugger.common2.debugger.remote.SecuritySettings;
+import org.netbeans.modules.cnd.debugger.dbx.vjsch.VJSchImpl;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
@@ -60,9 +60,12 @@ public final class RemoteSupport {
 	if (securityStyle == null) {
 	    final String security;
 	    security =  System.getProperty("cnd.nativedebugger.security",// NOI18N
-					   "jsch");			     // NOI18N
+					   "vjsch");			     // NOI18N
 
-	    if ("jsch".equals(security)) { // NOI18N
+            if ("vjsch".equals(security)) { // NOI18N
+                securityStyle = new SecurityStyle.VJSch();
+                Glue.setVirtJSch(new VJSchImpl());
+            } else if ("jsch".equals(security)) { // NOI18N
 		securityStyle = new SecurityStyle.JSch();
 
 	    } else if ("rsh".equals(security)) { // NOI18N
