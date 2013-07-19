@@ -43,6 +43,8 @@
 package org.netbeans.modules.java.hints.jdk;
 
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -128,8 +130,23 @@ public class IteratorToFor {
         final boolean[] unsuitable = new boolean[1];
         new CancellableTreePathScanner<Void, Void>() {
             @Override public Void visitArrayAccess(ArrayAccessTree node, Void p) {
-                if (MatcherUtilities.matches(ctx, getCurrentPath(), "$arr[$index]")) {
-                    toReplace.add(getCurrentPath());
+                TreePath path = getCurrentPath();
+                if (MatcherUtilities.matches(ctx, path, "$arr[$index]")) {
+                    if (path.getParentPath() != null) {
+                        if (   path.getParentPath().getLeaf().getKind() == Kind.ASSIGNMENT
+                            && ((AssignmentTree) path.getParentPath().getLeaf()).getVariable() == node) {
+                            unsuitable[0] = true;
+                            cancel();
+                            return null;
+                        }
+                        if (CompoundAssignmentTree.class.isAssignableFrom(path.getParentPath().getLeaf().getKind().asInterface())
+                            && ((CompoundAssignmentTree) path.getParentPath().getLeaf()).getVariable() == node) {
+                            unsuitable[0] = true;
+                            cancel();
+                            return null;
+                        }
+                    }
+                    toReplace.add(path);
                     return null;
                 }
                 return super.visitArrayAccess(node, p);
