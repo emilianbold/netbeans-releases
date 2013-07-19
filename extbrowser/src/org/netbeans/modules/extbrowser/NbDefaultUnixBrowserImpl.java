@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.extbrowser;
 
-import java.awt.EventQueue;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
@@ -172,7 +171,8 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
     }
 
     private static String detectDefaultWebBrowser() {
-        assert !EventQueue.isDispatchThread();
+        // XXX hotfix for #233047
+        // assert !EventQueue.isDispatchThread();
         if (!XDG_AVAILABLE) {
             return null;
         }
