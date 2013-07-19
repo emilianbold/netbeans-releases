@@ -53,10 +53,11 @@ public class JsParserError implements Error.Badging {
     private final Severity severity;
     private final Object[] parameters;
     private final boolean showExplorerBadge;
+    private final boolean showInEditor;
 
     public JsParserError(JsErrorManager.SimpleError error, FileObject file,
             Severity severity, Object[] parameters, boolean wholeLine,
-            boolean showExplorerBadge) {
+            boolean showExplorerBadge, boolean showInEditor) {
 
         this.error = error;
         this.file = file;
@@ -64,6 +65,7 @@ public class JsParserError implements Error.Badging {
         this.parameters = parameters != null ? parameters.clone() : new Object[] {};
         this.wholeLine = wholeLine;
         this.showExplorerBadge = showExplorerBadge;
+        this.showInEditor = showInEditor;
     }
 
     @Override
@@ -115,5 +117,9 @@ public class JsParserError implements Error.Badging {
     @Override
     public boolean showExplorerBadge() {
         return showExplorerBadge;
+    }
+
+    public boolean showInEditor() {
+        return showInEditor;
     }
 }
