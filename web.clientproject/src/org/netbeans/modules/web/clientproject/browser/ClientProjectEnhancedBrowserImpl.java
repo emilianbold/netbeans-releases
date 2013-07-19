@@ -139,6 +139,13 @@ public class ClientProjectEnhancedBrowserImpl implements ClientProjectEnhancedBr
     }
 
     @Override
+    public void close() {
+        if (browserSupport != null) {
+            getBrowserSupport().close(true);
+        }
+    }
+
+    @Override
     public ProjectConfigurationProvider getProjectConfigurationProvider() {
         return null;
     }

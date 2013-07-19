@@ -78,6 +78,12 @@ public interface ClientProjectEnhancedBrowserImplementation {
      */
     void deactivate();
 
+    /**
+     * Close the browser if it is opened.
+     * @since 1.42
+     */
+    void close();
+
     boolean isHighlightSelectionEnabled();
     
     boolean isAutoRefresh();
