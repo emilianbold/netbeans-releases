@@ -1552,7 +1552,7 @@ public final class UnitTab extends javax.swing.JPanel {
                     if (!installed.getRelevantElement ().isEnabled ()) {
                         OperationInfo info = Containers.forEnable ().add (installed.updateUnit, installed.getRelevantElement ());
                         if (info ==  null) {
-                            Logger.getLogger(UnitTab.class).log(Level.WARNING, "Null OperationInfo for " + installed.getRelevantElement ());
+                            Logger.getLogger(UnitTab.class.getName()).log(Level.WARNING, "Null OperationInfo for " + installed.getRelevantElement ());
                         }
                     }
                 }
