@@ -2691,6 +2691,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
 
         private static final String ATTRIBUTE = "org/netbeans/modules/java/editor/resources/attribute_16.png"; // NOI18N
         private static final String ATTRIBUTE_COLOR = Utilities.getHTMLColor(128, 128, 128);
+        private static final String VALUE_COLOR = Utilities.getHTMLColor(192, 192, 192);
         private static ImageIcon icon;
 
         private ElementHandle<ExecutableElement> elementHandle;
@@ -2708,7 +2709,7 @@ public abstract class JavaCompletionItem implements CompletionItem {
             this.simpleName = elem.getSimpleName().toString();
             this.typeName = Utilities.getTypeName(info, type.getReturnType(), false).toString();
             AnnotationValue value = elem.getDefaultValue();
-            this.defaultValue = value != null ? value.toString() : null;
+            this.defaultValue = value != null ? value.getValue() instanceof TypeMirror ? Utilities.getTypeName(info, (TypeMirror)value.getValue(), false).toString() + ".class" : value.toString() : null; //NOI18N
         }
 
         @Override
@@ -2757,6 +2758,8 @@ public abstract class JavaCompletionItem implements CompletionItem {
                 if (defaultValue == null) {
                     sb.append(BOLD_END);
                 } else {
+                    sb.append(COLOR_END);
+                    sb.append(VALUE_COLOR);                            
                     sb.append(" = "); //NOI18N
                     sb.append(defaultValue);
                 }
