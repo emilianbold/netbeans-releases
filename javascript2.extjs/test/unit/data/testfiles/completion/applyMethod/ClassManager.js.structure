@@ -49,7 +49,10 @@ Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
   namespaceParseCache:CLASS:[PUBLIC]:ESCAPED{namespaceParseCache}:
   namespaceRewrites:FIELD:[PUBLIC]:ESCAPED{namespaceRewrites}<font color="#999999">ESCAPED{ : }Array</font>:
   onCreated:METHOD:[PUBLIC]:ESCAPED{onCreated}ESCAPED{(}ESCAPED{fn}ESCAPED{, }ESCAPED{scope}ESCAPED{, }ESCAPED{className}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
-  parseNamespace:METHOD:[PUBLIC]:ESCAPED{parseNamespace}ESCAPED{(}ESCAPED{namespace}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.parseNamespace.cacheESCAPED{|}Manager.namespaceParseCacheESCAPED{|}Manager.parseNamespace.partsESCAPED{|}Ext.ClassManager.parseNamespace.parts</font>:
+    listener:CLASS:[PRIVATE]:ESCAPED{listener}:
+      fn:FIELD:[PUBLIC]:ESCAPED{fn}<font color="#999999">ESCAPED{ : }Manager.onCreated.fn</font>:
+      scope:FIELD:[PUBLIC]:ESCAPED{scope}<font color="#999999">ESCAPED{ : }Manager.onCreated.scope</font>:
+  parseNamespace:METHOD:[PUBLIC]:ESCAPED{parseNamespace}ESCAPED{(}ESCAPED{namespace}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.parseNamespace.cacheESCAPED{|}Manager.namespaceParseCacheESCAPED{|}Ext.ClassManager.parseNamespace.parts</font>:
   postprocessors:CLASS:[PUBLIC]:ESCAPED{postprocessors}:
   processCreate:METHOD:[PUBLIC]:ESCAPED{processCreate}ESCAPED{(}ESCAPED{className}ESCAPED{, }ESCAPED{cls}ESCAPED{, }ESCAPED{clsData}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
   registerPostprocessor:METHOD:[PUBLIC]:ESCAPED{registerPostprocessor}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }ESCAPED{fn}ESCAPED{, }ESCAPED{properties}ESCAPED{, }ESCAPED{position}ESCAPED{, }ESCAPED{relativeTo}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager</font>:
