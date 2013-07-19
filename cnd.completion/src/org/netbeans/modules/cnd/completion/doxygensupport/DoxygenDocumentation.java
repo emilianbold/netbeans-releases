@@ -262,7 +262,9 @@ public class DoxygenDocumentation {
                     return doc;
                 case BLOCK_COMMENT:
                 case LINE_COMMENT:
-                    candidate = doc;
+                    if (candidate == null) {
+                        candidate = doc;
+                    }
             }
         }
         return candidate;
