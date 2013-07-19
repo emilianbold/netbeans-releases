@@ -331,17 +331,21 @@ public class DoxygenDocumentation {
                 case DOXYGEN_COMMENT:
                 case DOXYGEN_LINE_COMMENT:
                     DocCandidate docCandidate = new DocCandidate(ts.token().text().toString(), ts.token().id());
+                    boolean addDoc = true;
                     while (ts.movePrevious()) {
                         switch (ts.token().id()) {
                             case WHITESPACE:
                                 continue;
                             case NEW_LINE:
-                                list.add(docCandidate);
                                 break;
                             default:
+                                addDoc = false;
                                 break;
                         }
                         break;
+                    }
+                    if (addDoc) {
+                        list.add(docCandidate);
                     }
                     break;
                 case SEMICOLON:
