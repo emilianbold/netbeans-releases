@@ -462,6 +462,34 @@ public class IteratorToForTest {
                 .assertCompilable();//intentionally not testing the exact name
     }
     
+    @Test public void forWriteToArray233017a() throws Exception {
+        HintTest.create().input("package test;\n"
+                + "import java.util.*;"
+                + "public class Test {\n"
+                + "    public static void main(String[] interfaces) {\n"
+                + "        for (int i = 0; i < interfaces.length; i++) {\n"
+                + "            interfaces[i] = interfaces[i].trim();\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n")
+                .run(IteratorToFor.class)
+                .assertWarnings();
+    }
+    
+    @Test public void forWriteToArray233017b() throws Exception {
+        HintTest.create().input("package test;\n"
+                + "import java.util.*;"
+                + "public class Test {\n"
+                + "    public static void main(int[] n) {\n"
+                + "        for (int i = 0; i < n.length; i++) {\n"
+                + "            n[i] = n[i] * 2;\n"
+                + "        }\n"
+                + "    }\n"
+                + "}\n")
+                .run(IteratorToFor.class)
+                .assertWarnings();
+    }
+    
     // XXX also ought to match: for (Iterator i = coll.iterator(); i.hasNext(); ) {use((Type) i.next());}
     // XXX match final modifiers on iterator and/or element vars
     // XXX remove import of java.util.Iterator if present
