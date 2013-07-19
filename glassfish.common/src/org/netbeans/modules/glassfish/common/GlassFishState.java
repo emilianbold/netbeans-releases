@@ -279,13 +279,13 @@ public class GlassFishState {
             if (added) {
                 try {
                     long startTime = System.currentTimeMillis();
+                    long waitTime = INIT_MONITORING_TIMEOUT; 
                     synchronized (listener) {
                         // Guard against spurious wakeup.
-                        while (!listener.isWakeUp()
-                                && (System.currentTimeMillis()
-                                - startTime < INIT_MONITORING_TIMEOUT)) {
-                            listener.wait(
-                                    System.currentTimeMillis() - startTime);
+                        while (!listener.isWakeUp() && waitTime > 0) {
+                            listener.wait(waitTime);
+                            waitTime = INIT_MONITORING_TIMEOUT
+                            + startTime - System.currentTimeMillis();
                         }
                     }
                 } catch (InterruptedException ie) {
