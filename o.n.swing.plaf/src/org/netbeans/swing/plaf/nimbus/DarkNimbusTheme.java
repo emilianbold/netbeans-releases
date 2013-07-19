@@ -78,7 +78,7 @@ public class DarkNimbusTheme {
         UIManager.put( "text", new Color( 230, 230, 230) );
 //        UIManager.put( "nb.imageicon.filter", new DarkIconFilter() );
         UIManager.put( "nb.errorForeground", new Color(127,0,0) ); //NOI18N
-        UIManager.put( "nb.warningForeground", new Color(255,255,255) ); //NOI18N
+        UIManager.put( "nb.warningForeground", new Color(255,216,0) ); //NOI18N
 
         UIManager.put( "nb.heapview.border1", new Color( 128, 128, 128) ); //NOI18N
         UIManager.put( "nb.heapview.border2", new Color( 128, 128, 128).darker() ); //NOI18N
