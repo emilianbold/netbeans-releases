@@ -102,7 +102,7 @@ public class PatternResourcesIterator implements WizardDescriptor.ProgressInstan
             
             boolean useJersey = Boolean.TRUE.equals(wizard.getProperty(WizardProperties.USE_JERSEY));
             if (!useJersey) {
-                RestSupport.RestConfig.IDE.setAppClassName(restAppClass);
+                RestSupport.RestConfig.IDE.setAppClassName(restAppPackage+"."+restAppClass); //NOI18N
             }
             if ( restSupport!= null ){
                 restSupport.ensureRestDevelopmentReady(useJersey ?

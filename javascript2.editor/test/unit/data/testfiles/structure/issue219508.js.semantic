@@ -1,0 +1,14 @@
+|>GLOBAL:SomeSingleton<| = new function ()
+{
+  	var |>UNUSED:_privateVariable<| = 123;
+
+  	this.|>FIELD:publicVariable<| = 456;
+	
+  	this.|>METHOD:publicFunction<| = function(|>UNUSED:foobar<|)
+	{
+	};
+	
+	var |>METHOD,UNUSED:_privateFunction<| = function(|>UNUSED:blah<|)
+	{
+	};
+};    

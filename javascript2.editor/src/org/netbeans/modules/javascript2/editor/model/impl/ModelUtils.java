@@ -287,6 +287,11 @@ public class ModelUtils {
     public static Collection<? extends JsObject> getVariables(DeclarationScope inScope) {
         HashMap<String, JsObject> result = new HashMap<String, JsObject>();
         while (inScope != null) {
+            for (JsObject object : ((JsObject)inScope).getProperties().values()) {
+                if (!result.containsKey(object.getName()) && object.getModifiers().contains(Modifier.PRIVATE)) {
+                    result.put(object.getName(), object);
+                }
+            }
             for (JsObject object : ((JsFunction)inScope).getParameters()) {
                 if (!result.containsKey(object.getName())) {
                     result.put(object.getName(), object);
@@ -297,7 +302,9 @@ public class ModelUtils {
                     result.put(object.getName(), object);
                 }
             }
-            
+            if (!result.containsKey(((JsObject)inScope).getName())) {
+                result.put(((JsObject)inScope).getName(), (JsObject)inScope);
+            }
             inScope = inScope.getParentScope();
         }
         return result.values();

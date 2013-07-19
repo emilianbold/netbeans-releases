@@ -644,11 +644,11 @@ public class ModelVisitor extends PathNodeVisitor {
         functionStack.add(functions);
 
         JsFunctionImpl fncScope = (JsFunctionImpl)modelBuilder.getCurrentDeclarationFunction();
+        JsObject parent = null;
         if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
             // create the function object
             DeclarationScopeImpl scope = modelBuilder.getCurrentDeclarationFunction();
             boolean isAnonymous = false;
-            JsObject parent = null;
             if (getPreviousFromPath(2) instanceof ReferenceNode) {
                 Node node = getPreviousFromPath(3);
                 if (node instanceof CallNode || node instanceof ExecuteNode) {
@@ -660,7 +660,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 } 
             }
-            if (isPrivilage && !isAnonymous && fncScope.isAnonymous()) {
+            if (canBeSingletonPattern()) {
                 // follow the patter to create new objects via new anonymous function 
                 // exp: this.pro = new function () { this.field = "";}
                 parent = resolveThis(fncScope);
@@ -687,13 +687,18 @@ public class ModelVisitor extends PathNodeVisitor {
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         // create variables that are declared in the function
         // They has to be created here for tracking occurrences
+        if (canBeSingletonPattern(1)) {
+            parent = resolveThis(fncScope);
+        } else {
+            parent = fncScope;
+        }
         for (VarNode varNode : functionNode.getDeclarations()) {
             Identifier varName = new IdentifierImpl(varNode.getName().getName(), new OffsetRange(varNode.getName().getStart(), varNode.getName().getFinish()));
             OffsetRange range = varNode.getInit() instanceof ObjectNode ? new OffsetRange(varNode.getName().getStart(), ((ObjectNode)varNode.getInit()).getFinish()) 
                     : varName.getOffsetRange();
-            JsObject variable = handleArrayCreation(varNode.getInit(), fncScope, varName);
+            JsObject variable = handleArrayCreation(varNode.getInit(), parent, varName);
             if (variable == null) {
-                JsObjectImpl newObject = new JsObjectImpl(fncScope, varName, range, parserResult.getSnapshot().getMimeType(), null);
+                JsObjectImpl newObject = new JsObjectImpl(parent, varName, range, parserResult.getSnapshot().getMimeType(), null);
                 newObject.setDeclared(true);
                 if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
                     // here are the variables allways private
@@ -704,7 +709,7 @@ public class ModelVisitor extends PathNodeVisitor {
             }
             
             variable.addOccurrence(varName.getOffsetRange());
-            modelBuilder.getCurrentObject().addProperty(varName.getName(), variable);
+            parent.addProperty(varName.getName(), variable);
             if (docHolder != null) {
                 ((JsObjectImpl)variable).setDocumentation(docHolder.getDocumentation(varNode));
                 ((JsObjectImpl)variable).setDeprecated(docHolder.isDeprecated(varNode));
@@ -1186,6 +1191,7 @@ public class ModelVisitor extends PathNodeVisitor {
          if (!(varNode.getInit() instanceof ObjectNode || varNode.getInit() instanceof ReferenceNode
                  || varNode.getInit() instanceof LiteralNode.ArrayLiteralNode)) {
             JsObject parent = modelBuilder.getCurrentObject();
+            parent = canBeSingletonPattern(1) ? resolveThis(parent) : parent;
             if (parent instanceof CatchBlockImpl) {
                 parent = parent.getParent();
             } 
@@ -1617,22 +1623,15 @@ public class ModelVisitor extends PathNodeVisitor {
         if (where.isAnonymous()) {
             int pathIndex = 1;
             Node lastNode = getPreviousFromPath(1);
-            if (lastNode instanceof FunctionNode) {
-                pathIndex = 5;
-            } else if (lastNode instanceof AccessNode) {
-                pathIndex = 4;
-            } else {
-                while (pathIndex < getPath().size() && !(getPreviousFromPath(pathIndex) instanceof FunctionNode)) {
-                    pathIndex++;
-                }
+            if (lastNode instanceof FunctionNode && !canBeSingletonPattern(pathIndex)) {
+                pathIndex++;
+            } 
+            while (pathIndex < getPath().size() && !(getPreviousFromPath(pathIndex) instanceof FunctionNode)) {
+                pathIndex++;
             }
             // trying to find out that it corresponds with patter, where an object is defined via new function:
             // exp: this.pro = new function () { this.field = "";}
-            if (getPath().size() > pathIndex + 4 && getPreviousFromPath(pathIndex) instanceof FunctionNode
-                    && getPreviousFromPath(pathIndex + 1) instanceof ReferenceNode
-                    && getPreviousFromPath(pathIndex + 2) instanceof CallNode
-                    && getPreviousFromPath(pathIndex + 3) instanceof UnaryNode
-                    && getPreviousFromPath(pathIndex + 4) instanceof BinaryNode) {
+            if (canBeSingletonPattern(pathIndex)) {
                 UnaryNode uNode = (UnaryNode)getPreviousFromPath(pathIndex + 3);
                 if (uNode.tokenType() == TokenType.NEW) {
                     BinaryNode bNode = (BinaryNode)getPreviousFromPath(pathIndex + 4);
@@ -1676,6 +1675,26 @@ public class ModelVisitor extends PathNodeVisitor {
             }
         }
         return where;
+    }
+    
+    private boolean canBeSingletonPattern() {
+        int pathIndex = 1;
+        Node lastNode = getPreviousFromPath(1);
+        if (lastNode instanceof FunctionNode && !canBeSingletonPattern(pathIndex)) {
+            pathIndex++;
+        } 
+        while (pathIndex < getPath().size() && !(getPreviousFromPath(pathIndex) instanceof FunctionNode)) {
+            pathIndex++;
+        }
+        return canBeSingletonPattern(pathIndex);
+    }
+    
+    private boolean canBeSingletonPattern(int pathIndex) {
+       return  (getPath().size() > pathIndex + 4 && getPreviousFromPath(pathIndex) instanceof FunctionNode
+                    && getPreviousFromPath(pathIndex + 1) instanceof ReferenceNode
+                    && getPreviousFromPath(pathIndex + 2) instanceof CallNode
+                    && getPreviousFromPath(pathIndex + 3) instanceof UnaryNode
+                    && getPreviousFromPath(pathIndex + 4) instanceof BinaryNode);
     }
     
     public static class FunctionCall {

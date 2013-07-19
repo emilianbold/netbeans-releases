@@ -842,8 +842,6 @@ public class MenuBar extends JMenuBar implements Externalizable {
                 LinkedList<Object> cInstances = new LinkedList<Object>();
                 allInstances(cookies, cInstances);
 
-                m.removeAll();
-
                 // #11848, #13013. Enablement should be set immediatelly,
                 // popup will be created on-demand.
                 // m.setEnabled(!cInstances.isEmpty());
@@ -856,8 +854,7 @@ public class MenuBar extends JMenuBar implements Externalizable {
                     m.add(item);
                 }
 
-                m.dynaModel.loadSubmenu(cInstances, m, cookiesToFiles);
-
+                m.dynaModel.loadSubmenu(cInstances, m, true, cookiesToFiles);
                 return m;
             }
             

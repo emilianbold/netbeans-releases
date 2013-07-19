@@ -53,6 +53,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
@@ -196,7 +197,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
      */
     void updateContent(final boolean keepSelection) {
         try {
-            contentUpdateInProgress = keepSelection;
+            contentUpdateInProgress.incrementAndGet();
             nodeLookup.setPageModel(pageModel);
             selectionPanel.updateContent(pageModel, keepSelection);
             updateTitle();
@@ -216,8 +217,9 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                                     EventQueue.invokeLater(new Runnable() {
                                         @Override
                                         public void run() {
-                                            contentUpdateInProgress = false;
-                                            updateRulesEditor(keepSelection);
+                                            if (contentUpdateInProgress.decrementAndGet() == 0) {
+                                                updateRulesEditor(keepSelection);
+                                            }
                                         }
                                     });
                                 }
@@ -230,7 +232,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
     }
 
     /** Determines whether the content update is in progress. */
-    boolean contentUpdateInProgress;
+    AtomicInteger contentUpdateInProgress = new AtomicInteger();
 
     /**
      * Updates the rules editor window to show information about the selected rule.
@@ -383,7 +385,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
         @Override
         public void resultChanged(LookupEvent ev) {
             // Trying to avoid unwanted flashing of Rule Editor
-            if (!contentUpdateInProgress) {
+            if (contentUpdateInProgress.get() == 0) {
                 updateRulesEditor(false);
             }
         }

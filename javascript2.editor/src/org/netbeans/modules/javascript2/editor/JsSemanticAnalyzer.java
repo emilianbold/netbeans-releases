@@ -75,7 +75,8 @@ import org.netbeans.modules.parsing.spi.SchedulerEvent;
 public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
     //public static final EnumSet<ColoringAttributes> UNUSED_VARIABLE_SET = EnumSet.of(ColoringAttributes.UNUSED, ColoringAttributes.VA);
     public static final EnumSet<ColoringAttributes> UNUSED_OBJECT_SET = EnumSet.of( ColoringAttributes.UNUSED,  ColoringAttributes.CLASS);
-
+    public static final EnumSet<ColoringAttributes> UNUSED_METHOD_SET = EnumSet.of( ColoringAttributes.UNUSED,  ColoringAttributes.METHOD);
+    
     private boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
     private static final List<String> GLOBAL_TYPES = Arrays.asList(Type.ARRAY, Type.STRING, Type.BOOLEAN, Type.NUMBER, Type.UNDEFINED);
@@ -122,7 +123,19 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     case METHOD:
                     case FUNCTION:
                         if(object.isDeclared() && !object.isAnonymous() && !object.getDeclarationName().getOffsetRange().isEmpty()) {
-                            highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.METHOD_SET);
+                            EnumSet<ColoringAttributes> coloring = ColoringAttributes.METHOD_SET;
+                            if (object.getModifiers().contains(Modifier.PRIVATE)) {
+                                if (object.getOccurrences().isEmpty()) {
+                                    coloring = UNUSED_METHOD_SET;
+                                } else if (object.getOccurrences().size() == 1) {
+                                    OffsetRange orDeclaration = object.getDeclarationName().getOffsetRange();
+                                    OffsetRange orOccurrence = object.getOccurrences().get(0).getOffsetRange();
+                                    if (orDeclaration.equals(orOccurrence)) {
+                                        coloring = UNUSED_METHOD_SET;
+                                    }
+                                }
+                            } 
+                            highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), coloring);
                         }
                         for(JsObject param: ((JsFunction)object).getParameters()) {
                             count(result, param, highlights);

@@ -251,8 +251,9 @@ public final class InstanceContent extends AbstractLookup.Content {
          * @return if the item has already create an instance and it is the same
          *  as obj.
          */
+        @Override
         protected boolean creatorOf(Object obj) {
-            return obj == this.obj;
+            return obj == null ? null == this.obj : obj.equals(this.obj);
         }
 
         /** The class of this item.
