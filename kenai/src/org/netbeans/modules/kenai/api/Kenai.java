@@ -44,6 +44,8 @@ package org.netbeans.modules.kenai.api;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.MalformedURLException;
 import java.net.PasswordAuthentication;
@@ -57,6 +59,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import javax.swing.Icon;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import org.codeviation.commons.patterns.Factory;
 import org.codeviation.commons.utils.Iterators;
 import org.jivesoftware.smack.PacketListener;
@@ -72,7 +77,10 @@ import org.netbeans.modules.kenai.ProjectData;
 import org.netbeans.modules.kenai.ServicesListData.ServicesListItem;
 import org.netbeans.modules.kenai.UserData;
 import org.netbeans.modules.kenai.api.KenaiProjectMember.Role;
+import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
 
 /**
  * Main entry point to Kenai integration.
@@ -599,14 +607,26 @@ public final class Kenai implements Comparable<Kenai> {
         if (auth==null)
             return Collections.emptyList();
         if (forceServerReload==false) {
-                return getMyProjects();
-            }
-            Collection<ProjectData> prjs = impl.getMyProjects(auth);
-            myProjects = new LinkedList<KenaiProject>(new LazyCollection(prjs));
-            return myProjects;
+            return getMyProjects();
         }
+        Collection<ProjectData> prjs = impl.getMyProjects(auth);
+        myProjects = new LinkedList<KenaiProject>(new LazyCollection(prjs));
+        return myProjects;
+    }
 
-
+    public Document getFeed(String feedUrl) throws KenaiException, IOException {
+        try {
+            DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+            String str = impl.getFeed(feedUrl, auth);
+            return str != null ? dbf.parse(new ByteArrayInputStream(str.getBytes())) : null;
+        } catch (SAXException ex) {
+            Exceptions.printStackTrace(ex);
+        } catch (ParserConfigurationException ex) {
+            Exceptions.printStackTrace(ex);
+        } 
+        return null;
+    }
+    
     Collection<KenaiProject> loadProjects() {
         return Persistence.getInstance().loadProjects();
     }
