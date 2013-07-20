@@ -127,6 +127,7 @@ import javax.tools.JavaFileObject;
 
 import com.sun.source.tree.ErroneousTree;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.GuardedDocument;
@@ -922,7 +923,10 @@ public final class GeneratorUtilities {
             }
             
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;
-            TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            TokenHierarchy<?> tokens =   unit.getSourceFile() instanceof SourceFileObject
+                                       ? ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy()
+                                       : TokenHierarchy.create(unit.getSourceFile().getCharContent(true), JavaTokenId.language());
+            TokenSequence<JavaTokenId> seq = tokens.tokenSequence(JavaTokenId.language());
             TreePath tp = TreePath.getPath(cut, original);
             Tree toMap = (tp != null && original.getKind() != Kind.COMPILATION_UNIT) ? tp.getParentPath().getLeaf() : original;
             AssignComments translator = new AssignComments(info, original, seq, unit);
