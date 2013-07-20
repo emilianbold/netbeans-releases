@@ -62,6 +62,7 @@ import javax.swing.plaf.basic.BasicTreeUI;
 import org.netbeans.modules.bugtracking.issuetable.Filter;
 import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.netbeans.modules.bugzilla.query.QueryParameter.ParameterValueCellRenderer;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 
 /**
  *
@@ -74,7 +75,7 @@ public class QueryPanel extends javax.swing.JPanel {
     final ExpandablePanel byPeople;
     final ExpandablePanel byLastChange;
     private static final Color ERROR_COLOR = new Color(153,0,0);
-    private Color defaultTextColor;
+    private final Color defaultTextColor;
 
     /** Creates new form QueryPanel */
     public QueryPanel(JComponent tableComponent) {
@@ -170,13 +171,18 @@ public class QueryPanel extends javax.swing.JPanel {
         repaint();
     }
 
-    void setQueryRunning(boolean running) {
-        modifyButton.setEnabled(!running);
-        seenButton.setEnabled(!running);
-        removeButton.setEnabled(!running);
-        refreshButton.setEnabled(!running);
-        filterLabel.setEnabled(!running);
-        filterComboBox.setEnabled(!running);
+    void setQueryRunning(final boolean running) {
+        BugzillaUtil.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                modifyButton.setEnabled(!running);
+                seenButton.setEnabled(!running);
+                removeButton.setEnabled(!running);
+                refreshButton.setEnabled(!running);
+                filterLabel.setEnabled(!running);
+                filterComboBox.setEnabled(!running);
+            }
+        });
     }
 
     /** This method is called from within the constructor to
@@ -1286,145 +1292,185 @@ public class QueryPanel extends javax.swing.JPanel {
      * enables/disables all but the parameter fields
      * @param enable
      */
-    void enableFields(boolean enable) {
-        summaryLabel.setEnabled(enable);
-        whiteboardLabel.setEnabled(enable);
-        commentLabel.setEnabled(enable);
-        keywordsLabel.setEnabled(enable);
-        keywordsButton.setEnabled(enable);
+    void enableFields(final boolean enable) {
         
-        productLabel.setEnabled(enable);
-        componentLabel.setEnabled(enable);
-        versionLabel.setEnabled(enable);
-        statusLabel.setEnabled(enable);
-        severityLabel.setEnabled(enable);
-        resolutionLabel.setEnabled(enable);
-        priorityLabel.setEnabled(enable);
-        tmLabel.setEnabled(enable);
-        issueTypeLabel.setEnabled(enable);
-
-        peopleLabel.setEnabled(enable);
-        peopleTextField.setEnabled(enable);
-
-        searchButton.setEnabled(enable);
-        saveButton.setEnabled(enable);
-        webButton.setEnabled(enable);
-        urlToggleButton.setEnabled(enable);
-        refreshConfigurationButton.setEnabled(enable);
-
-        changedLabel.setEnabled(enable);
-        changedAndLabel.setEnabled(enable);
-        changedWhereLabel.setEnabled(enable);
-        changedBlaBlaLabel.setEnabled(enable);
-        changedHintLabel.setEnabled(enable);
+        BugzillaUtil.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                summaryLabel.setEnabled(enable);
+                whiteboardLabel.setEnabled(enable);
+                commentLabel.setEnabled(enable);
+                keywordsLabel.setEnabled(enable);
+                keywordsButton.setEnabled(enable);
+                
+                productLabel.setEnabled(enable);
+                componentLabel.setEnabled(enable);
+                versionLabel.setEnabled(enable);
+                statusLabel.setEnabled(enable);
+                severityLabel.setEnabled(enable);
+                resolutionLabel.setEnabled(enable);
+                priorityLabel.setEnabled(enable);
+                tmLabel.setEnabled(enable);
+                issueTypeLabel.setEnabled(enable);
+                
+                peopleLabel.setEnabled(enable);
+                peopleTextField.setEnabled(enable);
+                
+                searchButton.setEnabled(enable);
+                saveButton.setEnabled(enable);
+                webButton.setEnabled(enable);
+                urlToggleButton.setEnabled(enable);
+                refreshConfigurationButton.setEnabled(enable);
+                
+                changedLabel.setEnabled(enable);
+                changedAndLabel.setEnabled(enable);
+                changedWhereLabel.setEnabled(enable);
+                changedBlaBlaLabel.setEnabled(enable);
+                changedHintLabel.setEnabled(enable);
+            }
+        });
     }
 
-    void switchQueryFields(boolean showAdvanced) {
-        byDetails.setVisible(showAdvanced);
-        byText.setVisible(showAdvanced);
-        byLastChange.setVisible(showAdvanced);
-        byPeople.setVisible(showAdvanced);
-
-        urlPanel.setVisible(!showAdvanced);
-        if(showAdvanced) {
-            urlToggleButton.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.urlToggleButton.textUrl"));
-        } else {
-            urlToggleButton.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.urlToggleButton.textForm"));
-        }
+    void switchQueryFields(final boolean showAdvanced) {
+        BugzillaUtil.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                byDetails.setVisible(showAdvanced);
+                byText.setVisible(showAdvanced);
+                byLastChange.setVisible(showAdvanced);
+                byPeople.setVisible(showAdvanced);
+                
+                urlPanel.setVisible(!showAdvanced);
+                if (showAdvanced) {
+                    urlToggleButton.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.urlToggleButton.textUrl"));
+                } else {
+                    urlToggleButton.setText(org.openide.util.NbBundle.getMessage(QueryPanel.class, "QueryPanel.urlToggleButton.textForm"));
+                }
+            }
+        });
     }
 
-    void showError(String text) {
-        noContentPanel.setVisible(true);
-        tableSummaryLabel.setVisible(false);
-        tableFieldsPanel.setVisible(false);
-        if(text != null) {
-            noContentLabel.setForeground(ERROR_COLOR);
-            noContentLabel.setText(text);
-        }
+    void showError(final String text) {
+        BugzillaUtil.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                noContentPanel.setVisible(true);
+                tableSummaryLabel.setVisible(false);
+                tableFieldsPanel.setVisible(false);
+                if (text != null) {
+                    noContentLabel.setForeground(ERROR_COLOR);
+                    noContentLabel.setText(text);
+                }
+            }
+        });
     }
 
-    void showSearchingProgress(boolean on, String text) {
-        noContentPanel.setVisible(on);
-        tableSummaryLabel.setVisible(!on);
-        tableFieldsPanel.setVisible(!on);
-        if(on && text != null) {
-            noContentLabel.setForeground(defaultTextColor);
-            noContentLabel.setText(text);
-        }
+    void showSearchingProgress(final boolean on, final String text) {
+        BugzillaUtil.runInAWT(new Runnable() {
+            public void run() {
+                noContentPanel.setVisible(on);
+                tableSummaryLabel.setVisible(!on);
+                tableFieldsPanel.setVisible(!on);
+                if (on && text != null) {
+                    noContentLabel.setForeground(defaultTextColor);
+                    noContentLabel.setText(text);
+                }
+            }
+        });
     }
 
-    void showRetrievingProgress(boolean on, String text, boolean searchPanelVisible) {
-        noContentPanel.setVisible(on);
-        noContentLabel.setForeground(Color.red);
-        if(searchPanelVisible) {
-            searchPanel.setVisible(!on);
-        }
-        if(on && text != null) {
-            noContentLabel.setForeground(defaultTextColor);
-            noContentLabel.setText(text);
-        }
+    void showRetrievingProgress(final boolean on, final String text, final boolean searchPanelVisible) {
+        BugzillaUtil.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                noContentPanel.setVisible(on);
+                noContentLabel.setForeground(Color.red);
+                if (searchPanelVisible) {
+                    searchPanel.setVisible(!on);
+                }
+                if (on && text != null) {
+                    noContentLabel.setForeground(defaultTextColor);
+                    noContentLabel.setText(text);
+                }
+            }
+        });
     }
 
     void showNoContentPanel(boolean on) {
         showSearchingProgress(on, null);
     }
 
-    void setModifyVisible(boolean b) {
-        searchPanel.setVisible(b);
-        cancelChangesButton.setVisible(b);
-        saveChangesButton.setVisible(b);
-
-        tableFieldsPanel.setVisible(!b);
-        searchButton.setVisible(!b);
-        saveButton.setVisible(!b);
-        webButton.setVisible(!b);
-        urlToggleButton.setVisible(!b);
-
-        separatorLabel1.setVisible(!b);
-        separatorLabel2.setVisible(!b);
-        separatorLabel3.setVisible(!b);
+    void setModifyVisible(final boolean b) {
+        BugzillaUtil.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                searchPanel.setVisible(b);
+                cancelChangesButton.setVisible(b);
+                saveChangesButton.setVisible(b);
+                
+                tableFieldsPanel.setVisible(!b);
+                searchButton.setVisible(!b);
+                saveButton.setVisible(!b);
+                webButton.setVisible(!b);
+                urlToggleButton.setVisible(!b);
+                
+                separatorLabel1.setVisible(!b);
+                separatorLabel2.setVisible(!b);
+                separatorLabel3.setVisible(!b);
+            }
+        });
     }
 
-    void setSaved(String name, String lastRefresh) {
-        searchPanel.setVisible(false);
-        gotoPanel.setVisible(false);
-        queryHeaderPanel.setVisible(true);
-        tableHeaderPanel.setVisible(true);
-        filterComboBox.setVisible(true); // XXX move to bugtracking IssueTable component
-        filterLabel.setVisible(true);
-        tablePanel.setVisible(true);
-        nameLabel.setText(name);
-        setLastRefresh(lastRefresh);
+    void setSaved(final String name, final String lastRefresh) {
+        BugzillaUtil.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                searchPanel.setVisible(false);
+                gotoPanel.setVisible(false);
+                queryHeaderPanel.setVisible(true);
+                tableHeaderPanel.setVisible(true);
+                filterComboBox.setVisible(true); // XXX move to bugtracking IssueTable component
+                filterLabel.setVisible(true);
+                tablePanel.setVisible(true);
+                nameLabel.setText(name);
+                setLastRefresh(lastRefresh);
+            }
+        });
     }
 
-    void setLastRefresh(String lastRefresh) {
-        lastRefreshDateLabel.setText(lastRefresh);
+    void setLastRefresh(final String lastRefresh) {
+        BugzillaUtil.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                lastRefreshDateLabel.setText(lastRefresh);
+            }
+        });
     }
 
-    void setNBFieldsVisible(boolean visible) {
-        whiteboardLabel.setVisible(visible);
-        whiteboardComboBox.setVisible(visible);
-        whiteboardTextField.setVisible(visible);
-
-        issueTypeLabel.setVisible(visible);
-        issueTypeList.setVisible(visible);
-        issueTypeScrollPane.setVisible(visible);
-        severityLabel.setVisible(!visible);
-        severityList.setVisible(!visible);
-        severityScrollPane.setVisible(!visible);
-        
-        tmLabel.setVisible(visible);
-        tmList.setVisible(visible);
-        tmScrollPane.setVisible(visible);
+    void setNBFieldsVisible(final boolean visible) {
+        BugzillaUtil.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                whiteboardLabel.setVisible(visible);
+                whiteboardComboBox.setVisible(visible);
+                whiteboardTextField.setVisible(visible);
+                
+                issueTypeLabel.setVisible(visible);
+                issueTypeList.setVisible(visible);
+                issueTypeScrollPane.setVisible(visible);
+                severityLabel.setVisible(!visible);
+                severityList.setVisible(!visible);
+                severityScrollPane.setVisible(!visible);
+                
+                tmLabel.setVisible(visible);
+                tmList.setVisible(visible);
+                tmScrollPane.setVisible(visible);
+            }
+        });
     }
 
     public void focusLost(FocusEvent e) {
         // do nothing
-    }
-
-    private void setBoldFont(JLabel label) {
-        Font f = label.getFont().deriveFont(Font.BOLD);
-        label.setFont(f);
     }
 
     class ExpandablePanel {

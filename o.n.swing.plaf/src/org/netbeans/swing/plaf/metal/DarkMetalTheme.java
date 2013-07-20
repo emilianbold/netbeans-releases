@@ -79,8 +79,8 @@ public class DarkMetalTheme extends DefaultMetalTheme {
     public void addCustomEntriesToTable( UIDefaults table ) {
         super.addCustomEntriesToTable( table );
         table.put( "nb.imageicon.filter", new DarkIconFilter() ); //NOI18N
-        table.put( "nb.errorForeground", new Color(255,0,0) ); //NOI18N
-        table.put( "nb.warningForeground", new Color(255,255,255) ); //NOI18N
+        table.put( "nb.errorForeground", new Color(255,71,71) ); //NOI18N
+        table.put( "nb.warningForeground", new Color(255,216,0) ); //NOI18N
         table.put( "PropSheet.setBackground", new Color( primary2.getRGB() ) ); //NOI18N
         table.put( "PropSheet.selectedSetBackground", new Color( primary1.getRGB() ) ); //NOI18N
         table.put( "PropSheet.selectedSetForeground", black ); //NOI18N

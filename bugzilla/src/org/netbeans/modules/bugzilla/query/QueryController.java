@@ -1027,11 +1027,16 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        if(isChanged()) {
-            panel.saveChangesButton.setEnabled(true);
-        } else {
-            panel.saveChangesButton.setEnabled(false);
-        }        
+        BugzillaUtil.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                if (isChanged()) {
+                    panel.saveChangesButton.setEnabled(true);
+                } else {
+                    panel.saveChangesButton.setEnabled(false);
+                }                
+            }
+        });
     }
 
     public boolean isChanged() {

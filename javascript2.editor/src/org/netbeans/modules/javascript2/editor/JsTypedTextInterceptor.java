@@ -245,7 +245,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             return;
         }
 
-        ts.move(caretOffset);
+        int checkOffset = caretOffset - context.getText().length();
+        ts.move(checkOffset);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
             return;
@@ -256,13 +257,14 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         TokenId[] stringTokens = null;
         TokenId beginTokenId = null;
 
-        if (ch == '*' && id == JsTokenId.LINE_COMMENT && caretOffset == ts.offset()+1) {
-            // Just typed "*" inside a "//" -- the user has typed "/", which automatched to
-            // "//" and now they're typing "*" (e.g. to type "/*", but ended up with "/*/".
-            // Remove the auto-matched /.
-            doc.remove(caretOffset, 1);
-            return; // false: continue to insert the "*"
-        }
+// XXX / -> to // removed right ?
+//        if (ch == '*' && id == JsTokenId.LINE_COMMENT && caretOffset == ts.offset()+1) {
+//            // Just typed "*" inside a "//" -- the user has typed "/", which automatched to
+//            // "//" and now they're typing "*" (e.g. to type "/*", but ended up with "/*/".
+//            // Remove the auto-matched /.
+//            doc.remove(caretOffset, 1);
+//            return; // false: continue to insert the "*"
+//        }
 
         // "/" is handled AFTER the character has been inserted since we need the lexer's help
         if (ch == '\"' || (ch == '\'' && singleQuote)) {
@@ -281,16 +283,16 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 beginTokenId = JsTokenId.REGEXP_BEGIN;
             }
         } else if (isCompletableStringBoundary(token, singleQuote, false) &&
-                (caretOffset == (ts.offset() + 1))) {
+                (checkOffset == (ts.offset() + 1))) {
             if (!Character.isLetter(ch)) { // %q, %x, etc. Only %[], %!!, %<space> etc. is allowed
                 stringTokens = STRING_TOKENS;
                 beginTokenId = id;
             }
-        } else if ((isCompletableStringBoundary(token, singleQuote, false) && (caretOffset == (ts.offset() + 2))) ||
+        } else if ((isCompletableStringBoundary(token, singleQuote, false) && (checkOffset == (ts.offset() + 2))) ||
                 isCompletableStringBoundary(token, singleQuote, true)) {
             stringTokens = STRING_TOKENS;
             beginTokenId = JsTokenId.STRING_BEGIN;
-        } else if (((id == JsTokenId.REGEXP_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
+        } else if (((id == JsTokenId.REGEXP_BEGIN) && (checkOffset == (ts.offset() + 2))) ||
                 (id == JsTokenId.REGEXP_END)) {
             stringTokens = REGEXP_TOKENS;
             beginTokenId = JsTokenId.REGEXP_BEGIN;
