@@ -1170,12 +1170,7 @@ public class FieldGroupTest extends GeneratorTestMDRCompat {
             "package javaapplication1;\n" +
             "\n" +
             "class UserTask {\n" +
-            //XXX: should ideally be:
-            //"    int i, j,k;\n" +
-            //instead of:
-            "    int i;\n" +
-            "    int j;\n" +
-            "    int k;\n" +
+            "    int i,j,k;\n" +
             "}\n";
         JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
         Task<WorkingCopy> task = new Task<WorkingCopy>() {
