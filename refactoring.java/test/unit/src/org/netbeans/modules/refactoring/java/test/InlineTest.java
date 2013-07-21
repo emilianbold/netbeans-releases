@@ -178,6 +178,41 @@ public class InlineTest extends RefactoringTestBase {
                 + "}"));
     }
     
+    public void test233082() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "     public String concat(String s1, String s2) {\n"
+                + "        System.out.println(\"Concatenating\"+s1+s2);\n"
+                + "        String r= s1+s2; \n"
+                + "        return r;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB(A a) {\n"
+                + "        String con = a.concat(\"Hello\", a.concat(\" \", \"world\"));\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB(A a) {\n"
+                + "        System.out.println(\"Concatenating\" + \" \" + \"world\");\n"
+                + "        String r = \" \" + \"world\";\n"
+                + "        System.out.println(\"Concatenating\" + \"Hello\" + r);\n"
+                + "        String r1 = \"Hello\" + r;\n"
+                + "        String con = r1;\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void test228769() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

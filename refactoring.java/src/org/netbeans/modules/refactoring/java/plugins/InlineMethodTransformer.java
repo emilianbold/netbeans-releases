@@ -174,7 +174,6 @@ public class InlineMethodTransformer extends RefactoringVisitor {
         if (el.getKind() == ElementKind.METHOD && methodElement.equals(el)) {
             ExecutableElement method = (ExecutableElement) el;
             List<StatementTree> newStatementList = new LinkedList<>();
-            final HashMap<Tree, Tree> original2TranslatedBody = new HashMap<>();
 
             final TypeElement bodyEnclosingTypeElement = workingCopy.getElementUtilities().enclosingTypeElement(methodElement);
             TreePath findEnclosingClass = JavaRefactoringUtils.findEnclosingClass(workingCopy, methodInvocationPath, true, true, true, true, true);
@@ -188,16 +187,18 @@ public class InlineMethodTransformer extends RefactoringVisitor {
 
             BlockTree body = methodTree.getBody();
 
+            final HashMap<Tree, Tree> original2TranslatedBody = new HashMap<>();
             scanForNameClash(methodInvocationPath, body, methodElement, original2TranslatedBody);
             if (problem != null && problem.isFatal()) {
                 return node;
             }
+            body = (BlockTree) workingCopy.getTreeUtilities().translate(body, original2TranslatedBody);
 
             if (hasParameters) {
-                replaceParametersWithArguments(original2TranslatedBody, method, node, methodInvocationPath, body, newStatementList);
+                final HashMap<Tree, Tree> original2TranslatedBody2 = new HashMap<>();
+                replaceParametersWithArguments(original2TranslatedBody2, method, node, methodInvocationPath, body, newStatementList);
+                body = (BlockTree) workingCopy.getTreeUtilities().translate(body, original2TranslatedBody2);
             }
-
-            body = (BlockTree) workingCopy.getTreeUtilities().translate(body, original2TranslatedBody);
 
             TreePath methodPath = trees.getPath(methodElement);
             TreePath bodyPath = new TreePath(methodPath, methodTree.getBody());
@@ -552,6 +553,9 @@ public class InlineMethodTransformer extends RefactoringVisitor {
                 newVars.add(make.Variable(make.Modifiers(element.getModifiers()), (uniqueName == null ? varName != null : !uniqueName.equals(varName))? uniqueName : varName, arraytype, make.NewArray(type, Collections.EMPTY_LIST, arguments)));
             } else {
                 ExpressionTree argument = node.getArguments().get(i);
+                if(!translateQueue.isEmpty() && translateQueue.getLast().containsKey(argument)) {
+                    argument = (ExpressionTree) translateQueue.getLast().get(argument);
+                }
                 if(LITERALS.contains(argument.getKind()) && changedParamters.contains(element)) {
                     Tree arraytype = make.Type(element.asType());
                     String varName = element.getSimpleName().toString();
