@@ -47,6 +47,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -59,10 +60,8 @@ import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
 import org.netbeans.modules.cnd.api.model.CsmFunctionDefinition;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
-import org.netbeans.modules.cnd.api.model.CsmMacroParameter;
 import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
-import org.netbeans.modules.cnd.api.model.CsmParameter;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.spi.editor.completion.CompletionDocumentation;
 
@@ -263,7 +262,9 @@ public class DoxygenDocumentation {
                     return doc;
                 case BLOCK_COMMENT:
                 case LINE_COMMENT:
-                    candidate = doc;
+                    if (candidate == null) {
+                        candidate = doc;
+                    }
             }
         }
         return candidate;
@@ -278,6 +279,108 @@ public class DoxygenDocumentation {
         TokenHierarchy<?> h = TokenHierarchy.create(containingFile.getText(), CppTokenId.languageHeader());
         TokenSequence<CppTokenId> ts = h.tokenSequence(CppTokenId.languageHeader());
 
+        // check the line before the declaration
+        ts.move(csmOffsetable.getStartOffset());
+        boolean newLineOccured = false;
+        while (ts.movePrevious()) {
+            switch (ts.token().id()) {
+                case NEW_LINE:
+                    if (newLineOccured) {
+                        break;
+                    } else {
+                        newLineOccured = true;
+                        continue;
+                    }
+                case LINE_COMMENT:
+                case DOXYGEN_LINE_COMMENT: 
+                {
+                    LinkedList<String> stack = new LinkedList<String>();
+                    final CppTokenId id = ts.token().id();
+                    if (id == CppTokenId.LINE_COMMENT) {
+                        stack.addFirst(ts.token().text().toString().substring(2));
+                    } else {
+                        stack.addFirst(ts.token().text().toString().substring(3));
+                    }
+                    boolean addDoc = true;
+                    int newLine = 0;
+                    while (ts.movePrevious()) {
+                        switch (ts.token().id()) {
+                            case WHITESPACE:
+                                continue;
+                            case NEW_LINE:
+                                if (newLine > 0) {
+                                    break;
+                                }
+                                newLine++;
+                                continue;
+                            case LINE_COMMENT:
+                                stack.addFirst(ts.token().text().toString().substring(2));
+                                newLine = 0;
+                                continue;
+                            case DOXYGEN_LINE_COMMENT: 
+                                stack.addFirst(ts.token().text().toString().substring(3));
+                                newLine = 0;
+                                continue;
+                            default:
+                                addDoc = newLine > 0;
+                                break;
+                        }
+                        break;
+                    }
+                    if (addDoc) {
+                        StringBuilder buf = new StringBuilder();
+                        if (id == CppTokenId.LINE_COMMENT) {
+                            buf.append("//"); // NOI18N
+                        } else {
+                            buf.append("///"); // NOI18N
+                        }
+                        Iterator<String> iterator = stack.iterator();
+                        boolean first = true;
+                        while(iterator.hasNext()) {
+                            if (!first) {
+                                buf.append('\n'); // NOI18N
+                            }
+                            buf.append(iterator.next());
+                            first = false;
+                        }
+                        DocCandidate docCandidate = new DocCandidate(buf.toString(), id);
+                        list.add(docCandidate);
+                    }
+                    break;
+                }
+                case BLOCK_COMMENT:
+                case DOXYGEN_COMMENT:
+                {
+                    DocCandidate docCandidate = new DocCandidate(ts.token().text().toString(), ts.token().id());
+                    boolean addDoc = true;
+                    while (ts.movePrevious()) {
+                        switch (ts.token().id()) {
+                            case WHITESPACE:
+                                continue;
+                            case NEW_LINE:
+                                break;
+                            default:
+                                addDoc = false;
+                                break;
+                        }
+                        break;
+                    }
+                    if (addDoc) {
+                        list.add(docCandidate);
+                    }
+                    break;
+                }
+                case SEMICOLON:
+                case RBRACE:
+                case LBRACE:
+                case PREPROCESSOR_DIRECTIVE:
+                    break;
+                default:
+                    continue;
+            }
+            break;
+        }
+        
         // check right after declaration on the same line
         TokenSequence<CppTokenId> ts2 = ts;
         ts2.move(csmOffsetable.getEndOffset());
@@ -314,46 +417,6 @@ public class DoxygenDocumentation {
             break;
         }
         
-        // check the line before the declaration
-        ts.move(csmOffsetable.getStartOffset());
-        boolean newLineOccured = false;
-        while (ts.movePrevious()) {
-            switch (ts.token().id()) {
-                case NEW_LINE:
-                    if (newLineOccured) {
-                        break;
-                    } else {
-                        newLineOccured = true;
-                        continue;
-                    }
-                case LINE_COMMENT:
-                case BLOCK_COMMENT:
-                case DOXYGEN_COMMENT:
-                case DOXYGEN_LINE_COMMENT:
-                    DocCandidate docCandidate = new DocCandidate(ts.token().text().toString(), ts.token().id());
-                    while (ts.movePrevious()) {
-                        switch (ts.token().id()) {
-                            case WHITESPACE:
-                                continue;
-                            case NEW_LINE:
-                                list.add(docCandidate);
-                                break;
-                            default:
-                                break;
-                        }
-                        break;
-                    }
-                    break;
-                case SEMICOLON:
-                case RBRACE:
-                case LBRACE:
-                case PREPROCESSOR_DIRECTIVE:
-                    break;
-                default:
-                    continue;
-            }
-            break;
-        }
         if (CsmKindUtilities.isFunctionDefinition(csmObject)) {
             // K&K does not supported by model
             //CsmFunctionDefinition def = (CsmFunctionDefinition) csmObject;

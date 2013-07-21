@@ -78,7 +78,7 @@ public class CndIndexer extends CustomIndexer {
             FileObject fo = root.getFileObject(idx.getRelativePath());
             CsmFile file = CsmUtilities.getCsmFile(fo, false, false);
             if (file != null) {
-                ((ProjectImpl)file.getProject()).onFileImplExternalChange((FileImpl)file);
+                ((ProjectBase)file.getProject()).onFileImplExternalChange((FileImpl)file);
             }
         }
     }

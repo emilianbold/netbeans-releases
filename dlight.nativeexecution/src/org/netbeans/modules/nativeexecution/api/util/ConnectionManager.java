@@ -65,6 +65,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.jsch.JSchChannelsSupport;
 import org.netbeans.modules.nativeexecution.jsch.JSchConnectionTask;
+import org.netbeans.modules.nativeexecution.spi.support.JSchAccess;
 import org.netbeans.modules.nativeexecution.support.Authentication;
 import org.netbeans.modules.nativeexecution.support.HostConfigurationPanel;
 import org.netbeans.modules.nativeexecution.support.Logger;
@@ -86,12 +87,11 @@ public final class ConnectionManager {
 
         public CancellationException() {
         }
-        
+
         public CancellationException(String message) {
             super(message);
-        }        
+        }
     }
-
     private static final java.util.logging.Logger log = Logger.getInstance();
     // Actual sessions pools. One per host
     private static final ConcurrentHashMap<ExecutionEnvironment, JSchChannelsSupport> channelsSupport = new ConcurrentHashMap<ExecutionEnvironment, JSchChannelsSupport>();
@@ -106,14 +106,12 @@ public final class ConnectionManager {
             new ConcurrentHashMap<ExecutionEnvironment, JSchConnectionTask>();
     private static final boolean UNIT_TEST_MODE = Boolean.getBoolean("nativeexecution.mode.unittest"); // NOI18N
     private final ConnectionContinuation DEFAULT_CC;
-
     private final AbstractList<ExecutionEnvironment> recentConnections = new ArrayList<ExecutionEnvironment>();
 
     static {
         ConnectionManagerAccessor.setDefault(new ConnectionManagerAccessorImpl());
 
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-
             @Override
             public void run() {
                 shutdown();
@@ -126,7 +124,6 @@ public final class ConnectionManager {
 
         if (log.isLoggable(Level.FINEST)) {
             JSch.setLogger(new com.jcraft.jsch.Logger() {
-
                 @Override
                 public boolean isEnabled(int level) {
                     return true;
@@ -140,7 +137,6 @@ public final class ConnectionManager {
         }
 
         DEFAULT_CC = new ConnectionContinuation() {
-
             @Override
             public void connectionEstablished(ExecutionEnvironment env) {
                 StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ConnectionManager.class, "ConnectionManager.status.established", env.getDisplayName())); // NOI18N
@@ -159,7 +155,7 @@ public final class ConnectionManager {
             }
         };
 
-        restoreRecentConnectionsList();        
+        restoreRecentConnectionsList();
     }
 
     public void addConnectionListener(ConnectionListener listener) {
@@ -215,7 +211,10 @@ public final class ConnectionManager {
         return ConnectionManager.class.getName() + "_connection.history_" + idx; //NOI18N
     }
 
-    /** for test purposes only; package-local */ void clearRecentConnectionsList() {
+    /**
+     * for test purposes only; package-local
+     */
+    void clearRecentConnectionsList() {
         synchronized (recentConnections) {
             recentConnections.clear();
         }
@@ -239,6 +238,7 @@ public final class ConnectionManager {
     /**
      * Tests whether the connection with the <tt>execEnv</tt> is established or
      * not.
+     *
      * @param execEnv execution environment to test connection with.
      * @return true if connection is established or if execEnv refers to the
      * localhost environment. false otherwise.
@@ -250,7 +250,6 @@ public final class ConnectionManager {
         JSchChannelsSupport support = channelsSupport.get(execEnv); // it's a ConcurrentHashMap => no lock is needed
         return (support != null) && support.isConnected();
     }
-
     private static final int RETRY_MAX = 10;
 
     /**
@@ -384,7 +383,7 @@ public final class ConnectionManager {
                 if (!cs.isConnected()) {
                     throw new IOException("JSchChannelsSupport lost connection with " + env.getDisplayName() + "during initialization "); // NOI18N
                 }
-                
+
                 synchronized (channelsSupportLock) {
                     channelsSupport.put(env, cs);
                 }
@@ -403,7 +402,7 @@ public final class ConnectionManager {
                         throw new IOException(problem.type.name(), problem.cause);
                 }
             }
-            
+
             HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
             log.log(Level.FINE, "New connection established: {0} - {1}", new String[]{env.toString(), hostInfo.getOS().getName()}); // NOI18N
 
@@ -423,14 +422,13 @@ public final class ConnectionManager {
     }
 
     /**
-     * Returns {@link Action javax.swing.Action} that can be used
-     * to get connected to the {@link ExecutionEnvironment}.
-     * It is guaranteed that the same Action is returned for equal execution
-     * environments.
+     * Returns {@link Action javax.swing.Action} that can be used to get
+     * connected to the {@link ExecutionEnvironment}. It is guaranteed that the
+     * same Action is returned for equal execution environments.
      *
      * @param execEnv - {@link ExecutionEnvironment} to connect to.
      * @param onConnect - Runnable that is executed when connection is
-     *        established.
+     * established.
      * @return action to be used to connect to the <tt>execEnv</tt>.
      * @see Action
      */
@@ -489,8 +487,8 @@ public final class ConnectionManager {
     }
 
     /**
-     * Do clean up for the env.
-     * Any stored settings will be removed
+     * Do clean up for the env. Any stored settings will be removed
+     *
      * @param env
      */
     public void forget(ExecutionEnvironment env) {
@@ -521,7 +519,6 @@ public final class ConnectionManager {
         @Override
         public void actionPerformed(ActionEvent e) {
             NativeTaskExecutorService.submit(new Runnable() {
-
                 @Override
                 public void run() {
                     try {
@@ -612,6 +609,91 @@ public final class ConnectionManager {
                         }
                 }
             }
+        }
+
+        @Override
+        public JSchAccess getJSchAccess(ExecutionEnvironment env) {
+            return new JSchAccessImpl(env);
+        }
+    }
+
+    private static class JSchAccessImpl implements JSchAccess {
+
+        private final ExecutionEnvironment env;
+
+        public JSchAccessImpl(final ExecutionEnvironment env) {
+            this.env = env;
+        }
+
+        @Override
+        public String getServerVersion() throws JSchException {
+            synchronized (channelsSupportLock) {
+                if (channelsSupport.containsKey(env)) {
+                    JSchChannelsSupport cs = channelsSupport.get(env);
+                    return cs.getServerVersion();
+                }
+            }
+
+            return null;
+        }
+
+        @Override
+        public Channel openChannel(String type) throws JSchException, InterruptedException, JSchException {
+            try {
+                return ConnectionManagerAccessor.getDefault().openAndAcquireChannel(env, type, true);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+            return null;
+        }
+
+        @Override
+        public void releaseChannel(Channel channel) throws JSchException {
+            ConnectionManagerAccessor.getDefault().closeAndReleaseChannel(env, channel);
+        }
+
+        @Override
+        public void setPortForwardingR(String bind_address, int rport, String host, int lport) throws JSchException {
+            synchronized (channelsSupportLock) {
+                JSchChannelsSupport cs = channelsSupport.get(env);
+                cs.setPortForwardingR(bind_address, rport, host, lport);
+            }
+        }
+
+        @Override
+        public int setPortForwardingL(int lport, String host, int rport) throws JSchException {
+            synchronized (channelsSupportLock) {
+                JSchChannelsSupport cs = channelsSupport.get(env);
+                return cs.setPortForwardingL(lport, host, rport);
+            }
+        }
+
+        @Override
+        public void delPortForwardingR(int rport) throws JSchException {
+            synchronized (channelsSupportLock) {
+                JSchChannelsSupport cs = channelsSupport.get(env);
+                cs.delPortForwardingR(rport);
+            }
+        }
+
+        @Override
+        public void delPortForwardingL(int lport) throws JSchException {
+            synchronized (channelsSupportLock) {
+                JSchChannelsSupport cs = channelsSupport.get(env);
+                cs.delPortForwardingL(lport);
+            }
+        }
+
+        @Override
+        public String getConfig(String key) {
+            synchronized (channelsSupportLock) {
+                if (channelsSupport.containsKey(env)) {
+                    JSchChannelsSupport cs = channelsSupport.get(env);
+                    return cs.getConfig(key);
+                }
+            }
+
+            return null;
         }
     }
 
