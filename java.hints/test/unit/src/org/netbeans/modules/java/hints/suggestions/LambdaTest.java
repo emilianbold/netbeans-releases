@@ -134,6 +134,35 @@ public class LambdaTest {
     }
     
     @Test
+    public void testLambda2ClassExpressionVoid233100() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "import javax.swing.*;\n" +
+                       "public class Test {\n" +
+                       "    public void main() {\n" +
+                       "        SwingUtilities.invokeLater(() -^> System.err.println(1));\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.8")
+                .run(Lambda.class)
+                .findWarning("4:39-4:39:verifier:ERR_lambda2Class")
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import javax.swing.*;\n" +
+                              "public class Test {\n" +
+                              "    public void main() {\n" +
+                              "        SwingUtilities.invokeLater(new Runnable() {\n" +
+                              "            public void run() {\n" +
+                              "                System.err.println(1);\n" +
+                              "            }\n" +
+                              "        });\n" +
+                              "    }\n" +
+                              "}\n");
+    }
+    
+    @Test
     public void testExpression2Body() throws Exception {
         HintTest.create()
                 .setCaretMarker('^')
@@ -155,6 +184,33 @@ public class LambdaTest {
                                       "    public void main(List<String> list) {\n" +
                                       "        Collections.sort(list, (l, r) -> {\n" +
                                       "            return l.compareTo(r);\n" +
+                                      "        });\n" +
+                                      "    }\n" +
+                                      "}\n");
+    }
+    
+    @Test
+    public void testVoidExpression2Body233100() throws Exception {
+        HintTest.create()
+                .setCaretMarker('^')
+                .input("package test;\n" +
+                       "import javax.swing.*;\n" +
+                       "public class Test {\n" +
+                       "    public void main() {\n" +
+                       "        SwingUtilities.invokeLater(() -^> System.err.println(1));\n" +
+                       "    }\n" +
+                       "}\n")
+                .sourceLevel("1.8")
+                .run(Lambda.class)
+                .findWarning("4:39-4:39:verifier:ERR_expression2Return")
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n" +
+                                      "import javax.swing.*;\n" +
+                                      "public class Test {\n" +
+                                      "    public void main() {\n" +
+                                      "        SwingUtilities.invokeLater(() -> {\n" +
+                                      "            System.err.println(1);\n" +
                                       "        });\n" +
                                       "    }\n" +
                                       "}\n");

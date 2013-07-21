@@ -972,6 +972,22 @@ public class JavaFixUtilitiesTest extends TestBase {
 		           "}\n");
     }
     
+    public void testExpression2ExpressionStatement() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private static String t(CharSequence seq) {\n" +
+                           "        return seq.toString();\n" +
+                           "    }\n" +
+                           "}\n",
+                           "return $var; => $var;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private static String t(CharSequence seq) {\n" +
+                           "        seq.toString();\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
     public void testOptimizeNegExpressionNeg() throws Exception {
         performOptimizeNegExpressionTest("!s.isEmpty()", "s.isEmpty()");
     }

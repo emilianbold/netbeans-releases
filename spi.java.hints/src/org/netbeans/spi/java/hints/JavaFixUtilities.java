@@ -786,7 +786,7 @@ public class JavaFixUtilities {
             if (name != null) {
                 TreePath tp = parameters.get(name.toString());
 
-                if (tp != null) {
+                if (tp != null && StatementTree.class.isAssignableFrom(tp.getLeaf().getKind().asInterface())) {
                     rewrite(node, tp.getLeaf());
                     return null;
                 }
