@@ -60,6 +60,8 @@ import javax.swing.JList;
 import javax.swing.JSeparator;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.ActionMappings;
@@ -196,6 +198,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         completer = new TextValueCompleter(getGlobalOptions(), txtOptions, " "); //NOI18N
         cbProjectNodeNameMode.addActionListener(listener);
         txtProjectNodeNameCustomPattern.setVisible(false);
+        txtProjectNodeNameCustomPattern.getDocument().addDocumentListener(new DocumentListenerImpl());
         lstCategory.setSelectedIndex(0);
         lstCategory.setCellRenderer(new DefaultListCellRenderer() {
 
@@ -698,6 +701,9 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void cbProjectNodeNameModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbProjectNodeNameModeActionPerformed
         txtProjectNodeNameCustomPattern.setVisible(cbProjectNodeNameMode.getSelectedIndex()==cbProjectNodeNameMode.getItemCount()-1);
+        txtProjectNodeNameCustomPattern.getParent().invalidate();
+        txtProjectNodeNameCustomPattern.getParent().revalidate();
+        txtProjectNodeNameCustomPattern.getParent().repaint();
     }//GEN-LAST:event_cbProjectNodeNameModeActionPerformed
 
     private void cbProjectNodeNameModeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbProjectNodeNameModeItemStateChanged
@@ -940,6 +946,24 @@ public class SettingsPanel extends javax.swing.JPanel {
         
         @Override
         public void actionPerformed(ActionEvent e) {
+            changed = true;
+        }
+        
+    }
+    private class DocumentListenerImpl implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changed = true;
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changed = true;
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
             changed = true;
         }
         
