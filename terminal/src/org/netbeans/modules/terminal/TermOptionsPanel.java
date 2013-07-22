@@ -52,10 +52,10 @@ import javax.swing.JPanel;
 import org.netbeans.lib.terminalemulator.LineDiscipline;
 import org.netbeans.lib.terminalemulator.Term;
 import org.netbeans.lib.terminalemulator.support.TermOptions;
-import org.openide.util.NbBundle;
 import static org.netbeans.modules.terminal.Bundle.*;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
+import org.openide.util.NbBundle.Messages;
 
 /**
  * A copy of org.netbeans.lib.terminalemulator.support.TermOptionsPanel that
@@ -71,10 +71,11 @@ public final class TermOptionsPanel extends JPanel {
     /**
      * Creates new form TermOptionPanel
      */
-    @NbBundle.Messages({
+    @Messages({
 	"MSG_Hello=Hello from Term",
 	"FontChooser.title=Font Chooser",
-	"FontChooser.defaultFont.label=Default Font"})
+	"FontChooser.defaultFont.label=Default Font"
+    })
     public TermOptionsPanel() {
 	propertyListener = new PropertyChangeListener() {
 	    @Override
