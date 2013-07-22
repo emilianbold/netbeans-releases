@@ -27,7 +27,6 @@ display table-row-group
 End cursor position = 76
 [color: |, color green, color: green, 105]
 color color chooser
-color hash_color_code
 color activeborder
 color activecaption
 color aliceblue
@@ -214,7 +213,6 @@ color yellowgreen
 End cursor position = 118
 [border-right: |, border-right inset, border-right: inset, 170]
 border-right color chooser
-border-right hash_color_code
 border-right length
 border-right activeborder
 border-right activecaption
@@ -416,7 +414,6 @@ border-right yellowgreen
 End cursor position = 190
 [border-bottom-color : |, border-bottom-color red, border-bottom-color : red, 254]
 border-bottom-color color choo
-border-bottom-color hash_color
 border-bottom-color activebord
 border-bottom-color activecapt
 border-bottom-color aliceblue

@@ -21,7 +21,7 @@
             </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/glassfish-tooling-sdk.jar</runtime-relative-path>
-                <binary-origin>external/glassfish-tooling-sdk-0.3-b050.jar</binary-origin>
+                <binary-origin>external/glassfish-tooling-sdk-0.3-b051.jar</binary-origin>
             </class-path-extension>
         </data>
     </configuration>

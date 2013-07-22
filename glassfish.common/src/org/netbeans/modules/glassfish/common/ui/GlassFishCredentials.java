@@ -44,7 +44,6 @@ package org.netbeans.modules.glassfish.common.ui;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.DocumentListener;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.openide.DialogDisplayer;
@@ -53,11 +52,11 @@ import static org.openide.NotifyDescriptor.CANCEL_OPTION;
 import org.openide.util.NbBundle;
 
 /**
- * Set or change GlassFish password panel.
+ * Input GlassFish credentials (username and password).
  * <p/>
  * @author Tomas Kraus
  */
-public class GlassFishPassword extends CommonPasswordPanel {
+public class GlassFishCredentials extends CommonPasswordPanel {
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -65,38 +64,39 @@ public class GlassFishPassword extends CommonPasswordPanel {
 
     /** Local logger. */
     private static final Logger LOGGER
-            = GlassFishLogger.get(GlassFishPassword.class);
+            = GlassFishLogger.get(GlassFishCredentials.class);
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Display GlassFish password panel to change GlassFish password.
-     <p/>
-     * Password is stored in server instance properties and returned
-     * by this method. Properties are persisted.
+     * Display GlassFish credentials panel to get GlassFish credentials.
+     * <p/>
+     * User name and password is stored in server instance properties.
+     * Properties are persisted.
      * <p/>
      * @param instance GlassFish server instance.
-     * @return Password {@see String} when password was successfully changed
-     *         or <code>null</code> otherwise.
+     * @return Value of <code>true</code> when GlassFish credentials were
+     *         updated of <code>false</code> when <code>Cancel</code> button
+     *         was selected.
      */
-    public static String setPassword(final GlassfishInstance instance) {
+    public static boolean setCredentials(final GlassfishInstance instance,
+            final String message) {
         String title = NbBundle.getMessage(
-                GlassFishPassword.class, "GlassFishPassword.title");
-        String message = NbBundle.getMessage(
-                GlassFishPassword.class,
-                "GlassFishPassword.message", instance.getDisplayName());
+                GlassFishPassword.class, "GlassFishCredentials.title");
         NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
                 null, title, NotifyDescriptor.OK_CANCEL_OPTION,
                 NotifyDescriptor.PLAIN_MESSAGE, null, null);
-        GlassFishPassword panel
-                = new GlassFishPassword(notifyDescriptor, instance, message);
+        GlassFishCredentials panel
+                = new GlassFishCredentials(notifyDescriptor, instance, message);
         Object button = DialogDisplayer.getDefault().notify(notifyDescriptor);
         if (button == CANCEL_OPTION) {
-            return null;
+            return false;
         }
+        String userName = panel.getUserName();
         String password = panel.getPassword();
+        instance.setAdminUser(userName);
         instance.setPassword(password);
         try {
             GlassfishInstance.writeInstanceToFile(instance);
@@ -104,22 +104,33 @@ public class GlassFishPassword extends CommonPasswordPanel {
             LOGGER.log(Level.INFO,
                     "Could not store GlassFish server attributes", ex);
         }
-        return password;
+        return true;
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Instance attributes                                                    //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /** Password verification label. */
-    private final String passwordVerifyLabelText;
+    /**
+     * Display GlassFish credentials panel to get GlassFish credentials.
+     * <p/>
+     * User name and password is stored in server instance properties.
+     * Properties are persisted.
+     * <p/>
+     * @param instance GlassFish server instance.
+     * @return Value of <code>true</code> when GlassFish credentials were
+     *         updated of <code>false</code> when <code>Cancel</code> button
+     *         was selected.
+     */
+    public static boolean setCredentials(final GlassfishInstance instance) {
+        String message = NbBundle.getMessage(
+                GlassFishPassword.class,
+                "GlassFishCredentials.message", instance.getDisplayName());
+        return setCredentials(instance, message);
+    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Creates new GlassFish password panel.
+     * Creates new GlassFish credentials panel.
      * <p/>
      * @param descriptor User notification descriptor.
      * @param instance   GlassFish server instance used to search
@@ -127,18 +138,11 @@ public class GlassFishPassword extends CommonPasswordPanel {
      * @param message    Message text.
      */
     @SuppressWarnings("LeakingThisInConstructor")
-    public GlassFishPassword(final NotifyDescriptor descriptor,
+    public GlassFishCredentials(final NotifyDescriptor descriptor,
             final GlassfishInstance instance, final String message) {
         super(descriptor, instance, message);
-        this.passwordVerifyLabelText = NbBundle.getMessage(
-                GlassFishPassword.class,
-                "GlassFishPassword.passwordVerifyLabel");
         initComponents();
-        initFileds(passwordValid());
-        password.getDocument()
-                .addDocumentListener(initPasswordValidateListener());
-        passwordVerify.getDocument()
-                .addDocumentListener(initPasswordValidateListener());
+        initFileds(true);
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -154,63 +158,26 @@ public class GlassFishPassword extends CommonPasswordPanel {
         return new String(password.getPassword());
     }
 
-    ////////////////////////////////////////////////////////////////////////////
-    // Validators                                                             //
-    ////////////////////////////////////////////////////////////////////////////
-
     /**
-     * Validate password fields.
+     * Get user name value from form.
      * <p/>
-     * Password fields have the same length and content.
-     * <p/>
-     * @return <code>true</code> when password fields are valid
-     *         or <code>false</code> otherwise.
+     * @return User name value from form.
      */
-    @SuppressWarnings("LocalVariableHidesMemberVariable")
-    final boolean passwordValid() {
-        char[] password1 = password.getPassword();
-        char[] password2 = passwordVerify.getPassword();
-        if (password1.length == password2.length) {
-            boolean valid = true;
-            int i = 0;
-            while(valid && i < password1.length) {
-                valid = password1[i] == password2[i];
-                i += 1;
-            }
-            return valid;
-        } else {
-            return false;
-        }        
+    String getUserName() {
+        return userText.getText();
     }
 
-    /**
-     * Create event listener to validate account field on the fly.
-     */
-    private DocumentListener initPasswordValidateListener() {
-        return new ComponentFieldListener() {
-            @Override
-            void processEvent() {
-                valid = passwordValid();
-                setDescriptorButtons(descriptor, valid);
-            }
-        };
-    }
-    
     ////////////////////////////////////////////////////////////////////////////
     // Methods                                                                //
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Clear form fields to remove password {@see String}s from them.
+     * Clear form fields.
      */
     public void clear() {
         this.password.setText("");
-        this.passwordVerify.setText("");
+        this.userText.setText("");
     }
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Generated GUI code                                                     //
-    ////////////////////////////////////////////////////////////////////////////
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -224,35 +191,22 @@ public class GlassFishPassword extends CommonPasswordPanel {
         messageLabel = new javax.swing.JLabel();
         userLabel = new javax.swing.JLabel();
         passwordLabel = new javax.swing.JLabel();
-        passwordVerifyLabel = new javax.swing.JLabel();
         userText = new javax.swing.JTextField();
         password = new javax.swing.JPasswordField();
-        passwordVerify = new javax.swing.JPasswordField();
 
         setMaximumSize(new java.awt.Dimension(500, 200));
         setMinimumSize(new java.awt.Dimension(500, 150));
         setPreferredSize(new java.awt.Dimension(500, 150));
 
         org.openide.awt.Mnemonics.setLocalizedText(messageLabel, this.message);
-        messageLabel.setMaximumSize(new java.awt.Dimension(93, 15));
-        messageLabel.setMinimumSize(new java.awt.Dimension(93, 15));
-        messageLabel.setPreferredSize(new java.awt.Dimension(15, 15));
 
         org.openide.awt.Mnemonics.setLocalizedText(userLabel, this.userLabelText);
-        userLabel.setMaximumSize(new java.awt.Dimension(93, 15));
-        userLabel.setMinimumSize(new java.awt.Dimension(93, 15));
-        userLabel.setPreferredSize(new java.awt.Dimension(93, 15));
 
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, this.passwordLabelText);
 
-        org.openide.awt.Mnemonics.setLocalizedText(passwordVerifyLabel, this.passwordVerifyLabelText);
-
-        userText.setEditable(false);
         userText.setText(this.instance.getAdminUser());
 
         password.setText(this.instance.getAdminPassword());
-
-        passwordVerify.setText(this.instance.getAdminPassword());
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -262,16 +216,14 @@ public class GlassFishPassword extends CommonPasswordPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(messageLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(userLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE)
-                            .addComponent(passwordLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(passwordVerifyLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(passwordLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(userLabel, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 150, Short.MAX_VALUE))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(userText, javax.swing.GroupLayout.DEFAULT_SIZE, 314, Short.MAX_VALUE)
-                            .addComponent(password)
-                            .addComponent(passwordVerify))))
+                            .addComponent(password))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -279,27 +231,21 @@ public class GlassFishPassword extends CommonPasswordPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(messageLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 67, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(userLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(userLabel)
                     .addComponent(userText, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(passwordLabel)
                     .addComponent(password, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.CENTER)
-                    .addComponent(passwordVerifyLabel)
-                    .addComponent(passwordVerify, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(65, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel messageLabel;
     private javax.swing.JPasswordField password;
     private javax.swing.JLabel passwordLabel;
-    private javax.swing.JPasswordField passwordVerify;
-    private javax.swing.JLabel passwordVerifyLabel;
     private javax.swing.JLabel userLabel;
     private javax.swing.JTextField userText;
     // End of variables declaration//GEN-END:variables
