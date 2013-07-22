@@ -340,15 +340,7 @@ public class FtpClient implements RemoteClient {
 
     private String printWorkingDirectoryInternal() throws IOException {
         assert Thread.holdsLock(this);
-        String pwd = ftpClient.printWorkingDirectory();
-        // #231137
-        while (pwd.startsWith("\"")) { // NOI18N
-            pwd = pwd.substring(1);
-        }
-        while (pwd.endsWith("\"")) { // NOI18N
-            pwd = pwd.substring(0, pwd.length() - 1);
-        }
-        return pwd;
+        return ftpClient.printWorkingDirectory();
     }
 
     @Override
