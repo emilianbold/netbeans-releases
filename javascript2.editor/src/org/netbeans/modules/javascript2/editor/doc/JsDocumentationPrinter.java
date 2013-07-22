@@ -63,6 +63,7 @@ public class JsDocumentationPrinter {
     private static final String OPTIONAL_PARAMETER = "[optional]"; //NOI18N
 
     @Messages({
+        "# T13Y: All following words are section headers of the documentation window. Mostly ends with colon.",
         "JsDocumentationPrinter.title.type=Type",
         "JsDocumentationPrinter.title.description=Description",
         "JsDocumentationPrinter.title.deprecated=Deprecated",
