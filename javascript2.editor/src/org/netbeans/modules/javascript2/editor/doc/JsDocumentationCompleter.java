@@ -53,6 +53,7 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import javax.swing.text.BadLocationException;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -61,7 +62,6 @@ import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.javascript2.editor.doc.api.JsDocumentationSupport;
 import org.netbeans.modules.javascript2.editor.doc.spi.SyntaxProvider;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
@@ -244,7 +244,7 @@ public class JsDocumentationCompleter {
         Collection<? extends TypeUsage> returnTypes = function.getReturnTypes();
         Collection<TypeUsage> types = ModelUtils.resolveTypes(returnTypes, jsParserResult);
         if (types.isEmpty()) {
-            if (hasReturnClause(doc, jsObject)) {
+            if (hasReturnClause(jsParserResult, jsObject)) {
                 addReturns(doc, toAdd, syntaxProvider, indent, Collections.singleton(new TypeUsageImpl(Type.UNRESOLVED)));
             }
         } else {
@@ -254,9 +254,10 @@ public class JsDocumentationCompleter {
         doc.insertString(offset, toAdd.toString(), null);
     }
 
-    private static boolean hasReturnClause(BaseDocument doc, JsObject jsObject) {
+    private static boolean hasReturnClause(JsParserResult jsParserResult, JsObject jsObject) {
         OffsetRange offsetRange = jsObject.getOffsetRange();
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(doc, offsetRange.getStart());
+        TokenHierarchy<?> tokenHierarchy = jsParserResult.getSnapshot().getTokenHierarchy();
+        TokenSequence<? extends JsTokenId> ts = tokenHierarchy.tokenSequence(JsTokenId.javascriptLanguage());
         if (ts == null) {
             return false;
         }

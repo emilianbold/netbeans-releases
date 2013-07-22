@@ -41,10 +41,9 @@
  */
 package org.netbeans.modules.html.editor.gsf;
 
+import java.awt.Color;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
@@ -68,6 +67,7 @@ import org.netbeans.modules.html.editor.completion.AttrValuesCompletion;
 import org.netbeans.modules.web.common.api.ValueCompletion;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -376,6 +376,8 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
         private EntryHandle entryHandle;
         private RefactoringElementType type;
         private static final int SELECTOR_TEXT_MAX_LENGTH = 50;
+        
+        private static final Color SELECTOR_COLOR = new Color(0x00, 0x7c, 0x00);
 
         public AlternativeLocationImpl(DeclarationLocation location, EntryHandle entry, RefactoringElementType type) {
             this.location = location;
@@ -388,6 +390,11 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             return CSS_SELECTOR_ELEMENT_HANDLE_SINGLETON;
         }
 
+        private static String hexColorCode(Color c) {
+            Color tweakedToLookAndFeel = LFCustoms.shiftColor(c);
+            return Integer.toHexString(tweakedToLookAndFeel.getRGB()).substring(2);
+        }
+        
         @Override
         public String getDisplayHtml(HtmlFormatter formatter) {
             StringBuilder b = new StringBuilder();
@@ -447,7 +454,9 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                 }
             }
             
-            b.append("<font color=007c00>");//NOI18N
+            b.append("<font color=");//NOI18N
+            b.append(hexColorCode(SELECTOR_COLOR));
+            b.append(">");
             b.append(prefix);
             b.append(' '); //NOI18N
             b.append("<b>"); //NOI18N
