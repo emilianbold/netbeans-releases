@@ -56,6 +56,7 @@ import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -238,7 +239,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
                                      ( war != null ? war.getJ2eeProfile() :
                                            (ejb != null ? ejb.getJ2eeProfile() : Profile.JAVA_EE_6_FULL));
         String[] ids = Deployment.getDefault().getServerInstanceIDs(Collections.singletonList(type), profile);
-        Collection<Server> col = new ArrayList<Server>();
+        Collection<Server> col = new ArrayList<>();
         col.add(new Server(ExecutionChecker.DEV_NULL));
 
         for (int i = 0; i < ids.length; i++) {
@@ -399,7 +400,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     }
 
     private void updateProjectLbl() {
-        ProjectInformation pi = project.getLookup().lookup(ProjectInformation.class);
+        ProjectInformation pi = ProjectUtils.getInformation(project);
         if (pi != null) {
             lblProject.setText(NbBundle.getMessage(SelectAppServerPanel.class,
                     "MSG_InProject", pi.getDisplayName()));

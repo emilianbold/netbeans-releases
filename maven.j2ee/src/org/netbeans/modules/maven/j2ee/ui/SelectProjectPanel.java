@@ -167,7 +167,7 @@ public class SelectProjectPanel extends javax.swing.JPanel {
         @Override
         public void run() {
             Project[] prjs = OpenProjects.getDefault().getOpenProjects();
-            final List<Node> toRet = new ArrayList<Node>();
+            final List<Node> toRet = new ArrayList<>();
             for (Project p : prjs) {
                 if (p == curProject) {
                     continue;

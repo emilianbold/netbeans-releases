@@ -147,7 +147,7 @@ public class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
     public List<JPADataSource> getDataSources() {
 
         J2eeModuleProvider prvd = project.getLookup().lookup(J2eeModuleProvider.class);
-        List<Datasource> datasources = new ArrayList<Datasource>();
+        List<Datasource> datasources = new ArrayList<>();
         try {
             datasources.addAll(prvd.getModuleDatasources());
         } catch (ConfigurationException e) {
@@ -159,7 +159,7 @@ public class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
             // TODO: it would be reasonable to rethrow this exception, see #96791
         }
 
-        List<JPADataSource> result = new ArrayList<JPADataSource>(datasources.size());
+        List<JPADataSource> result = new ArrayList<>(datasources.size());
         for(Datasource each : datasources){
             result.add(new DatasourceWrapper(each));
         }
