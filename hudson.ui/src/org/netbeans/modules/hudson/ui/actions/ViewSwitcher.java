@@ -67,7 +67,9 @@ import org.openide.util.actions.Presenter;
 @ActionID(category="Team", id="org.netbeans.modules.hudson.ui.actions.ViewSwitcher")
 @ActionRegistration(displayName="#ViewSwitcher.label", lazy=false)
 @ActionReference(path=HudsonInstance.ACTION_PATH, position=100)
-@Messages("ViewSwitcher.label=View")
+@Messages({
+    "# \"View\" is used as noun in a menu for selection of a defined view.",
+    "ViewSwitcher.label=View"})
 public class ViewSwitcher extends AbstractAction implements ContextAwareAction, Presenter.Popup {
 
     private final HudsonInstance instance;
