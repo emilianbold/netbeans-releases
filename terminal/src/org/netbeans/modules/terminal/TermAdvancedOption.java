@@ -55,7 +55,6 @@ import org.openide.util.NbPreferences;
 import org.netbeans.spi.options.OptionsPanelController;
 
 import org.netbeans.lib.terminalemulator.support.TermOptions;
-import org.netbeans.lib.terminalemulator.support.TermOptionsPanel;
 
 /**
  * Sets up an options category under Miscellaneous.
