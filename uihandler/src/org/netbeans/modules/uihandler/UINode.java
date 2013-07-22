@@ -74,6 +74,7 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
 
         LogRecords.decorate(r, this);
         
+        /* Not necessary after the UI has changed by http://hg.netbeans.org/core-main/rev/933355e50026
         Sheet.Set s = Sheet.createPropertiesSet();
         s.put(createPropertyDate(this));
         s.put(createPropertyLogger(this));
@@ -89,6 +90,7 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
             }
             getSheet().put(paramSheet);
         }
+        */
     }
 
     @Override
@@ -138,6 +140,8 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
         return new UINode(r, ch);
     }
     
+    /* Not necessary after the UI has changed by http://hg.netbeans.org/core-main/rev/933355e50026
+     * Leaving it commented out if the properties are going to be displayed somewhere again
     static Node.Property createPropertyDate(final VisualData source) {
         class NP extends PropertySupport.ReadOnly<Date> {
             public NP() {
@@ -265,6 +269,7 @@ final class UINode extends AbstractNode implements VisualData, Decorable {
         }
         return new NP();
     }
+    */
 
     
     private static final class StackTraceChildren extends Children.Keys<StackTraceElement> {
