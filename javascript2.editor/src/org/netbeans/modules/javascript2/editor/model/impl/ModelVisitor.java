@@ -158,6 +158,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node leave(AccessNode accessNode) {
+        boolean isPrivilage = false;
         if (accessNode.getBase() instanceof IdentNode) {
             IdentNode base = (IdentNode)accessNode.getBase();
             if (!"this".equals(base.getName())) {
@@ -186,6 +187,7 @@ public class ModelVisitor extends PathNodeVisitor {
             } else {
                 JsObject current = modelBuilder.getCurrentDeclarationFunction();
                 fromAN = (JsObjectImpl)resolveThis(current);
+                isPrivilage = true;
             }
         }
         if (fromAN != null) {
@@ -215,8 +217,21 @@ public class ModelVisitor extends PathNodeVisitor {
                             property.addOccurrence(name.getOffsetRange());
                         }
                     } else {
+                        boolean setDocumentation = false;
+                        if (isPrivilage && getPath().size() > 1 && getPreviousFromPath(2) instanceof ExecuteNode ) {
+                            // google style declaration of properties:  this.buildingID;    
+                            onLeftSite = true;
+                            setDocumentation = true;
+                        }
                         property = new JsObjectImpl(fromAN, name, name.getOffsetRange(), onLeftSite, parserResult.getSnapshot().getMimeType(), null);
                         property.addOccurrence(name.getOffsetRange());
+                        if (setDocumentation) {
+                            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+                            if (docHolder != null) {    
+                                property.setDocumentation(docHolder.getDocumentation(accessNode));
+                                property.setDeprecated(docHolder.isDeprecated(accessNode));
+                            }
+                        }
                     }
                     fromAN.addProperty(name.getName(), property);
                 }
