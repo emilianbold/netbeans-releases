@@ -187,7 +187,7 @@ public class SmartyOptionsPanel extends JPanel {
 
     public void setWarning(String message) {
         errorLabel.setText(" "); // NOI18N
-        errorLabel.setForeground(Color.ORANGE); // NOI18N
+        errorLabel.setForeground(UIManager.getColor("nb.warningForeground")); // NOI18N
         errorLabel.setText(message);
     }
 

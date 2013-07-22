@@ -52,6 +52,7 @@ import javax.swing.JSeparator;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.openide.awt.Mnemonics;
@@ -73,11 +74,6 @@ public class SmartyCustomizerPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-
-
-
-
-
         customOpenDelimiterLabel = new JLabel();
         customOpenDelimiterTextField = new JTextField();
         customDelimitersLabel = new JLabel();
@@ -85,11 +81,15 @@ public class SmartyCustomizerPanel extends JPanel {
         optionsLabel = new JLabel();
         customCloseDelimiterLabel = new JLabel();
         customCloseDelimiterTextField = new JTextField();
-        Mnemonics.setLocalizedText(customOpenDelimiterLabel, NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customOpenDelimiterLabel.text"));
+
+        Mnemonics.setLocalizedText(customOpenDelimiterLabel, NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customOpenDelimiterLabel.text")); // NOI18N
+
         customOpenDelimiterTextField.setText(NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customOpenDelimiterTextField.text")); // NOI18N
-        customDelimitersLabel.setForeground(new Color(124, 124, 124));
-        Mnemonics.setLocalizedText(customDelimitersLabel, NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customDelimitersLabel.text"));
-        Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.optionsLabel.text"));
+
+        customDelimitersLabel.setForeground(UIManager.getColor("Label.foreground"));
+        Mnemonics.setLocalizedText(customDelimitersLabel, NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customDelimitersLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(optionsLabel, NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.optionsLabel.text")); // NOI18N
         optionsLabel.setToolTipText(NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.optionsLabel.toolTipText")); // NOI18N
         optionsLabel.addMouseListener(new MouseAdapter() {
             public void mouseEntered(MouseEvent evt) {
@@ -99,8 +99,11 @@ public class SmartyCustomizerPanel extends JPanel {
                 optionsLabelMousePressed(evt);
             }
         });
-        Mnemonics.setLocalizedText(customCloseDelimiterLabel, NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customCloseDelimiterLabel.text"));
+
+        Mnemonics.setLocalizedText(customCloseDelimiterLabel, NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customCloseDelimiterLabel.text")); // NOI18N
+
         customCloseDelimiterTextField.setText(NbBundle.getMessage(SmartyCustomizerPanel.class, "SmartyCustomizerPanel.customCloseDelimiterTextField.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
