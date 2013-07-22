@@ -52,7 +52,6 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.modules.maven.j2ee.ejb.*;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.DatasourceUIHelper;
-import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.j2ee.common.ServerUtil;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.common.api.Datasource;
@@ -68,6 +67,7 @@ import org.netbeans.modules.j2ee.persistence.spi.server.ServerStatusProvider2;
 import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
 import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
 import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.j2ee.ui.SelectAppServerPanel;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.util.ChangeSupport;
@@ -185,7 +185,7 @@ public class JPAStuffImpl implements JPAModuleInfo, JPADataSourcePopulator,
     @Override
     public boolean selectServer() {
         J2eeModuleProvider provider = project.getLookup().lookup(J2eeModuleProvider.class);
-        boolean res = ExecutionChecker.showServerSelectionDialog(project, provider, null);
+        boolean res = SelectAppServerPanel.showServerSelectionDialog(project, provider, null);
         if (res) {
             // notify other parties that a server was selected
             SwingUtilities.invokeLater(new Runnable() {

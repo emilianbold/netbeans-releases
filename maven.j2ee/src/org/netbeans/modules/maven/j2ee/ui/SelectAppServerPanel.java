@@ -40,15 +40,18 @@
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.maven.j2ee;
+package org.netbeans.modules.maven.j2ee.ui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
+import java.util.Set;
 import javax.swing.DefaultComboBoxModel;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
@@ -57,12 +60,27 @@ import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.maven.api.NbMavenProject;
+import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
+import org.netbeans.modules.maven.j2ee.SessionContent;
+import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.utils.Server;
 import org.netbeans.modules.web.api.webmodule.WebModule;
+import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
+import org.netbeans.spi.project.SubprojectProvider;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotificationLineSupport;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,7 +93,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     private Project project;
 
 
-    public SelectAppServerPanel(boolean showIgnore, Project project) {
+    private SelectAppServerPanel(boolean showIgnore, Project project) {
         this.project = project;
         initComponents();
         buttonGroup1.add(rbSession);
@@ -104,23 +122,108 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
         rbPermanentStateChanged(null);
     }
 
-    String getSelectedServerType() {
+    public static boolean showServerSelectionDialog(Project project, J2eeModuleProvider provider, RunConfig config) {
+        if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
+            boolean isDefaultGoal = config == null ? true : neitherJettyNorCargo(config.getGoals()); //TODO how to figure if really default or overridden by user?
+            SelectAppServerPanel panel = new SelectAppServerPanel(!isDefaultGoal, project);
+            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ExecutionChecker.class, "TIT_Select"));
+            panel.setNLS(dd.createNotificationLineSupport());
+            Object obj = DialogDisplayer.getDefault().notify(dd);
+            if (obj == NotifyDescriptor.OK_OPTION) {
+                String instanceId = panel.getSelectedServerInstance();
+                String serverId = panel.getSelectedServerType();
+                if (!ExecutionChecker.DEV_NULL.equals(instanceId)) {
+                    boolean permanent = panel.isPermanent();
+                    if (permanent) {
+                        persistServer(project, instanceId, serverId, panel.getChosenProject());
+                    } else {
+                        SessionContent sc = project.getLookup().lookup(SessionContent.class);
+                        if (sc != null) {
+                            sc.setServerInstanceId(instanceId);
+                        }
+
+                        // We want to initiate context path to default value if there isn't related deployment descriptor yet
+                        MavenProjectSupport.changeServer(project, true);
+                    }
+
+                    LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] { MavenProjectSupport.obtainServerName(project) }, "maven"); //NOI18N
+
+                    return true;
+                } else {
+                    //ignored used now..
+                    if (panel.isIgnored() && config != null) {
+                        removeNetbeansDeployFromActionMappings(project, config.getActionName());
+                        return true;
+                    }
+                }
+            }
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExecutionChecker.class, "ERR_Action_without_deployment_server"));
+            return false;
+        }
+        return true;
+    }
+
+    private static void removeNetbeansDeployFromActionMappings(Project project, String actionName) {
+        try {
+            ProjectConfiguration cfg = project.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
+            NetbeansActionMapping mapp = ModelHandle2.getMapping(actionName, project, cfg);
+            if (mapp != null) {
+                mapp.getProperties().remove(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY);
+                ModelHandle2.putMapping(mapp, project, cfg);
+            }
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+    }
+
+    private static boolean neitherJettyNorCargo(List<String> goals) {
+        for (String goal : goals) {
+            if (goal.contains("jetty") || goal.contains("cargo")) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
+        MavenProjectSupport.setServerInstanceID(project, iID);
+        MavenProjectSupport.setServerID(project, sID);
+
+        // We want to initiate context path to default value if there isn't related deployment descriptor yet
+        MavenProjectSupport.changeServer(project, true);
+
+        // refresh all subprojects
+        SubprojectProvider spp = targetPrj.getLookup().lookup(SubprojectProvider.class);
+        //mkleint: we are assuming complete result (transitive projects included)
+        //that's ok as far as the current maven impl goes afaik, but not according to the
+        //documentation for SubProjectprovider
+        Set<? extends Project> childrenProjs = spp.getSubprojects();
+        if (!childrenProjs.contains(project)) {
+            NbMavenProject.fireMavenProjectReload(project);
+        }
+        for (Project curPrj : childrenProjs) {
+            NbMavenProject.fireMavenProjectReload(curPrj);
+        }
+
+    }
+
+    private String getSelectedServerType() {
         return ((Server) comServer.getSelectedItem()).getServerID();
     }
 
-    String getSelectedServerInstance() {
+    private String getSelectedServerInstance() {
         return ((Server) comServer.getSelectedItem()).getServerInstanceID();
     }
 
-    boolean isPermanent() {
+    private boolean isPermanent() {
         return rbPermanent.isSelected();
     }
 
-    boolean isIgnored() {
+    private boolean isIgnored() {
         return rbIgnore.isSelected();
     }
 
-    Project getChosenProject() {
+    private Project getChosenProject() {
         return project;
     }
 
@@ -283,7 +386,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
         }
     }
 
-    void setNLS(NotificationLineSupport notif) {
+    private void setNLS(NotificationLineSupport notif) {
         nls = notif;
     }
 
