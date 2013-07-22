@@ -158,7 +158,6 @@ public class ModelVisitor extends PathNodeVisitor {
 
     @Override
     public Node leave(AccessNode accessNode) {
-        boolean isPrivilage = false;
         if (accessNode.getBase() instanceof IdentNode) {
             IdentNode base = (IdentNode)accessNode.getBase();
             if (!"this".equals(base.getName())) {
@@ -187,7 +186,6 @@ public class ModelVisitor extends PathNodeVisitor {
             } else {
                 JsObject current = modelBuilder.getCurrentDeclarationFunction();
                 fromAN = (JsObjectImpl)resolveThis(current);
-                isPrivilage = true;
             }
         }
         if (fromAN != null) {
@@ -218,7 +216,7 @@ public class ModelVisitor extends PathNodeVisitor {
                         }
                     } else {
                         boolean setDocumentation = false;
-                        if (isPrivilage && getPath().size() > 1 && getPreviousFromPath(2) instanceof ExecuteNode ) {
+                        if (isPriviliged(accessNode) && getPath().size() > 1 && getPreviousFromPath(2) instanceof ExecuteNode ) {
                             // google style declaration of properties:  this.buildingID;    
                             onLeftSite = true;
                             setDocumentation = true;
@@ -1739,6 +1737,17 @@ public class ModelVisitor extends PathNodeVisitor {
                     && getPreviousFromPath(pathIndex + 3) instanceof UnaryNode
                     && (getPreviousFromPath(pathIndex + 4) instanceof BinaryNode
                         || getPreviousFromPath(pathIndex + 4) instanceof VarNode));
+    }
+    
+    private boolean isPriviliged(AccessNode aNode) {
+        Node node = aNode.getBase();
+        while (node instanceof AccessNode) {
+            node = ((AccessNode)node).getBase();
+        }
+        if (node instanceof IdentNode && "this".endsWith(((IdentNode)node).getName())) {
+            return true;
+        }
+        return false;
     }
     
     public static class FunctionCall {
