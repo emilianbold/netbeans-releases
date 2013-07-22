@@ -102,8 +102,6 @@ public class J2EEPrerequisitesChecker implements PrerequisitesChecker, LateBound
         J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
         if (provider != null) {
             checkWarInplace(config, provider);
-//            boolean isReady = provider.getConfigSupport().ensureConfigurationReady();
-            //TODO report not-readiness.
         }
         return true;
     }
