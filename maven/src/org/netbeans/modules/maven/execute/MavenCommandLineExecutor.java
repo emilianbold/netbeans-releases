@@ -613,6 +613,6 @@ public class MavenCommandLineExecutor extends AbstractMavenExecutor {
                 list = list + " " + s;
             }
         }
-        return list.contains("-T ") || list.contains("--threads ");
+        return list.contains("-T") || list.contains("--threads");
     } 
 }

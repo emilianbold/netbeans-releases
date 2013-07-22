@@ -425,7 +425,7 @@ mediaExpression
     
 mediaFeatureValue
     :
-    ws? COLON ws? expression
+    ws? COLON ws? cp_expression
     ;
  
 mediaFeature
