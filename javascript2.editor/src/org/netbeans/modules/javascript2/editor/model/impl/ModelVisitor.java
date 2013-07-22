@@ -230,6 +230,12 @@ public class ModelVisitor extends PathNodeVisitor {
                             if (docHolder != null) {    
                                 property.setDocumentation(docHolder.getDocumentation(accessNode));
                                 property.setDeprecated(docHolder.isDeprecated(accessNode));
+                                List<Type> returnTypes = docHolder.getReturnType(accessNode);
+                                if (!returnTypes.isEmpty()) {
+                                    for (Type type : returnTypes) {
+                                        property.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), accessNode.getFinish());
+                                    }
+                                }
                             }
                         }
                     }
