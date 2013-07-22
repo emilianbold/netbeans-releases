@@ -127,7 +127,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
         if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
             boolean isDefaultGoal = config == null ? true : neitherJettyNorCargo(config.getGoals()); //TODO how to figure if really default or overridden by user?
             SelectAppServerPanel panel = new SelectAppServerPanel(!isDefaultGoal, project);
-            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ExecutionChecker.class, "TIT_Select"));
+            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(SelectAppServerPanel.class, "TIT_Select"));
             panel.setNLS(dd.createNotificationLineSupport());
             Object obj = DialogDisplayer.getDefault().notify(dd);
             if (obj == NotifyDescriptor.OK_OPTION) {
@@ -158,7 +158,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
                     }
                 }
             }
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExecutionChecker.class, "ERR_Action_without_deployment_server"));
+            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(SelectAppServerPanel.class, "ERR_Action_without_deployment_server"));
             return false;
         }
         return true;
