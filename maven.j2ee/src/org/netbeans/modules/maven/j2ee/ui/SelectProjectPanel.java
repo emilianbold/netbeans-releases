@@ -46,7 +46,7 @@
  * Created on Sep 4, 2009, 10:21:42 AM
  */
 
-package org.netbeans.modules.maven.j2ee;
+package org.netbeans.modules.maven.j2ee.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
@@ -167,7 +167,7 @@ public class SelectProjectPanel extends javax.swing.JPanel {
         @Override
         public void run() {
             Project[] prjs = OpenProjects.getDefault().getOpenProjects();
-            final List<Node> toRet = new ArrayList<Node>();
+            final List<Node> toRet = new ArrayList<>();
             for (Project p : prjs) {
                 if (p == curProject) {
                     continue;
