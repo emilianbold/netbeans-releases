@@ -789,7 +789,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private void completeObjectMembers(JsObject jsObject, CompletionRequest request, Map<String, List<JsElement>> properties) {
         if (jsObject.getJSKind() == JsElement.Kind.OBJECT || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
             for (JsObject property : jsObject.getProperties().values()) {
-                if(!property.getModifiers().contains(Modifier.PRIVATE)) {
+                if(!property.getModifiers().contains(Modifier.PRIVATE) && !property.isAnonymous()) {
                     addPropertyToMap(request, properties, property);
                 }
             }
