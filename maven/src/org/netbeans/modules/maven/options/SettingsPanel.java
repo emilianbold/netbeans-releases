@@ -105,6 +105,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private final DefaultComboBoxModel mavenHomeDataModel = new DefaultComboBoxModel();
     private String             mavenRuntimeHome = null;
     private int                lastSelected = -1;
+    private final static RequestProcessor RP = new RequestProcessor(SettingsPanel.class);
 
     private static class ComboBoxRenderer extends DefaultListCellRenderer {
 
@@ -789,38 +790,57 @@ public class SettingsPanel extends javax.swing.JPanel {
     public void setValues() {
         txtOptions.setText(MavenSettings.getDefault().getDefaultOptions());
 
-        predefinedRuntimes.clear();
-        predefinedRuntimes.add("");
-        String defaultExternalMavenRuntime = MavenSettings.getDefaultExternalMavenRuntime();
-        if (defaultExternalMavenRuntime != null) {
-            predefinedRuntimes.add(defaultExternalMavenRuntime);
-        }
-        userDefinedMavenRuntimes.clear();
-        userDefinedMavenRuntimes.addAll(MavenSettings.getDefault().getUserDefinedMavenRuntimes());
-        comMavenHome.removeActionListener(listItemChangedListener);
-        mavenHomeDataModel.removeAllElements();
-        File command = EmbedderFactory.getMavenHome();
-        for (String runtime : predefinedRuntimes) {
-            boolean bundledRuntime = runtime.isEmpty();
-            String desc = bundledRuntime ? MAVEN_RUNTIME_Bundled() :
-                    MAVEN_RUNTIME_External(runtime);
-            mavenHomeDataModel.addElement(desc);
-        }
-        
-        if (!userDefinedMavenRuntimes.isEmpty()) {
-            mavenHomeDataModel.addElement(SEPARATOR);
-            for (String runtime : userDefinedMavenRuntimes) {
-                String desc = MAVEN_RUNTIME_External(runtime); // NOI18N
-                mavenHomeDataModel.addElement(desc);
+        final List<String> predefined = new ArrayList<String>();
+        final List<String> user = new ArrayList<String>();
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                predefined.add("");
+                String defaultExternalMavenRuntime = MavenSettings.getDefaultExternalMavenRuntime();
+                if (defaultExternalMavenRuntime != null) {
+                    predefined.add(defaultExternalMavenRuntime);
+                }
+                user.addAll(MavenSettings.getDefault().getUserDefinedMavenRuntimes());
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        predefinedRuntimes.clear();
+                        userDefinedMavenRuntimes.clear();
+                        predefinedRuntimes.addAll(predefined);
+                        userDefinedMavenRuntimes.addAll(user);
+
+                        comMavenHome.removeActionListener(listItemChangedListener);
+                        mavenHomeDataModel.removeAllElements();
+                        File command = EmbedderFactory.getMavenHome();
+                        for (String runtime : predefinedRuntimes) {
+                            boolean bundledRuntime = runtime.isEmpty();
+                            String desc = bundledRuntime ? MAVEN_RUNTIME_Bundled()
+                                    : MAVEN_RUNTIME_External(runtime);
+                            mavenHomeDataModel.addElement(desc);
+                        }
+
+                        if (!userDefinedMavenRuntimes.isEmpty()) {
+                            mavenHomeDataModel.addElement(SEPARATOR);
+                            for (String runtime : userDefinedMavenRuntimes) {
+                                String desc = MAVEN_RUNTIME_External(runtime); // NOI18N
+                                mavenHomeDataModel.addElement(desc);
+                            }
+                        }
+
+                        mavenHomeDataModel.addElement(SEPARATOR);
+                        mavenHomeDataModel.addElement(MAVEN_RUNTIME_Browse());
+                        comMavenHome.setSelectedItem(command.getAbsolutePath()); //NOI18N
+                        listDataChanged();
+                        lastSelected = comMavenHome.getSelectedIndex();
+                        comMavenHome.addActionListener(listItemChangedListener);
+                        changed = false;  //#163955 - do not fire change events on load
+                        //listDataChanged() sets changed to true
+                    }
+                });
             }
-        }
-        
-        mavenHomeDataModel.addElement(SEPARATOR);
-        mavenHomeDataModel.addElement(MAVEN_RUNTIME_Browse());
-        comMavenHome.setSelectedItem(command.getAbsolutePath()); //NOI18N
-        listDataChanged();
-        lastSelected = comMavenHome.getSelectedIndex();
-        comMavenHome.addActionListener(listItemChangedListener);
+        });
         
         comIndex.setSelectedIndex(RepositoryPreferences.getIndexUpdateFrequency());
         comBinaries.setSelectedItem(MavenSettings.getDefault().getBinaryDownloadStrategy());
