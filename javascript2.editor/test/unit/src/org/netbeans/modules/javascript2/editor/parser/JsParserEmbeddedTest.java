@@ -53,6 +53,7 @@ import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.openide.filesystems.FileObject;
 
@@ -100,22 +101,7 @@ public class JsParserEmbeddedTest extends JsTestBase {
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
-                Parser.Result r = resultIterator.getParserResult();
-                JsParserResult jspr = null;
-                if (r instanceof JsParserResult) {
-                    jspr = (JsParserResult) r;
-                } else {
-                    for (Embedding embedding : resultIterator.getEmbeddings()) {
-                        if (JsTokenId.JAVASCRIPT_MIME_TYPE.equals(embedding.getMimeType())) {
-                            ResultIterator embeddingIterator = resultIterator.getResultIterator(embedding);
-                            r = embeddingIterator.getParserResult();
-                            if (r instanceof JsParserResult) {
-                                jspr = (JsParserResult) r;
-                                break;
-                            }
-                        }
-                    }
-                }
+                JsParserResult jspr = getJsParserResult(resultIterator);
 
                 assertNotNull(jspr);
                 List<? extends org.netbeans.modules.csl.api.Error> parserErrors =
@@ -129,5 +115,20 @@ public class JsParserEmbeddedTest extends JsTestBase {
                 }
             }
         });
+    }
+
+    private static JsParserResult getJsParserResult(ResultIterator resultIterator) throws ParseException {
+        Parser.Result r = resultIterator.getParserResult();
+        if (r instanceof JsParserResult) {
+            return (JsParserResult) r;
+        } else {
+            for (Embedding embedding : resultIterator.getEmbeddings()) {
+                //if (JsTokenId.JAVASCRIPT_MIME_TYPE.equals(embedding.getMimeType())) {
+                    ResultIterator embeddingIterator = resultIterator.getResultIterator(embedding);
+                    return getJsParserResult(embeddingIterator);
+                //}
+            }
+        }
+        return null;
     }
 }
