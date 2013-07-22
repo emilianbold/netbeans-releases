@@ -88,7 +88,6 @@ class ShelveChangesPanel extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(lblError, org.openide.util.NbBundle.getMessage(ShelveChangesPanel.class, "ShelveChangesPanel.lblError.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(ShelveChangesPanel.class, "ShelveChangesPanel.jLabel1.text")); // NOI18N
-        jLabel1.setEnabled(false);
 
         optionsPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(org.openide.util.NbBundle.getMessage(ShelveChangesPanel.class, "LBL_ShelveChangesPanel.optionsPanel.title"))); // NOI18N
         optionsPanel.setLayout(new javax.swing.BoxLayout(optionsPanel, javax.swing.BoxLayout.LINE_AXIS));
