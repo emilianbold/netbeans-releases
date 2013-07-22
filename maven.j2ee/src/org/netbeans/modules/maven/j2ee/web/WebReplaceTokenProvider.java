@@ -180,6 +180,9 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                                     fo.setAttribute(ATTR_EXECUTION_URI, uriPanel.getServletUri());
                                 } catch (IOException ex) {
                                 }
+                            } else if (res.equals(NotifyDescriptor.CANCEL_OPTION)) {
+                                replaceMap.put(WEB_PATH, null);
+                                return replaceMap;
                             }
                         }
 
