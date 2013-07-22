@@ -42,6 +42,8 @@
 package org.netbeans.modules.html.knockout;
 
 import java.awt.Color;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
  *
@@ -57,6 +59,25 @@ public class KOUtils {
     
     public static final Color KO_COLOR = Color.red.darker();
     
-    
+     /**
+     * Gets document range for the given from and to embedded offsets. 
+     * 
+     * Returns null if the converted document offsets are invalid.
+     */
+    public static OffsetRange getValidDocumentOffsetRange(int efrom, int eto, Snapshot snapshot) {
+        if(efrom == -1 || eto == -1) {
+            throw new IllegalArgumentException(String.format("bad range: %s - %s", efrom, eto));
+        }
+        int dfrom = snapshot.getOriginalOffset(efrom);
+        int dto = snapshot.getOriginalOffset(eto);
+        if(dfrom == -1 || dto == -1) {
+            return null;
+        }
+        if(dfrom > dto) {
+            return null;
+        }
+        
+        return new OffsetRange(dfrom, dto);
+    }
     
 }
