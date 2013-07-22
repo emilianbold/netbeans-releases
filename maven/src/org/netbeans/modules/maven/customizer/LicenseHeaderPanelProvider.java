@@ -119,11 +119,13 @@ public class LicenseHeaderPanelProvider implements ProjectCustomizer.CompositeCa
                         } else {
                             fo = FileUtil.toFileObject(file);
                         }
-                        OutputStream out = fo.getOutputStream();
-                        try {
-                            FileUtil.copy(new ByteArrayInputStream(licenseContent.getBytes()), out);
-                        } finally {
-                            out.close();
+                        if (fo.isData()) {
+                            OutputStream out = fo.getOutputStream();
+                            try {
+                                FileUtil.copy(new ByteArrayInputStream(licenseContent.getBytes()), out);
+                            } finally {
+                                out.close();
+                            }
                         }
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
@@ -151,9 +153,16 @@ public class LicenseHeaderPanelProvider implements ProjectCustomizer.CompositeCa
 
         @Override
         public FileObject resolveProjectLocation(String path) {
+            if ("".equals(path)) {
+                return null;
+            }
             try {
                 String eval = PluginPropertyUtils.createEvaluator(project).evaluate(path).toString();
-                return FileUtil.toFileObject(FileUtilities.resolveFilePath(handle.getProject().getBasedir(), eval));
+                FileObject toRet = FileUtil.toFileObject(FileUtilities.resolveFilePath(handle.getProject().getBasedir(), eval));
+                if (toRet != null && toRet.isFolder()) {
+                    toRet = null;
+                }
+                return toRet;
             } catch (ExpressionEvaluationException ex) {
                 Exceptions.printStackTrace(ex);
             }
@@ -164,6 +173,9 @@ public class LicenseHeaderPanelProvider implements ProjectCustomizer.CompositeCa
         public void setProjectLicenseLocation(String newLocation) {
             licensePath = newLocation;
             handle.setRawAuxiliaryProperty(Constants.HINT_LICENSE_PATH, newLocation, true);
+            if (newLocation != null) {
+                handle.setRawAuxiliaryProperty(Constants.HINT_LICENSE, null, true);
+            }
         }
 
         @Override

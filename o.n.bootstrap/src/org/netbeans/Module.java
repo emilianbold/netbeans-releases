@@ -317,12 +317,12 @@ public abstract class Module extends ModuleInfo {
 
     @Override
     public String getImplementationVersion() {
-        return data.getImplementationVersion();
+        return data().getImplementationVersion();
     }
 
     @Override
     public String getBuildVersion() {
-        return data.getBuildVersion();
+        return data().getBuildVersion();
     }
     
     

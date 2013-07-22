@@ -73,8 +73,8 @@ import org.openide.util.RequestProcessor.Task;
  * @author Tomas Stupka
  */
 public class BugzillaRepositoryController implements RepositoryController, DocumentListener, ActionListener {
-    private BugzillaRepository repository;
-    private RepositoryPanel panel;
+    private final BugzillaRepository repository;
+    private final RepositoryPanel panel;
     private String errorMessage;
     private boolean validateError;
     private boolean populated = false;
@@ -138,10 +138,15 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
 
     private boolean validate() {
         if(validateError) {
-            panel.validateButton.setEnabled(true);
+            BugzillaUtil.runInAWT(new Runnable() {
+                @Override
+                public void run() {            
+                    panel.setValidateEnabled(true);
+                }
+            });
             return false;
         }
-        panel.validateButton.setEnabled(false);
+        panel.setValidateEnabled(false);
 
         if(!populated) {
             return false;
@@ -180,7 +185,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
         }
 
         // the url format is ok - lets enable the validate button
-        panel.validateButton.setEnabled(true);
+        panel.setValidateEnabled(true);
 
         // is url unique?
         if(repository.getTaskRepository() == null) {
@@ -220,6 +225,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
         }
     }
 
+    @Override
     public void populate() {
         taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_ReadingRepoData")) {  // NOI18N
             @Override
@@ -234,7 +240,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
             }
             @Override
             void execute() {
-                SwingUtilities.invokeLater(new Runnable() {
+                BugzillaUtil.runInAWT(new Runnable() {
                     @Override
                     public void run() {
                         RepositoryInfo info = repository.getInfo();
@@ -368,7 +374,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
     private abstract class TaskRunner implements Runnable, Cancellable, ActionListener {
         private Task task;
         private ProgressHandle handle;
-        private String labelText;
+        private final String labelText;
 
         public TaskRunner(String labelText) {
             this.labelText = labelText;            
@@ -400,12 +406,17 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
             panel.cancelButton.addActionListener(this);
             panel.connectionLabel.setVisible(false);
             handle.start();
-            panel.progressPanel.setVisible(true);
-            panel.cancelButton.setVisible(true);
-            panel.validateButton.setVisible(false);
-            panel.validateLabel.setVisible(true);
-            panel.enableFields(false);
-            panel.validateLabel.setText(labelText); // NOI18N
+            BugzillaUtil.runInAWT(new Runnable() {
+                @Override
+                public void run() {
+                    panel.progressPanel.setVisible(true);
+                    panel.cancelButton.setVisible(true);
+                    panel.validateButton.setVisible(false);
+                    panel.validateLabel.setVisible(true);
+                    panel.enableFields(false);
+                    panel.validateLabel.setText(labelText); // NOI18N
+                }
+            });
         }
 
         protected void postRun() {
@@ -413,7 +424,7 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
                 handle.finish();
             }
             panel.cancelButton.removeActionListener(this);
-            SwingUtilities.invokeLater(new Runnable() {
+            BugzillaUtil.runInAWT(new Runnable() {
                 @Override
                 public void run() {            
                     panel.progressPanel.setVisible(false);

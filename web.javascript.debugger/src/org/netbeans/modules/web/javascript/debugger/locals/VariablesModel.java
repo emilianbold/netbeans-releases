@@ -93,7 +93,7 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     
     protected final Debugger debugger;
     protected final EvaluatorService evaluator;
-    private ScopedRemoteObject globalScopeVar;
+    private final Map<String, ScopedRemoteObject> scopeVars = new HashMap<String, ScopedRemoteObject>();
     
     protected final List<ModelListener> listeners = new CopyOnWriteArrayList<ModelListener>();
     private AtomicReference<CallFrame> currentStack = new AtomicReference<CallFrame>();
@@ -145,18 +145,23 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
             RemoteObject obj = scope.getScopeObject();
             if (scope.isLocalScope()) {
                 vars.addAll(getProperties(obj, ViewScope.LOCAL));
-            } else if (scope.isGlobalScope()) {
-                vars.add(getGlobalScopeVariable(obj, scope));
+            } else {
+                vars.add(getScopeVariable(obj, scope));
             }
         }
         return sortVariables(vars);
     }
 
-    private ScopedRemoteObject getGlobalScopeVariable(RemoteObject obj, Scope scope) {
-        if (globalScopeVar == null) {
-            globalScopeVar = new ScopedRemoteObject(obj, scope);
+    private ScopedRemoteObject getScopeVariable(RemoteObject obj, Scope scope) {
+        final String scopeType = scope.getType();
+        synchronized (scopeVars) {
+            ScopedRemoteObject sro = scopeVars.get(scopeType);
+            if (sro == null) {
+                sro = new ScopedRemoteObject(obj, scope);
+                scopeVars.put(scopeType, sro);
+            }
+            return sro;
         }
-        return globalScopeVar;
     }
 
     private List<ScopedRemoteObject> sortVariables(List<ScopedRemoteObject> vars) {
@@ -187,9 +192,6 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         variablesCache.put(prop, res);
         if (prop.getType() == RemoteObject.Type.OBJECT) {
             for (PropertyDescriptor desc : prop.getProperties()) {
-                if (desc.getValue() == null || desc.getValue().getType() == RemoteObject.Type.FUNCTION) {
-                    continue;
-                }
                 res.add(new ScopedRemoteObject(desc.getValue(), desc.getName(), scope));
             }
         }
@@ -268,12 +270,13 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
         if (node instanceof ScopedRemoteObject) {
             ScopedRemoteObject sv = (ScopedRemoteObject) node;
             switch (sv.getScope()) {
-                case GLOBAL:
-                    return GLOBAL;
                 case PROTO:
                     return PROTO;
+                case LOCAL:
+                case DEFAULT:
+                    return LOCAL;
             }
-            return LOCAL;
+            return GLOBAL;
         } else {
             throw new UnknownTypeException(node);
         }
@@ -300,20 +303,26 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
             RemoteObject var = ((ScopedRemoteObject) node).getRemoteObject();
             if (LOCALS_VALUE_COLUMN_ID.equals(columnID)) {
                 String value = var.getValueAsString();
-                if (value.isEmpty() && var.getType() == RemoteObject.Type.OBJECT) {
-                    value = var.getDescription();
+                if (value.isEmpty()) {
+                    RemoteObject.Type type = var.getType();
+                    if (type == RemoteObject.Type.OBJECT ||
+                        type == RemoteObject.Type.FUNCTION) {
+                        
+                        value = var.getDescription();
+                    }
                 }
                 return value;
             } else if (LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
-                if (var.getType() == RemoteObject.Type.OBJECT) {
+                RemoteObject.Type type = var.getType();
+                if (type == RemoteObject.Type.OBJECT) {
                     String clazz = var.getClassName();
                     if (clazz == null) {
-                        return var.getType().getName();
+                        return type.getName();
                     } else {
                         return clazz;
                     }
                 } else {
-                    return var.getType().getName();
+                    return type.getName();
                 }
             } else if (LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
                 return var.getValueAsString();
@@ -393,7 +402,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     public void resumed() {
         currentStack.set(null);
         variablesCache = new HashMap<RemoteObject, List<ScopedRemoteObject>>();
-        globalScopeVar = null;
+        synchronized (scopeVars) {
+            scopeVars.clear();
+        }
         refresh();
     }
 
@@ -411,6 +422,9 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     }
     
     
+    @NbBundle.Messages({"Scope_Local=Local", "Scope_Global=Global",
+                        "Scope_Catch=Catch", "Scope_Closure=Closure",
+                        "Scope_With=With" })
     public static class ScopedRemoteObject {
 
         private RemoteObject var;
@@ -425,10 +439,26 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
             this.var = var;
             if (sc.isLocalScope()) {
                 this.scope = ViewScope.LOCAL;
-                this.objectName = "Local";
-            } else {
+                this.objectName = Bundle.Scope_Local();
+            } else if (sc.isGlobalScope()) {
                 this.scope = ViewScope.GLOBAL;
-                this.objectName = "Global";
+                this.objectName = Bundle.Scope_Global();
+            } else if (sc.isCatchScope()) {
+                this.scope = ViewScope.CATCH;
+                this.objectName = Bundle.Scope_Catch();
+            } else if (sc.isClosureScope()) {
+                this.scope = ViewScope.CLOSURE;
+                this.objectName = Bundle.Scope_Closure();
+            } else if (sc.isWithScope()) {
+                this.scope = ViewScope.WITH;
+                this.objectName = Bundle.Scope_With();
+            } else {
+                this.scope = ViewScope.UNKNOWN;
+                String type = sc.getType();
+                if (type.length() > 1) {
+                    type = Character.toUpperCase(type.charAt(0)) + type.substring(1);
+                }
+                this.objectName = type;
             }
         }
 
@@ -457,8 +487,12 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
     public static enum ViewScope {
 
         LOCAL,
+        CATCH,
+        CLOSURE,
         GLOBAL,
         DEFAULT,
         PROTO,
+        WITH,
+        UNKNOWN,
     }
 }

@@ -59,9 +59,13 @@ import java.awt.event.MouseListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.MissingResourceException;
@@ -141,6 +145,20 @@ public final class HintsPanel extends javax.swing.JPanel   {
     private final ClassPathBasedHintWrapper cpBased;
     private final QueryStatus queryStatus;
     private final boolean showHeavyInspections;
+    private final RequestProcessor.Task expandTask = WORKER.create(new Runnable() {
+        @Override public void run() {
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override public void run() {
+                    JTree tree = HintsPanel.this.errorTree;
+                    
+                    for (int r = 0; r < tree.getRowCount(); r++) {
+                        tree.expandRow(r);
+                    }
+                }
+            });
+            
+        }
+    });
     
     //AWT only:
     private HintMetadata toSelect = null;
@@ -226,7 +244,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         return hasNewHints;
     }
     
-    private org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter optionsFilter;
+    private OptionsFilter optionsFilter;
     
     private void setModel(DefaultTreeModel errorTreeModel) {
         if (optionsFilter!=null) {
@@ -241,15 +259,10 @@ public final class HintsPanel extends javax.swing.JPanel   {
         scriptScrollPane.setVisible(false);
         optionsFilter = null;
         if (!ignoreMissingFilter && filter==null) {
-            optionsFilter = new org.netbeans.modules.java.hints.spiimpl.refactoring.OptionsFilter(
+            optionsFilter = OptionsFilter.create(
                     searchTextField.getDocument(), new Runnable() {
-        
-                @Override
-                public void run() {
-                }
-
-            }
-            ); 
+                        @Override public void run() {}
+                    });
         }
         configCombo.setModel(new ConfigurationsComboModel(true));
         configCombo.setRenderer(new ConfigurationRenderer());
@@ -1152,13 +1165,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
     private final Map<HintMetadata, TreePath> hint2Path =  new HashMap<HintMetadata, TreePath>();
 
     private DefaultTreeModel constructTM(Collection<? extends HintMetadata> metadata, boolean allHints) {
-        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
-        Map<HintCategory, Collection<HintMetadata>> cat2Hints = new TreeMap<HintCategory, Collection<HintMetadata>>(new Comparator<HintCategory>() {
-            public int compare(HintCategory o1, HintCategory o2) {
-                return HintsPanel.compare(o1.displayName, o2.displayName);
-            }
-        });
-        Map<String, HintCategory> cat2CatDesc =  new HashMap<String, HintCategory>();
+        HintCategory rootCategory = new HintCategory("");
 
         for (HintMetadata m : metadata) {
             if (m.options.contains(Options.NON_GUI)) continue;
@@ -1177,36 +1184,74 @@ public final class HintsPanel extends javax.swing.JPanel   {
                 }
             } 
 
-            HintCategory cat = cat2CatDesc.get(m.category);
+            HintCategory curr = rootCategory;
+            int lastIndex = -1;
+            boolean stop = false;
+            OUTER: do {
+                int newIndex = m.category.indexOf('/', lastIndex + 1);
 
-            if (cat == null) {
-                cat2CatDesc.put(m.category, cat = new HintCategory(m.category));
-            }
-            
-            Collection<HintMetadata> catNode = cat2Hints.get(cat);
-
-            if (catNode == null) {
-                cat2Hints.put(cat, catNode = new TreeSet<HintMetadata>(new Comparator<HintMetadata>() {
-                    public int compare(HintMetadata o1, HintMetadata o2) {
-                        return o1.displayName.compareToIgnoreCase(o2.displayName);
+                if (newIndex == (-1)) {
+                    newIndex = m.category.length();
+                    stop = true;
+                }
+                
+                lastIndex = newIndex;
+                
+                String currentCategory = m.category.substring(0, newIndex);
+                
+                for (HintCategory hc : curr.subCategories) {
+                    if (currentCategory.equals(hc.codeName)) {
+                        curr = hc;
+                        continue OUTER;
                     }
-                }));
-            }
-
-            catNode.add(m);
+                }
+                
+                curr.subCategories.add(curr = new HintCategory(currentCategory));
+            } while (!stop);
+            
+            curr.hints.add(m);
         }
 
-        for (Entry<HintCategory, Collection<HintMetadata>> e : cat2Hints.entrySet()) {
-            DefaultMutableTreeNode catNode = new DefaultMutableTreeNode(e.getKey());
-
-            for (HintMetadata hm : e.getValue()) {
-                DefaultMutableTreeNode hmNode = new DefaultMutableTreeNode(hm);
-
-                catNode.add(hmNode);
-                hint2Path.put(hm, new TreePath(new Object[] {root, catNode, hmNode}));
+        DefaultMutableTreeNode root = new DefaultMutableTreeNode();
+        Map<HintCategory, TreePath> category2Node = new IdentityHashMap<>();
+        
+        category2Node.put(rootCategory, new TreePath(root));
+        
+        List<HintCategory> hints = new LinkedList<>();
+        
+        hints.add(rootCategory);
+        
+        while (!hints.isEmpty()) {
+            HintCategory cat = hints.remove(0);
+            TreePath currentPath = category2Node.get(cat);
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) currentPath.getLastPathComponent();
+            
+            Collections.sort(cat.subCategories, new Comparator<HintCategory>() {
+                @Override public int compare(HintCategory o1, HintCategory o2) {
+                    return HintsPanel.compare(o1.displayName, o2.displayName);
+                }
+            });
+            
+            for (HintCategory sub : cat.subCategories) {
+                DefaultMutableTreeNode subNode = new DefaultMutableTreeNode(sub);
+                
+                category2Node.put(sub, currentPath.pathByAddingChild(subNode));
+                node.add(subNode);
             }
-
-            root.add(catNode);
+            
+            hints.addAll(cat.subCategories);
+            
+            Collections.sort(cat.hints, new Comparator<HintMetadata>() {
+                @Override public int compare(HintMetadata o1, HintMetadata o2) {
+                    return o1.displayName.compareTo(o2.displayName);
+                }
+            });
+            
+            for (HintMetadata hm : cat.hints) {
+                DefaultMutableTreeNode hintNode = new DefaultMutableTreeNode(hm);
+                node.add(hintNode);
+                hint2Path.put(hm, currentPath.pathByAddingChild(hintNode));
+            }
         }
 
         if (allHints)
@@ -1297,13 +1342,19 @@ public final class HintsPanel extends javax.swing.JPanel   {
         return list;
     }
 
-    private static final class AcceptorImpl implements Acceptor {
+    private final class AcceptorImpl implements Acceptor {
 
         public boolean accept(Object originalTreeNode, String filterText) {
             if (filterText.isEmpty()) return true;
             
+            expandTask.schedule(100);
+            
             DefaultMutableTreeNode n = (DefaultMutableTreeNode) originalTreeNode;
-            HintMetadata hm = (HintMetadata) n.getUserObject();
+            Object uo = n.getUserObject();
+            
+            if (!(uo instanceof HintMetadata)) return false;
+            
+            HintMetadata hm = (HintMetadata) uo;
 
             filterText = filterText.toLowerCase();
 

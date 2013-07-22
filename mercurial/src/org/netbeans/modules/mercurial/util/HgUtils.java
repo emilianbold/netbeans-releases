@@ -131,7 +131,7 @@ import org.openide.util.lookup.Lookups;
 public class HgUtils {    
     private static final Pattern httpPasswordPattern = Pattern.compile("(https*://)(\\w+\\b):(\\b\\S*)@"); //NOI18N
     private static final String httpPasswordReplacementStr = "$1$2:\\*\\*\\*\\*@"; //NOI18N
-    private static final Pattern httpCredentialsPattern = Pattern.compile("(.*://)(\\w+\\b):(\\b\\S*)@"); //NOI18N
+    private static final Pattern httpCredentialsPattern = Pattern.compile("(.*://)(\\w+\\b)(?::(\\b\\S*))?@"); //NOI18N
     private static final String httpCredentialsReplacementStr = "$1"; //NOI18N
     
     private static final Pattern metadataPattern = Pattern.compile(".*\\" + File.separatorChar + "(\\.)hg(\\" + File.separatorChar + ".*|$)"); // NOI18N

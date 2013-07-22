@@ -54,7 +54,7 @@ class ProblemPanel extends JPanel {
         // UI roughly copied from org.netbeans.core.ui.notifications.NotificationDisplayerImpl
         // XXX could add links to show changes, etc.
         initComponents();
-        showFailure.setText("<html><u>" + notification.showFailureText());
+        showFailure.setText("<html><a href=\"#\">" + notification.showFailureText()); //NOI18N
         // XXX #171445: not available from form editor
         showFailure.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
         ignore.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
@@ -68,7 +68,6 @@ class ProblemPanel extends JPanel {
 
         setOpaque(false);
 
-        showFailure.setForeground(java.awt.Color.blue);
         showFailure.setText("<html><u>Show [something]"); // NOI18N
         showFailure.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         showFailure.setBorderPainted(false);
@@ -76,14 +75,12 @@ class ProblemPanel extends JPanel {
         showFailure.setFocusPainted(false);
         showFailure.setFocusable(false);
         showFailure.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        showFailure.setOpaque(false);
         showFailure.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 showFailureActionPerformed(evt);
             }
         });
 
-        ignore.setForeground(java.awt.Color.blue);
         ignore.setText(org.openide.util.NbBundle.getMessage(ProblemPanel.class, "ProblemPanel.ignore.text")); // NOI18N
         ignore.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
         ignore.setBorderPainted(false);
@@ -91,7 +88,6 @@ class ProblemPanel extends JPanel {
         ignore.setFocusPainted(false);
         ignore.setFocusable(false);
         ignore.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
-        ignore.setOpaque(false);
         ignore.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 ignoreActionPerformed(evt);

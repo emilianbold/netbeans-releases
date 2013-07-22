@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
 @Hint(displayName = "#SessionSynchImplementedBySFSBOnly.display.name",
         description = "#SessionSynchImplementedBySFSBOnly.err",
         id = "o.n.m.j2ee.ejbverification.SessionSynchImplementedBySFSBOnly",
-        category = "JavaEE",
+        category = "javaee/ejb",
         enabled = true,
         suppressWarnings = "SessionSynchImplementedBySFSBOnly")
 @NbBundle.Messages({

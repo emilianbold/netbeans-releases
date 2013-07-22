@@ -66,6 +66,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.hints.legacy.spi.RulesManager;
+import org.netbeans.modules.java.hints.legacy.spi.RulesManager.LegacyHintConfiguration;
 import org.netbeans.modules.java.source.TreeLoader;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -159,7 +160,7 @@ public abstract class TreeRuleTestBase extends NbTestCase {
 
     @Override
     public void runTest() throws Throwable {
-        RulesManager.currentHintPreferences.set(new TempPreferences());
+        RulesManager.currentHintPreferences.set(new LegacyHintConfiguration(true, null, new TempPreferences()));
         try {
             super.runTest();
         } finally {

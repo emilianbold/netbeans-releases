@@ -86,6 +86,7 @@ import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.BaseTextUI;
 import org.netbeans.editor.Coloring;
+import org.netbeans.editor.EditorUI;
 import org.netbeans.editor.PopupManager;
 import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ToolTipSupport;
@@ -429,6 +430,11 @@ public class BraceMatchingSidebarComponent extends JComponent implements
                 }
             }
         });
+        try {
+            Thread.sleep(1000);
+        } catch (Exception ex) {
+            
+        }
         SwingUtilities.invokeLater(new Runnable() {
            public void run() {
             braceContext = ctx[0];
@@ -568,9 +574,23 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         if (kit == null || !(doc instanceof NbDocument.CustomEditor)) {
             return null;
         }
-
         CustomEditor ed = (NbDocument.CustomEditor)doc;
         Element lineRootElement = doc.getDefaultRootElement();
+
+        // Set the same kit and document
+        tooltipPane.setEditorKit(kit);
+        tooltipPane.setDocument(doc);
+        EditorUI editorUI = Utilities.getEditorUI(tooltipPane);
+        if (editorUI == null) {
+            // see #232827; the NB editor kit is either not yet installed, or has been just uninstalled
+            return null;
+        }
+        
+        tooltipPane.setEditable(false);
+        tooltipPane.setFocusable(false);
+        tooltipPane.putClientProperty("nbeditorui.vScrollPolicy", JScrollPane.VERTICAL_SCROLLBAR_NEVER);
+        tooltipPane.putClientProperty("nbeditorui.hScrollPolicy", JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        tooltipPane.putClientProperty("nbeditorui.selectSidebarLocations", "West");
         try {
             // Start-offset of the fold => line start => position
             int lineIndex = lineRootElement.getElementIndex(start);
@@ -584,14 +604,6 @@ public class BraceMatchingSidebarComponent extends JComponent implements
             // DocumentView.END_POSITION_PROPERTY
             tooltipPane.putClientProperty("document-view-end-position", pos);
             tooltipPane.putClientProperty("document-view-accurate-span", true);
-            // Set the same kit and document
-            tooltipPane.setEditorKit(kit);
-            tooltipPane.setDocument(doc);
-            tooltipPane.setEditable(false);
-            tooltipPane.setFocusable(false);
-            tooltipPane.putClientProperty("nbeditorui.vScrollPolicy", JScrollPane.VERTICAL_SCROLLBAR_NEVER);
-            tooltipPane.putClientProperty("nbeditorui.hScrollPolicy", JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-            tooltipPane.putClientProperty("nbeditorui.selectSidebarLocations", "West");
 
             if (braceContext != null) {
                 tooltipPane.putClientProperty(MATCHED_BRACES, origin);
@@ -665,6 +677,10 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         int contentHeight;
         Rectangle visible = getVisibleRect();
         
+        BaseDocument bdoc = baseUI.getEditorUI().getDocument();
+        if (bdoc == null) {
+            return;
+        }
         try {
             int yPos = baseUI.getYFromPos(yFrom);
             tooltipYAnchor = yPos;
@@ -686,7 +702,6 @@ public class BraceMatchingSidebarComponent extends JComponent implements
                     // and finally the suppression line:
                     contentHeight += lineHeight;
                     
-                    BaseDocument bdoc = baseUI.getEditorUI().getDocument();
                     int startAfterRelated = Utilities.getRowStart(bdoc, rel.getEnd().getOffset(), 1);
                     int startAtContext = Utilities.getRowStart(bdoc, yFrom);
                     // measure the indent so the view can align the ellipsis 

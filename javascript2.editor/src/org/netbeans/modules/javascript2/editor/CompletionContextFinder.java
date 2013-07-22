@@ -92,6 +92,13 @@ public class CompletionContextFinder {
         Token<? extends JsTokenId> token = ts.token();
         JsTokenId tokenId =token.id();
         
+        if (tokenId == JsTokenId.OPERATOR_DOT && ts.moveNext()) {
+            ts.movePrevious();
+            ts.movePrevious();
+            token = ts.token();
+            tokenId =token.id();
+        }
+        
         if (tokenId == JsTokenId.STRING || tokenId == JsTokenId.STRING_END) {
             return CompletionContext.STRING;
         }
@@ -148,9 +155,11 @@ public class CompletionContextFinder {
         // find previous , or : or { or ;
         token = LexUtilities.findPreviousToken(ts, listIds);
         tokenId = token.id();
+        boolean commaFirst = false;
         if (tokenId == JsTokenId.OPERATOR_COMMA && ts.movePrevious()) {
             token = LexUtilities.findPreviousToken(ts, listIds);
             tokenId = token.id();
+            commaFirst = true;
             if (tokenId == JsTokenId.OPERATOR_COLON) {
                 // we are in the previous property definition
                 return true;
@@ -183,7 +192,7 @@ public class CompletionContextFinder {
                         token = LexUtilities.findPrevious(ts, emptyIds);
                         tokenId = token.id();
                         if (tokenId == JsTokenId.OPERATOR_COLON) {
-                            return true;
+                            return commaFirst;
                         }
                     }
                 }

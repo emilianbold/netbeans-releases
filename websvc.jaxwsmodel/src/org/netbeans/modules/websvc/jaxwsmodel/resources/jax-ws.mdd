@@ -112,6 +112,11 @@ made subject to such option by the copyright holder.
 		<wrapper-class>Boolean</wrapper-class>
 	</meta-element>
         <meta-element>
+		<dtd-name>jvmarg</dtd-name>
+		<bean-name>JvmArg</bean-name>
+		<wrapper-class>String</wrapper-class>
+	</meta-element>
+        <meta-element>
 		<dtd-name>use-dispatch</dtd-name>
 		<bean-name>UseDispatch</bean-name>
 		<wrapper-class>Boolean</wrapper-class>

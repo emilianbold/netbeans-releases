@@ -76,6 +76,7 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -102,7 +103,7 @@ public class CordovaPerformer implements BuildPerformer {
     
     private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
 
-    private final int BUILD_SCRIPT_VERSION = 10;
+    private final int BUILD_SCRIPT_VERSION = 11;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
@@ -130,10 +131,20 @@ public class CordovaPerformer implements BuildPerformer {
     @NbBundle.Messages({
         "LBL_InstallThroughItunes=Install application using iTunes and tap on it",
         "CTL_InstallAndRun=Install and Run",
-        "DSC_PhoneGap=PhoneGap Application"    
+        "DSC_PhoneGap=PhoneGap Application",
+        "ERR_StartFileNotFound=Start file cannot be found."
     })
     @Override
     public ExecutorTask perform(final String target, final Project project) {
+        if (ClientProjectUtilities.getStartFile(project) == null) {
+            DialogDisplayer.getDefault().notify(
+                    new DialogDescriptor.Message(
+                    Bundle.ERR_StartFileNotFound()));
+            CustomizerProvider2 cust = project.getLookup().lookup(CustomizerProvider2.class);
+            cust.showCustomizer("RUN", null);
+            return null;
+        }
+        
         if (((target.startsWith("build") || target.startsWith("sim")) // NOI18N
                 && ClientProjectUtilities.getSiteRoot(project).getFileObject("res") == null)) { // NOI18N
             String message = NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaCustomizerPanel.createConfigsLabel.text") + "\n"
@@ -210,8 +221,11 @@ public class CordovaPerformer implements BuildPerformer {
         final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(p);
         final String siteRootRelative = FileUtil.getRelativePath(p.getProjectDirectory(), siteRoot);
         props.put(PROP_SITE_ROOT, siteRootRelative);
-        final String startFileRelative = FileUtil.getRelativePath(siteRoot, ClientProjectUtilities.getStartFile(p));
-        props.put(PROP_START_FILE, startFileRelative);
+        final FileObject startFile = ClientProjectUtilities.getStartFile(p);
+        if (startFile!=null) {
+            final String startFileRelative = FileUtil.getRelativePath(siteRoot, startFile);
+            props.put(PROP_START_FILE, startFileRelative);
+        }
         final File antTaskJar = InstalledFileLocator.getDefault().locate(
            PATH_EXTRA_ANT_JAR, 
            "org.netbeans.modules.cordova" , true); // NOI18N
@@ -299,7 +313,7 @@ public class CordovaPerformer implements BuildPerformer {
             FileObject config = project.getProjectDirectory().getFileObject(configPath);
             SourceConfig conf = new SourceConfig(FileUtil.toFile(config));
             if (fresh) {
-                final String appName = ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", "_").replaceAll("-", "_").replaceAll(".","_"); // NOI18N
+                final String appName = ProjectUtils.getInformation(project).getDisplayName().replaceAll(" ", "_").replaceAll("-", "_").replaceAll("\\.","_"); // NOI18N
                 conf.setId(DEFAULT_ID_PREFIX + "." + appName); // NOI18N
                 conf.setName(appName);
                 conf.setDescription(DEFAULT_DESCRIPTION);

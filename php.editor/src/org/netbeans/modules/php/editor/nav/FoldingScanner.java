@@ -90,7 +90,7 @@ public final class FoldingScanner {
     public static final FoldType TYPE_CODE_BLOCKS = FoldType.CODE_BLOCK;
 
     /**
-     * FoldType for the PHP class (either nested, or top-level)
+     * FoldType for the PHP class (either nested, or top-level).
      */
     @NbBundle.Messages("FT_Classes=Classes")
     public static final FoldType TYPE_CLASS = FoldType.NESTED.derive(
@@ -98,7 +98,7 @@ public final class FoldingScanner {
             Bundle.FT_Classes(), FoldTemplate.DEFAULT_BLOCK);
 
     /**
-     * PHP documentation comments
+     * PHP documentation comments.
      */
     @NbBundle.Messages("FT_PHPDoc=PHPDoc documentation")
     public static final FoldType TYPE_PHPDOC = FoldType.DOCUMENTATION.override(
@@ -145,35 +145,11 @@ public final class FoldingScanner {
                     }
                 }
             }
-            List<Comment> comments = program.getComments();
-            if (comments != null) {
-                for (Comment comment : comments) {
-                    if (comment.getCommentType() == Comment.Type.TYPE_PHPDOC) {
-                        getRanges(folds, TYPE_PHPDOC).add(createOffsetRange(comment, -3));
-                    } else {
-                        if (comment.getCommentType() == Comment.Type.TYPE_MULTILINE) {
-                            getRanges(folds, TYPE_COMMENT).add(createOffsetRange(comment));
-                        }
-                    }
-                }
-            }
+            processComments(folds, program.getComments());
             PHPParseResult result = (PHPParseResult) info;
             final Model model = result.getModel(Model.Type.COMMON);
             FileScope fileScope = model.getFileScope();
-            List<Scope> scopes = getEmbededScopes(fileScope, null);
-            for (Scope scope : scopes) {
-                OffsetRange offsetRange = scope.getBlockRange();
-                if (offsetRange == null) {
-                    continue;
-                }
-                if (scope instanceof TypeScope) {
-                    getRanges(folds, TYPE_CLASS).add(offsetRange);
-                } else {
-                    if (scope instanceof FunctionScope || scope instanceof MethodScope) {
-                        getRanges(folds, TYPE_FUNCTION).add(offsetRange);
-                    }
-                }
-            }
+            processScopes(folds, getEmbededScopes(fileScope, null));
             program.accept(new FoldingVisitor(folds));
             Source source = info.getSnapshot().getSource();
             assert source != null : "source was null";
@@ -185,6 +161,34 @@ public final class FoldingScanner {
             return folds;
         }
         return Collections.emptyMap();
+    }
+
+    private void processComments(Map<String, List<OffsetRange>> folds, List<Comment> comments) {
+        for (Comment comment : comments) {
+            if (comment.getCommentType() == Comment.Type.TYPE_PHPDOC) {
+                getRanges(folds, TYPE_PHPDOC).add(createOffsetRange(comment, -3));
+            } else {
+                if (comment.getCommentType() == Comment.Type.TYPE_MULTILINE) {
+                    getRanges(folds, TYPE_COMMENT).add(createOffsetRange(comment));
+                }
+            }
+        }
+    }
+
+    private void processScopes(Map<String, List<OffsetRange>> folds, List<Scope> scopes) {
+        for (Scope scope : scopes) {
+            OffsetRange offsetRange = scope.getBlockRange();
+            if (offsetRange == null) {
+                continue;
+            }
+            if (scope instanceof TypeScope) {
+                getRanges(folds, TYPE_CLASS).add(offsetRange);
+            } else {
+                if (scope instanceof FunctionScope || scope instanceof MethodScope) {
+                    getRanges(folds, TYPE_FUNCTION).add(offsetRange);
+                }
+            }
+        }
     }
 
     private OffsetRange createOffsetRange(ASTNode node, int startShift) {
@@ -325,7 +329,9 @@ public final class FoldingScanner {
         }
 
         private void addFold(final OffsetRange offsetRange) {
-            getRanges(folds, TYPE_CODE_BLOCKS).add(offsetRange);
+            if (offsetRange != null && offsetRange.getLength() > 1) {
+                getRanges(folds, TYPE_CODE_BLOCKS).add(offsetRange);
+            }
         }
 
     }

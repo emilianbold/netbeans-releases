@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.editor.global.format;
 
+import java.awt.Dialog;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -58,6 +60,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.AbstractAction;
+import javax.swing.JButton;
+import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
@@ -66,7 +70,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -87,36 +90,80 @@ import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
 import org.netbeans.modules.refactoring.spi.RefactoringPluginFactory;
 import org.netbeans.modules.refactoring.spi.Transaction;
+import org.openide.DialogDescriptor;
+import org.openide.DialogDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
-import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 import org.openide.util.UserQuestionException;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
 public final class GlobalFormatAction extends AbstractAction {
 
+    private static final RequestProcessor WORKER = new RequestProcessor(GlobalFormatAction.class.getName(), 1, false, false);
+    
     public GlobalFormatAction() {
         putValue(NAME, BaseKit.formatAction);
     }
 
     @Override
+    @Messages({"BTN_OK=OK",
+               "BTN_Cancel=Cancel",
+               "CAP_Reformat=Format Recursively"
+    })
     public void actionPerformed(ActionEvent e) {
-        ProgressHandle handle = ProgressHandleFactory.createHandle("Format");
-        ProgressUtils.showProgressDialogAndRun(new ProgressRunnableImpl(handle), handle, true);
+        final JButton ok = new JButton(Bundle.BTN_OK());
+        JButton cancelButton = new JButton(Bundle.BTN_Cancel());
+        final ProgressHandle handle = ProgressHandleFactory.createHandle("Format");
+        final ConfirmationPanel panel = new ConfirmationPanel(handle);
+        DialogDescriptor nd = new DialogDescriptor(panel, Bundle.CAP_Reformat(), true, new Object[] {ok, cancelButton}, ok, DialogDescriptor.DEFAULT_ALIGN, null, new ActionListener() {
+            @Override public void actionPerformed(ActionEvent e) {}
+        });
+        final Dialog[] d = new Dialog[1];
+        final AtomicBoolean cancel = new AtomicBoolean();
+        ok.addActionListener(new ActionListener() {
+            @Override public void actionPerformed(ActionEvent e) {
+                ok.setEnabled(false);
+                panel.started();
+                WORKER.post(new Runnable() {
+                    @Override public void run() {
+                        try {
+                            doFormat(handle, cancel);
+                        } catch (IOException ex) {
+                            Exceptions.printStackTrace(ex);
+                        } finally {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override public void run() {
+                                    d[0].setVisible(false);
+                                    d[0].dispose();
+                                }
+                            });
+                        }
+                    }
+                });
+            }
+        });
+        cancelButton.addActionListener(new ActionListener() {
+            @Override public void actionPerformed(ActionEvent e) {
+                cancel.set(true);
+            }
+        });
+        handle.start(1);//need to "start" the progress, so that the progressbars have reasonable size
+        d[0] = DialogDisplayer.getDefault().createDialog(nd);
+        d[0].setVisible(true);
     }
 
     @Messages({"LBL_Preparing=Preparing...", "#{0} - the name of the file being formatted", "LBL_Formatting=Formatting: {0}", "LBL_BulkFormatting=Formatting"})
     private static void doFormat(ProgressHandle handle, AtomicBoolean cancel) throws IOException {
-        handle.start();
-
         try {
+            handle.switchToIndeterminate();
             handle.progress(Bundle.LBL_Preparing());
 
             Set<String> sourceIds = new HashSet<String>();
@@ -246,6 +293,8 @@ public final class GlobalFormatAction extends AbstractAction {
                     }
 
                     ec.saveDocument();
+                } catch (UserQuestionException uqe) {
+                    uqe.confirmed();
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } finally {
@@ -352,32 +401,6 @@ public final class GlobalFormatAction extends AbstractAction {
         for (PositionRegion region : regions) {
             formatter.reformat(region.getStartOffset(), region.getEndOffset());
         }
-    }
-
-    private static class ProgressRunnableImpl implements Runnable, Cancellable {
-
-        private final ProgressHandle handle;
-        private final AtomicBoolean cancel = new AtomicBoolean();
-
-        public ProgressRunnableImpl(ProgressHandle handle) {
-            this.handle = handle;
-        }
-
-        @Override
-        public void run() {
-            try {
-                doFormat(handle, cancel);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-
-        @Override
-        public boolean cancel() {
-            cancel.set(true);
-            return true;
-        }
-
     }
 
     static final class FormatRefactoring extends AbstractRefactoring {

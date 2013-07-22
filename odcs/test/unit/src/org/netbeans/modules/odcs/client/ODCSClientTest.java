@@ -90,7 +90,7 @@ public class ODCSClientTest extends NbTestCase  {
     protected  static String passw;
     private static String proxyHost;
     private static String proxyPort;
-    public static final String URL = "http://qa-dev.developer.us.oracle.com";
+    public static final String URL = "http://developer.us.oracle.com/qa-dev";
     private static final String MY_PROJECT = "qa-dev_netbeans-test"; //NOI18N
 
     public static Test suite() {
@@ -221,45 +221,45 @@ public class ODCSClientTest extends NbTestCase  {
         assertTrue(watchedProjects.isEmpty());
     }
     
-    public void testGetRecentActivities () throws Exception {
-        ODCSClient client = getClient();
-        Project project = client.getProjectById(MY_PROJECT);
-        List<ProjectActivity> shortActivities = client.getRecentShortActivities(project.getIdentifier());
-        assertNotNull(shortActivities);
-        assertTrue(shortActivities.size() > 0);
-        List<ProjectActivity> activities = client.getRecentActivities(project.getIdentifier());
-        assertNotNull(activities);
-        assertTrue(activities.size() > 0);
-        
-        // lets not compare the arrays for now. short activities seem to skip some ...
-        
-//        Comparator<ProjectActivity> c = new Comparator<ProjectActivity>() {
-//            @Override
-//            public int compare(ProjectActivity o1, ProjectActivity o2) {
-//                return o1.getActivityDate().compareTo(o2.getActivityDate()) * -1;
-//            }
-//        };
-//        Collections.sort(activities, c);
-//        Collections.sort(shortActivities, c);
+//    public void testGetRecentActivities () throws Exception {
+//        ODCSClient client = getClient();
+//        Project project = client.getProjectById(MY_PROJECT);
+//        List<ProjectActivity> shortActivities = client.getRecentShortActivities(project.getIdentifier());
+//        assertNotNull(shortActivities);
+//        assertTrue(shortActivities.size() > 0);
+//        List<ProjectActivity> activities = client.getRecentActivities(project.getIdentifier());
+//        assertNotNull(activities);
+//        assertTrue(activities.size() > 0);
 //        
-//        for (int i = 0; i < shortActivities.size(); ++i) {
-//            print(shortActivities.get(i));
-//            print(activities.get(i));
-//            System.out.println();
-//        }
-//                
-//        // is it the same??
-//        for (int i = 0; i < shortActivities.size(); ++i) {
-//            ProjectActivity a1 = shortActivities.get(i);
-//            ProjectActivity a2 = activities.get(i);
-//            assertEquals(a1.getActivityDate(), a2.getActivityDate());
-//            assertEquals(a1.getProjectIdentifier(), a2.getProjectIdentifier());
-//            assertEquals(a1.getClass(), a2.getClass());
-//            if (a1 instanceof TaskActivity) {
-//                assertActivity((TaskActivity) a1, (TaskActivity) a2);
-//            }
-//        }
-    }
+//        // lets not compare the arrays for now. short activities seem to skip some ...
+//        
+////        Comparator<ProjectActivity> c = new Comparator<ProjectActivity>() {
+////            @Override
+////            public int compare(ProjectActivity o1, ProjectActivity o2) {
+////                return o1.getActivityDate().compareTo(o2.getActivityDate()) * -1;
+////            }
+////        };
+////        Collections.sort(activities, c);
+////        Collections.sort(shortActivities, c);
+////        
+////        for (int i = 0; i < shortActivities.size(); ++i) {
+////            print(shortActivities.get(i));
+////            print(activities.get(i));
+////            System.out.println();
+////        }
+////                
+////        // is it the same??
+////        for (int i = 0; i < shortActivities.size(); ++i) {
+////            ProjectActivity a1 = shortActivities.get(i);
+////            ProjectActivity a2 = activities.get(i);
+////            assertEquals(a1.getActivityDate(), a2.getActivityDate());
+////            assertEquals(a1.getProjectIdentifier(), a2.getProjectIdentifier());
+////            assertEquals(a1.getClass(), a2.getClass());
+////            if (a1 instanceof TaskActivity) {
+////                assertActivity((TaskActivity) a1, (TaskActivity) a2);
+////            }
+////        }
+//    }
     
 //    public void testGetHudsonStatus () throws Exception {
 //        ODCSClient client = getClient();

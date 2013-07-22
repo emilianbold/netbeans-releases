@@ -88,7 +88,7 @@ public class ChromeWithPluginBrowserFactory extends ChromeBrowser implements Enh
     }
 
     @Override
-    public Image getIconImage() {
+    public Image getIconImage(boolean small) {
         return null;
     }
 

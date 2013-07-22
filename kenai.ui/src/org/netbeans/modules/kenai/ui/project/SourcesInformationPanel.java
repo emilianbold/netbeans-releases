@@ -69,9 +69,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Element;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -86,7 +83,6 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -104,15 +100,13 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
         initComponents();
         srcFeedPane.addHyperlinkListener(new HyperlinkListener() {
 
+            @Override
             public void hyperlinkUpdate(final HyperlinkEvent e) {
                 if (e.getEventType() == HyperlinkEvent.EventType.ENTERED) {
                     srcFeedPane.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
                     if (e.getDescription().startsWith("http://") || e.getDescription().startsWith("https://")) { //NOI18N
                         srcFeedPane.setToolTipText(e.getDescription());
                     }
-//                    else if (e.getDescription().startsWith("#")) { //NOI18N
-//                        srcFeedPane.setToolTipText("Scroll down to this repository...");
-//                    }
                     return;
                 }
                 if (e.getEventType() == HyperlinkEvent.EventType.EXITED) {
@@ -121,21 +115,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                     return;
                 }
                 if (e.getEventType() == HyperlinkEvent.EventType.ACTIVATED) {
-//                    if (e.getDescription().startsWith("#repo")) { //NOI18N
-//                        SwingUtilities.invokeLater(new Runnable() {
-//
-//                            public void run() {
-//                                vbar.setValue(0);
-//                                srcFeedPane.scrollToReference(e.getDescription().substring(1));
-//                                Rectangle scrollVal = srcFeedPane.getVisibleRect();
-//                                scrollVal.translate(0, 280); //Fix - scrollbar is not by the JEditorPane, but it is global - the header height must be added
-//                                srcFeedPane.scrollRectToVisible(scrollVal);
-//                            }
-//                        });
-//                        return;
-//                    }
                     URLDisplayer.getDefault().showURL(e.getURL());
-                    return;
                 }
             }
         });
@@ -248,12 +228,11 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                 final KenaiFeature repo = repos[k];
                 if (repo == null) continue;
 
-                DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                String base = proj.getKenai().getUrl().toString().replaceFirst("https://", "http://"); //NOI18N
+                String base = proj.getKenai().getUrl().toString(); //.replaceFirst("https://", "http://"); //NOI18N
                 URL webLocation = repo.getWebLocation();
                 String urlStr = webLocation == null 
                         ? null 
-                        : base + webLocation.getPath().replaceAll("/show$", "/history.atom"); //NOI18N
+                        : webLocation.getPath().replaceAll("/show$", "/history.atom"); //NOI18N
                 int entriesCount = 0;
                 NodeList entries = null;
                 String htmlID = repo.getName().replaceAll("[^a-zA-Z0-9]", "_") + "_" + k + "__" + proj.getName().replace('-', '_'); //NOI18N
@@ -263,11 +242,10 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                     if (urlStr == null) {
                         throw new FileNotFoundException();
                     }
-                    new URL(urlStr).openStream(); // just to fail quickly if URL is invalid...
-                    if (Thread.interrupted()) {
-                        return WAIT_STRING;
+                    Document doc = proj.getKenai().getFeed(urlStr);
+                    if(doc == null) {
+                        continue;
                     }
-                    Document doc = dbf.parse(urlStr);
                     entries = doc.getElementsByTagName("entry"); //NOI18N
                     entriesCount = entries.getLength();
                 } catch (FileNotFoundException e) {
@@ -349,13 +327,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
             return null;
-        } catch (SAXException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        } catch (ParserConfigurationException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
+        } 
 
     }
 
@@ -382,6 +354,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
         final String str = loadRepoFeeds(instProj);
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 if (str != null) {
                     srcFeedPane.setText(String.format("<html><h2>%s</h2>%s</html>", NbBundle.getMessage(SourcesInformationPanel.class, "MSG_PROJECT_SOURCES"), str)); //NOI18N
@@ -389,9 +362,9 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                     srcFeedPane.setCaretPosition(0);
                     for (final String id : registeredButtonID) {
                         registerHTMLButton((HTMLDocument)srcFeedPane.getDocument(), id, new ActionListener() {
-
+                            @Override
                             public void actionPerformed(ActionEvent e) {
-                                new GetSourcesFromKenaiAction(new ProjectAndFeature(instProj, repoMap.get(id), null), null).actionPerformed(e);
+                                GetSourcesFromKenaiAction.getSources(new ProjectAndFeature(instProj, repoMap.get(id), null), null);
                             }
                         });
                     }
@@ -401,9 +374,11 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
         });
     }
 
+    @Override
     public void clearContent() {
         SwingUtilities.invokeLater(new Runnable() {
 
+            @Override
             public void run() {
                 srcFeedPane.setText(WAIT_STRING); //NOI18N
             }

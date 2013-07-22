@@ -88,6 +88,7 @@ import com.sun.source.doctree.UnknownBlockTagTree;
 import com.sun.source.doctree.UnknownInlineTagTree;
 import com.sun.source.doctree.ValueTree;
 import com.sun.source.doctree.VersionTree;
+import com.sun.source.tree.CaseTree;
 
 import com.sun.tools.javac.api.JavacTaskImpl;
 import com.sun.tools.javac.api.JavacTrees;
@@ -113,6 +114,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CodeStyle;
@@ -120,6 +122,8 @@ import org.netbeans.api.java.source.CodeStyle.*;
 import org.netbeans.api.java.source.Comment;
 import org.netbeans.api.java.source.Comment.Style;
 import org.netbeans.api.java.source.UiUtils;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.java.source.builder.CommentHandlerService;
 import org.netbeans.modules.java.source.query.CommentHandler;
 import org.netbeans.modules.java.source.query.CommentSet;
@@ -128,6 +132,7 @@ import org.netbeans.modules.java.source.parsing.FileObjects;
 import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.modules.java.source.save.CasualDiff;
 import org.netbeans.modules.java.source.save.DiffContext;
+import org.netbeans.modules.java.source.save.PositionEstimator;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.java.source.transform.FieldGroupTree;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -306,6 +311,44 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     public int endPos(JCTree t) {
         return TreeInfo.getEndPos(t, diffContext.origUnit.endPositions);
     }
+    
+    private java.util.List<? extends StatementTree> getStatements(Tree tree) {
+        switch (tree.getKind()) {
+            case BLOCK: return ((BlockTree) tree).getStatements();
+            case CASE: return ((CaseTree) tree).getStatements();
+            default: return null;
+        }
+    }
+    
+    private java.util.List<JCVariableDecl> printOriginalPartOfFieldGroup(FieldGroupTree fgt) {
+        java.util.List<JCVariableDecl> variables = fgt.getVariables();
+        TreePath tp = TreePath.getPath(diffContext.mainUnit, variables.get(0));
+        TreePath parent = tp.getParentPath();
+            
+        if (parent == null) return variables;
+            
+        java.util.List<? extends StatementTree> statements = getStatements(parent.getLeaf());
+        
+        if (statements == null) return variables;
+            
+        int startIndex = statements.indexOf(fgt.getVariables().get(0));
+            
+        if (startIndex < 0) return variables; //XXX: should not happen
+        
+        int origCount = 0;
+            
+        for (JCTree t : variables) {
+            if (statements.get(startIndex++) != t) break;
+            origCount++;
+        }
+        
+        if (origCount < 2) return variables;
+        
+        doPrintOriginalTree(variables.subList(0, origCount), true);
+        
+        return variables.subList(origCount, variables.size());
+    }
+    
     public Set<Tree> oldTrees = Collections.emptySet();
     public Set<int[]> reindentRegions = new TreeSet<>(new Comparator<int[]>() {
         @Override public int compare(int[] o1, int[] o2) {
@@ -325,10 +368,12 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 if (fgt.isEnum()) {
                     printEnumConstants(List.from(fgt.getVariables().toArray(new JCTree[0])), !fgt.isEnum() || fgt.moreElementsFollowEnum());
                 } else {
+                    java.util.List<JCVariableDecl> remainder = printOriginalPartOfFieldGroup(fgt);
+                    
                     //XXX: this will unroll the field group (see FieldGroupTest.testMove187766)
                     //XXX: copied from visitClassDef
-                    boolean firstMember = true;
-                    for (JCVariableDecl var : fgt.getVariables()) {
+                    boolean firstMember = remainder.size() == fgt.getVariables().size();
+                    for (JCVariableDecl var : remainder) {
                         oldTrees.remove(var);
                         assert !isEnumerator(var);
                         assert !isSynthetic(var);
@@ -387,9 +432,10 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             TreePath parent = tp.getParentPath();
             
             if (parent == null) return false; //XXX: should not happen, right?
-            if (parent.getLeaf().getKind() != Kind.BLOCK) return false; //TODO: CaseTree
             
-            java.util.List<? extends StatementTree> statements = ((BlockTree) parent.getLeaf()).getStatements();
+            java.util.List<? extends StatementTree> statements = getStatements(parent.getLeaf());
+            
+            if (statements == null) return false;
             
             int startIndex = statements.indexOf(toPrint.get(0));
             
@@ -399,7 +445,13 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
                 if (statements.get(startIndex++) != t) return false;
             }
         }
-
+        
+        doPrintOriginalTree(toPrint, includeComments);
+        
+        return true;
+    }
+    
+    private void doPrintOriginalTree(java.util.List<? extends JCTree> toPrint, boolean includeComments) {
         if (out.isWhitespaceLine()) toLeftMargin();
         
         JCTree firstTree = toPrint.get(0);
@@ -441,7 +493,6 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 
         //XXX: handle comments!
         copyToIndented(realStart, realEnd[0]);
-        return true;
     }
 
     private static final Logger LOG = Logger.getLogger(CasualDiff.class.getName());
@@ -1430,7 +1481,12 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     @Override
     public void visitUnary(JCUnary tree) {
 	int ownprec = TreeInfo.opPrec(tree.getTag());
-	Name opname = treeinfo.operatorName(tree.getTag());
+	Name opname;
+        switch (tree.getTag()) {
+            case POS: opname = names.fromString("+"); break;
+            case NEG: opname = names.fromString("-"); break;
+            default: opname = treeinfo.operatorName(tree.getTag()); break;
+        }
 	if (tree.getTag().ordinal() <= JCTree.Tag.PREDEC.ordinal()) { //XXX: comparing ordinals!
             if (cs.spaceAroundUnaryOps()) {
                 needSpace();
@@ -2513,23 +2569,17 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
 	}
     }
 
-    private <T extends JCTree >void printStats(List < T > trees) {
+    private void printStats(List < ? extends JCTree > trees) {
         printStats(trees, false);
     }
 
-    private <T extends JCTree >void printStats(List < T > trees, boolean members) {
-        java.util.List<T> filtered = new ArrayList<T>(trees.size());
-	for (List < T > l = trees; l.nonEmpty(); l = l.tail) {
-            T t = l.head;
-            if (isSynthetic(t))
-                continue;
-            filtered.add(t);
-        }
+    private void printStats(List < ? extends JCTree > trees, boolean members) {
+        java.util.List<JCTree> filtered = CasualDiff.filterHidden(diffContext, trees);
 
         if (!filtered.isEmpty() && handlePossibleOldTrees(filtered, true)) return;
 
         boolean first = true;
-	for (T t : filtered) {
+	for (JCTree t : filtered) {
 	    toColExactly(out.leftMargin);
 	    printStat(t, members, first);
             first = false;
@@ -2553,6 +2603,8 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
         printBlock(tree, stats, bracePlacement, spaceBeforeLeftBrace, false);
     }
 
+    public int conditionStartHack = (-1);
+    
     private void printBlock(JCTree tree, List<? extends JCTree> stats, BracePlacement bracePlacement, boolean spaceBeforeLeftBrace, boolean members) {
         printPrecedingComments(tree, true);
 	int old = indent();
@@ -2573,9 +2625,24 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
             toColExactly(bcol);
             break;
         }
+        String trailing = null;
+        if (conditionStartHack != (-1)) {
+            TokenSequence<JavaTokenId> ts = TokenHierarchy.create(toString().substring(conditionStartHack), JavaTokenId.language()).tokenSequence(JavaTokenId.language());
+            boolean found;
+            ts.moveEnd();
+            while ((found = ts.movePrevious()) && PositionEstimator.nonRelevant.contains(ts.token().id()))
+                ;
+            if (found) {
+                String content = toString();
+                trailing = content.substring(conditionStartHack + ts.offset() + ts.token().text().length());
+                out.used -= trailing.length();
+                out.col -= trailing.length();
+            }
+        }
         if (spaceBeforeLeftBrace)
             needSpace();
 	print('{');
+        if (trailing != null) print(trailing);
         boolean emptyBlock = true;
         for (List<? extends JCTree> l = stats; l.nonEmpty(); l = l.tail) {
             if (!isSynthetic(l.head)) {

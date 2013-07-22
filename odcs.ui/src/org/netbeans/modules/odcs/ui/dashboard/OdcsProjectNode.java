@@ -117,7 +117,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
     private final boolean canOpen;
     private final boolean canBookmark;
     private LinkButton btnBookmark;
-    private Action closeAction;
+    private final Action closeAction;
     private LinkButton btnClose;
     private JLabel myPrjLabel;
     private JLabel closePlaceholder;
@@ -404,7 +404,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
             @Override
             public void run() {
                 if (buildAccessor != null) {
-                    if (buildAccessor.isEnabled(project)) {
+                    if (buildAccessor.hasBuilds(project)) {
                         if (buildHandleStatusListener == null) {
                             initBuildHandleStatusListener();
                         }
@@ -519,8 +519,12 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
         boolean bugsVisible = btnBugs != null && !"0".equals(btnBugs.getText()); //NOI18N
         boolean buildsVisible = btnBuilds != null;
         boolean visible = bugsVisible || buildsVisible;
-        leftPar.setVisible(visible);
-        rightPar.setVisible(visible);
+        if(leftPar != null) {
+            leftPar.setVisible(visible);
+        }
+        if (rightPar != null) {
+            rightPar.setVisible(visible);
+        }
         if (btnBugs != null) {
             btnBugs.setVisible(bugsVisible);
         }

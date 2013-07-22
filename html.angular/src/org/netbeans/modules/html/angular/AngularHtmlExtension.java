@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
@@ -65,8 +66,6 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 
 /**
  * AngularJS extension to the html editor.
- *
- * XXX register also to text/xhtml?
  *
  * @author marekfukala
  */

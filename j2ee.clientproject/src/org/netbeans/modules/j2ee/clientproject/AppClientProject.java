@@ -98,6 +98,7 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettingConstants;
 import org.netbeans.modules.javaee.project.api.ant.AntProjectUtil;
 import org.netbeans.modules.websvc.api.client.WebServicesClientSupport;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
@@ -1039,22 +1040,54 @@ public final class AppClientProject implements Project, FileChangeListener {
 
         @Override
         public void setProfile(Profile profile) {
-            try {
-                UpdateHelper helper = project.getUpdateHelper();
-                EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                projectProperties.setProperty(AppClientProjectProperties.J2EE_PLATFORM, profile.toPropertiesString());
-                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-                ProjectManager.getDefault().saveProject(project);
-            } catch (IOException ex) {
-                LOG.log(Level.WARNING, "Project properties couldn't be saved.", ex);
-            }
+            setInSharedProperties(JavaEEProjectSettingConstants.J2EE_PLATFORM, profile.toPropertiesString());
         }
 
         @Override
         public Profile getProfile() {
             return project.getAPICar().getJ2eeProfile();
         }
+        
+        @Override
+        public void setBrowserID(String browserID) {
+            // Does not make sense for Application Client project - simply do nothing
+        }
+
+        @Override
+        public String getBrowserID() {
+            // Does not make sense for Application Client project - simply do nothing
+            return null;
+        }
+
+        @Override
+        public void setServerInstanceID(String serverInstanceID) {
+            setInPrivateProperties(JavaEEProjectSettingConstants.J2EE_SERVER_INSTANCE, serverInstanceID);
+        }
+
+        @Override
+        public String getServerInstanceID() {
+            return evaluator().getProperty(JavaEEProjectSettingConstants.J2EE_SERVER_INSTANCE);
+        }
+
+        private void setInSharedProperties(String key, String value) {
+            setInProperties(key, value, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        }
+
+        private void setInPrivateProperties(String key, String value) {
+            setInProperties(key, value, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        }
+
+        private void setInProperties(String key, String value, String propertiesPath) {
+            try {
+                UpdateHelper helper = project.getUpdateHelper();
+                EditableProperties projectProperties = helper.getProperties(propertiesPath);
+                projectProperties.setProperty(key, value);
+                helper.putProperties(propertiesPath, projectProperties);
+                ProjectManager.getDefault().saveProject(project);
+            } catch (IOException ex) {
+                LOG.log(Level.WARNING, "Project properties couldn't be saved.", ex);
+            }
+        }
     }
-    
 }
 

@@ -61,6 +61,7 @@ import javax.swing.JToolBar;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.inspect.CSSUtils;
 import org.netbeans.modules.web.inspect.PageModel;
+import org.netbeans.modules.web.inspect.actions.Resource;
 import org.netbeans.modules.web.inspect.files.Files;
 import org.netbeans.modules.web.inspect.webkit.ui.CSSStylesPanel;
 import org.netbeans.modules.web.webkit.debugging.api.dom.DOM;
@@ -162,6 +163,7 @@ public class WebKitPageModel extends PageModel {
      * Prepares the page for inspection.
      */
     private void initializePage() {
+        Resource.clearCache();
         // documentUpdated event is not delivered when no node information
         // was sent to the client => requesting document node to make sure
         // that we obtain next documentUpdated event (that we need to be able

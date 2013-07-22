@@ -76,10 +76,6 @@ public class ManageTagsPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jLabel7 = new javax.swing.JLabel();
-        lblTagger = new javax.swing.JLabel();
-        lblTagMessage = new javax.swing.JLabel();
-        jScrollPane2 = new javax.swing.JScrollPane();
-        lblTagId = new javax.swing.JLabel();
         jPanel1 = new javax.swing.JPanel();
         org.netbeans.modules.git.ui.repository.RevisionInfoPanel revisionInfoPanel1 = this.revisionInfoPanel;
 
@@ -95,72 +91,10 @@ public class ManageTagsPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel6, org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.jLabel6.text")); // NOI18N
 
-        jLabel7.setLabelFor(lstTags);
         org.openide.awt.Mnemonics.setLocalizedText(jLabel7, org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.jLabel7.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(btnDelete, org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.btnDelete.text")); // NOI18N
         btnDelete.setToolTipText(org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.btnDelete.TTtext")); // NOI18N
-
-        panelTagObjectInfo.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
-        panelTagObjectInfo.setPreferredSize(new java.awt.Dimension(332, 100));
-
-        txtTagId.setEditable(false);
-        txtTagId.setText(org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.txtTagId.text")); // NOI18N
-
-        lblTagger.setLabelFor(txtTagger);
-        org.openide.awt.Mnemonics.setLocalizedText(lblTagger, org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.lblTagger.text")); // NOI18N
-
-        txtTagger.setEditable(false);
-        txtTagger.setText(org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.txtTagger.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblTagMessage, org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.lblTagMessage.text")); // NOI18N
-
-        txtTagMessage.setBackground(txtTagName.getBackground());
-        txtTagMessage.setColumns(1);
-        txtTagMessage.setEditable(false);
-        txtTagMessage.setRows(1);
-        jScrollPane2.setViewportView(txtTagMessage);
-
-        lblTagId.setLabelFor(txtTagId);
-        org.openide.awt.Mnemonics.setLocalizedText(lblTagId, org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.lblTagId.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(lblTagMessage1, org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.lblTagMessage.text")); // NOI18N
-
-        javax.swing.GroupLayout panelTagObjectInfoLayout = new javax.swing.GroupLayout(panelTagObjectInfo);
-        panelTagObjectInfo.setLayout(panelTagObjectInfoLayout);
-        panelTagObjectInfoLayout.setHorizontalGroup(
-            panelTagObjectInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelTagObjectInfoLayout.createSequentialGroup()
-                .addGroup(panelTagObjectInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblTagId)
-                    .addGroup(panelTagObjectInfoLayout.createSequentialGroup()
-                        .addGap(0, 0, 0)
-                        .addGroup(panelTagObjectInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(lblTagger)
-                            .addComponent(lblTagMessage))))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(panelTagObjectInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
-                    .addComponent(txtTagId, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE)
-                    .addComponent(txtTagger, javax.swing.GroupLayout.DEFAULT_SIZE, 251, Short.MAX_VALUE))
-                .addGap(0, 0, 0))
-        );
-        panelTagObjectInfoLayout.setVerticalGroup(
-            panelTagObjectInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(panelTagObjectInfoLayout.createSequentialGroup()
-                .addGroup(panelTagObjectInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblTagId)
-                    .addComponent(txtTagId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(panelTagObjectInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(lblTagger)
-                    .addComponent(txtTagger, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(panelTagObjectInfoLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(lblTagMessage)
-                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 34, Short.MAX_VALUE))
-                .addGap(0, 0, 0))
-        );
 
         txtTaggedObject.setEditable(false);
         txtTaggedObject.setText(org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.txtTaggedObject.text")); // NOI18N
@@ -188,7 +122,7 @@ public class ManageTagsPanel extends javax.swing.JPanel {
                     .addComponent(lblTaggedObject)
                     .addComponent(txtTaggedObject, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(revisionInfoPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 112, Short.MAX_VALUE)
+                .addComponent(revisionInfoPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE)
                 .addGap(0, 0, 0))
         );
 
@@ -196,12 +130,32 @@ public class ManageTagsPanel extends javax.swing.JPanel {
         panelProgress.setLayout(panelProgressLayout);
         panelProgressLayout.setHorizontalGroup(
             panelProgressLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 518, Short.MAX_VALUE)
+            .addGap(0, 0, Short.MAX_VALUE)
         );
         panelProgressLayout.setVerticalGroup(
             panelProgressLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 44, Short.MAX_VALUE)
+            .addGap(0, 22, Short.MAX_VALUE)
         );
+
+        org.openide.awt.Mnemonics.setLocalizedText(lblTagMessage, org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.lblTagMessage.text")); // NOI18N
+
+        txtTagMessage.setEditable(false);
+        txtTagMessage.setBackground(txtTagName.getBackground());
+        txtTagMessage.setColumns(1);
+        txtTagMessage.setRows(1);
+        jScrollPane2.setViewportView(txtTagMessage);
+
+        txtTagger.setEditable(false);
+        txtTagger.setText(org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.txtTagger.text")); // NOI18N
+
+        lblTagger.setLabelFor(txtTagger);
+        org.openide.awt.Mnemonics.setLocalizedText(lblTagger, org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.lblTagger.text")); // NOI18N
+
+        lblTagId.setLabelFor(txtTagId);
+        org.openide.awt.Mnemonics.setLocalizedText(lblTagId, org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.lblTagId.text")); // NOI18N
+
+        txtTagId.setEditable(false);
+        txtTagId.setText(org.openide.util.NbBundle.getMessage(ManageTagsPanel.class, "ManageTagsPanel.txtTagId.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -210,22 +164,24 @@ public class ManageTagsPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(panelProgress, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(panelProgress, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel6, javax.swing.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(panelTagObjectInfo, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                        .addComponent(jLabel1)
-                                        .addGap(36, 36, 36)
-                                        .addComponent(txtTagName, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
-                                .addGap(18, 18, 18))
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(jLabel6, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE)
-                                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lblTagId)
+                                    .addComponent(lblTagger)
+                                    .addComponent(lblTagMessage)
+                                    .addComponent(jLabel1))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
+                                    .addComponent(txtTagId, javax.swing.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
+                                    .addComponent(txtTagger, javax.swing.GroupLayout.DEFAULT_SIZE, 257, Short.MAX_VALUE)
+                                    .addComponent(txtTagName))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel7)
                             .addComponent(btnDelete)
@@ -243,15 +199,24 @@ public class ManageTagsPanel extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(panelTagObjectInfo, javax.swing.GroupLayout.DEFAULT_SIZE, 84, Short.MAX_VALUE)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(lblTagId)
+                            .addComponent(txtTagId, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(lblTagger)
+                            .addComponent(txtTagger, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(lblTagMessage)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE))
                         .addGap(18, 18, 18)
                         .addComponent(jLabel6, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGap(20, 20, 20))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 253, Short.MAX_VALUE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jScrollPane1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addComponent(btnDelete)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(panelProgress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -265,15 +230,13 @@ public class ManageTagsPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel7;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JScrollPane jScrollPane1;
-    private javax.swing.JScrollPane jScrollPane2;
-    private javax.swing.JLabel lblTagId;
-    private javax.swing.JLabel lblTagMessage;
-    final javax.swing.JLabel lblTagMessage1 = new javax.swing.JLabel();
+    final javax.swing.JScrollPane jScrollPane2 = new javax.swing.JScrollPane();
+    final javax.swing.JLabel lblTagId = new javax.swing.JLabel();
+    final javax.swing.JLabel lblTagMessage = new javax.swing.JLabel();
     final javax.swing.JLabel lblTaggedObject = new javax.swing.JLabel();
-    private javax.swing.JLabel lblTagger;
+    final javax.swing.JLabel lblTagger = new javax.swing.JLabel();
     final javax.swing.JList lstTags = new javax.swing.JList();
     final javax.swing.JPanel panelProgress = new javax.swing.JPanel();
-    final javax.swing.JPanel panelTagObjectInfo = new javax.swing.JPanel();
     final javax.swing.JTextField txtTagId = new javax.swing.JTextField();
     final javax.swing.JTextArea txtTagMessage = new javax.swing.JTextArea();
     final javax.swing.JTextField txtTagName = new javax.swing.JTextField();

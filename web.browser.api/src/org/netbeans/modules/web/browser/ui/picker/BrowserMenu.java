@@ -53,6 +53,7 @@ import java.awt.event.ActionListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.swing.BorderFactory;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JComponent;
@@ -60,6 +61,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JPopupMenu;
 import javax.swing.JSeparator;
+import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -72,7 +74,7 @@ import org.openide.util.NbBundle;
 
 /**
  * Browser selection popup.
- * 
+ *
  * @author S. Aubrecht
  */
 public class BrowserMenu implements ChangeListener {
@@ -84,6 +86,9 @@ public class BrowserMenu implements ChangeListener {
     private JPopupMenu popup;
     private WebBrowser selectedBrowser;
     private final ChangeSupport changeSupport = new ChangeSupport( this );
+    private static final boolean windowsLaF = "Windows".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
+    private final Color windowsSeparatorColor = UIManager.getColor( "controlHighlight" ); //NOI18N
+    private final Color windowsLightBackgroundColor = Color.white;
 
     public BrowserMenu( ProjectBrowserProvider provider ) {
         this( provider.getBrowsers(), provider.getActiveBrowser(), provider );
@@ -108,6 +113,9 @@ public class BrowserMenu implements ChangeListener {
 
         popup = new JPopupMenu();
         popup.add( panel );
+        if( windowsLaF ) {
+            popup.setBorder( BorderFactory.createLineBorder( windowsSeparatorColor.darker() ));
+        }
         popup.show( invoker, x, y );
     }
 
@@ -133,23 +141,34 @@ public class BrowserMenu implements ChangeListener {
             }
         }
 
-        addSection( contentPanel, defaultItems, NbBundle.getMessage(BrowserMenu.class, "Header_BROWSER"), 0, null );
-        addSection( contentPanel, mobileItems, NbBundle.getMessage(BrowserMenu.class, "Header_MOBILE"), 2, null );
-        addSection( contentPanel, phoneGapItems, NbBundle.getMessage(BrowserMenu.class, "Header_PHONEGAP"), 4, createConfigureButton() );
+        addSection( contentPanel, defaultItems, NbBundle.getMessage(BrowserMenu.class, "Header_BROWSER"), 0, null, mobileItems.isEmpty() && phoneGapItems.isEmpty() );
+        addSection( contentPanel, mobileItems, NbBundle.getMessage(BrowserMenu.class, "Header_MOBILE"), 2, null, phoneGapItems.isEmpty() );
+        addSection( contentPanel, phoneGapItems, NbBundle.getMessage(BrowserMenu.class, "Header_PHONEGAP"), 4, createConfigureButton(), true );
 
-        if( !defaultItems.isEmpty() && !mobileItems.isEmpty() ) {
+        JPanel panel = createBrighterPanel();
+        JLabel label = new JLabel( NbBundle.getMessage(BrowserMenu.class, "Hint_NB_Connector"));
+        if( windowsLaF ) {
+            label.setEnabled( false );
+            panel.setBorder( BorderFactory.createMatteBorder( 1, 0, 0, 0, windowsSeparatorColor));
+        }
+        label.setBorder( BorderFactory.createEmptyBorder( 10, 10, 5, 5));
+        panel.add( label, BorderLayout.WEST );
+
+        contentPanel.add( panel, new GridBagConstraints( 0, 1, GridBagConstraints.REMAINDER, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0 ));
+
+        if( !defaultItems.isEmpty() && !mobileItems.isEmpty() && !windowsLaF ) {
             contentPanel.add( new JSeparator(JSeparator.VERTICAL),
-                    new GridBagConstraints( 1, 1, 1, 2, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.VERTICAL, new Insets(10,10,10,10), 0, 0 ));
+                    new GridBagConstraints( 1, 1, 1, 3, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.VERTICAL, new Insets(0,0,0,0), 0, 0 ));
         }
 
-        if( !mobileItems.isEmpty() && !phoneGapItems.isEmpty() ) {
+        if( !mobileItems.isEmpty() && !phoneGapItems.isEmpty() && !windowsLaF ) {
             contentPanel.add( new JSeparator(JSeparator.VERTICAL),
-                    new GridBagConstraints( 3, 1, 1, 2, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.VERTICAL, new Insets(10,10,10,10), 0, 0 ));
+                    new GridBagConstraints( 3, 1, 1, 3, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.VERTICAL, new Insets(0,0,0,0), 0, 0 ));
         }
 
         if( !phoneGapItems.isEmpty() ) {
             contentPanel.add( new JLabel( NbBundle.getMessage(BrowserMenu.class, "Hint_PhoneGap")),
-                    new GridBagConstraints( 0, 3, 5, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10,10,10,10), 0, 0 ));
+                    new GridBagConstraints( 0, 4, GridBagConstraints.REMAINDER, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10,10,10,10), 0, 0 ));
         }
 
         if( null != selItem )
@@ -186,21 +205,30 @@ public class BrowserMenu implements ChangeListener {
         return list.getComponent();
     }
 
-    private void addSection( JPanel contentPanel, List<ListItemImpl> items, String header, int column, JComponent bottomPart ) {
+    private void addSection( JPanel contentPanel, List<ListItemImpl> items, String header, int column, JComponent bottomPart, boolean isLast ) {
         if( items.isEmpty() )
             return;
 
         contentPanel.add( createHeader( header ),
-                new GridBagConstraints( column, 0, 1, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(5,5,10,5), 0, 0 ));
+                new GridBagConstraints( column, 0, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets( 10,10,10,10), 0, 0 ));
 
+        JPanel panel = createBrighterPanel();
+        panel.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createMatteBorder( 0, 0, 1, 1, windowsSeparatorColor),
+                BorderFactory.createEmptyBorder( 10, 10, 10, 10)));
+        if( windowsLaF && !isLast ) {
+            panel.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createMatteBorder( 0, 0, 1, 1, windowsSeparatorColor),
+                    BorderFactory.createEmptyBorder( 10, 10, 10, 10)));
+        }
+        contentPanel.add( panel,
+                new GridBagConstraints( column, 2, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0 ));
         JComponent list = createList( items, true );
         if( null != list ) {
-            contentPanel.add( list,
-                    new GridBagConstraints( column, 1, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(5,5,5,5), 0, 0 ));
+            panel.add( list, BorderLayout.CENTER );
         }
 
-        JPanel panel = new JPanel( new BorderLayout( 0, 5 ) );
+        panel = new JPanel( new BorderLayout( 0, 5 ) );
         panel.setOpaque( false );
+        panel.setBorder( BorderFactory.createEmptyBorder(15,10,10,10));
         list = createList( items, false );
         if( null != list ) {
             panel.add( list, BorderLayout.CENTER );
@@ -208,9 +236,13 @@ public class BrowserMenu implements ChangeListener {
         if( null != bottomPart )
             panel.add( bottomPart, BorderLayout.SOUTH );
 
+        if( windowsLaF && !isLast ) {
+            panel.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createMatteBorder( 0, 0, 0, 1, windowsSeparatorColor),
+                    BorderFactory.createEmptyBorder(15,10,10,10)) );
+        }
         if( null != bottomPart || null != list ) {
             contentPanel.add( panel,
-                    new GridBagConstraints( column, 2, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.HORIZONTAL, new Insets(15,5,5,5), 0, 0 ));
+                    new GridBagConstraints( column, 3, 1, 1, 0.0, 0.0, GridBagConstraints.NORTHWEST, GridBagConstraints.BOTH, new Insets(0,0,0,0), 0, 0 ));
         }
     }
 
@@ -257,7 +289,7 @@ public class BrowserMenu implements ChangeListener {
 
         @Override
         public Icon getIcon() {
-            return ImageUtilities.image2Icon( browser.getIconImage() );
+            return ImageUtilities.image2Icon( browser.getIconImage(false) );
         }
 
         @Override
@@ -276,5 +308,16 @@ public class BrowserMenu implements ChangeListener {
 
     public WebBrowser getSelectedBrowser() {
         return selectedBrowser;
+    }
+
+    private JPanel createBrighterPanel() {
+        JPanel res = new JPanel( new BorderLayout() );
+        if( windowsLaF ) {
+            res.setOpaque( true );
+            res.setBackground( windowsLightBackgroundColor );
+        } else {
+            res.setOpaque( false );
+        }
+        return res;
     }
 }

@@ -563,7 +563,9 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
             }
 
             for (Position i : lines) {
-                line2Errors.get(i).remove(ed);
+                if (line2Errors.get(i) != null) {
+                    line2Errors.get(i).remove(ed);
+                }
                 modifiedLinesTokens.add(i);
             }
             for (List<ErrorDescription> edsForLayer : layer2Errors.values()) {

@@ -128,6 +128,9 @@ public final class CoreBridgeImpl extends CoreBridge {
             @Override
             public void run() {
                 final Class uiClassToUse = null == uiClass ? getPreferredUIClass() : uiClass;
+                if( null != uiClass ) {
+                    System.setProperty( "nb.laf.forced", uiClass.getName() ); //NOI18N
+                }
                 EventQueue.invokeLater( new Runnable() {
                     @Override
                     public void run() {

@@ -169,15 +169,28 @@ public final class MiscEditorUtil {
         try {
             URI uri = URI.create(filePath);
             if (uri.isAbsolute()) {
-                URL url = uri.toURL();
+                URL url;
+                try {
+                    url = uri.toURL();
+                } catch (MalformedURLException muex) {
+                    // Issue 230657
+                    LOG.log(Level.INFO, "Cannot resolve " + filePath, muex); // NOI18N
+                    return null;
+                }
                 if (project != null) {
                     fileObject = ServerURLMapping.fromServer(project, url);
                 }
                 if (fileObject == null && (filePath.startsWith("http:") || filePath.startsWith("https:"))) {    // NOI18N
                     fileObject = RemoteFileCache.getRemoteFile(url);
                 }
-            } else {
-                File file = new File(filePath);
+            }
+            if (fileObject == null) {
+                File file;
+                if (filePath.startsWith("file:/")) {
+                    file = Utilities.toFile(uri);
+                } else {
+                    file = new File(filePath);
+                }
                 fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
             }
         } catch (IOException ex) {

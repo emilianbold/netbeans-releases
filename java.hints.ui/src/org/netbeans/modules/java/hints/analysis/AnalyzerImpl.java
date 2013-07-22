@@ -50,6 +50,7 @@ import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
@@ -104,12 +105,13 @@ public class AnalyzerImpl implements Analyzer {
         final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         ProgressHandleWrapper w = new ProgressHandleWrapper(ctx, 10, 90);
         Collection<HintDescription> hints = new ArrayList<HintDescription>();
-        HintsSettings settings = HintsSettings.createPreferencesBasedHintsSettings(ctx.getSettings(), false, null);
+        Preferences incomingSettings = ctx.getSettings();
+        HintsSettings settings = incomingSettings != null ? HintsSettings.createPreferencesBasedHintsSettings(incomingSettings, false, null) : null;
 
         for (Entry<? extends HintMetadata, ? extends Collection<? extends HintDescription>> e : Utilities.getBatchSupportedHints(new ClassPathBasedHintWrapper()).entrySet()) {
             if (singleWarning != null) {
                 if (!singleWarning.equals(e.getKey().id)) continue;
-            } else if (ctx.getSettings() != null) {
+            } else if (incomingSettings != null) {
                 if (!settings.isEnabled(e.getKey())) continue;
             }
 

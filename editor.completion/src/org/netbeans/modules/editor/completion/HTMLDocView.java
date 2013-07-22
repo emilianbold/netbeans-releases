@@ -126,6 +126,7 @@ public class HTMLDocView extends JEditorPane {
 
             public void mouseMoved(MouseEvent e) {}
         });
+        putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
     }
 
     private int positionCaret(MouseEvent event) {

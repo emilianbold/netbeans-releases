@@ -92,7 +92,8 @@ import org.xml.sax.SAXException;
  */
 public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
     
-    private static final String[] DEFAULT_WSIMPORT_OPTIONS = {"extension", "verbose"};  //NOI18N
+    private static final String[] DEFAULT_WSIMPORT_OPTIONS = {"extension", "verbose", "fork"};  //NOI18N
+    private static final String[] DEFAULT_WSIMPORT_VALUES = {"true", "true", "false"};  //NOI18N
     private static final String XNOCOMPILE_OPTION = "xnocompile";  //NOI18N
     private static final String XENDORSED_OPTION = "xendorsed"; //NOI18N
     private static final String TARGET_OPTION = "target"; //NOI18N
@@ -254,10 +255,11 @@ public abstract class ProjectJAXWSSupport implements JAXWSSupportImpl {
                     
                     WsimportOptions wsimportOptions = service.getWsImportOptions();
                     if (wsimportOptions != null) {
+                        int i=0;
                         for (String option:DEFAULT_WSIMPORT_OPTIONS) {
                             WsimportOption wsimportOption = wsimportOptions.newWsimportOption();
                             wsimportOption.setWsimportOptionName(option);
-                            wsimportOption.setWsimportOptionValue("true"); //NOI18N
+                            wsimportOption.setWsimportOptionValue(DEFAULT_WSIMPORT_VALUES[i++]); //NOI18N
                             wsimportOptions.addWsimportOption(wsimportOption);
                         }
                         if (isXnocompile(project)) {

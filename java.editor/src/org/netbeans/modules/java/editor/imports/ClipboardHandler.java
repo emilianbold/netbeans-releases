@@ -94,7 +94,10 @@ import javax.swing.text.Position;
 import javax.swing.text.StyledDocument;
 
 import com.sun.source.tree.CaseTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.ImportTree;
+import com.sun.source.tree.MethodTree;
+import java.util.Set;
 import org.netbeans.api.editor.EditorActionRegistration;
 import org.netbeans.api.editor.EditorActionRegistrations;
 import org.netbeans.api.java.lexer.JavaTokenId;
@@ -442,12 +445,13 @@ public class ClipboardHandler {
                             parameter.toPhase(JavaSource.Phase.RESOLVED);
 
                             new TreePathScanner<Void, Void>() {
+                                private final Set<Element> declaredInCopiedText = new HashSet<>();
                                 @Override public Void visitIdentifier(IdentifierTree node, Void p) {
                                     int s = (int) parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), node);
                                     int e = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), node);
                                     javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
 
-                                    if (s >= start && e >= start && e <= end && el != null) {
+                                    if (s >= start && e >= start && e <= end && el != null && !declaredInCopiedText.contains(el)) {
                                         if (el.getKind().isClass() || el.getKind().isInterface()) {
                                             TreePath parentPath = getCurrentPath().getParentPath();
                                             if (parentPath == null || parentPath.getLeaf().getKind() != Tree.Kind.NEW_CLASS
@@ -471,9 +475,28 @@ public class ClipboardHandler {
                                     }
                                     return super.visitIdentifier(node, p);
                                 }
+                                @Override public Void visitClass(ClassTree node, Void p) {
+                                    handleDeclaration();
+                                    return super.visitClass(node, p);
+                                }
+                                @Override public Void visitMethod(MethodTree node, Void p) {
+                                    handleDeclaration();
+                                    return super.visitMethod(node, p);
+                                }
+                                private void handleDeclaration() {
+                                    int s = (int) parameter.getTrees().getSourcePositions().getStartPosition(parameter.getCompilationUnit(), getCurrentPath().getLeaf());
+                                    int e = (int) parameter.getTrees().getSourcePositions().getEndPosition(parameter.getCompilationUnit(), getCurrentPath().getLeaf());
+                                    javax.lang.model.element.Element el = parameter.getTrees().getElement(getCurrentPath());
+
+                                    if ((start <= s && s <= end) || (start <= e && e <= end) && el != null) {
+                                        simple2ImportFQN.remove(el.getSimpleName().toString());
+                                        declaredInCopiedText.add(el);
+                                    }
+                                }
                                 private Tree lastType;
                                 @Override
                                 public Void visitVariable(VariableTree node, Void p) {
+                                    handleDeclaration();
                                     if (lastType == node.getType()) {
                                         scan(node.getInitializer(), null);
                                         return null;

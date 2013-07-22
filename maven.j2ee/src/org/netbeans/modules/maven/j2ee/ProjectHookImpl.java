@@ -53,10 +53,12 @@ import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.project.api.ClientSideDevelopmentSupport;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettingConstants;
+import org.netbeans.modules.javaee.project.api.WhiteListUpdater;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
-import org.netbeans.modules.maven.j2ee.web.ClientSideDevelopmentSupport;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
 import org.netbeans.modules.web.common.api.CssPreprocessorsListener;
@@ -115,6 +117,12 @@ public class ProjectHookImpl extends ProjectOpenedHook {
             watcher.addPropertyChangeListener(refreshListener);
         }
 
+        // Setup whiteListUpdater
+        WhiteListUpdater whiteListUpdater = project.getLookup().lookup(WhiteListUpdater.class);
+        if (whiteListUpdater != null) {
+            whiteListUpdater.checkWhiteLists();
+        }
+
         if (preferencesListener == null) {
             preferencesListener = new PreferenceChangeListener() {
 
@@ -124,6 +132,12 @@ public class ProjectHookImpl extends ProjectOpenedHook {
                         ClientSideDevelopmentSupport clientSideSupport = project.getLookup().lookup(ClientSideDevelopmentSupport.class);
                         if (clientSideSupport != null) {
                             clientSideSupport.resetBrowserSupport();
+                        }
+                    }
+                    if (MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID.equals(evt.getKey())) {
+                        WhiteListUpdater whiteListUpdater = project.getLookup().lookup(WhiteListUpdater.class);
+                        if (whiteListUpdater != null) {
+                            whiteListUpdater.checkWhiteLists();
                         }
                     }
                 }

@@ -637,9 +637,12 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
         }
 
         private VariableTree getPropertyChangeSupport(javax.lang.model.element.TypeElement node, String support) {
-            for (VariableElement el : ElementFilter.fieldsIn(node.getEnclosedElements())) {
-                if (el.asType().equals(workingCopy.getElements().getTypeElement(support).asType())) {
-                    return (VariableTree) workingCopy.getTrees().getPath(el).getLeaf();
+            TypeElement supportElement = workingCopy.getElements().getTypeElement(support);
+            if(supportElement != null) {
+                for (VariableElement el : ElementFilter.fieldsIn(node.getEnclosedElements())) {
+                    if (el.asType().equals(supportElement.asType())) {
+                        return (VariableTree) workingCopy.getTrees().getPath(el).getLeaf();
+                    }
                 }
             }
             return null;

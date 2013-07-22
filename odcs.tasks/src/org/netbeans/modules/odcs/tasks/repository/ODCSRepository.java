@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.odcs.tasks.repository;
 
+import com.tasktop.c2c.server.common.service.domain.criteria.ColumnCriteria;
+import com.tasktop.c2c.server.common.service.domain.criteria.Criteria;
+import com.tasktop.c2c.server.common.service.domain.criteria.CriteriaBuilder;
 import com.tasktop.c2c.server.tasks.domain.PredefinedTaskQuery;
 import com.tasktop.c2c.server.tasks.domain.RepositoryConfiguration;
 import com.tasktop.c2c.server.tasks.domain.SavedTaskQuery;
@@ -90,6 +93,7 @@ import org.netbeans.modules.odcs.tasks.issue.ODCSIssue;
 import org.netbeans.modules.odcs.tasks.query.ODCSQuery;
 import org.netbeans.modules.odcs.tasks.util.ODCSUtil;
 import org.netbeans.modules.mylyn.util.PerformQueryCommand;
+import org.netbeans.modules.odcs.tasks.query.QueryParameters;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
@@ -370,8 +374,14 @@ public class ODCSRepository implements PropertyChangeListener {
         }
 
         // XXX shouldn't be only a perfect match 
-        IRepositoryQuery iquery = new RepositoryQuery(taskRepository.getConnectorKind(), "ODCS simple task search");            // NOI18N
-        iquery.setAttribute(TaskAttribute.SUMMARY, criteria);
+        IRepositoryQuery iquery = new RepositoryQuery(taskRepository.getConnectorKind(), "ODCS simple task search"); // NOI18N
+        iquery.setUrl(CloudDevConstants.CRITERIA_QUERY);
+        iquery.setAttribute(
+                    CloudDevConstants.QUERY_CRITERIA, 
+                    new ColumnCriteria(
+                        QueryParameters.Column.SUMMARY.getColumnName(), 
+                        Criteria.Operator.EQUALS, 
+                        criteria).toQueryString()); 
         
         PerformQueryCommand queryCmd = 
             new PerformQueryCommand(

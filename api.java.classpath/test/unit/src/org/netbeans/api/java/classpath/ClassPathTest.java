@@ -821,4 +821,15 @@ public class ClassPathTest extends NbTestCase {
         assertFalse(ClassPathFactory.createClassPath(cpi).equals(ClassPathSupport.createClassPath(new URL[0])));
     }
 
+    public void testDataRoot () throws Exception {
+        final File wd = getWorkDir();
+        final ClassPath cp = ClassPathSupport.createClassPath(
+                new URL(wd.toURI().toURL().toExternalForm()+"test1/"),    //NOI18N
+                new URL(wd.toURI().toURL().toExternalForm()+"test2/")    //NOI18N
+        );
+        final FileObject test1 = FileUtil.createData(FileUtil.toFileObject(wd), "test1");   //NOI18N
+        final FileObject test2 = FileUtil.createFolder(FileUtil.toFileObject(wd), "test2");   //NOI18N
+        assertEquals(Collections.singletonList(test2),Arrays.asList(cp.getRoots()));
+    }
+
 }

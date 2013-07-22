@@ -47,6 +47,8 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
@@ -514,7 +516,13 @@ public class ElementsParser implements Iterator<Element> {
                             attr_keys.add(attrib);
                             attr_values.add(values);
                         } else {
-                            attr_values.get(index).add(tokenInfo());
+                            List<TokenInfo> valueParts = attr_values.get(index);
+                            //http://statistics.netbeans.org/exceptions/messageslog?id=679650
+                            //NPE might happen as attr_values.get(index) might return null
+                            //I cannot see the code path which leads to this so adding a silly NPE check
+                            if(valueParts != null) {
+                                valueParts.add(tokenInfo());
+                            }
                         }
 
                         break;

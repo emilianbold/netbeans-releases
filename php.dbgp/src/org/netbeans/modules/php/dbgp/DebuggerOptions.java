@@ -112,7 +112,7 @@ public class DebuggerOptions {
     }
 
     public String getProjectEncoding() {
-        return projectEncoding != null ? projectEncoding : getGlobalInstance().getProjectEncoding();
+        return projectEncoding != null ? projectEncoding : "UTF-8"; //NOI18N
     }
 
     private static class DefaultGlobal extends DebuggerOptions {

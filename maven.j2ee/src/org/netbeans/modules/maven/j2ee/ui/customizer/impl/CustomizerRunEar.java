@@ -47,9 +47,15 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
+import org.netbeans.modules.maven.j2ee.ExecutionChecker;
+import org.netbeans.modules.maven.j2ee.ear.EarImpl;
+import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ui.customizer.BaseRunCustomizer;
 import static org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb.PROP_SHOW_IN_BROWSER;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.modules.maven.j2ee.utils.Server;
+import org.netbeans.modules.maven.j2ee.utils.ServerUtils;
 import org.openide.util.Exceptions;
 
 
@@ -63,7 +69,7 @@ public class CustomizerRunEar extends BaseRunCustomizer {
         initComponents();
 
         module = Ear.getEar(project.getProjectDirectory());
-        if (module != null) {
+        if (module != null && module.getJ2eeProfile() != null) {
             txtJ2EEVersion.setText(module.getJ2eeProfile().getDisplayName());
         }
 
@@ -96,6 +102,13 @@ public class CustomizerRunEar extends BaseRunCustomizer {
     @Override
     public void applyChanges() {
         changeServer(comServer);
+
+        EarModuleProviderImpl earProvider = project.getLookup().lookup(EarModuleProviderImpl.class);
+        if (earProvider != null) {
+            for (Project subProject : earProvider.getEarImpl().getProjects()) {
+                ServerUtils.setServer(subProject, (Server) comServer.getSelectedItem());
+            }
+        }
     }
 
     /** This method is called from within the constructor to

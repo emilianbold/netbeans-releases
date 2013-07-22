@@ -1432,6 +1432,24 @@ public class NPECheckTest extends NbTestCase {
                 .assertWarnings();
     }
     
+    public void testDoWhile232484() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.io.*;\n" +
+                       "class Test {\n" +
+                       "    public static void m(BufferedReader br) throws IOException {\n" +
+                       "       String line;\n" +
+                       "       do {\n" +
+                       "          line = br.readLine();\n" +
+                       "       } while(line != null);\n" +
+                       "       if(line != null) {\n" +
+                       "       }\n" +
+                       "   }\n" +
+                       "}")
+                .run(NPECheck.class)
+                .assertWarnings();
+    }
+    
     private void performAnalysisTest(String fileName, String code, String... golden) throws Exception {
         HintTest.create()
                 .input(fileName, code)

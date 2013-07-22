@@ -66,13 +66,13 @@ import org.openide.util.Utilities;
 public final class AutoupdateCatalogCache {
     
     private AutoupdateCatalogCache () {
-        assert cacheDir == null : "cacheDir field is null.";
         cacheDir = Places.getCacheSubdirectory("catalogcache"); // NOI18N
+        assert cacheDir != null && cacheDir.exists () : "Cache directory " + cacheDir + " exists.";
         getLicenseDir().mkdirs();
         err.log (Level.FINE, "getCacheDirectory: {0}", cacheDir.getPath ());
     }
     
-    private File cacheDir;
+    private final File cacheDir;
     
     private static AutoupdateCatalogCache INSTANCE;
     
@@ -86,7 +86,7 @@ public final class AutoupdateCatalogCache {
     }
     
     private synchronized File getCatalogCache () {
-        assert cacheDir != null && cacheDir.exists () : "Cache directory must exist.";
+        assert cacheDir != null && cacheDir.exists() : "Cache directory " + cacheDir + " must exist.";
         return cacheDir;
     }
     

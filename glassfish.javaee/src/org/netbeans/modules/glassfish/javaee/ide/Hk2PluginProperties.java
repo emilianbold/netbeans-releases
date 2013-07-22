@@ -44,28 +44,22 @@
 package org.netbeans.modules.glassfish.javaee.ide;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.MalformedURLException;
-import java.net.Socket;
 import java.net.URI;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.platform.Specification;
 import org.netbeans.modules.glassfish.javaee.Hk2DeploymentManager;
-import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
+import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 
 /**
  * Hk2PluginProperties
@@ -292,44 +286,4 @@ public class Hk2PluginProperties {
         return DEBUGPORT;
     }
 
-    /**
-     *
-     * @param host
-     * @param port
-     * @return
-     */
-    private static boolean isRunning(String host, int port) throws IOException {
-        if (null == host) {
-            return false;
-        }
-        InetSocketAddress isa = new InetSocketAddress(host, port);
-        Socket socket = new Socket();
-        Logger.getLogger("glassfish-socket-connect-diagnostic").log(Level.FINE, "Using socket.connect", new Exception());
-        socket.connect(isa, 2000);
-        socket.setSoTimeout(2000);
-        try { socket.close(); } catch (IOException ioe) {
-            Logger.getLogger("glassfish-javaee").log(Level.INFO, "stranded open socket to "+host+":"+port, ioe);  //NOI18N
-        }
-        return true;
-    }
-
-    /**
-     *
-     * @param host
-     * @param port
-     * @return
-     */
-    public static boolean isRunning(String host, String port) {
-        try {
-            return isRunning(host, Integer.parseInt(port));
-        } catch (NumberFormatException e) {
-            Logger.getLogger("glassfish-javaee").log(Level.INFO, host+"  "+port, e); // NOI18N
-            return false;
-        } catch (java.net.ConnectException ce) {
-            return false;
-        } catch (IOException ioe) {
-            Logger.getLogger("glassfish-javaee").log(Level.INFO, host+"  "+port, ioe); // NOI18N
-            return false;
-        }
-    }
 }

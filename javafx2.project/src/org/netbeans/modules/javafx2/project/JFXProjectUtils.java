@@ -1171,64 +1171,68 @@ public final class JFXProjectUtils {
         final boolean hasDefaultJavaFXPlatform[] = new boolean[1];
         final EditableProperties ep = new EditableProperties(true);
         final FileObject projPropsFO = project.getProjectDirectory().getFileObject(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        try {
-            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
-                @Override
-                public Void run() throws Exception {
-                    final Lookup lookup = project.getLookup();
-                    final J2SEPropertyEvaluator eval = lookup.lookup(J2SEPropertyEvaluator.class);
-                    if (eval != null) {
-                        // if project has Default_JavaFX_Platform, change it to default Java Platform
-                        String platformName = eval.evaluator().getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
-                        hasDefaultJavaFXPlatform[0] = JFXProjectProperties.isEqual(platformName, JavaFXPlatformUtils.DEFAULT_JAVAFX_PLATFORM);
-                    }
-                    if(hasDefaultJavaFXPlatform[0]) {
-                        final J2SEProjectPlatform platformSetter = lookup.lookup(J2SEProjectPlatform.class);
-                        if(platformSetter != null) {
-                            platformSetter.setProjectPlatform(JavaPlatformManager.getDefault().getDefaultPlatform());
+        if(projPropsFO != null) {
+            try {
+                ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                    @Override
+                    public Void run() throws Exception {
+                        final Lookup lookup = project.getLookup();
+                        final J2SEPropertyEvaluator eval = lookup.lookup(J2SEPropertyEvaluator.class);
+                        if (eval != null) {
+                            // if project has Default_JavaFX_Platform, change it to default Java Platform
+                            String platformName = eval.evaluator().getProperty(JFXProjectProperties.PLATFORM_ACTIVE);
+                            hasDefaultJavaFXPlatform[0] = JFXProjectProperties.isEqual(platformName, JavaFXPlatformUtils.DEFAULT_JAVAFX_PLATFORM);
                         }
-                    }
-                    final InputStream is = projPropsFO.getInputStream();
-                    try {
-                        ep.load(is);
-                    } finally {
-                        if (is != null) {
-                            is.close();
+                        if(hasDefaultJavaFXPlatform[0]) {
+                            final J2SEProjectPlatform platformSetter = lookup.lookup(J2SEProjectPlatform.class);
+                            if(platformSetter != null) {
+                                platformSetter.setProjectPlatform(JavaPlatformManager.getDefault().getDefaultPlatform());
+                            }
                         }
-                    }
-                    updateClassPathExtensionProperties(ep);
-                    OutputStream os = null;
-                    FileLock lock = null;
-                    try {
-                        lock = projPropsFO.lock();
-                        os = projPropsFO.getOutputStream(lock);
-                        ep.store(os);
-                    } finally {
-                        if (os != null) {
-                            os.close();
+                        final InputStream is = projPropsFO.getInputStream();
+                        try {
+                            ep.load(is);
+                        } finally {
+                            if (is != null) {
+                                is.close();
+                            }
                         }
-                        if (lock != null) {
-                            lock.releaseLock();
+                        updateClassPathExtensionProperties(ep);
+                        OutputStream os = null;
+                        FileLock lock = null;
+                        try {
+                            lock = projPropsFO.lock();
+                            os = projPropsFO.getOutputStream(lock);
+                            ep.store(os);
+                        } finally {
+                            if (os != null) {
+                                os.close();
+                            }
+                            if (lock != null) {
+                                lock.releaseLock();
+                            }
                         }
+                        return null;
                     }
-                    return null;
-                }
-            });
-        } catch (MutexException mux) {
-            throw (IOException) mux.getException();
-        }
-        if(hasDefaultJavaFXPlatform[0]) {
-            final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_DEFAULT_PLATFORM_HEADER"); //NOI18N
-            final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(project).getDisplayName()});
-            final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_DEFAULT_PLATFORM_CONTENT"); //NOI18N
-            Notification notePlatformChange = NotificationDisplayer.getDefault().notify(
-                    header, 
-                    ImageUtilities.loadImageIcon("org/netbeans/modules/javafx2/project/ui/resources/jfx_project.png", true), //NOI18N
-                    content, 
-                    null, 
-                    NotificationDisplayer.Priority.LOW, 
-                    NotificationDisplayer.Category.INFO);
-            JFXProjectOpenedHook.addNotification(project, notePlatformChange);
+                });
+            } catch (MutexException mux) {
+                throw (IOException) mux.getException();
+            }
+            if(hasDefaultJavaFXPlatform[0]) {
+                final String headerTemplate = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_DEFAULT_PLATFORM_HEADER"); //NOI18N
+                final String header = MessageFormat.format(headerTemplate, new Object[] {ProjectUtils.getInformation(project).getDisplayName()});
+                final String content = NbBundle.getMessage(JFXProjectUtils.class, "TXT_UPDATED_DEFAULT_PLATFORM_CONTENT"); //NOI18N
+                Notification notePlatformChange = NotificationDisplayer.getDefault().notify(
+                        header, 
+                        ImageUtilities.loadImageIcon("org/netbeans/modules/javafx2/project/ui/resources/jfx_project.png", true), //NOI18N
+                        content, 
+                        null, 
+                        NotificationDisplayer.Priority.LOW, 
+                        NotificationDisplayer.Category.INFO);
+                JFXProjectOpenedHook.addNotification(project, notePlatformChange);
+            }
+        } else {
+            LOGGER.warning("Project metafiles inaccessible - classpath extension could not be verified and updated if needed."); //NOI18N
         }
     }
 

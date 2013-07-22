@@ -105,6 +105,11 @@ public final class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserIm
     }
 
     @Override
+    public void close() {
+        browserSupport.close(true);
+    }
+
+    @Override
     public boolean isAutoRefresh() {
         Preferences p = ProjectUtils.getPreferences(project, EnhancedBrowserImpl.class, false);
         return p.getBoolean(PROJECT_AUTO_REFRESH+"."+browser.getId(), true); //NOI18N
@@ -125,4 +130,5 @@ public final class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserIm
     public ActionProvider getActionProvider() {
         return actionProvider;
     }
+
 }

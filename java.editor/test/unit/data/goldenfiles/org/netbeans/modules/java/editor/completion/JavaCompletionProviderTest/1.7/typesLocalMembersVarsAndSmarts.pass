@@ -117,14 +117,6 @@ public static final Class<Integer> Integer.TYPE
 public static final Class<Long> Long.TYPE
 public static final byte Character.UNASSIGNED
 public static final byte Character.UPPERCASE_LETTER
-public static final Class<Boolean> Boolean.class
-public static final Class<Character> Character.class
-public static final Class<Double> Double.class
-public static final Class<Float> Float.class
-public static final Class<Integer> Integer.class
-public static final Class<Long> Long.class
-public static final Class<Object> Object.class
-public static final Class<String> String.class
 public static int Integer.bitCount(int arg0)
 public static int Long.bitCount(long arg0)
 public static int Character.charCount(int arg0)

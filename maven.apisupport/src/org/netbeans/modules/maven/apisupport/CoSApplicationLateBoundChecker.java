@@ -78,7 +78,7 @@ public class CoSApplicationLateBoundChecker implements LateBoundPrerequisitesChe
             return true;
         }
         DependencyProjectsProvider dpp = config.getProject().getLookup().lookup(DependencyProjectsProvider.class);
-        String params = config.getProperties().get("netbeans.run.params");
+        String params = config.getProperties().get(NetBeansRunParamsIDEChecker.PROPERTY);
         StringBuilder sb = new StringBuilder(params != null ? params : "");
         final List<DependencyProjectsProvider.Pair> nonModules = new ArrayList<DependencyProjectsProvider.Pair>();
         final Map<String, List<DependencyProjectsProvider.Pair>> extraCP = new HashMap<String, List<DependencyProjectsProvider.Pair>>();
@@ -151,7 +151,7 @@ public class CoSApplicationLateBoundChecker implements LateBoundPrerequisitesChe
             
         }
         if (sb.length() > 0) {
-            config.setProperty("netbeans.run.params", sb.toString());
+            config.setProperty(NetBeansRunParamsIDEChecker.PROPERTY, sb.toString());
         }
         return true;
     }

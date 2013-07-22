@@ -66,6 +66,153 @@ public class InlineTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test231631a() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void test(int x) {\n"
+                + "        if(x>3) x = 0;\n"
+                + "    }\n"
+                + "    public void usage() {\n"
+                + "        test(2);\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void usage() {\n"
+                + "        int x = 2;\n"
+                + "        if(x>3) x = 0;\n"
+                + "    }\n"
+                + "}"));
+    }
+    
+    public void test231631b() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void test(int x) {\n"
+                + "        if(x>3) x = 0;\n"
+                + "    }\n"
+                + "    public void usage(int x) {\n"
+                + "        test(2);\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void usage(int x) {\n"
+                + "        int x1 = 2;\n"
+                + "        if (x1 > 3) { x1 = 0; }\n"
+                + "    }\n"
+                + "}"));
+    }
+    
+    public void test232211a() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private String getGreeting(String... names) {\n"
+                + "        StringBuilder builder = new StringBuilder();\n"
+                + "        for (String name : names) {\n"
+                + "            builder.append(\"Hello \").append(name).append(\"!\");\n"
+                + "        }\n"
+                + "        return builder.toString();\n"
+                + "    }\n"
+                + "    public void testMethod() {\n"
+                + "        System.out.println(getGreeting());\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void testMethod() {\n"
+                + "        String[] names = new String[]{};\n"
+                + "        StringBuilder builder = new StringBuilder();\n"
+                + "        for (String name : names) {\n"
+                + "            builder.append(\"Hello \").append(name).append(\"!\");\n"
+                + "        }\n"
+                + "        System.out.println(builder.toString());\n"
+                + "    }\n"
+                + "}"));
+    }
+    
+    public void test232211b() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    private String getGreeting(String... names) {\n"
+                + "        StringBuilder builder = new StringBuilder();\n"
+                + "        for (String name : names) {\n"
+                + "            builder.append(\"Hello \").append(name).append(\"!\");\n"
+                + "        }\n"
+                + "        return builder.toString();\n"
+                + "    }\n"
+                + "    public void testMethod() {\n"
+                + "        System.out.println(getGreeting(\"World\", \"Moon\"));\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void testMethod() {\n"
+                + "        String[] names = new String[]{\"World\", \"Moon\"};\n"
+                + "        StringBuilder builder = new StringBuilder();\n"
+                + "        for (String name : names) {\n"
+                + "            builder.append(\"Hello \").append(name).append(\"!\");\n"
+                + "        }\n"
+                + "        System.out.println(builder.toString());\n"
+                + "    }\n"
+                + "}"));
+    }
+    
+    public void test233082() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "     public String concat(String s1, String s2) {\n"
+                + "        System.out.println(\"Concatenating\"+s1+s2);\n"
+                + "        String r= s1+s2; \n"
+                + "        return r;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB(A a) {\n"
+                + "        String con = a.concat(\"Hello\", a.concat(\" \", \"world\"));\n"
+                + "    }\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public void testMethodB(A a) {\n"
+                + "        System.out.println(\"Concatenating\" + \" \" + \"world\");\n"
+                + "        String r = \" \" + \"world\";\n"
+                + "        System.out.println(\"Concatenating\" + \"Hello\" + r);\n"
+                + "        String r1 = \"Hello\" + r;\n"
+                + "        String con = r1;\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void test228769() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

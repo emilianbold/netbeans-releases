@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.kenai;
 
+import java.io.InputStream;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.util.Collection;
@@ -174,6 +175,11 @@ public abstract class KenaiImpl {
 
     public abstract void deleteProject (
             String name,
+            PasswordAuthentication pa)
+            throws KenaiException;
+    
+    public abstract String getFeed(
+            String relUrl,
             PasswordAuthentication pa)
             throws KenaiException;
 }

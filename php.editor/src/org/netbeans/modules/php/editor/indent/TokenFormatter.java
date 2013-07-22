@@ -409,7 +409,7 @@ public class TokenFormatter {
                     int countSpaces;
                     int column = 0;
                     int indentOfOpenTag = 0;
-                    final Deque<Integer> lastBracedBlockIndent = new ArrayDeque<Integer>();
+                    final Deque<Integer> lastBracedBlockIndent = new ArrayDeque<>();
 
                     FormatToken formatToken;
                     String newText = null;
@@ -1146,7 +1146,17 @@ public class TokenFormatter {
                                         countSpaces = docOptions.spaceWithinCatchParens ? 1 : 0;
                                         break;
                                     case WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS:
-                                        countSpaces = docOptions.spaceWithinArrayBrackets ? 1 : 0;
+                                        helpIndex = index - 1;
+                                        while (helpIndex > 0
+                                                && formatTokens.get(helpIndex).getId() != FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS
+                                                && formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE) {
+                                            helpIndex--;
+                                        }
+                                        if (helpIndex > 0 && formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS) {
+                                            countSpaces = 0;
+                                        } else {
+                                            countSpaces = docOptions.spaceWithinArrayBrackets ? 1 : 0;
+                                        }
                                         break;
                                     case WHITESPACE_WITHIN_TYPE_CAST_PARENS:
                                         countSpaces = docOptions.spaceWithinTypeCastParens ? 1 : 0;
@@ -1759,9 +1769,14 @@ public class TokenFormatter {
 
                 } while (token.getId() != FormatToken.Kind.WHITESPACE_INDENT
                         && token.getId() != FormatToken.Kind.TEXT
+                        && token.getId() != FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN
+                        && token.getId() != FormatToken.Kind.WHITESPACE_AFTER_ARRAY_DECL_LEFT_PAREN
                         && hIndex > 0);
                 if (token.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
                     countSpaces = indent;
+                } else if (token.getId() == FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN
+                        || token.getId() == FormatToken.Kind.WHITESPACE_AFTER_ARRAY_DECL_LEFT_PAREN) {
+                    countSpaces = 0;
                 } else {
                     countSpaces = docOptions.spaceWithinArrayDeclParens ? 1 : 0;
                 }

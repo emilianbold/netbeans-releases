@@ -274,6 +274,35 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                         "}\n").replaceAll("[ \n\t\r]+", " "));
     }
     
+    public void test203476() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "import static test.Aux.getName;\n" +
+                       "public class Test {\n" +
+                       "    public void foo() {\n" +
+                       "        getName(undefined());\n" +
+                       "    }\n" +
+                       "}\n" +
+                       "class Aux {\n" +
+                       "    public static void getName(String param) { }\n" +
+                       "}\n",
+                       -1,
+                       "CreateMethodFix:undefined()java.lang.String:test.Test",
+                       ("package test;\n" +
+                        "import static test.Aux.getName;\n" +
+                        "public class Test {\n" +
+                        "    public void foo() {\n" +
+                        "        getName(undefined());\n" +
+                        "    }\n" +
+                        "    private String undefined() {\n" +
+                        "         throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates. \n" +
+                        "    }\n" +
+                        "}\n" +
+                        "class Aux {\n" +
+                        "    public static void getName(String param) { }\n" +
+                        "}\n").replaceAll("[ \n\t\r]+", " "));
+    }
+
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
         List<Fix> fixes = new CreateElement().analyze(info, pos);
         List<Fix> result=  new LinkedList<Fix>();

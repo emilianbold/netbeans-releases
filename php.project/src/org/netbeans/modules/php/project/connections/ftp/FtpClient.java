@@ -136,7 +136,7 @@ public class FtpClient implements RemoteClient {
         FtpConfiguration.Security security = configuration.getSecurity();
         if (!security.isPresent()) {
             LOGGER.log(Level.FINE, "No encryption used");
-            ProxyInfo proxyInfo = RemoteUtils.getHttpProxy();
+            ProxyInfo proxyInfo = RemoteUtils.getHttpProxy(configuration.getHost());
             if (proxyInfo != null) {
                 LOGGER.log(Level.FINE, "HTTP proxy will be used");
                 return new FTPHTTPClient(proxyInfo.getHost(), proxyInfo.getPort(), proxyInfo.getUsername(), proxyInfo.getPassword());
@@ -340,15 +340,7 @@ public class FtpClient implements RemoteClient {
 
     private String printWorkingDirectoryInternal() throws IOException {
         assert Thread.holdsLock(this);
-        String pwd = ftpClient.printWorkingDirectory();
-        // #231137
-        while (pwd.startsWith("\"")) { // NOI18N
-            pwd = pwd.substring(1);
-        }
-        while (pwd.endsWith("\"")) { // NOI18N
-            pwd = pwd.substring(0, pwd.length() - 1);
-        }
-        return pwd;
+        return ftpClient.printWorkingDirectory();
     }
 
     @Override

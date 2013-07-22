@@ -286,6 +286,33 @@ public class KenaiREST extends KenaiImpl {
             throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
     }
 
+    @Override
+    public String getFeed(String relUrl, PasswordAuthentication pa) throws KenaiException {
+        String url = relUrl.startsWith("/") ? baseURL.toString() + relUrl : baseURL.toString() + "/" + relUrl;
+        RestConnection conn = new RestConnection(url, pa);
+        
+        RestResponse resp = null;
+
+        long start = 0;
+        if (TIMER.isLoggable(Level.FINE)) {
+            start = System.currentTimeMillis();
+            System.err.println("read feed " + url);
+        }
+        try {
+            resp = conn.get(null);
+        } catch (IOException iOException) {
+            throw new KenaiException(iOException);
+        }
+        if (TIMER.isLoggable(Level.FINE)) {
+            System.err.println("read feed " + url + " " + (System.currentTimeMillis()-start) + " ms");
+        }
+
+        if (resp.getResponseCode() != 200)
+            throw new KenaiException(resp.getResponseMessage(),resp.getDataAsString());
+
+        return resp.getDataAsString();
+    }
+
     private class LazyList<COLLECTION extends ListData, ITEM> extends AbstractCollection<ITEM> {
 
         private COLLECTION col;

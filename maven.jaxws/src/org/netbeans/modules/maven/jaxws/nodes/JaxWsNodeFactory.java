@@ -85,7 +85,7 @@ public class JaxWsNodeFactory implements NodeFactory {
         return new WsNodeList(p);
     }
     
-    private static class WsNodeList implements NodeList<String>, PropertyChangeListener, LookupListener {
+    private static class WsNodeList implements NodeList<String>, PropertyChangeListener, LookupListener, Runnable {
         // Web Services
         private static final String KEY_SERVICES = "web_services"; // NOI18N
         // Web Service Client
@@ -97,40 +97,40 @@ public class JaxWsNodeFactory implements NodeFactory {
         private Lookup.Result<JAXWSLightSupportProvider> lookupResult;
         private AtomicReference<List<String>> nodeList; 
         
-        private RequestProcessor.Task jaxWsTask =
-            new RequestProcessor("JaxWs-maven-request-processor").create(new Runnable() { //NOI18N
-                @Override
-                public void run() {
-                    List<String> result = new ArrayList<String>(2);
-                    if ( jaxwsSupport != null) {
-                        List<JaxWsService> services = jaxwsSupport.getServices();
-                        boolean hasServices = false;
-                        boolean hasClients = false;
-                        for (JaxWsService s:services) {
-                            if (!hasServices && s.isServiceProvider()) {
-                                hasServices = true;
-                            } else if (!hasClients && !s.isServiceProvider()) {
-                                hasClients = true;
-                            }
-                            if (hasServices && hasClients) break;
-                        }
-                        if (hasServices) {
-                            result.add(KEY_SERVICES);
-                        }
-                        if (hasClients) {
-                            result.add(KEY_SERVICE_REFS);
-                        }
-                    }
-                    nodeList.set( result );
-                    fireChange();
-                }
-            });
+        private static final RequestProcessor JAX_WS_RP = new RequestProcessor(WsNodeList.class);
+        private final RequestProcessor.Task jaxWsTask = JAX_WS_RP.create(this);
         
         public WsNodeList(Project proj) {
             project = proj;
             nodeList = new AtomicReference<List<String>>();
         }
-        
+
+        @Override
+        public void run() {
+            List<String> result = new ArrayList<String>(2);
+            if ( jaxwsSupport != null) {
+                List<JaxWsService> services = jaxwsSupport.getServices();
+                boolean hasServices = false;
+                boolean hasClients = false;
+                for (JaxWsService s:services) {
+                    if (!hasServices && s.isServiceProvider()) {
+                        hasServices = true;
+                    } else if (!hasClients && !s.isServiceProvider()) {
+                        hasClients = true;
+                    }
+                    if (hasServices && hasClients) break;
+                }
+                if (hasServices) {
+                    result.add(KEY_SERVICES);
+                }
+                if (hasClients) {
+                    result.add(KEY_SERVICE_REFS);
+                }
+            }
+            nodeList.set( result );
+            fireChange();
+        }
+
         @Override
         public List<String> keys() {
             List<String> keys = nodeList.get();

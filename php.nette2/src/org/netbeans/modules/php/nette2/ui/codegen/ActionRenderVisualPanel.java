@@ -245,7 +245,7 @@ public final class ActionRenderVisualPanel extends JPanel {
         return result;
     }
 
-    @NbBundle.Messages("WRN_InvalidActionFormat=Action name is not aplhanumeric string.")
+    @NbBundle.Messages("WRN_InvalidActionFormat=Action name is not alphanumeric string.")
     private boolean isValidActionFormat(String action) {
         boolean result = false;
         if (action.trim().matches(Constants.VALID_ACTION_NAME_REGEX)) {

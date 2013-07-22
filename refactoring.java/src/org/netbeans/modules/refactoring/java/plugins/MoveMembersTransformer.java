@@ -689,7 +689,13 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                             }
                         }
                     }
-                    newMember = make.Method(modifiers, methodTree.getName(), methodTree.getReturnType(), typeParameters, newParameters, methodTree.getThrows(), body, (ExpressionTree) methodTree.getDefaultValue());
+                    Tree returnType = methodTree.getReturnType();
+                    final TreePath returnPath = new TreePath(resolvedPath, returnType);
+                    Element returnTypeEl = trees.getElement(returnPath);
+                    if(returnTypeEl != null && returnTypeEl.getKind() != ElementKind.TYPE_PARAMETER && isElementBeingMoved(returnTypeEl) == null) {
+                        returnType = make.QualIdent(returnTypeEl);
+                    }
+                    newMember = make.Method(modifiers, methodTree.getName(), returnType, typeParameters, newParameters, methodTree.getThrows(), body, (ExpressionTree) methodTree.getDefaultValue());
 
                     // Make a new Variable (Field) tree
                 } else if (member.getKind() == Tree.Kind.VARIABLE) {
@@ -888,7 +894,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
         switch (visibility) {
             case ESCALATE:
                 if (usageOutsideOfPackage) {
-                    if (flags.contains(Modifier.PRIVATE)) {
+                    if (!flags.contains(Modifier.PUBLIC)) {
                         newModifiers.removeAll(ALL_ACCESS_MODIFIERS);
                         newModifiers.add(Modifier.PUBLIC);
                     }

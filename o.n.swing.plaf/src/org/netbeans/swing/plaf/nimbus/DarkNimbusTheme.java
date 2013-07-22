@@ -41,10 +41,19 @@
  */
 package org.netbeans.swing.plaf.nimbus;
 
+import com.sun.imageio.plugins.common.ImageUtil;
 import java.awt.Color;
+import java.awt.Font;
+import java.util.concurrent.Callable;
+import javax.imageio.ImageIO;
+import javax.swing.JLabel;
 import javax.swing.LookAndFeel;
+import javax.swing.UIDefaults;
 import javax.swing.UIManager;
+import javax.swing.text.html.HTMLEditorKit;
+import javax.swing.text.html.StyleSheet;
 import org.netbeans.swing.plaf.util.DarkIconFilter;
+import org.netbeans.swing.plaf.util.RelativeColor;
 
 /**
  *
@@ -68,8 +77,8 @@ public class DarkNimbusTheme {
         UIManager.put( "nimbusSelectionBackground", new Color( 104, 93, 156) );
         UIManager.put( "text", new Color( 230, 230, 230) );
 //        UIManager.put( "nb.imageicon.filter", new DarkIconFilter() );
-        UIManager.put( "nb.errorForeground", new Color(220,0,0) ); //NOI18N
-        UIManager.put( "nb.warningForeground", new Color(255,255,255) ); //NOI18N
+        UIManager.put( "nb.errorForeground", new Color(127,0,0) ); //NOI18N
+        UIManager.put( "nb.warningForeground", new Color(255,216,0) ); //NOI18N
 
         UIManager.put( "nb.heapview.border1", new Color( 128, 128, 128) ); //NOI18N
         UIManager.put( "nb.heapview.border2", new Color( 128, 128, 128).darker() ); //NOI18N
@@ -99,7 +108,7 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.bugtracking.table.background", new Color(18, 30, 49) ); //NOI18N
         UIManager.put( "nb.bugtracking.table.background.alternate", new Color(13, 22, 36) ); //NOI18N
 
-        UIManager.put( "nb.html.link.foreground", new Color(32,32,255) ); //NOI18N
+        UIManager.put( "nb.html.link.foreground", new Color(164,164,255) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.hover", new Color(255,216,0) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.visited", new Color(0,200,0) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.focus", new Color(255,216,0) ); //NOI18N
@@ -112,7 +121,7 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.startpage.tab.border1.color", new Color(64,64,64) );
         UIManager.put( "nb.startpage.tab.border2.color", new Color(64,64,64) );
         UIManager.put( "nb.startpage.rss.details.color", new Color(230, 230, 230) );
-        UIManager.put( "nb.startpage.rss.header.color", new Color(32,32,255) );
+        UIManager.put( "nb.startpage.rss.header.color", new Color(128,128,255) );
         UIManager.put( "nb.startpage.tab.imagename.selected", "org/netbeans/modules/welcome/resources/tab_selected_dark.png" ); //NOI18N
         UIManager.put( "nb.startpage.tab.imagename.rollover", "org/netbeans/modules/welcome/resources/tab_rollover_dark.png" ); //NOI18N
         UIManager.put( "nb.startpage.imagename.contentheader", "org/netbeans/modules/welcome/resources/content_banner_dark.png" ); //NOI18N
@@ -160,5 +169,40 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.versioning.conflicted.color", new Color(255, 51, 51)); //NOI18N
         UIManager.put( "nb.versioning.ignored.color", new Color(153, 153, 153)); //NOI18N
         UIManager.put( "nb.versioning.remotemodification.color", new Color( 230, 230, 230)); //NOI18N
+
+        // db.dataview
+        UIManager.put("nb.dataview.table.background", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "Table.background")); //NOI18N
+        UIManager.put("nb.dataview.table.altbackground", new RelativeColor(new Color(0,0,0), new Color(30,30,30), "Table.background")); //NOI18N
+        UIManager.put("Table.selectionBackground", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "Table[Enabled+Selected].textBackground")); //NOI18N
+        UIManager.put("nb.dataview.table.rollOverRowBackground", new RelativeColor(new Color(0,0,0), new Color(30,30,30), "Table[Enabled+Selected].textBackground"));
+
+        UIManager.put( "nb.laf.postinstall.callable", new Callable<Object>() { //NOI18N
+
+            @Override
+            public Object call() throws Exception {
+                //change the default link foreground color
+                HTMLEditorKit kit = new HTMLEditorKit();
+                StyleSheet newStyleSheet = new StyleSheet();
+                Font f = new JLabel().getFont();
+                newStyleSheet.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
+                            .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
+                newStyleSheet.addRule( "a { color: #A4A4FF; text-decoration: underline}"); //NOI18N
+                newStyleSheet.addStyleSheet(kit.getStyleSheet());
+                kit.setStyleSheet(newStyleSheet);
+                return null;
+            }
+        });
+
+        UIManager.put( "nb.close.tab.icon.enabled.name", "org/openide/awt/resources/vista_close_enabled.png");
+        UIManager.put( "nb.close.tab.icon.pressed.name", "org/openide/awt/resources/vista_close_pressed.png");
+        UIManager.put( "nb.close.tab.icon.rollover.name", "org/openide/awt/resources/vista_close_rollover.png");
+        UIManager.put( "nb.bigclose.tab.icon.enabled.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
+        UIManager.put( "nb.bigclose.tab.icon.pressed.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
+        UIManager.put( "nb.bigclose.tab.icon.rollover.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
+
+        //#232854 - menu item accelerators are too dark
+        UIManager.put( "MenuItem.acceleratorForeground", new Color(198,198,198) );
+        UIManager.put( "CheckBoxMenuItem.acceleratorForeground", new Color(198,198,198) );
+        UIManager.put( "RadioButtonMenuItem.acceleratorForeground", new Color(198,198,198) );
    }
 }

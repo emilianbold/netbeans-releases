@@ -56,7 +56,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
+public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
     
     public JsCodeCompletionGeneralTest(String testName) {
         super(testName);
@@ -321,6 +321,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeComplationBase {
     
     public void testIssue232376_01() throws Exception {
         checkCompletion("testfiles/completion/general/issue232376.js", "a232376.w^", false);
+    }
+    
+    public void testIssue223311_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue223311.js", "var b = (a).s^", false);
     }
  
     @Override

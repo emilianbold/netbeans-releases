@@ -63,6 +63,7 @@ import javax.swing.InputMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
+import javax.swing.SwingUtilities;
 import javax.swing.Timer;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
@@ -167,10 +168,20 @@ public final class AddModulePanel extends JPanel {
             public void valueChanged(ListSelectionEvent e) {
                 showDescription();
                 currectJavadoc = null;
-                ModuleDependency[] deps = getSelectedDependencies();
+                final ModuleDependency[] deps = getSelectedDependencies();
                 if (deps.length == 1) {
-                    NbPlatform platform = props.getActivePlatform();
-                    currectJavadoc = deps[0].getModuleEntry().getJavadoc(platform);
+                    final NbPlatform platform = props.getActivePlatform();
+                    ModuleProperties.RP.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            SwingUtilities.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    currectJavadoc = deps[0].getModuleEntry().getJavadoc(platform);
+                                }
+                            });
+                        }
+                    });
                 }
                 showJavadocButton.setEnabled(currectJavadoc != null);
             }

@@ -82,6 +82,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
@@ -710,6 +711,7 @@ public final class ElementUtilities {
     private DeclaredType findCommonSubtype(DeclaredType type1, DeclaredType type2, Env<AttrContext> env) {
         List<DeclaredType> subtypes1 = getSubtypes(type1, env);
         List<DeclaredType> subtypes2 = getSubtypes(type2, env);
+        if (subtypes1 == null || subtypes2 == null) return null;
         Types types = info.getTypes();
         for (DeclaredType subtype1 : subtypes1) {
             for (DeclaredType subtype2 : subtypes2) {
@@ -739,8 +741,10 @@ public final class ElementUtilities {
             subtypes.add(head);
             List<? extends TypeMirror> tas = head.getTypeArguments();
             boolean isRaw = !tas.iterator().hasNext();
+            Set<ElementHandle<TypeElement>> implementors = index.getElements(ElementHandle.create(elem), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.allOf(ClassIndex.SearchScope.class));
+            if (implementors == null) return null; //cancelled
             subtypes:
-            for (ElementHandle<TypeElement> eh : index.getElements(ElementHandle.create(elem), EnumSet.of(ClassIndex.SearchKind.IMPLEMENTORS), EnumSet.allOf(ClassIndex.SearchScope.class))) {
+            for (ElementHandle<TypeElement> eh : implementors) {
                 TypeElement e = eh.resolve(info);
                 if (e != null) {
                     if (resolve.isAccessible(env, (TypeSymbol)e)) {

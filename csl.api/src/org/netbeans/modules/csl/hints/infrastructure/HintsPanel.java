@@ -55,10 +55,14 @@ import javax.swing.JTree;
 import javax.swing.UIManager;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
+import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
+import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.modules.csl.api.Rule;
 
 import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
+import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -68,9 +72,11 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
     private JCheckBox renderer = new JCheckBox();
     private HintsPanelLogic logic;
     private GsfHintsManager manager;
-       
+    private OptionsFilter filter;
+    private DefaultTreeModel baseModel;
       
-    public HintsPanel(javax.swing.tree.TreeModel treeModel, GsfHintsManager manager) {        
+    public HintsPanel(OptionsFilter filter, 
+            javax.swing.tree.TreeModel treeModel, GsfHintsManager manager) {        
         this.manager = manager;
         initComponents();
         
@@ -99,11 +105,44 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
 
         //errorTree.setModel( RulesManager.getInstance().getHintsTreeModel() );
         errorTree.setModel(treeModel);
+        this.baseModel = (DefaultTreeModel)treeModel;
+        
+        if (filter != null) {
+            filter.installFilteringModel(errorTree, treeModel, new AcceptorImpl());
+        }
         
         // Expand all
         for(int lastRow = errorTree.getRowCount(); lastRow >= 0; --lastRow) {
             errorTree.expandRow(lastRow);
         }        
+    }
+    
+    private class AcceptorImpl implements OptionsFilter.Acceptor {
+        @Override
+        public boolean accept(Object originalTreeNode, String filterText) {
+            DefaultMutableTreeNode tn = (DefaultMutableTreeNode)originalTreeNode;
+            Object o = tn.getUserObject();
+            if (!(o instanceof Rule)) {
+                return false;
+            }
+            
+            Rule r = (Rule)o;
+            if (filterText == null) {
+                return true;
+            }
+            filterText = filterText.toLowerCase();
+            if (r.getDisplayName().toLowerCase().contains(filterText)) {
+                return true;
+            }
+            if (r instanceof UserConfigurableRule) {
+                String htmlDesc = (((UserConfigurableRule)r)).getDescription().toLowerCase();
+                // filter out opening and closing tags. Hope that > does not appear in attribute values.
+                String untagged = htmlDesc.replaceAll("</?[a-z0-9]+.*?>", ""); // NOI18N
+                return untagged.
+                        toLowerCase().contains(filterText);
+            }
+            return false;
+        }
     }
     
     /** This method is called from within the constructor to
@@ -252,7 +291,7 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             logic.disconnect();
         }
         logic = new HintsPanelLogic(manager);
-        logic.connect(errorTree, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
+        logic.connect(errorTree, baseModel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea);
     }
     
     public void cancel() {

@@ -51,6 +51,7 @@ import org.netbeans.spi.editor.hints.settings.FileHintPreferences;
 import org.netbeans.spi.editor.hints.settings.FileHintPreferences.GlobalHintPreferencesProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbPreferences;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -78,6 +79,7 @@ public abstract class HintsSettings {
         private final Severity overrideSeverity;
 
         public PreferencesBasedHintsSettings(Preferences preferences, boolean useDefaultEnabled, Severity overrideSeverity) {
+            Parameters.notNull("preferences", preferences);
             this.preferences = preferences;
             this.useDefaultEnabled = useDefaultEnabled;
             this.overrideSeverity = overrideSeverity;

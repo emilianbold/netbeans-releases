@@ -3,7 +3,7 @@
 
     var |>CLASS:layout<|;
 
-    |>CLASS:TEST<| = {
+    |>GLOBAL:TEST<| = {
         |>METHOD:test<|: function () {
             if (layout) {
                 layout.destroy();

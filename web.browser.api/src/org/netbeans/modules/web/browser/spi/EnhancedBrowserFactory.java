@@ -56,11 +56,12 @@ public interface EnhancedBrowserFactory {
     BrowserFamilyId getBrowserFamilyId();
 
     /**
-     * Image icon representing this browser. 24x24 size expected.
+     * Image icon representing this browser.
+     * @param small return 16x16 icon if true; otherwise 24x24 size expected
      * @return can return null (in which case a fallback icon will be used as
      * implemented in WebBrowser itself)
      */
-    Image getIconImage();
+    Image getIconImage(boolean small);
 
     /**
      * Display name of browser.

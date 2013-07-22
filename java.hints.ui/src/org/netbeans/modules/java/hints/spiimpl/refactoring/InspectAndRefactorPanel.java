@@ -68,6 +68,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -239,8 +240,20 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
             manageSingleRefactoring.setEnabled(false);
             configurationRadio.setEnabled(false);
         } else if (preselect != null) {
-            singleRefactoringCombo.setSelectedItem(preselect);
-            singleRefactorRadio.setSelected(true);
+            //the instance of HintMetadata in preselect and in the combo may differ
+            //for hints from the classpath - match using an ID:
+            HintMetadata toSelect = null;
+            String id = preselect.id;
+            for (HintMetadata hm : allHints.keySet()) {
+                if (Objects.equals(hm.id, id)) {
+                    toSelect = hm;
+                    break;
+                }
+            }
+            if (toSelect != null) {
+                singleRefactoringCombo.setSelectedItem(toSelect);
+                singleRefactorRadio.setSelected(true);
+            }
         }
     }
     

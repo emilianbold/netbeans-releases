@@ -1,10 +1,10 @@
 Name: Nashorn
-Version: 5f2db2d8a7fa patched
-Description: JavaScript engine patched to run parser on JDK 6
+Version: 02f810c26ff9 patched
+Description: JavaScript engine patched to run parser on JDK 7
 License: GPL-2-CP
-Origin: http://hg.openjdk.java.net/nashorn/jdk8/nashorn/rev/5f2db2d8a7fa
+Origin: http://hg.openjdk.java.net/nashorn/jdk8/nashorn/rev/02f810c26ff9
 
-Use of Nashorn 5f2db2d8a7fa patched is governed by the terms of the license below:
+Use of Nashorn 02f810c26ff9 patched is governed by the terms of the license below:
 
 [TEXT OF THE LICENSE]
 

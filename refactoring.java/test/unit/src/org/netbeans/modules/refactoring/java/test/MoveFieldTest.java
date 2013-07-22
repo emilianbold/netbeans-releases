@@ -53,6 +53,39 @@ public class MoveFieldTest extends MoveBaseTest {
     public MoveFieldTest(String name) {
         super(name);
     }
+    
+    public void testMoveEscalate() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    static int i;\n"
+                + "}\n"),
+                new File("v/B.java", "package v;\n"
+                + "public class B {\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "    private void foo() {\n"
+                + "        System.out.println(A.i);\n"
+                + "    }\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("v/B.java"), Visibility.ESCALATE, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "}\n"),
+                new File("v/B.java", "package v;\n"
+                + "public class B {\n"
+                + "    public static int i;\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "import v.B;\n"
+                + "public class C {\n"
+                + "    private void foo() {\n"
+                + "        System.out.println(B.i);\n"
+                + "    }\n"
+                + "}\n"));
+    }
 
     public void testMoveStatic() throws Exception {
         writeFilesAndWaitForScan(src,

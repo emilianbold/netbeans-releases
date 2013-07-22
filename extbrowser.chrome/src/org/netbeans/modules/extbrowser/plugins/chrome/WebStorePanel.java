@@ -43,7 +43,6 @@ package org.netbeans.modules.extbrowser.plugins.chrome;
 
 import java.awt.Dimension;
 import java.awt.Font;
-import java.awt.FontMetrics;
 import java.awt.Window;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -52,6 +51,7 @@ import java.awt.event.HierarchyListener;
 import java.util.logging.Logger;
 
 import javax.swing.JEditorPane;
+import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 
 import javax.swing.event.HyperlinkEvent;
@@ -60,7 +60,6 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Utilities;
 import javax.swing.text.html.HTMLDocument;
 
-import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
@@ -121,7 +120,12 @@ class WebStorePanel extends javax.swing.JPanel {
     
     private void init(){
         initComponents();
-        description.setBackground(getBackground());
+        // ui tweaks
+        Font labelFont = new JLabel().getFont();
+        description.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        description.setFont(labelFont);
+        notConnectedLink.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        notConnectedLink.setFont(labelFont);
         
         Font font = description.getFont();
         String bodyRule = "body { font-family: " + font.getFamily() + "; " +
@@ -234,7 +238,6 @@ class WebStorePanel extends javax.swing.JPanel {
         add(webStoreButton, gridBagConstraints);
 
         description.setEditable(false);
-        description.setBackground(new java.awt.Color(240, 240, 240));
         description.setBorder(null);
         description.setContentType("text/html"); // NOI18N
         description.setText(org.openide.util.NbBundle.getMessage(WebStorePanel.class, "WebStorePanel.description.text")); // NOI18N
@@ -249,7 +252,6 @@ class WebStorePanel extends javax.swing.JPanel {
         add(description, gridBagConstraints);
 
         notConnectedLink.setEditable(false);
-        notConnectedLink.setBackground(new java.awt.Color(240, 240, 240));
         notConnectedLink.setBorder(null);
         notConnectedLink.setContentType("text/html"); // NOI18N
         notConnectedLink.setText(org.openide.util.NbBundle.getMessage(WebStorePanel.class, "LBL_NotConnected")); // NOI18N

@@ -72,7 +72,7 @@ import org.openide.util.NbBundle;
 @Hint(displayName = "#RemoteAnnotatedBeanHasRBI.display.name",
         description = "#RemoteAnnotatedBeanHasRBI.err",
         id = "o.n.m.j2ee.ejbverification.RemoteAnnotatedBeanHasRBI",
-        category = "JavaEE",
+        category = "javaee/ejb",
         enabled = true,
         suppressWarnings = "RemoteAnnotatedBeanHasRBI")
 @NbBundle.Messages({

@@ -50,7 +50,6 @@ import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
@@ -62,7 +61,6 @@ import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCompleter;
 import org.netbeans.modules.javascript2.editor.lexer.JsDocumentationTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.javascript2.editor.formatter.JsFormatter;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
 
 /**
@@ -83,18 +81,18 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
     private final boolean comments;
 
+    private final boolean multiLineLiterals;
+
     private CommentGenerator commentGenerator = null;
 
-    public JsTypedBreakInterceptor(Language<JsTokenId> language, boolean comments) {
+    public JsTypedBreakInterceptor(Language<JsTokenId> language, boolean comments, boolean multiLineLiterals) {
         this.language = language;
         this.comments = comments;
+        this.multiLineLiterals = multiLineLiterals;
     }
 
-    public boolean isInsertMatchingEnabled(BaseDocument doc) {
-        // The editor options code is calling methods on BaseOptions instead of looking in the settings map :(
-        // Boolean b = ((Boolean) Settings.getValue(doc.getKitClass(), SettingsNames.PAIR_CHARACTERS_COMPLETION));
-        // return b == null || b.booleanValue();
-        EditorOptions options = EditorOptions.get(JsTokenId.JAVASCRIPT_MIME_TYPE);
+    private boolean isInsertMatchingEnabled() {
+        EditorOptions options = EditorOptions.get(language.mimeType());
         if (options != null) {
             return options.getMatchBrackets();
         }
@@ -107,7 +105,6 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         BaseDocument doc = (BaseDocument) context.getDocument();
         TokenHierarchy<BaseDocument> tokenHierarchy = TokenHierarchy.get(doc);
         int offset = context.getCaretOffset();
-        boolean insertMatching = isInsertMatchingEnabled(doc);
 
         int lineBegin = Utilities.getRowStart(doc, offset);
         int lineEnd = Utilities.getRowEnd(doc, offset);
@@ -136,7 +133,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         // Insert a missing }
         boolean insertRightBrace = isAddRightBrace(doc, offset);
 
-        if (!id.isError() && insertMatching && insertRightBrace && !isDocToken(id)) {
+        if (!id.isError() && isInsertMatchingEnabled() && insertRightBrace && !isDocToken(id)) {
             int indent = GsfUtilities.getLineIndent(doc, offset);
 
             int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, offset);
@@ -213,32 +210,34 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
 
-        if (id == JsTokenId.STRING ||
-                (id == JsTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
-            // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
-            //int indent = GsfUtilities.getLineIndent(doc, offset);
-            //int delimiterOffset = id == JsTokenId.STRING_END ? ts.offset() : ts.offset()-1;
-            //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
-            //doc.insertString(offset, delimiter + " + " + delimiter, null);
-            //caret.setDot(offset+3);
-            //return offset + 5 + indent;
-            String str = (id != JsTokenId.STRING || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
-            context.setText(str, -1, str.length());
-            return;
-        }
+        if (multiLineLiterals) {
+            if (id == JsTokenId.STRING ||
+                    (id == JsTokenId.STRING_END) && offset < ts.offset()+ts.token().length()) {
+                // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
+                //int indent = GsfUtilities.getLineIndent(doc, offset);
+                //int delimiterOffset = id == JsTokenId.STRING_END ? ts.offset() : ts.offset()-1;
+                //char delimiter = doc.getText(delimiterOffset,1).charAt(0);
+                //doc.insertString(offset, delimiter + " + " + delimiter, null);
+                //caret.setDot(offset+3);
+                //return offset + 5 + indent;
+                String str = (id != JsTokenId.STRING || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
+                context.setText(str, -1, str.length());
+                return;
+            }
 
 
 
-        if (id == JsTokenId.REGEXP ||
-                (id == JsTokenId.REGEXP_END) && offset < ts.offset()+ts.token().length()) {
-            // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
-            //int indent = GsfUtilities.getLineIndent(doc, offset);
-            //doc.insertString(offset, "/ + /", null);
-            //caret.setDot(offset+3);
-            //return offset + 5 + indent;
-            String str = (id != JsTokenId.REGEXP || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
-            context.setText(str, -1, str.length());
-            return;
+            if (id == JsTokenId.REGEXP ||
+                    (id == JsTokenId.REGEXP_END) && offset < ts.offset()+ts.token().length()) {
+                // Instead of splitting a string "foobar" into "foo"+"bar", just insert a \ instead!
+                //int indent = GsfUtilities.getLineIndent(doc, offset);
+                //doc.insertString(offset, "/ + /", null);
+                //caret.setDot(offset+3);
+                //return offset + 5 + indent;
+                String str = (id != JsTokenId.REGEXP || offset > ts.offset()) ? "\\n\\\n"  : "\\\n";
+                context.setText(str, -1, str.length());
+                return;
+            }
         }
 
         // Special case: since I do hash completion, if you try to type
@@ -748,7 +747,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
         @Override
         public TypedBreakInterceptor createTypedBreakInterceptor(MimePath mimePath) {
-            return new JsTypedBreakInterceptor(JsTokenId.javascriptLanguage(), true);
+            return new JsTypedBreakInterceptor(JsTokenId.javascriptLanguage(), true, true);
         }
 
     }
@@ -758,7 +757,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
         @Override
         public TypedBreakInterceptor createTypedBreakInterceptor(MimePath mimePath) {
-            return new JsTypedBreakInterceptor(JsTokenId.jsonLanguage(), false);
+            return new JsTypedBreakInterceptor(JsTokenId.jsonLanguage(), false, false);
         }
 
     }

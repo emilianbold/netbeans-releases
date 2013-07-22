@@ -146,6 +146,7 @@ import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.ant.UpdateImplementation;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettingConstants;
 import org.netbeans.modules.javaee.project.api.ant.AntProjectUtil;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
@@ -333,7 +334,7 @@ public class EjbJarProject implements Project, FileChangeListener {
              }
          );    
         // whitelist updater listens on project properties and pays attention to whitelist changes
-        whiteListUpdater = WhiteListUpdater.createWhiteListUpdater(this, evaluator());
+        whiteListUpdater = new WhiteListUpdaterImpl(this);
     }
 
     public void setProjectPropertiesSave(boolean value) {
@@ -1638,6 +1639,30 @@ public class EjbJarProject implements Project, FileChangeListener {
 
     }
 
+    private final class WhiteListUpdaterImpl extends WhiteListUpdater {
+
+        public WhiteListUpdaterImpl(Project project) {
+            super(project);
+        }
+
+        @Override
+        public void addSettingListener() {
+            evaluator().addPropertyChangeListener(new PropertyChangeListener() {
+
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(JavaEEProjectSettingConstants.J2EE_SERVER_INSTANCE)){
+                        checkWhiteLists();
+                    }
+                    if (evt.getPropertyName().equals(ProjectProperties.JAVAC_CLASSPATH)){
+                        // if classpath changes refresh whitelists as well:
+                        updateWhitelist(null, getServerWhiteList());
+                    }
+                }
+            });
+        }
+    }
+
     private class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplementation {
 
         private final EjbJarProject project;
@@ -1648,20 +1673,53 @@ public class EjbJarProject implements Project, FileChangeListener {
 
         @Override
         public void setProfile(Profile profile) {
-            try {
-                UpdateHelper helper = project.getUpdateHelper();
-                EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                projectProperties.setProperty(EjbJarProjectProperties.J2EE_PLATFORM, profile.toPropertiesString());
-                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-                ProjectManager.getDefault().saveProject(project);
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Project properties couldn't be saved.", ex);
-            }
+            setInSharedProperties(JavaEEProjectSettingConstants.J2EE_PLATFORM, profile.toPropertiesString());
         }
 
         @Override
         public Profile getProfile() {
             return ejbModule.getJ2eeProfile();
+        }
+
+        @Override
+        public void setBrowserID(String browserID) {
+            // Does not make sense for EJB project - simply do nothing
+        }
+
+        @Override
+        public String getBrowserID() {
+            // Does not make sense for EJB project - simply do nothing
+            return null;
+        }
+
+        @Override
+        public void setServerInstanceID(String serverInstanceID) {
+            setInPrivateProperties(JavaEEProjectSettingConstants.J2EE_SERVER_INSTANCE, serverInstanceID);
+        }
+
+        @Override
+        public String getServerInstanceID() {
+            return evaluator().getProperty(JavaEEProjectSettingConstants.J2EE_SERVER_INSTANCE);
+        }
+
+        private void setInSharedProperties(String key, String value) {
+            setInProperties(key, value, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        }
+
+        private void setInPrivateProperties(String key, String value) {
+            setInProperties(key, value, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        }
+
+        private void setInProperties(String key, String value, String propertiesPath) {
+            try {
+                UpdateHelper helper = project.getUpdateHelper();
+                EditableProperties projectProperties = helper.getProperties(propertiesPath);
+                projectProperties.setProperty(key, value);
+                helper.putProperties(propertiesPath, projectProperties);
+                ProjectManager.getDefault().saveProject(project);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Project properties couldn't be saved.", ex);
+            }
         }
     }
 }

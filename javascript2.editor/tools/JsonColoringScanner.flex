@@ -38,6 +38,7 @@
 
 package org.netbeans.modules.javascript2.editor.lexer;
 
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.spi.lexer.LexerInput;
 import org.netbeans.spi.lexer.LexerRestartInfo;
 
@@ -153,7 +154,7 @@ Fraction = \. [0-9]*
 Exponent = [eE] [+-]? [0-9]+
 
 /* string and character literals */
-StringCharacter  = [^\r\n\"\\] | \\{LineTerminator}
+StringCharacter  = [^\r\n\"\\]
 
 %state STRING
 %state STRINGEND

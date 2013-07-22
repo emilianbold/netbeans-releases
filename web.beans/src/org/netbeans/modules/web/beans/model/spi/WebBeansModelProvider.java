@@ -55,6 +55,7 @@ import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeMirror;
 
 import org.netbeans.api.java.source.CompilationController;
+import org.netbeans.modules.web.beans.api.model.BeanArchiveType;
 import org.netbeans.modules.web.beans.api.model.CdiException;
 import org.netbeans.modules.web.beans.api.model.InjectionPointDefinitionError;
 import org.netbeans.modules.web.beans.api.model.DependencyInjectionResult;
@@ -101,4 +102,5 @@ public interface WebBeansModelProvider {
 
     Collection<AnnotationMirror> getInterceptorBindings( Element element );
 
+    BeanArchiveType getBeanArchiveType();
 }

@@ -279,10 +279,10 @@ made subject to such option by the copyright holder.
             <xsl:attribute name="wsdl">${basedir}/${conf-dir}xml-resources/<xsl:value-of select="$wsDir"/>/<xsl:value-of select="$wsName"/>/wsdl/<xsl:value-of select="$wsdlUrl"/></xsl:attribute>
             <xsl:attribute name="catalog"><xsl:value-of select="$Catalog" /></xsl:attribute>
             <xsl:if test="$xjcencoding='true'">
-					<xsl:attribute name="encoding">
-						<xsl:text>${source.encoding}</xsl:text>
-                     </xsl:attribute>
-             </xsl:if>
+                <xsl:attribute name="encoding">
+                    <xsl:text>${source.encoding}</xsl:text>
+                </xsl:attribute>
+            </xsl:if>
             <xsl:if test="$wsimportoptions">
                 <xsl:for-each select="$wsimportoptions/jaxws:wsimport-option">
                     <xsl:variable name="wsoptionname" select="jaxws:wsimport-option-name"/>
@@ -329,6 +329,13 @@ made subject to such option by the copyright holder.
                     </xsl:attribute>
                 </binding>
             </xsl:if>
+            <xsl:for-each select="jaxws:jvmarg">
+                <jvmarg>
+                    <xsl:attribute name="value">
+                        <xsl:text><xsl:value-of select="."/></xsl:text>
+                    </xsl:attribute>
+                </jvmarg>   
+            </xsl:for-each>
         </wsimport>
     </xsl:template>
     <!-- END: invokeWsimport template -->

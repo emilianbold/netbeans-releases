@@ -227,6 +227,10 @@ public class ComputeImportsTest extends NbTestCase {
         doTest("StaticImportsArrays2");
     }
     
+    public void test232647() throws Exception {
+        doTest("Test232647");
+    }
+    
     private void prepareTest(String capitalizedName) throws Exception {
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
         

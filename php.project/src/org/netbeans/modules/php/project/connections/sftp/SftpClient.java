@@ -161,7 +161,7 @@ public class SftpClient implements RemoteClient {
                 sftpSession.setPassword(password);
             }
             // proxy
-            setProxy();
+            setProxy(host);
             sftpSession.setUserInfo(new SftpUserInfo(configuration));
             sftpSession.setTimeout(timeout);
             // keep-alive
@@ -186,14 +186,14 @@ public class SftpClient implements RemoteClient {
 
     }
 
-    private void setProxy() {
+    private void setProxy(String host) {
         if (NO_PROXY_PROPERTY) {
             LOGGER.log(Level.FINE, "No proxy will be used (disabled via system property)");
             return;
         }
         Proxy proxy = null;
         // prefer socks proxy
-        RemoteUtils.ProxyInfo proxyInfo = RemoteUtils.getSocksProxy();
+        RemoteUtils.ProxyInfo proxyInfo = RemoteUtils.getSocksProxy(host);
         if (proxyInfo != null) {
             LOGGER.log(Level.FINE, "SOCKS proxy will be used");
             ProxySOCKS5 socksProxy = new ProxySOCKS5(proxyInfo.getHost(), proxyInfo.getPort());
@@ -202,7 +202,7 @@ public class SftpClient implements RemoteClient {
             }
             proxy = socksProxy;
         } else {
-            proxyInfo = RemoteUtils.getHttpProxy();
+            proxyInfo = RemoteUtils.getHttpProxy(host);
             if (proxyInfo != null) {
                 LOGGER.log(Level.FINE, "HTTP proxy will be used");
                 ProxyHTTP httpProxy = new ProxyHTTP(proxyInfo.getHost(), proxyInfo.getPort());
