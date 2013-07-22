@@ -123,10 +123,8 @@ public class JsParserEmbeddedTest extends JsTestBase {
             return (JsParserResult) r;
         } else {
             for (Embedding embedding : resultIterator.getEmbeddings()) {
-                //if (JsTokenId.JAVASCRIPT_MIME_TYPE.equals(embedding.getMimeType())) {
-                    ResultIterator embeddingIterator = resultIterator.getResultIterator(embedding);
-                    return getJsParserResult(embeddingIterator);
-                //}
+                ResultIterator embeddingIterator = resultIterator.getResultIterator(embedding);
+                return getJsParserResult(embeddingIterator);
             }
         }
         return null;
