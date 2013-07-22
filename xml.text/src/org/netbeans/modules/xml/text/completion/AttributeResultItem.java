@@ -49,6 +49,7 @@ import javax.swing.text.JTextComponent;
 
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.spi.editor.completion.CompletionTask;
+import org.netbeans.swing.plaf.LFCustoms;
 
 /**
  * It represents attribute name (or namespace prefix).
@@ -57,7 +58,8 @@ import org.netbeans.spi.editor.completion.CompletionTask;
  * @author  Petr Kuzel
  */
 class AttributeResultItem extends XMLResultItem {
-
+    private static final Color COLOR = new Color(64, 64, 255);
+    
     // we are requested to avoid appending extra data
     private boolean inline = false;
     
@@ -81,7 +83,7 @@ class AttributeResultItem extends XMLResultItem {
         return result;
     }
     
-    Color getPaintColor() { return Color.blue; }
+    Color getPaintColor() { return LFCustoms.shiftColor(COLOR); }
 
     @Override
     public CompletionTask createDocumentationTask() {
