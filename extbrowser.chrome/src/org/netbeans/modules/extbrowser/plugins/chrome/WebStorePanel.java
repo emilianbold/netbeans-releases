@@ -120,8 +120,12 @@ class WebStorePanel extends javax.swing.JPanel {
     
     private void init(){
         initComponents();
+        // ui tweaks
+        Font labelFont = new JLabel().getFont();
         description.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
-        description.setFont(new JLabel().getFont());
+        description.setFont(labelFont);
+        notConnectedLink.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
+        notConnectedLink.setFont(labelFont);
         
         Font font = description.getFont();
         String bodyRule = "body { font-family: " + font.getFamily() + "; " +
@@ -234,6 +238,7 @@ class WebStorePanel extends javax.swing.JPanel {
         add(webStoreButton, gridBagConstraints);
 
         description.setEditable(false);
+        description.setBorder(null);
         description.setContentType("text/html"); // NOI18N
         description.setText(org.openide.util.NbBundle.getMessage(WebStorePanel.class, "WebStorePanel.description.text")); // NOI18N
         description.setMinimumSize(new java.awt.Dimension(350, 60));
@@ -247,7 +252,6 @@ class WebStorePanel extends javax.swing.JPanel {
         add(description, gridBagConstraints);
 
         notConnectedLink.setEditable(false);
-        notConnectedLink.setBackground(new java.awt.Color(240, 240, 240));
         notConnectedLink.setBorder(null);
         notConnectedLink.setContentType("text/html"); // NOI18N
         notConnectedLink.setText(org.openide.util.NbBundle.getMessage(WebStorePanel.class, "LBL_NotConnected")); // NOI18N
