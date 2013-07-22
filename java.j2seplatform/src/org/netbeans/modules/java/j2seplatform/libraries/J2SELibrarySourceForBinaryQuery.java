@@ -271,6 +271,10 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                     }
                 }
                 if (change) {
+                    LOG.log(
+                        Level.FINE,
+                        "Library {0} redefined.",   //NOI18N
+                        currentLib.getName());
                     boolean fire = false;
                     synchronized (this) {
                         if (newLib != null) {
