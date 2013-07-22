@@ -1079,6 +1079,18 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     }
 
     /**
+     * Set GlassFish server administration user name from stored properties.
+     * <p/>
+     * Method {@see #writeInstanceToFile(GlassfishInstance)} must be called
+     * to persist value.
+     * <p/>
+     * @param usern GlassFish server administration user name.
+     */
+    public void setAdminUser(final String user) {
+        properties.put(GlassfishModule.USERNAME_ATTR, user);
+    }
+
+    /**
      * Retrieve password attribute from stored properties and NetBeans
      * key store.
      * <p/>
