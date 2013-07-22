@@ -687,7 +687,7 @@ public class ModelVisitor extends PathNodeVisitor {
         JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
         // create variables that are declared in the function
         // They has to be created here for tracking occurrences
-        if (canBeSingletonPattern(1)) {
+        if (canBeSingletonPattern()) {
             parent = resolveThis(fncScope);
         } else {
             parent = fncScope;
@@ -1588,6 +1588,12 @@ public class ModelVisitor extends PathNodeVisitor {
      */
     private JsObject resolveThis(JsObject where) {
         JsElement.Kind whereKind = where.getJSKind();
+        if (canBeSingletonPattern()) {
+            JsObject result = resolveThisInSingletonPattern(where);
+            if (result != null) {
+                return result;
+            }
+        }
         if (whereKind == JsElement.Kind.FILE) {
             // this is used in global context
             return where;
@@ -1621,26 +1627,37 @@ public class ModelVisitor extends PathNodeVisitor {
             return parent;
         }
         if (where.isAnonymous()) {
-            int pathIndex = 1;
-            Node lastNode = getPreviousFromPath(1);
-            if (lastNode instanceof FunctionNode && !canBeSingletonPattern(pathIndex)) {
-                pathIndex++;
-            } 
-            while (pathIndex < getPath().size() && !(getPreviousFromPath(pathIndex) instanceof FunctionNode)) {
-                pathIndex++;
+            JsObject result = resolveThisInSingletonPattern(where);
+            if (result != null) {
+                return result;
             }
-            // trying to find out that it corresponds with patter, where an object is defined via new function:
-            // exp: this.pro = new function () { this.field = "";}
-            if (canBeSingletonPattern(pathIndex)) {
-                UnaryNode uNode = (UnaryNode)getPreviousFromPath(pathIndex + 3);
-                if (uNode.tokenType() == TokenType.NEW) {
-                    BinaryNode bNode = (BinaryNode)getPreviousFromPath(pathIndex + 4);
+        }
+        return where;
+    }
+    
+    private JsObject resolveThisInSingletonPattern(JsObject where) {
+        int pathIndex = 1;
+        Node lastNode = getPreviousFromPath(1);
+        if (lastNode instanceof FunctionNode && !canBeSingletonPattern(pathIndex)) {
+            pathIndex++;
+        }
+        while (pathIndex < getPath().size() && !(getPreviousFromPath(pathIndex) instanceof FunctionNode)) {
+            pathIndex++;
+        }
+        // trying to find out that it corresponds with patter, where an object is defined via new function:
+        // exp: this.pro = new function () { this.field = "";}
+        if (canBeSingletonPattern(pathIndex)) {
+            UnaryNode uNode = (UnaryNode) getPreviousFromPath(pathIndex + 3);
+            if (uNode.tokenType() == TokenType.NEW) {
+
+                String name = null;
+                boolean simpleName = true;
+                if (getPreviousFromPath(pathIndex + 4) instanceof BinaryNode) {
+                    BinaryNode bNode = (BinaryNode) getPreviousFromPath(pathIndex + 4);
                     if (bNode.tokenType() == TokenType.ASSIGN) {
-                        String name = null;
-                        boolean simpleName = true;
                         if (bNode.lhs() instanceof AccessNode) {
-                            List<Identifier> identifier = getName((AccessNode)bNode.lhs(), parserResult);
-                            if (identifier.size() == 1 ) {
+                            List<Identifier> identifier = getName((AccessNode) bNode.lhs(), parserResult);
+                            if (identifier.size() == 1) {
                                 name = identifier.get(0).getName();
                             } else {
                                 StringBuilder sb = new StringBuilder();
@@ -1651,30 +1668,35 @@ public class ModelVisitor extends PathNodeVisitor {
                                 simpleName = false;
                             }
                         } else if (bNode.lhs() instanceof IdentNode) {
-                            name = ((IdentNode)bNode.lhs()).getName();
-                        }
-                        if (name != null) {
-                            if (simpleName) {
-                                parent = where;
-                                while (parent != null && parent.getProperty(name) == null) {
-                                    parent = parent.getParent();
-                                }
-                                if (parent != null && parent.getProperty(name) != null) {
-                                    return parent.getProperty(name);
-                                }
-                            } else {
-                                JsObject property = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(parent), name);
-                                if (property != null) {
-                                    return property;
-                                }
-                            }
-                            
+                            name = ((IdentNode) bNode.lhs()).getName();
                         }
                     }
+                } else if (getPreviousFromPath(pathIndex + 4) instanceof VarNode) {
+                    VarNode vNode = (VarNode)getPreviousFromPath(pathIndex + 4);
+                    name = vNode.getName().getName();
+                }
+                
+                JsObject parent = where.getParent() == null ? where : where.getParent();
+                if (name != null) {
+                    if (simpleName) {
+                        parent = where;
+                        while (parent != null && parent.getProperty(name) == null) {
+                            parent = parent.getParent();
+                        }
+                        if (parent != null && parent.getProperty(name) != null) {
+                            return parent.getProperty(name);
+                        }
+                    } else {
+                        JsObject property = ModelUtils.findJsObjectByName(ModelUtils.getGlobalObject(parent), name);
+                        if (property != null) {
+                            return property;
+                        }
+                    }
+
                 }
             }
         }
-        return where;
+        return null;
     }
     
     private boolean canBeSingletonPattern() {
@@ -1694,7 +1716,8 @@ public class ModelVisitor extends PathNodeVisitor {
                     && getPreviousFromPath(pathIndex + 1) instanceof ReferenceNode
                     && getPreviousFromPath(pathIndex + 2) instanceof CallNode
                     && getPreviousFromPath(pathIndex + 3) instanceof UnaryNode
-                    && getPreviousFromPath(pathIndex + 4) instanceof BinaryNode);
+                    && (getPreviousFromPath(pathIndex + 4) instanceof BinaryNode
+                        || getPreviousFromPath(pathIndex + 4) instanceof VarNode));
     }
     
     public static class FunctionCall {

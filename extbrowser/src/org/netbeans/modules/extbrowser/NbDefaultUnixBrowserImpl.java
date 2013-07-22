@@ -78,26 +78,29 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
     
     private static final Logger LOGGER = Logger.getLogger(NbDefaultUnixBrowserImpl.class.getName());
 
-    private static final String XDG_COMMAND = "xdg-open"; // NOI18N
+    private static final String XDG_OPEN_COMMAND = "xdg-open"; // NOI18N
+    private static final String XDG_SETTINGS_COMMAND = "xdg-settings"; // NOI18N
     private static final String XBROWSER_COMMAND = "x-www-browser"; // NOI18N
     private static final String XDG_DEFAULT_WEB_BROWSER;
     
     private static final RequestProcessor REQUEST_PROCESSOR = 
         new RequestProcessor( NbDefaultUnixBrowserImpl.class );
 
-    private static final boolean XDG_AVAILABLE;
+    private static final boolean XDG_OPEN_AVAILABLE;
+    private static final boolean XDG_SETTINGS_AVAILABLE;
     private static final boolean XBROWSER_AVAILABLE;
     
     static {
         // XXX Lame check to find out whether the functionality is installed.
         // TODO Find some better way to ensure it is there.
-        XDG_AVAILABLE = new File("/usr/bin/" + XDG_COMMAND).exists(); // NOI18N
+        XDG_OPEN_AVAILABLE = new File("/usr/bin/" + XDG_OPEN_COMMAND).exists(); // NOI18N
+        XDG_SETTINGS_AVAILABLE = new File("/usr/bin/" + XDG_SETTINGS_COMMAND).exists(); // NOI18N
         XBROWSER_AVAILABLE = new File("/usr/bin/" + XBROWSER_COMMAND).exists(); // NOI18N
         XDG_DEFAULT_WEB_BROWSER = detectDefaultWebBrowser();
     }
     
     static boolean isAvailable() {
-        return XDG_AVAILABLE || XBROWSER_AVAILABLE;
+        return XDG_OPEN_AVAILABLE || XBROWSER_AVAILABLE;
     }
     
     
@@ -159,7 +162,7 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
         url = URLUtil.createExternalURL(url, false);
         String urlArg = url.toExternalForm();
         // prefer xdg-open, then x-www-browser
-        String command = XDG_AVAILABLE ? XDG_COMMAND : XBROWSER_COMMAND;
+        String command = XDG_OPEN_AVAILABLE ? XDG_OPEN_COMMAND : XBROWSER_COMMAND;
 
         ProcessBuilder pb = new ProcessBuilder(new String[] { command, urlArg });
         try {
@@ -173,11 +176,12 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
     private static String detectDefaultWebBrowser() {
         // XXX hotfix for #233047
         // assert !EventQueue.isDispatchThread();
-        if (!XDG_AVAILABLE) {
+        // #233145
+        if (!XDG_SETTINGS_AVAILABLE) {
             return null;
         }
         OutputProcessorFactory outputProcessorFactory = new OutputProcessorFactory();
-        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder("xdg-settings") // NOI18N
+        ExternalProcessBuilder processBuilder = new ExternalProcessBuilder(XDG_SETTINGS_COMMAND) // NOI18N
                 .addArgument("get") // NOI18N
                 .addArgument("default-web-browser"); // NOI18N
         ExecutionDescriptor silentDescriptor = new ExecutionDescriptor()
