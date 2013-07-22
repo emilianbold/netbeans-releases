@@ -44,7 +44,13 @@
 
 package org.netbeans.modules.project.uiapi;
 
+import java.awt.BorderLayout;
 import java.awt.CardLayout;
+import java.awt.GridBagConstraints;
+import javax.swing.JComponent;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
@@ -59,6 +65,8 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
     private String projectFolder;
     private boolean enableCheckbox;
     private ProgressHandle handle;
+    private JComponent progressComponent;
+    private ProgressBar progressBar;
     
     public DefaultProjectDeletePanel(ProgressHandle handle, String projectDisplaName, String projectFolder, boolean enableCheckbox) {
         this.projectDisplaName = projectDisplaName;
@@ -72,6 +80,28 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         }
     }
     
+    private static class ProgressBar extends JPanel {
+
+        private JLabel label;
+
+        private static ProgressBar create(JComponent progress) {
+            ProgressBar instance = new ProgressBar();
+            instance.setLayout(new BorderLayout());
+            instance.label = new JLabel(" "); //NOI18N
+            instance.label.setBorder(new EmptyBorder(0, 0, 2, 0));
+            instance.add(instance.label, BorderLayout.NORTH);
+            instance.add(progress, BorderLayout.CENTER);
+            return instance;
+        }
+
+        public void setString(String value) {
+            label.setText(value);
+        }
+
+        private ProgressBar() {
+        }
+    }
+    
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
         java.awt.GridBagConstraints gridBagConstraints;
@@ -82,7 +112,6 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         jPanel4 = new javax.swing.JPanel();
         progressImpl = new javax.swing.JPanel();
         jLabel5 = new javax.swing.JLabel();
-        jPanel3 = new javax.swing.JPanel();
         questionLabel = new javax.swing.JLabel();
 
         setLayout(new java.awt.GridBagLayout());
@@ -117,23 +146,16 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         progress.setLayout(new java.awt.CardLayout());
         progress.add(jPanel4, "not-progress");
 
+        progressImpl.add(progressComponent = ProgressHandleFactory.createProgressComponent(handle));
         progressImpl.setLayout(new java.awt.GridBagLayout());
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel5, org.openide.util.NbBundle.getMessage(DefaultProjectDeletePanel.class, "LBL_Deleting_Project", new Object[] {})); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridheight = java.awt.GridBagConstraints.REMAINDER;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
         gridBagConstraints.weightx = 1.0;
         progressImpl.add(jLabel5, gridBagConstraints);
-
-        jPanel3.add(ProgressHandleFactory.createProgressComponent(handle));
-        jPanel3.setLayout(new java.awt.BorderLayout());
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
-        gridBagConstraints.weightx = 1.0;
-        progressImpl.add(jPanel3, gridBagConstraints);
 
         progress.add(progressImpl, "progress");
 
@@ -143,7 +165,7 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         gridBagConstraints.gridwidth = 2;
         gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.weightx = 1.0;
+        gridBagConstraints.weightx = 0.8;
         gridBagConstraints.weighty = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(12, 0, 0, 0);
         add(progress, gridBagConstraints);
@@ -163,7 +185,6 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JCheckBox deleteSourcesCheckBox;
     private javax.swing.JLabel jLabel5;
-    private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
     private javax.swing.JPanel progress;
     private javax.swing.JPanel progressImpl;
@@ -192,4 +213,18 @@ final class DefaultProjectDeletePanel extends javax.swing.JPanel implements Inva
         return true;
     }
     
+    protected void addProgressBar() {
+        progressBar = ProgressBar.create(progressComponent); //NOI18N
+        GridBagConstraints gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+        gridBagConstraints.anchor = java.awt.GridBagConstraints.SOUTH;
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 1;
+        progressImpl.add(progressBar, gridBagConstraints);
+    }
+    
+    protected void removeProgressBar() {
+        progressImpl.remove(progressBar);
+    }
+
 }

@@ -383,4 +383,36 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testIssue232570() throws Exception {
         checkStructure("testfiles/completion/issue232570.js");
     }
+    
+    public void testIssue231815() throws Exception {
+        checkStructure("testfiles/structure/issue231815.js");
+    }
+    
+    public void testIssue232910() throws Exception {
+        checkStructure("testfiles/structure/issue232910.js");
+    }
+    
+    public void testIssue232920() throws Exception {
+        checkStructure("testfiles/structure/issue232920.js");
+    }
+    
+    public void testIssue232942() throws Exception {
+        checkStructure("testfiles/structure/issue232942.js");
+    }
+    
+    public void testIssue219508() throws Exception {
+        checkStructure("testfiles/structure/issue219508.js");
+    }
+    
+    public void testIssue222179() throws Exception {
+        checkStructure("testfiles/structure/issue222179.js");
+    }
+    
+    public void testIssue233062() throws Exception {
+        checkStructure("testfiles/structure/issue233062.js");
+    }
+    
+    public void testIssue223593() throws Exception {
+        checkStructure("testfiles/completion/issue223593.js");
+    }
 }

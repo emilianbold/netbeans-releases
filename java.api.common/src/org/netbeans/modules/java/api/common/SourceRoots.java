@@ -260,9 +260,20 @@ public final class SourceRoots extends Roots {
 
     /**
      * Returns the source roots as {@link URL}s.
+     * Calls {@link SourceRoots#getRootURLs(boolean)} with true.
      * @return an array of {@link URL}.
      */
     public URL[] getRootURLs() {
+        return getRootURLs(true);
+    }
+    
+    /**
+     * Returns the source roots as {@link URL}s.
+     * @param removeInvalidRoots when true the {@link URL}s pointing to existing non folder roots are removed.
+     * @return an array of {@link URL}.
+     * @since 1.56
+     */
+    public URL[] getRootURLs(final boolean removeInvalidRoots) {
         synchronized (this) {
             if (sourceRootURLs != null) {
                 return sourceRootURLs.toArray(new URL[sourceRootURLs.size()]);
@@ -283,7 +294,7 @@ public final class SourceRoots extends Roots {
                                     URL url = Utilities.toURI(f).toURL();
                                     if (!f.exists()) {
                                         url = new URL(url.toExternalForm() + "/"); // NOI18N
-                                    } else if (f.isFile()) {
+                                    } else if (removeInvalidRoots && !f.isDirectory()) {
                                         // file cannot be a source root (archives are not supported as source roots).
                                         continue;
                                     }

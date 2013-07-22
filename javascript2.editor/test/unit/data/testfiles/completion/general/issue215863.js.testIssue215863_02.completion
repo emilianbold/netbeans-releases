@@ -5,7 +5,7 @@ window.|location.toString();
 CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     Image(width: Number, height: N  [PUBLIC]   JS Platform
 METHOD     Option(text: String, value: St  [PUBLIC]   JS Platform
-METHOD     Worker(uri: String): Worker     [PUBLIC]   JS Platform
+METHOD     Worker(uri: String): window.Wo  [PUBLIC]   JS Platform
 METHOD     addEventListener(type: String,  [PUBLIC]   JS Platform
 METHOD     alert(): undefined              [PUBLIC]   JS Platform
 METHOD     atob(encodedData: String): Str  [PUBLIC]   JS Platform

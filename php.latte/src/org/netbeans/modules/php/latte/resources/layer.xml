@@ -72,6 +72,20 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
                             </file>
                         </folder>
                     </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="highlighting-bluetheme.xml" url="highlighting-bluetheme.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.latte.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="highlighting-citylights.xml" url="highlighting-citylights.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.latte.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
                 <file name="org-netbeans-modules-csl-core-EmbeddingIndexerFactoryImpl.instance">
                     <attr methodvalue="org.netbeans.modules.csl.core.EmbeddingIndexerFactoryImpl.create" name="instanceCreate"/>

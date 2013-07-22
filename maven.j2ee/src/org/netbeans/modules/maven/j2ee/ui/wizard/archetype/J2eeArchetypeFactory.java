@@ -107,7 +107,7 @@ public final class J2eeArchetypeFactory {
     private static class AppClientArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
-            addMojoArchetype(Profile.JAVA_EE_7_FULL, "1.0", "appclient-javaee7"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_7_FULL, "1.1", "appclient-javaee7"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.0", "appclient-javaee6"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_5, "1.0", "appclient-jee5"); //NOI18N
             addMojoArchetype(Profile.J2EE_14, "1.0", "appclient-jee5"); //NOI18N
@@ -135,7 +135,7 @@ public final class J2eeArchetypeFactory {
     private static class EjbArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
-            addMojoArchetype(Profile.JAVA_EE_7_FULL, "1.0", "ejb-javaee7"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_7_FULL, "1.1", "ejb-javaee7"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_6_FULL, "1.5", "ejb-javaee6"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_5, "1.3", "ejb-jee5"); //NOI18N
             addMojoArchetype(Profile.J2EE_14, "1.3", "ejb-j2ee14"); //NOI18N
@@ -145,7 +145,7 @@ public final class J2eeArchetypeFactory {
     private static class WebArchetypes extends BaseJ2eeArchetypeProvider {
         @Override
         protected void setUpProjectArchetypes() {
-            addMojoArchetype(Profile.JAVA_EE_7_WEB, "1.0", "webapp-javaee7"); //NOI18N
+            addMojoArchetype(Profile.JAVA_EE_7_WEB, "1.1", "webapp-javaee7"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_6_WEB, "1.5", "webapp-javaee6"); //NOI18N
             addMojoArchetype(Profile.JAVA_EE_5, "1.3", "webapp-jee5"); //NOI18N
             addMojoArchetype(Profile.J2EE_14, "1.3", "webapp-j2ee14"); //NOI18N

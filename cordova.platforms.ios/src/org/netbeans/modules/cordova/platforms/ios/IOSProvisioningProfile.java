@@ -63,7 +63,7 @@ public class IOSProvisioningProfile implements ProvisioningProfile {
         displayName = "Error"; // NOI18N
         try {
             this.path = path;
-            String xml = ProcessUtilities.callProcess("security", true, 1000, "cms", "-D", "-i", path); // NOI18N
+            String xml = ProcessUtilities.callProcess("security", true, IOSPlatform.DEFAULT_TIMEOUT, "cms", "-D", "-i", path); // NOI18N
             NSObject root = PropertyListParser.parse(xml.getBytes());
             if (root instanceof NSDictionary) {
                 displayName = ((NSDictionary) root).objectForKey("Name").toString(); // NOI18N
@@ -76,10 +76,12 @@ public class IOSProvisioningProfile implements ProvisioningProfile {
         
     }
 
+    @Override
     public String getDisplayName() {
         return displayName;
     }
 
+    @Override
     public String getPath() {
         return path;
     }

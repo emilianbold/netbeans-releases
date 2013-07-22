@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -70,6 +70,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
@@ -1549,7 +1551,9 @@ public final class UnitTab extends javax.swing.JPanel {
                     Unit.Installed installed = (Unit.Installed)u;
                     if (!installed.getRelevantElement ().isEnabled ()) {
                         OperationInfo info = Containers.forEnable ().add (installed.updateUnit, installed.getRelevantElement ());
-                        assert info != null;
+                        if (info ==  null) {
+                            Logger.getLogger(UnitTab.class.getName()).log(Level.WARNING, "Null OperationInfo for " + installed.getRelevantElement ());
+                        }
                     }
                 }
             }

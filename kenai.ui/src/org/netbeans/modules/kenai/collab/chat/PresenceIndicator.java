@@ -51,6 +51,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.InvocationTargetException;
 import java.net.PasswordAuthentication;
 import javax.swing.ImageIcon;
 import javax.swing.JCheckBoxMenuItem;
@@ -58,6 +59,7 @@ import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JPopupMenu;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import org.jivesoftware.smack.PacketListener;
 import org.jivesoftware.smack.packet.Packet;
@@ -84,26 +86,31 @@ public class PresenceIndicator {
     private static final ImageIcon OFFLINE = ImageUtilities.loadImageIcon("org/netbeans/modules/kenai/collab/resources/offline.png", true); // NOI18N
     private static PresenceIndicator instance;
 
-    private JLabel label;
-    private MouseL helper;
+    private final JLabel label;
+    private final MouseL helper;
 
-    private void setStatus(Kenai.Status status) {
-        label.setIcon(status == Kenai.Status.ONLINE?ONLINE:OFFLINE);
-        if (status!=Kenai.Status.ONLINE) {
-            label.setText(""); // NOI18N
-        }
-        switch (status) {
-            case OFFLINE:
-                label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline_Tooltip")); // NOI18N
-                break;
-            case LOGGED_IN:
-                label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedInButNotOnChat_Tooltip")); // NOI18N
-                break;
-            case ONLINE:
-                label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip", KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1:"")); // NOI18N
-                break;
-        }
-            label.setVisible(status!=Kenai.Status.OFFLINE);
+    private void setStatus(final Kenai.Status status) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                label.setIcon(status == Kenai.Status.ONLINE?ONLINE:OFFLINE);
+                if (status!=Kenai.Status.ONLINE) {
+                    label.setText(""); // NOI18N
+                }
+                switch (status) {
+                    case OFFLINE:
+                        label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_Offline_Tooltip")); // NOI18N
+                        break;
+                    case LOGGED_IN:
+                        label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedInButNotOnChat_Tooltip")); // NOI18N
+                        break;
+                    case ONLINE:
+                        label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip", KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1:"")); // NOI18N
+                        break;
+                }
+                label.setVisible(status!=Kenai.Status.OFFLINE);
+            }
+        });
     }
 
     private static Kenai.Status getKenaiStatus() {
@@ -145,7 +152,7 @@ public class PresenceIndicator {
             return;
         }
         KenaiManager.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-
+            @Override
             public void propertyChange(PropertyChangeEvent evt) {
                 setStatus(getKenaiStatus());
             }
@@ -210,7 +217,7 @@ public class PresenceIndicator {
                         });
 
                         logoutItem.addActionListener(new ActionListener() {
-
+                            @Override
                             public void actionPerformed(ActionEvent e) {
                                 Utilities.getRequestProcessor().post(new Runnable() {
 
@@ -225,10 +232,10 @@ public class PresenceIndicator {
                     final JMenuItem logoutItem = new JMenuItem(NbBundle.getMessage(PresenceIndicator.class, "CTL_LogoutMenuItem")); // NOI18N
                     menu.add(logoutItem);
                     onlineCheckBox.addActionListener(new ActionListener() {
-
+                        @Override
                         public void actionPerformed(ActionEvent e) {
                             Utilities.getRequestProcessor().post(new Runnable() {
-
+                                @Override
                                 public void run() {
                                     try {
                                         for(Kenai kenai: KenaiManager.getDefault().getKenais()) {
@@ -245,7 +252,7 @@ public class PresenceIndicator {
                         }
                     });
                     logoutItem.addActionListener(new ActionListener() {
-
+                        @Override
                         public void actionPerformed(ActionEvent e) {
                             Actions.forID("Team", "org.netbeans.modules.team.ui.LogoutAction").actionPerformed(e);
                         }
@@ -262,9 +269,15 @@ public class PresenceIndicator {
         /**
          * @param packet
          */
+        @Override
         public void processPacket(Packet packet) {
-            PresenceIndicator.getDefault().label.setText(KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1+"":""); // NOI18N
-            PresenceIndicator.getDefault().label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip", KenaiUser.getOnlineUserCount()>0?KenaiUser.getOnlineUserCount()-1:""));
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    PresenceIndicator.getDefault().label.setText(KenaiUser.getOnlineUserCount() > 0 ? KenaiUser.getOnlineUserCount() - 1 + "" : ""); // NOI18N
+                    PresenceIndicator.getDefault().label.setToolTipText(NbBundle.getMessage(PresenceIndicator.class, "LBL_LoggedIn_Tooltip", KenaiUser.getOnlineUserCount() > 0 ? KenaiUser.getOnlineUserCount() - 1 : ""));
+                }
+            });
             for (MultiUserChat muc : KenaiConnection.getDefault(KenaiConnection.getKenai(StringUtils.parseBareAddress(packet.getFrom()))).getChats()) {
                 String chatName = StringUtils.parseName(muc.getRoom());
                 assert chatName != null : "muc.getRoom() = " + muc.getRoom(); // NOI18N

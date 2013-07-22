@@ -42,13 +42,18 @@
 package org.netbeans.modules.html.editor.embedding;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.MatchResult;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
@@ -73,10 +78,6 @@ import org.netbeans.modules.web.common.api.WebUtils;
         mimeType = "text/html",
         targetMimeType = "text/javascript")
 public class JsEmbeddingProvider extends EmbeddingProvider {
-//@EmbeddingProvider.Registration(
-//        mimeType = "text/html",
-//        targetMimeType = "text/javascript")
-//public class JsEmbeddingProvider extends ParserBasedEmbeddingProvider<HtmlParserResult> {
 
     private static final Logger LOGGER = Logger.getLogger(JsEmbeddingProvider.class.getSimpleName());
     private static final String JS_MIMETYPE = "text/javascript"; //NOI18N
@@ -84,22 +85,33 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
     private boolean cancelled = true;
     private final Language JS_LANGUAGE;
     private final JsEPPluginQuery PLUGINS;
+    
+    private static final Pattern GENERIC_MARK_PATTERN = Pattern.compile("@@@"); //NOI18N
+    private static final Pattern GENERIC_MARK_PATTERN_SPLITTER = Pattern.compile("[^@@@]*"); //NOI18N
+    private static final String GENERATED_JS_IDENTIFIER = "__UNKNOWN__"; // NOI18N
+    
+    /** Files with mime types defined in this collection will use transitional
+     * javascript embedded source creation. 
+     * 
+     * This means that first html embedded source will be created from the top level
+     * language and then from this embedded html source an embedded javascript source
+     * will be created.
+     */
+    private static final Collection<String> TEMPLATING_LANGUAGES_USING_TRANSITIONAL_EMBEDDING_CREATION 
+            = new HashSet<>(Arrays.asList(new String[]{
+                "text/x-jsp", "text/x-tag", "text/xhtml", "text/x-php5" //NOI18N
+            }));
 
     public JsEmbeddingProvider() {
         JS_LANGUAGE = Language.find(JS_MIMETYPE); //NOI18N
         PLUGINS = JsEPPluginQuery.getDefault();
     }
     
-//    @Override
-//    public Class<? extends Scheduler> getSchedulerClass() {
-//        return null;
-//    }
-//
-//    @Override
-//    public List<Embedding> getEmbeddings(HtmlParserResult result) {
     @Override
     public List<Embedding> getEmbeddings(final Snapshot snapshot) {
-        if (snapshot.getMimePath().size() > 1) {
+        String rootMimeType = snapshot.getMimePath().getMimeType(0);
+        if (snapshot.getMimePath().size() > 1 
+                && !TEMPLATING_LANGUAGES_USING_TRANSITIONAL_EMBEDDING_CREATION.contains(rootMimeType)) {
             //do not create any js embeddings in already embedded html code
             //another js embedding provider for such cases exists in 
             //javascript2.editor module.
@@ -180,7 +192,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
                         break;
                     case TEXT:
                         if (state.in_javascript) {
-                            embeddings.add(snapshot.create(ts.offset(), token.length(), JS_MIMETYPE));
+                            embeddings.addAll(createEmbedding(snapshot, ts.offset(), token.length()));
                         }
                         break;
                     case VALUE_JAVASCRIPT:
@@ -189,7 +201,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
                         break;
                     case TAG_CLOSE:
                         if (LexerUtils.equals("script", token.text(), true, true)) {
-                            embeddings.add(snapshot.create("\n", JS_MIMETYPE)); //NOI18N
+                            embeddings.addAll(createEmbedding(snapshot, "\n")); //NOI18N
                         }
                         break;
                     default:
@@ -207,10 +219,10 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
     private void handleValue(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, List<Embedding> embeddings) {
         if (ts.embedded(JS_LANGUAGE) != null) {
             //has javascript embedding
-            embeddings.add(snapshot.create("(function(){\n", JS_MIMETYPE)); //NOI18N
+            embeddings.addAll(createEmbedding(snapshot, "(function(){\n")); //NOI18N
             int diff = Utils.isAttributeValueQuoted(ts.token().text()) ? 1 : 0;
-            embeddings.add(snapshot.create(ts.offset() + diff, ts.token().length() - diff * 2, JS_MIMETYPE));
-            embeddings.add(snapshot.create(";\n});\n", JS_MIMETYPE)); //NOI18N
+            embeddings.addAll(createEmbedding(snapshot, ts.offset() + diff, ts.token().length() - diff * 2));
+            embeddings.addAll(createEmbedding(snapshot, ";\n});\n")); //NOI18N
         }
     }
 
@@ -223,7 +235,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
             String text = ts.token().text().toString();
             List<EmbeddingPosition> jsEmbeddings = extractJsEmbeddings(text, sourceStart);
             for (EmbeddingPosition embedding : jsEmbeddings) {
-                embeddings.add(snapshot.create(embedding.getOffset(), embedding.getLength(), JS_MIMETYPE));
+                embeddings.addAll(createEmbedding(snapshot, embedding.getOffset(), embedding.getLength()));
             }
         }
     }
@@ -287,7 +299,7 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
 
                     // Insert a file link
                     String insertText = NETBEANS_IMPORT_FILE + "('" + src + "');\n"; // NOI18N
-                    embeddings.add(snapshot.create(insertText, JS_MIMETYPE));
+                    embeddings.addAll(createEmbedding(snapshot, insertText));
                 }
             }
         }
@@ -351,7 +363,33 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
             return false;
         }
     }
-
+    
+    /* replace all @@@ marks by the fake javascript ident */
+    private static Collection<Embedding> createEmbedding(Snapshot snapshot, CharSequence text) {
+        String replaced = GENERIC_MARK_PATTERN.matcher(text).replaceAll(GENERATED_JS_IDENTIFIER);
+        return Collections.singleton(snapshot.create(replaced, JS_MIMETYPE));
+    }
+    
+    /* replace all @@@ marks by the fake javascript ident */
+    private Collection<Embedding> createEmbedding(Snapshot snapshot, int offset, int len) {
+        Collection<Embedding> es = new ArrayList<>();
+        CharSequence text = snapshot.getText().subSequence(offset, offset + len);
+        Matcher matcher = GENERIC_MARK_PATTERN_SPLITTER.matcher(text);
+        while(matcher.find()) {
+            int start = matcher.start();
+            int end = matcher.end();
+            if(start != end) {
+                //create embedding from the original
+                es.add(snapshot.create(offset + start, end - start, JS_MIMETYPE));
+                if(!matcher.hitEnd()) {
+                    //follows the delimiter - @@@ - convert it to the GENERATED_JS_IDENTIFIER
+                    es.add(snapshot.create(GENERATED_JS_IDENTIFIER, JS_MIMETYPE));
+                }
+            }
+        }
+        return es;
+    }
+    
     private static final class JsAnalyzerState {
 
         boolean in_javascript = false;

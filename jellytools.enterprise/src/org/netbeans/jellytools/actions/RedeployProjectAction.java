@@ -39,8 +39,6 @@
  */
 package org.netbeans.jellytools.actions;
 
-import org.netbeans.jellytools.Bundle;
-
 /**
  * Used to call "Deploy" popup menu item on project's root node,
  *
@@ -51,12 +49,12 @@ import org.netbeans.jellytools.Bundle;
  */
 public class RedeployProjectAction extends Action {
 
-    // "Undeploy and Deploy"
-    private static final String redeployProjectPopup =
-            Bundle.getStringTrimmed("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_RedeployAction_Name");
+    private static final String DEPLOY_POPUP = "Deploy";
 
-    /** creates new RedeployProjectAction instance */
+    /**
+     * creates new RedeployProjectAction instance
+     */
     public RedeployProjectAction() {
-        super(null, redeployProjectPopup);
+        super(null, DEPLOY_POPUP);
     }
 }

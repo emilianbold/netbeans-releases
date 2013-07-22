@@ -708,8 +708,11 @@ class NodeTableModel extends AbstractTableModel {
 
         while (it.hasNext()) {
             boxtext = it.next();
-
             int i = sort.get(boxtext).intValue();
+            if(allPropertyColumns[i].getProperty().getName().equals(IssueNode.LABEL_NAME_SEEN)) {
+                continue;
+            }
+            
             JCheckBox b = new JCheckBox(boxtext, oldvalues[i]);
             Mnemonics.setLocalizedText(b, boxtext);
             makeAccessibleCheckBox(b, allPropertyColumns[i].getProperty());

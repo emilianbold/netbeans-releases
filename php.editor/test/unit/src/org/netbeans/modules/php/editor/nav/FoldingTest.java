@@ -85,4 +85,8 @@ public class FoldingTest extends PHPTestBase {
         checkFolds("testfiles/parser/issue216088.php");
     }
 
+    public void testIssue232884() throws Exception {
+        checkFolds("testfiles/parser/issue232884.php");
+    }
+
 }

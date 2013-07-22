@@ -47,6 +47,7 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import javax.swing.Action;
 import javax.swing.JComponent;
@@ -56,7 +57,6 @@ import org.netbeans.modules.team.ui.spi.DashboardProvider;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.ui.spi.QueryAccessor;
 import org.netbeans.modules.team.ui.spi.QueryHandle;
-import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.team.ui.util.treelist.LeafNode;
 import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
 import org.openide.util.NbBundle;
@@ -76,12 +76,12 @@ public class QueryListNode<P> extends SectionNode {
 
     @Override
     protected List<TreeListNode> createChildren() {
-        ArrayList<TreeListNode> res = new ArrayList<TreeListNode>(20);
         QueryAccessor accessor = dashboard.getQueryAccessor();
-        List<QueryHandle> queries = accessor.getQueries(project);
-        if(queries == null) {
-            return null;
+        if(!accessor.hasTasks(project)) {
+            return Arrays.asList(new TreeListNode[] {new NANode(this)});
         }
+        ArrayList<TreeListNode> res = new ArrayList<>(20);
+        List<QueryHandle> queries = accessor.getQueries(project);
         for( QueryHandle q : queries ) {
             res.add( new QueryNode( q, this, dashboard ) );
         }

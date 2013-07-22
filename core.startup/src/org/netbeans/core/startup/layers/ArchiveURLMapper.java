@@ -98,7 +98,8 @@ public class ArchiveURLMapper extends URLMapper {
                                     new URI(null, fo.getPath(), null).getRawSchemeSpecificPart() +
                                     (fo.isFolder() && !fo.isRoot() ? "/" : "")); // NOI18N
                             } catch (URISyntaxException syntax) {
-                                return new URL("jar:" + Utilities.toURI(archiveFile) + "!/" + fo.getPath()
+                                final String path = new URI(null, fo.getPath(), null).toString();
+                                return new URL("jar:" + Utilities.toURI(archiveFile) + "!/" + path
                                         + ((fo.isFolder() && !fo.isRoot()) ? "/" : "")); // NOI18N
                             }
                         }

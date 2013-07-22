@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.javascript2.knockout;
 
-import org.netbeans.modules.javascript2.editor.JsCodeComplationBase;
+import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
 
 /**
  *
  * @author Petr Hejl
  */
-public class KnockoutCodeCompletionTest extends JsCodeComplationBase {
+public class KnockoutCodeCompletionTest extends JsCodeCompletionBase {
 
     public KnockoutCodeCompletionTest(String testName) {
         super(testName);

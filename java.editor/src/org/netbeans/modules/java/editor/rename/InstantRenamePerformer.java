@@ -214,6 +214,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
         target.addKeyListener(this);
 
         target.putClientProperty(InstantRenamePerformer.class, this);
+        target.putClientProperty("NetBeansEditor.navigateBoundaries", mainRegion); // NOI18N
 	
         requestRepaint();
         
@@ -717,7 +718,7 @@ public class InstantRenamePerformer implements DocumentListener, KeyListener {
             //already released
             return ;
         }
-        
+        target.putClientProperty("NetBeansEditor.navigateBoundaries", null); // NOI18N
         target.putClientProperty(InstantRenamePerformer.class, null);
         if (doc instanceof BaseDocument) {
             ((BaseDocument) doc).setPostModificationDocumentListener(null);

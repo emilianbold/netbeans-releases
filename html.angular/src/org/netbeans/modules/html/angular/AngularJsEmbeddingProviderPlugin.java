@@ -151,17 +151,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             case ARGUMENT:
                 Directive ajsDirective = Directive.getDirective(tokenText.toString().trim().toLowerCase());
                 if(ajsDirective != null) {
-                    switch(ajsDirective) {
-                        case controller:
-                        case model:
-                        case repeat:
-                        case disabled:
-                        case click:
-                            interestedAttr = ajsDirective;
-                            break;
-                        default:
-                            interestedAttr = null;
-                    }
+                    interestedAttr = ajsDirective;
                 } else {
                     interestedAttr = null;
                 }
@@ -183,7 +173,8 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             processed = processRepeat(value);
                             stack.push(new StackItem(lastTagOpen, "}\n")); //NOI18N
                             break;
-                        default:        
+                        default:   
+                            processed = processExpression(value);
                     }
                 }
                 break;
@@ -191,7 +182,12 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                  if (tokenSequence.moveNext()) {
                     if (tokenSequence.token().id() == HTMLTokenId.EL_CONTENT) {
                         String value = tokenSequence.token().text().toString().trim();
-                        String name = value.startsWith("(") ? value.substring(1) : value;
+                        int indexStart = 0;
+                        String name = value;
+                        if (value.startsWith("(")) {
+                            name = value.substring(1);
+                            indexStart = 1;
+                        }
                         int parenIndex = name.indexOf('('); //NOI18N
                         if (parenIndex > -1) {
                             name = name.substring(0, parenIndex);
@@ -207,10 +203,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             processed = true;
                         } else if (name.contains("|")){
                             int indexEnd = name.indexOf('|');
-                            int indexStart = 0;
-                            name = name.substring(indexStart, indexEnd);
+                            name = name.substring(0, indexEnd);
                             if (name.startsWith("-")) {
-                                indexStart = 1;
+                                indexStart++;
                                 name = name.substring(1);
                             }
                             if(propertyToFqn.containsKey(name)) {
@@ -219,7 +214,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                                 processed = true;
                             } else {
-                                embeddings.add(snapshot.create(tokenSequence.offset(), indexEnd, Constants.JAVASCRIPT_MIMETYPE));
+                                embeddings.add(snapshot.create(tokenSequence.offset() + indexStart, name.length(), Constants.JAVASCRIPT_MIMETYPE));
                                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                                 processed = true;
                             }
@@ -285,6 +280,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                             sb.append("()");    //NOI18N
                         }
 
+                    } else {
+                        sb.append(" = "); //NOI18N
+                        sb.append(indexedElement.getFQN());
                     }
             }
             sb.append(";\n");   //NOI18N
@@ -302,8 +300,12 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         } else {
             int parenStart = value.indexOf('('); //NOI18N
             String name = value;
+            int lenght = name.length();
             if (parenStart > -1) {
-                name = name.substring(0, parenStart);
+                name = name.substring(0, parenStart).trim();
+            }
+            if (name.indexOf('=') > -1) {
+                name = name.substring(0, name.indexOf('=')).trim();
             }
             if (propertyToFqn.containsKey(name)) {
                 embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
@@ -324,7 +326,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                     }
                     embeddings.add(snapshot.create(tokenSequence.offset() + 1, parenEnd, Constants.JAVASCRIPT_MIMETYPE));
                 } else {
-                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, name.length(), Constants.JAVASCRIPT_MIMETYPE));
+                    embeddings.add(snapshot.create(tokenSequence.offset() + 1, lenght, Constants.JAVASCRIPT_MIMETYPE));
                 } 
                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
             }  else {
@@ -418,6 +420,49 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 }
                 lastPartPos = lastPartPos + parts[partIndex].length() + 1;
                 partIndex++;
+            }
+        }
+        return processed;
+    }
+    
+    private boolean processExpression(String value) {
+        boolean processed = false;
+        if (value.isEmpty()) {
+            embeddings.add(snapshot.create("( function () {", Constants.JAVASCRIPT_MIMETYPE));
+            embeddings.add(snapshot.create(tokenSequence.offset(), 1, Constants.JAVASCRIPT_MIMETYPE));
+            embeddings.add(snapshot.create(";})();\n", Constants.JAVASCRIPT_MIMETYPE));
+            processed = true;
+        } else {
+            int lastPartPos = 0;
+            if (value.startsWith("{")) {
+                value = value.substring(1);
+                lastPartPos = 1;
+            }
+            String valueTrim = value.trim();
+            if (valueTrim.endsWith("}")) {
+                value = valueTrim.substring(0, valueTrim.length() - 1);
+            }
+            int index = value.indexOf(':'); // are there pairs like name: expr?
+            if (index > -1) {
+                
+                String[] parts = value.split(","); // example: ng-class="{completed: todo.completed, editing: todo == editedTodo}"
+                for (String part : parts) {
+                    index = value.indexOf(':');
+                    if (index > 0) {
+                        String[] conditionParts = part.trim().split(":");
+                        if(conditionParts.length > 1) {
+                            String propName = conditionParts[1].trim();
+                            int position = lastPartPos + part.indexOf(propName) + 1;
+                            if (propertyToFqn.containsKey(propName)) {
+                                embeddings.add(snapshot.create(propertyToFqn.get(propName) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N                            
+                            }
+                            embeddings.add(snapshot.create(tokenSequence.offset() + position, propName.length(), Constants.JAVASCRIPT_MIMETYPE));
+                            embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
+                            processed = true;
+                        }
+                    }
+                    lastPartPos = lastPartPos + part.length() + 1;
+                }
             }
         }
         return processed;

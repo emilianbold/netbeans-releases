@@ -224,6 +224,10 @@ public class ModelUtils {
         if (result.getParent() != null && result.getParent() instanceof DeclarationScope) {
             result = result.getParent();
         } 
+        if (!(result instanceof DeclarationScope)) {
+            // this shouldn't happened, basically it means that the model is broken and has an object without parent
+            result = getGlobalObject(object);
+        }
         return (DeclarationScope)result;
     }
 
@@ -281,17 +285,29 @@ public class ModelUtils {
      * @return 
      */
     public static Collection<? extends JsObject> getVariables(DeclarationScope inScope) {
-        List<JsObject> result = new ArrayList<JsObject>();
+        HashMap<String, JsObject> result = new HashMap<String, JsObject>();
         while (inScope != null) {
             for (JsObject object : ((JsObject)inScope).getProperties().values()) {
-                result.add(object);
+                if (!result.containsKey(object.getName()) && object.getModifiers().contains(Modifier.PRIVATE)) {
+                    result.put(object.getName(), object);
+                }
             }
             for (JsObject object : ((JsFunction)inScope).getParameters()) {
-                result.add(object);
+                if (!result.containsKey(object.getName())) {
+                    result.put(object.getName(), object);
+                }
+            }
+            for (JsObject object : ((JsObject)inScope).getProperties().values()) {
+                if (!result.containsKey(object.getName())) {
+                    result.put(object.getName(), object);
+                }
+            }
+            if (!result.containsKey(((JsObject)inScope).getName())) {
+                result.put(((JsObject)inScope).getName(), (JsObject)inScope);
             }
             inScope = inScope.getParentScope();
         }
-        return result;
+        return result.values();
     }
     
 
@@ -389,7 +405,7 @@ public class ModelUtils {
                             JsFunction function = rObject instanceof JsFunctionImpl
                                     ? (JsFunctionImpl) rObject
                                     : rObject instanceof JsFunctionReference ? ((JsFunctionReference) rObject).getOriginal() : null;
-                            if (function != null && function != object.getParent()) {
+                            if (function != null && function.getParent().equals(object.getParent())) {
                                 // creates reference to the original function
                                 object.getParent().addProperty(object.getName(), new JsFunctionReference(
                                         object.getParent(), object.getDeclarationName(), function, true, null));

@@ -69,6 +69,8 @@ public class JsErrorManager extends ErrorManager {
 
     private static final Logger LOGGER = Logger.getLogger(JsErrorManager.class.getName());
 
+    private static final boolean SHOW_BADGES_EMBEDDED = Boolean.getBoolean(JsErrorManager.class.getName() + ".showBadgesEmbedded");;
+
     private static final Comparator<SimpleError> POSITION_COMPARATOR = new Comparator<SimpleError>() {
 
         @Override
@@ -118,7 +120,7 @@ public class JsErrorManager extends ErrorManager {
                     && (error.message.contains("Expected }") || error.message.contains("but found }"))) { // NOI18N
                 return new JsParserError(convert(error),
                         snapshot != null ? snapshot.getSource().getFileObject() : null,
-                        Severity.ERROR, null, true, false);
+                        Severity.ERROR, null, true, false, false);
             }
         }
         return null;
@@ -133,7 +135,7 @@ public class JsErrorManager extends ErrorManager {
                     && error.message.contains("Expected ;")) { // NOI18N
                 return new JsParserError(convert(error),
                         snapshot != null ? snapshot.getSource().getFileObject() : null,
-                        Severity.ERROR, null, true, false);
+                        Severity.ERROR, null, true, false, false);
             }
         }
         return null;
@@ -254,54 +256,53 @@ public class JsErrorManager extends ErrorManager {
         List<JsParserError> ret = new ArrayList<JsParserError>(errors.size());
         final FileObject file = snapshot != null ? snapshot.getSource().getFileObject() : null;
 
-        String mimepath = snapshot != null ? snapshot.getMimePath().getPath() : null;
-        if (snapshot != null && !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimepath)
-            && !JsTokenId.JSON_MIME_TYPE.equals(mimepath)) {
-                int nextCorrect = -1;
-                boolean afterGeneratedIdentifier = false;
-                for (SimpleError error : errors) {
-                    boolean showExplorerBadge = true;
-                    // if the error is in embedded code we ignore it
-                    // as we don't know what the other language will add
-                    int pos = snapshot.getOriginalOffset(error.getPosition());
-                    if (pos >= 0 && nextCorrect <= error.getPosition()
-                            && !JsEmbeddingProvider.containsGeneratedIdentifier(error.getMessage())) {
-                        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(
-                                snapshot, error.getPosition());
-                        if (ts != null && ts.movePrevious()) {
-                            // check also a previous token - is it generated ?
-                            org.netbeans.api.lexer.Token<? extends JsTokenId> token = LexUtilities.findPreviousNonWsNonComment(ts);
-                            if (JsEmbeddingProvider.containsGeneratedIdentifier(token.text().toString())) {
-                                // usually we may expect a group of errors
-                                // so we disable them until next } .... \n
-                                nextCorrect = findNextCorrectOffset(ts, error.getPosition());
-                                showExplorerBadge = false;
-                                afterGeneratedIdentifier = true;
-                            } else if (afterGeneratedIdentifier && error.getMessage().indexOf(EXPECTED) != -1) {
-                                // errors after generated identifiers can display farther - see issue #229985
-                                String expected = getExpected(error.getMessage());
-                                if ("eof".equals(expected)) { //NOI18N
-                                    // unexpected end of script, probably missing at some earlier place : ; } etc.
-                                    showExplorerBadge = false;
-                                } else {
-                                    JsTokenId expectedToken = getJsTokenFromString(expected);
-                                    ts.movePrevious();
-                                    org.netbeans.api.lexer.Token<? extends JsTokenId> previousNonWsToken = LexUtilities.findPreviousNonWsNonComment(ts);
-                                    if (expectedToken != null && expectedToken == previousNonWsToken.id()) {
-                                        // char is available, doesn't show the error
-                                        showExplorerBadge = false;
-                                    }
+        if (snapshot != null && JsParserResult.isEmbedded(snapshot)) {
+            int nextCorrect = -1;
+            boolean afterGeneratedIdentifier = false;
+            for (SimpleError error : errors) {
+                boolean showInEditor = true;
+                // if the error is in embedded code we ignore it
+                // as we don't know what the other language will add
+                int pos = snapshot.getOriginalOffset(error.getPosition());
+                if (pos >= 0 && nextCorrect <= error.getPosition()
+                        && !JsEmbeddingProvider.containsGeneratedIdentifier(error.getMessage())) {
+                    TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsPositionedSequence(
+                            snapshot, error.getPosition());
+                    if (ts != null && ts.movePrevious()) {
+                        // check also a previous token - is it generated ?
+                        org.netbeans.api.lexer.Token<? extends JsTokenId> token =
+                                LexUtilities.findPreviousNonWsNonComment(ts);
+                        if (JsEmbeddingProvider.containsGeneratedIdentifier(token.text().toString())) {
+                            // usually we may expect a group of errors
+                            // so we disable them until next } .... \n
+                            nextCorrect = findNextCorrectOffset(ts, error.getPosition());
+                            showInEditor = false;
+                            afterGeneratedIdentifier = true;
+                        } else if (afterGeneratedIdentifier && error.getMessage().indexOf(EXPECTED) != -1) {
+                            // errors after generated identifiers can display farther - see issue #229985
+                            String expected = getExpected(error.getMessage());
+                            if ("eof".equals(expected)) { //NOI18N
+                                // unexpected end of script, probably missing at some earlier place : ; } etc.
+                                showInEditor = false;
+                            } else {
+                                JsTokenId expectedToken = getJsTokenFromString(expected);
+                                ts.movePrevious();
+                                org.netbeans.api.lexer.Token<? extends JsTokenId> previousNonWsToken = LexUtilities.findPreviousNonWsNonComment(ts);
+                                if (expectedToken != null && expectedToken == previousNonWsToken.id()) {
+                                    // char is available, doesn't show the error
+                                    showInEditor = false;
                                 }
                             }
                         }
-                    } else {
-                        showExplorerBadge = false;
                     }
-                    ret.add(new JsParserError(error, file, Severity.ERROR, null, true, showExplorerBadge));
+                } else {
+                    showInEditor = false;
                 }
+                ret.add(new JsParserError(error, file, Severity.ERROR, null, true, SHOW_BADGES_EMBEDDED, showInEditor));
+            }
         } else {
             for (SimpleError error : errors) {
-                ret.add(new JsParserError(error, file, Severity.ERROR, null, true, true));
+                ret.add(new JsParserError(error, file, Severity.ERROR, null, true, true, true));
             }
         }
         return ret;

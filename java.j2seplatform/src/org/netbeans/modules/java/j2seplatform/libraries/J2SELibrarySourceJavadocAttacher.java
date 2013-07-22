@@ -54,9 +54,14 @@ import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.java.j2seplatform.queries.SourceJavadocAttacherUtil;
+import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
+import org.netbeans.spi.project.libraries.support.LibrariesSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Mutex;
+import org.openide.util.Parameters;
 import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
@@ -104,11 +109,13 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
                     if (volume == J2SELibraryTypeProvider.VOLUME_TYPE_SRC) {
                         selected = SourceJavadocAttacherUtil.selectSources(
                             root,
+                            lib.getURIContent(volume),
                             new SelectFolder(volume, lib.getName(), baseFolder),
                             new Convertor(volume, baseFolder));
                     } else if (volume == J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC) {
                         selected = SourceJavadocAttacherUtil.selectJavadoc(
                             root,
+                            lib.getURIContent(volume),
                             new SelectFolder(volume, lib.getName(), baseFolder),
                             new Convertor(volume, baseFolder));
                     } else {
@@ -122,20 +129,20 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
                         for (String currentVolume : J2SELibraryTypeProvider.VOLUME_TYPES) {
                             List<URI> content = lib.getURIContent(currentVolume);
                             if (volume == currentVolume) {
-                                final List<URI> newContent = new ArrayList<URI>(content.size()+selected.size());
-                                newContent.addAll(content);
-                                newContent.addAll(selected);
+                                final List<URI> newContent = new ArrayList<>(selected);
                                 content = newContent;
                             }
                             volumes.put(currentVolume,content);
                         }
+                        final Map<String,String> props = lib.getProperties();
                         lm.removeLibrary(lib);
                         lm.createURILibrary(
                             J2SELibraryTypeProvider.LIBRARY_TYPE,
                             name,
                             displayName,
                             desc,
-                            volumes);
+                            volumes,
+                            props);
                         success = true;
                     }
                 } catch (IOException ioe) {
@@ -215,16 +222,55 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
         private Convertor(
                 @NonNull final String volume,
                 @NullAllowed final File baseFolder) {
+            Parameters.notNull("volume", volume);   //NOI18N
             this.volume = volume;
             this.baseFolder = baseFolder;
         }
 
         @Override
         public Collection<? extends URI> call(String param) throws Exception {
-            final URI uri = J2SEVolumeCustomizer.pathToURI(baseFolder, param, volume);
-            return uri == null ? Collections.<URI>emptySet() : Collections.singleton(uri);
+            Collection<String> roots = Collections.singleton(param);
+            final File paramFile = new File(param);
+            if (paramFile.isAbsolute() && paramFile.isDirectory()) {
+                FileObject paramFO = FileUtil.toFileObject(paramFile);
+                if (paramFO != null) {
+                    switch (volume) {
+                        case J2SELibraryTypeProvider.VOLUME_TYPE_SRC:
+                            final Collection<String> sourceFolders = new ArrayList<>();
+                            for( FileObject fo : JavadocAndSourceRootDetection.findSourceRoots(paramFO, null)) {
+                                final File f = FileUtil.toFile(fo);
+                                if (f != null) {
+                                    sourceFolders.add(f.getAbsolutePath());
+                                }
+                            }
+                            if (!sourceFolders.isEmpty()) {
+                                roots = sourceFolders;
+                            }
+                            break;
+                        case J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC:
+                            final Collection<String> javadocFolders = new ArrayList<>();
+                            for (FileObject fo : JavadocAndSourceRootDetection.findJavadocRoots(paramFO, null)) {
+                                final File f = FileUtil.toFile(fo);
+                                if (f != null) {
+                                    javadocFolders.add(f.getAbsolutePath());
+                                }
+                            }
+                            if (!javadocFolders.isEmpty()) {
+                                roots = javadocFolders;
+                            }
+                            break;
+                    }
+                }
+            }
+            final Collection<URI> result = new ArrayList<>(roots.size());
+            for (String root : roots) {
+                final URI uri = J2SEVolumeCustomizer.pathToURI(baseFolder, root, volume);
+                if (uri != null) {
+                    result.add(uri);
+                }
+            }
+            return Collections.unmodifiableCollection(result);
         }
-
     }
 
 }

@@ -218,6 +218,11 @@ public class SourceAccessorImpl extends VCSAccessor {
         return new GetSourcesFromODCSAction(server);
     }
 
+    @Override
+    public boolean hasSources(ProjectHandle<ODCSProject> project) {
+        return project.getTeamProject().hasScm();
+    }
+
     public static class ProjectAndRepository {
         public ProjectHandle<ODCSProject> project;
         public ScmRepository repository;

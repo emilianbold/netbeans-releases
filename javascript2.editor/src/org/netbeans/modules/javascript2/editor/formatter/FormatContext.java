@@ -57,6 +57,7 @@ import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 
 /**
@@ -107,8 +108,7 @@ public final class FormatContext {
 
         dumpRegions();
 
-        this.embedded = !JsTokenId.JAVASCRIPT_MIME_TYPE.equals(context.mimePath())
-                && !JsTokenId.JSON_MIME_TYPE.equals(context.mimePath());
+        this.embedded = JsParserResult.isEmbedded(snapshot);
 
         /*
          * What we do here is fix for case like this:

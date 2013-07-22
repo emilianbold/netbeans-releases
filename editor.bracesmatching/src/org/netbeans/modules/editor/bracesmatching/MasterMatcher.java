@@ -311,6 +311,9 @@ public final class MasterMatcher {
     }
     
     private Position[] toPositions(JTextComponent c, int[] offsets) throws BadLocationException {
+        if (offsets == null) {
+            return null;
+        }
         Position[] ret = new Position[offsets.length];
         for (int i = 0; i < ret.length; i++) {
             ret[i] = c.getDocument().createPosition(offsets[i]);

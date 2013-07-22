@@ -111,6 +111,7 @@ import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ClasspathInfo.PathKind;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
@@ -399,6 +400,7 @@ public class JavaFixUtilities {
         protected void performRewrite(TransformationContext ctx) {
             final WorkingCopy wc = ctx.getWorkingCopy();
             TreePath tp = ctx.getPath();
+            tp = new TreePath(tp.getParentPath(), GeneratorUtilities.get(wc).importComments(tp.getLeaf(), tp.getCompilationUnit()));
             final Map<String, TreePath> parameters = new HashMap<String, TreePath>();
 
             for (Entry<String, TreePathHandle> e : params.entrySet()) {
@@ -784,7 +786,7 @@ public class JavaFixUtilities {
             if (name != null) {
                 TreePath tp = parameters.get(name.toString());
 
-                if (tp != null) {
+                if (tp != null && StatementTree.class.isAssignableFrom(tp.getLeaf().getKind().asInterface())) {
                     rewrite(node, tp.getLeaf());
                     return null;
                 }

@@ -82,9 +82,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.odcs.api.ODCSProject;
+import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.client.api.ODCSException;
-import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
-import org.netbeans.modules.team.ui.common.AddInstanceAction;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.awt.Mnemonics;
@@ -92,7 +91,6 @@ import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.spi.TeamUIUtils;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
 import org.netbeans.modules.odcs.ui.api.OdcsUIUtil;
 import org.openide.util.NbBundle.Messages;
@@ -103,10 +101,10 @@ import org.openide.util.NbBundle.Messages;
  */
 public class NameWizardPanelGUI extends JPanel {
 
-    private RequestProcessor errorChecker = new RequestProcessor("Error Checker"); // NOI18N
+    private final RequestProcessor errorChecker = new RequestProcessor("Error Checker"); // NOI18N
     private WizardDescriptor settings;
     private NameWizardPanel panel;
-    private PropertyChangeListener serverListener;
+    private final PropertyChangeListener serverListener;
     private String prjNameCheckMessage = null;
 
     @NbBundle.Messages("CTL_AddInstance=Add Server")
@@ -114,28 +112,13 @@ public class NameWizardPanelGUI extends JPanel {
 
         panel = pnl;
         initComponents();
-
-        teamCombo.setSelectedItem(ODCSUiServer.forServer(panel.getServer()));
-        teamCombo.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed (final ActionEvent e) {
-                if (teamCombo.getSelectedItem() instanceof ODCSUiServer) {
-                    panel.setServer(((ODCSUiServer) teamCombo.getSelectedItem()).getServer());
-                    refreshUsername();
-                } else if (teamCombo.getSelectedItem() instanceof String) {
-                    EventQueue.invokeLater(new Runnable() {
-                        @Override
-                        public void run () {
-                            new AddInstanceAction(ODCSServerProviderImpl.getDefault(), Bundle.CTL_AddInstance()).actionPerformed(e);
-                            panel.setServer(((ODCSUiServer) teamCombo.getSelectedItem()).getServer());
-                            refreshUsername();
-                        }
-                    });
-                }
-                setupLicensesListModel();
-            }
-        });
-
+        
+        ODCSServer server = panel.getServer();
+        assert server != null;
+        if(server != null) {
+            serverLabel.setText(server.getDisplayName());
+            serverLabel.setIcon(server.getIcon());
+        }
 
         refreshUsername();
 
@@ -191,9 +174,7 @@ public class NameWizardPanelGUI extends JPanel {
         root.setEnabled(enabled);
         if (root instanceof java.awt.Container) {
             for (Component c : ((java.awt.Container) root).getComponents()) {
-                if (c != teamCombo) {
-                    setChildrenEnabled(c, enabled);
-                }
+                setChildrenEnabled(c, enabled);
             }
         }
     }
@@ -232,17 +213,16 @@ public class NameWizardPanelGUI extends JPanel {
         projectWikiLabel = new JLabel();
         projectWikiComboBox = new JComboBox();
         proxyConfigButton = new JButton();
-        teamCombo = TeamUIUtils.createTeamCombo(ODCSServerProviderImpl.getDefault(), true);
         jScrollPane1 = new JScrollPane();
         projectDescTextField = new JTextArea();
         projectPrivacyLabel = new JLabel();
         btnPrivacyPrivate = new JRadioButton();
         btnPrivacyPublic = new JRadioButton();
         btnPrivacyOrganizationPrivate = new JRadioButton();
+        serverLabel = new JLabel();
 
         setLayout(new GridBagLayout());
 
-        loggedInLabel.setLabelFor(teamCombo);
         Mnemonics.setLocalizedText(loggedInLabel, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.loggedInLabel.text")); // NOI18N
         gridBagConstraints = new GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -359,12 +339,6 @@ public class NameWizardPanelGUI extends JPanel {
         add(proxyConfigButton, gridBagConstraints);
         proxyConfigButton.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.proxyConfigButton.AccessibleContext.accessibleDescription")); // NOI18N
 
-        gridBagConstraints = new GridBagConstraints();
-        gridBagConstraints.gridx = 1;
-        gridBagConstraints.gridy = 2;
-        gridBagConstraints.anchor = GridBagConstraints.WEST;
-        add(teamCombo, gridBagConstraints);
-
         projectDescTextField.setColumns(20);
         projectDescTextField.setRows(5);
         projectDescTextField.setText(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.projectDescTextField.text")); // NOI18N
@@ -420,6 +394,13 @@ public class NameWizardPanelGUI extends JPanel {
         gridBagConstraints.gridy = 7;
         gridBagConstraints.anchor = GridBagConstraints.NORTHWEST;
         add(btnPrivacyOrganizationPrivate, gridBagConstraints);
+
+        Mnemonics.setLocalizedText(serverLabel, NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.serverLabel.text")); // NOI18N
+        gridBagConstraints = new GridBagConstraints();
+        gridBagConstraints.gridx = 1;
+        gridBagConstraints.gridy = 2;
+        gridBagConstraints.anchor = GridBagConstraints.WEST;
+        add(serverLabel, gridBagConstraints);
 
         getAccessibleContext().setAccessibleName(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.AccessibleContext.accessibleName")); // NOI18N
         getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(NameWizardPanelGUI.class, "NameWizardPanelGUI.AccessibleContext.accessibleDescription")); // NOI18N
@@ -499,7 +480,7 @@ public class NameWizardPanelGUI extends JPanel {
     private JComboBox projectWikiComboBox;
     private JLabel projectWikiLabel;
     private JButton proxyConfigButton;
-    private JComboBox teamCombo;
+    private JLabel serverLabel;
     private JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
 

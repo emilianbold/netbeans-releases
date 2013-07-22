@@ -82,8 +82,7 @@ public class CordovaSetupPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public HelpCtx getHelp() {
-        return null;
-        //return new HelpCtx("html5.samples"); // NOI18N
+        return new HelpCtx("org.netbeans.modules.cordova.wizard.CordovaSetupPanel"); // NOI18N
     }
 
     @Override

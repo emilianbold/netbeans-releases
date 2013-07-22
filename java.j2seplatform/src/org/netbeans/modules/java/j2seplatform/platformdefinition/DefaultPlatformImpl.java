@@ -93,7 +93,12 @@ public class DefaultPlatformImpl extends J2SEPlatformImpl {
         if (sources == null) {
             sources = getSources (javaHome);
         }
-        return new DefaultPlatformImpl(installFolders, properties, new HashMap(System.getProperties()), sources,javadoc);
+        final Properties p = System.getProperties();
+        final Map<String,String> systemProperties;
+        synchronized (p) {
+            systemProperties = new HashMap(p);
+        }
+        return new DefaultPlatformImpl(installFolders, properties, systemProperties, sources,javadoc);
     }
     
     private DefaultPlatformImpl(List<URL> installFolders, Map<String,String> platformProperties,

@@ -99,8 +99,8 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
     public static final String FILE_DD        =     "web.xml";          //NOI18N
     
     private static final Set<WebModule> SERVLET_SEARCH_MODULES = new HashSet<WebModule>();
-    private static RequestProcessor SERVLETS_REQUEST_PROCESSOR = 
-        new RequestProcessor(WebReplaceTokenProvider.class);
+    private static RequestProcessor SERVLETS_REQUEST_PROCESSOR = new RequestProcessor(WebReplaceTokenProvider.class);
+    private static RequestProcessor RP = new RequestProcessor(WebReplaceTokenProvider.class);
 
     private Project project;
     private AtomicBoolean   isScanStarted;
@@ -362,7 +362,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                  * we will start several initial scanning.
                  */
                 isScanStarted.set(true);
-                RequestProcessor.getDefault().post(runnable);
+                RP.post(runnable);
             }
             return true;
         }

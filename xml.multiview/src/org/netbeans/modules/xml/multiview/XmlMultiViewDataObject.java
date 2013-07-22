@@ -411,9 +411,12 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
             if (fileTime == file.lastModified().getTime()) {
                 return;
             }
-            FileLock lock = getLock();
-            if (lock == null){
-                lock = lock();
+            FileLock lock;
+            synchronized (this) {
+                lock = getLock();
+                if (lock == null){
+                    lock = lock();
+                }
             }
             loadData(file, lock);
             
@@ -513,16 +516,18 @@ public abstract class XmlMultiViewDataObject extends MultiDataObject implements 
         }
         
         public FileLock lock() throws IOException {
-            FileLock current = getLock();
-            if (current != null) {
-                throw new FileAlreadyLockedException("File is already locked by [" + current + "]."); // NO18N
+            synchronized (this) {
+                FileLock current = getLock();
+                if (current != null) {
+                    throw new FileAlreadyLockedException("File is already locked by [" + current + "]."); // NO18N
+                }
+                FileLock l = new FileLock();
+                lockReference = new WeakReference(l);
+                return l;
             }
-            FileLock l = new FileLock();
-            lockReference = new WeakReference(l);
-            return l;
         }
         
-        private FileLock getLock() {
+        private synchronized FileLock getLock() {
             // How this week reference can be useful ?
             FileLock l = lockReference == null ? null : (FileLock) lockReference.get();
             if (l != null && !l.isValid()) {

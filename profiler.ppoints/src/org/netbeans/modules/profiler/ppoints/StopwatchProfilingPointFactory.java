@@ -151,8 +151,8 @@ public class StopwatchProfilingPointFactory extends CodeProfilingPointFactory {
     }
 
     protected String getServerHandlerClassName() {
-        return "org.netbeans.lib.profiler.global.ProfilingPointServerHandler";
-    } // NOI18N
+        return "org.netbeans.lib.profiler.server.ProfilingPointServerHandler";   // NOI18N
+    }
 
     protected StopwatchCustomizer createCustomizer() {
         return new StopwatchCustomizer(getType(), getIcon());

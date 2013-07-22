@@ -455,13 +455,18 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     }
 
     private void setFilterIntern(Filter filter) {
-        List<IssueNode> filteredNodes = new ArrayList<IssueNode>(nodes.size());
+        final List<IssueNode> filteredNodes = new ArrayList<IssueNode>(nodes.size());
         for (IssueNode node : nodes) {
             if (filter == null || filter.accept(node)) {
                 filteredNodes.add(node);
             }
         }
-        setTableModel(filteredNodes.toArray(new IssueNode[filteredNodes.size()]));
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                setTableModel(filteredNodes.toArray(new IssueNode[filteredNodes.size()]));
+            }
+        });
     }
 
     SummaryTextFilter getSummaryFilter() {
@@ -805,7 +810,12 @@ public class IssueTable<Q> implements MouseListener, AncestorListener, KeyListen
     }
     public void started() {
         nodes.clear();
-        IssueTable.this.setTableModel(new IssueNode[0]);
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                IssueTable.this.setTableModel(new IssueNode[0]);
+            }
+        });
     }
 
     private class SeenDescriptor extends ColumnDescriptor<Boolean> {

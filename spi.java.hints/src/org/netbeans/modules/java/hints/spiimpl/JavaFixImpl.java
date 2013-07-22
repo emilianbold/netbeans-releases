@@ -63,6 +63,7 @@ import org.netbeans.modules.java.hints.spiimpl.batch.BatchUtilities;
 import org.netbeans.modules.java.source.JavaSourceAccessor;
 import org.netbeans.modules.refactoring.spi.RefactoringElementImplementation;
 import org.netbeans.spi.editor.hints.ChangeInfo;
+import org.netbeans.spi.editor.hints.EnhancedFix;
 import org.netbeans.spi.editor.hints.Fix;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
@@ -73,7 +74,7 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Lahoda
  */
-public final class JavaFixImpl implements Fix {
+public class JavaFixImpl implements Fix {
 
     public final JavaFix jf;
 
@@ -122,6 +123,18 @@ public final class JavaFixImpl implements Fix {
         return jf.hashCode();
     }
 
+    public static class EnhancedJavaFixImpl extends JavaFixImpl implements EnhancedFix {
+
+        public EnhancedJavaFixImpl(JavaFix jf) {
+            super(jf);
+        }
+
+        @Override public CharSequence getSortText() {
+            return Accessor.INSTANCE.getSortText(jf);
+        }
+        
+    }
+    
     public static abstract class Accessor {
 
         static {
@@ -135,6 +148,7 @@ public final class JavaFixImpl implements Fix {
         public static Accessor INSTANCE;
 
         public abstract String getText(JavaFix jf);
+        public abstract String getSortText(JavaFix jf);
         public abstract ChangeInfo process(JavaFix jf, WorkingCopy wc, boolean canShowUI, Map<FileObject, byte[]> resourceContent, Collection<? super RefactoringElementImplementation> fileChanges) throws Exception;
         public abstract FileObject getFile(JavaFix jf);
         public abstract Map<String, String> getOptions(JavaFix jf);

@@ -63,6 +63,7 @@ public class JPAProblemContext extends ProblemContext {
     private AccessType accessType;
     private EntityMappingsMetadata metadata;
     private Set<CancelListener> cListeners;
+    private final Object cListenersLock = new Object();
     
     public boolean isEntity(){
         return entity;
@@ -120,8 +121,10 @@ public class JPAProblemContext extends ProblemContext {
     public void setCancelled(boolean cancelled) {
         super.setCancelled(cancelled);
         if(cancelled && cListeners != null) {
-            for(CancelListener cl:cListeners) {
-                cl.cancelled();
+            synchronized(cListenersLock) {
+                for(CancelListener cl:cListeners) {
+                    cl.cancelled();
+                }
             }
         }
     }
@@ -130,12 +133,16 @@ public class JPAProblemContext extends ProblemContext {
         if(cListeners == null) {
             cListeners = new HashSet();
         }
-        cListeners.add(aThis);
+        synchronized(cListenersLock) {
+            cListeners.add(aThis);
+        }
     }
     
     public void removeCancelListener(CancelListener cl) {
         if(cListeners != null) {
-            cListeners.remove(cl);
+            synchronized(cListenersLock) {
+                cListeners.remove(cl);
+            }
         }
     }
 }

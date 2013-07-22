@@ -81,7 +81,7 @@ public class DynaMenuModelTest extends TestCase {
         JMenu m = new JMenu();
         DynaMenuModel instance = new DynaMenuModel();
         
-        instance.loadSubmenu(cInstances, m, Collections.<Object,FileObject>emptyMap());
+        instance.loadSubmenu(cInstances, m, false, Collections.<Object,FileObject>emptyMap());
         Component[] comps = m.getPopupMenu().getComponents();
         assertEquals("0", ((JMenuItem)comps[0]).getText());
         assertEquals("1", ((JMenuItem)comps[1]).getText());
@@ -99,7 +99,7 @@ public class DynaMenuModelTest extends TestCase {
         JMenu m = new JMenu();
         DynaMenuModel instance = new DynaMenuModel();
         
-        instance.loadSubmenu(cInstances, m, Collections.<Object,FileObject>emptyMap());
+        instance.loadSubmenu(cInstances, m, false, Collections.<Object,FileObject>emptyMap());
         instance.checkSubmenu(m);
         
         Component[] comps = m.getPopupMenu().getComponents();

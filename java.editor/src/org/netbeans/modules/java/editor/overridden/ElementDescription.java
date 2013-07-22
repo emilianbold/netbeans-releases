@@ -58,6 +58,7 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.java.source.ui.ElementOpen;
+import org.netbeans.modules.editor.java.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -68,7 +69,7 @@ import org.openide.util.NbBundle;
  */
 public class ElementDescription {
     
-    private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
+    private static final String PKG_COLOR = Utilities.getHTMLColor(192, 192, 192);
 
     private ClasspathInfo originalCPInfo;
     

@@ -1667,7 +1667,7 @@ outer:  do {
                         em.fine("    ## not running it synchronously"); // NOI18N
                     }
 
-                    if (runAtAll && lastThread != Thread.currentThread()) {
+                    if ((runAtAll || lastThread != null) && lastThread != Thread.currentThread()) {
                         if (loggable) {
                             em.log(Level.FINE, "    ## waiting for it to be finished: {0} now: {1}", new Object[]{lastThread, Thread.currentThread()}); // NOI18N
                         }

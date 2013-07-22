@@ -47,7 +47,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.JsCodeComplationBase;
+import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
 import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -57,7 +57,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class KOCodeCompletionTest extends JsCodeComplationBase {
+public class KOCodeCompletionTest extends JsCodeCompletionBase {
 
     public KOCodeCompletionTest(String testName) {
         super(testName);

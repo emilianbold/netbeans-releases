@@ -60,13 +60,14 @@ import org.netbeans.modules.cordova.wizard.CordovaTemplate;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Jan Becicka
  */
-public class CordovaCustomizerPanel extends javax.swing.JPanel implements ActionListener {
+public class CordovaCustomizerPanel extends javax.swing.JPanel implements ActionListener, HelpCtx.Provider {
 
     private Project project;
     private SourceConfig config;
@@ -270,5 +271,10 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         if (config!=null)
             cordovaPanel.load(config);
         validate();
+    }
+
+    @Override
+    public HelpCtx getHelpCtx() {
+        return new HelpCtx("org.netbeans.modules.cordova.project.CordovaCustomizerPanel");
     }
 }

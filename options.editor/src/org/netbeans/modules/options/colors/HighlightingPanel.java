@@ -265,10 +265,7 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
         this.colorModel = colorModel;
         currentProfile = colorModel.getCurrentProfile ();
         listen = false;
-        setCurrentProfile (currentProfile);
-        lCategories.setListData (getCategories (currentProfile));
-        lCategories.setSelectedIndex (0);
-        refreshUI ();	
+        setCurrentProfile (currentProfile);	
         listen = true;
         changed = false;
     }
@@ -309,6 +306,10 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
             profileToCategories.put (currentProfile, new Vector<AttributeSet>(categories));
             toBeSaved.add (currentProfile);
         }
+        
+        lCategories.setListData (getCategories (currentProfile));
+        lCategories.repaint();
+        lCategories.setSelectedIndex (0);         
         refreshUI ();
     }
 
@@ -317,6 +318,9 @@ public class HighlightingPanel extends JPanel implements ActionListener, ItemLis
             profileToCategories.remove (profile);
         else {
             profileToCategories.put (profile, getDefaults (profile));
+            lCategories.setListData (getCategories (profile));
+            lCategories.repaint();
+            lCategories.setSelectedIndex (0);   
             refreshUI ();
         }
         toBeSaved.add (profile);

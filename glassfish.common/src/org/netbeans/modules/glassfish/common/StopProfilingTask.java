@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -43,7 +43,7 @@ package org.netbeans.modules.glassfish.common;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.glassfish.tools.ide.admin.TaskEvent;
+import org.glassfish.tools.ide.data.TaskEvent;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;

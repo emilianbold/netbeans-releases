@@ -70,6 +70,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.TreeUtilities;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.modules.editor.java.Utilities;
@@ -144,19 +145,19 @@ public class ConstructorGenerator implements CodeGenerator {
                 fieldsDescription = ElementNode.Description.create(controller, typeElement, fieldDescriptions, false, false);
             }
             if (constructorHandle != null || constructorDescription != null || fieldsDescription != null)
-                ret.add(new ConstructorGenerator(component, ElementHandle.create(typeElement), constructorHandle, constructorDescription, fieldsDescription));
+                ret.add(new ConstructorGenerator(component, TreePathHandle.create(path, controller), constructorHandle, constructorDescription, fieldsDescription));
             return ret;
         }
     }
 
     private JTextComponent component;
-    private ElementHandle<TypeElement> typeHandle;
+    private TreePathHandle typeHandle;
     private ElementHandle<? extends Element> constructorHandle;
     private ElementNode.Description constructorDescription;
     private ElementNode.Description fieldsDescription;
     
     /** Creates a new instance of ConstructorGenerator */
-    private ConstructorGenerator(JTextComponent component, ElementHandle<TypeElement> typeHandle, ElementHandle<? extends Element> constructorHandle, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
+    private ConstructorGenerator(JTextComponent component, TreePathHandle typeHandle, ElementHandle<? extends Element> constructorHandle, ElementNode.Description constructorDescription, ElementNode.Description fieldsDescription) {
         this.component = component;
         this.typeHandle = typeHandle;
         this.constructorHandle = constructorHandle;
@@ -196,8 +197,10 @@ public class ConstructorGenerator implements CodeGenerator {
                 ModificationResult mr = js.runModificationTask(new Task<WorkingCopy>() {
                     public void run(WorkingCopy copy) throws IOException {
                         copy.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
-                        Element e = typeHandle.resolve(copy);
-                        TreePath path = e != null ? copy.getTrees().getPath(e) : copy.getTreeUtilities().pathFor(caretOffset);
+                        TreePath path = typeHandle.resolve(copy);
+                        if (path == null) {
+                            path = copy.getTreeUtilities().pathFor(caretOffset);
+                        }
                         path = Utilities.getPathElementOfKind(TreeUtilities.CLASS_TREE_KINDS, path);
                         if (path == null) {
                             String message = NbBundle.getMessage(ConstructorGenerator.class, "ERR_CannotFindOriginalClass"); //NOI18N

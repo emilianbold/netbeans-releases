@@ -894,7 +894,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
         switch (visibility) {
             case ESCALATE:
                 if (usageOutsideOfPackage) {
-                    if (flags.contains(Modifier.PRIVATE)) {
+                    if (!flags.contains(Modifier.PUBLIC)) {
                         newModifiers.removeAll(ALL_ACCESS_MODIFIERS);
                         newModifiers.add(Modifier.PUBLIC);
                     }

@@ -79,7 +79,6 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.LayoutStyle.ComponentPlacement;
-import javax.swing.SwingUtilities;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.team.ui.spi.TeamUIUtils;
@@ -88,7 +87,6 @@ import org.openide.util.WeakListeners;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.ui.spi.TeamServer;
 import org.netbeans.modules.odcs.versioning.SourceAccessorImpl.ProjectAndRepository;
-import org.netbeans.modules.odcs.ui.api.OdcsUIUtil;
 import org.netbeans.modules.team.ui.common.LoginHandleImpl;
 import org.netbeans.modules.team.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.ui.spi.ProjectHandle;
@@ -109,7 +107,7 @@ import org.openide.util.NbPreferences;
 public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
 
     private SourceAccessorImpl.ProjectAndRepository prjAndRepository;
-    private boolean localFolderPathEdited = false;
+    private final boolean localFolderPathEdited = false;
 
     private DefaultComboBoxModel comboModel;
     private ODCSUiServer server;
@@ -130,14 +128,15 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
         
         initComponents();
         
-        if (server == null && prjAndRepository == null) {
-            server = ((ODCSUiServer) odcsCombo.getSelectedItem());
-        } else {
+        if (server == null) {
             if (prjAndRepository != null) {
                 server = ODCSUiServer.forServer(prjAndRepository.project.getTeamProject().getServer());
             }
-            odcsCombo.setSelectedItem(server);
-            odcsCombo.setEnabled(false);
+        }
+        assert server != null;
+        if(server != null) {
+            serverLabel.setText(server.getDisplayName());
+            serverLabel.setIcon(server.getIcon());
         }
 
         refreshUsername();
@@ -192,9 +191,9 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
         odcsRepoLabel = new JLabel();
         odcsRepoComboBox = new JComboBox();
         projectPreviewLabel = new JLabel();
-        odcsCombo = OdcsUIUtil.createTeamCombo();
         jLabel2 = new JLabel();
         lblError = new JLabel();
+        serverLabel = new JLabel();
 
         Mnemonics.setLocalizedText(jLabel1, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.jLabel1.text")); // NOI18N
 
@@ -222,12 +221,6 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
         });
 
         Mnemonics.setLocalizedText(projectPreviewLabel, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.projectPreviewLabel.text")); // NOI18N
-
-        odcsCombo.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                odcsComboActionPerformed(evt);
-            }
-        });
 
         cmbProvider.setToolTipText(NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.cmbProvider.toolTipText")); // NOI18N
 
@@ -257,6 +250,8 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
         lblError.setIcon(new ImageIcon(getClass().getResource("/org/netbeans/modules/odcs/versioning/resources/error.png"))); // NOI18N
         Mnemonics.setLocalizedText(lblError, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.lblError.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(serverLabel, NbBundle.getMessage(GetSourcesFromODCSPanel.class, "GetSourcesFromODCSPanel.serverLabel.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -268,7 +263,7 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
                 .addGap(4, 4, 4)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(odcsCombo, 0, 261, Short.MAX_VALUE)
+                        .addComponent(serverLabel, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(usernameLabel)
                         .addGap(4, 4, 4)
@@ -281,22 +276,20 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(Alignment.LEADING)
                             .addComponent(panelProvider, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                             .addComponent(lblError))
-                        .addGap(0, 135, Short.MAX_VALUE))))
+                        .addGap(0, 181, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(loggedInLabel))
-                    .addGroup(layout.createSequentialGroup()
-                        .addGap(6, 6, 6)
-                        .addComponent(usernameLabel))
                     .addComponent(loginButton)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(1, 1, 1)
-                        .addComponent(odcsCombo, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                        .addGap(6, 6, 6)
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(loggedInLabel)
+                            .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                                .addComponent(usernameLabel)
+                                .addComponent(serverLabel)))))
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGap(18, 18, 18)
@@ -342,22 +335,6 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
         updatePanelUI();
         updateRepoPath();
     }//GEN-LAST:event_odcsRepoComboBoxActionPerformed
-
-    private void odcsComboActionPerformed(ActionEvent evt) {//GEN-FIRST:event_odcsComboActionPerformed
-        final ActionEvent e = evt;
-        SwingUtilities.invokeLater(new Runnable() {
-            @Override
-            public void run() {
-                Object item = odcsCombo.getSelectedItem();
-                if (item != null && !(item instanceof ODCSUiServer)) {
-                    OdcsUIUtil.createAddInstanceAction().actionPerformed(e);
-                }
-                server = ((ODCSUiServer) odcsCombo.getSelectedItem());
-                odcsRepoComboBox.setModel(new ODCSRepositoriesComboModel());
-                refreshUsername();
-            }
-        });
-    }//GEN-LAST:event_odcsComboActionPerformed
 
     private void initializeProviders () {
         cmbProvider.setRenderer(new DefaultListCellRenderer() {
@@ -506,7 +483,10 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
                     
                     PasswordAuthentication pa = server.getPasswordAuthentication();
                     if (pa != null) {
-                        projects.addAll(projectAcccessor.getMemberProjects(server, new LoginHandleImpl(pa.getUserName()), false));
+                        List<ProjectHandle<ODCSProject>> memberProjects = projectAcccessor.getMemberProjects(server, new LoginHandleImpl(pa.getUserName()), false);
+                        if(memberProjects != null) {
+                            projects.addAll(memberProjects);
+                        }
                     }
                     return projects.toArray(handles);
                 }
@@ -590,11 +570,11 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
     private JLabel lblError;
     private JLabel loggedInLabel;
     private JButton loginButton;
-    private JComboBox odcsCombo;
     private JComboBox odcsRepoComboBox;
     private JLabel odcsRepoLabel;
     final JPanel panelProvider = new JPanel();
     private JLabel projectPreviewLabel;
+    private JLabel serverLabel;
     private JLabel usernameLabel;
     // End of variables declaration//GEN-END:variables
 
@@ -615,9 +595,7 @@ public class GetSourcesFromODCSPanel extends javax.swing.JPanel {
         root.setEnabled(enabled);
         if (root instanceof java.awt.Container) {
             for (Component c : ((java.awt.Container) root).getComponents()) {
-                if (c != odcsCombo) {
-                    setChildrenEnabled(c, enabled);
-                }
+                setChildrenEnabled(c, enabled);
             }
         }
     }

@@ -47,7 +47,7 @@ import org.netbeans.modules.javascript2.editor.*;
  *
  * @author Martin Fousek <marfous@oracle.com>
  */
-public class JsDocCodeCompletionTest extends JsCodeComplationBase {
+public class JsDocCodeCompletionTest extends JsCodeCompletionBase {
 
     public JsDocCodeCompletionTest(String testName) {
         super(testName);

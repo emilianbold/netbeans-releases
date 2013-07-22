@@ -48,6 +48,7 @@ import org.netbeans.modules.bugtracking.util.ListValuePicker;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -192,5 +193,12 @@ public class BugzillaUtil {
     public static void openQuery(BugzillaQuery bugzillaQuery) {
         Bugzilla.getInstance().getBugtrackingFactory().openQuery(getRepository(bugzillaQuery.getRepository()), bugzillaQuery);
     }
-    
+
+    public static void runInAWT(Runnable r) {
+        if(SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
+    }
 }

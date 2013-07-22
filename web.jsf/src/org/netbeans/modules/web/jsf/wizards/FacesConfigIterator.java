@@ -322,7 +322,7 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
         }
 
         @Messages({
-            "FacesConfigIterator.err.no.document.base=Project hasn't defined DocumentBase. See project properties."
+            "FacesConfigIterator.err.no.document.base=Project hasn't defined document root. See project properties."
         })
         @Override
         public boolean isValid() {

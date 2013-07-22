@@ -43,6 +43,8 @@
 package org.netbeans.modules.java.hints.jdk;
 
 import com.sun.source.tree.ArrayAccessTree;
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
@@ -63,6 +65,7 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
@@ -84,7 +87,7 @@ import org.openide.util.NbBundle.Messages;
     "DN_IteratorToFor=Use JDK 5 for-loop",
     "DESC_IteratorToFor=Replaces simple uses of Iterator with a corresponding for-loop.",
     "ERR_IteratorToFor=Use of Iterator for simple loop",
-    "ERR_IteratorToForArray=Use enhanced for loop to interate over the array",
+    "ERR_IteratorToForArray=Use enhanced for loop to iterate over the array",
     "FIX_IteratorToFor=Convert to for-loop"
 })
 public class IteratorToFor {
@@ -127,8 +130,23 @@ public class IteratorToFor {
         final boolean[] unsuitable = new boolean[1];
         new CancellableTreePathScanner<Void, Void>() {
             @Override public Void visitArrayAccess(ArrayAccessTree node, Void p) {
-                if (MatcherUtilities.matches(ctx, getCurrentPath(), "$arr[$index]")) {
-                    toReplace.add(getCurrentPath());
+                TreePath path = getCurrentPath();
+                if (MatcherUtilities.matches(ctx, path, "$arr[$index]")) {
+                    if (path.getParentPath() != null) {
+                        if (   path.getParentPath().getLeaf().getKind() == Kind.ASSIGNMENT
+                            && ((AssignmentTree) path.getParentPath().getLeaf()).getVariable() == node) {
+                            unsuitable[0] = true;
+                            cancel();
+                            return null;
+                        }
+                        if (CompoundAssignmentTree.class.isAssignableFrom(path.getParentPath().getLeaf().getKind().asInterface())
+                            && ((CompoundAssignmentTree) path.getParentPath().getLeaf()).getVariable() == node) {
+                            unsuitable[0] = true;
+                            cancel();
+                            return null;
+                        }
+                    }
+                    toReplace.add(path);
                     return null;
                 }
                 return super.visitArrayAccess(node, p);
@@ -215,6 +233,7 @@ public class IteratorToFor {
 
         @Override
         protected void performRewrite(TransformationContext ctx) throws Exception {
+            Tree loop = GeneratorUtilities.get(ctx.getWorkingCopy()).importComments(ctx.getPath().getLeaf(), ctx.getPath().getCompilationUnit());
             TreePath $arr = arr.resolve(ctx.getWorkingCopy());
             
             if ($arr == null) {
@@ -251,7 +270,7 @@ public class IteratorToFor {
             TreeMaker make = ctx.getWorkingCopy().getTreeMaker();
             EnhancedForLoopTree newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(((ArrayType) arrType).getComponentType()), null), (ExpressionTree) $arr.getLeaf(), ((ForLoopTree) ctx.getPath().getLeaf()).getStatement());
             
-            ctx.getWorkingCopy().rewrite(ctx.getPath().getLeaf(), newLoop);
+            ctx.getWorkingCopy().rewrite(loop, newLoop);
             
             for (TreePathHandle tr : toReplace) {
                 TreePath tp = tr.resolve(ctx.getWorkingCopy());

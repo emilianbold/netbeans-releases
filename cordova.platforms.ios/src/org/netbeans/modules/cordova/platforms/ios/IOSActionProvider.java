@@ -43,6 +43,7 @@ package org.netbeans.modules.cordova.platforms.ios;
 
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDisplayer;
@@ -78,7 +79,9 @@ public class IOSActionProvider implements ActionProvider {
         "ERR_NotMac=iOS Development is available only on Mac OS X",
         "ERR_Title=Error",
         "LBL_Opening=Connecting to iOS Simulator",
-        "ERR_NO_PhoneGap=PhoneGap Platform is not configured.\nConfigure? "
+        "ERR_NO_PhoneGap=PhoneGap Platform is not configured.\nConfigure? ",
+        "ERR_NO_Xcode=Supported version of Xcode and Command Line Tools for Xcode not found.\n"
+            + "Make sure, that you have latest version of Xcode and iOS SDK installed from Mac App Store."
     })
     @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
@@ -93,6 +96,19 @@ public class IOSActionProvider implements ActionProvider {
             DialogDisplayer.getDefault().notify(not);
             return;
         }
+
+        if (!PlatformManager.getPlatform(PlatformManager.IOS_TYPE).isReady()) {
+            NotifyDescriptor not = new NotifyDescriptor(
+                    Bundle.ERR_NO_Xcode(),
+                    Bundle.ERR_Title(),
+                    NotifyDescriptor.DEFAULT_OPTION,
+                    NotifyDescriptor.ERROR_MESSAGE,
+                    null,
+                    null);
+            DialogDisplayer.getDefault().notify(not);
+            return;
+        }
+        
         final BuildPerformer build = Lookup.getDefault().lookup(BuildPerformer.class);
         assert build != null;
         try {

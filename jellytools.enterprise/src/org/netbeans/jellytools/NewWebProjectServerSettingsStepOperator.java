@@ -95,8 +95,7 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JLabelOperator lblContextPath() {
         if (_lblContextPath==null) {
-            String contextPath = Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NWP1_ContextPath_Label");
-            _lblContextPath = new JLabelOperator(this, contextPath);
+            _lblContextPath = new JLabelOperator(this, "Context Path:");
         }
         return _lblContextPath;
     }
@@ -106,8 +105,7 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JLabelOperator lblServer() {
         if (_lblServer==null) {
-            String server = Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NWP1_Server");
-            _lblServer = new JLabelOperator(this, server);
+            _lblServer = new JLabelOperator(this, "Server:");
         }
         return _lblServer;
     }
@@ -117,8 +115,7 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JLabelOperator lblJavaEEVersion() {
         if (_lblJavaEEVersion==null) {
-            String javaEEVersion = Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NWP1_J2EESpecLevel_Label");
-            _lblJavaEEVersion = new JLabelOperator(this, javaEEVersion);
+            _lblJavaEEVersion = new JLabelOperator(this, "Java EE Version:");
         }
         return _lblJavaEEVersion;
     }
@@ -160,8 +157,7 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JButtonOperator btAdd() {
         if (_btAdd==null) {
-            String add = Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_AddServer");
-            _btAdd = new JButtonOperator(this, add);
+            _btAdd = new JButtonOperator(this, "Add...");
         }
         return _btAdd;
     }
@@ -182,8 +178,7 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JLabelOperator lblAddToEnterpriseApplication() {
         if (_lblAddToEnterpriseApplication==null) {
-            String addToEnterpriseApplication = Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "LBL_NWP1_AddToEnterprise_Label");
-            _lblAddToEnterpriseApplication = new JLabelOperator(this, addToEnterpriseApplication);
+            _lblAddToEnterpriseApplication = new JLabelOperator(this, "Add to Enterprise Application:");
         }
         return _lblAddToEnterpriseApplication;
     }
@@ -203,8 +198,7 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
      */
     public JLabelOperator lblSharingJARLicenseRemark() {
         if (_lblSharingJARLicenseRemark == null) {
-            String sharingJARLicenseRemark = Bundle.getString("org.netbeans.modules.j2ee.common.project.ui.Bundle", "PanelSharability.licenseWarning.text");
-            _lblSharingJARLicenseRemark = new JLabelOperator(this, sharingJARLicenseRemark);
+            _lblSharingJARLicenseRemark = new JLabelOperator(this, "There may be legal considerations when sharing server JAR files");
         }
         return _lblSharingJARLicenseRemark;
     }
@@ -297,6 +291,7 @@ public class NewWebProjectServerSettingsStepOperator extends NewProjectWizardOpe
 
     /** Performs verification of NewWebApplication by accessing all its components.
      */
+    @Override
     public void verify() {
         lblContextPath();
         lblServer();

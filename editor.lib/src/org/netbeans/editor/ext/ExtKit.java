@@ -258,7 +258,8 @@ public class ExtKit extends BaseKit {
     */
     @EditorActionRegistration(
             name = buildPopupMenuAction,
-            shortDescription = editorBundleHash + buildPopupMenuAction
+            shortDescription = editorBundleHash + buildPopupMenuAction,
+            noKeyBinding = true
     )
     public static class BuildPopupMenuAction extends BaseKitLocalizedAction {
 
@@ -408,7 +409,8 @@ public class ExtKit extends BaseKit {
     */
     @EditorActionRegistration(
             name = "org.openide.actions.PopupAction",
-            shortDescription = editorBundleHash + showPopupMenuAction
+            shortDescription = editorBundleHash + showPopupMenuAction,
+            noKeyBinding = true
     )
     public static class ShowPopupMenuAction extends BaseKitLocalizedAction {
 

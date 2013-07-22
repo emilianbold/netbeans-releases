@@ -355,11 +355,16 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
 //        return server != null ? OneProjectDashboard.forServer(server) : null;
     }
 
-    private void setProjectLabel(String name) {
-        lbl.setText(name);
-        if(server != null) {
-            lbl.setIcon(server.getIcon());
-        }
+    private void setProjectLabel(final String name) {
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                lbl.setText(name);
+                if(server != null) {
+                    lbl.setIcon(server.getIcon());
+                }
+            }
+        });
     }
 
     private class MouseOverListener extends MouseAdapter {
