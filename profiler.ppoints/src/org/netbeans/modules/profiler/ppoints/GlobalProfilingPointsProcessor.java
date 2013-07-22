@@ -107,10 +107,11 @@ public class GlobalProfilingPointsProcessor implements DataManagerListener {
                     stop(); // modify profiling
                 }
 
-                init(); // TODO: unnecessarily called when finishing profiling session
+//                init(); // TODO: unnecessarily called when finishing profiling session
             } else if (profilingInProgress) { // profiling in progress
 
                 if (!isRunning) {
+                    init(); // #232978
                     start();
                 }
             } else { // profiling inactive
