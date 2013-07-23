@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -62,6 +62,17 @@ import org.openide.filesystems.FileUtil;
  */
 public abstract class J2eeModuleHelper {
 
+    /** Web application meta data directory. */
+    public static final String WEB_INF = "WEB-INF";
+
+    /** GlassFish specific meta data file for version 1 and 2. */
+    public static final String GF_WEB_XML_V1
+            = WEB_INF + File.separatorChar + "sun-web.xml";
+    
+    /** GlassFish specific meta data file for version 3 and 4. */
+    public static final String GF_WEB_XML_V2
+            = WEB_INF + File.separatorChar + "glassfish-web.xml";
+
     private static final Map<Object, J2eeModuleHelper> helperMap;
     private static final Map<Object, J2eeModuleHelper> gfhelperMap;
 
@@ -73,11 +84,23 @@ public abstract class J2eeModuleHelper {
         map.put(J2eeModule.Type.CAR, new ClientDDHelper());
         helperMap = Collections.unmodifiableMap(map);
         map = new HashMap<Object, J2eeModuleHelper>();
-        map.put(J2eeModule.Type.WAR, new WebDDHelper("WEB-INF/glassfish-web.xml",null));
+        map.put(J2eeModule.Type.WAR, new WebDDHelper(GF_WEB_XML_V2, null));
         map.put(J2eeModule.Type.EJB, new EjbDDHelper("META-INF/glassfish-ejb-jar.xml", "META-INF/glassfish-cmp-mappings.xml"));
         map.put(J2eeModule.Type.EAR, new EarDDHelper("META-INF/glassfish-application.xml", null));
         map.put(J2eeModule.Type.CAR, new ClientDDHelper("META-INF/glassfish-application-client.xml",null));
         gfhelperMap = Collections.unmodifiableMap(map);
+    }
+
+    /**
+     * Check for <code>WEB-INF/glassfish-web.xml</code> in Java EE module.
+     * <p/>
+     * @return Value of <code>true</code> when
+     * <code>WEB-INF/glassfish-web.xml</code> exists and is readable
+     * or <code>false</code> otherwise.
+     */
+    public static boolean isGlassFishWeb(final J2eeModule module) {
+         File webXml = module.getDeploymentConfigurationFile(GF_WEB_XML_V2);
+         return webXml.canRead();
     }
 
     public static final J2eeModuleHelper getSunDDModuleHelper(Object type) {
@@ -176,7 +199,7 @@ public abstract class J2eeModuleHelper {
     public static class WebDDHelper extends J2eeModuleHelper {
 
         private WebDDHelper() {
-            this("WEB-INF/sun-web.xml", null);
+            this(GF_WEB_XML_V1, null);
         }
 
         private WebDDHelper(String dd1, String dd2) {
