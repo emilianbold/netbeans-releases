@@ -79,6 +79,10 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
+import static org.netbeans.modules.javascript2.editor.doc.spi.JsModifier.PRIVATE;
+import static org.netbeans.modules.javascript2.editor.doc.spi.JsModifier.PUBLIC;
+import static org.netbeans.modules.javascript2.editor.doc.spi.JsModifier.STATIC;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
@@ -234,6 +238,7 @@ public class ModelVisitor extends PathNodeVisitor {
                                         property.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), accessNode.getFinish());
                                     }
                                 }
+                                setModifiersFromDoc(property, docHolder.getModifiers(accessNode));
                             }
                         }
                     }
@@ -802,7 +807,8 @@ public class ModelVisitor extends PathNodeVisitor {
                     prototype.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), type.getOffset());
                 }
             }
-
+            
+            setModifiersFromDoc(fncScope, docHolder.getModifiers(functionNode));
         }
 
         for (FunctionNode fn : functions) {
@@ -1748,6 +1754,28 @@ public class ModelVisitor extends PathNodeVisitor {
             return true;
         }
         return false;
+    }
+    
+    private void setModifiersFromDoc(JsObject object, Set<JsModifier> modifiers) {
+        if (modifiers != null && !modifiers.isEmpty()) {
+            for (JsModifier jsModifier : modifiers) {
+                switch (jsModifier) {
+                    case PRIVATE:
+                        object.getModifiers().remove(Modifier.PROTECTED);
+                        object.getModifiers().remove(Modifier.PUBLIC);
+                        object.getModifiers().add(Modifier.PRIVATE);
+                        break;
+                    case PUBLIC:
+                        object.getModifiers().remove(Modifier.PROTECTED);
+                        object.getModifiers().remove(Modifier.PRIVATE);
+                        object.getModifiers().add(Modifier.PUBLIC);
+                        break;
+                    case STATIC:
+                        object.getModifiers().add(Modifier.STATIC);
+                        break;
+                }
+            }
+        }
     }
     
     public static class FunctionCall {
