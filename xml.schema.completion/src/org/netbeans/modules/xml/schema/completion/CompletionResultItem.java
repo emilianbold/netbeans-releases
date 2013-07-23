@@ -65,6 +65,7 @@ import org.netbeans.modules.xml.schema.completion.spi.CompletionContext;
 import org.netbeans.modules.xml.schema.completion.util.CompletionContextImpl;
 import org.netbeans.modules.xml.schema.completion.util.CompletionUtil;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.netbeans.swing.plaf.LFCustoms;
 
 /**
  *
@@ -73,6 +74,8 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 public abstract class CompletionResultItem implements CompletionItem {
     private static final Logger _logger = Logger.getLogger(CompletionResultItem.class.getName());
 
+    private static final Color COLOR = LFCustoms.shiftColor(new Color(64, 64, 255));
+    
     public static final String
         ICON_ELEMENT    = "element.png",     //NOI18N
         ICON_ATTRIBUTE  = "attribute.png",   //NOI18N
@@ -148,7 +151,7 @@ public abstract class CompletionResultItem implements CompletionItem {
     }
 
     Color getPaintColor() { 
-        return Color.BLUE;
+        return LFCustoms.shiftColor(COLOR);
     }
 
     public int getExtraPaintGap() {

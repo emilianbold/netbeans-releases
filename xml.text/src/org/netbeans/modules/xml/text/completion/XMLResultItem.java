@@ -60,6 +60,7 @@ import javax.swing.Icon;
 
 import org.netbeans.editor.*;
 import javax.swing.JLabel;
+import javax.swing.UIManager;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.xml.api.model.GrammarResult;
@@ -70,6 +71,7 @@ import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
@@ -83,21 +85,40 @@ import org.openide.util.Exceptions;
 class XMLResultItem implements CompletionItem {
     private static final Logger LOG = Logger.getLogger(XMLResultItem.class.getName());
     
+    private static final Color COLOR = new Color(64, 64, 255);
+    
     // text to be diplayed to user
     public final String displayText;
     private final String replacementText;
     // icon to be diplayed
     public javax.swing.Icon icon;
-    public Color foreground = Color.black;
-    public Color background = Color.white;
-    public Color selectionForeground = Color.black;
-    public Color selectionBackground = new Color(204, 204, 255);
+    public Color foreground;
+    public Color background;
+    public Color selectionForeground;
+    public Color selectionBackground;
     private static JLabel rubberStamp = new JLabel();
     private boolean shift = false;
     private final int position;
     
     static {
         rubberStamp.setOpaque( true );
+    }
+    
+    {
+        foreground = LFCustoms.getTextFgColor();
+        background = UIManager.getColor( "Tree.background" ); // NOI18N
+        if (background ==null) {
+            background = Color.white;
+        }
+        
+        selectionForeground = UIManager.getColor("List.selectionForeground"); //NOI18N
+        if (selectionForeground == null) {
+            selectionForeground =  Color.black;
+        }
+        selectionBackground = UIManager.getColor("List.selectionBackground"); // NOI18N
+        if (selectionBackground == null) {
+            selectionBackground = new Color(204, 204, 255);
+        }
     }
     
     /**
@@ -319,7 +340,7 @@ class XMLResultItem implements CompletionItem {
         return getItemText();
     }
     
-    Color getPaintColor() { return Color.BLUE; }
+    Color getPaintColor() { return LFCustoms.shiftColor(COLOR); }
     
     ////////////////////////////////////////////////////////////////////////////////
     ///////////////////methods from CompletionItem interface////////////////////////
