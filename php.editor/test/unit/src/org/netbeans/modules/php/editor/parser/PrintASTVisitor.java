@@ -397,6 +397,13 @@ public class PrintASTVisitor implements Visitor {
     }
 
     @Override
+    public void visit(FinallyClause node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "FinallyClause");
+        printNode.addChild(node.getBody());
+        printNode.print(this);
+    }
+
+    @Override
     public void visit(ForEachStatement node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "ForEachStatement");
         printNode.addChild("Key", node.getKey());
@@ -736,6 +743,7 @@ public class PrintASTVisitor implements Visitor {
     public void visit(TryStatement node) {
         XMLPrintNode printNode = new XMLPrintNode(node, "TryStatement");
         printNode.addChildrenGroup("CatchClauses", node.getCatchClauses());
+        printNode.addChild(node.getFinallyClause());
         printNode.addChild(node.getBody());
         printNode.print(this);
     }
