@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="hash" default="number"/>
     <fontcolor name="operator" default="operator"/>
     <fontcolor name="string" default="string"/>
-    <fontcolor name="url" default="string"/>
+    <fontcolor name="url" default="string" underline="cyan"/>
     <fontcolor name="keyword" default="keyword"/>
     <fontcolor name="number" default="number"/>
     <fontcolor name="rgb" default="string"/>

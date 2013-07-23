@@ -69,6 +69,7 @@ import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -421,7 +422,7 @@ public class CompletionQuery extends AsyncCompletionQuery {
                     null, 
                     g, 
                     defaultFont, 
-                    defaultColor.darker(), 
+                    LFCustoms.shiftColor(defaultColor),
                     width, 
                     height, 
                     selected);
