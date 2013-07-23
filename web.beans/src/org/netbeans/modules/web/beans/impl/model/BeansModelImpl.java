@@ -396,6 +396,10 @@ public class BeansModelImpl implements BeansModel {
         }
     }
 
+    /**
+     * is based on cdi 1.1, do not use for 1.0
+     * @return 
+     */
     private synchronized BeanArchiveType getBeansArchiveType() {
         for (FileObject fileObject : getUnit().getSourcePath().getRoots()) {
             FileObject beans = getBeansFile(fileObject);
@@ -411,6 +415,7 @@ public class BeansModelImpl implements BeansModel {
                 return beanArchiveType;
             }
         }
+        beanArchiveType = BeanArchiveType.IMPLICIT;//no beans.xmk is found, in 1.1 it means implicit/annotated
         return beanArchiveType;
     }
 
