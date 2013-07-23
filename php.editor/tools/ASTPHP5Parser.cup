@@ -203,6 +203,7 @@ terminal  T_RETURN;
 terminal  T_TRY;
 terminal  T_CATCH;
 terminal  T_THROW;
+terminal  T_FINALLY;
 terminal  T_USE;
 terminal  T_GLOBAL;
 terminal  T_VAR;
