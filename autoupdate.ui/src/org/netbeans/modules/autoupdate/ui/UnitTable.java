@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -47,6 +47,8 @@ package org.netbeans.modules.autoupdate.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.Font;
+import java.awt.FontMetrics;
 import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -68,7 +70,7 @@ import org.netbeans.api.autoupdate.UpdateManager;
  *
  * @author Jiri Rechtacek, Radek Matous
  */
-public final class UnitTable extends JTable {
+public class UnitTable extends JTable {
     private UnitCategoryTableModel model = null;
     private static final int DARKER_COLOR_COMPONENT = 10;
     private TableCellRenderer enableRenderer = null;
@@ -84,6 +86,7 @@ public final class UnitTable extends JTable {
         if(UIManager.getLookAndFeel().getID().equals("Nimbus")) {
             setBackground(new Color(getBackground().getRGB(), false));
         }
+        //setFillsViewportHeight(true);        
         setIntercellSpacing (new Dimension (0, 0));
         revalidate ();
     }
@@ -108,11 +111,12 @@ public final class UnitTable extends JTable {
     
     @Override
     public String getToolTipText (MouseEvent e) {
+        String tip = null;
         java.awt.Point p = e.getPoint ();
         int rowIndex = rowAtPoint (p);
         int colIndex = columnAtPoint (p);
         int realColumnIndex = convertColumnIndexToModel (colIndex);
-        String tip = model.getToolTipText (rowIndex, realColumnIndex);
+        tip = model.getToolTipText (rowIndex, realColumnIndex);
         return tip != null ? tip : super.getToolTipText (e);
     }
     
@@ -196,13 +200,11 @@ public final class UnitTable extends JTable {
         return new MyTableHeader ( columnModel );
     }
     
-    private final class MyTableHeader extends JTableHeader {
-        private final SortColumnHeaderRenderer sortingRenderer;
+    private class MyTableHeader extends JTableHeader {
+        private SortColumnHeaderRenderer sortingRenderer;
         
         public MyTableHeader ( TableColumnModel model ) {
             super ( model );
-            sortingRenderer = new SortColumnHeaderRenderer((UnitCategoryTableModel) getModel(), getDefaultRenderer());
-            setDefaultRenderer(sortingRenderer);
             addMouseListener ( new MouseAdapter () {
                 @Override
                 public void mouseClicked (MouseEvent e) {
@@ -255,10 +257,11 @@ public final class UnitTable extends JTable {
         
         @Override
         public void setDefaultRenderer (TableCellRenderer defaultRenderer) {
-            if (sortingRenderer != null && !(defaultRenderer instanceof SortColumnHeaderRenderer)) {
-                return;
+            if( !(defaultRenderer instanceof SortColumnHeaderRenderer) ) {
+                sortingRenderer = new SortColumnHeaderRenderer ((UnitCategoryTableModel)getModel (), defaultRenderer );
+                defaultRenderer = sortingRenderer;
             }
-            super.setDefaultRenderer(defaultRenderer);
+            super.setDefaultRenderer ( defaultRenderer );
         }
         
         @Override
