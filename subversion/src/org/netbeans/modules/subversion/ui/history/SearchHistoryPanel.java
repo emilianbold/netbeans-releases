@@ -161,6 +161,7 @@ class SearchHistoryPanel extends javax.swing.JPanel implements ExplorerManager.P
         initComponents();
         initializeFilter();
         filterTimer = new Timer(500, this);
+        filterTimer.setRepeats(false);
         filterTimer.stop();
         aquaBackgroundWorkaround();
         setupComponents();
