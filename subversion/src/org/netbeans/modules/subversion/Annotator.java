@@ -442,10 +442,10 @@ public class Annotator {
                 actions.add(SystemAction.get(StatusAction.class));
                 actions.add(new DiffMenu(destination, null));
                 actions.add(SystemAction.get(CommitAction.class));
+                actions.add(new UpdateMenu(destination, null));
                 actions.add(SystemAction.get(RevertModificationsAction.class));
                 actions.add(SystemAction.get(BlameAction.class));
                 actions.add(SystemAction.get(SearchHistoryAction.class));
-                actions.add(new UpdateMenu(destination, null));
                 actions.add(SystemAction.get(ResolveConflictsAction.class));
                 actions.add(null);
                 
@@ -483,13 +483,13 @@ public class Annotator {
                 actions.add(SystemActionBridge.createAction(SystemAction.get(StatusAction.class), loc.getString("CTL_PopupMenuItem_Status"), context));
                 actions.add(new DiffMenu(destination, context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context));
+                actions.add(new UpdateMenu(destination, context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_GetClean"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(BlameAction.class),
                         ((BlameAction)SystemAction.get(BlameAction.class)).visible(nodes)
                         ? loc.getString("CTL_PopupMenuItem_HideAnnotations")
                         : loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), loc.getString("CTL_PopupMenuItem_SearchHistory"), context));
-                actions.add(new UpdateMenu(destination, context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), loc.getString("CTL_PopupMenuItem_ResolveConflicts"), context));
                 actions.add(null);
                 
