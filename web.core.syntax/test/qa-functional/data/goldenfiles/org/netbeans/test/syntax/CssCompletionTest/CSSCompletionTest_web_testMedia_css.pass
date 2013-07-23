@@ -39,7 +39,6 @@ User interface cursor
 End cursor position = 121
 [background: |, background url, background: url, 174]
 background-color color chooser
-background-color hash_color_co
 background length
 background percentage
 background-color activeborder
@@ -255,7 +254,6 @@ background-color yellowgreen
 End cursor position = 190
 [color: |, color green, color: green, 219]
 color color chooser
-color hash_color_code
 color activeborder
 color activecaption
 color aliceblue
