@@ -252,6 +252,17 @@ public class InstantiationHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("deepNestedTemplateEntities.cpp", 27, 36, "deepNestedTemplateEntities.cpp", 26, 57);        
     }
     
+    public void testBug232530() throws Exception {
+        // Bug 232530 - "Empty class specialization name" in messages log
+        performTest("bug232530.cpp", 9, 19, "bug232530.cpp", 4, 9);
+        
+        performTest("bug232530.cpp", 8, 37, "bug232530.cpp", 8, 27);
+        performTest("bug232530.cpp", 9, 24, "bug232530.cpp", 8, 27);
+        performTest("bug232530.cpp", 9, 34, "bug232530.cpp", 8, 27);
+        
+        performTest("bug232530.cpp", 9, 39, "bug232530.cpp", 9, 27);
+    }
+    
     
     public static class Failed extends HyperlinkBaseTestCase {
 
