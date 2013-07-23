@@ -35,7 +35,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="bracesPlacementLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="jSeparator1" pref="105" max="32767" attributes="0"/>
+                      <Component id="jSeparator1" max="32767" attributes="0"/>
                   </Group>
                   <Group type="102" attributes="0">
                       <EmptySpace max="-2" attributes="0"/>
@@ -48,7 +48,7 @@
                                   <Component id="switchLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                   <Component id="catchLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                               </Group>
-                              <EmptySpace pref="29" max="32767" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                               <Group type="103" groupAlignment="0" max="-2" attributes="0">
                                   <Component id="catchCombo" alignment="0" max="32767" attributes="1"/>
                                   <Component id="switchCombo" alignment="0" max="32767" attributes="1"/>
@@ -59,7 +59,7 @@
                           </Group>
                           <Group type="102" alignment="1" attributes="0">
                               <Component id="useTraitLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace pref="52" max="32767" attributes="0"/>
+                              <EmptySpace max="32767" attributes="0"/>
                               <Component id="useTraitCombo" min="-2" max="-2" attributes="1"/>
                           </Group>
                           <Group type="102" alignment="0" attributes="0">
@@ -127,17 +127,17 @@
                   <Component id="catchCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="catchLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="useTraitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="useTraitCombo" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="useTraitLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="otherCombo" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="otherLabel" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
+              <EmptySpace pref="18" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
