@@ -39,76 +39,49 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.prep.editor;
+package org.netbeans.modules.css.prep.editor.less;
 
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.css.prep.editor.model.CPElementHandle;
+import org.netbeans.modules.css.prep.editor.scss.*;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
+import org.netbeans.modules.css.prep.editor.model.CPModel;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author marekfukala
  */
-public class MixinCompletionItem extends CPCompletionItem {
-    
-    /**
-     * 
-     * @param elementHandle
-     * @param handle
-     * @param anchorOffset
-     * @param origin Origin is null for current file. File displayname otherwise.
-     */
-    public MixinCompletionItem(ElementHandle elementHandle, CPElementHandle handle, int anchorOffset, String origin) {
-        super(elementHandle, handle, anchorOffset ,origin);
+public class LessCompletionTest extends CssModuleTestBase {
+
+    public LessCompletionTest(String name) {
+        super(name);
     }
 
     @Override
-    public ElementKind getKind() {
-        return ElementKind.METHOD;
+    protected void setUp() throws Exception {
+        super.setUp();
+        CPModel.topLevelSnapshotMimetype = getTopLevelSnapshotMimetype();
     }
 
     @Override
-    public String getInsertPrefix() {
-        return handle.getName();
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        CPModel.topLevelSnapshotMimetype = null;
     }
 
     @Override
-    public String getName() {
-        return handle.getName();
-    }
-    
-    @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 89 * hash + (this.origin != null ? this.origin.hashCode() : 0);
-        hash = 89 * hash + getName().hashCode();
-        return hash;
+    protected String getTopLevelSnapshotMimetype() {
+        return "text/less";
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final MixinCompletionItem other = (MixinCompletionItem) obj;
-        if ((this.origin == null) ? (other.origin != null) : !this.origin.equals(other.origin)) {
-            return false;
-        }
-        if (!getName().equals(other.getName())) {
-            return false;
-        }
-        return true;
+    protected String getCompletionItemText(CompletionProposal cp) {
+        return cp.getInsertPrefix();
     }
 
-    @Override
-    public int getSortPrioOverride() {
-        int prio = 70;
-        if(origin == null) {
-            prio -= 40; //current file items have precedence
-        }
-        return prio;
+    public void testMixinsCompletion() throws ParseException {
+        checkCC(".mixin() {}\n"
+                + "div { .| }", arr("mixin"), Match.CONTAINS);
+
     }
 }
