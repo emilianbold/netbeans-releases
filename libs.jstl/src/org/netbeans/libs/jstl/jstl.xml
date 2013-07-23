@@ -45,13 +45,13 @@ Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
 <library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
-    <name>jstl11</name>
+    <name>jstl</name>
     <type>j2se</type>
-    <localizing-bundle>org/netbeans/modules/web/jstl11/Bundle</localizing-bundle>
+    <localizing-bundle>org/netbeans/libs/jstl/Bundle</localizing-bundle>
     <volume>
         <type>classpath</type>
-        <resource>jar:nbinst://org.netbeans.modules.web.jstl11/modules/ext/standard.jar!/</resource>
-        <resource>jar:nbinst://org.netbeans.modules.web.jstl11/modules/ext/jstl.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.jstl/modules/ext/jstl-impl.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.jstl/modules/ext/jstl-api.jar!/</resource>
     </volume>
     <volume>
         <type>javadoc</type>
@@ -62,8 +62,8 @@ made subject to such option by the copyright holder.
         <property>
             <name>maven-dependencies</name>
             <value>
-                javax.servlet:jstl:1.1.2:jar
-                taglibs:standard:1.1.2:jar
+                javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:1.2.1:jar
+                org.glassfish.web:javax.servlet.jsp.jstl:1.2.2:jar
             </value>
         </property>
     </properties>    
