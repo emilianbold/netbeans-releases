@@ -46,6 +46,7 @@ package org.netbeans.modules.xml.text.completion;
 import java.awt.Color;
 
 import org.netbeans.modules.xml.api.model.*;
+import org.netbeans.swing.plaf.LFCustoms;
 
 /**
  * Represents entity option.
@@ -54,10 +55,11 @@ import org.netbeans.modules.xml.api.model.*;
  * @author  Petr Kuzel
  */
 class EntityRefResultItem extends XMLResultItem {
-
+    private static final Color COLOR = new Color(64, 64, 255);
+    
     public EntityRefResultItem(int position, GrammarResult res){
         super(position, res.getNodeName());
-        selectionForeground = foreground = Color.red.darker();
+        selectionForeground = foreground = LFCustoms.shiftColor(Color.red);
     }
 
     public String getReplacementText(int modifiers) {
@@ -65,5 +67,5 @@ class EntityRefResultItem extends XMLResultItem {
         return "&" + super.getReplacementText(modifiers) + ';';
     }
     
-    Color getPaintColor() { return Color.blue; }
+    Color getPaintColor() { return LFCustoms.shiftColor(COLOR); }
 }

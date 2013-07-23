@@ -56,6 +56,7 @@ import org.netbeans.spi.editor.completion.CompletionDocumentation;
 import org.netbeans.spi.editor.completion.CompletionResultSet;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
+import org.netbeans.swing.plaf.LFCustoms;
 
 /**
  * Represent element name (or its part for namespace prefix).
@@ -64,6 +65,7 @@ import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
  * @author  Petr Kuzel
  */
 class ElementResultItem extends XMLResultItem {
+    private static final Color COLOR = new Color(64, 64, 255);
     
     // does it represent start element name?
     // then there is more possibilities how to complete it
@@ -78,7 +80,7 @@ class ElementResultItem extends XMLResultItem {
     public ElementResultItem(int position, GrammarResult res){
         super(position, res.getNodeName());
         this.res = res;
-        foreground = Color.blue;
+        foreground = LFCustoms.shiftColor(COLOR);
         startElement = true;
         empty = res.isEmptyElement();
         icon = res.getIcon(BeanInfo.ICON_COLOR_16x16);
@@ -89,7 +91,7 @@ class ElementResultItem extends XMLResultItem {
      */
     public ElementResultItem(int position, String name) {
         super(position, name);
-        foreground = Color.blue;
+        foreground = LFCustoms.shiftColor(COLOR);
         startElement = false;
         empty = false;
     }
@@ -147,5 +149,5 @@ class ElementResultItem extends XMLResultItem {
 //    static class EndTag extends ElementResultItem {
 //    }
     
-    Color getPaintColor() { return Color.blue; }
+    Color getPaintColor() { return LFCustoms.shiftColor(COLOR); }
 }
