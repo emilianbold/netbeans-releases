@@ -420,11 +420,17 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     }
     
     @Override public void addHudsonChangeListener(HudsonChangeListener l) {
-        listeners.add(l);
+        if (l != null) {
+            synchronized (listeners) {
+                listeners.add(l);
+            }
+        }
     }
     
     @Override public void removeHudsonChangeListener(HudsonChangeListener l) {
-        listeners.remove(l);
+        synchronized (listeners) {
+            listeners.remove(l);
+        }
     }
     
     private void fireStateChanges() {
