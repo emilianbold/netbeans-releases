@@ -44,9 +44,12 @@
 
 package org.netbeans.modules.j2ee.earproject.ui.customizer;
 
+import java.awt.Component;
+import java.awt.Image;
+import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
-import java.net.URI;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -63,18 +66,21 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.modules.j2ee.earproject.EarProject;
 import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
-import org.netbeans.modules.j2ee.earproject.EarProjectTest;
 import org.netbeans.modules.j2ee.earproject.classpath.ClassPathSupportCallbackImpl;
 import org.netbeans.modules.j2ee.earproject.test.TestUtil;
 import org.netbeans.modules.j2ee.earproject.ui.wizards.NewEarProjectWizardIteratorTest;
+import org.netbeans.modules.web.browser.api.BrowserFamilyId;
+import org.netbeans.modules.web.browser.spi.EnhancedBrowserFactory;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
+import org.openide.awt.HtmlBrowser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.test.MockLookup;
 
 /**
@@ -297,5 +303,113 @@ public class EarProjectPropertiesTest extends NbTestCase {
         assertNotNull("web project should exist", webProject);
         
         return webProject;
+    }
+
+    @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
+    public static class DummyBrowser implements HtmlBrowser.Factory, EnhancedBrowserFactory {
+
+        @Override
+        public HtmlBrowser.Impl createHtmlBrowserImpl() {
+            return new HtmlBrowser.Impl() {
+
+                @Override
+                public Component getComponent() {
+                    return null;
+                }
+
+                @Override
+                public void reloadDocument() {
+                }
+
+                @Override
+                public void stopLoading() {
+                }
+
+                @Override
+                public void setURL(URL url) {
+                }
+
+                @Override
+                public URL getURL() {
+                    return null;
+                }
+
+                @Override
+                public String getStatusMessage() {
+                    return null;
+                }
+
+                @Override
+                public String getTitle() {
+                    return null;
+                }
+
+                @Override
+                public boolean isForward() {
+                    return false;
+                }
+
+                @Override
+                public void forward() {
+                }
+
+                @Override
+                public boolean isBackward() {
+                    return false;
+                }
+
+                @Override
+                public void backward() {
+                }
+
+                @Override
+                public boolean isHistory() {
+                    return false;
+                }
+
+                @Override
+                public void showHistory() {
+                }
+
+                @Override
+                public void addPropertyChangeListener(PropertyChangeListener l) {
+                }
+
+                @Override
+                public void removePropertyChangeListener(PropertyChangeListener l) {
+                }
+            };
+        }
+
+        @Override
+        public BrowserFamilyId getBrowserFamilyId() {
+            return BrowserFamilyId.FIREFOX;
+        }
+
+        @Override
+        public Image getIconImage(boolean small) {
+            return null;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "some";
+        }
+
+        @Override
+        public String getId() {
+            return "some";
+        }
+
+        @Override
+        public boolean hasNetBeansIntegration() {
+            return false;
+        }
+
+        @Override
+        public boolean canCreateHtmlBrowserImpl() {
+            return true;
+        }
+
     }
 }
