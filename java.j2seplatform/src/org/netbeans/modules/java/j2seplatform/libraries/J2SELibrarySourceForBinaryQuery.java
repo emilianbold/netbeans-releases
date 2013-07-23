@@ -47,6 +47,8 @@ package org.netbeans.modules.java.j2seplatform.libraries;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,6 +57,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -102,7 +105,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                                 }
                             }
                             if (binaryRoot.equals(normalizedEntry)) {
-                                res = new Result(entry, lib);
+                                res = new Result(entry, mgr, lib);
                                 cache.put(binaryRoot, res);
                                 return res;
                             }
@@ -110,7 +113,7 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
                     }
                 }
             }
-        } catch (MalformedURLException ex) {
+        } catch (MalformedURLException | URISyntaxException ex) {
             LOG.log (Level.INFO, "Invalid URL: " + binaryRoot, ex);
             //cache.put (binaryRoot, null);
         }
@@ -189,26 +192,33 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
     
     
     private static class Result implements SourceForBinaryQueryImplementation2.Result, PropertyChangeListener {
-        
-        private Library lib;
-        private URL entry;
+
+        private final LibraryManager manager;        
+        private final URI entry;
         private final ChangeSupport cs = new ChangeSupport(this);
         private FileObject[] cache;
+        private volatile Library lib;
         
         @SuppressWarnings("LeakingThisInConstructor")
-        public Result (URL queryFor, Library lib) {
-            this.entry = queryFor;
+        public Result (
+                @NonNull final URL queryFor,
+                @NonNull final LibraryManager manager,
+                @NonNull final Library lib) throws URISyntaxException {
+            this.entry = queryFor.toURI();
+            this.manager = manager;
             this.lib = lib;
-            this.lib.addPropertyChangeListener(WeakListeners.propertyChange(this, this.lib));
+            manager.addPropertyChangeListener(WeakListeners.propertyChange(this, manager));
+            lib.addPropertyChangeListener(WeakListeners.propertyChange(this, lib));
         }
         
         @Override
         public synchronized FileObject[] getRoots () {
             if (this.cache == null) {
                 // entry is not resolved so directly volume content can be searched for it:
-                if (this.lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH).contains(entry)) {
+                final Library _lib = this.lib;
+                if (_lib.getURIContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH).contains(entry)) {
                     List<FileObject> result = new ArrayList<FileObject>();
-                    for (URL u : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC)) {
+                    for (URL u : _lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC)) {
                         FileObject sourceRoot = URLMapper.findFileObject(u);
                         if (sourceRoot!=null) {
                             result.add (sourceRoot);
@@ -237,11 +247,46 @@ public class J2SELibrarySourceForBinaryQuery implements SourceForBinaryQueryImpl
         
         @Override
         public void propertyChange (PropertyChangeEvent event) {
-            if (Library.PROP_CONTENT.equals(event.getPropertyName())) {
+            final String propName = event.getPropertyName();
+            if (Library.PROP_CONTENT.equals(propName)) {
                 synchronized (this) {                    
                     this.cache = null;
                 }
                 cs.fireChange();
+            } else if (LibraryManager.PROP_LIBRARIES.equals(propName) && manager.equals(event.getSource())) {
+                final Library currentLib = lib;
+                final Library newLib = manager.getLibrary(currentLib.getName());
+                final boolean change;
+                if (newLib == null) {
+                    change = true;
+                } else if (newLib == currentLib) {
+                    change = false;
+                } else {
+                    final List<? extends URI> newBin = newLib.getURIContent(J2SELibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
+                    if (newBin == null || !newBin.contains(entry)) {
+                        change = true;
+                    } else {
+                        final List<? extends URI> newSrc = newLib.getURIContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC);
+                        change = newSrc == null || !newSrc.equals(currentLib.getURIContent(J2SELibraryTypeProvider.VOLUME_TYPE_SRC));
+                    }
+                }
+                if (change) {
+                    LOG.log(
+                        Level.FINE,
+                        "Library {0} redefined.",   //NOI18N
+                        currentLib.getName());
+                    boolean fire = false;
+                    synchronized (this) {
+                        if (newLib != null) {
+                            lib = newLib;
+                            fire = true;
+                        }
+                        this.cache = null;
+                    }
+                    if (fire) {
+                        cs.fireChange();
+                    }
+                }
             }
         }
 

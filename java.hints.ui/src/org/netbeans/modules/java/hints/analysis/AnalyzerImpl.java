@@ -159,7 +159,6 @@ public class AnalyzerImpl implements Analyzer {
 
         private  static final String HINTS_FOLDER = "org-netbeans-modules-java-hints/rules/hints/";  // NOI18N
 
-        @Messages("DN_UnknownCategory=Unknown")
         @Override
         public Iterable<? extends WarningDescription> getWarnings() {
             List<WarningDescription> result = new ArrayList<WarningDescription>();
@@ -168,8 +167,7 @@ public class AnalyzerImpl implements Analyzer {
                 if (e.getKey().options.contains(Options.NON_GUI)) continue;
                 String displayName = e.getKey().displayName;
                 String category = e.getKey().category;
-                FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + category);
-                String categoryDisplayName = catFO != null ? getFileObjectLocalizedName(catFO) : Bundle.DN_UnknownCategory();
+                String categoryDisplayName = Utilities.categoryDisplayName(category);
 
                 result.add(WarningDescription.create(ID_JAVA_HINTS_PREFIX + e.getKey().id, displayName, category, categoryDisplayName));
             }
