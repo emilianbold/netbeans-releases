@@ -305,7 +305,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                         DefaultMutableTreeNode o = (DefaultMutableTreeNode) path.getLastPathComponent();
                         if (o.getUserObject() instanceof HintMetadata) {
                             HintMetadata hint = (HintMetadata) o.getUserObject();
-                            if (hint.category.equals(HintCategory.CUSTOM_CATEGORY)) {
+                            if (hint.category.equals(Utilities.CUSTOM_CATEGORY)) {
                                 JPopupMenu popup = new JPopupMenu();
                                 popup.add(new JMenuItem(new RenameHint(o, hint, path)));
                                 popup.add(new JMenuItem(new RemoveHint(o, hint)));
@@ -1107,22 +1107,6 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
     }
 
-    static String getFileObjectLocalizedName( FileObject fo ) {
-        Object o = fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
-        if ( o instanceof String ) {
-            String bundleName = (String)o;
-            try {
-                ResourceBundle rb = NbBundle.getBundle(bundleName);            
-                String localizedName = rb.getString(fo.getPath());                
-                return localizedName;
-            }
-            catch(MissingResourceException ex ) {
-                // Do nothing return file path;
-            }
-        }
-        return fo.getPath();
-    } 
-        
     // Variables declaration - do not modify                     
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1175,7 +1159,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                 }
             }
             if (   m.options.contains(Options.QUERY)
-                && !HintCategory.CUSTOM_CATEGORY.equals(m.category)) {
+                && !Utilities.CUSTOM_CATEGORY.equals(m.category)) {
                 if (queryStatus == QueryStatus.NEVER) {
                     continue;
                 }
@@ -1333,7 +1317,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
     private Collection<? extends HintMetadata> filterCustom(Set<HintMetadata> keySet, boolean filterSuggestions) {
         ArrayList<HintMetadata> list = new ArrayList<HintMetadata>();
         for (HintMetadata hint:keySet) {
-            if (HintCategory.CUSTOM_CATEGORY.equals(hint.category)) {
+            if (Utilities.CUSTOM_CATEGORY.equals(hint.category)) {
                 continue;
             }
             if (hint.kind == Kind.ACTION && filterSuggestions) continue;
@@ -1458,7 +1442,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             DefaultMutableTreeNode o = (DefaultMutableTreeNode) path.getLastPathComponent();
             if (o.getUserObject() instanceof HintMetadata) {
                 HintMetadata hint = (HintMetadata) o.getUserObject();
-                if (hint.category.equals(HintCategory.CUSTOM_CATEGORY)) {
+                if (hint.category.equals(Utilities.CUSTOM_CATEGORY)) {
                     return true;
                 }
             }

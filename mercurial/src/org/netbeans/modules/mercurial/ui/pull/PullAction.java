@@ -416,6 +416,7 @@ public class PullAction extends ContextAction {
                             Bundle.MSG_PullAction_localModifications_text(),
                             Bundle.LBL_PullAction_localModifications_title(), 
                             JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    break;
                 }
             }
         } catch (HgException ex) {

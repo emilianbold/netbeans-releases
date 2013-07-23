@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.notifications.center;
 
+import java.awt.Color;
 import java.awt.Event;
 import java.awt.Font;
 import java.awt.FontMetrics;
@@ -126,7 +127,8 @@ public final class NotificationCenterTopComponent extends TopComponent {
     private void init() {
         initComponents();
         detailsPanel = new JPanel(new GridLayout(1, 1));
-        detailsPanel.setBackground(Utils.getTextBackground());
+        Color color = Utils.getTextBackground();
+        detailsPanel.setBackground(new Color(color.getRed(), color.getGreen(), color.getBlue()));
         lblEmptyDetails = new JLabel(NbBundle.getMessage(NotificationCenterTopComponent.class, "LBL_EmptyDetails"), JLabel.CENTER);
         lblEmptyDetails.setFont(lblEmptyDetails.getFont().deriveFont(Font.ITALIC));
         lblEmptyDetails.setEnabled(false);

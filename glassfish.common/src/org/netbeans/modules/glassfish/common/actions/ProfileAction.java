@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.glassfish.common.actions;
 
+import org.netbeans.modules.glassfish.common.GlassFishState;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
@@ -58,6 +59,7 @@ import org.openide.util.actions.NodeAction;
  */
 public class ProfileAction extends NodeAction {
     
+    @Override
     protected void performAction(Node[] activatedNodes) {
         for(Node node : activatedNodes) {
             GlassfishModule commonSupport = 
@@ -75,6 +77,7 @@ public class ProfileAction extends NodeAction {
         commonSupport.startServer(null, ServerState.STOPPED_JVM_PROFILER);
     }
 
+    @Override
     protected boolean enable(Node[] activatedNodes) {
         boolean result = false;
         if(activatedNodes != null && activatedNodes.length > 0) {
@@ -95,7 +98,7 @@ public class ProfileAction extends NodeAction {
     }
     
     private static boolean enableImpl(GlassfishModule commonSupport, Node node) {
-        return commonSupport.getServerState() == ServerState.STOPPED &&
+        return GlassFishState.canStart(commonSupport.getInstance()) &&
                 null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR) &&
                 Util.isDefaultOrServerTarget(commonSupport.getInstanceProperties());
     }
@@ -105,10 +108,12 @@ public class ProfileAction extends NodeAction {
         return false; 
     }
     
+    @Override
     public String getName() {
         return NbBundle.getMessage(ProfileAction.class, "CTL_ProfileAction");
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
         return HelpCtx.DEFAULT_HELP;
     }

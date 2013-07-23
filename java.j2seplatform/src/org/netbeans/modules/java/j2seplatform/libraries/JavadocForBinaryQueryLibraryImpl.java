@@ -54,6 +54,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.HashMap;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
@@ -79,55 +81,8 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
     }
 
     @Override
-    public JavadocForBinaryQuery.Result findJavadoc(final URL b) {
-        class R implements JavadocForBinaryQuery.Result, PropertyChangeListener {
-
-            private Library lib;
-            private final ChangeSupport cs = new ChangeSupport(this);
-            private URL[] cachedRoots;
-            
-
-            public R (Library lib) {
-                this.lib = lib;
-                this.lib.addPropertyChangeListener (WeakListeners.propertyChange(this,this.lib));
-            }
-
-            @Override
-            public synchronized URL[] getRoots() {
-                if (this.cachedRoots == null) {
-                    List<URL> result = new ArrayList<URL>();
-                    for (URL u : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {
-                        result.add (getIndexFolder(u));
-                    }
-                    this.cachedRoots = result.toArray(new URL[result.size()]);
-                }
-                return this.cachedRoots;
-            }
-            
-            @Override
-            public void addChangeListener(ChangeListener l) {
-                assert l != null : "Listener can not be null";
-                cs.addChangeListener(l);
-            }
-            
-            @Override
-            public void removeChangeListener(ChangeListener l) {
-                assert l != null : "Listener can not be null";
-                cs.removeChangeListener(l);
-            }
-            
-            @Override
-            public void propertyChange (PropertyChangeEvent event) {
-                if (Library.PROP_CONTENT.equals(event.getPropertyName())) {
-                    synchronized (this) {
-                        this.cachedRoots = null;
-                    }
-                    cs.fireChange();
-                }
-            }
-            
-        }
-
+    @CheckForNull
+    public JavadocForBinaryQuery.Result findJavadoc(@NonNull final URL b) {
         final Boolean isNormalizedURL = isNormalizedURL(b);
         if (isNormalizedURL != null) {
             for (LibraryManager mgr : LibraryManager.getOpenManagers()) {
@@ -199,18 +154,64 @@ public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryIm
         }
         return "file".equals(url.getProtocol());    //NOI18N
     }
-    
-    private static URL getIndexFolder (final URL url) {
-        assert url != null;
-        final FileObject root = URLMapper.findFileObject(url);
-        if (root == null) {
-            return url;
+
+    private static class R implements JavadocForBinaryQuery.Result, PropertyChangeListener {
+
+        private final Library lib;
+        private final ChangeSupport cs = new ChangeSupport(this);
+        private URL[] cachedRoots;
+
+
+        public R (Library lib) {
+            this.lib = lib;
+            this.lib.addPropertyChangeListener (WeakListeners.propertyChange(this,this.lib));
         }
-        final FileObject index = JavadocAndSourceRootDetection.findJavadocRoot(root);
-        if (index == null) {
-            return url;
+
+        @Override
+        public synchronized URL[] getRoots() {
+            if (this.cachedRoots == null) {
+                List<URL> result = new ArrayList<URL>();
+                for (URL u : lib.getContent(J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC)) {
+                    result.add (getIndexFolder(u));
+                }
+                this.cachedRoots = result.toArray(new URL[result.size()]);
+            }
+            return this.cachedRoots;
         }
-        return index.toURL();
+
+        @Override
+        public void addChangeListener(ChangeListener l) {
+            assert l != null : "Listener can not be null";
+            cs.addChangeListener(l);
+        }
+
+        @Override
+        public void removeChangeListener(ChangeListener l) {
+            assert l != null : "Listener can not be null";
+            cs.removeChangeListener(l);
+        }
+
+        @Override
+        public void propertyChange (PropertyChangeEvent event) {
+            if (Library.PROP_CONTENT.equals(event.getPropertyName())) {
+                synchronized (this) {
+                    this.cachedRoots = null;
+                }
+                cs.fireChange();
+            }
+        }
+
+        private static URL getIndexFolder (final URL url) {
+            assert url != null;
+            final FileObject root = URLMapper.findFileObject(url);
+            if (root == null) {
+                return url;
+            }
+            final FileObject index = JavadocAndSourceRootDetection.findJavadocRoot(root);
+            if (index == null) {
+                return url;
+            }
+            return index.toURL();
+        }
     }
-    
 }

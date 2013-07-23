@@ -100,7 +100,7 @@ public class ExpressionLang30Test extends GeneralJSP {
         eo.setCaretPositionToEndOfLine(12);
         type(eo, "\n ${[1,2].");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(200);
+        evt.waitNoEvent(2000);
         String t = eo.getText(eo.getLineNumber());
         assertTrue("Incorrect autocompletion", t.indexOf("${[1,2].stream()}") > -1);
         this.clearLine(eo);
@@ -125,12 +125,12 @@ public class ExpressionLang30Test extends GeneralJSP {
         cjo = completion.listItself;
         checkCompletionItems(cjo, new String[]{"map", "max", "min"});
         checkCompletionDoesntContainItems(cjo, new String[]{"distinct"});
-        type(eo, "ap.().");
-        eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(1000);
-        completion = getCompletion();
-        cjo = completion.listItself;
-        checkCompletionItems(cjo, new String[]{"map", "average", "distinct"});
+//        type(eo, "ap.().");
+//        eo.typeKey(' ', InputEvent.CTRL_MASK);
+//        evt.waitNoEvent(1000);
+//        completion = getCompletion();
+//        cjo = completion.listItself;
+//        checkCompletionItems(cjo, new String[]{"map", "average", "distinct"});
         this.clearLine(eo);
         endTest();
     }
@@ -143,9 +143,7 @@ public class ExpressionLang30Test extends GeneralJSP {
         eo.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
-        CompletionInfo completion = getCompletion();
-        CompletionJListOperator cjo = completion.listItself;
-        checkCompletionItems(cjo, new String[]{"stream"});
+        assertTrue("Incorrect autocompletion: "+eo.getText(), eo.getText().indexOf("v.stream()") > -1);
         this.clearLine(eo);
         endTest();
     }

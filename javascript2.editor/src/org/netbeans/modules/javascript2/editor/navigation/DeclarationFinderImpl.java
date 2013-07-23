@@ -116,7 +116,8 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         
                     }
                 } else {
-                    Collection<? extends IndexResult> items = JsIndex.get(fo).findFQN(object.getFullyQualifiedName());
+                    Collection<? extends IndexResult> items = JsIndex.get(fo).findByFqn(
+                            object.getFullyQualifiedName(), JsIndex.TERMS_BASIC_INFO);
                     indexResults.addAll(items);
                     DeclarationLocation location = processIndexResult(indexResults);
                     if (location != null) {
@@ -130,9 +131,10 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                     if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
                         String propertyName = ts.token().text().toString();
                         for (Type type : assignments) {
-                            Collection<? extends IndexResult> items = jsIndex.findFQN(type.getType() + "." + propertyName); // NOI18N
+                            Collection<? extends IndexResult> items = jsIndex.findByFqn(
+                                    type.getType() + "." + propertyName, JsIndex.TERMS_BASIC_INFO); // NOI18N
                             if(items.isEmpty()) {
-                                items = jsIndex.findFQN( type.getType() + ".prototype." + propertyName); // NOI18N
+                                items = jsIndex.findByFqn(type.getType() + ".prototype." + propertyName, JsIndex.TERMS_BASIC_INFO); // NOI18N
                             }
                             indexResults.addAll(items);
                         }

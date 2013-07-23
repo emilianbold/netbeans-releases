@@ -52,7 +52,7 @@ import javax.ejb.Singleton;
 public class NameStorageBean {
 
     // name field
-    private String name = "Name Storage World";
+    private String name = "World";
 
     public String getName() {
         return name;

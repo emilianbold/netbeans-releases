@@ -44,79 +44,20 @@ package org.netbeans.modules.glassfish.common.ui;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
 import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import static org.openide.NotifyDescriptor.CANCEL_OPTION;
-import static org.openide.NotifyDescriptor.OK_OPTION;
 import org.openide.util.NbBundle;
 
 /**
- * Set or change GlassFish password pannel.
+ * Set or change GlassFish password panel.
  * <p/>
  * @author Tomas Kraus
  */
-public class GlassFishPassword extends javax.swing.JPanel {
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner classes                                                          //
-    ////////////////////////////////////////////////////////////////////////////
-
-    // This is copy-paste from Glassfish cloud module. It should be moved
-    // to some common place later.
-    // Spource: org.netbeans.modules.glassfish.cloud.wizards.GlassFishWizardComponent
-    /**
-     * Event listener to validate component field on the fly.
-     */
-    abstract class ComponentFieldListener implements DocumentListener {
-        
-        ////////////////////////////////////////////////////////////////////////
-        // Abstract methods                                                   //
-        ////////////////////////////////////////////////////////////////////////
-
-        /**
-         * Process received notification from all notification types.
-         */
-        abstract void processEvent();
-
-        ////////////////////////////////////////////////////////////////////////
-        // Implemented Interface Methods                                      //
-        ////////////////////////////////////////////////////////////////////////
-
-        /**
-         * Gives notification that there was an insert into component field.
-         * <p/>
-         * @param event Change event object.
-         */
-        @Override
-        public void insertUpdate(DocumentEvent e) {
-            processEvent();
-        }
-
-        /**
-         * Gives notification that a portion of component field has been removed.
-         * <p/>
-         * @param event Change event object.
-         */
-        @Override
-        public void removeUpdate(DocumentEvent e) {
-            processEvent();
-        }
-
-        /**
-         * Gives notification that an attribute or set of attributes changed.
-         * <p/>
-         * @param event Change event object.
-         */
-        @Override
-        public void changedUpdate(DocumentEvent e) {
-            processEvent();
-        }
-
-    }
+public class GlassFishPassword extends CommonPasswordPanel {
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -126,34 +67,9 @@ public class GlassFishPassword extends javax.swing.JPanel {
     private static final Logger LOGGER
             = GlassFishLogger.get(GlassFishPassword.class);
 
-    /** Buttons for valid passwords. */
-    private static final Object[] validButtons
-            = new Object[] {OK_OPTION, CANCEL_OPTION};
-
-    /** Buttons for invalid passwords. */
-    private static final Object[] invalidButtons
-            = new Object[] {CANCEL_OPTION};
-    
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Set buttons in user notification descriptor depending on Java SE
-     * platforms.
-     * <p/>
-     * This method is used in constructor so it's better to be static.
-     * <p/>
-     * @param descriptor    User notification descriptor.
-     * @param javaPlatforms Java SE JDK selection content.
-     */
-    private void setDescriptorButtons(
-            NotifyDescriptor descriptor, boolean valid) {
-        if (valid)
-            descriptor.setOptions(validButtons);
-        else
-            descriptor.setOptions(invalidButtons);
-    }
 
     /**
      * Display GlassFish password panel to change GlassFish password.
@@ -161,11 +77,11 @@ public class GlassFishPassword extends javax.swing.JPanel {
      * Password is stored in server instance properties and returned
      * by this method. Properties are persisted.
      * <p/>
-     * @param instance GlassFish server instance to be started.
+     * @param instance GlassFish server instance.
      * @return Password {@see String} when password was successfully changed
      *         or <code>null</code> otherwise.
      */
-    public static String setPassword(final  GlassfishInstance instance) {
+    public static String setPassword(final GlassfishInstance instance) {
         String title = NbBundle.getMessage(
                 GlassFishPassword.class, "GlassFishPassword.title");
         String message = NbBundle.getMessage(
@@ -195,26 +111,8 @@ public class GlassFishPassword extends javax.swing.JPanel {
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
-    /** GlassFish server instance used to search for supported platforms. */
-    private final GlassfishInstance instance;
-
-    /** Message to be shown in the panel. */
-    private final String message;
-
-    /** Username label. */
-    private final String userLabelText;
-
-    /** Password label. */
-    private final String passwordLabelText;
-
     /** Password verification label. */
     private final String passwordVerifyLabelText;
-
-    /** Validity of <code>password</code> fields. */
-    private boolean passwordValid;
-
-    /** User notification descriptor. */
-    private final NotifyDescriptor descriptor;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -231,22 +129,12 @@ public class GlassFishPassword extends javax.swing.JPanel {
     @SuppressWarnings("LeakingThisInConstructor")
     public GlassFishPassword(final NotifyDescriptor descriptor,
             final GlassfishInstance instance, final String message) {
-        this.descriptor = descriptor;
-        this.instance = instance;
-        this.message = message;
-        this.userLabelText = NbBundle.getMessage(
-                GlassFishPassword.class, "GlassFishPassword.userLabel");
-        this.passwordLabelText = NbBundle.getMessage(
-                GlassFishPassword.class, "GlassFishPassword.passwordLabel");
+        super(descriptor, instance, message);
         this.passwordVerifyLabelText = NbBundle.getMessage(
                 GlassFishPassword.class,
                 "GlassFishPassword.passwordVerifyLabel");
-        this.instance.getAdminUser();
-        this.instance.getAdminPassword();
         initComponents();
-        this.passwordValid = passwordValid();
-        descriptor.setMessage(this);
-        setDescriptorButtons(descriptor, passwordValid);
+        initFileds(passwordValid());
         password.getDocument()
                 .addDocumentListener(initPasswordValidateListener());
         passwordVerify.getDocument()
@@ -257,6 +145,11 @@ public class GlassFishPassword extends javax.swing.JPanel {
     // GUI Getters and Setters                                                //
     ////////////////////////////////////////////////////////////////////////////
 
+    /**
+     * Get password value from form.
+     * <p/>
+     * @return Password value from form.
+     */
     String getPassword() {
         return new String(password.getPassword());
     }
@@ -273,6 +166,7 @@ public class GlassFishPassword extends javax.swing.JPanel {
      * @return <code>true</code> when password fields are valid
      *         or <code>false</code> otherwise.
      */
+    @SuppressWarnings("LocalVariableHidesMemberVariable")
     final boolean passwordValid() {
         char[] password1 = password.getPassword();
         char[] password2 = passwordVerify.getPassword();
@@ -296,8 +190,8 @@ public class GlassFishPassword extends javax.swing.JPanel {
         return new ComponentFieldListener() {
             @Override
             void processEvent() {
-                passwordValid = passwordValid();
-                setDescriptorButtons(descriptor, passwordValid);
+                valid = passwordValid();
+                setDescriptorButtons(descriptor, valid);
             }
         };
     }

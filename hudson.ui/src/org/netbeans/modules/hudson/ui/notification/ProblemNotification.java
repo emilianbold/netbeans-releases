@@ -82,9 +82,11 @@ class ProblemNotification {
     @Messages({
         "# {0} - job name",
         "# {1} - build number",
+        "# Please translate only \"failed\"",
         "ProblemNotification.title.failed={0} #{1,number,#} failed",
         "# {0} - job name",
         "# {1} - build number",
+        "# Please translate only \"is unstable\"",
         "ProblemNotification.title.unstable={0} #{1,number,#} is unstable"
     })
     private String getTitle() {

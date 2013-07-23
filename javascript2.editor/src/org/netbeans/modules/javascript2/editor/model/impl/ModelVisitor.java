@@ -215,8 +215,27 @@ public class ModelVisitor extends PathNodeVisitor {
                             property.addOccurrence(name.getOffsetRange());
                         }
                     } else {
+                        boolean setDocumentation = false;
+                        if (isPriviliged(accessNode) && getPath().size() > 1 && getPreviousFromPath(2) instanceof ExecuteNode ) {
+                            // google style declaration of properties:  this.buildingID;    
+                            onLeftSite = true;
+                            setDocumentation = true;
+                        }
                         property = new JsObjectImpl(fromAN, name, name.getOffsetRange(), onLeftSite, parserResult.getSnapshot().getMimeType(), null);
                         property.addOccurrence(name.getOffsetRange());
+                        if (setDocumentation) {
+                            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+                            if (docHolder != null) {    
+                                property.setDocumentation(docHolder.getDocumentation(accessNode));
+                                property.setDeprecated(docHolder.isDeprecated(accessNode));
+                                List<Type> returnTypes = docHolder.getReturnType(accessNode);
+                                if (!returnTypes.isEmpty()) {
+                                    for (Type type : returnTypes) {
+                                        property.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), accessNode.getFinish());
+                                    }
+                                }
+                            }
+                        }
                     }
                     fromAN.addProperty(name.getName(), property);
                 }
@@ -1718,6 +1737,17 @@ public class ModelVisitor extends PathNodeVisitor {
                     && getPreviousFromPath(pathIndex + 3) instanceof UnaryNode
                     && (getPreviousFromPath(pathIndex + 4) instanceof BinaryNode
                         || getPreviousFromPath(pathIndex + 4) instanceof VarNode));
+    }
+    
+    private boolean isPriviliged(AccessNode aNode) {
+        Node node = aNode.getBase();
+        while (node instanceof AccessNode) {
+            node = ((AccessNode)node).getBase();
+        }
+        if (node instanceof IdentNode && "this".endsWith(((IdentNode)node).getName())) {
+            return true;
+        }
+        return false;
     }
     
     public static class FunctionCall {
