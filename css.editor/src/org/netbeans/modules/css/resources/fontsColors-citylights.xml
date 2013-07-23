@@ -50,10 +50,49 @@ made subject to such option by the copyright holder.
     <fontcolor name="at_rule_symbol" foreColor="white">
         <font style="bold" />
     </fontcolor>
+
+    <!--"semantic" highlighting:-->
+    
+    <!-- css property name -->
+    <fontcolor name="mod-custom1" default="keyword"/> 
+    
+    <!-- vendor specific property name -->
+    <fontcolor name="mod-custom2" default="keyword">
+        <font style="italic" />
+    </fontcolor>
     
     <!-- media queries: media type (screen, printer, ...) -->
     <fontcolor name="mod-custom3" foreColor="magenta">
         <font style="italic" />
     </fontcolor>
+    
+    <!-- element, class, id selectors -->
+    <fontcolor name="mod-method" foreColor="magenta" >
+        <!--<font style="bold" />-->
+    </fontcolor>
+    
+    <!-- namespace prefix -->
+    <fontcolor name="mod-constructor">
+        <!--<font style="bold" />-->
+    </fontcolor>
+
+    <!-- pseudo class -->
+    <fontcolor name="mod-class" >
+        <font style="italic" />
+    </fontcolor>
+    
+    <!-- less/sass variable -->
+    <fontcolor name="mod-local-variable" foreColor="cyan" >
+        <!--<font style="bold" />-->
+    </fontcolor>
+    
+    <!-- less/sass keywords -->
+    <fontcolor name="mod-private" foreColor="cyan">
+        <font style="bold" />
+    </fontcolor>
+    
+    <!--mark occurrences:-->
+    <fontcolor name="mark-occurrences" bgColor="ECEBA3" foreColor="black"/>
+
     
 </fontscolors>

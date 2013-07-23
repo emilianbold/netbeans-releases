@@ -78,6 +78,8 @@ import org.openide.util.RequestProcessor;
 public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
 
     private static final Logger LOGGER = Logger.getLogger(Icefaces2CustomizerPanelVisual.class.getName());
+    private static final long serialVersionUID = 1L;
+    private static final RequestProcessor RP = new RequestProcessor("Icefaces Libraries Loader"); //NOI18N
 
     private volatile Set<Library> icefacesLibraries = new HashSet<Library>();
     private final Icefaces2Customizer customizer;
@@ -85,8 +87,6 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
 
     /**
      * Creates new form Icefaces2CustomizerPanelVisual.
-     *
-     * @param listener {@code ChangeListener} which should be notified about changes.
      */
     public Icefaces2CustomizerPanelVisual(Icefaces2Customizer customizer) {
         this.customizer = customizer;
@@ -120,8 +120,7 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
         long time = System.currentTimeMillis();
         final List<String> registeredRichfaces = new ArrayList<String>();
 
-        RequestProcessor.getDefault().post(new Runnable() {
-
+        RP.post(new Runnable() {
             @Override
             public void run() {
                 for (Library library : Icefaces2Customizer.getIcefacesLibraries()) {
@@ -130,7 +129,6 @@ public class Icefaces2CustomizerPanelVisual extends javax.swing.JPanel {
                 }
 
                 SwingUtilities.invokeLater(new Runnable() {
-
                     @Override
                     public void run() {
                         setLibrariesComboBox(icefacesLibraryComboBox, registeredRichfaces);

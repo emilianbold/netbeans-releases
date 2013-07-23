@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,32 +34,54 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.css.prep.editor.less;
 
-package org.netbeans.modules.websvc.rest.codegen;
-
-import org.netbeans.api.project.Project;
-import org.netbeans.modules.websvc.rest.RestUtils;
-import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
+import org.netbeans.modules.css.prep.editor.scss.*;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
+import org.netbeans.modules.css.prep.editor.model.CPModel;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
- * @author PeterLiu
+ * @author marekfukala
  */
-public class EntityResourcesGeneratorFactory {
-    
-    public static EntityResourcesGenerator newInstance(Project project) {
+public class LessCompletionTest extends CssModuleTestBase {
 
-        if (RestUtils.hasSpringSupport(project)) {
-            return new SpringEntityResourcesGenerator(RestUtils.hasAopAlliance(project));
-        } else if (MiscUtilities.isJavaEE6AndHigher(project)) {
-            return new JavaEE6EntityResourcesGenerator();
-        } else {
-            return new J2eeEntityResourcesGenerator();
-        }
+    public LessCompletionTest(String name) {
+        super(name);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        CPModel.topLevelSnapshotMimetype = getTopLevelSnapshotMimetype();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        CPModel.topLevelSnapshotMimetype = null;
+    }
+
+    @Override
+    protected String getTopLevelSnapshotMimetype() {
+        return "text/less";
+    }
+
+    @Override
+    protected String getCompletionItemText(CompletionProposal cp) {
+        return cp.getInsertPrefix();
+    }
+
+    public void testMixinsCompletion() throws ParseException {
+        checkCC(".mixin() {}\n"
+                + "div { .| }", arr("mixin"), Match.CONTAINS);
+
     }
 }

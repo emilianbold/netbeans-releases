@@ -79,10 +79,10 @@ public class JsParserEmbeddedTest extends JsTestBase {
         parse("testfiles/parser/embeddedSimple1.xhtml", Collections.<String>emptyList());
     }
 
-    public void testEmbeddedSimple2() throws Exception {
-        parse("testfiles/parser/embeddedSimple2.xhtml",
-                Collections.singletonList("<html><pre>embeddedSimple2.xhtml:5:12 Expected an operand but found error"));
-    }
+//    public void testEmbeddedSimple2() throws Exception {
+//        parse("testfiles/parser/embeddedSimple2.xhtml",
+//                Collections.singletonList("<html><pre>embeddedSimple2.xhtml:5:12 Expected an operand but found error"));
+//    }
 
     public void testEmbeddedSimple3() throws Exception {
         parse("testfiles/parser/embeddedSimple3.html",
