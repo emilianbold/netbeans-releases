@@ -46,6 +46,7 @@ package org.netbeans.modules.websvc.rest.wizard;
 
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JEditorPane;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.Project;
@@ -243,6 +244,7 @@ private void standAlonePatternSelected(java.awt.event.ActionEvent evt) {//GEN-FI
         String text = NbBundle.getMessage(this.getClass(), bundleKey);
         descriptionEditorPane.setText(text);
         descriptionEditorPane.setCaretPosition(0);
+        descriptionEditorPane.putClientProperty( JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
     }
     
     public void addChangeListener(ChangeListener listener) {
