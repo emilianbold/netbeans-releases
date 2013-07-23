@@ -220,6 +220,12 @@ public class CPCssEditorModule extends CssEditorModule {
                 if (context.getPrefix().length() == 1 && context.getPrefix().charAt(0) == model.getPreprocessorType().getVarPrefix()) {
                     proposals.addAll(allVars);
                 }
+                break;
+            case declaration:
+                if(tid == CssTokenId.DOT) {
+                    //div { .| } -- less mixin call
+                    proposals.addAll(getMixinsCompletionProposals(context, model));
+                }
 
         }
         return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);

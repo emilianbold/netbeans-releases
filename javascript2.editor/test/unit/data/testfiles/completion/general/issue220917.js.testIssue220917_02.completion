@@ -11,11 +11,11 @@ METHOD     createDocumentFragment(): Docu  [PUBLIC]   JS Platform
 METHOD     createElement(tagName: String)  [PUBLIC]   JS Platform
 METHOD     createElementNS(namespaceURI:   [PUBLIC]   JS Platform
 METHOD     createEntityReference(name: St  [PUBLIC]   JS Platform
-METHOD     createEvent(type: String): Eve  [PUBLIC]   JS Platform
-METHOD     createExpression(xpathText: St  [PUBLIC]   JS Platform
-METHOD     createNSResolver(node: Node):   [PUBLIC]   JS Platform
+METHOD     createEvent(type: String): Eve  [PUBLIC,   JS Platform
+METHOD     createExpression(xpathText: St  [PUBLIC,   JS Platform
+METHOD     createNSResolver(node: Node):   [PUBLIC,   JS Platform
 METHOD     createNodeIterator(root: Node,  [PUBLIC]   JS Platform
 METHOD     createProcessingInstruction(ta  [PUBLIC]   JS Platform
-METHOD     createRange(): Range            [PUBLIC]   JS Platform
+METHOD     createRange(): Range            [PUBLIC,   JS Platform
 METHOD     createTextNode(data: String):   [PUBLIC]   JS Platform
-METHOD     createTreeWalker(root: Node, w  [PUBLIC]   JS Platform
+METHOD     createTreeWalker(root: Node, w  [PUBLIC,   JS Platform

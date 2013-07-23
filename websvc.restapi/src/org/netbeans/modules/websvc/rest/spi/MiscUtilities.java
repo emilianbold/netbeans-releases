@@ -69,6 +69,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.Comment;
@@ -88,6 +89,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.MiscPrivateUtilities;
 import org.netbeans.modules.websvc.rest.WebXmlUpdater;
 import static org.netbeans.modules.websvc.rest.WebXmlUpdater.getRestServletAdaptorByName;
@@ -481,6 +483,26 @@ public class MiscUtilities {
             return (sourceLevel >= 1.7);
         } else
             return false;
+    }
+    
+    /** Check if project is of Java EE 6 project type or higher
+     * 
+     * @param project project instance
+     * @return true or false
+     */
+    public static boolean isJavaEE6AndHigher(Project project) {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            Profile profile = webModule.getJ2eeProfile();
+            if (Profile.JAVA_EE_6_WEB == profile || 
+                    Profile.JAVA_EE_6_FULL == profile ||
+                        Profile.JAVA_EE_7_WEB == profile ||
+                                Profile.JAVA_EE_7_FULL == profile )
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

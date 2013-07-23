@@ -134,8 +134,12 @@ public abstract class SearchScopeDefinition {
      * changes.
      */
     protected final void notifyListeners() {
+        ArrayList<ChangeListener> listenersCopy;
+        synchronized (this) {
+            listenersCopy = new ArrayList<ChangeListener>(changeListeners);
+        }
         ChangeEvent ev = new ChangeEvent(this);
-        for (ChangeListener cl : changeListeners) {
+        for (ChangeListener cl : listenersCopy) {
             cl.stateChanged(ev);
         }
     }

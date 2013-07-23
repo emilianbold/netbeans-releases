@@ -98,17 +98,15 @@ public class GsfReformatTask implements ReformatTask {
                             public void run (ResultIterator resultIterator) throws ParseException {
                                 if (resultIterator.getSnapshot().getMimeType().equals(mimeType)) {
                                     Parser.Result parserResult = (ParserResult) resultIterator.getParserResult();
-                                    if(!(parserResult instanceof ParserResult)) {
-                                        return ;
+                                    if (!(parserResult instanceof ParserResult)) {
+                                        return;
                                     }
 
-                                    f.reformat (context, (ParserResult)parserResult);
+                                    f.reformat(context, (ParserResult)parserResult);
                                 }
 
-                                for(Embedding e : resultIterator.getEmbeddings()) {
-                                    if (e.getMimeType().equals(mimeType)) {
-                                        run(resultIterator.getResultIterator(e));
-                                    }
+                                for (Embedding e : resultIterator.getEmbeddings()) {
+                                    run(resultIterator.getResultIterator(e));
                                 }
                             }
                         }
