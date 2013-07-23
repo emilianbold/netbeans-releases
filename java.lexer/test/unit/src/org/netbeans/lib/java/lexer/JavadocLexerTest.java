@@ -43,11 +43,8 @@
  */
 package org.netbeans.lib.java.lexer;
 
-import javax.swing.text.PlainDocument;
 import org.netbeans.api.java.lexer.JavadocTokenId;
-import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
@@ -141,6 +138,21 @@ public class JavadocLexerTest extends NbTestCase {
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.HTML_TAG, "<code");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, "\n ");
         LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.TAG, "@param");
+    }
+
+    public void test233097() {
+        String text = "{@code Foo<Bar>}";
+        
+        TokenHierarchy<?> hi = TokenHierarchy.create(text, JavadocTokenId.language());
+        TokenSequence<?> ts = hi.tokenSequence();
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.TAG, "@code");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, " ");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.IDENT, "Foo");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, "<");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.IDENT, "Bar");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, ">");
+        LexerTestUtilities.assertNextTokenEquals(ts, JavadocTokenId.OTHER_TEXT, "}");
     }
 
 //    public void testModification1() throws Exception {
