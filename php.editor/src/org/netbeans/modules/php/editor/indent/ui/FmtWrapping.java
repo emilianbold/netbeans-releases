@@ -107,7 +107,7 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     public static PreferencesCustomizer.Factory getController() {
         String preview = "";
         try {
-            preview = Utils.loadPreviewText(FmtWrapping.class.getClassLoader().getResourceAsStream("org/netbeans/modules/php/editor/indent/ui/Spaces.php"));
+            preview = Utils.loadPreviewText(FmtWrapping.class.getClassLoader().getResourceAsStream("org/netbeans/modules/php/editor/indent/ui/Wrapping.php"));
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }

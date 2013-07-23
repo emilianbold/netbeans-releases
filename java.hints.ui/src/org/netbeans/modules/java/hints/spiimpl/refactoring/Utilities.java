@@ -55,8 +55,9 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.swing.JLabel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
@@ -78,6 +79,7 @@ import org.openide.DialogDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.text.CloneableEditorSupport;
@@ -355,4 +357,28 @@ public class Utilities {
     
     //Endo of copy/paste
 
+    private  static final String HINTS_FOLDER = "org-netbeans-modules-java-hints/rules/hints/";  // NOI18N
+    public static final String CUSTOM_CATEGORY ="custom";
+    
+    public static String categoryDisplayName(String categoryCodeName) {
+            FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + categoryCodeName);
+            return catFO != null ? getFileObjectLocalizedName(catFO) :
+             CUSTOM_CATEGORY.equals(categoryCodeName)?NbBundle.getBundle("org.netbeans.modules.java.hints.resources.Bundle").getString("org-netbeans-modules-java-hints/rules/hints/custom"):categoryCodeName;
+    }
+
+    private static String getFileObjectLocalizedName( FileObject fo ) {
+        Object o = fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
+        if ( o instanceof String ) {
+            String bundleName = (String)o;
+            try {
+                ResourceBundle rb = NbBundle.getBundle(bundleName);            
+                String localizedName = rb.getString(fo.getPath());                
+                return localizedName;
+            }
+            catch(MissingResourceException ex ) {
+                // Do nothing return file path;
+            }
+        }
+        return fo.getPath();
+    }
 }
