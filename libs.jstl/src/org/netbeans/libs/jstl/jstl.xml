@@ -1,4 +1,4 @@
-<?xml version="1.0"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <!--
 DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -44,15 +44,27 @@ However, if you add GPL Version 2 code and therefore, elected the GPL
 Version 2 license, then the option applies only if the new code is
 made subject to such option by the copyright holder.
 -->
-
-<!DOCTYPE filesystem PUBLIC "-//NetBeans//DTD Filesystem 1.2//EN" "http://www.netbeans.org/dtds/filesystem-1_2.dtd">
-
-<filesystem>
-  <folder name="org-netbeans-api-project-libraries">
-    <folder name="Libraries">
-      <file name="jstl.xml" url="jstl.xml">
-        <attr name="displayName" bundlevalue="org/netbeans/modules/web/jstl11/Bundle#jstl"/>
-      </file>
-    </folder>
-  </folder>
-</filesystem>
+<library version="3.0" xmlns="http://www.netbeans.org/ns/library-declaration/3">
+    <name>jstl</name>
+    <type>j2se</type>
+    <localizing-bundle>org/netbeans/libs/jstl/Bundle</localizing-bundle>
+    <volume>
+        <type>classpath</type>
+        <resource>jar:nbinst://org.netbeans.libs.jstl/modules/ext/jstl-impl.jar!/</resource>
+        <resource>jar:nbinst://org.netbeans.libs.jstl/modules/ext/jstl-api.jar!/</resource>
+    </volume>
+    <volume>
+        <type>javadoc</type>
+        <resource>jar:nbinst://org.netbeans.modules.j2ee.platform/docs/javaee-doc-api.jar!/</resource>
+    </volume>
+    <properties>
+        <!-- please check with mkleint@netbeans.org before/after updating this or "classpath" section -->
+        <property>
+            <name>maven-dependencies</name>
+            <value>
+                javax.servlet.jsp.jstl:javax.servlet.jsp.jstl-api:1.2.1:jar
+                org.glassfish.web:javax.servlet.jsp.jstl:1.2.2:jar
+            </value>
+        </property>
+    </properties>    
+</library>
