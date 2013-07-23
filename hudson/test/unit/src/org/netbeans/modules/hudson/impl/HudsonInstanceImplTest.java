@@ -204,8 +204,12 @@ public class HudsonInstanceImplTest {
     public void testIgnoreNullListener() {
         HudsonInstanceImpl i = HudsonInstanceImpl.createHudsonInstance(
                 "testIgnoreNullListener", "http://testIgnoreNullListener/", "1");
-        i.addHudsonChangeListener(null);
-        i.addHudsonChangeListener(null);
-        i.terminate(); // shouldn't throw any exception
+        try {
+            i.addHudsonChangeListener(null);
+            i.addHudsonChangeListener(null);
+            i.terminate(); // shouldn't throw any exception
+        } finally {
+            HudsonManager.removeInstance(i);
+        }
     }
 }

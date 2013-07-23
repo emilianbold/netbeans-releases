@@ -204,16 +204,17 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     
     public void terminate() {
         // Clear all
-        RP.stop();
-        terminated = true;
-        connected = false;
-        forbidden = false;
-        version = null;
-        jobs.clear();
-        folders.clear();
-        views.clear();
-        primaryView = null;
-        
+        synchronized (this) {
+            RP.stop();
+            terminated = true;
+            connected = false;
+            forbidden = false;
+            version = null;
+            jobs.clear();
+            folders.clear();
+            views.clear();
+            primaryView = null;
+        }
         // Fire changes
         fireStateChanges();
         fireContentChanges();
@@ -223,7 +224,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
         return builderConnector;
     }
     
-    public void changeBuilderConnector(BuilderConnector connector) {
+    public synchronized void changeBuilderConnector(BuilderConnector connector) {
         assert !(connector instanceof HudsonConnector);
         this.builderConnector = connector;
         this.jobs.clear();
@@ -259,11 +260,11 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     }
     
     @Override public synchronized Collection<HudsonJob> getJobs() {
-        return jobs;
+        return new ArrayList<HudsonJob>(jobs);
     }
 
     @Override public synchronized Collection<HudsonFolder> getFolders() {
-        return folders;
+        return new ArrayList<HudsonFolder>(folders);
     }
 
     boolean isSalient(HudsonJobImpl job) {
@@ -296,7 +297,7 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
     }
     
     public @Override synchronized Collection<HudsonView> getViews() {
-        return views;
+        return new ArrayList<HudsonView>(views);
     }
     
     public @Override synchronized HudsonView getPrimaryView() {
@@ -403,14 +404,18 @@ public final class HudsonInstanceImpl implements HudsonInstance, OpenableInBrows
                             }
                         }
 
-                        // When there are no changes return and do not fire changes
-                        if (jobs.equals(retrieved) && folders.equals(retrievedFolders) && oldViews.equals(getViews())) {
-                            return;
+                        synchronized (this) {
+                            // When there are no changes return and do not fire changes
+                            if (jobs.equals(retrieved)
+                                    && folders.equals(retrievedFolders)
+                                    && oldViews.equals(views)) {
+                                return;
+                            }
+
+                            // Update jobs
+                            jobs = retrieved;
+                            folders = retrievedFolders;
                         }
-                        
-                        // Update jobs
-                        jobs = retrieved;
-                        folders = retrievedFolders;
 
                         // Fire all changes
                         fireContentChanges();
