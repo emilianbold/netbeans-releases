@@ -155,7 +155,7 @@ public class ShelveChangesAction extends SingleRepositoryAction {
         
         @Override
         @NbBundle.Messages({
-            "# {0} - repository name", "MSG_ShelveChanges.progress.exporting=saving changes in {0}"
+            "# {0} - repository name", "MSG_ShelveChanges.progress.exporting=Saving changes in {0}"
         })
         protected void exportPatch (File toFile, File commonParent) throws IOException {
             BufferedOutputStream out = null;
@@ -196,7 +196,7 @@ public class ShelveChangesAction extends SingleRepositoryAction {
 
         @Override
         @NbBundle.Messages({
-            "# {0} - repository name", "MSG_ShelveChanges.progress.reverting=reverting local changes - {0}"
+            "# {0} - repository name", "MSG_ShelveChanges.progress.reverting=Reverting local changes - {0}"
         })
         protected void postExportCleanup () {
             final Collection<File> notifiedFiles = new HashSet<File>();

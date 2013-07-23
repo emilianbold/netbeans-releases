@@ -73,16 +73,8 @@ public class Revision {
             return getRevision();
         }
     };
-    @NbBundle.Messages("LBL_Revision.BASE.name=Base")
-    public static final Revision BASE = new Revision(GitUtils.HEAD, Bundle.LBL_Revision_BASE_name()) {
-
-        @Override
-        public String toString (boolean shorten) {
-            return getRevision();
-        }
-    };
     @NbBundle.Messages("LBL_Revision.HEAD.name=HEAD")
-    public static final Revision HEAD = new Revision(Bundle.LBL_Revision_HEAD_name(), Bundle.LBL_Revision_HEAD_name()) {
+    public static final Revision HEAD = new Revision(GitUtils.HEAD, Bundle.LBL_Revision_HEAD_name()) {
 
         @Override
         public String toString (boolean shorten) {
