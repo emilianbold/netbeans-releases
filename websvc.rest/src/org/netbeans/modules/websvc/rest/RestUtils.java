@@ -425,7 +425,7 @@ public class RestUtils {
             }
         }
         
-        if (isJavaEE6AndHigher(project)) {
+        if (MiscUtilities.isJavaEE6AndHigher(project)) {
             SourceGroup[] sourceGroups = SourceGroupSupport
                     .getJavaSourceGroups(project);
             if (sourceGroups.length > 0) {
@@ -514,21 +514,6 @@ public class RestUtils {
             
         }).commit();
         return appClass;
-    }
-
-    public static boolean isJavaEE6AndHigher(Project project) {
-        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
-        if (webModule != null) {
-            Profile profile = webModule.getJ2eeProfile();
-            if (Profile.JAVA_EE_6_WEB == profile || 
-                    Profile.JAVA_EE_6_FULL == profile ||
-                        Profile.JAVA_EE_7_WEB == profile ||
-                                Profile.JAVA_EE_7_FULL == profile )
-            {
-                return true;
-            }
-        }
-        return false;
     }
     
     public static boolean hasProfile(Project project, Profile... profiles) {
