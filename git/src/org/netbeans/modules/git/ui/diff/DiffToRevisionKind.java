@@ -123,7 +123,7 @@ abstract class DiffToRevisionKind {
 
         @Override
         public Revision getTreeFirst () {
-            return Revision.BASE;
+            return Revision.HEAD;
         }
 
         @Override
@@ -222,7 +222,7 @@ abstract class DiffToRevisionKind {
 
         @Override
         public Revision getTreeSecond () {
-            return Revision.BASE;
+            return Revision.HEAD;
         }
         
     }

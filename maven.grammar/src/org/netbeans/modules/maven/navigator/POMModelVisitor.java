@@ -63,7 +63,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.SwingUtilities;
 import javax.xml.namespace.QName;
 import org.netbeans.modules.maven.model.pom.Activation;
 import org.netbeans.modules.maven.model.pom.ActivationCustom;
@@ -116,12 +115,9 @@ import org.netbeans.modules.xml.xam.Model;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
-import org.openide.nodes.NodeOperation;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.util.actions.Presenter;
 import org.openide.util.lookup.Lookups;
 
@@ -1523,6 +1519,11 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
         private POMModelPanel.Configuration configuration;
         private List<POMCutHolder> children;
 
+        @Override
+        public Object clone() {
+            return new PomChildren(parentHolder, names, type, configuration);
+        }
+
         public PomChildren(POMCutHolder parent, POMQNames names, Class type, POMModelPanel.Configuration config) {
             this.parentHolder = parent;
             this.names = names;
@@ -1718,7 +1719,7 @@ public class POMModelVisitor implements org.netbeans.modules.maven.model.pom.POM
             assert children != null;
             String itemName = key.lookup(String.class);
             assert itemName != null;
-            return new Node[] {new ObjectNode(Lookups.fixed(cutHolder, chldName), children, itemName)};
+            return new Node[] {new ObjectNode(Lookups.fixed(cutHolder, chldName), (PomChildren)children.clone(), itemName)};
         }
 
         private void fillValues(int current, List<T> list, T value) {

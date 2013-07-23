@@ -119,6 +119,9 @@ public class DashboardUtils {
 
         boolean html = false;
         String activeText = getFilterBoldText(fitText);
+        if (activeText.length() != fitText.length()) {
+            html = true;
+        }
         if (active) {
             activeText = BOLD_START_SUBSTITUTE + fitText + BOLD_END_SUBSTITUTE;
             html = true;
