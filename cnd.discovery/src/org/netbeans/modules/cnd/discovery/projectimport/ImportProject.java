@@ -449,6 +449,7 @@ public class ImportProject implements PropertyChangeListener {
                 if (configurationDescriptor.getActiveConfiguration() != null) {
                     if (runConfigure && configurePath != null && configurePath.length() > 0 &&
                             configureFileObject != null && configureFileObject.isValid()) {
+                        waitSources.await(); // or should it be waitConfigurationDescriptor() ?
                         postConfigure();
                     } else {
                         if (runMake) {

@@ -45,6 +45,7 @@
 package org.netbeans.modules.cnd.modelimpl.csm.core;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.cnd.antlr.collections.AST;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
@@ -168,20 +169,21 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 break;
         }
         if (_template) {
-            boolean templateClass = false;
             List<CsmTemplateParameter> templateParams = null;
-            AST templateNode = node.getFirstChild();
-            AST templateClassNode = templateNode;            
+            AST templateNode = node.getFirstChild();                        
             if (templateNode == null || templateNode.getType() != CPPTokenTypes.LITERAL_template) {
                 return null;
             }
+            
+            List<AST> templateClassNodes = new ArrayList<>();
+            
             // 0. our grammar can't yet differ template-class's method from template-method
             // so we need to check here if we has template-class or not
             AST qIdToken = AstUtil.findChildOfType(node, CPPTokenTypes.CSM_QUALIFIED_ID);
             // 1. check for definition of template class's method
             // like template<class A> C<A>:C() {}
             AST startTemplateSign = qIdToken != null ? AstUtil.findChildOfType(qIdToken, CPPTokenTypes.LESSTHAN) : null;
-            if (startTemplateSign != null) {
+            while (startTemplateSign != null) {
                 // TODO: fix parsing of inline definition of template operator <
                 // like template<class T, class P> bool operator<(T x, P y) {return x<y};
                 // workaround is next validation
@@ -195,32 +197,44 @@ public abstract class OffsetableDeclarationBase<T> extends OffsetableIdentifiabl
                 if (endTemplateSign != null) {
                     AST scopeSign = endTemplateSign.getNextSibling();
                     if (scopeSign != null && scopeSign.getType() == CPPTokenTypes.SCOPE) {
+                        _template = false; // assume that we do not have template method at all (if we have, it will be set later)
+                        
                         // 2. we have template class, we need to determine, is it specialization definition or not
                         if (specialization && classTemplateSuffix != null) { 
                             // we need to initialize classTemplateSuffix in this case
                             // to avoid mixing different specialization (IZ92138)
                             classTemplateSuffix.append(TemplateUtils.getSpecializationSuffix(qIdToken, null));
-                        }     
-                        // but there is still a chance to have template-method of template-class
-                        // e.g.: template<class A> template<class B> C<A>::C(B b) {}
-                        AST templateSiblingNode = templateNode.getNextSibling();
-                        if ( templateSiblingNode != null && templateSiblingNode.getType() == CPPTokenTypes.LITERAL_template ) {
-                            // it is template-method of template-class
-                            templateNode = templateSiblingNode;
-                            templateClass = true;
-                        } else {
-                            // we have no template-method at all
-                            templateClass = true;
-                            _template = false;
-                        }
-                    }
+                        }        
+                        templateClassNodes.add(templateNode);
+                        templateNode = templateNode.getNextSibling();
+                        startTemplateSign = AstUtil.findSiblingOfType(endTemplateSign, CPPTokenTypes.LESSTHAN);
+                    } else {
+                        break;
+                    }                    
+                } else {
+                    break;
                 }
             }
+            
+            if (!_template) {
+                // template method without template arrows
+                // e.g.: template<class A> template<class B> C<A>::C(B b) {}
+                if (templateNode != null && templateNode.getType() == CPPTokenTypes.LITERAL_template ) {
+                    // it is template-method of template-class
+                    _template = true;
+                }                
+            }
+            
             int inheritedTemplateParametersNumber = 0;
-            if(templateClass){
-                templateParams = TemplateUtils.getTemplateParameters(templateClassNode,
-                    file, scope, global);
-                inheritedTemplateParametersNumber = templateParams.size();
+            if (!templateClassNodes.isEmpty()){
+                for (AST templateClassNode : templateClassNodes) {
+                    if (templateParams == null) {
+                        templateParams = TemplateUtils.getTemplateParameters(templateClassNode, file, scope, global);
+                    } else {
+                        templateParams.addAll(TemplateUtils.getTemplateParameters(templateClassNode, file, scope, global));
+                    }
+                    inheritedTemplateParametersNumber = templateParams.size();
+                }
             }
             CharSequence templateSuffix = "";
             if (_template) {                

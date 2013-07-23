@@ -41,14 +41,12 @@
  */
 package org.netbeans.modules.cnd.makeproject;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.SourceGroup;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.WeakSet;
 
@@ -64,23 +62,25 @@ import org.openide.util.WeakSet;
 @org.openide.util.lookup.ServiceProvider(service = ClassPathProvider.class, position = 200)
 public class MakeProjectClassPathProvider implements ClassPathProvider {
 
-    private static final Set<MakeSources> PROJECT_SOURCES = new WeakSet<MakeSources>();
+    private static final Set<ClassPath> PROJECT_CPS = new WeakSet<>();
     private static final ReadWriteLock PROJECT_LOCK = new ReentrantReadWriteLock();
 
-    public static void addProjectSources(final MakeSources makeSources) {
+    public static void addProjectCP(final ClassPath[] cp) {
         runUnderWriteLock(new Runnable() {
             @Override
             public void run() {
-                PROJECT_SOURCES.add(makeSources);
+                Collections.addAll(PROJECT_CPS, cp);
             }
         });
     }
 
-    public static void removeProjectSources(final MakeSources makeSources) {
+    public static void removeProjectCP(final ClassPath[] cp) {
         runUnderWriteLock(new Runnable() {
             @Override
             public void run() {
-                PROJECT_SOURCES.remove(makeSources);
+                for (ClassPath classPath : cp) {
+                    PROJECT_CPS.remove(classPath);
+                }
             }
         });
     }
@@ -90,11 +90,9 @@ public class MakeProjectClassPathProvider implements ClassPathProvider {
         if (MakeProjectPaths.SOURCES.equals(type)) {
             PROJECT_LOCK.readLock().lock();
             try {
-                for (MakeSources sources : PROJECT_SOURCES) {
-                    for (SourceGroup sg : sources.getSourceGroups(MakeSources.GENERIC)) {
-                        if (sg.contains(file)) {
-                            return ClassPathSupport.createClassPath(Arrays.asList(new MakeProject.PathResourceImpl(ClassPathSupport.createResource(sg.getRootFolder().toURL()))));
-                        }
+                for (ClassPath spc : PROJECT_CPS) {
+                    if (spc.contains(file)) {
+                        return spc;
                     }
                 }
             } finally {

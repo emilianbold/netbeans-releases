@@ -82,19 +82,12 @@ public final class TermOptions {
     }
 
     public final void resetToDefault() {
-	final Font controlFont = UIManager.getFont("controlFont");// NOI18N
-	fontSize = (controlFont == null)? 12: controlFont.getSize();
-        font = new Font("monospaced", Font.PLAIN, fontSize);	// NOI18N
-	foreground = Color.black;
-	background = Color.white;
-	selectionBackground =
-	    UIManager.getColor("TextArea.selectionBackground");	// NOI18N
-	if (selectionBackground == null) {
-	    // bug #185154
-	    // Nimbus L&F doesn't define "TextArea.selectionBackground"
-	    selectionBackground =
-		UIManager.getColor("textHighlight");		// NOI18N
-	}
+        final Font controlFont = UIManager.getFont("controlFont"); //NOI18N
+        fontSize = (controlFont == null) ? 12 : controlFont.getSize();
+        font = new Font("monospaced", Font.PLAIN, fontSize); //NOI18N
+        foreground = getDefaultColorStandard();
+        background = getDefaultColorBackground();
+        selectionBackground = getDefaultSelectionBackground();
 	historySize = 5000;
 	tabSize = 8;
 	clickToType = true;
@@ -103,6 +96,41 @@ public final class TermOptions {
 	lineWrap = true;
         ignoreKeymap = false;
         markDirty();
+    }
+
+    private static Color getDefaultColorStandard() {
+        Color out = UIManager.getColor("nb.output.foreground"); //NOI18N
+        if (out == null) {
+            out = UIManager.getColor("TextField.foreground"); //NOI18N
+            if (out == null) {
+                out = Color.BLACK;
+            }
+        }
+        return out;
+    }
+
+    private static Color getDefaultColorBackground() {
+        Color back = UIManager.getColor("nb.output.backgorund"); //NOI18N
+        if (back == null) {
+            back = UIManager.getColor("TextField.background"); //NOI18N
+            if (back == null) {
+                back = Color.WHITE;
+            } else if ("Nimbus".equals( //NOI18N
+                    UIManager.getLookAndFeel().getName())) {
+                back = new Color(back.getRGB()); // #225829
+            }
+        }
+        return back;
+    }
+
+    private static Color getDefaultSelectionBackground() {
+	Color color = UIManager.getColor("TextArea.selectionBackground");// NOI18N
+	if (color == null) {
+	    // bug #185154
+	    // Nimbus L&F doesn't define "TextArea.selectionBackground"
+	    color = UIManager.getColor("textHighlight");// NOI18N
+	}
+        return color;
     }
 
     public synchronized static TermOptions getDefault(Preferences prefs) {
