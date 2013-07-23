@@ -42,7 +42,7 @@
 
 package org.netbeans.modules.odcs.ui.dashboard;
 
-import org.netbeans.modules.team.ui.common.LinkButton;
+import org.netbeans.modules.team.server.ui.common.LinkButton;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -55,10 +55,10 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.team.ui.spi.MessagingHandle;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
-import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.netbeans.modules.team.server.ui.spi.MessagingHandle;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.commons.treelist.AsynchronousNode;
+import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 
 /**

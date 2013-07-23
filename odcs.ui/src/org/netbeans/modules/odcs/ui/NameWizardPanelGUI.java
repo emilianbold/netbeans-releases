@@ -90,7 +90,7 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
 import org.netbeans.modules.odcs.ui.api.OdcsUIUtil;
 import org.openide.util.NbBundle.Messages;

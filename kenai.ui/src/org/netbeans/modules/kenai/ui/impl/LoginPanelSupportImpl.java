@@ -52,7 +52,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
 import org.netbeans.modules.kenai.collab.chat.PresenceIndicator;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
-import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
+import org.netbeans.modules.team.server.ui.spi.LoginPanelSupport;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import static org.netbeans.modules.kenai.ui.impl.Bundle.*;

@@ -57,12 +57,12 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.team.ui.util.treelist.LinkButton;
+import org.netbeans.modules.team.commons.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.filter.AppliedFilters;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
-import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
-import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
-import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.netbeans.modules.team.commons.treelist.AsynchronousNode;
+import org.netbeans.modules.team.commons.treelist.TreeLabel;
+import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
