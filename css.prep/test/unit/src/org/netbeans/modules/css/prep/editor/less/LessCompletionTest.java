@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,43 +37,51 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.mercurial.ui.queues;
+package org.netbeans.modules.css.prep.editor.less;
+
+import org.netbeans.modules.css.prep.editor.scss.*;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.css.editor.module.main.CssModuleTestBase;
+import org.netbeans.modules.css.prep.editor.model.CPModel;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
- * @author ondra
+ * @author marekfukala
  */
-public class QPatch {
-    
-    public static final String TAG_QTIP = "qtip"; //NOI18N
-    private final String id;
-    private final String message;
-    private final boolean applied;
-    private final Queue queue;
+public class LessCompletionTest extends CssModuleTestBase {
 
-    public QPatch (String id, String message, Queue queue, boolean applied) {
-        this.id = id;
-        this.message = message == null ? "" : message; //NOI18N
-        this.queue = queue;
-        this.applied = applied;
+    public LessCompletionTest(String name) {
+        super(name);
     }
 
-    public String getId () {
-        return id;
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        CPModel.topLevelSnapshotMimetype = getTopLevelSnapshotMimetype();
     }
 
-    public String getMessage () {
-        return message;
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        CPModel.topLevelSnapshotMimetype = null;
     }
 
-    public boolean isApplied () {
-        return applied;
+    @Override
+    protected String getTopLevelSnapshotMimetype() {
+        return "text/less";
     }
 
-    public Queue getQueue () {
-        return queue;
+    @Override
+    protected String getCompletionItemText(CompletionProposal cp) {
+        return cp.getInsertPrefix();
     }
 
+    public void testMixinsCompletion() throws ParseException {
+        checkCC(".mixin() {}\n"
+                + "div { .| }", arr("mixin"), Match.CONTAINS);
+
+    }
 }

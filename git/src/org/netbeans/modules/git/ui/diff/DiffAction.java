@@ -59,8 +59,8 @@ import org.openide.util.NbBundle;
 @ActionID(id = "org.netbeans.modules.git.ui.diff.DiffAction", category = "Git")
 @ActionRegistration(displayName = "#LBL_DiffAction_Name")
 @NbBundle.Messages({
-    "LBL_DiffAction_Name=&Diff To Base",
-    "LBL_DiffAction_PopupName=Diff To Base"
+    "LBL_DiffAction_Name=&Diff To HEAD",
+    "LBL_DiffAction_PopupName=Diff To HEAD"
 })
 public class DiffAction extends GitAction {
     private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/diff.png"; //NOI18N
@@ -81,7 +81,7 @@ public class DiffAction extends GitAction {
     }
 
     public void diff (VCSContext context) {
-        diff(context, Revision.BASE, Revision.LOCAL);
+        diff(context, Revision.HEAD, Revision.LOCAL);
     }
 
     public void diff (VCSContext context, Revision left, Revision right) {

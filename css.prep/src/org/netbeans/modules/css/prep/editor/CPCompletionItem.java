@@ -41,74 +41,71 @@
  */
 package org.netbeans.modules.css.prep.editor;
 
+import java.awt.Color;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.HtmlFormatter;
+import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 import org.netbeans.modules.css.prep.editor.model.CPElementHandle;
+import static org.netbeans.modules.css.prep.editor.model.CPElementType.VARIABLE_GLOBAL_DECLARATION;
+import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.swing.plaf.LFCustoms;
 
 /**
  *
  * @author marekfukala
  */
-public class MixinCompletionItem extends CPCompletionItem {
+public abstract class CPCompletionItem extends CssCompletionItem {
+
+    protected static final Color COLOR = new Color(0, 0, 0);
+    protected static final Color ORIGIN_COLOR = new Color(99, 99, 99);
     
-    /**
-     * 
-     * @param elementHandle
-     * @param handle
-     * @param anchorOffset
-     * @param origin Origin is null for current file. File displayname otherwise.
-     */
-    public MixinCompletionItem(ElementHandle elementHandle, CPElementHandle handle, int anchorOffset, String origin) {
-        super(elementHandle, handle, anchorOffset ,origin);
-    }
+    protected String origin;
+    protected CPElementHandle handle;
 
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.METHOD;
-    }
-
-    @Override
-    public String getInsertPrefix() {
-        return handle.getName();
-    }
-
-    @Override
-    public String getName() {
-        return handle.getName();
+    public CPCompletionItem(@NonNull ElementHandle elementHandle, @NonNull CPElementHandle handle, int anchorOffset, @NullAllowed String origin) {
+        super(elementHandle, handle.getName(), anchorOffset, false);
+        this.handle = handle;
+        this.origin = origin;
     }
     
     @Override
-    public int hashCode() {
-        int hash = 5;
-        hash = 89 * hash + (this.origin != null ? this.origin.hashCode() : 0);
-        hash = 89 * hash + getName().hashCode();
-        return hash;
+    public String getLhsHtml(HtmlFormatter formatter) {
+        switch (handle.getType()) {
+            case VARIABLE_GLOBAL_DECLARATION:
+            case MIXIN_DECLARATION:
+                formatter.appendHtml("<font color=");
+                formatter.appendHtml(WebUtils.toHexCode(LFCustoms.shiftColor(COLOR)));
+                formatter.appendHtml("><b>"); //NOI18N
+                break;
+        }
+        
+        formatter.appendText(getName());
+        
+        switch (handle.getType()) {
+            case MIXIN_DECLARATION:
+            case VARIABLE_GLOBAL_DECLARATION:
+                formatter.appendHtml("</b></font>"); //NOI18N);
+                break;
+        }
+        
+        return formatter.getText();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final MixinCompletionItem other = (MixinCompletionItem) obj;
-        if ((this.origin == null) ? (other.origin != null) : !this.origin.equals(other.origin)) {
-            return false;
-        }
-        if (!getName().equals(other.getName())) {
-            return false;
-        }
-        return true;
-    }
-
-    @Override
-    public int getSortPrioOverride() {
-        int prio = 70;
+    public String getRhsHtml(HtmlFormatter formatter) {
         if(origin == null) {
-            prio -= 40; //current file items have precedence
+            return super.getRhsHtml(formatter);
+        } else {
+            formatter.appendHtml("<font color=");
+            formatter.appendHtml(WebUtils.toHexCode(LFCustoms.shiftColor(ORIGIN_COLOR)));
+            formatter.appendHtml(">");
+            formatter.appendText(origin);
+            formatter.appendHtml("</font>"); //NOI18N
+            return formatter.getText();
         }
-        return prio;
     }
+
+   
 }

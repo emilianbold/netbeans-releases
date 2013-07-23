@@ -42,10 +42,9 @@
 
 package org.netbeans.modules.websvc.rest.codegen;
 
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.RestUtils;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 
 /**
  *
@@ -57,7 +56,7 @@ public class EntityResourcesGeneratorFactory {
 
         if (RestUtils.hasSpringSupport(project)) {
             return new SpringEntityResourcesGenerator(RestUtils.hasAopAlliance(project));
-        } else if (RestUtils.isJavaEE6AndHigher(project)) {
+        } else if (MiscUtilities.isJavaEE6AndHigher(project)) {
             return new JavaEE6EntityResourcesGenerator();
         } else {
             return new J2eeEntityResourcesGenerator();

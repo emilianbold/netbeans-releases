@@ -81,7 +81,7 @@ ide/modules/org-apache-commons-httpclient.jar                         Apache-2.0
 ide/modules/org-apache-commons-io.jar                                 Apache-2.0
 ide/modules/org-apache-commons-lang.jar                               Apache-2.0
 ide/modules/org-apache-commons-logging.jar                            Apache-2.0
-ide/modules/ext/commons-net-3.2.jar                                   Apache-2.0
+ide/modules/ext/commons-net-3.3.jar                                   Apache-2.0
 ide/modules/org-apache-ws-commons-util.jar                            Apache-2.0
 ide/modules/org-apache-xmlrpc.jar                                     Apache-2.0
 ide/modules/ext/freemarker-2.3.19.jar                                 freemarker

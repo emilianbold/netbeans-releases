@@ -247,7 +247,13 @@ class FlashingIcon extends JLabel implements MouseListener, PropertyChangeListen
         BufferedImage countIcon = new BufferedImage(16, 16, BufferedImage.TYPE_INT_ARGB);
         Graphics2D g = countIcon.createGraphics();
         g.setFont(getFont().deriveFont(10f));
-        g.setColor(UIManager.getColor("Label.foreground"));
+        Color color;
+        if ("Nimbus".equals(UIManager.getLookAndFeel().getID())) {
+            color = Color.BLACK;
+        } else {
+            color = UIManager.getColor("Label.foreground");
+        }
+        g.setColor(color);
         if (unread < 10) {
             g.setFont(g.getFont().deriveFont(Font.BOLD));
             g.drawString(Integer.toString(unread), 5, 10);
