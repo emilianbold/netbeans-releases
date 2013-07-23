@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2010-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -56,6 +56,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.autoupdate.InstallSupport;
@@ -175,7 +176,9 @@ public class PluginImporter {
             try {
                 OperationContainer.OperationInfo info = oc.add (el);
                 oc.add (candidate2import);
-                if (info.getBrokenDependencies ().isEmpty ()) {
+                if (isBlacklisted(el)) {
+                    LOG.info("Plugin " + el + " is on blacklist thus will not be imported.");
+                } else if (info.getBrokenDependencies ().isEmpty ()) {
                     toImport.add (el);
                 } else {
                     LOG.log (Level.INFO, "Plugin " + el + // NOI18N
@@ -438,5 +441,21 @@ public class PluginImporter {
         } catch (IOException ex) {
             LOG.log(Level.INFO, ex.getMessage(), ex);
         }
+    }
+    
+    private static boolean isBlacklisted(UpdateElement el) {
+        String blacklist = System.getProperty ("plugin.import.blacklist", ""); // NOI18N
+        if (! blacklist.isEmpty()) {
+            blacklist = blacklist + ','; // NOI18N
+        }
+        blacklist = blacklist + NbBundle.getMessage(PluginImporter.class, "plugin.import.blacklist"); // NOI18N
+        LOG.fine("Blacklist: " + blacklist);
+        StringTokenizer tokens = new StringTokenizer(blacklist, ",");
+        while(tokens.hasMoreTokens()) {
+            if (el.getCodeName().equals(tokens.nextToken())) {
+                return true;
+            }
+        }
+        return false;
     }
 }

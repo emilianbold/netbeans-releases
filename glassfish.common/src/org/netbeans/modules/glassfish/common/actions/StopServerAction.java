@@ -43,7 +43,6 @@
 package org.netbeans.modules.glassfish.common.actions;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.glassfish.common.CommonServerSupport;
 import org.netbeans.modules.glassfish.common.GlassFishState;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
@@ -95,12 +94,13 @@ public class StopServerAction extends NodeAction {
     }
 
     private static boolean enableImpl(GlassfishModule commonSupport) {
-        return (commonSupport.getServerState() == ServerState.RUNNING
+        boolean online = GlassFishState.isOnline(commonSupport.getInstance());
+        return (online
                 || commonSupport.getServerState() == ServerState.STOPPED_JVM_PROFILER)
                 && (null != commonSupport.getInstanceProperties().get(GlassfishModule.DOMAINS_FOLDER_ATTR)
                 // there is a target part of this server's url AND the das is running
                 || (!Util.isDefaultOrServerTarget(commonSupport.getInstanceProperties())
-                && GlassFishState.isOnline(((CommonServerSupport)commonSupport).getInstance())));
+                && online));
     }
     
     @Override

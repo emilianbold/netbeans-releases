@@ -41,23 +41,25 @@
  */
 package org.netbeans.modules.glassfish.common;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.tools.ide.GlassFishStatus;
-import static org.glassfish.tools.ide.GlassFishStatus.OFFLINE;
-import static org.glassfish.tools.ide.GlassFishStatus.UNKNOWN;
-import org.glassfish.tools.ide.GlassFishStatusListener;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishServerStatus;
-import org.glassfish.tools.ide.data.GlassFishStatusCheck;
-import static org.glassfish.tools.ide.data.GlassFishStatusCheck.LOCATIONS;
-import static org.glassfish.tools.ide.data.GlassFishStatusCheck.VERSION;
-import org.glassfish.tools.ide.data.GlassFishStatusCheckResult;
-import org.glassfish.tools.ide.data.GlassFishStatusTask;
+import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.utils.ServerUtils;
+import org.netbeans.modules.glassfish.common.status.AuthFailureStateListener;
+import org.netbeans.modules.glassfish.common.status.MonitoringInitStateListener;
 import org.openide.util.NbBundle;
 
 /**
- * Server state checks.
+ * Server state checks public module API.
+ * <p/>
+ * This API runs GlassFish server administration commands at the background
+ * and is accessing server properties including administrator password stored
+ * in <code>Keyring</code>.<br/>
+ * Do not use this class in NetBeans startup code to avoid <code>Keyring</code>
+ * access deadlocks.
  * <p/>
  * @author Tomas Kraus
  */
@@ -109,143 +111,6 @@ public class GlassFishState {
         }
 
     }
-    /**
-     * Notification about server state check results.
-     * <p/>
-     * Handles initial period of time after adding new server into status
-     * monitoring.
-     * At least port checks are being executed periodically so this class will
-     * be called back in any situation.
-     */
-    private static class StateListener implements GlassFishStatusListener {
-
-        ////////////////////////////////////////////////////////////////////////
-        // Instance attributes                                                //
-        ////////////////////////////////////////////////////////////////////////
-
-        /** Requested wake up of checking thread. */
-        private volatile boolean wakeUp;
-
-        /** Number of verification checks passed. */
-        private short count;
-
-        ////////////////////////////////////////////////////////////////////////
-        // Constructors                                                       //
-        ////////////////////////////////////////////////////////////////////////
-
-        /**
-         * Constructs an instance of state check results notification.
-         */
-        private StateListener() {
-            wakeUp = false;
-            count = 0;
-        }
-
-        ////////////////////////////////////////////////////////////////////////
-        // Methods                                                            //
-        ////////////////////////////////////////////////////////////////////////
-
-        /**
-         * Wake up checking thread.
-         */
-        private void wakeUp() {
-            if (!wakeUp) synchronized(this) {
-                wakeUp = true;
-                this.notify();
-            }
-        }
-
-        /**
-         * Get status of wake up request of checking thread.
-         * <p/>
-         * @return Status of wake up request of checking thread.
-         */
-        private boolean isWakeUp() {
-            return wakeUp;
-        }
-
-        /**
-         * Callback to notify about current server status after every check
-         * when enabled.
-         * <p/>
-         * Wait for more checking cycles to make sure server status monitoring
-         * has settled down.
-         * <p/>
-         * @param server GlassFish server instance being monitored.
-         * @param status Current server status.
-         * @param task   Last GlassFish server status check task details.
-         */
-        @Override
-        public void currentState(final GlassFishServer server,
-                final GlassFishStatus status, final GlassFishStatusTask task) {
-            count++;
-            switch(status) {
-                case UNKNOWN:
-                    // Something should be wrong when state is UNKNOWN after
-                    // port check.
-                    if (task != null
-                            && task.getType() == GlassFishStatusCheck.PORT) {
-                        wakeUp();
-                    // Otherwise wait for 2 checks.
-                    } else if (count > 1) {
-                        wakeUp();
-                    }
-                    break;
-                // Wait for 4 internal checks in OFFLINE state.
-                case OFFLINE:
-                    // Command check failure means server is really not online.
-                    if (task != null) {
-                       switch(task.getType()) {
-                           case LOCATIONS: case VERSION:
-                               if (task.getStatus()
-                                       == GlassFishStatusCheckResult.FAILED) {
-                                   wakeUp();
-                                   // Skip 2nd wake up.
-                                   count = 0;
-                               }
-                       }
-                    }
-                    // Otherwise wait for 3 internal checks in OFFLINE state.
-                    if (count > 2) {
-                        wakeUp();
-                    }
-                    break;
-                // Wake up after 1st check in any other state.
-                default:
-                    wakeUp();
-            }
-        }
-
-        /**
-         * Callback to notify about server status change when enabled.
-         * <p/>
-         * Listens on <code>ONLINE</code>, <code>SHUTDOWN</code>
-         * and <code>STARTUP</code> state changes where we can wake up checking
-         * thread immediately.
-         * <p/>
-         * @param server GlassFish server instance being monitored.
-         * @param status Current server status.
-         * @param task   Last GlassFish server status check task details.
-         */    
-        @Override
-        public void newState(final GlassFishServer server,
-                final GlassFishStatus status, final GlassFishStatusTask task) {
-            wakeUp();
-        }
-
-        /**
-         * Callback to notify about server status check failures.
-         * <p/>
-         * @param server GlassFish server instance being monitored.
-         * @param task   GlassFish server status check task details.
-         */
-        @Override
-        public void error(final GlassFishServer server,
-                final GlassFishStatusTask task) {
-            // Not used yet.
-        }
-
-    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -272,23 +137,35 @@ public class GlassFishState {
         // Check if server is already being monitored.
         GlassFishServerStatus status = GlassFishStatus.get(instance);
         if (status == null) {
-            StateListener listener = new StateListener();
+            MonitoringInitStateListener listener
+                    = new MonitoringInitStateListener();
             added = GlassFishStatus.add(instance, listener, true,
                     GlassFishStatus.ONLINE, GlassFishStatus.SHUTDOWN,
                     GlassFishStatus.STARTUP);
             if (added) {
+                if (instance.getVersion() != null
+                        && instance.getVersion().ordinal()
+                        >= GlassFishVersion.GF_4.ordinal()) {
+                   AuthFailureStateListener authListener
+                           =  new AuthFailureStateListener();
+                   GlassFishStatus.addChangeListener(
+                           instance, authListener, GlassFishStatus.STARTUP);
+                    GlassFishStatus.addErrorListener(instance, authListener);
+                }
                 try {
                     long startTime = System.currentTimeMillis();
+                    long waitTime = INIT_MONITORING_TIMEOUT; 
                     synchronized (listener) {
                         // Guard against spurious wakeup.
-                        while (!listener.isWakeUp()
-                                && (System.currentTimeMillis()
-                                - startTime < INIT_MONITORING_TIMEOUT)) {
-                            listener.wait(
-                                    System.currentTimeMillis() - startTime);
+                        while (!listener.isWakeUp() && waitTime > 0) {
+                            listener.wait(waitTime);
+                            waitTime = INIT_MONITORING_TIMEOUT
+                            + startTime - System.currentTimeMillis();
                         }
                     }
                 } catch (InterruptedException ie) {
+                    LOGGER.log(Level.FINE,
+                            "Interrupted while waiting on server monitoring");
                 } finally {
                     GlassFishStatus.removeListener(instance, listener);
                 }

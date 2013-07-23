@@ -128,6 +128,7 @@ public class SvnClientFactory {
      */
     public synchronized static void resetClient() {
         instance = null;
+        SvnConfigFiles.getInstance().reset();
     }
     
     public static boolean isCLI() {
@@ -202,7 +203,7 @@ public class SvnClientFactory {
         LOG.log(Level.INFO, "Switching forcefully to a commandline client"); //NOI18N
         SvnModuleConfig.getDefault().setPreferredFactoryType(FACTORY_TYPE_COMMANDLINE);
         SvnModuleConfig.getDefault().setForceCommnandlineClient(true);
-        instance = null;
+        resetClient();
     }
 
     /**

@@ -177,7 +177,7 @@ public class ExpressionLangTest extends GeneralJSP {
         checkCompletionDoesntContainItems(cjo, new String[]{"animation"});
         checkCompletionItems(cjo, new String[]{"background"});
 
-        type(eo, "ackground:");
+        type(eo, "ackground: ");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
         evt.waitNoEvent(1000);
         completion = getCompletion();

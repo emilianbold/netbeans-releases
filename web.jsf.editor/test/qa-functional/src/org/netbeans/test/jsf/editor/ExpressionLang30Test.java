@@ -99,7 +99,7 @@ public class ExpressionLang30Test extends GeneralJSF {
         eo.setCaretPositionToEndOfLine(9);
         type(eo, "\n #{[1,2].");
         eo.typeKey(' ', InputEvent.CTRL_MASK);
-        evt.waitNoEvent(200);
+        evt.waitNoEvent(2000);
         String t = eo.getText(eo.getLineNumber());
         assertTrue("Incorrect autocompletion: "+t, t.indexOf("#{[1,2].stream()}") > -1);
         this.clearLine(eo);

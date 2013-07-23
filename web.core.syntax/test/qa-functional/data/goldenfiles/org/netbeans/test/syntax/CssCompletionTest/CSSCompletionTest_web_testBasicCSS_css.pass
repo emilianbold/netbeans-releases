@@ -8,12 +8,11 @@ Background background-image
 Background background-origin
 Background background-position
 Chrome background-position-x
-Chrome background-position-x
-Chrome background-position-y
 Chrome background-position-y
 Background background-repeat
 Background background-size
 Line baseline-shift
+Internet explorer behavior
 Default bleed
 Default bookmark-label
 Default bookmark-level
@@ -125,7 +124,6 @@ Transformations 3d perspective
 Default pitch
 Default pitch-range
 Default play-during
-Chrome pointer-events
 Chrome pointer-events
 Default position
 Default presentation-level
