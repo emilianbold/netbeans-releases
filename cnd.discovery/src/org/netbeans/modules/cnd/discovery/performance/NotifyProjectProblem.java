@@ -58,13 +58,13 @@ import org.openide.util.NbBundle.Messages;
  * @author Alexander Simon
  */
 @Messages({
-    "NotifyProjectProblem.action.text=details"
+    "NotifyProjectProblem.action.text=Details"
     ,"NotifyProjectProblem.open.message.text=Slow File System Detected"
     ,"# {0} - details"
     ,"NotifyProjectProblem.open.explanation.text=The IDE has detected slowness while opening/creating the project.<br>\n"
                                                +"Most probably this is caused by poor overall file system performance.<br>\n"
                                                +"{0}"
-    ,"NotifyProjectProblem.infinite.create.message.text=Too Long File Access Detected"
+    ,"NotifyProjectProblem.infinite.create.message.text=Slow File Access Detected"
     ,"# {0} - details"
     ,"NotifyProjectProblem.infinite.create.explanation.text=The IDE has detected too long file access.<br>\n"
                                                            +"{0}"
@@ -78,7 +78,7 @@ import org.openide.util.NbBundle.Messages;
     ,"NotifyProjectProblem.parse.explanation.text=The IDE has detected slowness while parsing project files.<br>\n"
                                                 +"Most probably this is caused by poor overall file system performance.<br>\n"
                                                 +"{0}"
-    ,"NotifyProjectProblem.infinite.parse.message.text=Too Long File Parsing Detected"
+    ,"NotifyProjectProblem.infinite.parse.message.text=Slow File Parsing Detected"
     ,"# {0} - details"
     ,"NotifyProjectProblem.infinite.parse.explanation.text=The IDE has detected too long file parsing.<br>\n"
                                                          +"Most probably this is caused by a bug in the IDE or too big file.<br>\n"
