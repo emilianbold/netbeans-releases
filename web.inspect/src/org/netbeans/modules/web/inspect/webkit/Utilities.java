@@ -527,7 +527,9 @@ public class Utilities {
             if (fob != null) {
                 FileObject projectDir = project.getProjectDirectory();
                 String relativePath = FileUtil.getRelativePath(projectDir, fob);
-                name = relativePath;
+                if (relativePath != null) {
+                    name = relativePath;
+                }
             }
         }
         return name;
