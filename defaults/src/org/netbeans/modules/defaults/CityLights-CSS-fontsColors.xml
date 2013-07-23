@@ -60,15 +60,4 @@ made subject to such option by the copyright holder.
     <fontcolor name="unknown" default="error"/>
     <!-- whitespaces including comments -->
     <fontcolor  name="whitespace_comment" default="comment"/>
-    
-    <!-- GSF colors - taken from ruby editor -->
-    <!--"semantic" highlighting:-->
-    <fontcolor name="mod-custom1" default="keyword"/>
-    <fontcolor name="mod-custom2" default="keyword" foreColor="orange">
-        <font style="italic" />
-    </fontcolor>
-    <fontcolor name="mod-method">
-        <font style="bold" />
-    </fontcolor>
-    <fontcolor name="mark-occurrences" bgColor="ECEBA3"/>
 </fontscolors>
