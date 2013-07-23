@@ -56,6 +56,7 @@ import java.io.OutputStreamWriter;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.Writer;
+import java.net.ConnectException;
 import java.net.URISyntaxException;
 import java.text.MessageFormat;
 import java.text.ParseException;
@@ -65,6 +66,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
@@ -77,6 +79,7 @@ import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory;
 import org.netbeans.modules.nativeexecution.api.util.MacroExpanderFactory.MacroExpander;
@@ -92,6 +95,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.NotImplementedException;
 
 public class NativeExecutionBaseTestCase extends NbTestCase {
     static {
@@ -315,6 +319,15 @@ public class NativeExecutionBaseTestCase extends NbTestCase {
         return testExecutionEnvironment;
     }
 
+    protected RcFile getLocalRcFile() throws IOException, RcFile.FormatException {
+        return NativeExecutionTestSupport.getRcFile();
+    }
+
+    protected RcFile getRemoteRcFile() 
+            throws IOException, RcFile.FormatException, ConnectException,
+            ConnectionManager.CancellationException, InterruptedException, ExecutionException {
+        return NativeExecutionTestSupport.getRemoteRcFile(getTestExecutionEnvironment());
+    }
 
     protected String getTestHostName() {
         ExecutionEnvironment env = getTestExecutionEnvironment();
