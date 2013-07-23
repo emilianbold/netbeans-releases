@@ -464,7 +464,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             names = toDelete.length + " " + NbBundle.getMessage(DashboardViewer.class, "LBL_Categories").toLowerCase();
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteCatTitle");
-        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQuestion", names);
+        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteCatQuestion", names);
         if (confirmDelete(title, message)) {
             synchronized (LOCK_CATEGORIES) {
                 for (CategoryNode categoryNode : toDelete) {
@@ -676,7 +676,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             }
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQueryTitle");
-        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQuestion", names);
+        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQueryQuestion", names);
         if (confirmDelete(title, message)) {
             for (QueryNode queryNode : toDelete) {
                 queryNode.getQuery().remove();

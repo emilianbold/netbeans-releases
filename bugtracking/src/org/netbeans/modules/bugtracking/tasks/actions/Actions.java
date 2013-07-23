@@ -388,7 +388,7 @@ public class Actions {
     public static class OpenTaskAction extends TaskAction {
 
         public OpenTaskAction(TaskNode... taskNodes) {
-            super(NbBundle.getMessage(OpenTaskAction.class, "CTL_Open"), taskNodes); //NOI18N
+            super(NbBundle.getMessage(OpenTaskAction.class, "CTL_OpenNode"), taskNodes); //NOI18N
         }
 
         @Override
@@ -701,7 +701,7 @@ public class Actions {
         }
 
         public OpenQueryAction(QueryController.QueryMode mode, QueryNode... queryNodes) {
-            super(NbBundle.getMessage(OpenQueryAction.class, "CTL_Open"), queryNodes); //NOI18N
+            super(NbBundle.getMessage(OpenQueryAction.class, "CTL_OpenNode"), queryNodes); //NOI18N
             this.mode = mode;
         }
 
