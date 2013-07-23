@@ -180,9 +180,9 @@ public class LibrariesTest extends JellyTestCase {
         librariesUrls.put("javac-api", set);
         set = new TreeSet<String>();
         set.add("jar:nbinst:///docs/javaee-doc-api.jar!/");
-        set.add("jar:nbinst://org.netbeans.modules.web.jstl11/modules/ext/jstl.jar!/");
-        set.add("jar:nbinst://org.netbeans.modules.web.jstl11/modules/ext/standard.jar!/");
-        librariesUrls.put("jstl11", set);
+        set.add("jar:nbinst://org.netbeans.modules.web.jstl11/modules/ext/jstl-api.jar!/");
+        set.add("jar:nbinst://org.netbeans.modules.web.jstl11/modules/ext/jstl-impl.jar!/");
+        librariesUrls.put("jstl", set);
         set = new TreeSet<String>();
         set.add("jar:nbinst:///modules/ext/jaxws21/activation.jar!/");
         set.add("jar:nbinst:///modules/ext/jaxws21/api/jaxb-api.jar!/");

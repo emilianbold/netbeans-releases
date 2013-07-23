@@ -50,8 +50,8 @@ made subject to such option by the copyright holder.
 <filesystem>
   <folder name="org-netbeans-api-project-libraries">
     <folder name="Libraries">
-      <file name="jstl11.xml" url="jstl11.xml">
-        <attr name="displayName" bundlevalue="org/netbeans/modules/web/jstl11/Bundle#jstl11"/>
+      <file name="jstl.xml" url="jstl.xml">
+        <attr name="displayName" bundlevalue="org/netbeans/modules/web/jstl11/Bundle#jstl"/>
       </file>
     </folder>
   </folder>
