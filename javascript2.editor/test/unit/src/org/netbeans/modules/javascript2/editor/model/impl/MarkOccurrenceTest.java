@@ -830,7 +830,51 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue232595_02() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue232595.js","      myl^oc1 += loc2;", true);
     }
-
+    
+    // testing with statement
+    public void testIssue232776_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232776.js","p^rop01 = prop01 + prop02;", true);
+    }
+    
+    public void testIssue232776_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232776.js","prop01 = prop01 + pro^p02;", true);
+    }
+    
+    public void testIssue232776_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232776.js","metho^d01();", true);
+    }
+    
+    public void testIssue232776_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232776.js","with (testWi^th01) {", true);
+    }
+    
+    public void testIssue232777_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232777.js","app.des^cription = \"new description\";", true);
+    }
+    
+    public void testIssue232777_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232777.js","ap^p.description = \"new description\";", true);
+    }
+    
+    public void testIssue232792_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232792.js","getI^nfo();", true);
+    }
+    
+    public void testIssue232792_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232792.js","A.getN^ame();", true);
+    }
+    
+    public void testIssue232792_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232792.js","A.B.getN^ame();", true);
+    }
+    
+    public void testIssue232804_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232804.js","with (tes^tWith02) {", true);
+    }
+    
+    public void testIssue232804_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232804.js","console.log(app.desc^ription);", true);
+    }
     
     private String getTestName() {
         String name = getName();

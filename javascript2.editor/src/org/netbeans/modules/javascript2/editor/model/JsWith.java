@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,68 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.model.impl;
+package org.netbeans.modules.javascript2.editor.model;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
-import org.netbeans.modules.javascript2.editor.model.Identifier;
-import org.netbeans.modules.javascript2.editor.model.JsObject;
-import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 
 /**
  *
  * @author Petr Pisl
  */
-public class DeclarationScopeImpl extends JsObjectImpl implements DeclarationScope {
-
-    private final DeclarationScope parentScope;
-
-    private final List<DeclarationScope> childrenScopes;
-
-    public DeclarationScopeImpl(DeclarationScope inScope, JsObject inObject,
-            Identifier name, OffsetRange offsetRange, String mimeType, String sourceLabel) {
-        super(inObject, name, offsetRange, mimeType, sourceLabel);
-        this.parentScope = inScope;
-        this.childrenScopes = new ArrayList<DeclarationScope>();
-    }
-
-    @Override
-    public DeclarationScope getParentScope() {
-        return parentScope;
-    }
-
-    @Override
-    public Collection<? extends DeclarationScope> getChildrenScopes() {
-        return childrenScopes;
-    }
-
-    protected void addDeclaredScope(DeclarationScope scope) {
-        childrenScopes.add(scope);
-    }
-
-    private static class With {
-
-        private final OffsetRange range;
-
-        private final Collection<? extends TypeUsage> types;
-
-        public With(OffsetRange range, Collection<? extends TypeUsage> types) {
-            this.range = range;
-            this.types = types;
-        }
-
-        public OffsetRange getRange() {
-            return range;
-        }
-
-        public Collection<? extends TypeUsage> getTypes() {
-            return types;
-        }
-    }
-
+public interface JsWith extends JsObject {
+    
+    /**
+     * 
+     * @return collection types that corresponds to the expression in the with ()
+     */
+    public Collection<? extends TypeUsage> getTypes();
+    
+    public Collection<? extends JsWith> getInnerWiths();
+            
+    public JsWith getOuterWith();
 }

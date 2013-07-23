@@ -55,12 +55,14 @@ public final class ModelBuilder {
     private Stack<JsObjectImpl> stack;
     private Stack<DeclarationScopeImpl> functionStack;
     private int anonymObjectCount;
+    private int withObjectCount;
     
     ModelBuilder(JsFunctionImpl globalObject) {
         this.globalObject = globalObject;
         this.stack = new Stack<JsObjectImpl>();
         this.functionStack = new Stack<DeclarationScopeImpl>();
         anonymObjectCount = 0;
+        withObjectCount = 0;
         setCurrentObject(globalObject);
     }
     
@@ -114,6 +116,10 @@ public final class ModelBuilder {
     
     String getUnigueNameForAnonymObject() {
         return "Anonym$" + anonymObjectCount++;  
+    }
+    
+    String getUnigueNameForWithObject() {
+        return "With$" + withObjectCount++;  
     }
     
 //    FunctionScope build(FunctionNode function) {
