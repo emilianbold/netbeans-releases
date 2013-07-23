@@ -78,11 +78,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
@@ -100,21 +97,17 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.core.api.support.java.GenerationUtils;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGenerator;
 import org.netbeans.modules.j2ee.persistence.wizard.fromdb.FacadeGeneratorProvider;
 import org.netbeans.modules.j2ee.persistence.api.EntityClassScope;
-import org.netbeans.modules.j2ee.persistence.api.PersistenceLocation;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.j2ee.persistence.api.metadata.orm.EntityMappingsMetadata;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
-import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
-import org.netbeans.modules.websvc.rest.codegen.JavaEE6EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.TypeUtil;
@@ -125,16 +118,13 @@ import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.fromdb.EjbFacadeGeneratorProvider;
-import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
-import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
 import com.sun.source.tree.AnnotationTree;
-import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ExpressionTree;
@@ -143,6 +133,7 @@ import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 
 /**
  * Copy of j2ee/utilities Util class
@@ -517,7 +508,7 @@ public class Util {
     public static boolean isCDIEnabled(Project project) {
         WebModule wm = WebModule.getWebModule(project.getProjectDirectory());
         if (wm != null) {
-            if (  !RestUtils.isJavaEE6AndHigher(project))
+            if (  !MiscUtilities.isJavaEE6AndHigher(project))
             {
                 return false;
             }

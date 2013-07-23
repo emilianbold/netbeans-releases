@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.index;
 
 import java.io.IOException;
+import java.lang.ref.SoftReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,6 +54,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -91,7 +93,8 @@ public class JsIndex {
 
     private static final WeakHashMap<FileObject, JsIndex> CACHE = new WeakHashMap<FileObject, JsIndex>();
 
-    private static final int MAX_ENTRIES_CACHE_INDEX_RESULT = 300;
+    // empirical value
+    private static final int MAX_ENTRIES_CACHE_INDEX_RESULT = 500;
     // cache to keep latest index results. The cache is cleaned if a file is saved
     // or a file has to be reindexed due to an external change
     private static final Map <CacheKey, CacheValue> CACHE_INDEX_RESULT = new LinkedHashMap<CacheKey, CacheValue>(MAX_ENTRIES_CACHE_INDEX_RESULT + 1, 0.75F, true) {
@@ -105,7 +108,14 @@ public class JsIndex {
 
     private static final Map<StatsKey, StatsValue> QUERY_STATS = new HashMap<StatsKey, StatsValue>();
 
+    private static final AtomicInteger CACHE_HIT = new AtomicInteger();
+
+    private static final AtomicInteger CACHE_MISS = new AtomicInteger();
+
     private final QuerySupport querySupport;
+
+    private final SoftReference<Map<CacheKey, CacheValue>> resultCache =
+            new SoftReference<Map<CacheKey, CacheValue>>(new HashMap<CacheKey, CacheValue>());
 
     private JsIndex(QuerySupport querySupport) {
         this.querySupport = querySupport;
@@ -139,15 +149,35 @@ public class JsIndex {
             try {
                 if (INDEX_CHANGED.get()) {
                     CACHE_INDEX_RESULT.clear();
+                    Map<CacheKey, CacheValue> currentCache = resultCache.get();
+                    if (currentCache != null) {
+                        currentCache.clear();
+                    }
                     INDEX_CHANGED.set(false);
                 }
                 CacheKey key = new CacheKey(this, fieldName, fieldValue, kind);
                 CacheValue value = CACHE_INDEX_RESULT.get(key);
                 Collection<? extends IndexResult> result;
                 if (value == null || !value.contains(fieldsToLoad)) {
-                    result = querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
-                    CACHE_INDEX_RESULT.put(key, new CacheValue(fieldsToLoad, result));
+                    Map<CacheKey, CacheValue> currentCache = resultCache.get();
+                    if (currentCache != null) {
+                        value = currentCache.get(key);
+                    }
+                    if (value == null || !value.contains(fieldsToLoad)) {
+                        CACHE_MISS.incrementAndGet();
+                        result = querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
+                        value = new CacheValue(fieldsToLoad, result);
+                        CACHE_INDEX_RESULT.put(key, value);
+
+                        if (currentCache != null) {
+                            currentCache.put(key, value);
+                        }
+                    } else {
+                        CACHE_HIT.incrementAndGet();
+                        result = value.getResult();
+                    }
                 } else {
+                    CACHE_HIT.incrementAndGet();
                     result = value.getResult();
                 }
 
@@ -176,6 +206,8 @@ public class JsIndex {
                             LOG.log(Level.FINEST, entry.getKey() + ": " + entry.getValue());
                         }
                     }
+                    LOG.log(Level.FINEST, "Cache hit: " + CACHE_HIT.get() + ", Cache miss: "
+                            + CACHE_MISS.get() + ", Ratio: " + (CACHE_HIT.get() / CACHE_MISS.get()));
                 }
                 return result;
             } catch (IOException ioe) {

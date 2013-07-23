@@ -49,6 +49,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.KeyEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -121,6 +123,7 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ContextAwareAction;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
 * Java editor kit with appropriate document
@@ -375,6 +378,312 @@ public class NbEditorKit extends ExtKit implements Callable {
         }
     }
 
+    /**
+     * See issue #183946
+     * Attempts to load Action instances. It collects all actions and eventually
+     * could be able to build the popup menu from the collected data, but that would
+     * require some caching and to solve the issue, relevant classes need just to be loaded
+     * so the data may be thrown away.
+     */
+    static class PopupInitializer implements Runnable {
+        private final Lookup        contextLookup;
+        private final NbEditorKit   editorKit;
+        private final TopComponent  outerTopComponent;
+        private final String mimeType;
+        private final String settingName;
+
+        private List<Object> actionObjects;
+
+        private List<Object> initedObjects;
+
+        private int[] instructions;
+
+        int index;
+
+        public PopupInitializer(Lookup contextLookup, NbEditorKit editorKit, TopComponent outerTopComponent, String mimeType, String settingName) {
+            this.contextLookup = contextLookup;
+            this.editorKit = editorKit;
+            this.outerTopComponent = outerTopComponent;
+            this.mimeType = mimeType;
+            this.settingName = settingName;
+        }
+
+        public void run() {
+            List l = PopupMenuActionsProvider.getPopupMenuItems(mimeType);
+
+            if (l.isEmpty()){
+                Preferences prefs = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
+                String actionNames = prefs.get(settingName, null);
+
+                if (actionNames != null) {
+                    l = new ArrayList();
+                    for(StringTokenizer t = new StringTokenizer(actionNames, ","); t.hasMoreTokens(); ) { //NOI18N
+                        String action = t.nextToken().trim();
+                        l.add(action);
+                    }
+                }
+            }
+            
+            initedObjects = new ArrayList<Object>(l.size());
+            instructions = new int[l.size()];
+
+            for (Iterator i = l.iterator(); i.hasNext(); ) {
+                Object obj = i.next();
+
+                if (obj == null || obj instanceof javax.swing.JSeparator) {
+                    initActionByName(null);
+                } else if (obj instanceof String) {
+                    initActionByName((String)obj);
+                } else if (obj instanceof Action) {
+                    initActionInstance((Action)obj);
+                } else if (obj instanceof DataFolder) {
+                    addInitedObject(
+                            new SubFolderData(editorKit, ((DataFolder) obj).getPrimaryFile()), 
+                            ACTION_FOLDER);
+                }
+            }
+        }
+
+        /*
+        void runInEDT(JPopupMenu menu) {
+            for (int i = 0; i < instructions.length; i++) {
+                switch (instructions[i]) {
+                    case ACTIONS_TOPCOMPONENT:
+                        addTopComponentActions(menu, (Action[])initedObjects.get(i));
+                        break;
+                    case ACTION_CREATEITEM:
+                        addActionInstance(menu, (Action)initedObjects.get(i));
+                        break;
+                    case ACTION_EXTKIT_BYNAME:
+                        addExtKitAction(menu, (String)initedObjects.get(i));
+                        break;
+                    case ACTION_SYSTEM:
+                        addSystemAction(menu, (Action)initedObjects.get(i));
+                        break;
+                    case ACTION_FOLDER: 
+                        addFolder(menu, (SubFolderData)initedObjects.get(i));
+                        break;
+                    default:
+                        throw new IllegalStateException();
+                }
+            }
+        }
+
+        private void addFolder(JPopupMenu pm, SubFolderData data) {
+            pm.add(
+                new LayerSubFolderMenu(
+                    component, data.localizedName, data.objects, data.instructions
+                )
+            );
+        }
+
+        private void addTopComponentActions(JPopupMenu popupMenu, Action[] actions) {
+            Component[] comps = org.openide.util.Utilities.actionsToPopup(actions, contextLookup).getComponents();
+            for (int i = 0; i < comps.length; i++) {
+                popupMenu.add(comps[i]);
+            }
+        }
+
+        private void addExtKitAction(JPopupMenu popupMenu, String actionName) {
+            NbBuildPopupMenuAction.super.addAction(component, popupMenu, actionName);
+        }
+
+        private void addSystemAction(JPopupMenu popupMenu, Action action) {
+            JMenuItem item = (action != null) ? createLocalizedMenuItem(action) : null;
+            if (item != null) {
+                if (item instanceof DynamicMenuContent) {
+                    Component[] cmps = ((DynamicMenuContent)item).getMenuPresenters();
+                    for (int i = 0; i < cmps.length; i++) {
+                        if(cmps[i] != null) {
+                            popupMenu.add(cmps[i]);
+                        } else {
+                            popupMenu.addSeparator();
+                        }
+                    }
+                } else {
+                    if (!(item instanceof JMenu)) {
+                        if (Boolean.TRUE.equals(action.getValue(DynamicMenuContent.HIDE_WHEN_DISABLED)) && !action.isEnabled()) {
+                            return;
+                        }
+                        assignAccelerator(
+                             (Keymap)Lookup.getDefault().lookup(Keymap.class),
+                             action,
+                             item
+                        );
+                    }
+                    debugPopupMenuItem(item, action);
+                    popupMenu.add(item);
+                }
+            }
+        }
+
+        private void addActionInstance(JPopupMenu popupMenu, Action action) {
+            JMenuItem item = createLocalizedMenuItem(action);
+            if (item instanceof DynamicMenuContent) {
+                Component[] cmps = ((DynamicMenuContent)item).getMenuPresenters();
+                for (int i = 0; i < cmps.length; i++) {
+                    if(cmps[i] != null) {
+                        popupMenu.add(cmps[i]);
+                    } else {
+                        popupMenu.addSeparator();
+                    }
+                }
+            } else {
+                if (Boolean.TRUE.equals(action.getValue(DynamicMenuContent.HIDE_WHEN_DISABLED)) && !action.isEnabled()) {
+                    return;
+                }
+                item.setEnabled(action.isEnabled());
+                Object helpID = action.getValue ("helpID"); // NOI18N
+                if (helpID != null && (helpID instanceof String)) {
+                    item.putClientProperty ("HelpID", helpID); // NOI18N
+                }
+                assignAccelerator(component.getKeymap(), action, item);
+                debugPopupMenuItem(item, action);
+                popupMenu.add(item);
+            }
+        }
+
+            */
+
+        private void addInitedObject(Object inited, int instr) {
+            initedObjects.add(inited);
+            instructions[index++] = instr;
+        }
+
+        protected void initActionByName(String actionName) {
+            if (actionName != null) { // try if it's an action class name
+                // Check for the TopComponent actions
+                if (TopComponent.class.getName().equals(actionName)) {
+                    Action[] actions = outerTopComponent.getActions();
+                    addInitedObject(actions, ACTIONS_TOPCOMPONENT);
+                    return;
+                } else { // not cloneable-editor actions
+
+                    // Try to load the action class
+                    Class saClass = null;
+                    try {
+                        ClassLoader loader = (ClassLoader)Lookup.getDefault().lookup(ClassLoader.class);
+                        saClass = Class.forName(actionName, false, loader);
+                    } catch (Throwable t) {
+                    }
+
+                    if (saClass != null && SystemAction.class.isAssignableFrom(saClass)) {
+                        Action action = SystemAction.get(saClass);
+                        action = translateContextLookupAction(contextLookup, action);
+                        if (action != null) {
+                            addInitedObject(action, ACTION_SYSTEM);
+                        }
+                        return;
+                    }
+                }
+
+            }
+
+            // implementation taken from ExtKit
+            Action a = editorKit == null ? null : editorKit.getActionByName(actionName);
+            addInitedObject(actionName, ACTION_EXTKIT_BYNAME);
+        }
+
+        protected void initActionInstance(Action action) {
+            // issue #69688
+            if (contextLookup == null && (editorKit instanceof NbEditorKit) &&
+                    ((NbEditorKit)editorKit).systemAction2editorAction.containsKey(action.getClass().getName())){
+                initActionByName((String) ((NbEditorKit)editorKit).systemAction2editorAction.get(action.getClass().getName()));
+                return;
+            }
+
+            Action naction = translateContextLookupAction(contextLookup, action);
+            if (naction != null) {
+                addInitedObject(naction, ACTION_CREATEITEM);
+            }
+        }
+
+
+    }
+
+    static final class SubFolderData {
+        private final NbEditorKit editorKit;
+        private final String localizedName;
+        
+        List    objects;
+        int[]   instructions;
+        int     index;
+        
+        private static List<FileObject> sort( FileObject[] children ) {
+            List<FileObject> fos = Arrays.asList(children);
+            fos = FileUtil.getOrder(fos, true);
+            return fos;
+        }
+        
+        private static String getLocalizedName(FileObject f) {
+            Object displayName = f.getAttribute("displayName"); //NOI18N
+            if (displayName instanceof String) {
+                return (String) displayName;
+            } else {
+                try {
+                    return f.getFileSystem().getStatus().annotateName(
+                        f.getNameExt(),
+                        Collections.singleton(f));
+                } catch (FileStateInvalidException e) {
+                    return f.getNameExt();
+                }
+            }
+        }
+
+        private SubFolderData(NbEditorKit editorKit, FileObject folder) {
+            this.editorKit = editorKit;
+            this.localizedName = getLocalizedName(folder);
+            
+            List items = ActionsList.convert(sort(folder.getChildren()), false);
+            objects = new ArrayList(items.size());
+            instructions = new int[items.size()];
+            
+            for (Iterator i = items.iterator(); i.hasNext(); ) {
+                Object obj = i.next();
+                
+                if (obj == null || obj instanceof javax.swing.JSeparator) {
+                    objects.add(null);
+                    instructions[index++] = ACTION_SEPARATOR;
+                } else if (obj instanceof String) {
+                    initActionByName((String)obj);
+                } else if (obj instanceof Action) {
+                    objects.add(obj);
+                    instructions[index++] = ACTION_CREATEITEM;
+                } else if (obj instanceof DataFolder) {
+                    objects.add(
+                            new SubFolderData(editorKit, ((DataFolder) obj).getPrimaryFile()));
+                    instructions[index++] = ACTION_FOLDER;
+                }
+            }
+        }
+        
+        private void initActionByName(String actionName) {
+            if (editorKit == null) {
+                return;
+            }
+            Action a = editorKit.getActionByName(actionName);
+            if (a != null) {
+                objects.add(a);
+                instructions[index++] = ACTION_EXTKIT_BYNAME;
+            }
+        }
+    }
+
+    static final Object SEPARATOR = new String("separator");
+
+    /**
+     * Action_ constants specify how a JMenuItem should be created from pre-initialized data.
+     * The constants are produced by PopupInitializer and SubFolderData, and currently not consumed :)
+     * but if the init/creation should be somehow cached, JMenuItems could be created from the preprocessed data.
+     */
+    static final int ACTIONS_TOPCOMPONENT = 1;
+    static final int ACTION_SYSTEM = 2;
+    static final int ACTION_EXTKIT_BYNAME = 3;
+    static final int ACTION_CREATEITEM = 4;
+    static final int ACTION_FOLDER = 5;
+
+    static final int ACTION_SEPARATOR = 11;
+
     @EditorActionRegistration(name = buildPopupMenuAction, weight = 100)
     public static class NbBuildPopupMenuAction extends BuildPopupMenuAction {
 
@@ -493,7 +802,7 @@ public class NbEditorKit extends ExtKit implements Callable {
                 }
             }
         }
-
+        
         protected @Override void addAction(JTextComponent component, JPopupMenu popupMenu, String actionName) {
             if (actionName != null) { // try if it's an action class name
                 // Check for the TopComponent actions
@@ -804,8 +1113,8 @@ public class NbEditorKit extends ExtKit implements Callable {
         }
     
     }
-
     
+
     private static final class LayerSubFolderMenu extends JMenu {
 
         private static String getLocalizedName(FileObject f) {
@@ -823,16 +1132,16 @@ public class NbEditorKit extends ExtKit implements Callable {
             }
         }
         
-        public LayerSubFolderMenu(JTextComponent target, FileObject folder) {
-            this(target, getLocalizedName(folder), ActionsList.convert(sort(folder.getChildren()), false));
-        }
-        
         private static List<FileObject> sort( FileObject[] children ) {
             List<FileObject> fos = Arrays.asList(children);
             fos = FileUtil.getOrder(fos, true);
             return fos;
         }
         
+       public LayerSubFolderMenu(JTextComponent target, FileObject folder) {
+            this(target, getLocalizedName(folder), ActionsList.convert(sort(folder.getChildren()), false));
+        }
+
         @SuppressWarnings("LeakingThisInConstructor")
         private LayerSubFolderMenu(JTextComponent target, String text, List items) {
             super();
@@ -1007,7 +1316,18 @@ public class NbEditorKit extends ExtKit implements Callable {
 
         // preinitialize keymap, see issue #203920
         getKeymap();
-        
+
+        // preinitialize the entire popup menu - issue #183946
+        EditorUI ui = Utilities.getEditorUI(pane);
+        String settingName = ui == null || ui.hasExtComponent()
+                ? "popup-menu-action-name-list" //NOI18N
+                : "dialog-popup-menu-action-name-list"; //NOI18N
+        PopupInitializer init = new PopupInitializer(
+                getContextLookup(pane), 
+                this,
+                NbEditorUtilities.getOuterTopComponent(pane), 
+                getContentType(), settingName);
+        init.run();
         return null;
     }
 }

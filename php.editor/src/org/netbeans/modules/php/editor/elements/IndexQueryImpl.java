@@ -1580,14 +1580,14 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return names;
     }
 
-    private Collection<? extends IndexResult> search(String key, String name, QuerySupport.Kind kind, String... terms) {
+    private Collection<? extends IndexResult> search(String fieldName, String fieldValue, QuerySupport.Kind kind, String... fieldsToLoad) {
         try {
             long start = (LOG.isLoggable(Level.FINER)) ? System.currentTimeMillis() : 0;
-            Collection<? extends IndexResult> results = index.query(key, name, kind, terms);
+            Collection<? extends IndexResult> results = index.query(fieldName, fieldValue, kind, fieldsToLoad);
 
             if (LOG.isLoggable(Level.FINER)) {
-                String msg = "IndexQuery.search(" + key + ", " + name + ", " + kind + ", " //NOI18N
-                        + (terms == null || terms.length == 0 ? "no terms" : Arrays.asList(terms)) + ")"; //NOI18N
+                String msg = "IndexQuery.search(" + fieldName + ", " + fieldValue + ", " + kind + ", " //NOI18N
+                        + (fieldsToLoad == null || fieldsToLoad.length == 0 ? "no terms" : Arrays.asList(fieldsToLoad)) + ")"; //NOI18N
                 LOG.finer(msg);
 
                 if (LOG.isLoggable(Level.FINEST)) {

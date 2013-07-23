@@ -79,7 +79,7 @@ public class HtmlActionsImplementationProvider extends ActionsImplementationProv
     //since this service provider has a very high position, if one of the mimetypes has
     //its own refactoring UI registered that one will be prefered.
     public static Collection<String> REFACTORABLE_TYPES = 
-            Arrays.asList(new String[]{"text/html", "text/xhtml", "text/css", "text/javascript",
+            Arrays.asList(new String[]{"text/html", "text/xhtml", "text/css", "text/javascript", "text/x-json",
             "image/gif", "image/jpeg", "image/png", "image/bmp"}); //NOI18N
 
     @Override

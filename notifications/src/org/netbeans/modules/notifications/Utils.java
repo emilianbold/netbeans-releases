@@ -128,7 +128,7 @@ public class Utils {
     }
 
     public static Color getTextBackground() {
-        Color textB = UIManager.getColor("TextPane.background"); //NOI18N
+        Color textB = UIManager.getColor("Table.background"); //NOI18N
         if ("Aqua".equals(UIManager.getLookAndFeel().getID())) //NOI18N
         {
             textB = UIManager.getColor("NbExplorerView.background"); //NOI18N
