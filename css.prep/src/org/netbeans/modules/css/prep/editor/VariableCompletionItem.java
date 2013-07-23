@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.prep.editor;
 
+import java.awt.Color;
 import javax.swing.ImageIcon;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -50,6 +51,8 @@ import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 import org.netbeans.modules.css.prep.editor.model.CPElementHandle;
 import org.netbeans.modules.css.prep.editor.model.CPElementType;
+import org.netbeans.modules.web.common.api.WebUtils;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.util.ImageUtilities;
 
 /**
@@ -60,6 +63,9 @@ public class VariableCompletionItem extends CssCompletionItem {
 
     private static final int LOCAL_VAR_SORT_IMPORTANCE = 200;
     private static final int GLOBAL_VAR_SORT_IMPORTANCE = 100;
+    
+    private static final Color VAR_COLOR = new Color(0,0,0);
+    private static final Color ORIGIN_COLOR = new Color(99,99,99);
     
     private String origin;
     private CPElementHandle handle;
@@ -132,7 +138,9 @@ public class VariableCompletionItem extends CssCompletionItem {
     public String getLhsHtml(HtmlFormatter formatter) {
         switch (handle.getType()) {
             case VARIABLE_GLOBAL_DECLARATION:
-                formatter.appendHtml("<font color=000000><b>"); //NOI18N
+                formatter.appendHtml("<font color=");
+                formatter.appendHtml(WebUtils.toHexCode(LFCustoms.shiftColor(VAR_COLOR)));
+                formatter.appendHtml("><b>"); //NOI18N
                 break;
         }
         
@@ -152,7 +160,9 @@ public class VariableCompletionItem extends CssCompletionItem {
         if(origin == null) {
             return super.getRhsHtml(formatter);
         } else {
-            formatter.appendHtml("<font color=999999>");
+            formatter.appendHtml("<font color=");
+            formatter.appendHtml(WebUtils.toHexCode(LFCustoms.shiftColor(ORIGIN_COLOR)));
+            formatter.appendHtml(">");
             formatter.appendText(origin);
             formatter.appendHtml("</font>"); //NOI18N
             return formatter.getText();
