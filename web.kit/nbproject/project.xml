@@ -190,10 +190,10 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.web.jstl11</code-name-base>
+                    <code-name-base>org.netbeans.libs.jstl</code-name-base>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>2.8</specification-version>
+                        <specification-version>2.31</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
