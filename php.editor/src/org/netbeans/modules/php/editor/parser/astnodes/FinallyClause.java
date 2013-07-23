@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,67 +37,33 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-
 /**
- * Represents the try statement
- * <pre>e.g.<pre>
- * try {
- *   statements...
- * } catch (Exception $e) {
- *   statements...
- * } catch (AnotherException $ae) {
- *   statements...
- * }
+ * Represents a finally clause (as part of a try statement)
+ * <pre>e.g.<pre> finally { body; },
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class TryStatement extends Statement {
+public class FinallyClause extends Statement {
+    private final Block body;
 
-    private Block tryStatement;
-    private ArrayList<CatchClause> catchClauses = new ArrayList<>();
-    private final FinallyClause finallyClause;
-
-    private TryStatement(int start, int end, Block tryStatement, CatchClause[] catchClauses, FinallyClause finallyClause) {
+    public FinallyClause(int start, int end, Block body) {
         super(start, end);
 
-        if (tryStatement == null || catchClauses == null) {
-            throw new IllegalArgumentException();
-        }
-        this.tryStatement = tryStatement;
-        this.catchClauses.addAll(Arrays.asList(catchClauses));
-        this.finallyClause = finallyClause;
-    }
-
-    public TryStatement(int start, int end, Block tryStatement, List<CatchClause> catchClauses, FinallyClause finallyClause) {
-        this(start, end, tryStatement, catchClauses == null ? null : (CatchClause[]) catchClauses.toArray(new CatchClause[catchClauses.size()]), finallyClause);
+        assert body != null;
+        this.body = body;
     }
 
     /**
-     * Returns the body of this try statement.
+     * Returns the body of this finally clause.
      *
-     * @return the try body
+     * @return the finally clause body
      */
     public Block getBody() {
-        return this.tryStatement;
-    }
-
-    /**
-     * Returns the live ordered list of catch clauses for this try statement.
-     *
-     * @return the live list of catch clauses
-     *    (element type: <code>CatchClause</code>)
-     */
-    public List<CatchClause> getCatchClauses() {
-        return this.catchClauses;
-    }
-
-    public FinallyClause getFinallyClause() {
-        return finallyClause;
+        return body;
     }
 
     @Override
@@ -107,11 +73,7 @@ public class TryStatement extends Statement {
 
     @Override
     public String toString() {
-        StringBuilder sb = new StringBuilder();
-        for (CatchClause catchClause : getCatchClauses()) {
-            sb.append(catchClause);
-        }
-        return "try" + getBody() + sb.toString(); //NOI18N
+        return "finally " + getBody(); //NOI18N
     }
 
 }
