@@ -477,7 +477,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
         occurrences.clear();
     }
     
-    protected void moveOccurrenceOfProperties(JsObjectImpl original, JsObject created) {
+    public static void moveOccurrenceOfProperties(JsObjectImpl original, JsObject created) {
         if (original.equals(created)) {
             return;
         }

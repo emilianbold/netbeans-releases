@@ -66,6 +66,8 @@ import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.model.impl.AnonymousObject;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
@@ -77,6 +79,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.UsageBuilder;
 import org.netbeans.modules.javascript2.editor.spi.model.ModelElementFactory;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.ParserManager;
 
 /**
  *
@@ -121,11 +124,17 @@ public final class Model {
     private final UsageBuilder usageBuilder;
     
     private ModelVisitor visitor;
+    
+    /**
+     * contains with expression?
+     */
+    private boolean resolveWithObjects;
 
     Model(JsParserResult parserResult) {
         this.parserResult = parserResult;
         this.occurrencesSupport = new OccurrencesSupport(this);
         this.usageBuilder = new UsageBuilder();
+        this.resolveWithObjects = false;
     }
 
     private synchronized ModelVisitor getModelVisitor() {
@@ -137,7 +146,7 @@ public final class Model {
                 root.accept(visitor);
             }
             long startResolve = System.currentTimeMillis();
-            resolveLocalTypes(getGlobalObject(), parserResult.getDocumentationHolder());
+            resolveLocalTypes(visitor.getGlobalObject(), parserResult.getDocumentationHolder());
 
             ModelElementFactory elementFactory = ModelElementFactoryAccessor.getDefault().createModelElementFactory();
             long startCallingME = System.currentTimeMillis();
@@ -157,6 +166,67 @@ public final class Model {
             if(LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms. Extending model took {2}", new Object[]{(end - start), (startCallingME - startResolve), (end - startCallingME)}));
             }
+        } else if (resolveWithObjects) {
+            long start = System.currentTimeMillis();
+            JsObject global = visitor.getGlobalObject();
+            JsIndex jsIndex = JsIndex.get(parserResult.getSnapshot().getSource().getFileObject());
+            List<JsObject> globalProperties = new ArrayList(global.getProperties().values());
+            for (JsObject jsObject : globalProperties) {
+                if (jsObject instanceof JsWith) {
+                    JsWith jsWith = (JsWith) jsObject;
+                    Collection<? extends TypeUsage> withTypes = jsWith.getTypes();
+                    for (TypeUsage typeUsage : withTypes) {
+                        for (TypeUsage rType : ModelUtils.resolveTypeFromSemiType(jsWith, typeUsage)) {
+                            String type = rType.getType();
+                            if (type.startsWith("@exp;")) {
+                                type = type.substring(5);
+                            }
+                            JsObject fromType = ModelUtils.findJsObjectByName(global, type);
+                            if (fromType != null) {
+                                Collection<TypeUsage> assignments = ModelUtils.resolveTypes(fromType.getAssignments(), parserResult);
+                                for (TypeUsage assignment : assignments) {
+                                    Collection<IndexedElement> properties = jsIndex.getProperties(assignment.getType());
+                                    for (IndexedElement indexedElement : properties) {
+                                        JsObject jsWithProperty = jsWith.getProperty(indexedElement.getName());
+                                        if (jsWithProperty != null) {
+                                            JsObject fromTypeProperty = fromType.getProperty(indexedElement.getName());
+                                            if (fromTypeProperty == null) {
+                                                ((JsObjectImpl) jsWithProperty).setParent(fromType);
+                                                fromType.addProperty(indexedElement.getName(), jsWithProperty);
+                                            } else {
+                                                for (Occurrence occurrence : jsWithProperty.getOccurrences()) {
+                                                    fromTypeProperty.addOccurrence(occurrence.getOffsetRange());
+                                                }
+                                            }
+                                            jsWith.getProperties().remove(indexedElement.getName());
+                                        }
+                                    }
+                                }
+
+                            }
+
+                        }
+                    }
+                    List<JsObject> withProperties = new ArrayList(jsWith.getProperties().values());
+                    for (JsObject jsWithProperty: withProperties) {
+                        JsObject globalProperty = global.getProperty(jsWithProperty.getName());
+                        if (globalProperty == null) {
+                            ((JsObjectImpl) jsWithProperty).setParent(global);
+                            global.addProperty(jsWithProperty.getName(), jsWithProperty);
+                        } else {
+                            JsObjectImpl.moveOccurrenceOfProperties((JsObjectImpl)globalProperty, jsWithProperty);
+                            for (Occurrence occurrence : jsWithProperty.getOccurrences()) {
+                                globalProperty.addOccurrence(occurrence.getOffsetRange());
+                            }
+                        }
+                        jsWith.getProperties().remove(jsWithProperty.getName());
+                    }
+                }
+            }
+            long end = System.currentTimeMillis();
+            resolveWithObjects = false;
+            System.out.println("resolving with took: " + (end - start));
+            
         }
         return visitor;
     }
@@ -187,10 +257,13 @@ public final class Model {
     }
 
     private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder) {
-         if(object instanceof JsFunctionImpl) {
+        if(object instanceof JsFunctionImpl) {
             ((JsFunctionImpl)object).resolveTypes(docHolder);
         } else {
             ((JsObjectImpl)object).resolveTypes(docHolder);
+            if (object instanceof JsWith) {
+                resolveWithObjects = true;
+            }
         }
         ArrayList<JsObject> copy = new ArrayList(object.getProperties().values());
         for(JsObject property: copy) {
