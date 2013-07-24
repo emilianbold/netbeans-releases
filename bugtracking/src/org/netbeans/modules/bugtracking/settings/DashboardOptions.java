@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.bugtracking.tasks.settings;
+package org.netbeans.modules.bugtracking.settings;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeSupport;

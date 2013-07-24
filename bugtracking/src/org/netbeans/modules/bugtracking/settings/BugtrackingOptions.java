@@ -1,3 +1,5 @@
+package org.netbeans.modules.bugtracking.settings;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -41,7 +43,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.bugtracking.util;
+
 
 import java.beans.PropertyChangeListener;
 import java.util.HashMap;
@@ -49,7 +51,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.JComponent;
-import org.netbeans.modules.bugtracking.tasks.settings.DashboardOptions;
+import org.netbeans.modules.bugtracking.settings.DashboardOptions;
 import org.netbeans.spi.options.AdvancedOption;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;

@@ -1,3 +1,5 @@
+package org.netbeans.modules.bugtracking.settings;
+
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
@@ -42,7 +44,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.bugtracking.util;
+
 
 import java.awt.CardLayout;
 import javax.swing.DefaultListModel;
