@@ -41,17 +41,22 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.javascript2.editor.parser.JsParserError;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.openide.util.NbBundle;
 
 /**
  *
@@ -135,17 +140,46 @@ public class JsHintsProvider implements HintsProvider {
 
     }
 
+    @NbBundle.Messages({
+        "MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR=JavaScript error checking for this file is disabled, you can enable it with this hint"
+    })
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
         JsParserResult parserResult = (JsParserResult) context.parserResult;
         List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
         // if in embedded
         if (parserResult.isEmbedded()) {
-            for (Error error : errors) {
-                if (!(error instanceof JsParserError) || ((JsParserError) error).showInEditor()) {
-                    unhandled.add(error);
+            String mimeType = ErrorCheckingSupport.getMimeType(parserResult);
+            List<HintFix> defaultFixes = new ArrayList<HintFix>(4);
+            if (!ErrorCheckingSupport.isErrorCheckingEnabledForFile(parserResult)) {
+                defaultFixes.add(ErrorCheckingSupport.createErrorFixForFile(parserResult.getSnapshot(), true));
+            }
+            if (!ErrorCheckingSupport.isErrorCheckingEnabledForMimetype(mimeType)) {
+                defaultFixes.add(ErrorCheckingSupport.createErrorFixForMimeType(
+                        parserResult.getSnapshot(), mimeType, true));
+            }
+
+            if (!errors.isEmpty()) {
+                if (ErrorCheckingSupport.isErrorCheckingEnabled(parserResult, mimeType)) {
+                    unhandled.addAll(errors);
+
+                    if (ErrorCheckingSupport.isErrorCheckingEnabledForFile(parserResult)) {
+                        defaultFixes.add(ErrorCheckingSupport.createErrorFixForFile(parserResult.getSnapshot(), false));
+                    }
+                    if (ErrorCheckingSupport.isErrorCheckingEnabledForMimetype(mimeType)) {
+                        defaultFixes.add(ErrorCheckingSupport.createErrorFixForMimeType(
+                                parserResult.getSnapshot(), mimeType, false));
+                    }
                 }
             }
+
+            Hint h = new Hint(new JsErrorRule(),
+                    Bundle.MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR(),
+                    parserResult.getSnapshot().getSource().getFileObject(),
+                    new OffsetRange(0, 0),
+                    defaultFixes,
+                    50);
+            hints.add(h);
         } else {
             unhandled.addAll(errors);
         }
@@ -177,5 +211,33 @@ public class JsHintsProvider implements HintsProvider {
             return jsParserResult;
         }
 
+    }
+
+    private static class JsErrorRule implements Rule.ErrorRule {
+
+        @Override
+        public Set<?> getCodes() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public boolean appliesTo(RuleContext context) {
+            return true;
+        }
+
+        @Override
+        public String getDisplayName() {
+            return "js";
+        }
+
+        @Override
+        public boolean showInTasklist() {
+            return false;
+        }
+
+        @Override
+        public HintSeverity getDefaultSeverity() {
+            return HintSeverity.INFO;
+        }
     }
 }
