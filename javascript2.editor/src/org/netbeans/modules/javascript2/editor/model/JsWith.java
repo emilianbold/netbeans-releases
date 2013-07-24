@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,50 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor;
+package org.netbeans.modules.javascript2.editor.model;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import java.util.Collection;
 
 /**
  *
- * @author Petr Hejl
+ * @author Petr Pisl
  */
-public class JsCodeCompletionWith extends JsCodeCompletionBase {
+public interface JsWith extends JsObject {
     
-    public JsCodeCompletionWith(String testName) {
-        super(testName);
-    }
+    /**
+     * 
+     * @return collection types that corresponds to the expression in the with ()
+     */
+    public Collection<? extends TypeUsage> getTypes();
     
-    public void testWith1() throws Exception {
-        checkCompletion("testfiles/completion/with/with1.js", "    ^ // test", false);
-    }
-
-    public void testWith2() throws Exception {
-        checkCompletion("testfiles/completion/with/with2.js", "    z.e.^", false);
-    }
-
-    public void testWith3() throws Exception {
-        checkCompletion("testfiles/completion/with/with3.js", "    ( ^ )", false);
-    }
-
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
-        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/with")));
-        return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
-        );
-    }
+    public Collection<? extends JsWith> getInnerWiths();
+            
+    public JsWith getOuterWith();
 }
