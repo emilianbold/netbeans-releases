@@ -221,7 +221,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         
         synchronized (LOCK) {
             DashboardViewer dashboard = DashboardViewer.getInstance();
-            AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
+            AppliedFilters<TaskNode> appliedFilters = dashboard.getAppliedTaskFilters();
             removeTaskListeners();
             if (taskListener == null) {
                 taskListener = new TaskListener();
@@ -261,7 +261,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
 
             filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
             for (TaskNode taskNode : taskNodes) {
-                if (appliedFilters.isInFilter(taskNode.getTask())) {
+                if (appliedFilters.isInFilter(taskNode)) {
                     filteredTaskNodes.add(taskNode);
                 }
             }

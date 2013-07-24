@@ -41,17 +41,17 @@
  */
 package org.netbeans.modules.bugtracking.tasks.filter;
 
-import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 
 /**
  *
  * @author jpeska
  */
-public class OpenedTaskFilter implements DashboardFilter<IssueImpl> {
+public class OpenedCategorizedTaskFilter implements DashboardFilter<TaskNode> {
 
     @Override
-    public boolean isInFilter(IssueImpl issue) {
-        return !issue.isFinished();
+    public boolean isInFilter(TaskNode task) {
+        return !task.getTask().isFinished() || !task.isCategorized();
     }
 
     @Override

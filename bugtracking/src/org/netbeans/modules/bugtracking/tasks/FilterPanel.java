@@ -46,7 +46,7 @@ import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
-import org.netbeans.modules.bugtracking.tasks.filter.OpenedTaskFilter;
+import org.netbeans.modules.bugtracking.tasks.filter.OpenedCategorizedTaskFilter;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
 import org.netbeans.modules.team.commons.treelist.ColorManager;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
@@ -67,7 +67,7 @@ public class FilterPanel extends javax.swing.JPanel {
     private final TreeLabel lblCount;
     private final JButton btnFilter;
     //private final JButton btnGroup;
-    private final OpenedTaskFilter openedTaskFilter;
+    private final OpenedCategorizedTaskFilter openedTaskFilter;
     private final DashboardToolbar toolBar;
     private final RequestProcessor REQUEST_PROCESSOR;
 
@@ -75,7 +75,7 @@ public class FilterPanel extends javax.swing.JPanel {
         REQUEST_PROCESSOR = DashboardViewer.getInstance().getRequestProcessor();
         BACKGROUND_COLOR = ColorManager.getDefault().getExpandableRootBackground();
         FOREGROUND_COLOR = ColorManager.getDefault().getExpandableRootForeground();
-        openedTaskFilter = new OpenedTaskFilter();
+        openedTaskFilter = new OpenedCategorizedTaskFilter();
         initComponents();
         setBackground(BACKGROUND_COLOR);
         final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/find.png", true)); //NOI18N
@@ -201,64 +201,31 @@ public class FilterPanel extends javax.swing.JPanel {
 
     private JPopupMenu createFilterPopup() {
         final JPopupMenu popup = new JPopupMenu();
-        final ButtonGroup groupStatus = new ButtonGroup();
+        final JCheckBoxMenuItem chbShowFinished = new JCheckBoxMenuItem();
+        AbstractAction action = new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_ShowAll")) { //NOI18N
 
-        //<editor-fold defaultstate="collapsed" desc="opened/all entries section">
-        // show all action
-        JRadioButtonMenuItem rbAllStatuses = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_ShowAll")) { //NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
                 REQUEST_PROCESSOR.post(new Runnable() {
                     @Override
                     public void run() {
-                        int hits = DashboardViewer.getInstance().removeTaskFilter(openedTaskFilter, true);
-                        manageHitCount(hits);
-                        DashboardSettings.getInstance().setFinishedTaskFilter(false);
+                        boolean selected = chbShowFinished.isSelected();
+                        if (selected) {
+                            int hits = DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, true);
+                            manageHitCount(hits);
+                            DashboardSettings.getInstance().setFinishedTaskFilter(true);
+                        } else {
+                            int hits = DashboardViewer.getInstance().removeTaskFilter(openedTaskFilter, true);
+                            manageHitCount(hits);
+                            DashboardSettings.getInstance().setFinishedTaskFilter(false);
+                        }
                     }
                 });
-                if (e.getSource() instanceof JMenuItem) {
-                    ((JMenuItem) e.getSource()).setSelected(enabled);
-                }
             }
-        });
-
-        groupStatus.add(rbAllStatuses);
-        popup.add(rbAllStatuses);
-
-        // show opened only action
-        JRadioButtonMenuItem rbOpenedStatus = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_ShowOpened")) { //NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                REQUEST_PROCESSOR.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        int hits = DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, true);
-                        manageHitCount(hits);
-                        DashboardSettings.getInstance().setFinishedTaskFilter(true);
-                    }
-                });
-                if (e.getSource() instanceof JMenuItem) {
-                    ((JMenuItem) e.getSource()).setSelected(enabled);
-                }
-            }
-        });
-        groupStatus.add(rbOpenedStatus);
-        // load saved setting
-        boolean finishedTaskFilter = DashboardSettings.getInstance().isFinishedTaskFilter();
-        rbOpenedStatus.setSelected(finishedTaskFilter);
-        rbAllStatuses.setSelected(!finishedTaskFilter);
-
-        if (rbOpenedStatus.isSelected()) {
-            REQUEST_PROCESSOR.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, false);
-                    }
-                });
-        }
-        popup.add(rbOpenedStatus);
-
-        //</editor-fold>
+        };
+        chbShowFinished.setAction(action);
+        chbShowFinished.setSelected(DashboardSettings.getInstance().isFinishedTaskFilter());
+        popup.add(chbShowFinished);
 
         //<editor-fold defaultstate="collapsed" desc="schedule filters section">
         /*

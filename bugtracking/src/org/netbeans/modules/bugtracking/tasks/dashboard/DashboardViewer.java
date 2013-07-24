@@ -124,7 +124,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private final Map<RepositoryImpl, UnsubmittedCategoryNode> mapRepositoryToUnsubmittedNode;
     private List<CategoryNode> categoryNodes;
     private List<RepositoryNode> repositoryNodes;
-    private final AppliedFilters<IssueImpl> appliedTaskFilters;
+    private final AppliedFilters<TaskNode> appliedTaskFilters;
     private final AppliedFilters<CategoryNode> appliedCategoryFilters;
     private final AppliedFilters<RepositoryNode> appliedRepositoryFilters;
     private int taskHits;
@@ -192,7 +192,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         String a11y = NbBundle.getMessage(DashboardViewer.class, "A11Y_TeamProjects"); //NOI18N
         accessibleContext.setAccessibleName(a11y);
         accessibleContext.setAccessibleDescription(a11y);
-        appliedTaskFilters = new AppliedFilters<IssueImpl>();
+        appliedTaskFilters = new AppliedFilters<TaskNode>();
         appliedCategoryFilters = new AppliedFilters<CategoryNode>();
         appliedRepositoryFilters = new AppliedFilters<RepositoryNode>();
         unsubmittedCategoryFilter = new UnsubmittedCategoryFilter();
@@ -356,7 +356,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 taskNode = categorizedTaskNode;
             }
             final boolean isCatInFilter = isCategoryInFilter(destCategoryNode);
-            final boolean isTaskInFilter = appliedTaskFilters.isInFilter(taskNode.getTask());
+            final boolean isTaskInFilter = appliedTaskFilters.isInFilter(taskNode);
             TaskNode toAdd = new TaskNode(taskNode.getTask(), destCategoryNode);
             if (destCategoryNode.addTaskNode(toAdd, isTaskInFilter)) {
                 //remove from old category
@@ -737,23 +737,23 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    public AppliedFilters getAppliedTaskFilters() {
+    public AppliedFilters<TaskNode> getAppliedTaskFilters() {
         return appliedTaskFilters;
     }
 
-    public int updateTaskFilter(DashboardFilter<IssueImpl> oldFilter, DashboardFilter<IssueImpl> newFilter) {
+    public int updateTaskFilter(DashboardFilter<TaskNode> oldFilter, DashboardFilter<TaskNode> newFilter) {
         if (oldFilter != null) {
             appliedTaskFilters.removeFilter(oldFilter);
         }
         return applyTaskFilter(newFilter, true);
     }
 
-    public int applyTaskFilter(DashboardFilter<IssueImpl> taskFilter, boolean refresh) {
+    public int applyTaskFilter(DashboardFilter<TaskNode> taskFilter, boolean refresh) {
         appliedTaskFilters.addFilter(taskFilter);
         return manageApplyFilter(refresh);
     }
 
-    public int removeTaskFilter(DashboardFilter<IssueImpl> taskFilter, boolean refresh) {
+    public int removeTaskFilter(DashboardFilter<TaskNode> taskFilter, boolean refresh) {
         appliedTaskFilters.removeFilter(taskFilter);
         return manageRemoveFilter(refresh, !taskFilter.expandNodes());
     }
