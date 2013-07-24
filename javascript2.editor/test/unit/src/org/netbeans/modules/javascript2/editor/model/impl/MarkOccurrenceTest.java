@@ -876,22 +876,6 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue232804.js","console.log(app.desc^ription);", true);
     }
     
-    public void testWith_01() throws Exception {
-        checkOccurrences("/testfiles/with/test01.js", "console.log(getFirst^Name());", true);
-    }
-    
-    public void testWith_02() throws Exception {
-        checkOccurrences("/testfiles/with/test01.js", "console.l^og(getFirstName());", true);
-    }
-    
-    public void testWith_03() throws Exception {
-        checkOccurrences("/testfiles/with/test01.js", "conso^le.log(getFirstName());", true);
-    }
-    
-    public void testWith_04() throws Exception {
-        checkOccurrences("/testfiles/with/test01.js", "with(rom^an) {", true);
-    }
-    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

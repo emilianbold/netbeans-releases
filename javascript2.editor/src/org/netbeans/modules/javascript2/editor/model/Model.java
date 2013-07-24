@@ -168,6 +168,7 @@ public final class Model {
             }
         } else if (resolveWithObjects) {
             long start = System.currentTimeMillis();
+            resolveWithObjects = false;
             JsObject global = visitor.getGlobalObject();
             JsIndex jsIndex = JsIndex.get(parserResult.getSnapshot().getSource().getFileObject());
             List<JsObject> globalProperties = new ArrayList(global.getProperties().values());
@@ -180,6 +181,9 @@ public final class Model {
                             String type = rType.getType();
                             if (type.startsWith("@exp;")) {
                                 type = type.substring(5);
+                            }
+                            if (type.contains("@pro;")) {
+                                type = type.replace("@pro;", ".");
                             }
                             JsObject fromType = ModelUtils.findJsObjectByName(global, type);
                             if (fromType != null) {
@@ -202,7 +206,25 @@ public final class Model {
                                         }
                                     }
                                 }
-
+                                
+                                for (TypeUsage typeFE : ModelUtils.resolveTypes(withTypes, parserResult)) {
+                                Collection<IndexedElement> properties = jsIndex.getProperties(typeFE.getType());
+                                for (IndexedElement indexedElement : properties) {
+                                    JsObject jsWithProperty = jsWith.getProperty(indexedElement.getName());
+                                    if (jsWithProperty != null) {
+                                        JsObject fromTypeProperty = fromType.getProperty(indexedElement.getName());
+                                        if (fromTypeProperty == null) {
+                                            ((JsObjectImpl) jsWithProperty).setParent(fromType);
+                                            fromType.addProperty(indexedElement.getName(), jsWithProperty);
+                                        } else {
+                                            for (Occurrence occurrence : jsWithProperty.getOccurrences()) {
+                                                fromTypeProperty.addOccurrence(occurrence.getOffsetRange());
+                                            }
+                                        }
+                                        jsWith.getProperties().remove(indexedElement.getName());
+                                    }
+                                }
+                                }
                             }
 
                         }
@@ -224,7 +246,7 @@ public final class Model {
                 }
             }
             long end = System.currentTimeMillis();
-            resolveWithObjects = false;
+            
             System.out.println("resolving with took: " + (end - start));
             
         }

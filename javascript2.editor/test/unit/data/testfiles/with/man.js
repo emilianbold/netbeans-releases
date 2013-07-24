@@ -13,5 +13,13 @@ function Man (fName, sName) {
     this.getSecondName = function () {
         return secondName;
     }
-       
+    
+    this.address = {
+        street: "unknown street",
+        city: "some town",
+        zip: "15000",
+        print : function () {
+            return "Address: " + this.street + ", " + this.city + ", " + this.zip; 
+        }
+    };
 }
