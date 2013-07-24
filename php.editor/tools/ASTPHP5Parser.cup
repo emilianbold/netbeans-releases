@@ -203,6 +203,7 @@ terminal  T_RETURN;
 terminal  T_TRY;
 terminal  T_CATCH;
 terminal  T_THROW;
+terminal  T_FINALLY;
 terminal  T_USE;
 terminal  T_GLOBAL;
 terminal  T_VAR;
@@ -387,6 +388,7 @@ non terminal VariableBase variable;
 non terminal List additional_catches;
 non terminal List non_empty_additional_catches;
 non terminal CatchClause additional_catch;
+non terminal FinallyClause additional_finally;
 non terminal FunctionDeclaration unticked_function_declaration_statement;
 non terminal Statement unticked_class_declaration_statement;
 non terminal ClassDeclaration.Modifier class_entry_type;
@@ -834,13 +836,14 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 :}
 
 | T_TRY:start T_CURLY_OPEN:tryBlockStart inner_statement_list:tryList T_CURLY_CLOSE:tryBlockEnd T_CATCH:catch_word T_OPEN_PARENTHESE fully_qualified_class_name:className tracked_variable:var T_CLOSE_PARENTHESE
-T_CURLY_OPEN:catchBlockStart inner_statement_list:catchList T_CURLY_CLOSE:catchBlockEnd additional_catches:catchesList
+T_CURLY_OPEN:catchBlockStart inner_statement_list:catchList T_CURLY_CLOSE:catchBlockEnd additional_catches:catchesList additional_finally:finallyBlock
 {:
 	Block tryBlock = new Block(tryBlockStartleft, tryBlockEndright, tryList);
 	Block catchBlock = new Block(catchBlockStartleft, catchBlockEndright, catchList);
 	CatchClause catchClause = new CatchClause(catch_wordleft, catchBlockEndright, className, var, catchBlock);
 	((LinkedList) catchesList).addFirst(catchClause);
-	TryStatement tryStatement = new TryStatement(startleft, catchesListright, tryBlock, catchesList);
+    int end = finallyBlock == null ? catchesListright : finallyBlockright;
+	TryStatement tryStatement = new TryStatement(startleft, end, tryBlock, catchesList, finallyBlock);
 	RESULT = tryStatement;
 :}
 
@@ -901,6 +904,20 @@ T_CATCH:catch_word T_OPEN_PARENTHESE fully_qualified_class_name:className T_VARI
 	Variable variable = new Variable(varleft, varright, var);
 	CatchClause catchClause = new CatchClause(catch_wordleft, catchBlockEndright, className, variable, catchBlock);
 	RESULT = catchClause;
+:}
+;
+
+additional_finally ::=
+ /* empty */
+{:
+    RESULT = null;
+:}
+
+| T_FINALLY:finally_word T_CURLY_OPEN:finallyBlockStart inner_statement_list:finallyList T_CURLY_CLOSE:finallyBlockEnd
+{:
+    Block finallyBlock = new Block(finallyBlockStartleft, finallyBlockEndright, finallyList);
+	FinallyClause finallyClause = new FinallyClause(finally_wordleft, finallyBlockEndright, finallyBlock);
+	RESULT = finallyClause;
 :}
 ;
 

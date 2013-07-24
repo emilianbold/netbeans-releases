@@ -70,6 +70,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FinallyClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -292,6 +293,11 @@ public class DefaultVisitor implements Visitor {
     }
 
     @Override
+    public void visit(FinallyClause node) {
+        scan(node.getBody());
+    }
+
+    @Override
     public void visit(ForEachStatement node) {
         scan(node.getExpression());
         scan(node.getKey());
@@ -491,6 +497,7 @@ public class DefaultVisitor implements Visitor {
     public void visit(TryStatement node) {
         scan(node.getCatchClauses());
         scan(node.getBody());
+        scan(node.getFinallyClause());
     }
 
     @Override

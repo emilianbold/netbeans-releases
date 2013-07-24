@@ -121,6 +121,8 @@ public interface Visitor {
     //public void endVisit(FieldAccess fieldAccess);
     public void visit(FieldsDeclaration fieldsDeclaration);
 
+    public void visit(FinallyClause finallyClause);
+
     //public void endVisit(FieldsDeclaration fieldsDeclaration);
     public void visit(ForEachStatement forEachStatement);
 

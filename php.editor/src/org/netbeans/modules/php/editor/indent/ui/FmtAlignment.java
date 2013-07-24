@@ -66,6 +66,7 @@ public class FmtAlignment extends javax.swing.JPanel {
         nlElseCheckBox.putClientProperty(OPTION_ID, PLACE_ELSE_ON_NEW_LINE);
         nlWhileCheckBox.putClientProperty(OPTION_ID, PLACE_WHILE_ON_NEW_LINE);
         nlCatchCheckBox.putClientProperty(OPTION_ID, PLACE_CATCH_ON_NEW_LINE);
+        nlFinallyCheckBox.putClientProperty(OPTION_ID, PLACE_FINALLY_ON_NEW_LINE);
         nlModifiersCheckBox.putClientProperty(OPTION_ID, PLACE_NEW_LINE_AFTER_MODIFIERS);
         amMethodParamsCheckBox.putClientProperty(OPTION_ID, ALIGN_MULTILINE_METHOD_PARAMS);
         amCallArgsCheckBox.putClientProperty(OPTION_ID, ALIGN_MULTILINE_CALL_ARGS);
@@ -150,6 +151,7 @@ public class FmtAlignment extends javax.swing.JPanel {
         jSeparator3 = new javax.swing.JSeparator();
         gmlAssignmentCheckBox = new javax.swing.JCheckBox();
         gmlArrayInitializerCheckBox = new javax.swing.JCheckBox();
+        nlFinallyCheckBox = new javax.swing.JCheckBox();
 
         setName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "LBL_Alignment")); // NOI18N
         setOpaque(false);
@@ -200,62 +202,67 @@ public class FmtAlignment extends javax.swing.JPanel {
         org.openide.awt.Mnemonics.setLocalizedText(groupMultilineAlignmentLabel, org.openide.util.NbBundle.getMessage(FmtAlignment.class, "LBL_al_AccrosMultilineAllignment")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(gmlAssignmentCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.gmlAssignmentCheckBox.text")); // NOI18N
+        gmlAssignmentCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
         org.openide.awt.Mnemonics.setLocalizedText(gmlArrayInitializerCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.gmlArrayInitializerCheckBox.text")); // NOI18N
+        gmlArrayInitializerCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
+
+        org.openide.awt.Mnemonics.setLocalizedText(nlFinallyCheckBox, org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.nlFinallyCheckBox.text")); // NOI18N
+        nlFinallyCheckBox.setBorder(javax.swing.BorderFactory.createEmptyBorder(1, 1, 1, 1));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(nlWhileCheckBox)
-                            .addComponent(nlElseCheckBox))
-                        .addGap(59, 59, 59)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(nlCatchCheckBox)
-                            .addComponent(nlModifiersCheckBox))
-                        .addContainerGap(80, Short.MAX_VALUE))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                            .addGroup(layout.createSequentialGroup()
                                 .addComponent(newLinesLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jSeparator1, javax.swing.GroupLayout.DEFAULT_SIZE, 305, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addGap(194, 194, 194)
-                                .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 196, Short.MAX_VALUE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(groupMultilineAlignmentLabel)
-                                    .addComponent(gmlAssignmentCheckBox))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(groupMultilineAlignmentLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(gmlArrayInitializerCheckBox)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 69, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                                .addComponent(jSeparator3, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(multilineAlignmentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE))))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addComponent(multilineAlignmentLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 147, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jSeparator2, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE))
-                                    .addGroup(layout.createSequentialGroup()
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(amMethodParamsCheckBox)
-                                            .addComponent(amParenthesizedCheckBox1)
-                                            .addComponent(amAssignCheckBox1)
-                                            .addComponent(amForCheckBox1)
-                                            .addComponent(amImplementsCheckBox1))
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                            .addComponent(amBinaryOpCheckBox1)
-                                            .addComponent(amTernaryOpCheckBox1)
-                                            .addComponent(amArrayInitCheckBox1)
-                                            .addComponent(amCallArgsCheckBox))))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)))
-                        .addContainerGap())))
+                                    .addComponent(nlWhileCheckBox)
+                                    .addComponent(nlElseCheckBox))
+                                .addGap(71, 71, 71)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(nlCatchCheckBox)
+                                    .addComponent(nlModifiersCheckBox)))
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(gmlAssignmentCheckBox)
+                                .addGap(93, 93, 93)
+                                .addComponent(gmlArrayInitializerCheckBox))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(amMethodParamsCheckBox)
+                                    .addComponent(amParenthesizedCheckBox1)
+                                    .addComponent(amAssignCheckBox1)
+                                    .addComponent(amForCheckBox1)
+                                    .addComponent(amImplementsCheckBox1))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(amBinaryOpCheckBox1)
+                                    .addComponent(amTernaryOpCheckBox1)
+                                    .addComponent(amArrayInitCheckBox1)
+                                    .addComponent(amCallArgsCheckBox))))
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(nlFinallyCheckBox)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -275,6 +282,8 @@ public class FmtAlignment extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(nlWhileCheckBox)
                     .addComponent(nlCatchCheckBox))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(nlFinallyCheckBox)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(groupMultilineAlignmentLabel)
@@ -297,7 +306,7 @@ public class FmtAlignment extends javax.swing.JPanel {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addGap(26, 26, 26)
+                        .addGap(20, 20, 20)
                         .addComponent(amArrayInitCheckBox1)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(amTernaryOpCheckBox1))
@@ -311,7 +320,7 @@ public class FmtAlignment extends javax.swing.JPanel {
                         .addComponent(amParenthesizedCheckBox1)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(amForCheckBox1)
-                .addContainerGap(65, Short.MAX_VALUE))
+                .addContainerGap(40, Short.MAX_VALUE))
         );
 
         newLinesLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(FmtAlignment.class, "FmtAlignment.newLinesLabel.AccessibleContext.accessibleName")); // NOI18N
@@ -370,6 +379,7 @@ public class FmtAlignment extends javax.swing.JPanel {
     private javax.swing.JLabel newLinesLabel;
     private javax.swing.JCheckBox nlCatchCheckBox;
     private javax.swing.JCheckBox nlElseCheckBox;
+    private javax.swing.JCheckBox nlFinallyCheckBox;
     private javax.swing.JCheckBox nlModifiersCheckBox;
     private javax.swing.JCheckBox nlWhileCheckBox;
     // End of variables declaration//GEN-END:variables
