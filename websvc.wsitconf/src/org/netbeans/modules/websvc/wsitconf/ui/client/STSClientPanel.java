@@ -56,7 +56,6 @@ import org.netbeans.modules.websvc.wsitmodelext.versioning.ConfigVersion;
 import org.netbeans.modules.websvc.wsstack.api.WSStackVersion;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -87,6 +86,7 @@ public class STSClientPanel extends SectionInnerPanel {
 
         initComponents();
 
+        /* issue 232988: the background color issues with dark metal L&F
         endpointLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         endpointTextField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         metadataLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -102,6 +102,7 @@ public class STSClientPanel extends SectionInnerPanel {
         trustVersionLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         trustVersionCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         shareTokenChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        */
         shareTokenChBox.setToolTipText(NbBundle.getMessage(STSClientPanel.class, "LBL_STSPanel_ShareToken_Tooltip"));
 
         inSync = true;

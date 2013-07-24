@@ -55,7 +55,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelp
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityTokensModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.BindingOperation;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
@@ -98,11 +97,13 @@ public class InputPanel<T extends WSDLComponent> extends SectionInnerPanel {
         this.undoManager = undoManager;
         initComponents();
         
+        /* issue 232988: the background color issues with dark metal L&F
         tokenComboLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         tokenCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         signedChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         endorsingChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         encryptedChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        */
 
         addImmediateModifier(tokenCombo);
         addImmediateModifier(signedChBox);
