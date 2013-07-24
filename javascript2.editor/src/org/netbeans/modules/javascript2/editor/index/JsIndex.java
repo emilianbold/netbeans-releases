@@ -237,7 +237,7 @@ public class JsIndex {
     private static Collection<IndexedElement> getElementsByPrefix(String prefix, Collection<IndexedElement> items) {
         Collection<IndexedElement> result = new ArrayList<IndexedElement>();
         for (IndexedElement indexedElement : items) {
-            if (indexedElement.getFQN().startsWith(prefix)) {
+            if (indexedElement.getName().startsWith(prefix)) {
                 result.add(indexedElement);
             }
         }

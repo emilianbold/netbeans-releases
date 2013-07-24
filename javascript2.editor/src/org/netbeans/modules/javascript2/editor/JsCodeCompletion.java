@@ -134,7 +134,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     for (IndexedElement indexElement : fromIndex) {
                         addPropertyToMap(request, added, indexElement);
                     }
-                    added.putAll(getWithCompletionResults(request, null));
                     break;    
                 case EXPRESSION:
                     completeKeywords(request, resultList);
@@ -190,13 +189,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     for (IndexedElement indexElement : fromIndex) {
                         addPropertyToMap(request, addedProperties, indexElement);
                     }
-
-                    addedProperties.putAll(getWithCompletionResults(request, null));
+                    completeInWith(request, resultList);
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
                 case EXPRESSION:
                     completeKeywords(request, resultList);
                     completeExpression(request, added);
+                    completeInWith(request, resultList);
                     break;
                 case OBJECT_PROPERTY:
                     completeObjectProperty(request, added);
@@ -453,7 +452,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
 
-        addedItems.putAll(getWithCompletionResults(request, null));
     }
 
     private int checkRecursion;
@@ -461,57 +459,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private void completeObjectProperty(CompletionRequest request, Map<String, List<JsElement>> addedItems) {
         List<String> expChain = resolveExpressionChain(request, request.anchor, false);
         Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
-        Map<String, List<JsElement>> toAddWith = getWithCompletionResults(request, expChain);
         addedItems.putAll(toAdd);
-        if (!toAddWith.isEmpty()) {
-            addedItems.putAll(toAddWith);
-        }
-    }
-
-    private Map<String, List<JsElement>> getWithCompletionResults(CompletionRequest request, @NullAllowed List<String> expChain) {
-        Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);
-
-        DeclarationScope scope = ModelUtils.getDeclarationScope(request.result.getModel(), request.anchor);
-        List<String> realExpChain = expChain;
-        if (realExpChain == null) {
-            realExpChain = resolveExpressionChain(request, request.anchor, false);
-        }
-        List<String> combinedChain = new ArrayList<String>();
-        while (scope != null) {
-            List<? extends TypeUsage> found = scope.getWithTypesForOffset(request.anchor);
-
-            // we iterate in reverse order (by offset) to from the deepest with up
-            for (int i = found.size() - 1; i >= 0; i--) {
-                for (TypeUsage resolved : ModelUtils.resolveTypeFromSemiType(
-                        ModelUtils.findJsObject(request.result.getModel(), request.anchor), found.get(i))) {
-                    List<String> typeChain = ModelUtils.expressionFromType(resolved);
-                    if (typeChain.size() == 1) {
-                        typeChain = new ArrayList<String>(typeChain);
-                        typeChain.add("@pro"); // NOI18N
-                    }
-                    List<String> workingChain = new ArrayList<String>(typeChain.size() + realExpChain.size() + 2);
-                    workingChain.addAll(realExpChain);
-                    workingChain.addAll(typeChain);
-                    result.putAll(getCompletionFromExpressionChain(request, workingChain));
-
-                    if (!combinedChain.isEmpty()) {
-                        workingChain.clear();
-                        workingChain.addAll(combinedChain);
-                        workingChain.addAll(typeChain);
-                        result.putAll(getCompletionFromExpressionChain(request, workingChain));
-                    }
-                    combinedChain.addAll(typeChain);                    
-                }
-            }
-
-            // FIXME more generic solution
-            if ((scope instanceof JsFunction) && !(scope instanceof CatchBlockImpl)) {
-                // the with is not propagated to function afaik
-                break;
-            }
-            scope = scope.getParentScope();
-        }
-        return result;
     }
 
     private Map<String, List<JsElement>> getCompletionFromExpressionChain(CompletionRequest request, List<String> expChain) {
@@ -787,7 +735,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
     }
     
     private void completeObjectMembers(JsObject jsObject, CompletionRequest request, Map<String, List<JsElement>> properties) {
-        if (jsObject.getJSKind() == JsElement.Kind.OBJECT || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+        if (jsObject.getJSKind() == JsElement.Kind.OBJECT || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR
+                || jsObject.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
             for (JsObject property : jsObject.getProperties().values()) {
                 if(!property.getModifiers().contains(Modifier.PRIVATE) && !property.isAnonymous()) {
                     addPropertyToMap(request, properties, property);
@@ -804,6 +753,34 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
     }
 
+    private void completeInWith (CompletionRequest request, List<CompletionProposal> resultList) {
+        int offset = request.anchor;
+        Collection<? extends TypeUsage> typesFromWith = ModelUtils.getTypeFromWith(request.result.getModel(), offset);
+        if (!typesFromWith.isEmpty()) {
+            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+            JsIndex jsIndex = JsIndex.get(fo);
+            Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(typesFromWith, request.result);
+            Map<String, List<JsElement>> properties = new HashMap<String, List<JsElement>>();
+            for (TypeUsage type : resolveTypes) {
+                JsObject localObject = ModelUtils.findJsObjectByName(request.result.getModel(), type.getType());
+                if (localObject != null) {
+                    addObjectPropertiesToCC(localObject, request, properties);
+                } 
+                
+                Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(type.getType(), request.prefix);
+                for (IndexedElement indexedElement : indexResults) {
+                    if (!indexedElement.isAnonymous()
+                            && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
+                        addPropertyToMap(request, properties, indexedElement);
+                    }
+                }
+            }
+            
+            JsCompletionItem.Factory.create(properties, request, resultList);
+        }
+        
+    }
+    
     private void completeKeywords(CompletionRequest request, List<CompletionProposal> resultList) {
         for (String keyword : JsKeyWords.KEYWORDS.keySet()) {
             if (startsWith(keyword, request.prefix)) {

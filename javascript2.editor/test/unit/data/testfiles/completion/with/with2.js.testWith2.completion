@@ -4,12 +4,9 @@ z.e.|
 ------------------------------------
 CLASS      prototype                       [PUBLIC]   JS Platform
 METHOD     anchor(nameAttribute: String):  [PUBLIC]   JS Platform
-METHOD     apply(thisArg: String, argArra  [PUBLIC]   JS Platform
 METHOD     big(): String                   [PUBLIC]   JS Platform
-METHOD     bind(thisArg: Object): String   [PUBLIC]   JS Platform
 METHOD     blink(): String                 [PUBLIC]   JS Platform
 METHOD     bold(): String                  [PUBLIC]   JS Platform
-METHOD     call(thisArg: Object): String   [PUBLIC]   JS Platform
 METHOD     charAt(pos: Number): String     [PUBLIC]   JS Platform
 METHOD     charCodeAt(pos: Number): Numbe  [PUBLIC]   JS Platform
 METHOD     concat(): String                [PUBLIC]   JS Platform
