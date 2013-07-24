@@ -315,4 +315,8 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testFinally_02() throws Exception {
         checkErrors("testfiles/parser/finally_02.php");
     }
+
+    public void testListInForeach() throws Exception {
+        checkErrors("testfiles/parser/listInForeach.php");
+    }
 }

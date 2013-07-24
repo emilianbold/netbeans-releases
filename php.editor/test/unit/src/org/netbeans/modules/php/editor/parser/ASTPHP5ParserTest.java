@@ -460,6 +460,10 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/finally_02");
     }
 
+    public void testListInForeach() throws Exception {
+        performTest("parser/listInForeach");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");
