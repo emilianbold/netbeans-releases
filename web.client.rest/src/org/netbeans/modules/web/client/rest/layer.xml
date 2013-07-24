@@ -50,7 +50,7 @@ made subject to such option by the copyright holder.
             <file name="RestJavascriptClient.js">
                 <attr name="position" intvalue="420"/>
                 <attr name="template" boolvalue="true"/>
-                <attr name="templateCategory" stringvalue="clientside-types"/>
+                <attr name="templateCategory" stringvalue="html5"/>
                 <attr name="templateWizardIterator" newvalue="org.netbeans.modules.web.client.rest.wizard.JSClientIterator"/>
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/web/client/rest/wizard/resources/JSClient.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.web.client.rest.wizard.Bundle"/>
