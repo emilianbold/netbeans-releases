@@ -112,7 +112,7 @@ public class FilterPanel extends javax.swing.JPanel {
         });
         textFilter.setMinimumSize(new java.awt.Dimension(150, 20));
         textFilter.setPreferredSize(new java.awt.Dimension(150, 20));
-        add(textFilter, new GridBagConstraints(3, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(2, 5, 2, 5), 0, 0));
+        add(textFilter, new GridBagConstraints(3, 0, 1, 1, 1, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(2, 5, 2, 5), 0, 0));
 
         lblCount = new TreeLabel("");
         lblCount.setVisible(false);
