@@ -183,7 +183,7 @@ public class PresenceIndicator {
                 logoutItem.addActionListener(new ActionListener() {
                     @Override
                     public void actionPerformed(ActionEvent e) {
-                        Actions.forID("Team", "org.netbeans.modules.team.ui.LogoutAction").actionPerformed(e);
+                        Actions.forID("Team", "org.netbeans.modules.team.server.LogoutAction").actionPerformed(e);
                     }
                 });
                 menu.show(label, event.getPoint().x, event.getPoint().y);

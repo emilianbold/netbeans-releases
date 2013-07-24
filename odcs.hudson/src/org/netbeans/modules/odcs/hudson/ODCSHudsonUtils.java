@@ -53,7 +53,7 @@ import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSFactory;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 
 /**
  *

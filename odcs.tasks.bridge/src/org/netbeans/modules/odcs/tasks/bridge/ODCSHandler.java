@@ -61,13 +61,13 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.QueryHandle;
-import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
 import static org.netbeans.modules.odcs.tasks.bridge.Bundle.*;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
-import org.netbeans.modules.team.ui.common.DashboardSupport;
-import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.server.ui.common.DashboardSupport;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.WeakListeners;
 

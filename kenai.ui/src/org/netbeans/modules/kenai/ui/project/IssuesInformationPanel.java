@@ -73,7 +73,7 @@ import org.netbeans.modules.kenai.ui.KenaiPopupActionsProvider;
 import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.team.ui.common.DashboardSupport;
+import org.netbeans.modules.team.server.ui.common.DashboardSupport;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor.IssueHandle;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
