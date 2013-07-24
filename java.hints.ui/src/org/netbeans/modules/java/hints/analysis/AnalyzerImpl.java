@@ -204,10 +204,10 @@ public class AnalyzerImpl implements Analyzer {
                     if (context.getPreselectId() == null) {
                         HintsPanel prev = context.getPreviousComponent();
                         if (prev != null) {
-                            prev.setOverlayPreferences(HintsSettings.createPreferencesBasedHintsSettings(context.getSettings(), false, Severity.VERIFIER));
+                            prev.setOverlayPreferences(HintsSettings.createPreferencesBasedHintsSettings(context.getSettings(), false, Severity.VERIFIER), true);
                             return prev;
                         }
-                        return new HintsPanel(context.getSettings(), context.getData());
+                        return new HintsPanel(context.getSettings(), context.getData(), true);
                     } else {
                         HintMetadata toSelect = null;
                         for (HintMetadata hm : Utilities.getBatchSupportedHints(context.getData()).keySet()) {

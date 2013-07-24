@@ -163,7 +163,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     void connect( final JTree errorTree, DefaultTreeModel errorTreeModel, JLabel severityLabel, JComboBox severityComboBox,
                   JCheckBox tasklistCheckBox, JPanel customizerPanel,
                   JEditorPane descriptionTextArea, final JComboBox configCombo, JButton editScript,
-                  HintsSettings settings) {
+                  HintsSettings settings, boolean direct) {
         
         this.errorTree = errorTree;
         this.errorTreeModel = errorTreeModel;
@@ -184,7 +184,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
             originalSettings = HintsSettings.getGlobalSettings();
         }
         
-        writableSettings = new WritableSettings(originalSettings);
+        writableSettings = new WritableSettings(originalSettings, direct);
         
         valueChanged( null );
         
@@ -215,10 +215,10 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 //        return currentProfileId;
 //    }
 
-    synchronized void setOverlayPreferences(HintsSettings settings) {
+    synchronized void setOverlayPreferences(HintsSettings settings, boolean direct) {
         applyChanges();
         this.originalSettings = settings != null ? settings : HintsSettings.getGlobalSettings();
-        this.writableSettings = new WritableSettings(originalSettings);
+        this.writableSettings = new WritableSettings(originalSettings, direct);
         valueChanged(null);
         errorTree.repaint();
     }
@@ -696,10 +696,12 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     
     static final class WritableSettings extends HintsSettings {
         private final HintsSettings delegate;
+        private final boolean direct;
         private Map<HintMetadata,ModifiedHint> changes = new HashMap<HintMetadata, ModifiedHint>();
 
-        public WritableSettings(HintsSettings delegate) {
+        public WritableSettings(HintsSettings delegate, boolean direct) {
             this.delegate = delegate;
+            this.direct = direct;
         }
 
         @Override
@@ -723,11 +725,14 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         
         @Override
         public void setEnabled(HintMetadata hint, boolean value) {
-            forWriting(hint).enabledOverride = value;
+            if (direct) delegate.setEnabled(hint, value);
+            else forWriting(hint).enabledOverride = value;
         }
 
         @Override
         public Preferences getHintPreferences(HintMetadata hint) {
+            if (direct) return delegate.getHintPreferences(hint);
+            
             Preferences prefs = forWriting(hint).preferencesOverride;
             
             if (prefs == null) {
@@ -749,7 +754,8 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
 
         @Override
         public void setSeverity(HintMetadata hint, Severity severity) {
-            forWriting(hint).severityOverride = severity;
+            if (direct) delegate.setSeverity(hint, severity);
+            else forWriting(hint).severityOverride = severity;
         }
         
         public boolean isModified() {

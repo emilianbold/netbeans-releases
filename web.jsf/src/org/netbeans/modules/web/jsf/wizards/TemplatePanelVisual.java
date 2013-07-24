@@ -42,7 +42,13 @@
 
 package org.netbeans.modules.web.jsf.wizards;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.InputStream;
+import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import javax.swing.JRadioButton;
 import org.openide.util.HelpCtx;
 
 /**
@@ -54,9 +60,13 @@ public class TemplatePanelVisual extends javax.swing.JPanel implements HelpCtx.P
     private static final long serialVersionUID = 1L;
     private static final String RESOURCES_FOLDER="org/netbeans/modules/web/jsf/facelets/resources/templates/";  //NOI18N
 
+    private final Map<Integer, JRadioButton> templateButtonMapping = new HashMap();
+
     /** Creates new form TemplatePanelVisual */
     public TemplatePanelVisual() {
         initComponents();
+        initTemplateButtonMapping();
+        initListeners();
     }
     
     /** This method is called from within the constructor to
@@ -86,67 +96,76 @@ public class TemplatePanelVisual extends javax.swing.JPanel implements HelpCtx.P
 
         bgTemplates.add(jRadioButton2);
         jRadioButton2.setSelected(true);
+        jRadioButton2.setText(getTemplatePreviewText(1, true));
         jRadioButton2.setActionCommand("1");
         jRadioButton2.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton2.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jRadioButton2.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template1-unselected.png"))); // NOI18N
-        jRadioButton2.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template1-selected.png"))); // NOI18N
+        jRadioButton2.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jRadioButton2.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         jpTemplateChooser.add(jRadioButton2);
 
         bgTemplates.add(jRadioButton3);
+        jRadioButton3.setText(getTemplatePreviewText(2, false));
         jRadioButton3.setActionCommand("2");
         jRadioButton3.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton3.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jRadioButton3.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template2-unselected.png"))); // NOI18N
-        jRadioButton3.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template2-selected.png"))); // NOI18N
+        jRadioButton3.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jRadioButton3.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         jpTemplateChooser.add(jRadioButton3);
 
         bgTemplates.add(jRadioButton4);
+        jRadioButton4.setText(getTemplatePreviewText(8, false));
         jRadioButton4.setActionCommand("3");
         jRadioButton4.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton4.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jRadioButton4.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template8-unselected.png"))); // NOI18N
-        jRadioButton4.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template8-selected.png"))); // NOI18N
+        jRadioButton4.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jRadioButton4.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         jpTemplateChooser.add(jRadioButton4);
 
         bgTemplates.add(jRadioButton5);
+        jRadioButton5.setText(getTemplatePreviewText(7, false));
         jRadioButton5.setActionCommand("4");
         jRadioButton5.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton5.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jRadioButton5.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template7-unselected.png"))); // NOI18N
-        jRadioButton5.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template7-selected.png"))); // NOI18N
+        jRadioButton5.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jRadioButton5.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         jpTemplateChooser.add(jRadioButton5);
 
         bgTemplates.add(jRadioButton6);
+        jRadioButton6.setText(getTemplatePreviewText(3, false));
         jRadioButton6.setActionCommand("5");
         jRadioButton6.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton6.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jRadioButton6.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template3-unselected.png"))); // NOI18N
-        jRadioButton6.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template3-selected.png"))); // NOI18N
+        jRadioButton6.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jRadioButton6.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         jpTemplateChooser.add(jRadioButton6);
 
         bgTemplates.add(jRadioButton7);
+        jRadioButton7.setText(getTemplatePreviewText(6, false));
+        jRadioButton7.setToolTipText("");
         jRadioButton7.setActionCommand("6");
         jRadioButton7.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton7.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jRadioButton7.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template6-unselected.png"))); // NOI18N
-        jRadioButton7.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template6-selected.png"))); // NOI18N
+        jRadioButton7.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jRadioButton7.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         jpTemplateChooser.add(jRadioButton7);
 
         bgTemplates.add(jRadioButton8);
+        jRadioButton8.setText(getTemplatePreviewText(4, false));
         jRadioButton8.setActionCommand("7");
         jRadioButton8.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton8.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jRadioButton8.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template4-unselected.png"))); // NOI18N
-        jRadioButton8.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template4-selected.png"))); // NOI18N
+        jRadioButton8.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jRadioButton8.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         jpTemplateChooser.add(jRadioButton8);
 
         bgTemplates.add(jRadioButton9);
+        jRadioButton9.setText(getTemplatePreviewText(5, false));
         jRadioButton9.setActionCommand("8");
         jRadioButton9.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         jRadioButton9.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        jRadioButton9.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template5-unselected.png"))); // NOI18N
-        jRadioButton9.setSelectedIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/web/jsf/facelets/resources/template5-selected.png"))); // NOI18N
+        jRadioButton9.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jRadioButton9.setVerticalTextPosition(javax.swing.SwingConstants.TOP);
         jpTemplateChooser.add(jRadioButton9);
 
         java.util.ResourceBundle bundle = java.util.ResourceBundle.getBundle("org/netbeans/modules/web/jsf/wizards/Bundle"); // NOI18N
@@ -174,7 +193,7 @@ public class TemplatePanelVisual extends javax.swing.JPanel implements HelpCtx.P
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jRadioButton10)
                 .addGap(201, 201, 201))
-            .addComponent(jpTemplateChooser, javax.swing.GroupLayout.DEFAULT_SIZE, 623, Short.MAX_VALUE)
+            .addComponent(jpTemplateChooser, javax.swing.GroupLayout.DEFAULT_SIZE, 690, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -183,8 +202,8 @@ public class TemplatePanelVisual extends javax.swing.JPanel implements HelpCtx.P
                     .addComponent(jLabel1)
                     .addComponent(jRadioButton1)
                     .addComponent(jRadioButton10))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jpTemplateChooser, javax.swing.GroupLayout.DEFAULT_SIZE, 159, Short.MAX_VALUE))
+                .addGap(18, 18, 18)
+                .addComponent(jpTemplateChooser, javax.swing.GroupLayout.DEFAULT_SIZE, 167, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
     
@@ -234,4 +253,58 @@ public class TemplatePanelVisual extends javax.swing.JPanel implements HelpCtx.P
         String name = bgLayout.getSelection().getActionCommand() + "Layout";    //NOI18N
         return name;
     }
+
+    private void initTemplateButtonMapping() {
+        templateButtonMapping.put(1, jRadioButton2);
+        templateButtonMapping.put(2, jRadioButton3);
+        templateButtonMapping.put(3, jRadioButton6);
+        templateButtonMapping.put(4, jRadioButton8);
+        templateButtonMapping.put(5, jRadioButton9);
+        templateButtonMapping.put(6, jRadioButton7);
+        templateButtonMapping.put(7, jRadioButton5);
+        templateButtonMapping.put(8, jRadioButton4);
+    }
+
+    private void initListeners() {
+        ActionListener clickListener = new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (e.getSource() instanceof JRadioButton) {
+                    JRadioButton rbutton = (JRadioButton) e.getSource();
+                    int IdIndex = rbutton.getText().indexOf("template") + 8; //NOI18N
+                    int templateId = Integer.parseInt(rbutton.getText().substring(IdIndex, IdIndex + 1));
+                    resetAllPreviews();
+                    templateButtonMapping.get(templateId).setText(getTemplatePreviewText(templateId, true));
+                }
+            }
+        };
+        for (JRadioButton jRadioButton : templateButtonMapping.values()) {
+            jRadioButton.addActionListener(clickListener);
+        }
+    }
+
+    private void resetAllPreviews() {
+        for (Map.Entry<Integer, JRadioButton> entry : templateButtonMapping.entrySet()) {
+            entry.getValue().setText(getTemplatePreviewText(entry.getKey(), false));
+        }
+    }
+
+    private static String getTemplatePreviewText(int templateId, boolean selected) {
+        if (selected) {
+            return "<html><body><img src='" + getSelectedTemplatePreview(templateId) + "' width='68' height='68'>"; //NOI18N
+        } else {
+            return "<html><body><img src='" + getUnselectedTemplatePreview(templateId) + "' width='68' height='68'>"; //NOI18N
+        }
+    }
+
+    private static URL getUnselectedTemplatePreview(int templateId) {
+        return TemplatePanelVisual.class.getResource(
+                "/org/netbeans/modules/web/jsf/facelets/resources/template" + templateId + "-unselected.png"); //NOI18N
+    }
+
+    private static URL getSelectedTemplatePreview(int templateId) {
+        return TemplatePanelVisual.class.getResource(
+                "/org/netbeans/modules/web/jsf/facelets/resources/template" + templateId + "-selected.png"); //NOI18N
+    }
+
 }

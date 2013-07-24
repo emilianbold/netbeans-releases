@@ -51,6 +51,7 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
@@ -652,11 +653,11 @@ public class RefactoringUtils {
         //If no cp found at all log the file and use nullPath since the ClasspathInfo.create
         //doesn't accept null compile or boot cp.
         if (compile == null) {
-            LOG.warning("No classpath for: " + FileUtil.getFileDisplayName(files[0]) + " " + FileOwnerQuery.getOwner(files[0]));
+            LOG.log(Level.WARNING, "No classpath for: {0} {1}", new Object[]{FileUtil.getFileDisplayName(files[0]), FileOwnerQuery.getOwner(files[0])}); //NOI18N
             compile = nullPath;
         }
         compile = merge(compile, ClassPathSupport.createClassPath(dependentCompileRoots.toArray(new URL[dependentCompileRoots.size()])));
-        ClasspathInfo cpInfo = ClasspathInfo.create(boot, compile, rcp);
+        ClasspathInfo cpInfo = ClasspathInfo.create(boot == null? nullPath : boot, compile == null? nullPath : compile, rcp);
         return cpInfo;
     }
 

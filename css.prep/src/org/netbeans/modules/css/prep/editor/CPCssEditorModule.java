@@ -168,6 +168,11 @@ public class CPCssEditorModule extends CssEditorModule {
                 //not complete keyword (complete keyword have their own token types,
                 //but no need to complete them except documentation completion request
                 List<CompletionProposal> props = Utilities.createRAWCompletionProposals(model.getDirectives(), ElementKind.KEYWORD, context.getAnchorOffset());
+                
+                //less variable: @va|
+                if(model.getPreprocessorType() == CPType.LESS) {
+                    return Utilities.filterCompletionProposals(allVars, context.getPrefix(), true);
+                }
                 return Utilities.filterCompletionProposals(props, context.getPrefix(), true);
         }
 
