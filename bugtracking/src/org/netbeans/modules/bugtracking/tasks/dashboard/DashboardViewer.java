@@ -587,7 +587,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             List<TaskNode> finished = new ArrayList<TaskNode>();
             for (CategoryNode categoryNode : categoryNodes) {
                 if (!categoryNode.isOpened()) {
-                    categoryNode = new CategoryNode(categoryNode.getCategory(), false);
+                    continue;
                 }
                 for (TaskNode taskNode : categoryNode.getTaskNodes()) {
                     if (taskNode.getTask().isFinished()) {
