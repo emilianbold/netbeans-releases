@@ -59,7 +59,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RequiredConfigurationHe
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
@@ -172,7 +171,7 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         skewDff.setDefaultFormatter(skewFormatter);
 
         initComponents();
-
+        /* issue 232988: the background color issues with dark metal L&F
         lifeTimeLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         lifeTimeTextField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         renewExpiredChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -181,8 +180,6 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         rmAckRequestLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmResendField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmResendLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        rmInactTimeoutField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-//        rmInactTimeoutLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmCloseTimeoutLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmCloseTimeoutField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         maxClockSkewField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -190,6 +187,9 @@ public class AdvancedConfigPanelClient extends SectionInnerPanel {
         freshnessField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         freshnessLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         revocationChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        */
+//        rmInactTimeoutField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+//        rmInactTimeoutLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
 
         addImmediateModifier(rmAckRequestField);
         addImmediateModifier(rmCloseTimeoutField);

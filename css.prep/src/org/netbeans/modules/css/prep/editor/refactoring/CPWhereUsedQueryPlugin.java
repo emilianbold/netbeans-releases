@@ -124,7 +124,7 @@ public class CPWhereUsedQueryPlugin implements RefactoringPlugin {
         String varName = context.getElementName();
         int offset = context.getCaret();
 
-        CPModel model = CPModel.getModel(context.getParserResult());
+        CPModel model = context.getCPModel();
         //find a variable the user tries to refactor on
         CPElement currentVar = model.getVariableAtOffset(offset);
         if (currentVar == null) {

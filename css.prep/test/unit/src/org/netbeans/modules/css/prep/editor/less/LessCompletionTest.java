@@ -84,4 +84,36 @@ public class LessCompletionTest extends CssModuleTestBase {
                 + "div { .| }", arr("mixin"), Match.CONTAINS);
 
     }
+
+    public void testVarCompletionWithoutPrefix() throws ParseException {
+        checkCC("@oops:1;\n"
+                + ".mixin(@oops2) {\n"
+                + "    color: @|\n"
+                + "}"
+                , arr("@oops", "@oops2"), Match.CONTAINS);
+    }
+    
+    public void testVarCompletionWithPrefix() throws ParseException {
+        //at line end
+        checkCC("@oops:1;\n"
+                + ".mixin(@oops2) {\n"
+                + "    color: @oo|\n"
+                + "}"
+                , arr("@oops", "@oops2"), Match.CONTAINS);
+        
+        //before semi
+        checkCC("@oops:1;\n"
+                + ".mixin(@oops2) {\n"
+                + "    color: @oo|;\n"
+                + "}"
+                , arr("@oops", "@oops2"), Match.CONTAINS);
+        
+        //before ws and semi
+        checkCC("@oops:1;\n"
+                + ".mixin(@oops2) {\n"
+                + "    color: @oo| ;\n"
+                + "}"
+                , arr("@oops", "@oops2"), Match.CONTAINS);
+
+    }
 }
