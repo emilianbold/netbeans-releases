@@ -275,6 +275,7 @@ public class FilterPanel extends javax.swing.JPanel {
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="schedule filters section">
+        /*
         final ButtonGroup groupDue = new ButtonGroup();
         JRadioButtonMenuItem rbAllDue = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_DueAll")) { //NOI18N
             @Override
@@ -284,7 +285,6 @@ public class FilterPanel extends javax.swing.JPanel {
             }
         });
         rbAllDue.setSelected(true);
-        rbAllDue.setEnabled(false);
         groupDue.add(rbAllDue);
         popup.add(rbAllDue);
 
@@ -295,7 +295,6 @@ public class FilterPanel extends javax.swing.JPanel {
                 new DummyAction().actionPerformed(e);
             }
         });
-        rbTodayDue.setEnabled(false);
         groupDue.add(rbTodayDue);
         popup.add(rbTodayDue);
 
@@ -306,7 +305,6 @@ public class FilterPanel extends javax.swing.JPanel {
                 new DummyAction().actionPerformed(e);
             }
         });
-        rbWeekDue.setEnabled(false);
         groupDue.add(rbWeekDue);
         popup.add(rbWeekDue);
 
@@ -317,9 +315,9 @@ public class FilterPanel extends javax.swing.JPanel {
                 new DummyAction().actionPerformed(e);
             }
         });
-        rbMonthDue.setEnabled(false);
         groupDue.add(rbMonthDue);
         popup.add(rbMonthDue);
+        */
         //</editor-fold>
         return popup;
     }
