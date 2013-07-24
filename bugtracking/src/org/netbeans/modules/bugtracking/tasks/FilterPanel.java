@@ -45,10 +45,7 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.bugtracking.tasks.actions.DummyAction;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
-import org.netbeans.modules.bugtracking.tasks.filter.OpenedCategoryFilter;
-import org.netbeans.modules.bugtracking.tasks.filter.OpenedRepositoryFilter;
 import org.netbeans.modules.bugtracking.tasks.filter.OpenedTaskFilter;
 import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
 import org.netbeans.modules.team.commons.treelist.ColorManager;
@@ -71,8 +68,6 @@ public class FilterPanel extends javax.swing.JPanel {
     private final JButton btnFilter;
     //private final JButton btnGroup;
     private final OpenedTaskFilter openedTaskFilter;
-    private final OpenedCategoryFilter openedCategoryFilter;
-    private final OpenedRepositoryFilter openedRepositoryFilter;
     private final DashboardToolbar toolBar;
     private final RequestProcessor REQUEST_PROCESSOR;
 
@@ -81,8 +76,6 @@ public class FilterPanel extends javax.swing.JPanel {
         BACKGROUND_COLOR = ColorManager.getDefault().getExpandableRootBackground();
         FOREGROUND_COLOR = ColorManager.getDefault().getExpandableRootForeground();
         openedTaskFilter = new OpenedTaskFilter();
-        openedCategoryFilter = new OpenedCategoryFilter();
-        openedRepositoryFilter = new OpenedRepositoryFilter();
         initComponents();
         setBackground(BACKGROUND_COLOR);
         final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/find.png", true)); //NOI18N
@@ -218,8 +211,6 @@ public class FilterPanel extends javax.swing.JPanel {
                 REQUEST_PROCESSOR.post(new Runnable() {
                     @Override
                     public void run() {
-                        DashboardViewer.getInstance().removeCategoryFilter(openedCategoryFilter, false);
-                        DashboardViewer.getInstance().removeRepositoryFilter(openedRepositoryFilter, false);
                         int hits = DashboardViewer.getInstance().removeTaskFilter(openedTaskFilter, true);
                         manageHitCount(hits);
                         DashboardSettings.getInstance().setFinishedTaskFilter(false);
@@ -241,8 +232,6 @@ public class FilterPanel extends javax.swing.JPanel {
                 REQUEST_PROCESSOR.post(new Runnable() {
                     @Override
                     public void run() {
-                        DashboardViewer.getInstance().applyCategoryFilter(openedCategoryFilter, false);
-                        DashboardViewer.getInstance().applyRepositoryFilter(openedRepositoryFilter, false);
                         int hits = DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, true);
                         manageHitCount(hits);
                         DashboardSettings.getInstance().setFinishedTaskFilter(true);
@@ -263,19 +252,17 @@ public class FilterPanel extends javax.swing.JPanel {
             REQUEST_PROCESSOR.post(new Runnable() {
                     @Override
                     public void run() {
-                        DashboardViewer.getInstance().applyCategoryFilter(openedCategoryFilter, false);
-                        DashboardViewer.getInstance().applyRepositoryFilter(openedRepositoryFilter, false);
                         DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, false);
                     }
                 });
         }
         popup.add(rbOpenedStatus);
 
-        popup.addSeparator();
         //</editor-fold>
 
         //<editor-fold defaultstate="collapsed" desc="schedule filters section">
         /*
+        popup.addSeparator();
         final ButtonGroup groupDue = new ButtonGroup();
         JRadioButtonMenuItem rbAllDue = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_DueAll")) { //NOI18N
             @Override
