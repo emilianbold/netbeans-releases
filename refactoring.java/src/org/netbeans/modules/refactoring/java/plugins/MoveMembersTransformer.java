@@ -556,10 +556,10 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                         for (int i = 0; i < parameters.size(); i++) {
                             VariableTree variableTree = parameters.get(i);
                             TypeMirror type = workingCopy.getTrees().getTypeMirror(TreePath.getPath(resolvedPath, variableTree));
-                            if (removedParameter != null || !workingCopy.getTypes().isSameType(type, target.asType())) {
-                                newParameters.add(variableTree);
-                            } else {
+                            if (removedParameter == null && type != null && workingCopy.getTypes().isSameType(type, target.asType())) {
                                 removedParameter = variableTree;
+                            } else {
+                                newParameters.add(variableTree);
                             }
                         }
                     } else {
