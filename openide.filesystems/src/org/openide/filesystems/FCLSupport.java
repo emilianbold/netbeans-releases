@@ -130,6 +130,21 @@ class FCLSupport {
         }        
         
         private void dispatchEventImpl(FileChangeListener fcl, FileEvent fe, Op operation, Collection<Runnable> postNotify) {
+            boolean asserts = false;
+            assert asserts = true;
+            String origThreadName = null;
+            Thread thread = null;
+            if (asserts) {
+                thread = Thread.currentThread();
+                String threadName = thread.getName();
+                if (threadName != null && !threadName.contains(" :: ")) { //NOI18N
+                    try {
+                        origThreadName = threadName;
+                        thread.setName(threadName + " :: " + operation + " " + fe.getFile());  //NOI18N
+                    } catch (SecurityException e) {
+                    }
+                }
+            }
             try {
                 if (postNotify != null) {
                     fe.setPostNotify(postNotify);
@@ -161,6 +176,12 @@ class FCLSupport {
             } finally {
                 if (postNotify != null) {
                     fe.setPostNotify(null);
+                }
+                if (thread != null && origThreadName != null) {
+                    try {
+                        thread.setName(origThreadName);
+                    } catch (SecurityException e) {
+                    }
                 }
             }
         }
