@@ -212,7 +212,8 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
                 case '}':
                     if (state != null && state == 3) {
                         state = 1;
-                        input.backup(1);
+                        if (input.readLength() > 1)
+                            input.backup(1);
                         return token(JavadocTokenId.OTHER_TEXT);
                     }
                     leftbr = false;
