@@ -50,7 +50,7 @@ import org.jivesoftware.smack.packet.Message;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
-import org.netbeans.modules.team.ui.spi.MessagingHandle;
+import org.netbeans.modules.team.server.ui.spi.MessagingHandle;
 import org.openide.awt.Notification;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;

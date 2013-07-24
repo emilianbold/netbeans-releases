@@ -48,7 +48,6 @@ import java.io.IOException;
 import org.netbeans.modules.websvc.wsitconf.ui.StoreFileFilter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -98,6 +97,7 @@ public class KeystorePanel extends JPanel {
         
         initComponents();
 
+        /* issue 232988: the background color issues with dark metal L&F
         keyAliasCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         keyAliasLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         keyPasswordLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -108,6 +108,7 @@ public class KeystorePanel extends JPanel {
         keystorePasswordField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         aliasSelectorLbl.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         aliasSelectorField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        */
 
         sync();
     }

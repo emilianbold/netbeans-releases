@@ -52,11 +52,13 @@ import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.common.api.RemoteFileCache;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
+import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.openide.cookies.LineCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileRenameEvent;
 import org.openide.text.Line;
 import org.openide.util.WeakListeners;
 
@@ -72,6 +74,11 @@ public class LineBreakpoint extends AbstractBreakpoint {
      * It's the same as listening on the current Line object's {@link Line#PROP_LINE_NUMBER} events.
      */
     public static final String PROP_LINE_NUMBER = "lineNumber";      // NOI18N
+    /**
+     * This property is fired when the file changes.
+     * Please note that the Line object may stay the same when the file is renamed.
+     */
+    public static final String PROP_FILE = "fileChanged";           // NOI18N
 
     private Line myLine;
     private final FileRemoveListener myListener = new FileRemoveListener();
@@ -230,6 +237,17 @@ public class LineBreakpoint extends AbstractBreakpoint {
         public void fileDeleted( FileEvent arg0 ) {
             DebuggerManager.getDebuggerManager().removeBreakpoint( 
                     LineBreakpoint.this);
+        }
+
+        @Override
+        public void fileRenamed(FileRenameEvent fe) {
+            FileObject renamedFo = fe.getFile();
+            Line newLine = MiscEditorUtil.getLine(renamedFo, getLine().getLineNumber() + 1);
+            if (!newLine.equals(getLine())) {
+                setLine(newLine);
+            } else {
+                firePropertyChange(PROP_FILE, fe.getName(), fe.getFile().getName());
+            }
         }
 
     }

@@ -144,7 +144,7 @@ public class IndexedElement implements JsElement {
             sb.append(type.isResolved() ? "1" : "0");  //NOI18N
             sb.append("|");
         }
-        elementDocument.addPair(JsIndex.FIELD_ASSIGNMENS, sb.toString(), false, true);
+        elementDocument.addPair(JsIndex.FIELD_ASSIGNMENTS, sb.toString(), false, true);
         
         if (object.getJSKind().isFunction()) {
             sb = new StringBuilder();
@@ -208,7 +208,7 @@ public class IndexedElement implements JsElement {
 //    }
     
     public static Collection<TypeUsage> getAssignments(IndexResult indexResult) {
-        return getAssignments(indexResult.getValue(JsIndex.FIELD_ASSIGNMENS));
+        return getAssignments(indexResult.getValue(JsIndex.FIELD_ASSIGNMENTS));
     }
 
     private static Collection<TypeUsage> getAssignments(String sAssignments) {

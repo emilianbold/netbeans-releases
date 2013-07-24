@@ -49,7 +49,7 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>org.netbeans.modules.team.ui</code-name-base>
+                    <code-name-base>org.netbeans.modules.team.server</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>

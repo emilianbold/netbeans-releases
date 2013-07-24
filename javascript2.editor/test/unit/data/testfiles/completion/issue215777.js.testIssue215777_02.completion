@@ -3,18 +3,18 @@ var x=Math.|
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      prototype                       [PUBLIC]   JS Platform
-METHOD     abs(x: Number): Number          [PUBLIC]   JS Platform
-METHOD     acos(x: Number): Number         [PUBLIC]   JS Platform
-METHOD     asin(x: Number): Number         [PUBLIC]   JS Platform
-METHOD     atan(x: Number): Number         [PUBLIC]   JS Platform
-METHOD     atan2(y: Number, x: Number): N  [PUBLIC]   JS Platform
-METHOD     ceil(x: Number): Number         [PUBLIC]   JS Platform
-METHOD     cos(x: Number): Number          [PUBLIC]   JS Platform
+METHOD     abs(x: Number): Number          [PUBLIC,   JS Platform
+METHOD     acos(x: Number): Number         [PUBLIC,   JS Platform
+METHOD     asin(x: Number): Number         [PUBLIC,   JS Platform
+METHOD     atan(x: Number): Number         [PUBLIC,   JS Platform
+METHOD     atan2(y: Number, x: Number): N  [PUBLIC,   JS Platform
+METHOD     ceil(x: Number): Number         [PUBLIC,   JS Platform
+METHOD     cos(x: Number): Number          [PUBLIC,   JS Platform
 METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
 METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
 METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
-METHOD     exp(x: Number): Number          [PUBLIC]   JS Platform
-METHOD     floor(x: Number): Number        [PUBLIC]   JS Platform
+METHOD     exp(x: Number): Number          [PUBLIC,   JS Platform
+METHOD     floor(x: Number): Number        [PUBLIC,   JS Platform
 METHOD     freeze(O: Object): Object       [PUBLIC,   JS Platform
 METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   JS Platform
 METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   JS Platform
@@ -25,18 +25,18 @@ METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   JS Platform
 METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   JS Platform
 METHOD     isSealed(O: Object): Boolean    [PUBLIC,   JS Platform
 METHOD     keys(O: Object): Array          [PUBLIC,   JS Platform
-METHOD     log(x: Number): Number          [PUBLIC]   JS Platform
-METHOD     max(): Number                   [PUBLIC]   JS Platform
-METHOD     min(): Number                   [PUBLIC]   JS Platform
-METHOD     pow(x: Number, y: Number): Num  [PUBLIC]   JS Platform
+METHOD     log(x: Number): Number          [PUBLIC,   JS Platform
+METHOD     max(): Number                   [PUBLIC,   JS Platform
+METHOD     min(): Number                   [PUBLIC,   JS Platform
+METHOD     pow(x: Number, y: Number): Num  [PUBLIC,   JS Platform
 METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
 METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
-METHOD     random(): Number                [PUBLIC]   JS Platform
-METHOD     round(x: Number): Number        [PUBLIC]   JS Platform
+METHOD     random(): Number                [PUBLIC,   JS Platform
+METHOD     round(x: Number): Number        [PUBLIC,   JS Platform
 METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
-METHOD     sin(x: Number): Number          [PUBLIC]   JS Platform
-METHOD     sqrt(x: Number): Number         [PUBLIC]   JS Platform
-METHOD     tan(x: Number): Number          [PUBLIC]   JS Platform
+METHOD     sin(x: Number): Number          [PUBLIC,   JS Platform
+METHOD     sqrt(x: Number): Number         [PUBLIC,   JS Platform
+METHOD     tan(x: Number): Number          [PUBLIC,   JS Platform
 METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
 METHOD     toString(): String              [PUBLIC]   JS Platform
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform

@@ -58,7 +58,7 @@ import javax.swing.event.DocumentListener;
 //import org.jivesoftware.smack.RosterGroup;
 //import org.jivesoftware.smack.RosterListener;
 import org.netbeans.modules.kenai.api.Kenai;
-import org.netbeans.modules.team.ui.common.ColorManager;
+import org.netbeans.modules.team.server.ui.common.ColorManager;
 
 /**
  *

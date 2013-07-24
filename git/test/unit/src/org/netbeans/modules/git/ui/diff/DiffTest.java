@@ -97,7 +97,7 @@ public class DiffTest extends AbstractGitTestCase {
             @Override
             public void run () {
                 controllers[0] = new MultiDiffPanelController(VCSContext.forNodes(new Node[] {
-                    new AbstractNode(Children.LEAF, Lookups.fixed(file)) }), Revision.BASE, Revision.LOCAL);
+                    new AbstractNode(Children.LEAF, Lookups.fixed(file)) }), Revision.HEAD, Revision.LOCAL);
             }
         });
         MultiDiffPanelController controller = controllers[0];

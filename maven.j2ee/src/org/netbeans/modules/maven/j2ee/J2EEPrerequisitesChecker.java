@@ -68,6 +68,12 @@ import org.openide.util.Exceptions;
 })
 public class J2EEPrerequisitesChecker implements PrerequisitesChecker, LateBoundPrerequisitesChecker {
 
+    private List<String> SINGLE_ACTIONS = Arrays.asList(new String[] {
+        ActionProvider.COMMAND_RUN_SINGLE + ".deploy",
+        ActionProvider.COMMAND_DEBUG_SINGLE + ".deploy",
+        ActionProvider.COMMAND_PROFILE + ".deploy"
+    });
+
     private List applicableActions = Arrays.asList(new String[] {
         ActionProvider.COMMAND_RUN,
         ActionProvider.COMMAND_RUN_SINGLE + ".deploy",
@@ -84,12 +90,18 @@ public class J2EEPrerequisitesChecker implements PrerequisitesChecker, LateBound
         if (!applicableActions.contains(actionName)) {
             return true;
         }
-        //TODO check if an app server is selected and prompt for one if not.
+
+        // Checking if the Servlet URI is set --> See issue #227324
+        if (SINGLE_ACTIONS.contains(actionName)) {
+            String urlPath = config.getProperties().get(ExecutionChecker.CLIENTURLPART);
+            if (urlPath == null || "".equals(urlPath)) {
+                return false;
+            }
+        }
+
         J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
         if (provider != null) {
             checkWarInplace(config, provider);
-//            boolean isReady = provider.getConfigSupport().ensureConfigurationReady();
-            //TODO report not-readiness.
         }
         return true;
     }

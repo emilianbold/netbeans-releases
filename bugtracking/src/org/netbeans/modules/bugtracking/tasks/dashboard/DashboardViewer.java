@@ -59,7 +59,7 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
-import org.netbeans.modules.team.ui.util.treelist.LinkButton;
+import org.netbeans.modules.team.commons.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.CreateCategoryAction;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.CreateRepositoryAction;
@@ -74,11 +74,11 @@ import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
 import org.netbeans.modules.bugtracking.tasks.UnsubmittedCategory;
 import org.netbeans.modules.bugtracking.tasks.filter.UnsubmittedCategoryFilter;
-import org.netbeans.modules.team.ui.util.treelist.ColorManager;
-import org.netbeans.modules.team.ui.util.treelist.TreeList;
-import org.netbeans.modules.team.ui.util.treelist.TreeListModel;
-import org.netbeans.modules.team.ui.util.treelist.TreeListModelListener;
-import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.netbeans.modules.team.commons.treelist.ColorManager;
+import org.netbeans.modules.team.commons.treelist.TreeList;
+import org.netbeans.modules.team.commons.treelist.TreeListModel;
+import org.netbeans.modules.team.commons.treelist.TreeListModelListener;
+import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.ImageUtilities;
@@ -124,7 +124,7 @@ public final class DashboardViewer implements PropertyChangeListener {
     private final Map<RepositoryImpl, UnsubmittedCategoryNode> mapRepositoryToUnsubmittedNode;
     private List<CategoryNode> categoryNodes;
     private List<RepositoryNode> repositoryNodes;
-    private final AppliedFilters<IssueImpl> appliedTaskFilters;
+    private final AppliedFilters<TaskNode> appliedTaskFilters;
     private final AppliedFilters<CategoryNode> appliedCategoryFilters;
     private final AppliedFilters<RepositoryNode> appliedRepositoryFilters;
     private int taskHits;
@@ -192,7 +192,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         String a11y = NbBundle.getMessage(DashboardViewer.class, "A11Y_TeamProjects"); //NOI18N
         accessibleContext.setAccessibleName(a11y);
         accessibleContext.setAccessibleDescription(a11y);
-        appliedTaskFilters = new AppliedFilters<IssueImpl>();
+        appliedTaskFilters = new AppliedFilters<TaskNode>();
         appliedCategoryFilters = new AppliedFilters<CategoryNode>();
         appliedRepositoryFilters = new AppliedFilters<RepositoryNode>();
         unsubmittedCategoryFilter = new UnsubmittedCategoryFilter();
@@ -356,7 +356,7 @@ public final class DashboardViewer implements PropertyChangeListener {
                 taskNode = categorizedTaskNode;
             }
             final boolean isCatInFilter = isCategoryInFilter(destCategoryNode);
-            final boolean isTaskInFilter = appliedTaskFilters.isInFilter(taskNode.getTask());
+            final boolean isTaskInFilter = appliedTaskFilters.isInFilter(taskNode);
             TaskNode toAdd = new TaskNode(taskNode.getTask(), destCategoryNode);
             if (destCategoryNode.addTaskNode(toAdd, isTaskInFilter)) {
                 //remove from old category
@@ -464,7 +464,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             names = toDelete.length + " " + NbBundle.getMessage(DashboardViewer.class, "LBL_Categories").toLowerCase();
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteCatTitle");
-        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQuestion", names);
+        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteCatQuestion", names);
         if (confirmDelete(title, message)) {
             synchronized (LOCK_CATEGORIES) {
                 for (CategoryNode categoryNode : toDelete) {
@@ -587,7 +587,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             List<TaskNode> finished = new ArrayList<TaskNode>();
             for (CategoryNode categoryNode : categoryNodes) {
                 if (!categoryNode.isOpened()) {
-                    categoryNode = new CategoryNode(categoryNode.getCategory(), false);
+                    continue;
                 }
                 for (TaskNode taskNode : categoryNode.getTaskNodes()) {
                     if (taskNode.getTask().isFinished()) {
@@ -676,7 +676,7 @@ public final class DashboardViewer implements PropertyChangeListener {
             }
         }
         String title = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQueryTitle");
-        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQuestion", names);
+        String message = NbBundle.getMessage(DashboardViewer.class, "LBL_DeleteQueryQuestion", names);
         if (confirmDelete(title, message)) {
             for (QueryNode queryNode : toDelete) {
                 queryNode.getQuery().remove();
@@ -737,23 +737,23 @@ public final class DashboardViewer implements PropertyChangeListener {
         }
     }
 
-    public AppliedFilters getAppliedTaskFilters() {
+    public AppliedFilters<TaskNode> getAppliedTaskFilters() {
         return appliedTaskFilters;
     }
 
-    public int updateTaskFilter(DashboardFilter<IssueImpl> oldFilter, DashboardFilter<IssueImpl> newFilter) {
+    public int updateTaskFilter(DashboardFilter<TaskNode> oldFilter, DashboardFilter<TaskNode> newFilter) {
         if (oldFilter != null) {
             appliedTaskFilters.removeFilter(oldFilter);
         }
         return applyTaskFilter(newFilter, true);
     }
 
-    public int applyTaskFilter(DashboardFilter<IssueImpl> taskFilter, boolean refresh) {
+    public int applyTaskFilter(DashboardFilter<TaskNode> taskFilter, boolean refresh) {
         appliedTaskFilters.addFilter(taskFilter);
         return manageApplyFilter(refresh);
     }
 
-    public int removeTaskFilter(DashboardFilter<IssueImpl> taskFilter, boolean refresh) {
+    public int removeTaskFilter(DashboardFilter<TaskNode> taskFilter, boolean refresh) {
         appliedTaskFilters.removeFilter(taskFilter);
         return manageRemoveFilter(refresh, !taskFilter.expandNodes());
     }

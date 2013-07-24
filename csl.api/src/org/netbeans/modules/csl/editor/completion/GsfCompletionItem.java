@@ -669,7 +669,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
 
     /** Format parameters in orange etc. */
     private static class CompletionFormatter extends GsfHtmlFormatter {
-        private static final String METHOD_COLOR = getHTMLColor(0,0,0); //NOI18N
+        private static final String METHOD_COLOR = LFCustoms.getTextFgColorHTML();
         private static final String PARAMETER_NAME_COLOR = getHTMLColor(160, 96, 1);
         private static final String END_COLOR = "</font>"; // NOI18N
         private static final String CLASS_COLOR = getHTMLColor(86, 0, 0);
@@ -680,7 +680,7 @@ public abstract class GsfCompletionItem implements CompletionItem {
         private static final String CONSTRUCTOR_COLOR = getHTMLColor(178, 139, 0);
         private static final String INTERFACE_COLOR = getHTMLColor(64, 64, 64);
         private static final String PARAMETERS_COLOR = getHTMLColor(128, 128, 128);
-        private static final String ACTIVE_PARAMETER_COLOR = getHTMLColor(0,0,0);
+        private static final String ACTIVE_PARAMETER_COLOR = LFCustoms.getTextFgColorHTML();
 
         @Override
         public void parameters(boolean start) {

@@ -47,7 +47,6 @@ package org.netbeans.modules.websvc.wsitconf.ui.service.subpanels;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.Validator;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 
 import javax.swing.*;
@@ -80,6 +79,7 @@ public class ValidatorsPanel extends JPanel {
         
         initComponents();
 
+        /* issue 232988: the background color issues with dark metal L&F
         usernameValidatorTextField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         usernameValidatorLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         timestampValidatorTextField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -88,6 +88,7 @@ public class ValidatorsPanel extends JPanel {
         certificateValidatorLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         samlValidatorTextField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         samlValidatorLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        */
         
         sync();
     }

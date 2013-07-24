@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.refactoring;
 
+import java.awt.EventQueue;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -75,6 +76,7 @@ import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.windows.TopComponent;
 
@@ -90,6 +92,7 @@ import org.openide.windows.TopComponent;
 @ServiceProvider(service = ActionsImplementationProvider.class, position = 1033)
 public class CssActionsImplementationProvider extends ActionsImplementationProvider {
 
+    private static final RequestProcessor RP = new RequestProcessor(CssActionsImplementationProvider.class);
     private static final Logger LOG = Logger.getLogger(CssActionsImplementationProvider.class.getName());
 
     @Override
@@ -114,26 +117,28 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
     @Override
     public void doRename(Lookup selectedNodes) {
         EditorCookie ec = selectedNodes.lookup(EditorCookie.class);
+        Runnable task;
         if (isFromEditor(ec)) {
             //editor refactoring
-            new TextComponentTask(ec) {
+            task = new TextComponentTask(ec) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CssElementContext context) {
                     return new CssRenameRefactoringUI(context);
                 }
-            }.run();
+            };
         } else {
             //file or folder refactoring
             Collection<? extends Node> nodes = selectedNodes.lookupAll(Node.class);
             assert nodes.size() == 1;
             Node currentNode = nodes.iterator().next();
-            new NodeToFileTask(currentNode) {
+            task = new NodeToFileTask(currentNode) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CssElementContext context) {
                     return new CssRenameRefactoringUI(context);
                 }
-            }.run();
+            };
         }
+        RP.post(task);
     }
 
     @Override
@@ -156,26 +161,29 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
     @Override
     public void doFindUsages(Lookup lookup) {
         EditorCookie ec = lookup.lookup(EditorCookie.class);
+        Runnable task;
         if (isFromEditor(ec)) {
-            new TextComponentTask(ec) {
+            task = new TextComponentTask(ec) {
                 //editor element context
                 @Override
                 protected RefactoringUI createRefactoringUI(CssElementContext context) {
                     return new WhereUsedUI(context);
                 }
-            }.run();
+            };
         } else {
             //file context
             Collection<? extends Node> nodes = lookup.lookupAll(Node.class);
             assert nodes.size() == 1;
             Node currentNode = nodes.iterator().next();
-            new NodeToFileTask(currentNode) {
+            task = new NodeToFileTask(currentNode) {
                 @Override
                 protected RefactoringUI createRefactoringUI(CssElementContext context) {
                     return new WhereUsedUI(context);
                 }
-            }.run();
+            };
         }
+
+        RP.post(task);
     }
 
     private static boolean isCssFile(Node node) {
@@ -189,9 +197,9 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 
     private static boolean isRefactorableEditorElement(final Node node) {
         class Context {
+
             public int caret;
             public Document document;
-            
         }
         final Context context = Mutex.EVENT.readAccess(new Action<Context>() {
             @Override
@@ -208,7 +216,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
                 }
             }
         });
-        if(context == null) {
+        if (context == null) {
             return false;
         }
         Source source = Source.create(context.document);
@@ -218,11 +226,11 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
                     ResultIterator cssRi = WebUtils.getResultIterator(resultIterator, "text/css");
-                    if(cssRi != null) {
-                        CssParserResult result = (CssParserResult)cssRi.getParserResult();
+                    if (cssRi != null) {
+                        CssParserResult result = (CssParserResult) cssRi.getParserResult();
                         org.netbeans.modules.css.lib.api.Node leaf = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), context.caret);
-                        if(leaf != null) {
-                            switch(leaf.type()) {
+                        if (leaf != null) {
+                            switch (leaf.type()) {
                                 case elementName:
                                 case cssClass:
                                 case cssId:
@@ -234,14 +242,14 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
                             }
                         }
                     }
-                    
+
                 }
             });
             return res.get();
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
-        
+
         return false;
     }
 
@@ -291,25 +299,41 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
             }
         }
 
+        //runs in RequestProcessor
         @Override
         public void run() {
             DataObject dobj = node.getLookup().lookup(DataObject.class);
             if (dobj != null) {
+                Runnable task;
                 fileObject = dobj.getPrimaryFile();
 
                 if (fileObject.isFolder()) {
                     //folder
-                    UI.openRefactoringUI(createRefactoringUI(new CssElementContext.Folder(fileObject)));
+                    task = new Runnable() {
+                        @Override
+                        public void run() {
+                            UI.openRefactoringUI(createRefactoringUI(new CssElementContext.Folder(fileObject)));
+                        }
+                    };
                 } else {
                     //css file
                     Source source = Source.create(fileObject);
                     try {
                         ParserManager.parse(Collections.singletonList(source), this);
-                        UI.openRefactoringUI(createRefactoringUI(context));
+                        task = new Runnable() {
+                            @Override
+                            public void run() {
+                                UI.openRefactoringUI(createRefactoringUI(context));
+                            }
+                        };
                     } catch (ParseException ex) {
                         Exceptions.printStackTrace(ex);
+                        return ;
                     }
                 }
+                
+                //switch to EDT
+                EventQueue.invokeLater(task);
             }
 
         }
@@ -349,6 +373,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
             }
         }
 
+        //runs in RequestProcessor
         @Override
         public final void run() {
             try {
@@ -359,13 +384,19 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
                 return;
             }
 
-            TopComponent activetc = TopComponent.getRegistry().getActivated();
+            //switch to EDT
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    TopComponent activetc = TopComponent.getRegistry().getActivated();
 
-            if (ui != null) {
-                UI.openRefactoringUI(ui, activetc);
-            } else {
-                JOptionPane.showMessageDialog(null, NbBundle.getMessage(CssActionsImplementationProvider.class, "ERR_CannotRefactorLoc"));//NOI18N
-            }
+                    if (ui != null) {
+                        UI.openRefactoringUI(ui, activetc);
+                    } else {
+                        JOptionPane.showMessageDialog(null, NbBundle.getMessage(CssActionsImplementationProvider.class, "ERR_CannotRefactorLoc"));//NOI18N
+                    }
+                }
+            });
         }
 
         protected abstract RefactoringUI createRefactoringUI(CssElementContext context);

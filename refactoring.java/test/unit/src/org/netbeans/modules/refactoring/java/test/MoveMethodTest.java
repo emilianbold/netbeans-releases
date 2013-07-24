@@ -54,6 +54,41 @@ public class MoveMethodTest extends MoveBaseTest {
         super(name);
     }
     
+
+    public void test232902() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "\n"
+                + "    private void instanceMethod() {\n"
+                + "    }\n"
+                + "\n"
+                + "    public void usage(InnerTarget ic) throws IOException {\n"
+                + "        instanceMethod();\n"
+                + "    }\n"
+                + "\n"
+                + "    public class InnerTarget {\n"
+                + "\n"
+                + "    }\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{2}, "t.A.InnerTarget", Visibility.ESCALATE);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "\n"
+                + "    public void usage(InnerTarget ic) throws IOException {\n"
+                + "        ic.instanceMethod();\n"
+                + "    }\n"
+                + "\n"
+                + "    public class InnerTarget {\n"
+                + "\n"
+                + "    private void instanceMethod() {\n"
+                + "    }\n"
+                + "\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void test222403() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

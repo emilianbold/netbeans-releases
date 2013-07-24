@@ -55,7 +55,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="sgml-declaration" foreColor="ffbf9221" default="default"/>
     <fontcolor name="tag" foreColor="F8BB00" default="default"/>
     <fontcolor name="text" default="default"/>
-    <fontcolor name="value" foreColor="ff99006b" default="default"/>
+    <fontcolor name="value" default="markup-attribute-value"/>
     <fontcolor name="ws" default="whitespace"/>
     <fontcolor name="css-embedded" default="default"/>
     <fontcolor name="javascript-embedded" default="default"/>

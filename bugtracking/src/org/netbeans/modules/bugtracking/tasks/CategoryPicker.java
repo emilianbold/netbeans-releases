@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.bugtracking.tasks;
 
-import org.netbeans.modules.team.ui.util.treelist.LinkButton;
+import org.netbeans.modules.team.commons.treelist.LinkButton;
 import java.awt.event.ActionEvent;
 import java.util.List;
 import javax.swing.AbstractAction;
