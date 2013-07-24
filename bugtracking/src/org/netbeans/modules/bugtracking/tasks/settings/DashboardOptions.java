@@ -77,7 +77,6 @@ public class DashboardOptions extends javax.swing.JPanel implements DocumentList
         jLabel1 = new javax.swing.JLabel();
         jSeparator1 = new javax.swing.JSeparator();
         txtSync = new javax.swing.JTextField();
-        jLabel3 = new javax.swing.JLabel();
         jLabel4 = new javax.swing.JLabel();
         jSeparator2 = new javax.swing.JSeparator();
         txtLimitNumber = new javax.swing.JTextField();
@@ -93,8 +92,6 @@ public class DashboardOptions extends javax.swing.JPanel implements DocumentList
 
         txtSync.setMinimumSize(new java.awt.Dimension(30, 20));
         txtSync.setPreferredSize(new java.awt.Dimension(40, 20));
-
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel3, org.openide.util.NbBundle.getMessage(DashboardOptions.class, "DashboardOptions.jLabel3.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(jLabel4, org.openide.util.NbBundle.getMessage(DashboardOptions.class, "DashboardOptions.jLabel4.text")); // NOI18N
 
@@ -158,9 +155,7 @@ public class DashboardOptions extends javax.swing.JPanel implements DocumentList
                                     .addGroup(layout.createSequentialGroup()
                                         .addComponent(cbSync)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(txtSync, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                        .addComponent(jLabel3))
+                                        .addComponent(txtSync, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                                     .addGroup(layout.createSequentialGroup()
                                         .addGap(21, 21, 21)
                                         .addComponent(jLabel6)
@@ -169,7 +164,7 @@ public class DashboardOptions extends javax.swing.JPanel implements DocumentList
                                             .addComponent(cbLimitQuery)
                                             .addComponent(cbLimitCategory)))))
                             .addComponent(lblError))
-                        .addGap(0, 39, Short.MAX_VALUE)))
+                        .addGap(0, 100, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -185,7 +180,6 @@ public class DashboardOptions extends javax.swing.JPanel implements DocumentList
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(txtSync, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel3)
                     .addComponent(cbSync))
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
@@ -228,7 +222,6 @@ public class DashboardOptions extends javax.swing.JPanel implements DocumentList
     private javax.swing.JCheckBox cbLimitQuery;
     private javax.swing.JCheckBox cbSync;
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
