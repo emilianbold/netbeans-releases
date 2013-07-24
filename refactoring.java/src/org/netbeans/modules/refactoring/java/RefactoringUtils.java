@@ -181,14 +181,16 @@ public class RefactoringUtils {
         for (ElementHandle<TypeElement> subTypeHandle : subTypes) {
             TypeElement type = subTypeHandle.resolve(info);
             if (type == null) {
+                // #214462: removed logging, logs show coupling errors
+                continue;
                 // #120577: log info to find out what is going wrong
-                FileObject file = SourceUtils.getFile(subTypeHandle, info.getClasspathInfo());
-                if (file == null) {
-                    //Deleted file
-                    continue;
-                } else {
-                    throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file + " Classpath: " + info.getClasspathInfo());
-                }
+//                FileObject file = SourceUtils.getFile(subTypeHandle, info.getClasspathInfo());
+//                if (file == null) {
+//                    //Deleted file
+//                    continue;
+//                } else {
+//                    throw new NullPointerException("#120577: Cannot resolve " + subTypeHandle + "; file: " + file + " Classpath: " + info.getClasspathInfo());
+//                }
             }
             for (ExecutableElement method : ElementFilter.methodsIn(type.getEnclosedElements())) {
                 if (info.getElements().overrides(method, e, type)) {
