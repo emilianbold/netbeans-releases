@@ -53,7 +53,6 @@ import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.TransportModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
@@ -86,9 +85,10 @@ public class TransportPanelClient extends SectionInnerPanel {
         }
 
         initComponents();
-
+        /* issue 232988: the background color issues with dark metal L&F
         optimalEncChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         optimalTransportChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        */
 
         addImmediateModifier(optimalEncChBox);
         addImmediateModifier(optimalTransportChBox);

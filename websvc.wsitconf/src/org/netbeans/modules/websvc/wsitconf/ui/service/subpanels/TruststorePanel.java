@@ -48,7 +48,6 @@ import java.io.IOException;
 import org.netbeans.modules.websvc.wsitconf.ui.StoreFileFilter;
 import org.netbeans.modules.websvc.wsitconf.util.Util;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -101,6 +100,7 @@ public class TruststorePanel extends JPanel {
         
         initComponents();
 
+        /* issue 232988: the background color issues with dark metal L&F
         keyAliasCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         keyAliasLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         storeLocationLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -110,6 +110,7 @@ public class TruststorePanel extends JPanel {
         certSelectorLbl.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         certSelectorButton.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         certSelectorField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        */
 
         sync();
     }
