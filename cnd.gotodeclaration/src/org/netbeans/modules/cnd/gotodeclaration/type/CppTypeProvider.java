@@ -52,7 +52,7 @@ import org.openide.util.NbBundle;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.jumpto.type.TypeProvider.class)
 public class CppTypeProvider implements TypeProvider {
 
-    private boolean isCancelled = false;
+    private volatile boolean isCancelled = false;
     private static final boolean PROCESS_LIBRARIES = true; // Boolean.getBoolean("cnd.type.provider.libraries");
     private static final boolean TRACE = Boolean.getBoolean("cnd.type.provider.trace");
     
@@ -143,11 +143,17 @@ public class CppTypeProvider implements TypeProvider {
 
     private void processProject(CsmProject project, Set<TypeDescriptor> result, CsmSelect.CsmFilter filter, NameMatcher matcher) {
 	if( TRACE ) System.err.printf("processProject %s\n", project.getName());
+        if (isCancelled) {
+            return;
+        }
         processNamespace(project.getGlobalNamespace(), result, filter, matcher);
     }
     
     private void processNamespace(CsmNamespace nsp, Set<TypeDescriptor> result, CsmSelect.CsmFilter filter, NameMatcher matcher) {
         if( TRACE ) System.err.printf("processNamespace %s\n", nsp.getQualifiedName());
+        if (isCancelled) {
+            return;
+        }
         for( Iterator<CsmOffsetableDeclaration> iter  = CsmSelect.getDeclarations(nsp, filter); iter.hasNext(); ) {
             if( isCancelled ) {
 		return;
