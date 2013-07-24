@@ -91,6 +91,7 @@ import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -106,6 +107,8 @@ public final class EditMediator implements ActionListener, ListSelectionListener
     public static final FileFilter JAR_ZIP_FILTER = new SimpleFileFilter( 
         NbBundle.getMessage( EditMediator.class, "LBL_ZipJarFolderFilter" ), // NOI18N
         new String[] {"ZIP","JAR"} ); // NOI18N
+    
+    private static final RequestProcessor RP = new RequestProcessor(EditMediator.class);
     
     private final ListComponent list;
     private final DefaultListModel listModel;
@@ -283,152 +286,162 @@ public final class EditMediator implements ActionListener, ListSelectionListener
 
     /** Handles button events
      */        
-    public void actionPerformed( ActionEvent e ) {
+    public void actionPerformed( final ActionEvent e ) {
 
-        Object source = e.getSource();
+        RP.post(new Runnable() {
+            @Override
+            public void run() {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        Object source = e.getSource();
 
-        if ( source == addJar ) { 
-            // Let user search for the Jar file
-            FileChooser chooser;
-            if (helper.isSharableProject()) {
-                chooser = new FileChooser(helper, true);
-            } else {
-                chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
-            }
-            chooser.enableVariableBasedSelection(true);
-            chooser.setFileHidingEnabled(false);
-            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
-            chooser.setFileSelectionMode(fileSelectionMode);
-            chooser.setMultiSelectionEnabled( true );
-            chooser.setDialogTitle( NbBundle.getMessage( EditMediator.class, "LBL_AddJar_DialogTitle" ) ); // NOI18N
-            //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
-            chooser.setAcceptAllFileFilterUsed( false );
-            chooser.setFileFilter(filter);
-            File curDir = getLastUsedClassPathFolder(); 
-            chooser.setCurrentDirectory (curDir);
-            chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage( EditMediator.class, "LBL_AddJar_DialogTitle" ));
-            int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( list.getComponent() ) ); // Show the chooser
+                        if ( source == addJar ) { 
+                            // Let user search for the Jar file
+                            FileChooser chooser;
+                            if (helper.isSharableProject()) {
+                                chooser = new FileChooser(helper, true);
+                            } else {
+                                chooser = new FileChooser(FileUtil.toFile(project.getProjectDirectory()), null);
+                            }
+                            chooser.enableVariableBasedSelection(true);
+                            chooser.setFileHidingEnabled(false);
+                            FileUtil.preventFileChooserSymlinkTraversal(chooser, null);
+                            chooser.setFileSelectionMode(fileSelectionMode);
+                            chooser.setMultiSelectionEnabled( true );
+                            chooser.setDialogTitle( NbBundle.getMessage( EditMediator.class, "LBL_AddJar_DialogTitle" ) ); // NOI18N
+                            //#61789 on old macosx (jdk 1.4.1) these two method need to be called in this order.
+                            chooser.setAcceptAllFileFilterUsed( false );
+                            chooser.setFileFilter(filter);
+                            File curDir = getLastUsedClassPathFolder(); 
+                            chooser.setCurrentDirectory (curDir);
+                            chooser.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage( EditMediator.class, "LBL_AddJar_DialogTitle" ));
+                            int option = chooser.showOpenDialog( SwingUtilities.getWindowAncestor( list.getComponent() ) ); // Show the chooser
 
-            if ( option == JFileChooser.APPROVE_OPTION ) {
+                            if ( option == JFileChooser.APPROVE_OPTION ) {
 
-                String filePaths[];
-                try {
-                    filePaths = chooser.getSelectedPaths();
-                } catch (IOException ex) {
-                    // TODO: add localized message
-                    Exceptions.printStackTrace(ex);
-                    return;
-                }
+                                String filePaths[];
+                                try {
+                                    filePaths = chooser.getSelectedPaths();
+                                } catch (IOException ex) {
+                                    // TODO: add localized message
+                                    Exceptions.printStackTrace(ex);
+                                    return;
+                                }
 
-                // check corrupted jar/zip files
-                File base = FileUtil.toFile(helper.getProjectDirectory());
-                List<String> newPaths = new ArrayList<String> ();
-                for (String path : filePaths) {
-                    File fl = PropertyUtils.resolveFile(base, path);
-                    FileObject fo = FileUtil.toFileObject(fl);
-                    if (fo == null) {
-                        JOptionPane.showMessageDialog (
-                            SwingUtilities.getWindowAncestor (list.getComponent ()),
-                            NbBundle.getMessage (EditMediator.class, "LBL_Missing_JAR", fl),
-                                NbBundle.getMessage (EditMediator.class, "LBL_Missing_JAR_title"),
-                                JOptionPane.WARNING_MESSAGE
-                        );
-                        continue;
-                    }
-                    assert fo != null : fl;
-                    if (FileUtil.isArchiveFile (fo))
-                        try {
-                            new JarFile (fl);
-                        } catch (IOException ex) {
-                            JOptionPane.showMessageDialog (
-                                SwingUtilities.getWindowAncestor (list.getComponent ()),
-                                NbBundle.getMessage (EditMediator.class, "LBL_Corrupted_JAR", fl),
-                                    NbBundle.getMessage (EditMediator.class, "LBL_Corrupted_JAR_title"),
-                                    JOptionPane.WARNING_MESSAGE
-                            );
-                            continue;
+                                // check corrupted jar/zip files
+                                File base = FileUtil.toFile(helper.getProjectDirectory());
+                                List<String> newPaths = new ArrayList<String> ();
+                                for (String path : filePaths) {
+                                    File fl = PropertyUtils.resolveFile(base, path);
+                                    FileObject fo = FileUtil.toFileObject(fl);
+                                    if (fo == null) {
+                                        JOptionPane.showMessageDialog (
+                                            SwingUtilities.getWindowAncestor (list.getComponent ()),
+                                            NbBundle.getMessage (EditMediator.class, "LBL_Missing_JAR", fl),
+                                                NbBundle.getMessage (EditMediator.class, "LBL_Missing_JAR_title"),
+                                                JOptionPane.WARNING_MESSAGE
+                                        );
+                                        continue;
+                                    }
+                                    assert fo != null : fl;
+                                    if (FileUtil.isArchiveFile (fo))
+                                        try {
+                                            new JarFile (fl);
+                                        } catch (IOException ex) {
+                                            JOptionPane.showMessageDialog (
+                                                SwingUtilities.getWindowAncestor (list.getComponent ()),
+                                                NbBundle.getMessage (EditMediator.class, "LBL_Corrupted_JAR", fl),
+                                                    NbBundle.getMessage (EditMediator.class, "LBL_Corrupted_JAR_title"),
+                                                    JOptionPane.WARNING_MESSAGE
+                                            );
+                                            continue;
+                                        }
+                                    newPaths.add (path);
+                                }
+                                filePaths = newPaths.toArray (new String [newPaths.size ()]);
+
+                                // value of PATH_IN_DEPLOYMENT depends on whether file or folder is being added.
+                                // do not override value set by callback.initAdditionalProperties if includeNewFilesInDeployment
+                                int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), 
+                                        filePaths, base,
+                                        chooser.getSelectedPathVariables(), callback);
+                                list.setSelectedIndices( newSelection );
+                                curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
+                                setLastUsedClassPathFolder(curDir);
+                            }
                         }
-                    newPaths.add (path);
-                }
-                filePaths = newPaths.toArray (new String [newPaths.size ()]);
+                        else if ( source == addLibrary ) {
+                            //TODO this piece needs to go somewhere else?
+                            URL librariesFolder = null;
+                            LibraryManager manager = null;
+                            boolean empty = false;
+                            try {
+                                String path = libraryPath.getText(0, libraryPath.getLength());
+                                if (path != null && path.length() > 0) {
+                                    File fil = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), path);
+                                    librariesFolder = Utilities.toURI(FileUtil.normalizeFile(fil)).toURL();
+                                    manager = LibraryManager.forLocation(librariesFolder);
+                                } else {
+                                    empty = true;
+                                }
+                            } catch (BadLocationException ex) {
+                                empty = true;
+                                Exceptions.printStackTrace(ex);
+                            } catch (MalformedURLException ex2) {
+                                Exceptions.printStackTrace(ex2);
+                            }
+                            if (manager == null && empty) {
+                                manager = LibraryManager.getDefault();
+                            }
+                            if (manager == null) {
+                                //TODO some error message
+                                return;
+                            }
 
-                // value of PATH_IN_DEPLOYMENT depends on whether file or folder is being added.
-                // do not override value set by callback.initAdditionalProperties if includeNewFilesInDeployment
-                int[] newSelection = ClassPathUiSupport.addJarFiles( listModel, list.getSelectedIndices(), 
-                        filePaths, base,
-                        chooser.getSelectedPathVariables(), callback);
-                list.setSelectedIndices( newSelection );
-                curDir = FileUtil.normalizeFile(chooser.getCurrentDirectory());
-                setLastUsedClassPathFolder(curDir);
+                            Set<Library> added = LibraryChooser.showDialog(manager,
+                                    createLibraryFilter(), empty ? refHelper.getLibraryChooserImportHandler() : refHelper.getLibraryChooserImportHandler(librariesFolder));
+                            if (added != null) {
+                                final Set<Library> includedLibraries = getIncludedLibraries(listModel);
+                               int[] newSelection = ClassPathUiSupport.addLibraries(listModel, list.getSelectedIndices(), 
+                                       added.toArray(new Library[added.size()]), includedLibraries, callback);
+                               list.setSelectedIndices( newSelection );
+                            }
+                        }
+                        else if ( source == edit ) { 
+                            ClassPathUiSupport.edit( listModel, list.getSelectedIndices(),  helper);
+                            if (list instanceof JListListComponent) {
+                                ((JListListComponent)list).list.repaint();
+                            } else if (list instanceof JTableListComponent) {
+                                ((JTableListComponent)list).table.repaint();
+                            } else {
+                                assert false : "do not know how to handle " + list.getClass().getName();
+                            }
+                        }
+                        else if ( source == addAntArtifact ) { 
+                            AntArtifactItem artifactItems[] = AntArtifactChooser.showDialog(
+                                    antArtifactTypes, project, list.getComponent().getParent());
+                            if (artifactItems != null) {
+                                int[] newSelection = ClassPathUiSupport.addArtifacts( listModel, list.getSelectedIndices(), artifactItems, callback);
+                                list.setSelectedIndices( newSelection );
+                            }
+                        }
+                        else if ( source == remove ) { 
+                            int[] newSelection = ClassPathUiSupport.remove( listModel, list.getSelectedIndices() );
+                            list.setSelectedIndices( newSelection );
+                        }
+                        else if ( source == moveUp ) {
+                            int[] newSelection = ClassPathUiSupport.moveUp( listModel, list.getSelectedIndices() );
+                            list.setSelectedIndices( newSelection );
+                        }
+                        else if ( source == moveDown ) {
+                            int[] newSelection = ClassPathUiSupport.moveDown( listModel, list.getSelectedIndices() );
+                            list.setSelectedIndices( newSelection );
+                        }
+                    }
+                });
             }
-        }
-        else if ( source == addLibrary ) {
-            //TODO this piece needs to go somewhere else?
-            URL librariesFolder = null;
-            LibraryManager manager = null;
-            boolean empty = false;
-            try {
-                String path = libraryPath.getText(0, libraryPath.getLength());
-                if (path != null && path.length() > 0) {
-                    File fil = PropertyUtils.resolveFile(FileUtil.toFile(helper.getProjectDirectory()), path);
-                    librariesFolder = Utilities.toURI(FileUtil.normalizeFile(fil)).toURL();
-                    manager = LibraryManager.forLocation(librariesFolder);
-                } else {
-                    empty = true;
-                }
-            } catch (BadLocationException ex) {
-                empty = true;
-                Exceptions.printStackTrace(ex);
-            } catch (MalformedURLException ex2) {
-                Exceptions.printStackTrace(ex2);
-            }
-            if (manager == null && empty) {
-                manager = LibraryManager.getDefault();
-            }
-            if (manager == null) {
-                //TODO some error message
-                return;
-            }
-
-            Set<Library> added = LibraryChooser.showDialog(manager,
-                    createLibraryFilter(), empty ? refHelper.getLibraryChooserImportHandler() : refHelper.getLibraryChooserImportHandler(librariesFolder));
-            if (added != null) {
-                final Set<Library> includedLibraries = getIncludedLibraries(listModel);
-               int[] newSelection = ClassPathUiSupport.addLibraries(listModel, list.getSelectedIndices(), 
-                       added.toArray(new Library[added.size()]), includedLibraries, callback);
-               list.setSelectedIndices( newSelection );
-            }
-        }
-        else if ( source == edit ) { 
-            ClassPathUiSupport.edit( listModel, list.getSelectedIndices(),  helper);
-            if (list instanceof JListListComponent) {
-                ((JListListComponent)list).list.repaint();
-            } else if (list instanceof JTableListComponent) {
-                ((JTableListComponent)list).table.repaint();
-            } else {
-                assert false : "do not know how to handle " + list.getClass().getName();
-            }
-        }
-        else if ( source == addAntArtifact ) { 
-            AntArtifactItem artifactItems[] = AntArtifactChooser.showDialog(
-                    antArtifactTypes, project, list.getComponent().getParent());
-            if (artifactItems != null) {
-                int[] newSelection = ClassPathUiSupport.addArtifacts( listModel, list.getSelectedIndices(), artifactItems, callback);
-                list.setSelectedIndices( newSelection );
-            }
-        }
-        else if ( source == remove ) { 
-            int[] newSelection = ClassPathUiSupport.remove( listModel, list.getSelectedIndices() );
-            list.setSelectedIndices( newSelection );
-        }
-        else if ( source == moveUp ) {
-            int[] newSelection = ClassPathUiSupport.moveUp( listModel, list.getSelectedIndices() );
-            list.setSelectedIndices( newSelection );
-        }
-        else if ( source == moveDown ) {
-            int[] newSelection = ClassPathUiSupport.moveDown( listModel, list.getSelectedIndices() );
-            list.setSelectedIndices( newSelection );
-        }
+        });
     }    
 
 
