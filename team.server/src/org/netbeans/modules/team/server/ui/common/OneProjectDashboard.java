@@ -69,7 +69,7 @@ import org.netbeans.modules.team.server.ui.spi.LoginHandle;
 import org.netbeans.modules.team.server.ui.spi.ProjectAccessor;
 import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
-import org.netbeans.modules.team.server.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.netbeans.modules.team.commons.treelist.ListNode;
 import org.netbeans.modules.team.commons.treelist.SelectionList;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;

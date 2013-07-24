@@ -141,7 +141,7 @@ public final class KenaiUIUtils {
      */
     public static Kenai showKenaiLogin(final Kenai kenai) {
         TeamServer server = KenaiServer.forKenai(kenai);
-        server = org.netbeans.modules.team.server.ui.spi.TeamUIUtils.showLogin(server, false);
+        server = org.netbeans.modules.team.server.api.TeamUIUtils.showLogin(server, false);
         return (server instanceof KenaiServer) ? ((KenaiServer) server).getKenai() : null;
     }
 

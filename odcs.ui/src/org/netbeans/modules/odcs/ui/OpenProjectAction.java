@@ -51,7 +51,7 @@ import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.dashboard.ProjectHandleImpl;
 import org.netbeans.modules.odcs.ui.project.ODCSSearchPanel;
-import org.netbeans.modules.team.server.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.ActionID;
@@ -77,7 +77,7 @@ public final class OpenProjectAction extends AbstractAction {
     @Override
     public void actionPerformed(ActionEvent e) {
 
-        org.netbeans.modules.team.server.ui.spi.TeamUIUtils.activateTeamDashboard();
+        org.netbeans.modules.team.server.api.TeamUIUtils.activateTeamDashboard();
         if (server == null) {
             server = Utilities.getActiveServer(true);
         }

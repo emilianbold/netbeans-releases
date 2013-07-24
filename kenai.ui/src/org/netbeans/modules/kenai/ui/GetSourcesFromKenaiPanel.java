@@ -90,7 +90,7 @@ import org.netbeans.modules.kenai.ui.KenaiSearchPanel.KenaiProjectSearchInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
 import org.netbeans.modules.team.server.ui.common.DashboardSupport;
 import org.netbeans.modules.team.server.ui.common.AddInstanceAction;
-import org.netbeans.modules.team.server.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

@@ -81,7 +81,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.SharedItem;
-import org.netbeans.modules.team.server.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;

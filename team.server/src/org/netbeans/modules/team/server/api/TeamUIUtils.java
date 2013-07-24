@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.team.server.ui.spi;
+package org.netbeans.modules.team.server.api;
 
 import java.io.File;
 import java.util.Collections;
@@ -57,6 +57,8 @@ import org.netbeans.modules.team.server.TeamServerTopComponent;
 import org.netbeans.modules.team.server.LoginPanel;
 import org.netbeans.modules.team.server.TeamView;
 import org.netbeans.modules.team.server.api.TeamServerManager;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
+import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 

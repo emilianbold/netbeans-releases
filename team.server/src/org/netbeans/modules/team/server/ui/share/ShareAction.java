@@ -61,7 +61,7 @@ import org.netbeans.modules.team.server.Utilities;
 import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
-import org.netbeans.modules.team.server.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
