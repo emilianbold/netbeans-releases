@@ -82,14 +82,9 @@ public class ArchiveTypeBindingTypeFilter<T extends Element> extends Filter<T> {
                     for (Iterator<T> iterator = set.iterator(); iterator
                             .hasNext();) {
                         Element element = iterator.next();
-                        boolean isNormalScope = AnnotationUtil.hasAnnotation(element,
-                                AnnotationUtil.NORMAL_SCOPE_FQN, compInfo);
-                        if (isNormalScope) {
-                            continue;
-                        }
-                        boolean isScope = AnnotationUtil.hasAnnotation(element,
-                                AnnotationUtil.SCOPE_FQN, compInfo);
-                        if (isScope) {
+                        boolean isNormalScopeOrScope = AnnotationUtil.getAnnotationMirror(element, compInfo,
+                                AnnotationUtil.NORMAL_SCOPE_FQN, AnnotationUtil.SCOPE_FQN) != null;
+                        if (isNormalScopeOrScope) {
                             continue;
                         }
                         iterator.remove();
