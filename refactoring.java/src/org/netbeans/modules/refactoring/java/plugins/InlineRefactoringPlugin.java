@@ -283,6 +283,10 @@ public class InlineRefactoringPlugin extends JavaRefactoringPlugin {
                     preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodInInterface")); //NOI18N
                     return preCheckProblem;
                 }
+                if(element.getModifiers().contains(Modifier.ABSTRACT)) {
+                    preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(InlineRefactoringPlugin.class, "ERR_InlineMethodAbstract")); //NOI18N
+                    return preCheckProblem;
+                }
                 // Method can not be polymorphic
                 Collection<ExecutableElement> overridenMethods = JavaRefactoringUtils.getOverriddenMethods((ExecutableElement) element, javac);
                 Collection<ExecutableElement> overridingMethods = JavaRefactoringUtils.getOverridingMethods((ExecutableElement) element, javac,cancelRequested);

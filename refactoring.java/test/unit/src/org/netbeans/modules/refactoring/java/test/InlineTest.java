@@ -659,7 +659,7 @@ public class InlineTest extends RefactoringTestBase {
                 + "}"));
     }
 
-    public void test203914() throws Exception { // #203914 - [inline]  Cannot inline this method, a already used.
+    public void test203914a() throws Exception { // #203914 - [inline]  Cannot inline this method, a already used.
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -684,7 +684,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        int b = a * c;\n"
                 + "    }\n"
                 + "}"));
+    }
 
+    public void test203914b() throws Exception { // #203914 - [inline]  Cannot inline this method, a already used.
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -1275,7 +1277,7 @@ public class InlineTest extends RefactoringTestBase {
                 + "}"));
     }
 
-    public void testInlineMethod() throws Exception {
+    public void testInlineMethoda() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -1299,7 +1301,9 @@ public class InlineTest extends RefactoringTestBase {
                 + "        }\n"
                 + "    }\n"
                 + "}"));
+    }
 
+    public void testInlineMethodb() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
                 + "public class A {\n"
@@ -1618,6 +1622,17 @@ public class InlineTest extends RefactoringTestBase {
         final InlineRefactoring[] r = new InlineRefactoring[1];
         createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
         performRefactoring(r, new Problem(true, "ERR_InlineMethodRecursion"));
+    }
+    
+    public void testCannotInlineAbstractMethod() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public abstract String getGreeting(String name);\n"
+                + "}"));
+        final InlineRefactoring[] r = new InlineRefactoring[1];
+        createInlineMethodRefactoring(src.getFileObject("t/A.java"), 1, r);
+        performRefactoring(r, new Problem(true, "ERR_InlineMethodAbstract"));
     }
 
     public void testCannotInlineMethodMultipleReturn() throws Exception {
