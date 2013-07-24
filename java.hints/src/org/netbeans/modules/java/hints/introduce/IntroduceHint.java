@@ -476,8 +476,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     }
                     
                     if (pathToClass != null) { //XXX: should actually produce two different names: one when replacing duplicates, one when not replacing them
-                        guessedName = Utilities.makeNameUnique(info, info.getTrees().getScope(pathToClass),
-                                guessedName, cs.getFieldNamePrefix(), cs.getFieldNameSuffix());
+                        guessedName = Utilities.makeNameUnique(info,
+                                                               info.getTrees().getScope(pathToClass),
+                                                               guessedName,
+                                                               statik ? cs.getStaticFieldNamePrefix() : cs.getFieldNamePrefix(),
+                                                               statik ? cs.getStaticFieldNameSuffix() : cs.getFieldNameSuffix());
                     }
                 }
 
