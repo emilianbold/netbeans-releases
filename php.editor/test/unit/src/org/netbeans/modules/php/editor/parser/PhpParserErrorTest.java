@@ -319,4 +319,16 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testListInForeach() throws Exception {
         checkErrors("testfiles/parser/listInForeach.php");
     }
+
+    public void testExpressionArrayAccess_01() throws Exception {
+        checkErrors("testfiles/parser/expressionArrayAccess_01.php");
+    }
+
+    public void testExpressionArrayAccess_02() throws Exception {
+        checkErrors("testfiles/parser/expressionArrayAccess_02.php");
+    }
+
+    public void testExpressionArrayAccess_03() throws Exception {
+        checkErrors("testfiles/parser/expressionArrayAccess_03.php");
+    }
 }

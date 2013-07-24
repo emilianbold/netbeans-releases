@@ -112,6 +112,8 @@ public interface Visitor {
     //public void endVisit(EchoStatement echoStatement);
     public void visit(EmptyStatement emptyStatement);
 
+    public void visit(ExpressionArrayAccess node);
+
     //public void endVisit(EmptyStatement emptyStatement);
     public void visit(ExpressionStatement expressionStatement);
 

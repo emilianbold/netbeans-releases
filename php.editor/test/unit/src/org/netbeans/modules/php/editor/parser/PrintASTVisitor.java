@@ -373,6 +373,14 @@ public class PrintASTVisitor implements Visitor {
     }
 
     @Override
+    public void visit(ExpressionArrayAccess node) {
+        XMLPrintNode printNode = new XMLPrintNode(node, "ExpressionArrayAccess");
+        printNode.addChild(node.getExpression());
+        printNode.addChild(node.getDimension());
+        printNode.print(this);
+    }
+
+    @Override
     public void visit(ExpressionStatement expressionStatement) {
         XMLPrintNode printNode = new XMLPrintNode(expressionStatement, "ExpressionStatement");
         printNode.addChild(expressionStatement.getExpression());

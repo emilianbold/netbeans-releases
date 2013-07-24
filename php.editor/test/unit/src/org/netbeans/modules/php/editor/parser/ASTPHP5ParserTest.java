@@ -464,6 +464,18 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/listInForeach");
     }
 
+    public void testExpressionArrayAccess_01() throws Exception {
+        performTest("parser/expressionArrayAccess_01");
+    }
+
+    public void testExpressionArrayAccess_02() throws Exception {
+        performTest("parser/expressionArrayAccess_02");
+    }
+
+    public void testExpressionArrayAccess_03() throws Exception {
+        performTest("parser/expressionArrayAccess_03");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");

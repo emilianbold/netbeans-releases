@@ -67,6 +67,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.DereferencedArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.EchoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
@@ -274,6 +275,12 @@ public class DefaultVisitor implements Visitor {
 
     @Override
     public void visit(EmptyStatement emptyStatement) {
+    }
+
+    @Override
+    public void visit(ExpressionArrayAccess node) {
+        scan(node.getExpression());
+        scan(node.getDimension());
     }
 
     @Override
