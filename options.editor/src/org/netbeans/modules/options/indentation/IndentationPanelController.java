@@ -148,7 +148,7 @@ public final class IndentationPanelController implements PreferencesCustomizer, 
             if (delegate != null) {
                 ((PreviewProvider) delegate).refreshPreview();
             } else {
-                getIndentationPanel().getPreviewProvider().refreshPreview();
+                getIndentationPanel().scheduleRefresh();
             }
         } catch (ThreadDeath td) {
             throw td;
