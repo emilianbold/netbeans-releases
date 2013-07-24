@@ -82,10 +82,11 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
         this.root=root;
         this.foldable=foldable;
         initComponents();
-        setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        // issue 233048: the background color issues with dark metal L&F
+        //setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        //titlePanel.setBackground(foldable?SectionVisualTheme.getSectionHeaderColor():SectionVisualTheme.getContainerHeaderColor());
+        //actionPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         headerSeparator.setForeground(SectionVisualTheme.getSectionHeaderLineColor());
-        titlePanel.setBackground(foldable?SectionVisualTheme.getSectionHeaderColor():SectionVisualTheme.getContainerHeaderColor());
-        actionPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         fillerLine.setForeground(SectionVisualTheme.getFoldLineColor());
         fillerEnd.setForeground(SectionVisualTheme.getFoldLineColor());
         Mnemonics.setLocalizedText(titleButton, title);
@@ -135,8 +136,9 @@ public class SectionContainer extends javax.swing.JPanel implements NodeSectionP
     
     /** Method from NodeSectionPanel interface */
     public void setActive(boolean active) {
-        titlePanel.setBackground(active?SectionVisualTheme.getSectionHeaderActiveColor():
-            (foldable?SectionVisualTheme.getSectionHeaderColor():SectionVisualTheme.getContainerHeaderColor()));
+        // issue 233048: the background color issues with dark metal L&F
+        // titlePanel.setBackground(active?SectionVisualTheme.getSectionHeaderActiveColor():
+        //      (foldable?SectionVisualTheme.getSectionHeaderColor():SectionVisualTheme.getContainerHeaderColor()));
         if (active && !this.equals(sectionView.getActivePanel())) {
             sectionView.sectionSelected(true);
             sectionView.setActivePanel(this);
