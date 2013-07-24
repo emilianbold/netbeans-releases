@@ -203,8 +203,11 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(LambdaFunctionDeclaration node) {
+            scan(node.getLexicalVariables());
             parentNodes.push(node);
-            super.visit(node);
+            initializeExpressions(node.getLexicalVariables());
+            scan(node.getFormalParameters());
+            scan(node.getBody());
             parentNodes.pop();
         }
 
@@ -380,6 +383,12 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
                 retval = identifier.getName();
             }
             return retval;
+        }
+
+        private void initializeExpressions(List<Expression> expressions) {
+            for (Expression expression : expressions) {
+                initializeExpression(expression);
+            }
         }
 
         private void initializeExpression(Expression expression) {
