@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.java.ui;
 
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
@@ -56,13 +55,10 @@ import javax.lang.model.element.Modifier;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
-import javax.swing.JEditorPane;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 
 import com.sun.source.tree.AssignmentTree;
 import com.sun.source.tree.BlockTree;
@@ -76,25 +72,14 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 
-import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
-import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 
@@ -473,9 +458,7 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
     private javax.swing.JList visibilityOrderList;
     // End of variables declaration//GEN-END:variables
 
-        private static final class CodeGenCategorySupport extends CategorySupport {
-        
-        private Source source = null;
+        private static final class CodeGenCategorySupport extends DocumentCategorySupport {
 
         private CodeGenCategorySupport(Preferences preferences, JPanel panel) {
             super(preferences, "code-generation", panel, NbBundle.getMessage(FmtCodeGeneration.class, "SAMPLE_CodeGen"), //NOI18N
@@ -530,91 +513,36 @@ public class FmtCodeGeneration extends javax.swing.JPanel implements Runnable, L
                 node.put(optionID, value);            
         }
 
-        @Override
-        public void refreshPreview() {
-            final JEditorPane jep = (JEditorPane) getPreviewComponent();
-            try {
-                Class.forName(CodeStyle.class.getName(), true, CodeStyle.class.getClassLoader());
-            } catch (ClassNotFoundException cnfe) {
-                // ignore
-            }
-
-            final CodeStyle codeStyle = codeStyleProducer.create(previewPrefs);
-            jep.setIgnoreRepaint(true);
-            try {
-                if (source == null) {
-                    FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("org.netbeans.samples.ClassA", "java"); //NOI18N
-                    source = Source.create(fo);
-                }
-                final Document doc = source.getDocument(true);
-                if (doc.getLength() > 0) {
-                    doc.remove(0, doc.getLength());
-                }
-                doc.insertString(0, previewText, null);
-                doc.putProperty(CodeStyle.class, codeStyle);
-                jep.setDocument(doc);
-                ModificationResult result = ModificationResult.runModificationTask(Collections.singleton(source), new UserTask() {
-
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
-                        copy.toPhase(Phase.RESOLVED);
-                        TreeMaker tm = copy.getTreeMaker();
-                        GeneratorUtilities gu = GeneratorUtilities.get(copy);
-                        CompilationUnitTree cut = copy.getCompilationUnit();
-                        ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
-                        VariableTree field = (VariableTree)ct.getMembers().get(1);
-                        List<Tree> members = new ArrayList<Tree>();
-                        AssignmentTree stat = tm.Assignment(tm.Identifier("name"), tm.Literal("Name")); //NOI18N
-                        BlockTree init = tm.Block(Collections.singletonList(tm.ExpressionStatement(stat)), false);
-                        members.add(init);
-                        members.add(gu.createConstructor(ct, Collections.<VariableTree>emptyList()));
-                        members.add(gu.createGetter(field));
-                        ModifiersTree mods = tm.Modifiers(EnumSet.of(Modifier.PRIVATE));
-                        ClassTree inner = tm.Class(mods, "Inner", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>emptyList()); //NOI18N
-                        members.add(inner);
-                        mods = tm.Modifiers(EnumSet.of(Modifier.PRIVATE, Modifier.STATIC));
-                        ClassTree nested = tm.Class(mods, "Nested", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>emptyList()); //NOI18N
-                        members.add(nested);
-                        IdentifierTree nestedId = tm.Identifier("Nested"); //NOI18N
-                        VariableTree staticField = tm.Variable(mods, "instance", nestedId, null); //NOI18N
-                        members.add(staticField);
-                        NewClassTree nct = tm.NewClass(null, Collections.<ExpressionTree>emptyList(), nestedId, Collections.<ExpressionTree>emptyList(), null);
-                        stat = tm.Assignment(tm.Identifier("instance"), nct); //NOI18N
-                        BlockTree staticInit = tm.Block(Collections.singletonList(tm.ExpressionStatement(stat)), true);
-                        members.add(staticInit);
-                        members.add(gu.createGetter(staticField));
-                        ClassTree newCT = gu.insertClassMembers(ct, members);
-                        copy.rewrite(ct, newCT);
-                    }
-                });
-                result.commit();
-                final Reformat reformat = Reformat.get(doc);
-                reformat.lock();
-                try {
-                    if (doc instanceof BaseDocument) {
-                        ((BaseDocument) doc).runAtomicAsUser(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    reformat.reformat(0, doc.getLength());
-                                } catch (BadLocationException ble) {}
-                            }
-                        });
-                    } else {
-                        reformat.reformat(0, doc.getLength());
-                    }
-                } finally {
-                    reformat.unlock();
-                }
-                DataObject dataObject = DataObject.find(source.getFileObject());
-                SaveCookie sc = dataObject.getLookup().lookup(SaveCookie.class);
-                if (sc != null)
-                    sc.save();
-            } catch (Exception ex) {}
-            jep.setIgnoreRepaint(false);
-            jep.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
-            jep.repaint(100);
+        protected void doModification(ResultIterator resultIterator) throws Exception {
+            WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
+            copy.toPhase(Phase.RESOLVED);
+            TreeMaker tm = copy.getTreeMaker();
+            GeneratorUtilities gu = GeneratorUtilities.get(copy);
+            CompilationUnitTree cut = copy.getCompilationUnit();
+            ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+            VariableTree field = (VariableTree)ct.getMembers().get(1);
+            List<Tree> members = new ArrayList<Tree>();
+            AssignmentTree stat = tm.Assignment(tm.Identifier("name"), tm.Literal("Name")); //NOI18N
+            BlockTree init = tm.Block(Collections.singletonList(tm.ExpressionStatement(stat)), false);
+            members.add(init);
+            members.add(gu.createConstructor(ct, Collections.<VariableTree>emptyList()));
+            members.add(gu.createGetter(field));
+            ModifiersTree mods = tm.Modifiers(EnumSet.of(Modifier.PRIVATE));
+            ClassTree inner = tm.Class(mods, "Inner", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>emptyList()); //NOI18N
+            members.add(inner);
+            mods = tm.Modifiers(EnumSet.of(Modifier.PRIVATE, Modifier.STATIC));
+            ClassTree nested = tm.Class(mods, "Nested", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>emptyList()); //NOI18N
+            members.add(nested);
+            IdentifierTree nestedId = tm.Identifier("Nested"); //NOI18N
+            VariableTree staticField = tm.Variable(mods, "instance", nestedId, null); //NOI18N
+            members.add(staticField);
+            NewClassTree nct = tm.NewClass(null, Collections.<ExpressionTree>emptyList(), nestedId, Collections.<ExpressionTree>emptyList(), null);
+            stat = tm.Assignment(tm.Identifier("instance"), nct); //NOI18N
+            BlockTree staticInit = tm.Block(Collections.singletonList(tm.ExpressionStatement(stat)), true);
+            members.add(staticInit);
+            members.add(gu.createGetter(staticField));
+            ClassTree newCT = gu.insertClassMembers(ct, members);
+            copy.rewrite(ct, newCT);
         }
         
         private static class Element {
