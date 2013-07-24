@@ -55,6 +55,7 @@ import java.math.BigInteger;
 import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -516,44 +517,49 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                     List<String> welcomeFileList = new ArrayList<String>();
 
                     // add the welcome file only if there not any
-                    if (!faceletsEnabled && welcomeFiles == null) {
-                        if (facesMapping.charAt(0) == '/') {
-                            // if the mapping start with '/' (like /faces/*), then the welcome file can be the mapping
-                            if (webModule.getDocumentBase().getFileObject(WELCOME_JSF) != null || createWelcome) {
-                                welcomeFileList.add(ConfigurationUtils.translateURI(facesMapping, WELCOME_JSF));
-                            }
-                        } else {
-                            // if the mapping doesn't start '/' (like *.jsf), then the welcome file has to be
-                            // a helper file, which will foward the request to the right url
-                            welcomeFileList.add(FORWARD_JSF);
-                            //copy forwardToJSF.jsp
-                            if (facesMapping.charAt(0) != '/' && canCreateNewFile(webModule.getDocumentBase(), FORWARD_JSF)) { //NOI18N
-                                String content = readResource(getClass().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
-                                content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, WELCOME_JSF));
-                                Charset encoding = FileEncodingQuery.getDefaultEncoding();
-                                content = content.replaceAll("__ENCODING__", encoding.name());
-                                FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
-                                createFile(target, content, encoding.name());  //NOI18N
-                                DataObject dob = DataObject.find(target);
-                                if (dob != null) {
-                                    JSFPaletteUtilities.reformat(dob);
+                    if (!faceletsEnabled) {
+                        if (welcomeFiles == null) {
+                            if (facesMapping.charAt(0) == '/') {
+                                // if the mapping start with '/' (like /faces/*), then the welcome file can be the mapping
+                                if (webModule.getDocumentBase().getFileObject(WELCOME_JSF) != null || createWelcome) {
+                                    welcomeFileList.add(ConfigurationUtils.translateURI(facesMapping, WELCOME_JSF));
                                 }
+                            } else {
+                                // if the mapping doesn't start '/' (like *.jsf), then the welcome file has to be
+                                // a helper file, which will foward the request to the right url
+                                welcomeFileList.add(FORWARD_JSF);
+                                //copy forwardToJSF.jsp
+                                if (facesMapping.charAt(0) != '/' && canCreateNewFile(webModule.getDocumentBase(), FORWARD_JSF)) { //NOI18N
+                                    String content = readResource(getClass().getResourceAsStream(RESOURCE_FOLDER + FORWARD_JSF), "UTF-8"); //NOI18N
+                                    content = content.replace("__FORWARD__", ConfigurationUtils.translateURI(facesMapping, WELCOME_JSF));
+                                    Charset encoding = FileEncodingQuery.getDefaultEncoding();
+                                    content = content.replaceAll("__ENCODING__", encoding.name());
+                                    FileObject target = FileUtil.createData(webModule.getDocumentBase(), FORWARD_JSF);//NOI18N
+                                    createFile(target, content, encoding.name());  //NOI18N
+                                    DataObject dob = DataObject.find(target);
+                                    if (dob != null) {
+                                        JSFPaletteUtilities.reformat(dob);
+                                    }
 
+                                }
                             }
                         }
-                    } else if (faceletsEnabled && welcomeFiles == null) {
-                        welcomeFileList.add(ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML));
-                    }
-                    if (welcomeFiles != null && welcomeFileList.isEmpty()) {
-                        for (String fileName : welcomeFiles.getWelcomeFile()) {
-                            welcomeFileList.add(ConfigurationUtils.translateURI(facesMapping, fileName));
+                    } else {
+                        // Add the welcome file into the list if no such list exist or if it doesn't contain it yet
+                        String welcomeFileUri = ConfigurationUtils.translateURI(facesMapping, WELCOME_XHTML);
+                        if (welcomeFiles == null || !Arrays.asList(welcomeFiles.getWelcomeFile()).contains(welcomeFileUri)) {
+                            welcomeFileList.add(welcomeFileUri);
                         }
-                        welcomeFiles = null;
                     }
-                    if (welcomeFiles == null && !welcomeFileList.isEmpty()) {
+                    if (welcomeFiles != null) {
+                        // Copy already existing entries
+                        welcomeFileList.addAll(Arrays.asList(welcomeFiles.getWelcomeFile()));
+                    }
+                    if (!welcomeFileList.isEmpty()) {
+                        // If not empty generate the welcome file list
                         welcomeFiles = (WelcomeFileList) ddRoot.createBean("WelcomeFileList"); //NOI18N
                         ddRoot.setWelcomeFileList(welcomeFiles);
-                        for (String fileName: welcomeFileList) {
+                        for (String fileName : welcomeFileList) {
                             welcomeFiles.addWelcomeFile(fileName);
                         }
                     }
