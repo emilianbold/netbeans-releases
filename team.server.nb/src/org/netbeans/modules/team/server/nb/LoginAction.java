@@ -39,31 +39,62 @@
  *
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
-
-package org.netbeans.modules.team.server.ui.nodes;
+package org.netbeans.modules.team.server.nb;
 
 import java.awt.event.ActionEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import javax.swing.AbstractAction;
-import org.netbeans.modules.team.server.TeamServerManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
+import org.netbeans.modules.team.server.ui.spi.TeamUIUtils;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
- *
  * @author Jan Becicka
  */
-public class RemoveInstanceAction extends AbstractAction {
+final class LoginAction extends AbstractAction {
 
-    public TeamServer key;
-    public RemoveInstanceAction(TeamServer name) {
-        super(NbBundle.getMessage(RemoveInstanceAction.class, "CTL_RemoveInstance"));
-        this.key = name;
+    private final TeamServer teamServer;
+    private PropertyChangeListener l;
+    public LoginAction(TeamServer teamServer) {
+        this.teamServer = teamServer;
+        teamServer.addPropertyChangeListener(WeakListeners.propertyChange(l=new PropertyChangeListener() {
+
+            @Override
+            public void propertyChange(PropertyChangeEvent pce) {
+                if (TeamServer.PROP_LOGIN.equals(pce.getPropertyName()))  {
+                    if (pce.getNewValue() == null) {
+                        setLogout(false);
+                    } else {
+                        setLogout(true);
+                    }
+                }
+            }
+        }, teamServer));
+        setLogout(teamServer.getStatus() != TeamServer.Status.OFFLINE);
     }
-
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        TeamServerManager.getDefault().removeTeamServer(key);
+        if (teamServer.getStatus() != TeamServer.Status.OFFLINE) {
+            teamServer.logout();
+        } else {
+            TeamUIUtils.showLogin(teamServer);
+        }
     }
 
+    private void setLogout(final boolean b) {
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run () {
+                if (b) {
+                    putValue(NAME, NbBundle.getMessage(LoginAction.class, "CTL_LogoutAction")); //NOI18N
+                } else {
+                    putValue(NAME, NbBundle.getMessage(LoginAction.class, "CTL_LoginAction")); //NOI18N
+                }
+            }
+        });
+    }
 }

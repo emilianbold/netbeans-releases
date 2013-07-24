@@ -42,24 +42,34 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.team.server.ui.nodes;
+package org.netbeans.modules.team.server.nb;
 
-import org.netbeans.modules.team.server.ui.common.AddInstanceAction;
+import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.beans.PropertyVetoException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.core.ide.ServicesTabNodeRegistration;
-import org.netbeans.modules.team.server.TeamServerManager;
+import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.common.TeamServerComparator;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
+import org.openide.explorer.ExplorerManager;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.ChildFactory;
 import org.openide.nodes.Children;
 import org.openide.nodes.Node;
+import org.openide.nodes.NodeNotFoundException;
+import org.openide.nodes.NodeOp;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.windows.TopComponent;
+import org.openide.windows.WindowManager;
 
 /**
  * Root node in Services tab.
@@ -84,7 +94,7 @@ public class TeamRootNode extends AbstractNode {
     
     public @Override Action[] getActions(boolean context) {
         List<Action> actions = new ArrayList<Action>();
-        actions.add(new AddInstanceAction(true));
+        actions.add(new AddInstanceAction());
         return actions.toArray(new Action[actions.size()]);
     }
 
@@ -109,5 +119,67 @@ public class TeamRootNode extends AbstractNode {
             refresh(false);
         }
 
+    }
+    
+    private static final Logger LOG = Logger.getLogger(AddInstanceAction.class.getName());
+    private static class AddInstanceAction extends org.netbeans.modules.team.server.ui.common.AddInstanceAction {
+        @Override
+        public void actionPerformed(ActionEvent ae) {
+            super.actionPerformed(ae); 
+            TeamServer teamServer = getTeamServer();
+            if(teamServer != null) {
+                selectNode(teamServer.getUrl().toString());
+            }
+        }
+        private static void selectNode(final String... path) {
+            Mutex.EVENT.readAccess(new Runnable() {
+                @Override
+                public void run() {
+                    TopComponent tab = WindowManager.getDefault().findTopComponent("services"); // NOI18N
+                    if (tab == null) {
+                        // XXX have no way to open it, other than by calling ServicesTabAction
+                        LOG.fine("No ServicesTab found");
+                        return;
+                    }
+                    tab.open();
+                    tab.requestActive();
+                    if (!(tab instanceof ExplorerManager.Provider)) {
+                        LOG.fine("ServicesTab not an ExplorerManager.Provider");
+                        return;
+                    }
+                    final ExplorerManager mgr = ((ExplorerManager.Provider) tab).getExplorerManager();
+                    final Node root = mgr.getRootContext();
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        @Override
+                        public void run() {
+                            Node hudson = NodeOp.findChild(root, TeamRootNode.TEAM_NODE_NAME);
+                            if (hudson == null) {
+                                LOG.fine("ServicesTab does not contain " + TeamRootNode.TEAM_NODE_NAME);
+                                return;
+                            }
+                            Node _selected;
+                            try {
+                                _selected = NodeOp.findPath(hudson, path);
+                            } catch (NodeNotFoundException x) {
+                                LOG.log(Level.FINE, "Could not find subnode", x);
+                                _selected = x.getClosestNode();
+                            }
+                            final Node selected = _selected;
+                            Mutex.EVENT.readAccess(new Runnable() {
+                                @Override
+                                public void run() {
+                                    try {
+                                        mgr.setSelectedNodes(new Node[] {selected});
+                                    } catch (PropertyVetoException x) {
+                                        LOG.log(Level.FINE, "Could not select path", x);
+                                    }
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+        }
+        
     }
 }

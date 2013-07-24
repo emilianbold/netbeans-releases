@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.bugtracking.bridge.ideservices;
+package org.netbeans.modules.team.ide;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

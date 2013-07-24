@@ -56,7 +56,7 @@ import org.netbeans.modules.team.server.TeamServerCombo;
 import org.netbeans.modules.team.server.TeamServerTopComponent;
 import org.netbeans.modules.team.server.LoginPanel;
 import org.netbeans.modules.team.server.TeamView;
-import org.netbeans.modules.team.server.TeamServerManager;
+import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 

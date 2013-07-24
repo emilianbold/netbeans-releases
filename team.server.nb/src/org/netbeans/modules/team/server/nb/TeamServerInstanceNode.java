@@ -40,13 +40,14 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.team.server.ui.nodes;
+package org.netbeans.modules.team.server.nb;
 
 import org.netbeans.modules.team.server.ui.common.EditInstanceAction;
 import java.awt.Image;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import javax.swing.Action;
+import org.netbeans.modules.team.server.ui.common.RemoveInstanceAction;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;

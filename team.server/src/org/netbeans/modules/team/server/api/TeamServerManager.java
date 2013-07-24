@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.team.server;
+package org.netbeans.modules.team.server.api;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;

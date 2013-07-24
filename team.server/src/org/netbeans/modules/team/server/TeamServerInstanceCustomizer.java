@@ -40,7 +40,7 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.team.server.ui.nodes;
+package org.netbeans.modules.team.server;
 
 import java.awt.Component;
 import java.awt.event.ActionEvent;
@@ -56,7 +56,7 @@ import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.modules.team.server.TeamServerManager;
+import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 import org.openide.DialogDescriptor;

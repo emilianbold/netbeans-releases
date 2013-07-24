@@ -44,6 +44,7 @@ package org.netbeans.modules.team.server;
 
 import java.util.Collection;
 import java.util.prefs.Preferences;
+import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;

@@ -43,10 +43,10 @@ package org.netbeans.modules.team.server;
 
 import java.awt.event.ActionEvent;
 import javax.swing.AbstractAction;
+import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.ui.spi.TeamUIUtils;
 import org.openide.awt.ActionID;
-import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
 import org.openide.util.NbBundle;
 

@@ -294,6 +294,7 @@
             <friend-packages>
                 <friend>org.netbeans.modules.ade</friend>
                 <friend>org.netbeans.modules.bugtracking.bridge</friend>
+                <friend>org.netbeans.modules.team.ide</friend>
                 <friend>org.netbeans.modules.clearcase</friend>
                 <friend>org.netbeans.modules.git</friend>
                 <friend>org.netbeans.modules.localhistory</friend>

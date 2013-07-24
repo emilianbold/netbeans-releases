@@ -56,6 +56,7 @@ import javax.swing.JSeparator;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.queries.VersioningQuery;
+import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.spi.PopupMenuProvider;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 import org.openide.awt.ActionID;
