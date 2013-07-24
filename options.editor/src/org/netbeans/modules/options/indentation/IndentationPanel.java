@@ -99,7 +99,7 @@ import org.openide.util.WeakListeners;
  * @author Jan Jancura
  */
 @OptionsPanelController.Keywords(keywords={"org.netbeans.modules.options.editor.Bundle#KW_IndentationPanel"}, location=OptionsDisplayer.EDITOR, tabTitle= "org.netbeans.modules.options.editor.Bundle#CTL_Formating_DisplayName")
-public class IndentationPanel extends JPanel implements ChangeListener, ActionListener, PreferenceChangeListener, Runnable {
+public class IndentationPanel extends JPanel implements ChangeListener, ActionListener, PreferenceChangeListener {
 
     private static final Logger LOG = Logger.getLogger(IndentationPanel.class.getName());
 
@@ -111,7 +111,23 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     private final boolean showOverrideGlobalOptions;
     
     private static final int REFRESH_DELAY = 100; /* [ms] */
-    private final RequestProcessor.Task refreshTask = RequestProcessor.getDefault().create(this);
+    private final RequestProcessor.Task refreshTask = RequestProcessor.getDefault().create(new Runnable() {
+        public void run() {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(this);
+            } else {
+                // XXX: this is a workaround for the new view hierarchy, normally we
+                // should not catch any exception here and just call refreshPreview().
+                try {
+                    preview.refreshPreview();
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable e) {
+                    // ignore
+                }
+            }
+        }
+    });
     
     /** 
      * Creates new form IndentationPanel.
@@ -325,22 +341,6 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
 
         if (needsRefresh) {
             scheduleRefresh();
-        }
-    }
-    
-    public void run() {
-        if (!SwingUtilities.isEventDispatchThread()) {
-            SwingUtilities.invokeLater(this);
-        } else {
-            // XXX: this is a workaround for the new view hierarchy, normally we
-            // should not catch any exception here and just call refreshPreview().
-            try {
-                preview.refreshPreview();
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable e) {
-                // ignore
-            }
         }
     }
     
