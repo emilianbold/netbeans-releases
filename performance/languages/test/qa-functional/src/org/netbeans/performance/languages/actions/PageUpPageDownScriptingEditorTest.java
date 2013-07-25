@@ -44,24 +44,21 @@
 
 package org.netbeans.performance.languages.actions;
 
+import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
-
-import java.awt.event.KeyEvent;
-
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.Action.Shortcut;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -89,12 +86,8 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         WAIT_AFTER_OPEN = 200;        
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(PageUpPageDownScriptingEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(PageUpPageDownScriptingEditorTest.class).suite();
     }
 
     @Override
@@ -115,14 +108,20 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
     
     @Override
     public void prepare() {
-        if (pgup) new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator);
-        else  editorOperator.setCaretPositionToLine(1);
+        if (pgup) {
+            new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator);
+        } else {
+            editorOperator.setCaretPositionToLine(1);
+        }
     }
 
     @Override
     public ComponentOperator open() {
-        if (pgup) new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_PAGE_UP)).perform(editorOperator);
-        else new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_PAGE_DOWN)).perform(editorOperator);
+        if (pgup) {
+            new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0)).perform(editorOperator);
+        } else {
+            new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0)).perform(editorOperator);
+        }
         return null;
     }
     
