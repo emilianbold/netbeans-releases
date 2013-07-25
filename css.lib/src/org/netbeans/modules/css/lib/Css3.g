@@ -386,7 +386,7 @@ mediaBody
 
 mediaBodyItem
     :
-    (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN (~LBRACE)* LBRACE))=>cp_mixin_declaration 
+    (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration 
     | (cp_mixin_call)=>cp_mixin_call 
     |(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>propertyDeclaration
     | {isScssSource()}? sass_extend
@@ -448,7 +448,7 @@ mediaFeature
  
 bodyItem
     : 
-        (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN (~LBRACE)* LBRACE))=>cp_mixin_declaration
+        (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
         | (cp_mixin_call)=>cp_mixin_call
     	| rule
         | at_rule

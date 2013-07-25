@@ -472,5 +472,24 @@ public class Css3ParserLessTest extends CssTestBase {
         assertResultOK(result);
 
     }
+    
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=231698
+    public void testMixinCallPredicate() {
+        String source =
+                ".mxc(\"param\");\n"
+                + ".next {\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+        
+        //verify that .mxc(\"param\") was parsed as mixin call
+        Node mixinCall = NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/cp_mixin_call");
+        assertNotNull(mixinCall);
+
+    }
+
 
 }
