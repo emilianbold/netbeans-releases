@@ -57,66 +57,63 @@ import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 
-
 /**
  * @author ads
  *
  */
 public final class JsfModelFactory {
 
-    private JsfModelFactory(){
+    private JsfModelFactory() {
     }
-    
-    public static MetadataModel<JsfModel> createMetaModel( ModelUnit unit ){
+
+    public static MetadataModel<JsfModel> createMetaModel(ModelUnit unit) {
         return MetadataModelFactory.createMetadataModel(
                 JsfModelImplementation.create(unit));
     }
-    
-    public static synchronized MetadataModel<JsfModel> getModel( Project project ){
-        MetadataModel<JsfModel> model = MODELS.get( project );
-        if ( model == null ){
-            ModelUnit unit = getUnit( project );
-            if ( unit == null ){
+
+    public static synchronized MetadataModel<JsfModel> getModel(Project project) {
+        MetadataModel<JsfModel> model = MODELS.get(project);
+        if (model == null) {
+            ModelUnit unit = getUnit(project);
+            if (unit == null) {
                 return null;
             }
-            model = JsfModelFactory.createMetaModel( unit );
+            model = JsfModelFactory.createMetaModel(unit);
             MODELS.put(project, model);
         }
         return model;
     }
-    
-    private static ModelUnit getUnit( Project project ) {
-        if ( project == null ){
+
+    private static ModelUnit getUnit(Project project) {
+        if (project == null) {
             return null;
         }
-        ClassPath boot = getClassPath( project , ClassPath.BOOT);
-        ClassPath compile = getClassPath(project, ClassPath.COMPILE );
-        ClassPath src = getClassPath(project , ClassPath.SOURCE);
-        return (src == null) ? null: ModelUnit.create(boot, compile, src, project);
+        ClassPath boot = getClassPath(project, ClassPath.BOOT);
+        ClassPath compile = getClassPath(project, ClassPath.COMPILE);
+        ClassPath src = getClassPath(project, ClassPath.SOURCE);
+        return (src == null) ? null : ModelUnit.create(boot, compile, src, project);
     }
-    
-    private static ClassPath getClassPath( Project project, String type ) {
-        ClassPathProvider provider = project.getLookup().lookup( 
+
+    private static ClassPath getClassPath(Project project, String type) {
+        ClassPathProvider provider = project.getLookup().lookup(
                 ClassPathProvider.class);
-        if ( provider == null ){
+        if (provider == null) {
             return null;
         }
         Sources sources = project.getLookup().lookup(Sources.class);
-        if ( sources == null ){
+        if (sources == null) {
             return null;
         }
-        SourceGroup[] sourceGroups = sources.getSourceGroups( 
-                JavaProjectConstants.SOURCES_TYPE_JAVA );
+        SourceGroup[] sourceGroups = sources.getSourceGroups(
+                JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (SourceGroup sourceGroup : sourceGroups) {
             FileObject rootFolder = sourceGroup.getRootFolder();
-            ClassPath path = provider.findClassPath( rootFolder, type);
+            ClassPath path = provider.findClassPath(rootFolder, type);
             // return classpath of the first source group, that is ignore test source roots:
             return ClassPathSupport.createProxyClassPath(path);
         }
         return null;
     }
-    
     private static final Map<Project, MetadataModel<JsfModel>> MODELS =
-        new WeakHashMap<Project, MetadataModel<JsfModel>>();
-    
+            new WeakHashMap<Project, MetadataModel<JsfModel>>();
 }
