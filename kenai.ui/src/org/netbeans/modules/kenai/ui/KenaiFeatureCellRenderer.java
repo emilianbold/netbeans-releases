@@ -59,7 +59,7 @@ import javax.swing.ListCellRenderer;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.ui.GetSourcesFromKenaiPanel.KenaiFeatureListItem;
-import org.netbeans.modules.team.ui.common.ColorManager;
+import org.netbeans.modules.team.server.ui.common.ColorManager;
 import org.openide.util.NbBundle;
 
 /**

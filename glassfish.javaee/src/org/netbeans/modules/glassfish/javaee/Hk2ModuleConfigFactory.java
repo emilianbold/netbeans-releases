@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -42,27 +42,52 @@
 
 package org.netbeans.modules.glassfish.javaee;
 
+import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.glassfish.common.GlassfishInstance;
+import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
+import org.netbeans.modules.glassfish.eecommon.api.config.J2eeModuleHelper;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfiguration;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.config.ModuleConfigurationFactory2;
 
 /**
- *
- * @author vbk
+ * Factory to construct proper module configuration object.
+ * <p/>
+ * @author Vince Kraemer, Tomas Kraus
  */
 public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory2 {
     
     /** Creates a new instance of Hk2ModuleConfigFactory */
     public Hk2ModuleConfigFactory() {
     }
-    
+
+    /**
+     * Constructs proper module configuration object without having
+     * GlassFish server.
+     * <p/>
+     * Proper configuration object is selected depending on GlassFish specific
+     * web application meta data file (<code>WEB-INFsun-web.xml</code>
+     * or <code>WEB-INF/glassfish-web.xml</code>) existence.
+     * <p/>
+     * @param module Java EE module.
+     * @return Module configuration object.
+     * @throws ConfigurationException if there is a problem with
+     *         the server-specific configuration.
+     */
     @Override
-    public ModuleConfiguration create(J2eeModule module) throws ConfigurationException {
+    public ModuleConfiguration create(final J2eeModule module)
+            throws ConfigurationException {
         ModuleConfiguration retVal = null;
         try {
-            retVal = new ModuleConfigurationImpl(module, new Hk2Configuration(module), null);
+            if (J2eeModuleHelper.isGlassFishWeb(module)) {
+                retVal = new ModuleConfigurationImpl(
+                        module, new Three1Configuration(module), null);
+            } else {
+                retVal = new ModuleConfigurationImpl(
+                        module, new Hk2Configuration(module), null);
+            }
         } catch (ConfigurationException ce) {
             throw ce;
         } catch (Exception ex) {
@@ -71,16 +96,40 @@ public class Hk2ModuleConfigFactory implements ModuleConfigurationFactory2 {
         return retVal;
     }
 
+    /**
+     * Constructs proper module configuration object depending on
+     * GlassFish server.
+     * <p/>
+     * Proper configuration object is selected depending on GlassFish version.
+     * Old module configuration object is created for server before version 3.1
+     * and new module configuration object for server version 3.1 and later.
+     * 
+     * @param module Java EE module.
+     * @param instanceUrl GlassFish server internal URL.
+     * @return Module configuration object.
+     * @throws ConfigurationException if there is a problem with
+     *         the server-specific configuration.
+     */
     @Override
-    public ModuleConfiguration create(@NonNull J2eeModule module, @NonNull String instanceUrl) throws ConfigurationException {
+    public ModuleConfiguration create(final @NonNull J2eeModule module,
+            final @NonNull String instanceUrl) throws ConfigurationException {
         ModuleConfiguration retVal = null;
+        GlassfishInstance instance
+                = GlassfishInstanceProvider.getProvider()
+                .getGlassfishInstance(instanceUrl);
+        GlassFishVersion version = instance != null
+                ? instance.getVersion() : null;
         try {
             Hk2DeploymentManager hk2Dm =
-                    (Hk2DeploymentManager) Hk2DeploymentFactory.createEe6().getDisconnectedDeploymentManager(instanceUrl);
-            if (instanceUrl.contains("gfv3ee6wc")) { // NOI18N
-                retVal = new ModuleConfigurationImpl(module, new Three1Configuration(module), hk2Dm);
+                    (Hk2DeploymentManager) Hk2DeploymentFactory.createEe6()
+                    .getDisconnectedDeploymentManager(instanceUrl);
+            if (version != null
+                    && version.ordinal() >= GlassFishVersion.GF_3_1.ordinal()) {
+                retVal = new ModuleConfigurationImpl(
+                        module, new Three1Configuration(module), hk2Dm);
             } else {
-                retVal = new ModuleConfigurationImpl(module, new Hk2Configuration(module), hk2Dm);
+                retVal = new ModuleConfigurationImpl(
+                        module, new Hk2Configuration(module), hk2Dm);
             }
         } catch (ConfigurationException ce) {
             throw ce;

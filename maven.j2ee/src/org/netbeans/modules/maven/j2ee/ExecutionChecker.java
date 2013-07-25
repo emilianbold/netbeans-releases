@@ -44,8 +44,6 @@ package org.netbeans.modules.maven.j2ee;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
@@ -57,31 +55,19 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.execute.ExecutionContext;
 import org.netbeans.modules.maven.api.execute.ExecutionResultChecker;
 import org.netbeans.modules.maven.api.execute.PrerequisitesChecker;
 import org.netbeans.modules.maven.api.execute.RunConfig;
 import org.netbeans.modules.maven.api.execute.RunUtils;
-import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
+import org.netbeans.modules.maven.j2ee.ui.SelectAppServerPanel;
 import org.netbeans.modules.maven.j2ee.ui.customizer.impl.CustomizerRunWeb;
-import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.spi.debug.MavenDebugger;
 import org.netbeans.modules.web.browser.spi.URLDisplayerImplementation;
-import org.netbeans.spi.project.ProjectConfiguration;
-import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
-import org.netbeans.spi.project.SubprojectProvider;
-import org.openide.DialogDescriptor;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.awt.HtmlBrowser;
-import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.NbBundle;
 import org.openide.windows.OutputWriter;
 
 
@@ -230,54 +216,13 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         }
     }
     
-    public static boolean showServerSelectionDialog(Project project, J2eeModuleProvider provider, RunConfig config) {
-        if (ExecutionChecker.DEV_NULL.equals(provider.getServerInstanceID())) {
-            boolean isDefaultGoal = config == null ? true : neitherJettyNorCargo(config.getGoals()); //TODO how to figure if really default or overridden by user?
-            SelectAppServerPanel panel = new SelectAppServerPanel(!isDefaultGoal, project);
-            DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(ExecutionChecker.class, "TIT_Select"));
-            panel.setNLS(dd.createNotificationLineSupport());
-            Object obj = DialogDisplayer.getDefault().notify(dd);
-            if (obj == NotifyDescriptor.OK_OPTION) {
-                String instanceId = panel.getSelectedServerInstance();
-                String serverId = panel.getSelectedServerType();
-                if (!ExecutionChecker.DEV_NULL.equals(instanceId)) {
-                    boolean permanent = panel.isPermanent();
-                    if (permanent) {
-                        persistServer(project, instanceId, serverId, panel.getChosenProject());
-                    } else {
-                        SessionContent sc = project.getLookup().lookup(SessionContent.class);
-                        if (sc != null) {
-                            sc.setServerInstanceId(instanceId);
-                        }
-
-                        // We want to initiate context path to default value if there isn't related deployment descriptor yet
-                        MavenProjectSupport.changeServer(project, true);
-                    }
-
-                    LoggingUtils.logUsage(ExecutionChecker.class, "USG_PROJECT_CONFIG_MAVEN_SERVER", new Object[] { MavenProjectSupport.obtainServerName(project) }, "maven"); //NOI18N
-
-                    return true;
-                } else {
-                    //ignored used now..
-                    if (panel.isIgnored() && config != null) {
-                        removeNetbeansDeployFromActionMappings(project, config.getActionName());
-                        return true;
-                    }
-                }
-            }
-            StatusDisplayer.getDefault().setStatusText(NbBundle.getMessage(ExecutionChecker.class, "ERR_Action_without_deployment_server"));
-            return false;
-        }
-        return true;
-    }
-
     @Override
     public boolean checkRunConfig(RunConfig config) {
         boolean depl = Boolean.parseBoolean(config.getProperties().get(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY));
         if (depl) {
             J2eeModuleProvider provider = config.getProject().getLookup().lookup(J2eeModuleProvider.class);
             if (provider != null) {
-                return showServerSelectionDialog(project, provider, config);
+                return SelectAppServerPanel.showServerSelectionDialog(project, provider, config);
             }
         }
         return true;
@@ -316,28 +261,6 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         return new File(nbprj.getOutputDirectory(false), NB_COS).exists();
     }
 
-    private static void removeNetbeansDeployFromActionMappings(Project project, String actionName) {
-        try {
-            ProjectConfiguration cfg = project.getLookup().lookup(ProjectConfigurationProvider.class).getActiveConfiguration();
-            NetbeansActionMapping mapp = ModelHandle2.getMapping(actionName, project, cfg);
-            if (mapp != null) {
-                mapp.getProperties().remove(MavenJavaEEConstants.ACTION_PROPERTY_DEPLOY);
-                ModelHandle2.putMapping(mapp, project, cfg);
-            }
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-
-    private static boolean neitherJettyNorCargo(List<String> goals) {
-        for (String goal : goals) {
-            if (goal.contains("jetty") || goal.contains("cargo")) {
-                return false;
-            }
-        }
-        return true;
-    }
-
 
     static class DLogger implements Deployment.Logger {
 
@@ -351,27 +274,5 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         public void log(String string) {
             logger.println(string);
         }
-    }
-
-    private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
-        MavenProjectSupport.setServerInstanceID(project, iID);
-        MavenProjectSupport.setServerID(project, sID);
-
-        // We want to initiate context path to default value if there isn't related deployment descriptor yet
-        MavenProjectSupport.changeServer(project, true);
-
-        // refresh all subprojects
-        SubprojectProvider spp = targetPrj.getLookup().lookup(SubprojectProvider.class);
-        //mkleint: we are assuming complete result (transitive projects included)
-        //that's ok as far as the current maven impl goes afaik, but not according to the
-        //documentation for SubProjectprovider
-        Set<? extends Project> childrenProjs = spp.getSubprojects();
-        if (!childrenProjs.contains(project)) {
-            NbMavenProject.fireMavenProjectReload(project);
-        }
-        for (Project curPrj : childrenProjs) {
-            NbMavenProject.fireMavenProjectReload(curPrj);
-        }
-
     }
 }

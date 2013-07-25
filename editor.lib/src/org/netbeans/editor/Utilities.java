@@ -950,6 +950,9 @@ public class Utilities {
         boolean expandTabs = prefs.getBoolean(SimpleValueNames.EXPAND_TABS, EditorPreferencesDefaults.defaultExpandTabs);
         if (expandTabs) {
             int spacesPerTab = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
+            if (spacesPerTab <= 0) {
+                return ""; //NOI18N
+            }
             int len = (col + spacesPerTab) / spacesPerTab * spacesPerTab - col;
             return new String(Analyzer.getSpacesBuffer(len), 0, len);
         } else { // insert pure tab
@@ -967,7 +970,7 @@ public class Utilities {
         int col = getVisualColumn(doc, offset);
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
         int tabSize = prefs.getInt(SimpleValueNames.SPACES_PER_TAB, EditorPreferencesDefaults.defaultSpacesPerTab);
-        return (col + tabSize) / tabSize * tabSize;
+        return tabSize <= 0 ? col : (col + tabSize) / tabSize * tabSize;
     }
 
     public static void setStatusText(JTextComponent c, String text) {

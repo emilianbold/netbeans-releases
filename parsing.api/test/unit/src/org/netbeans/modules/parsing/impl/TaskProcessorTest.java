@@ -43,6 +43,7 @@
 package org.netbeans.modules.parsing.impl;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -50,9 +51,13 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Future;
@@ -73,6 +78,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.test.MockMimeLookup;
 import org.netbeans.junit.NbTestSuite;
@@ -107,12 +113,15 @@ import org.openide.loaders.DataObject;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
+import org.openide.util.Parameters;
 
 /**
  *
  * @author Tomas Zezula
  */
 public class TaskProcessorTest extends IndexingAwareTestCase {
+
+    private static final int TIMEOUT = Integer.getInteger("TaskProcessorTest.timeout", 10); //NOI18N
     
     public TaskProcessorTest(String testName) {
         super(testName);
@@ -129,6 +138,8 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
         suite.addTest(new TaskProcessorTest("testRunLoopSuspend"));                             //NOI18N
         suite.addTest(new TaskProcessorTest("testRunLoopSuspend2"));                            //NOI18N
         suite.addTest(new TaskProcessorTest("testSlowCancelSampler"));                          //NOI18N
+        suite.addTest(new TaskProcessorTest("testParserCancelInPRT"));                          //NOI18N
+        suite.addTest(new TaskProcessorTest("testParserCancelInUT"));                           //NOI18N
         return suite;
     }
 
@@ -251,7 +262,7 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
 
     public void testCancelCall () {                
         final FooTask task = new FooTask();
-        final FooParser parser = new FooParser();
+        final FooParser parser = new FooParser(Collections.<FooParserFactory.Target,Runnable>emptyMap());
         boolean success = false;
         try {
             synchronized (TaskProcessor.INTERNAL_LOCK) {
@@ -391,7 +402,7 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
         final File workingDir = getWorkDir();
         final FileObject file = FileUtil.createData(new File(workingDir,"test.foo"));
         final Source src = Source.create(file);
-        final FooParser parser = new FooParser();
+        final FooParser parser = new FooParser(Collections.<FooParserFactory.Target,Runnable>emptyMap());
         final FooTask task = new FooTask();
 
         boolean success = false;
@@ -727,6 +738,144 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
         }
     }
 
+    public void testParserCancelInPRT() throws Exception {
+        FileUtil.setMIMEType("foo", "text/foo");    //NOI18N
+        final FileObject wd = FileUtil.toFileObject(getWorkDir());
+        final FileObject file = wd.createData("test.foo");  //NOI18N
+        final FooParserFactory factory = new FooParserFactory();
+        final ParserResultTask<FooParserResult> task = new ParserResultTask<FooParserResult>() {
+            @Override
+            public void run(FooParserResult result, SchedulerEvent event) {
+            }
+
+            @Override
+            public int getPriority() {
+                return 0;
+            }
+
+            @Override
+            public Class<? extends Scheduler> getSchedulerClass() {
+                return Scheduler.SELECTED_NODES_SENSITIVE_TASK_SCHEDULER;
+            }
+
+            @Override
+            public void cancel() {
+            }
+        };
+        final CountDownLatch parserCalled = new CountDownLatch(1);
+        final CountDownLatch cancelCalled = new CountDownLatch(1);
+        final BlockingQueue<Boolean> result = new ArrayBlockingQueue<Boolean>(1);
+        final Runnable parseCallback = new Runnable() {
+            @Override
+            public void run() {
+                parserCalled.countDown();
+                try {
+                    final boolean canceled = cancelCalled.await(TIMEOUT, TimeUnit.SECONDS);
+                    result.offer(canceled);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        final Runnable cancelCallback = new Runnable() {
+            @Override
+            public void run() {
+                cancelCalled.countDown();
+            }
+        };
+        factory.setCallback(FooParserFactory.Target.PARSE, parseCallback);
+        factory.setCallback(FooParserFactory.Target.CANCEL, cancelCallback);
+        try {
+            MockMimeLookup.setInstances(MimePath.parse("text/foo"), factory);  //NOI18N
+            final Source src = Source.create(file);
+            TaskProcessor.addPhaseCompletionTasks(
+                    Arrays.<Pair<SchedulerTask,Class<? extends Scheduler>>>asList(Pair.<SchedulerTask,Class<? extends Scheduler>>of(
+                        task,
+                        task.getSchedulerClass())),
+                    SourceAccessor.getINSTANCE().getCache(src),
+                    false);
+            assertTrue(parserCalled.await(TIMEOUT, TimeUnit.SECONDS));
+            ParserManager.parse(
+                Collections.singleton(src),
+                new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                    }
+                });
+            final Boolean res = result.poll(TIMEOUT, TimeUnit.SECONDS);
+            assertNotNull(res);
+            assertTrue(res);
+        } finally {
+            factory.setCallback(FooParserFactory.Target.PARSE,null);
+            factory.setCallback(FooParserFactory.Target.CANCEL,null);
+        }
+    }
+
+    public void testParserCancelInUT() throws Exception {
+        FileUtil.setMIMEType("foo", "text/foo");    //NOI18N
+        final FileObject wd = FileUtil.toFileObject(getWorkDir());
+        final FileObject file = wd.createData("test.foo");  //NOI18N
+        final FooParserFactory factory = new FooParserFactory();        
+        final CountDownLatch parserCalled = new CountDownLatch(1);
+        final CountDownLatch cancelCalled = new CountDownLatch(1);
+        final BlockingQueue<Boolean> result = new ArrayBlockingQueue<Boolean>(1);
+        final Runnable parseCallback = new Runnable() {
+            @Override
+            public void run() {
+                parserCalled.countDown();
+                try {
+                    final boolean canceled = cancelCalled.await(TIMEOUT, TimeUnit.SECONDS);
+                    result.offer(canceled);
+                } catch (InterruptedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        };
+        final Runnable cancelCallback = new Runnable() {
+            @Override
+            public void run() {
+                cancelCalled.countDown();
+            }
+        };
+        factory.setCallback(FooParserFactory.Target.PARSE, parseCallback);
+        factory.setCallback(FooParserFactory.Target.CANCEL, cancelCallback);
+        try {
+            MockMimeLookup.setInstances(MimePath.parse("text/foo"), factory);  //NOI18N
+            final Source src = Source.create(file);
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ParserManager.parse(
+                            Collections.singleton(src),
+                            new UserTask() {
+                                @Override
+                                public void run(ResultIterator resultIterator) throws Exception {
+                                    resultIterator.getParserResult();
+                                }
+                            });
+                    } catch (ParseException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }).start();
+            assertTrue(parserCalled.await(TIMEOUT, TimeUnit.SECONDS));
+            ParserManager.parse(
+                Collections.singleton(src),
+                new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                    }
+                });
+            final Boolean res = result.poll(TIMEOUT, TimeUnit.SECONDS);
+            assertNotNull(res);
+            assertFalse(res);
+        } finally {
+            factory.setCallback(FooParserFactory.Target.PARSE,null);
+            factory.setCallback(FooParserFactory.Target.CANCEL,null);
+        }
+    }
+
     private void runLoop(
             final @NonNull Source source,
             final boolean suspend) throws NoSuchFieldException, IllegalArgumentException,
@@ -743,19 +892,42 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
     }
 
     private static final class FooParserFactory extends ParserFactory {
+
+        enum Target {
+            PARSE,
+            CANCEL
+        }
+
+        private final Map<Target,Runnable> callbacks = Collections.synchronizedMap(
+                new EnumMap<Target, Runnable>(Target.class));
+
+        public void setCallback(
+            @NonNull final Target target,
+            @NullAllowed final Runnable callback) {
+            Parameters.notNull("target", target);   //NOI18N
+            callbacks.put(target, callback);
+        }
+
         @Override
         public Parser createParser(Collection<Snapshot> snapshots) {
-            return new FooParser();
+            return new FooParser(callbacks);
         }
     }
 
     private static final class FooParser extends Parser {
+        private final Map<FooParserFactory.Target,Runnable> callbacks;
         private FooParserResult result;
         private int cancelCount;
         private int parseCount;
         private int resultCount;
 
+        FooParser(@NonNull final Map<FooParserFactory.Target,Runnable> callbacks) {
+            Parameters.notNull("callbacks", callbacks); //NOI18N
+            this.callbacks = callbacks;
+        }
+
         public @Override void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+            callCallBack(FooParserFactory.Target.PARSE);
             parseCount++;
             result = new FooParserResult((snapshot));
         }
@@ -765,14 +937,27 @@ public class TaskProcessorTest extends IndexingAwareTestCase {
             return result;
         }
 
-        public @Override void cancel() {
+        public @Override void cancel() {            
             cancelCount++;
+        }
+
+        @Override
+        public void cancel(CancelReason reason, SourceModificationEvent event) {
+           callCallBack(FooParserFactory.Target.CANCEL);
         }
 
         public @Override void addChangeListener(ChangeListener changeListener) {
         }
 
         public @Override void removeChangeListener(ChangeListener changeListener) {
+        }
+
+        private void callCallBack(@NonNull final FooParserFactory.Target target) {
+            Parameters.notNull("target", target);   //NOI18N
+            final Runnable r = callbacks.get(target);
+            if (r != null) {
+                r.run();
+            }
         }
     }
 

@@ -147,7 +147,15 @@ public abstract class BaseEEModuleImpl implements J2eeModuleImplementation2, Mod
         if (archiveName == null) {
             archiveName = projectModel.getBuild().getFinalName();
         }
-        String archiveDir = projectModel.getBuild().getDirectory();
+
+        // See issue: #231886
+        String archiveDir = PluginPropertyUtils.getPluginProperty(project, groupID, artifactID, "outputDirectory", goal); //NOI18N
+        if (archiveDir == null) {
+            archiveDir = projectModel.getBuild().getDirectory();
+        } else {
+            archiveDir = projectModel.getBasedir().getPath() + "/" + archiveDir;  //NOI18N
+        }
+
         File archiveFile = FileUtil.normalizeFile(new File(archiveDir, archiveName + "." + archiveType)); //NOI18N
         
         return FileUtil.toFileObject(archiveFile);

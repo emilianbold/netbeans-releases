@@ -52,6 +52,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.event.ChangeListener;
+import static junit.framework.Assert.assertNotNull;
 import org.netbeans.api.j2ee.core.Profile;
 
 import org.netbeans.api.java.classpath.ClassPath;
@@ -64,11 +65,12 @@ import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.support.JavaSourceTestCase;
 import org.netbeans.modules.j2ee.metadata.model.support.TestUtilities;
+import org.netbeans.modules.junit.TestUtil;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.jsf.impl.metamodel.JsfModelProviderImpl;
 import org.netbeans.modules.web.jsf.api.metamodel.ModelUnit;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
@@ -89,7 +91,7 @@ import org.openide.util.test.MockLookup;
  */
 public class CommonTestCase extends JavaSourceTestCase {
 
-    protected FileObject srcFo, webFo, projectFo;
+    protected FileObject webFo, projectFo;
     protected Project project;
     protected WebModuleProvider webModuleProvider;
     protected List<FileObject> projects = new LinkedList<FileObject>();
@@ -101,16 +103,15 @@ public class CommonTestCase extends JavaSourceTestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        this.projectFo = getTestFile("testWebProject");
+        projectFo = copyProjectFolder();
         assertNotNull(projectFo);
-        this.srcFo = getTestFile("testWebProject/src");
-        assertNotNull(srcFo);
-        this.webFo = getTestFile("testWebProject/web");
+
+        webFo = FileUtil.toFileObject(getWorkDir()).getFileObject("web");
         assertNotNull(webFo);
 
         //create classpath for web project
         Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
-        cps.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[]{srcFo, webFo}));
+        cps.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[]{srcFO, webFo}));
         projects.add(projectFo);
 
         webModuleProvider = new FakeWebModuleProvider(srcFO);
@@ -141,12 +142,48 @@ public class CommonTestCase extends JavaSourceTestCase {
                 ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
                 ClassPath.getClassPath(srcFO, ClassPath.SOURCE),
                 FileOwnerQuery.getOwner(projectFo));
-        return JsfModelFactory.createMetaModel(modelUnit);
+        return JsfModelProviderImpl.createMetaModel(modelUnit);
     }
 
     public String getFileContent(String relativePath) throws IOException {
         return TestUtilities.copyStreamToString(SeveralXmlModelTest.class.
                 getResourceAsStream(relativePath));
+    }
+
+    //copied from FileChooserAccessory
+    protected FileObject copyFolderRecursively(FileObject sourceFolder, FileObject destination) throws IOException {
+        assert sourceFolder.isFolder() : sourceFolder;
+        assert destination.isFolder() : destination;
+        FileObject destinationSubFolder = destination.getFileObject(sourceFolder.getName());
+        if (destinationSubFolder == null) {
+            destinationSubFolder = destination.createFolder(sourceFolder.getName());
+        }
+        for (FileObject fo : sourceFolder.getChildren()) {
+            if (fo.isFolder()) {
+                copyFolderRecursively(fo, destinationSubFolder);
+            } else {
+                FileObject foExists = destinationSubFolder.getFileObject(fo.getName(), fo.getExt());
+                if (foExists != null) {
+                    foExists.delete();
+                }
+                FileUtil.copyFile(fo, destinationSubFolder, fo.getName(), fo.getExt());
+            }
+        }
+        return destinationSubFolder;
+    }
+
+    private FileObject copyProjectFolder() throws IOException {
+        String[] projectContent = new String[]{"nbproject", "web", "build.xml"};
+        for (String content : projectContent) {
+            FileObject contentFO = getTestFile("testWebProject/" + content);
+            assertNotNull(contentFO);
+            if (contentFO.isFolder()) {
+                assertNotNull(copyFolderRecursively(contentFO, srcFO.getParent()));
+            } else {
+                assertNotNull(FileUtil.copyFile(contentFO, srcFO.getParent(), contentFO.getName()));
+            }
+        }
+        return FileUtil.toFileObject(getWorkDir());
     }
 
     protected static class FakeWebModuleProvider implements WebModuleProvider {
@@ -243,6 +280,7 @@ public class CommonTestCase extends JavaSourceTestCase {
             InstanceContent ic = new InstanceContent();
             ic.add(cpProvider);
             ic.add(new SourcesImpl());
+            ic.add(new JsfModelProviderImpl(this));
             this.lookup = new AbstractLookup(ic);
 
         }

@@ -358,5 +358,13 @@ public class MavenProjectRestSupport extends RestSupport {
     protected void handleSpring() throws IOException {
         // TBD ?
     }
-   
+
+    @Override
+    protected void extendJerseyClasspath() {
+        // extend Jersey Classpath only for JavaEE 5  project types
+        if (!MiscUtilities.isJavaEE6AndHigher(getProject())) {
+            super.extendJerseyClasspath();
+        }
+    }
+    
 }

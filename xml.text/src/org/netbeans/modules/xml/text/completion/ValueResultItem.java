@@ -49,6 +49,7 @@ import java.beans.BeanInfo;
 import javax.swing.text.JTextComponent;
 import org.netbeans.modules.xml.api.model.*;
 import org.netbeans.spi.editor.completion.CompletionTask;
+import org.netbeans.swing.plaf.LFCustoms;
 
 
 /**
@@ -65,7 +66,8 @@ import org.netbeans.spi.editor.completion.CompletionTask;
  * @author  Petr Kuzel
  */
 class ValueResultItem extends XMLResultItem {
-
+    private static final Color COLOR = new Color(64, 64, 255);
+    
     private final String replText;
     
     private final GrammarResult res;
@@ -93,7 +95,7 @@ class ValueResultItem extends XMLResultItem {
     }
     
     @Override
-    Color getPaintColor() { return Color.blue; }
+    Color getPaintColor() { return LFCustoms.shiftColor(COLOR); }
 
     @Override
     public CompletionTask createDocumentationTask() {

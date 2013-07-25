@@ -82,9 +82,12 @@ made subject to such option by the copyright holder.
         <font style="bold" />
     </fontcolor>
     
-    <!-- GSF colors - taken from ruby editor -->
     <!--"semantic" highlighting:-->
+    
+    <!-- css property name -->
     <fontcolor name="mod-custom1" foreColor="blue"/> 
+    
+    <!-- vendor specific property name -->
     <fontcolor name="mod-custom2" foreColor="blue"> 
         <font style="italic" />
     </fontcolor>

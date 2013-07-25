@@ -256,12 +256,19 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
         }
         // Color used for hovering highlight
         final Color hoverColor = color;
+        final boolean nimbus = "Nimbus".equals(UIManager.getLookAndFeel().getID()); // NOI18N
+        final JPanel nimbusPanel = nimbus ? new JPanel(new BorderLayout()) : null;
         return new DefaultTreeCellRenderer() {
             @Override
             public Component getTreeCellRendererComponent(JTree tree, Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
-                JLabel component;
+                JComponent component;
                 if (!selected && isHighlighted(value)) {
-                    component = (JLabel)delegate.getTreeCellRendererComponent(tree, value, true, expanded, leaf, row, hasFocus);
+                    component = (JComponent)delegate.getTreeCellRendererComponent(tree, value, true, expanded, leaf, row, hasFocus);
+                    if (nimbus) {
+                        nimbusPanel.removeAll();
+                        nimbusPanel.add(component);
+                        component = nimbusPanel;
+                    }
                     component.setBackground(hoverColor);
                     component.setOpaque(true);
                 } else {

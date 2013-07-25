@@ -46,6 +46,7 @@ package org.netbeans.modules.javadoc.hints;
 import com.sun.source.doctree.DocCommentTree;
 import com.sun.source.doctree.DocTree;
 import com.sun.source.tree.MethodTree;
+import com.sun.source.tree.Tree;
 import com.sun.source.util.DocTreePath;
 import java.util.LinkedList;
 import java.util.List;
@@ -97,7 +98,7 @@ final class RemoveTagFix extends JavaFix {
             }
         }
         DocCommentTree newDoc = make.DocComment(docComment.getFirstSentence(), docComment.getBody(), blockTags);
-        MethodTree tree = (MethodTree) ctx.getPath().getLeaf();
+        Tree tree = ctx.getPath().getLeaf();
         javac.rewrite(tree, docComment, newDoc);
     }
     private static final Logger LOG = Logger.getLogger(RemoveTagFix.class.getName());

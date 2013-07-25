@@ -63,6 +63,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
 import org.netbeans.modules.web.api.webmodule.WebFrameworks;
@@ -79,7 +80,8 @@ import org.netbeans.modules.web.jsf.api.metamodel.Component;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesConverter;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelProvider;
+import org.netbeans.modules.web.jsf.impl.metamodel.JsfModelProviderImpl;
 import org.netbeans.modules.web.jsf.api.metamodel.Renderer;
 import org.netbeans.modules.web.jsf.api.metamodel.Validator;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
@@ -167,8 +169,13 @@ public class JSFConfigUtilities {
             if (!preferences.get(JSF_PRESENT_PROPERTY, "").equals("true")) {
                 long time = System.currentTimeMillis();
                 try {
-                    Future<Boolean> future =  JsfModelFactory.getModel(project).runReadActionWhenReady(new MetadataModelAction<JsfModel, Boolean>() {
+                    JsfModelProvider modelProvider = project.getLookup().lookup(JsfModelProvider.class);
+                    MetadataModel<JsfModel> model = modelProvider.getModel();
+                    if (model == null) {
+                        return false;
+                    }
 
+                    Future<Boolean> future =  model.runReadActionWhenReady(new MetadataModelAction<JsfModel, Boolean>() {
                         @Override
                         public Boolean run(JsfModel metadata) throws Exception {
                             for (Class clazz: types) {

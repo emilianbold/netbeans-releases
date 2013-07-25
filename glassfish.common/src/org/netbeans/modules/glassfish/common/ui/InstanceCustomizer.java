@@ -319,7 +319,7 @@ public class InstanceCustomizer extends javax.swing.JPanel {
         }
         if ((cometEnabledChanged || monitorEnabledChanged
                 || jdbcDriverDeployEnabledChanged || sessionEnabledChanged
-                || startDerbyChanged) && instance.getCommonSupport().isWritable()) {
+                || startDerbyChanged) && !instance.getCommonSupport().isWritable()) {
             NotifyDescriptor nd = new NotifyDescriptor.Message(
                     NbBundle.getMessage(getClass(), "WRN_CouldNotWrite"),
                     NotifyDescriptor.WARNING_MESSAGE);

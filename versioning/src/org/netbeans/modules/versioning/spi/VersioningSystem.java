@@ -53,7 +53,6 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 import java.util.*;
-import org.netbeans.modules.versioning.Accessor;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.util.Utils;
 import org.openide.awt.ActionID;
@@ -111,7 +110,9 @@ public abstract class VersioningSystem {
     private final Map<String, Object> properties = Collections.synchronizedMap(new HashMap<String, Object>());
     
     static {
-        Accessor.IMPL = new AccessorImpl();
+        // initialize VCSContext which in turn initializes Accessor
+        // before any other thread touches Accessor
+        VCSContext ctx = VCSContext.EMPTY;
     }    
     
     /**

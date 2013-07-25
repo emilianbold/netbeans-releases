@@ -89,7 +89,7 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiLicense;
-import org.netbeans.modules.team.ui.common.AddInstanceAction;
+import org.netbeans.modules.team.server.ui.common.AddInstanceAction;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.awt.Mnemonics;
@@ -99,7 +99,7 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
-import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
 
 /**
  *

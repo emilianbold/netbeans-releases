@@ -82,7 +82,7 @@ import org.openide.util.NbBundle;
  * @author Tomas Pavek, Jan Stola
  */
 
-class TemplateWizardIterator implements WizardDescriptor.InstantiatingIterator {
+class TemplateWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
     private transient WizardDescriptor wiz;
     private transient WizardDescriptor.Panel superclassPanel;
     private transient boolean superclassPanelCurrent;

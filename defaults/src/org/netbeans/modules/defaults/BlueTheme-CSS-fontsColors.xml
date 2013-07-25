@@ -52,7 +52,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="hash" default="number"/>
     <fontcolor name="operator" default="operator"/>
     <fontcolor name="string" default="string"/>
-    <fontcolor name="url" default="string"/>
+    <fontcolor name="url" default="string" underline="cyan"/>
     <fontcolor name="keyword" default="keyword"/>
     <fontcolor name="number" default="number"/>
     <fontcolor name="rgb" default="string"/>
@@ -60,16 +60,4 @@ made subject to such option by the copyright holder.
     <fontcolor name="unknown" default="error"/>
     <!-- whitespaces including comments -->
     <fontcolor  name="whitespace_comment" default="comment"/>
-
-    <!-- GSF colors - taken from ruby editor -->
-    <!--"semantic" highlighting:-->
-    <fontcolor name="mod-custom1" default="keyword"/>
-    <fontcolor name="mod-custom2" default="keyword" foreColor="8AA6C1">
-        <font style="italic" />
-    </fontcolor>
-    <fontcolor name="mod-method">
-        <font style="bold" />
-    </fontcolor>
-    <fontcolor name="mark-occurrences" bgColor="38566F"/>
-
 </fontscolors>

@@ -385,7 +385,9 @@ public final class ColorModel {
                     }
                     int offset = e.getDot ();
                     String elementName = null;
-                    
+                    if (editorPane == null) {
+                        return;
+                    }
                     TokenHierarchy<Document> th = TokenHierarchy.get(editorPane.getDocument());
                     if (th != null) {
                         elementName = findLexerElement(th, offset);
