@@ -42,8 +42,10 @@
 package org.netbeans.modules.html.knockout;
 
 import java.awt.Color;
+import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -57,7 +59,11 @@ public class KOUtils {
     
     public static final String KO_DATA_BIND_ATTR_NAME = "data-bind"; //NOI18N
     
-    public static final Color KO_COLOR = Color.red.darker();
+    public static final ImageIcon KO_ICON =
+                ImageUtilities.loadImageIcon("org/netbeans/modules/html/knockout/knockout-icon.png", false); // NOI18N
+    
+    
+    public static final Color KO_COLOR = Color.green.darker();
     
      /**
      * Gets document range for the given from and to embedded offsets. 

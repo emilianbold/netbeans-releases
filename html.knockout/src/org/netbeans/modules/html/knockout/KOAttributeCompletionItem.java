@@ -68,13 +68,13 @@ public class KOAttributeCompletionItem extends HtmlCompletionItem.Attribute {
     private final boolean isInKnockoutFile;
     
     public KOAttributeCompletionItem(CustomAttribute ca, int offset, boolean isInKnockoutFile) {
-        super(ca.getName(), offset, false, ca.getHelp());
+        super(ca.getName(), offset, isInKnockoutFile /* not required, but makes them bold */, ca.getHelp());
         this.isInKnockoutFile = isInKnockoutFile;
     }
 
     @Override
     protected ImageIcon getIcon() {
-        return null;
+        return KOUtils.KO_ICON;
     }
 
     @Override

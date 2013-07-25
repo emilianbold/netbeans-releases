@@ -12,6 +12,20 @@
                             </file>
                         </folder>
                     </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-html-angular-resources-coloring-citylights.xml" url="fontsColors_dark.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.angular.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>                    
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-html-angular-resources-coloring-bluetheme.xml" url="fontsColors_dark.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.angular.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>                                        
                 </folder>
             </folder>
         </folder>
