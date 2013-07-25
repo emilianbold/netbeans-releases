@@ -174,7 +174,7 @@ public class AuthFailureStateListener implements GlassFishStatusListener {
                 }
                 break;
             case EXCEPTION:
-                LOGGER.log(Level.INFO, NbBundle.getMessage(
+                LOGGER.log(Level.FINEST, NbBundle.getMessage(
                     AuthFailureStateListener.class,
                     "AuthFailureStateListener.error.exception"));
                 break;
