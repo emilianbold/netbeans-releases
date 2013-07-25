@@ -64,6 +64,7 @@ import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.netbeans.modules.cnd.repository.spi.Persistent;
 import org.netbeans.modules.cnd.repository.spi.RepositoryDataInput;
@@ -95,20 +96,22 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     private LinkedList<IncludeInfo> inclStack = null;
     private StartEntry startFile;
     private final APTFileSearch fileSearch;
+    private MakeConfiguration projectConfiguration;
     
-    /*package*/ APTIncludeHandlerImpl(StartEntry startFile) {
-        this(startFile, new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), startFile.getFileSearch());
+    /*package*/ APTIncludeHandlerImpl(StartEntry startFile, MakeConfiguration projectConfiguration) {
+        this(startFile, new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), startFile.getFileSearch(), projectConfiguration);
     }
     
     public APTIncludeHandlerImpl(StartEntry startFile,
                                     List<IncludeDirEntry> systemIncludePaths,
                                     List<IncludeDirEntry> userIncludePaths,
-                                    List<IncludeDirEntry> userIncludeFilePaths, APTFileSearch fileSearch) {
+                                    List<IncludeDirEntry> userIncludeFilePaths, APTFileSearch fileSearch, MakeConfiguration projectConfiguration) {
         this.startFile = startFile;
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
         this.userIncludeFilePaths = userIncludeFilePaths;
         this.fileSearch = fileSearch;
+        this.projectConfiguration = projectConfiguration;
     }
 
     @Override
@@ -124,7 +127,7 @@ public class APTIncludeHandlerImpl implements APTIncludeHandler {
     @Override
     public APTIncludeResolver getResolver(FileSystem fs, CharSequence path) {
         return new APTIncludeResolverImpl(fs, path, getCurDirIndex(),
-                systemIncludePaths, userIncludePaths, fileSearch);
+                systemIncludePaths, userIncludePaths, fileSearch, projectConfiguration);
     }
     
     @Override

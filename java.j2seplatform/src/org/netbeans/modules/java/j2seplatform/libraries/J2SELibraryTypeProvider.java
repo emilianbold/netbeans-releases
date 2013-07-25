@@ -57,7 +57,6 @@ import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.netbeans.api.project.ProjectManager;
-import org.openide.ErrorManager;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.filesystems.FileObject;
@@ -69,12 +68,12 @@ import java.util.List;
 import java.util.Iterator;
 import java.net.URL;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
-import org.netbeans.spi.project.libraries.NamedLibraryImplementation;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -141,7 +140,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
                                 PropertyUtils.putGlobalProperties (props);
                             }
                         } catch (IOException ioe) {
-                            ErrorManager.getDefault().notify (ioe);
+                            Exceptions.printStackTrace(ioe);
                         }
                     }
                 }
@@ -162,7 +161,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
                         }
                         PropertyUtils.putGlobalProperties(props);
                     } catch (IOException ioe) {
-                        ErrorManager.getDefault().notify (ioe);
+                        Exceptions.printStackTrace(ioe);
                     }
                 }
             });
@@ -203,7 +202,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             boolean first = true;
             for (Iterator rootsIt=roots.iterator(); rootsIt.hasNext();) {
                 URL url = (URL) rootsIt.next();
-                if ("jar".equals(url.getProtocol())) {
+                if ("jar".equals(url.getProtocol())) {  //NOI18N
                     url = FileUtil.getArchiveFile (url);
                     // XXX check whether this is really the root
                 }
@@ -211,11 +210,23 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
                 FileObject fo = URLMapper.findFileObject(url);
                 if (fo != null) {
                     f = FileUtil.toFile(fo);
-                }
-                else if ("file".equals(url.getProtocol())) {    //NOI18N
+                } else if ("file".equals(url.getProtocol())) {    //NOI18N
                     //If the file does not exist (eg library from cleaned project)
                     // and it is a file protocol URL, add it.
-                    URI uri = URI.create (url.toExternalForm());
+                    URI uri = null;
+                    try {
+                        uri = new URI (url.toExternalForm());
+                    } catch (URISyntaxException use) {
+                        try {
+                            //Try to recover wrong URL
+                            uri = new URI("file", null, url.getFile(), null);   //NOI18N
+                        } catch (URISyntaxException e) {
+                            LOG.log (
+                                Level.WARNING,
+                                "Invalid root URL: {0}",    //NOI18N
+                                url);
+                        }
+                    }
                     if (uri != null) {
                         f = Utilities.toFile(uri);
                     }
@@ -227,9 +238,11 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
                     first = false;
                     f = FileUtil.normalizeFile(f);
                     propValue.append (f.getAbsolutePath());
-                }
-                else {
-                    ErrorManager.getDefault().log ("J2SELibraryTypeProvider: Can not resolve URL: "+url);
+                } else {
+                    LOG.log (
+                        Level.WARNING,
+                        "Can not resolve URL: {0}",    //NOI18N
+                        url);
                 }
             }
             String oldValue = props.getProperty (propName);

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.nativeexecution.spi.support;
 
-package org.netbeans.modules.cnd.script.editor;
-
-import javax.swing.Action;
-import static javax.swing.text.DefaultEditorKit.nextWordAction;
-import static javax.swing.text.DefaultEditorKit.previousWordAction;
-import static javax.swing.text.DefaultEditorKit.selectionNextWordAction;
-import static javax.swing.text.DefaultEditorKit.selectionPreviousWordAction;
-import javax.swing.text.Document;
-import javax.swing.text.TextAction;
-import org.netbeans.editor.BaseDocument;
-import static org.netbeans.editor.BaseKit.removeNextWordAction;
-import static org.netbeans.editor.BaseKit.removePreviousWordAction;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.NbEditorKit;
+import org.netbeans.modules.nativeexecution.ConnectionManagerAccessor;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 
 /**
- * @author Alexey Vladykin
+ *
+ * @author akrasny
  */
-public class ShellKit extends NbEditorKit {
-    private static final String COMMENT_LINE = "#"; //NOI18N
+public final class JSchAccessor {
 
-    @Override
-    public Document createDefaultDocument() {
-        Document doc = super.createDefaultDocument();
-        doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
-        return doc;
+    public static JSchAccess get(final ExecutionEnvironment env) {
+        return ConnectionManagerAccessor.getDefault().getJSchAccess(env);
     }
 
-    @Override
-    public String getContentType() {
-        return MIMENames.SHELL_MIME_TYPE;
-    }
-    
-    protected 
-    @Override
-    Action[] createActions() {
-        Action[] superActions = super.createActions();
-        Action[] ccActions = new Action[]{
-            new CommentAction(COMMENT_LINE),
-            new UncommentAction(COMMENT_LINE),
-            new ToggleCommentAction(COMMENT_LINE)};
-        ccActions = TextAction.augmentList(superActions, ccActions);
-
-        return ccActions;
-    }
 }

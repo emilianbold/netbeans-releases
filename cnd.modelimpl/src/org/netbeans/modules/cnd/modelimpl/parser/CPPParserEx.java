@@ -229,6 +229,33 @@ public class CPPParserEx extends CPPParser {
         }
     }
     
+    /**
+     * Checks if current declaration is explicit specialization or not.
+     * Explicit specializations must not have template parameters, i.e "tempate<> tempalte<> ... template<>"
+     * @return true if it is explicit specialization, false otherwise
+     */
+    @Override
+    protected boolean checkTemplateExplicitSpecialization() {
+        Boolean result = null;
+        int lookahead = 1;
+                
+        while (result == null) {
+            if (LA(lookahead++) == LITERAL_template) {
+                if (LA(lookahead++) == LESSTHAN) {
+                    if (LA(lookahead++) != GREATERTHAN) {
+                        result = false; // template_head found
+                    }
+                } else {
+                    break; // probably syntax error
+                }
+            } else {
+                result = true;
+            }
+        }
+        
+        return result != null ? result : false; // return false in case of syntax error
+    }
+    
     @Override
     protected CharSequence getTokenText(Token token) {
         if (token instanceof APTToken) {

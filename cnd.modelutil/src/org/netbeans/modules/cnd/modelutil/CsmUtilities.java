@@ -758,6 +758,7 @@ public class CsmUtilities {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+        cookie.prepareDocument().waitFinished();
         return document;
     }
     
@@ -776,6 +777,7 @@ public class CsmUtilities {
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
+        ces.prepareDocument().waitFinished();
         return document;
     } 
     

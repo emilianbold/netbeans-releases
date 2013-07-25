@@ -73,9 +73,12 @@ import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels;
 import org.netbeans.modules.cnd.makeproject.api.wizards.ProjectWizardPanels.NamedPanel;
 import org.netbeans.modules.cnd.makeproject.api.wizards.WizardConstants;
 import org.netbeans.modules.cnd.makeproject.spi.DatabaseProjectProvider;
+import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
@@ -372,11 +375,25 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
                 resultSet.addAll(extension.createProject(getSelectModePanel().getWizardStorage().getAdapter()));
+            } else {
+                String message = NbBundle.getMessage(NewMakeProjectWizardIterator.class, "SERVICE_NOT_AVALIABLE"); // NOI18N
+                if (CndUtils.isStandalone() || CndUtils.isUnitTestMode()) {
+                    LOGGER.log(Level.SEVERE, message);
+                } else {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                }
             }
         } else if (wizardtype == TYPE_MAKEFILE) { // thp
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
             if (extension != null) {
                 resultSet.addAll(extension.createProject(wiz));
+            } else {
+                String message = NbBundle.getMessage(NewMakeProjectWizardIterator.class, "SERVICE_NOT_AVALIABLE"); // NOI18N
+                if (CndUtils.isStandalone() || CndUtils.isUnitTestMode()) {
+                    LOGGER.log(Level.SEVERE, message);
+                } else {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                }
             }
         } else if (wizardtype == TYPE_BINARY) {
             IteratorExtension extension = Lookup.getDefault().lookup(IteratorExtension.class);
@@ -387,6 +404,13 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
                 }
                 extension.discoverProject(wiz.getProperties(), null, kind);
                 //resultSet.addAll(extension.createProject(wiz));
+            } else {
+                String message = NbBundle.getMessage(NewMakeProjectWizardIterator.class, "SERVICE_NOT_AVALIABLE"); // NOI18N
+                if (CndUtils.isStandalone() || CndUtils.isUnitTestMode()) {
+                    LOGGER.log(Level.SEVERE, message);
+                } else {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(message, NotifyDescriptor.ERROR_MESSAGE));
+                }
             }
         } else if (wizardtype == TYPE_APPLICATION || wizardtype == TYPE_DYNAMIC_LIB || wizardtype == TYPE_STATIC_LIB || wizardtype == TYPE_QT_APPLICATION || wizardtype == TYPE_QT_DYNAMIC_LIB || wizardtype == TYPE_QT_STATIC_LIB || wizardtype == TYPE_DB_APPLICATION) {
             int conftype = -1;
