@@ -404,7 +404,9 @@ public enum NodeType {
     
     cp_mixin_block,
     
-    mediaBodyItem
+    mediaBodyItem,
+    
+    cp_term_symbol
     
     ;
     
