@@ -59,6 +59,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.php.project.connections.ConfigManager;
 import org.netbeans.modules.php.project.util.PhpProjectUtils;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectConfiguration;
@@ -173,7 +174,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
     private final FileChangeListener fclWeak;
     private FileObject configDir;
     private Map<String, Config> configs;
-    private FileObject nbp;
+    private final FileObject nbp;
 
     public PhpConfigurationProvider(PhpProject project) {
         this.project = project;
@@ -214,7 +215,7 @@ public final class PhpConfigurationProvider implements ProjectConfigurationProvi
                         Properties p = new Properties();
                         p.load(is);
                         String name = kid.getName();
-                        String label = p.getProperty("$label"); // NOI18N
+                        String label = p.getProperty(ConfigManager.PROP_DISPLAY_NAME);
 
                         configs.put(name, new Config(name, label != null ? label : name));
                     }
