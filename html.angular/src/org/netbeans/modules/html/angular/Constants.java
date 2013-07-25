@@ -54,7 +54,7 @@ public class Constants {
     public static final ImageIcon ANGULAR_ICON =
                 ImageUtilities.loadImageIcon("org/netbeans/modules/html/angular/resources/AngularJS_icon_16.png", false); // NOI18N
     
-    public static final Color ANGULAR_COLOR = Color.red.darker();
+    public static final Color ANGULAR_COLOR = Color.green.darker();
     
     public static final String JAVASCRIPT_MIMETYPE = "text/javascript"; //NOI18N
 }

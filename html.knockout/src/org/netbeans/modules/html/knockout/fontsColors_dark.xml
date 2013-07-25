@@ -46,11 +46,8 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="mod-method" bgColor="eeeeee">
-        <font style="normal" />
-    </fontcolor>
-    <fontcolor name="mod-constructor" foreColor="b20000"> 
-        <!-- foreColor="b20000" --> <!-- Color.red.darker(); -->
-        <!--<font style="bold" />-->
+    <!-- HTML Framework Directive coloring -->
+    <fontcolor name="mod-constructor" default="markup-attribute"> 
+        <font style="bold" />
     </fontcolor>
 </fontscolors>
