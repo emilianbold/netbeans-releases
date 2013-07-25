@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.bugzilla.commands;
 
-import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
@@ -56,6 +55,7 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaUserMatchResponse;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
+import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
@@ -136,7 +136,12 @@ public class BugzillaExecutor {
         } catch (CoreException ce) {
             Bugzilla.LOG.log(Level.FINE, null, ce);
 
-            ExceptionHandler handler = ExceptionHandler.createHandler(ce, this, repository, reexecute);
+            ExceptionHandler handler;
+            if(cmd instanceof ValidateCommand) {
+                handler = ExceptionHandler.createHandler(ce, this, null, ((ValidateCommand)cmd), reexecute);
+            } else {
+                handler = ExceptionHandler.createHandler(ce, this, repository, null, reexecute);
+            }
             assert handler != null;
 
             String msg = handler.getMessage();
@@ -328,8 +333,8 @@ public class BugzillaExecutor {
             this.repository = repository;
         }
 
-        static ExceptionHandler createHandler(CoreException ce, BugzillaExecutor executor, BugzillaRepository repository, boolean forRexecute) {
-            String errormsg = getLoginError(repository, ce);
+        static ExceptionHandler createHandler(CoreException ce, BugzillaExecutor executor, BugzillaRepository repository, ValidateCommand validateCommand, boolean forRexecute) {
+            String errormsg = getLoginError(repository, validateCommand, ce);
             if(errormsg != null) {
                 return new LoginHandler(ce, errormsg, executor, repository);
             }
@@ -359,7 +364,7 @@ public class BugzillaExecutor {
             return false;
         }
         
-        private static String getLoginError(BugzillaRepository repository, CoreException ce) {
+        private static String getLoginError(BugzillaRepository repository, ValidateCommand validateCommand, CoreException ce) {
             String msg = getMessage(ce);
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
@@ -368,9 +373,19 @@ public class BugzillaExecutor {
                    msg.contains(EMPTY_PASSWORD))
                 {
                     Bugzilla.LOG.log(Level.FINER, "returned error message [{0}]", msg);                     // NOI18N
-                    String url = repository.getUrl();
+                    String url;
+                    if(validateCommand != null) {
+                        url = validateCommand.getUrl();
+                    } else {
+                        url = repository.getUrl();
+                    }
                     if(url != null && NBBugzillaUtils.isNbRepository(url)) {
-                        String user = repository.getUsername();
+                        String user;
+                        if(validateCommand != null) {
+                            user = validateCommand.getUser();
+                        } else {
+                            user = repository.getUsername();
+                        }
                         if(user != null && user.contains("@")) {
                             return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD") + // NOI18N
                                    " " + // NOI18N
