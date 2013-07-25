@@ -1,4 +1,4 @@
 Code completion result for source line:
-<? Test147179::|foo(); ?>
+<?php Test147179::|foo(); ?>
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 METHOD     foo()                           [STATIC]   Test147179
