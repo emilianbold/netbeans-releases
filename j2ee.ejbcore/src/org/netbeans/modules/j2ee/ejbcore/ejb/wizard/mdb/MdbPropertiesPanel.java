@@ -87,7 +87,7 @@ public class MdbPropertiesPanel implements WizardDescriptor.FinishablePanel {
 
     @Override
     public HelpCtx getHelp() {
-        return HelpCtx.DEFAULT_HELP;
+        return new HelpCtx("org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MdbPropertiesPanel");
     }
 
     @Override
