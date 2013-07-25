@@ -48,6 +48,7 @@ import java.awt.CardLayout;
 import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dialog;
+import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Image;
@@ -62,7 +63,6 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Locale;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -387,6 +387,17 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
     }
 
     private void selectPlatform (Node pNode) {
+        Component active = null;
+        for (Component c : cards.getComponents()) {
+            if (c.isVisible() &&
+                (c == jPanel1 || c == messageArea)) {
+                    active = c;
+                    break;
+            }
+        }
+        final Dimension lastSize = active == null ?
+            null :
+            active.getSize();
         this.clientArea.removeAll();
         this.messageArea.removeAll();
         this.removeButton.setEnabled (false);
@@ -395,6 +406,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             return;
         }
         JComponent target = messageArea;
+        JComponent owner = messageArea;
         JavaPlatform platform = pNode.getLookup().lookup(JavaPlatform.class);
         if (platform != null) {
             this.removeButton.setEnabled (canRemove(platform, pNode.getLookup().lookup(DataObject.class)));
@@ -407,6 +419,7 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
                     }
                 }
                 target = clientArea;
+                owner = jPanel1;
             }
         }
         Component component = null;
@@ -418,7 +431,16 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
             sp.setNodes(new Node[] {pNode});
             component = sp;
         }
-        addComponent(target, component);                   
+        addComponent(target, component);
+        if (lastSize != null) {
+            final Dimension newSize = owner.getPreferredSize();
+            final Dimension updatedSize = new Dimension(
+                Math.max(lastSize.width, newSize.width),
+                Math.max(lastSize.height, newSize.height));
+            if (!newSize.equals(updatedSize)) {
+                owner.setPreferredSize(updatedSize);
+            }
+        }
         target.revalidate();
         CardLayout cl = (CardLayout) cards.getLayout();
         if (target == clientArea) {
