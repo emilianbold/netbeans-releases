@@ -53,8 +53,11 @@ import javax.swing.JFileChooser;
 import javax.swing.filechooser.FileFilter;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
 import org.netbeans.spi.java.project.support.JavadocAndSourceRootDetection;
+import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
+import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation.Definer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -90,17 +93,20 @@ public final class SourceJavadocAttacherUtil {
             @NonNull final URL root,
             @NonNull final List<? extends URI> attachedRoots,
             @NonNull final Callable<List<? extends String>> browseCall,
-            @NonNull final Function<String,Collection<? extends URI>> convertor) {
+            @NonNull final Function<String,Collection<? extends URI>> convertor,
+            @NullAllowed final SourceJavadocAttacherImplementation.Definer plugin) {
         assert root != null;
         assert browseCall != null;
         assert convertor != null;
         final SelectRootsPanel selectJavadoc = new SelectRootsPanel(
                 SelectRootsPanel.JAVADOC,
-                getDisplayName(root),
+                root,
                 attachedRoots,
                 browseCall,
-                convertor);
+                convertor,
+                plugin);
         final DialogDescriptor dd = new DialogDescriptor(selectJavadoc, Bundle.TXT_SelectJavadoc());
+        dd.setButtonListener(selectJavadoc);
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
             try {
                 return selectJavadoc.getRoots();
@@ -123,17 +129,20 @@ public final class SourceJavadocAttacherUtil {
             @NonNull final URL root,
             @NonNull final List<? extends URI> attachedRoots,
             @NonNull final Callable<List<? extends String>> browseCall,
-            @NonNull final Function<String,Collection<? extends URI>> convertor) {
+            @NonNull final Function<String,Collection<? extends URI>> convertor,
+            @NullAllowed final SourceJavadocAttacherImplementation.Definer plugin) {
         assert root != null;
         assert browseCall != null;
         assert convertor != null;
         final SelectRootsPanel selectSources = new SelectRootsPanel(
                 SelectRootsPanel.SOURCES,
-                getDisplayName(root),
+                root,
                 attachedRoots,
                 browseCall,
-                convertor);
+                convertor,
+                plugin);
         final DialogDescriptor dd = new DialogDescriptor(selectSources, Bundle.TXT_SelectSources());
+        dd.setButtonListener(selectSources);
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
             try {
                 return selectSources.getRoots();
@@ -234,11 +243,5 @@ public final class SourceJavadocAttacherUtil {
 
     public static interface Function<P,R> {
         R call (P param) throws Exception;
-    }
-
-    @NonNull
-    private static String getDisplayName(@NonNull final URL root) {
-        File f = FileUtil.archiveOrDirForURL(root);
-        return f == null ? root.toString() : f.isFile() ? f.getName() : f.getAbsolutePath();
     }
 }

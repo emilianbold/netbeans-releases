@@ -76,6 +76,23 @@ made subject to such option by the copyright holder.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+        <change id="SourceJavadocAttacherImplementation-Definer">
+            <api name="queries"/>
+            <summary>Added extension to the default SourceJavadocAttacherImplementation</summary>
+            <version major="1" minor="47"/>
+            <date day="22" month="7" year="2013"/>
+            <author login="tzezula"/>
+            <compatibility semantic="compatible" source="compatible" binary="compatible"/>
+            <description>
+                <p>
+                    Added <code>SourceJavadocAttacherImplementation.Definer</code> interface
+                    allowing extending the default SourceJavadocAttacherImplementation.
+                    Such an extension can download or locate the sources and javadoc for
+                    given binary.
+                </p>
+            </description>
+            <issue number="215971"/>
+        </change>
         <change id="JDK8-profiles-2">
             <api name="queries"/>
             <summary>The <code>SourceLevelQuery</code> supports JDK 8 profiles</summary>
