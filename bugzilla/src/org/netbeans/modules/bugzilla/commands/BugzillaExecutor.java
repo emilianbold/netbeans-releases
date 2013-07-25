@@ -368,7 +368,8 @@ public class BugzillaExecutor {
                    msg.contains(EMPTY_PASSWORD))
                 {
                     Bugzilla.LOG.log(Level.FINER, "returned error message [{0}]", msg);                     // NOI18N
-                    if(NBBugzillaUtils.isNbRepository(repository.getUrl())) {
+                    String url = repository.getUrl();
+                    if(url != null && NBBugzillaUtils.isNbRepository(url)) {
                         String user = repository.getUsername();
                         if(user != null && user.contains("@")) {
                             return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD") + // NOI18N
