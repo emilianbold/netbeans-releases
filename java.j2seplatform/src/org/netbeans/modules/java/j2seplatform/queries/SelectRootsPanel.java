@@ -48,6 +48,8 @@
 package org.netbeans.modules.java.j2seplatform.queries;
 
 import java.awt.Component;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -68,43 +70,54 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.java.j2seplatform.queries.SourceJavadocAttacherUtil.Function;
+import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Cancellable;
 import org.openide.util.Exceptions;
+import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
  *
  * @author Tomas Zezula
  */
-class SelectRootsPanel extends javax.swing.JPanel {
+class SelectRootsPanel extends javax.swing.JPanel implements ActionListener {
 
     static final int SOURCES = 0;
     static final int JAVADOC = 1;
 
+    private static final RequestProcessor RP = new RequestProcessor(SelectRootsPanel.class);
+
     private final int mode;
-    private final String displayName;
+    private final URL root;
     private final Callable<List<? extends String>> browseCall;
     private final Function<String,Collection<? extends URI>> convertor;
+    private final SourceJavadocAttacherImplementation.Definer plugin;
+    private volatile CancelService cancelService;
 
     /** Creates new form SelectSourcesPanel */
     SelectRootsPanel (
             final int mode,
-            @NonNull final String displayName,
-            @NonNull final List<? extends URI> roots,
+            @NonNull final URL root,
+            @NonNull final List<? extends URI> attachedRoots,
             @NonNull final Callable<List<? extends String>> browseCall,
-            @NonNull final Function<String, Collection<? extends URI>> convertor) {
+            @NonNull final Function<String, Collection<? extends URI>> convertor,
+            @NullAllowed final SourceJavadocAttacherImplementation.Definer plugin) {
         assert (mode & ~1) == 0;
-        assert displayName != null;
+        assert root != null;
         assert browseCall != null;
         assert convertor != null;
         this.mode = mode;
-        this.displayName = displayName;
+        this.root = root;
         this.browseCall = browseCall;
         this.convertor = convertor;
+        this.plugin = plugin;
         initComponents();
         final DefaultListModel<URI> model = new DefaultListModel<URI>();
         sources.setModel(model);
@@ -112,14 +125,28 @@ class SelectRootsPanel extends javax.swing.JPanel {
         sources.addListSelectionListener(new ListSelectionListener() {
             @Override
             public void valueChanged(ListSelectionEvent e) {
-                enableActions();
+                enableSelectionSensitiveActions();
             }
         });
-        for (URI root : roots)  {
-            model.addElement(root);
+        for (URI r : attachedRoots)  {
+            model.addElement(r);
         }
         addURL.setVisible(mode != 0);
-        enableActions();
+        if (plugin != null) {
+            download.setVisible(true);
+            download.setToolTipText(plugin.getDescription());
+        } else {
+            download.setVisible(false);
+        }
+        enableSelectionSensitiveActions();
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        final CancelService cs = cancelService;
+        if (cs != null) {
+            cs.cancel();
+        }
     }
 
     @CheckForNull
@@ -146,6 +173,7 @@ class SelectRootsPanel extends javax.swing.JPanel {
         up = new javax.swing.JButton();
         down = new javax.swing.JButton();
         addURL = new javax.swing.JButton();
+        download = new javax.swing.JButton();
 
         attachTo.setText(getDescription());
 
@@ -194,6 +222,13 @@ class SelectRootsPanel extends javax.swing.JPanel {
             }
         });
 
+        org.openide.awt.Mnemonics.setLocalizedText(download, org.openide.util.NbBundle.getMessage(SelectRootsPanel.class, "TXT_Download")); // NOI18N
+        download.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                download(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -213,7 +248,8 @@ class SelectRootsPanel extends javax.swing.JPanel {
                     .addComponent(add, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(down, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                     .addComponent(up, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(addURL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(addURL, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(download, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -229,6 +265,8 @@ class SelectRootsPanel extends javax.swing.JPanel {
                         .addComponent(add)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(addURL)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(download)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(remove)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -325,11 +363,91 @@ private void browse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browse
         }
     }//GEN-LAST:event_addURL
 
-    private void enableActions() {
+    private void download(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_download
+        assert plugin != null;
+        enableDownloadAction(false);
+        cancelService = new CancelService();
+        RP.execute(new Runnable() {
+            @Override
+            public void run() {
+                Collection<? extends URL> res = null;
+                try {
+                    assert plugin != null;
+                    switch (mode) {
+                        case 0:
+                            res = plugin.getSources(root, cancelService);
+                            break;
+                        case 1:
+                            res = plugin.getJavadoc(root, cancelService);
+                            break;
+                        default:
+                            throw new IllegalStateException();
+                    }
+                } finally {
+                    final Collection<? extends URL> resFin = res;
+                    Mutex.EVENT.writeAccess(new Runnable() {
+                        @Override
+                        public void run() {
+                            boolean finished = false;
+                            try {
+                                finished = !cancelService.call();
+                            } catch (Exception e) {
+                                //pass - finished is false
+                            }
+                            try {
+                                if (finished) {
+                                    if (resFin.isEmpty()) {
+                                        DialogDisplayer.getDefault().notify(
+                                            new NotifyDescriptor.Message(
+                                                NbBundle.getMessage(
+                                                    SelectRootsPanel.class,
+                                                    mode == 0 ?
+                                                        "ERR_DownloadSourcesFailed" :
+                                                        "ERR_DownloadJavadocFailed",
+                                                    getDisplayName(root)),
+                                                NotifyDescriptor.INFORMATION_MESSAGE));
+                                    } else {
+                                        final DefaultListModel<URI> lm = (DefaultListModel<URI>) sources.getModel();
+                                        final Set<URI> contained = new HashSet<>(Collections.list(lm.elements()));
+                                        int index = sources.getSelectedIndex();
+                                        index = index < 0 ? lm.getSize() : index + 1;
+                                        final List<Integer> added = new ArrayList<>();
+                                        for (URL url : resFin) {
+                                            try {
+                                                URI uri = url.toURI();
+                                                if (!contained.contains(uri)) {
+                                                    lm.add(index, uri);
+                                                    added.add(index);
+                                                    index++;
+                                                }
+                                            } catch (URISyntaxException e) {
+                                                Exceptions.printStackTrace(e);
+                                            }
+                                        }
+                                        select(added);
+                                    }
+                                }
+                            } finally {
+                                cancelService = null;
+                                enableDownloadAction(true);
+                                enableSelectionSensitiveActions();
+                            }
+                        }
+                    });
+                }
+            }
+        });        
+    }//GEN-LAST:event_download
+
+    private void enableSelectionSensitiveActions() {
         final int[] indices = sources.getSelectedIndices();
         remove.setEnabled(indices.length > 0);
         up.setEnabled(indices.length > 0 && indices[0] != 0);
         down.setEnabled(indices.length > 0 && indices[indices.length-1] != sources.getModel().getSize()-1);
+    }
+
+    private void enableDownloadAction(final boolean enable) {
+        download.setEnabled(enable);        
     }
 
     private void select(@NonNull final Collection<? extends Integer> toSelect) {
@@ -343,6 +461,7 @@ private void browse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browse
 
     @NonNull
     private String getDescription() {
+        final String displayName = getDisplayName(root);
         switch (mode) {
             case 0:
                 return NbBundle.getMessage(SelectRootsPanel.class, "TXT_AttachSourcesTo",displayName);
@@ -351,6 +470,16 @@ private void browse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browse
             default:
                 throw new IllegalStateException(Integer.toString(mode));
         }
+    }
+
+    @NonNull
+    private static String getDisplayName(@NonNull final URL root) {
+        final File f = FileUtil.archiveOrDirForURL(root);
+        return f == null ?
+            root.toString() :
+            f.isFile() ?
+                f.getName() :
+                f.getAbsolutePath();
     }
 
     @NonNull
@@ -403,11 +532,28 @@ private void browse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_browse
         }
     }
 
+    private static class CancelService implements Callable<Boolean>, Cancellable {
+
+        private volatile boolean canceled;
+
+        @Override
+        public Boolean call() throws Exception {
+            return canceled;
+        }
+
+        @Override
+        public boolean cancel() {
+            canceled = true;
+            return true;
+        }
+    }
+        
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton add;
     private javax.swing.JButton addURL;
     private javax.swing.JLabel attachTo;
     private javax.swing.JButton down;
+    private javax.swing.JButton download;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JLabel lblSources;
     private javax.swing.JButton remove;

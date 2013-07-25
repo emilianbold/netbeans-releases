@@ -51,9 +51,11 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
+import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation.Definer;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.util.Exceptions;
+import org.openide.util.Lookup;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -142,7 +144,8 @@ public class DefaultSourceJavadocAttacher implements SourceJavadocAttacherImplem
                     Bundle.TXT_Title(),
                     Bundle.TXT_Sources(),
                     cfh),
-                SourceJavadocAttacherUtil.createDefaultURIConvertor(true));
+                SourceJavadocAttacherUtil.createDefaultURIConvertor(true),
+                Lookup.getDefault().lookup(SourceJavadocAttacherImplementation.Definer.class));
         } else if (mode == 1) {
             selected = SourceJavadocAttacherUtil.selectJavadoc(
                 root,
@@ -151,7 +154,8 @@ public class DefaultSourceJavadocAttacher implements SourceJavadocAttacherImplem
                     Bundle.TXT_Title(),
                     Bundle.TXT_Javadoc(),
                     cfh),
-                SourceJavadocAttacherUtil.createDefaultURIConvertor(false));
+                SourceJavadocAttacherUtil.createDefaultURIConvertor(false),
+                Lookup.getDefault().lookup(SourceJavadocAttacherImplementation.Definer.class));
         } else {
             throw new IllegalStateException(Integer.toString(mode));
         }

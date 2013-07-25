@@ -289,7 +289,7 @@ public class GetterSetterGenerator implements CodeGenerator {
             else 
                 setters.add(null);
             if (type!=GeneratorUtils.SETTERS_ONLY)
-                getters.add(CodeStyleUtils.computeGetterName(el.getSimpleName(), el.asType().getKind() == TypeKind.BOOLEAN, isStatic, codestyle));
+                getters.add(CodeStyleUtils.computeGetterName(el.getSimpleName(), Utilities.isBoolean(el.asType()), isStatic, codestyle));
             else
                 getters.add(null);
         }

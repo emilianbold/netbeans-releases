@@ -282,7 +282,7 @@ public class GeneratorUtils {
         assert name.length() > 0;
         TypeMirror type = field.asType();
         boolean isStatic = field.getModifiers().contains(Modifier.STATIC);
-        String getterName = CodeStyleUtils.computeGetterName(name, type.getKind() == TypeKind.BOOLEAN, isStatic, cs);
+        String getterName = CodeStyleUtils.computeGetterName(name, org.netbeans.modules.editor.java.Utilities.isBoolean(type), isStatic, cs);
         Types types = info.getTypes();
         List<ExecutableElement> candidates = methods.get(getterName);
         if (candidates != null) {
