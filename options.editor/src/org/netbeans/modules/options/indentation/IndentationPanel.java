@@ -53,7 +53,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -72,6 +71,7 @@ import javax.swing.JSpinner;
 import javax.swing.ListCellRenderer;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -88,8 +88,8 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 
@@ -110,6 +110,25 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     private final PreviewProvider preview;
     private final boolean showOverrideGlobalOptions;
     
+    private static final int REFRESH_DELAY = 100; /* [ms] */
+    private final RequestProcessor.Task refreshTask = RequestProcessor.getDefault().create(new Runnable() {
+        public void run() {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(this);
+            } else {
+                // XXX: this is a workaround for the new view hierarchy, normally we
+                // should not catch any exception here and just call refreshPreview().
+                try {
+                    preview.refreshPreview();
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable e) {
+                    // ignore
+                }
+            }
+        }
+    });
+    
     /** 
      * Creates new form IndentationPanel.
      */
@@ -118,7 +137,6 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         this.mimePath = mimePath;
         this.prefsFactory = prefsFactory;
         this.prefs = prefs;
-        this.prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, prefs));
 
         this.allLangPrefs = allLangPrefs;
         if (this.allLangPrefs == null) {
@@ -169,6 +187,9 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             this.prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areBasicOptionsOverriden());
         }
         prefsChange(null);
+
+        // will not monitor changes made during initialization
+        this.prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, prefs));
 
         //listeners
         cbOverrideGlobalOptions.addActionListener(this);
@@ -319,16 +340,12 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
 
         if (needsRefresh) {
-            // XXX: this is a workaround for the new view hierarchy, normally we
-            // should not catch any exception here and just call refreshPreview().
-            try {
-                preview.refreshPreview();
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable e) {
-                // ignore
-            }
+            scheduleRefresh();
         }
+    }
+    
+    /* package private */ void scheduleRefresh() {
+        refreshTask.schedule(REFRESH_DELAY);
     }
 
     // just copy the values over to prefs

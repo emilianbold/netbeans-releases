@@ -393,15 +393,16 @@ public class ProfilesAnalyzer implements Analyzer {
                         public void run(@NonNull final CompilationController cc) throws Exception {
                             cc.toPhase(JavaSource.Phase.RESOLVED);
                             final FileObject currentFile = cc.getFileObject();
-                            final FindPosScanner fps = new FindPosScanner(
-                                    currentFile,
-                                    cc.getTrees(),
-                                    cc.getElements(),
-                                    cc.getTreeUtilities(),
-                                    violationsByFiles.get(currentFile),
-                                    result);
-                            fps.scan(cc.getCompilationUnit(), null);
-
+                            if (currentFile != null) {
+                                final FindPosScanner fps = new FindPosScanner(
+                                        currentFile,
+                                        cc.getTrees(),
+                                        cc.getElements(),
+                                        cc.getTreeUtilities(),
+                                        violationsByFiles.get(currentFile),
+                                        result);
+                                fps.scan(cc.getCompilationUnit(), null);
+                            }
                         }
                     },
                     true);
