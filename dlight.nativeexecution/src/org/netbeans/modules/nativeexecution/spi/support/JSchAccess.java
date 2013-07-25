@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,52 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.nativeexecution.spi.support;
 
-package org.netbeans.modules.cnd.script.editor;
+import com.jcraft.jsch.Channel;
+import com.jcraft.jsch.JSchException;
 
-import javax.swing.Action;
-import static javax.swing.text.DefaultEditorKit.nextWordAction;
-import static javax.swing.text.DefaultEditorKit.previousWordAction;
-import static javax.swing.text.DefaultEditorKit.selectionNextWordAction;
-import static javax.swing.text.DefaultEditorKit.selectionPreviousWordAction;
-import javax.swing.text.Document;
-import javax.swing.text.TextAction;
-import org.netbeans.editor.BaseDocument;
-import static org.netbeans.editor.BaseKit.removeNextWordAction;
-import static org.netbeans.editor.BaseKit.removePreviousWordAction;
-import org.netbeans.modules.cnd.utils.MIMENames;
-import org.netbeans.modules.editor.NbEditorKit;
+public interface JSchAccess {
 
-/**
- * @author Alexey Vladykin
- */
-public class ShellKit extends NbEditorKit {
-    private static final String COMMENT_LINE = "#"; //NOI18N
+    public String getServerVersion() throws JSchException;
 
-    @Override
-    public Document createDefaultDocument() {
-        Document doc = super.createDefaultDocument();
-        doc.putProperty(BaseDocument.WRITE_LINE_SEPARATOR_PROP, BaseDocument.LS_LF);
-        return doc;
-    }
+    public Channel openChannel(String type) throws JSchException, InterruptedException, JSchException;
 
-    @Override
-    public String getContentType() {
-        return MIMENames.SHELL_MIME_TYPE;
-    }
-    
-    protected 
-    @Override
-    Action[] createActions() {
-        Action[] superActions = super.createActions();
-        Action[] ccActions = new Action[]{
-            new CommentAction(COMMENT_LINE),
-            new UncommentAction(COMMENT_LINE),
-            new ToggleCommentAction(COMMENT_LINE)};
-        ccActions = TextAction.augmentList(superActions, ccActions);
+    public void releaseChannel(Channel channel) throws JSchException;
 
-        return ccActions;
-    }
+    public void setPortForwardingR(String bind_address, int rport, String host, int lport) throws JSchException;
+
+    public int setPortForwardingL(int lport, String host, int rport) throws JSchException;
+
+    public void delPortForwardingR(int rport) throws JSchException;
+
+    public void delPortForwardingL(int lport) throws JSchException ;
+
+    public String getConfig(String key);
 }
