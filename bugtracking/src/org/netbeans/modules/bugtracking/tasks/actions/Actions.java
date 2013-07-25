@@ -67,7 +67,7 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.TaskContainerNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.Submitable;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;

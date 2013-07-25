@@ -60,8 +60,8 @@ import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiUser;
 import org.netbeans.modules.kenai.ui.dashboard.MemberNode;
 import org.netbeans.modules.kenai.ui.impl.LoginUtils;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.util.NbBundle;
 
 /**
@@ -141,7 +141,7 @@ public final class KenaiUIUtils {
      */
     public static Kenai showKenaiLogin(final Kenai kenai) {
         TeamServer server = KenaiServer.forKenai(kenai);
-        server = org.netbeans.modules.team.ui.spi.TeamUIUtils.showLogin(server, false);
+        server = org.netbeans.modules.team.server.ui.spi.TeamUIUtils.showLogin(server, false);
         return (server instanceof KenaiServer) ? ((KenaiServer) server).getKenai() : null;
     }
 

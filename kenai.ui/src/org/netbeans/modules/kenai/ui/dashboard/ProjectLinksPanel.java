@@ -58,12 +58,12 @@ import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.collab.chat.MessagingAccessorImpl;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
-import org.netbeans.modules.team.ui.common.LinkButton;
-import org.netbeans.modules.team.ui.spi.MessagingAccessor;
-import org.netbeans.modules.team.ui.spi.MessagingHandle;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
-import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.server.ui.common.LinkButton;
+import org.netbeans.modules.team.server.ui.spi.MessagingAccessor;
+import org.netbeans.modules.team.server.ui.spi.MessagingHandle;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.commons.treelist.AsynchronousNode;
+import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 

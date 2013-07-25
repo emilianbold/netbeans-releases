@@ -83,8 +83,11 @@ import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.InputOutput;
 
 /**
- *
- * @author Peter Williams
+ * GlassFish server instance.
+ * <p/>
+ * Represents any GlassFish server registered in NetBeans.
+ * <p/>
+ * @author Peter Williams, Vince Kraemer, Tomas Kraus
  */
 public class GlassfishInstance implements ServerInstanceImplementation,
         Lookup.Provider, LookupListener, GlassFishServer {

@@ -70,7 +70,7 @@ import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
+import org.netbeans.modules.web.jsf.impl.metamodel.JsfModelProviderImpl;
 import org.netbeans.modules.web.jsf.api.metamodel.ModelUnit;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
@@ -142,7 +142,7 @@ public class CommonTestCase extends JavaSourceTestCase {
                 ClassPath.getClassPath(srcFO, ClassPath.COMPILE),
                 ClassPath.getClassPath(srcFO, ClassPath.SOURCE),
                 FileOwnerQuery.getOwner(projectFo));
-        return JsfModelFactory.createMetaModel(modelUnit);
+        return JsfModelProviderImpl.createMetaModel(modelUnit);
     }
 
     public String getFileContent(String relativePath) throws IOException {
@@ -280,6 +280,7 @@ public class CommonTestCase extends JavaSourceTestCase {
             InstanceContent ic = new InstanceContent();
             ic.add(cpProvider);
             ic.add(new SourcesImpl());
+            ic.add(new JsfModelProviderImpl(this));
             this.lookup = new AbstractLookup(ic);
 
         }

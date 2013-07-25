@@ -55,14 +55,14 @@ import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSManager;
-import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.spi.TeamServerProvider;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
+import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
-import org.netbeans.modules.team.ui.spi.PopupMenuProvider;
+import org.netbeans.modules.team.server.ui.spi.PopupMenuProvider;
 import org.openide.util.Exceptions;
 import org.openide.util.NbPreferences;
 

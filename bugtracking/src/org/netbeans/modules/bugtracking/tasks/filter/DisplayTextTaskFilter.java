@@ -41,23 +41,23 @@
  */
 package org.netbeans.modules.bugtracking.tasks.filter;
 
-import org.netbeans.modules.bugtracking.IssueImpl;
+import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 
 /**
  *
  * @author jpeska
  */
-public class DisplayTextTaskFilter implements DashboardFilter<IssueImpl> {
+public class DisplayTextTaskFilter implements DashboardFilter<TaskNode> {
 
-    private String summaryParam;
+    private final String summaryParam;
 
     public DisplayTextTaskFilter(String summaryParam) {
         this.summaryParam = summaryParam;
     }
 
     @Override
-    public boolean isInFilter(IssueImpl task) {
-        return task.getDisplayName().toLowerCase().contains(summaryParam.toLowerCase().trim());
+    public boolean isInFilter(TaskNode taskNode) {
+        return taskNode.getTask().getDisplayName().toLowerCase().contains(summaryParam.toLowerCase().trim());
     }
 
     @Override

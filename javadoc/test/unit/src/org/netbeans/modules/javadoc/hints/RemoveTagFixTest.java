@@ -257,6 +257,33 @@ public class RemoveTagFixTest extends NbTestCase {
                 "}\n");
     }
     
+    public void testRemoveFromClass() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                "/**\n" +
+                " * \n" +
+                " * @param bla\n" +
+                " */\n" +
+                "class Zima {\n" +
+                "    void leden() {\n" +
+                "    }\n" +
+                "}\n")
+                .preference(AVAILABILITY_KEY + true, true)
+                .preference(SCOPE_KEY, "private")
+                .run(JavadocHint.class)
+                .findWarning("3:3-3:13:warning:@param tag cannot be used on CLASS.")
+                .applyFix("Remove @param tag")
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                "/**\n" +
+                " * \n" +
+                " */\n" +
+                "class Zima {\n" +
+                "    void leden() {\n" +
+                "    }\n" +
+                "}\n");
+    }
+    
     public void testRemoveDuplicateThrowsTagFix() throws Exception {
         HintTest.create()
                 .input("package test;\n" +

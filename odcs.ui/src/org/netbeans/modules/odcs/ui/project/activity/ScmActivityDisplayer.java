@@ -57,7 +57,7 @@ import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.project.LinkLabel;
 import org.netbeans.modules.odcs.ui.spi.VCSAccessor;
 import org.netbeans.modules.odcs.ui.utils.Utils;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
