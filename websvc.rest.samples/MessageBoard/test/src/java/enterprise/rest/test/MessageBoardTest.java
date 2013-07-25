@@ -38,76 +38,61 @@ Other names may be trademarks of their respective owners.
  */
 package enterprise.rest.test;
 
-import com.sun.jersey.api.client.Client;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.UniformInterfaceException;
-import com.sun.jersey.api.client.WebResource;
+import enterprise.messageboard.entities.Message;
 import java.net.URI;
+import java.net.URISyntaxException;
+import javax.ws.rs.client.Client;
+import javax.ws.rs.client.ClientBuilder;
+import javax.ws.rs.client.Entity;
+import javax.ws.rs.client.WebTarget;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import org.junit.Test;
 import static org.junit.Assert.*;
 
 public class MessageBoardTest {
 
-    private URI serverUri;
-    private Client c;
-    private WebResource baseWebResource;
+    private WebTarget webTarget;
     
     public MessageBoardTest() {
+        URI serverUri;
         try {
             if(System.getProperty("samples.javaee.serveruri") != null) {
                 serverUri = new URI(System.getProperty("samples.javaee.serveruri"));
             } else {
                 serverUri = new URI("http://localhost:8080");
             }
-            c = new Client();
-            baseWebResource = c.resource(serverUri).path("message-board");
+            Client client = ClientBuilder.newClient();
+            webTarget = client.target(serverUri).path("message-board/app/messages");
 
-        } catch(Exception e) {
+        } catch(URISyntaxException e) {
             assertTrue(false);
         }
     }
 
     @Test public void testDeployed() {
-        String s = baseWebResource.get(String.class);
-        assertFalse(s.length() == 0);
+        
+        // test GET [app/messages]
+        String result = webTarget.request().get(String.class);
+        assertFalse(result.length() == 0);
     }
 
-    @Test public void testAddMessage() {
-        ClientResponse response = baseWebResource.path("app/messages").post(ClientResponse.class, "hello world!");
-
-        assertTrue(response.getResponseStatus() == Status.CREATED);
-
-        c.resource(response.getLocation()).delete();
-    }
-
-    @Test public void testDeleteMessage() {
-        URI u = baseWebResource.getURI(); // just placeholder
-
-        ClientResponse response = baseWebResource.path("app/messages").post(ClientResponse.class, "toDelete");
-        if(response.getResponseStatus() == Status.CREATED) {
-            u = response.getLocation();
-        } else {
-            assertTrue(false);
-        }
-
-        String s = c.resource(u).get(String.class);
-
-        assertTrue(s.contains("toDelete"));
-
-        c.resource(u).delete();
-
-        boolean caught = false;
-
-        try {
-            s = c.resource(u).get(String.class);
-        } catch (UniformInterfaceException e) {
-            if (e.getResponse().getStatus() == 404) {
-                caught = true;
-            }
-        }
-
-        assertTrue(caught);
+    @Test public void testPostGetDeleteMessage() {
+        
+        // test POST [app/messages]
+        Response response = webTarget.request().post(Entity.entity("Hello World !!!", MediaType.TEXT_PLAIN), Response.class);
+        assertEquals(Status.CREATED.getStatusCode(), response.getStatus());
+        
+        // test GET [app/messages/{number}]
+        URI location = response.getLocation();
+        String resourceNum = location.getPath().substring(location.getPath().lastIndexOf("/")+1);
+        Message message = webTarget.path(resourceNum).request(MediaType.APPLICATION_XML).get(Message.class);
+        assertEquals("Hello World !!!", message.getMessage());
+        
+        // test DELETE [app/messages/{number}]
+        response = webTarget.path(resourceNum).request().delete();
+        assertNotSame(Status.NOT_FOUND.getStatusCode(), response.getStatus());
     }
 }
 

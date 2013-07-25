@@ -192,7 +192,10 @@ public final class OptionsFilter {
         private boolean filterNodes(Object currentNode, String term) {
             boolean accepted = term.isEmpty() || acceptor.accept(currentNode, term);
             
-            if (delegate.isLeaf(currentNode)) return accepted;
+            if (delegate.isLeaf(currentNode)) {
+                category2Nodes.put(currentNode, Collections.emptyList());
+                return accepted;
+            }
             
             List<Object> filtered = new ArrayList<Object>(delegate.getChildCount(currentNode));
             

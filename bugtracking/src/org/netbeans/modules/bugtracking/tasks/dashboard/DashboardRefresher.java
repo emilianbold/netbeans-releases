@@ -49,7 +49,7 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.tasks.Category;
-import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
+import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 

@@ -120,7 +120,9 @@ public class AngularDoc {
 
                 URL url = new URI(docURL).toURL();
                 StringWriter writer = new StringWriter();
+                writer.append("<!doctype html><html><head><title>AngularJS documentation</title></head><body>");
                 Utils.loadURL(url, writer, null);
+                writer.append("</body></html>");
 
                 LOG.log(Level.FINE, "Loaded content of URL ", docURL); //NOI18N
 

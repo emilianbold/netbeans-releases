@@ -357,11 +357,7 @@ public class WebProjectGeneratorTest extends NbTestCase {
     public static void validate(Project proj) throws Exception {
         File projF = FileUtil.toFile(proj.getProjectDirectory());
         File xml = new File(new File(projF, "nbproject"), "project.xml");
-        SAXParserFactory f = (SAXParserFactory)Class.forName("org.apache.xerces.jaxp.SAXParserFactoryImpl").newInstance();
-        if (f == null) {
-            System.err.println("Validation skipped because org.apache.xerces.jaxp.SAXParserFactoryImpl was not found on classpath");
-            return;
-        }
+        SAXParserFactory f = SAXParserFactory.newInstance();
         f.setNamespaceAware(true);
         f.setValidating(true);
         SAXParser p = f.newSAXParser();

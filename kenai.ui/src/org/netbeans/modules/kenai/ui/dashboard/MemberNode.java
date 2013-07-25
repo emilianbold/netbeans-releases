@@ -50,11 +50,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import org.netbeans.modules.kenai.ui.MemberAccessorImpl;
 import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
-import org.netbeans.modules.team.ui.common.LinkButton;
-import org.netbeans.modules.team.ui.spi.MemberHandle;
-import org.netbeans.modules.team.ui.util.treelist.LeafNode;
-import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
-import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.netbeans.modules.team.server.ui.common.LinkButton;
+import org.netbeans.modules.team.server.ui.spi.MemberHandle;
+import org.netbeans.modules.team.commons.treelist.LeafNode;
+import org.netbeans.modules.team.commons.treelist.TreeLabel;
+import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 

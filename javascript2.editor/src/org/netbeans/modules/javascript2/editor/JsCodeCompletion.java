@@ -844,7 +844,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         if (jsObject == null || !jsObject.isDeclared()) {
             boolean isObject = type.getType().equals("Object");   //NOI18N
             if (prop && !isObject) {
-                for (IndexResult indexResult : index.findFQN(type.getType())) {
+                for (IndexResult indexResult : index.findByFqn(type.getType(), JsIndex.FIELD_FLAG)) {
                     JsElement.Kind kind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
                     if (kind.isFunction()) {
                         isFunction = true;

@@ -92,7 +92,8 @@ public class SectionView extends PanelView implements SectionFocusCookie, Contai
         scrollPane.setViewportView(scrollPanel);
         scrollPane.getVerticalScrollBar().setUnitIncrement(15);
         filler = new JPanel();
-        filler.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        // issue 233048: the background color issues with dark metal L&F
+        // filler.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         add(scrollPane, BorderLayout.CENTER);
     }
     

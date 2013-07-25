@@ -43,18 +43,14 @@ package org.netbeans.modules.css.prep.editor;
 
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 import org.netbeans.modules.css.prep.editor.model.CPElementHandle;
 
 /**
  *
  * @author marekfukala
  */
-public class MixinCompletionItem extends CssCompletionItem {
-
-    private String origin;
-    private CPElementHandle handle;
+public class MixinCompletionItem extends CPCompletionItem {
+    
     /**
      * 
      * @param elementHandle
@@ -63,9 +59,7 @@ public class MixinCompletionItem extends CssCompletionItem {
      * @param origin Origin is null for current file. File displayname otherwise.
      */
     public MixinCompletionItem(ElementHandle elementHandle, CPElementHandle handle, int anchorOffset, String origin) {
-        super(elementHandle, handle.getName(), anchorOffset, false);
-        this.handle = handle;
-        this.origin = origin;
+        super(elementHandle, handle, anchorOffset ,origin);
     }
 
     @Override
@@ -74,15 +68,6 @@ public class MixinCompletionItem extends CssCompletionItem {
     }
 
     @Override
-    public int getSortPrioOverride() {
-        int prio = 1000;
-        if(origin == null) {
-            prio -= 500; //current file items have precedence
-        }
-        return prio;
-    }
-    
-    @Override
     public String getInsertPrefix() {
         return handle.getName();
     }
@@ -90,37 +75,6 @@ public class MixinCompletionItem extends CssCompletionItem {
     @Override
     public String getName() {
         return handle.getName();
-    }
-    
-    @Override
-    public String getLhsHtml(HtmlFormatter formatter) {
-        switch (handle.getType()) {
-            case MIXIN_DECLARATION:
-                formatter.appendHtml("<font color=000000><b>"); //NOI18N
-                break;
-        }
-        
-        formatter.appendText(getName());
-        
-        switch (handle.getType()) {
-            case MIXIN_DECLARATION:
-                formatter.appendHtml("</b></font>"); //NOI18N);
-                break;
-        }
-        
-        return formatter.getText();
-    }
-
-    @Override
-    public String getRhsHtml(HtmlFormatter formatter) {
-        if(origin == null) {
-            return super.getRhsHtml(formatter);
-        } else {
-            formatter.appendHtml("<font color=999999>");
-            formatter.appendText(origin);
-            formatter.appendHtml("</font>"); //NOI18N
-            return formatter.getText();
-        }
     }
     
     @Override
@@ -149,4 +103,12 @@ public class MixinCompletionItem extends CssCompletionItem {
         return true;
     }
 
+    @Override
+    public int getSortPrioOverride() {
+        int prio = 70;
+        if(origin == null) {
+            prio -= 40; //current file items have precedence
+        }
+        return prio;
+    }
 }

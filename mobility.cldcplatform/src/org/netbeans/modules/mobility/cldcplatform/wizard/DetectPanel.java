@@ -131,6 +131,7 @@ public class DetectPanel extends javax.swing.JPanel {
         nameField.getDocument().addDocumentListener(nameFieldListener);
         infoPanel.setEditorKitForContentType("text/html", new HTMLEditorKit()); //NOI18N
         infoPanel.setContentType("text/html;charset=UTF-8"); //NOI18N
+        infoPanel.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         javadocList.addListSelectionListener(new ListSelectionListener() {
             @SuppressWarnings("synthetic-access")
 			public void valueChanged(@SuppressWarnings("unused")

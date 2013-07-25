@@ -195,6 +195,7 @@ public class HTMLDocView extends JEditorPane {
         javax.swing.text.html.StyleSheet css =
                 new javax.swing.text.html.StyleSheet();
         java.awt.Font f = new EditorUI().getDefaultColoring().getFont();
+        setFont(f);
         css.addRule(new StringBuilder("body, div { font-size: ").append(f.getSize()) // NOI18N
                 .append("; font-family: ").append(getFont().getFamily()).append("; color: " + getForegroundColor() + ";}").toString()); // NOI18N
                 // do not use monospaced font, just adjust fontsize

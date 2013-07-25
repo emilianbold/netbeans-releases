@@ -73,7 +73,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="caret-color-insert-mode" foreColor="yellow" />
     <fontcolor name="caret-color-overwrite-mode" foreColor="yellow" />
     <fontcolor name="text-limit-line-color" foreColor="253E5A"/>
-    <fontcolor name="hyperlinks" foreColor="blue" underline="blue"/>
+    <fontcolor name="hyperlinks" foreColor="cyan" underline="cyan"/>
     <fontcolor name="synchronized-text-blocks-ext" foreColor="ffcc0099"/>
     <fontcolor name="synchronized-text-blocks-ext-slave" foreColor="ff996600"/>
     <fontcolor name="indent-whitespace"/>

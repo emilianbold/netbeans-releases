@@ -4,7 +4,8 @@
     </head>
     <body>
 
-        <%!            String str;
+        <%!
+            String str;
             Integer i = new Integer(10);
             java.util.List list = new java.util.LinkedList();
         %>

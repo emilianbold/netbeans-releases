@@ -1443,12 +1443,18 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  }\n"
                 + "}");
     }
-    
- public void testMixinBodyPropertyRecovery() throws ParseException, BadLocationException {
+
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=233038#c2
+    public void testCPExpressionInMediaQuery() throws ParseException, BadLocationException {
+        assertParses("@media only tv and (resolution: 120 * 3 + \"dpi\"){\n"
+                + "\n"
+                + "}");
+    }
+
+    public void testMixinBodyPropertyRecovery() throws ParseException, BadLocationException {
         CssParserResult result = TestUtil.parse("@mixin mymixin() { color: }");
-        Node node = NodeUtil.query(result.getParseTree(), 
+        Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/cp_mixin_declaration/cp_mixin_block/declarations/declaration/propertyDeclaration/property");
         assertNotNull(node);
     }
- 
 }

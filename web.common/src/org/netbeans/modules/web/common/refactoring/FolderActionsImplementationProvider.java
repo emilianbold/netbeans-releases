@@ -84,6 +84,14 @@ public class FolderActionsImplementationProvider extends ActionsImplementationPr
                 //check if the folder is a part of a web-like project using the
                 //web root query
                 if (ProjectWebRootQuery.getWebRoot(fo) != null) {
+
+                    // In Maven based projects the rename action need to do something different
+                    // See issue #219887
+                    FileObject pom = fo.getFileObject("pom.xml"); //NOI18N
+                    if (pom != null) {
+                        return false;
+                    }
+
                     //looks like the file is a web like project
                     try {
                         return !fo.getFileSystem().isReadOnly();

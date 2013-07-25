@@ -259,20 +259,25 @@ public abstract class RestSupport {
 
         // make sure the project classpath contains Jersey JARs:
         if (!hasJersey2 && !hasJersey1(true)) {
-            JaxRsStackSupport support = getJaxRsStackSupport();
-            boolean jerseyAdded = false;
-            if (support != null) {
-                jerseyAdded = support.extendsJerseyProjectClasspath(getProject());
-            }
-            // fallback on IDE's default library:
-            if (!jerseyAdded){
-                JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
-            }
+            extendJerseyClasspath();
         }
 
         handleSpring();
 
         ProjectManager.getDefault().saveProject(getProject());
+    }
+    
+    
+    protected void extendJerseyClasspath() {
+        JaxRsStackSupport support = getJaxRsStackSupport();
+        boolean jerseyAdded = false;
+        if (support != null) {
+            jerseyAdded = support.extendsJerseyProjectClasspath(getProject());
+        }
+        // fallback on IDE's default library:
+        if (!jerseyAdded){
+            JaxRsStackSupport.getDefault().extendsJerseyProjectClasspath(getProject());
+        }
     }
 
     protected abstract void extendBuildScripts() throws IOException;

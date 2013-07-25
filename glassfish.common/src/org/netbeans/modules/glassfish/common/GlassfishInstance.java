@@ -83,8 +83,11 @@ import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.InputOutput;
 
 /**
- *
- * @author Peter Williams
+ * GlassFish server instance.
+ * <p/>
+ * Represents any GlassFish server registered in NetBeans.
+ * <p/>
+ * @author Peter Williams, Vince Kraemer, Tomas Kraus
  */
 public class GlassfishInstance implements ServerInstanceImplementation,
         Lookup.Provider, LookupListener, GlassFishServer {
@@ -225,13 +228,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                     value = delegate.get(key);
                 }
                 if (value == null) {
-                    char[] passwordChars = Keyring.read(
-                            GlassfishInstance.passwordKey(
+                    value = getPasswordFromKeyring(
                             delegate.get(GlassfishModule.DISPLAY_NAME_ATTR),
-                            delegate.get(GlassfishModule.USERNAME_ATTR)));
-                    value = passwordChars != null
-                            ? new String(passwordChars)
-                            : DEFAULT_ADMIN_PASSWORD;
+                            delegate.get(GlassfishModule.USERNAME_ATTR));
                     synchronized(delegate) {
                         delegate.put((String)key, value);
                     }
@@ -629,7 +628,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                     instanceFO.getPath()); // NOI18N
             instanceFO.delete();
         }
-
         return instance;
     }
 
@@ -1081,6 +1079,18 @@ public class GlassfishInstance implements ServerInstanceImplementation,
      */
     public String getHttpAdminPort() {
         return properties.get(GlassfishModule.ADMINPORT_ATTR);
+    }
+
+    /**
+     * Set GlassFish server administration user name from stored properties.
+     * <p/>
+     * Method {@see #writeInstanceToFile(GlassfishInstance)} must be called
+     * to persist value.
+     * <p/>
+     * @param usern GlassFish server administration user name.
+     */
+    public void setAdminUser(final String user) {
+        properties.put(GlassfishModule.USERNAME_ATTR, user);
     }
 
     /**

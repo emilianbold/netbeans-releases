@@ -47,7 +47,7 @@ import java.util.Arrays;
 import javax.swing.JComponent;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.client.api.ODCSException;
-import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
+import org.netbeans.modules.team.server.ui.spi.LoginPanelSupport;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
 import org.netbeans.modules.odcs.ui.api.OdcsUIUtil;

@@ -232,7 +232,7 @@ Contributor(s): Andrei Badea
                 <friend>org.netbeans.modules.java.sourceui</friend>
                 <friend>org.netbeans.modules.javafx.editor</friend>
                 <friend>org.netbeans.modules.spring.beans</friend>
-                <friend>org.netbeans.modules.bugtracking.bridge</friend>
+                <friend>org.netbeans.modules.team.ide</friend>
                 <package>org.netbeans.api.jumpto.type</package>
                 <package>org.netbeans.spi.jumpto.file</package>
                 <package>org.netbeans.spi.jumpto.support</package>

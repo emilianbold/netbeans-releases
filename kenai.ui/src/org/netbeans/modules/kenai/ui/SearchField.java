@@ -62,7 +62,7 @@ import javax.swing.text.JTextComponent;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiManager;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.team.ui.common.AddInstanceAction;
+import org.netbeans.modules.team.server.ui.common.AddInstanceAction;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;

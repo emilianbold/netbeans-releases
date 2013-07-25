@@ -53,10 +53,10 @@ import javax.swing.JComboBox;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSManager;
 import org.netbeans.modules.odcs.ui.ODCSServerProviderImpl;
-import org.netbeans.modules.team.ui.common.AddInstanceAction;
+import org.netbeans.modules.team.server.ui.common.AddInstanceAction;
 import static org.netbeans.modules.odcs.ui.api.Bundle.*;
-import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -140,7 +140,7 @@ public final class OdcsUIUtil {
      */
     public static ODCSServer showServerLogin(final ODCSServer odcsServer) {
         TeamServer server = ODCSUiServer.forServer(odcsServer);
-        server = org.netbeans.modules.team.ui.spi.TeamUIUtils.showLogin(server, false);
+        server = org.netbeans.modules.team.server.api.TeamUIUtils.showLogin(server, false);
         return (server instanceof ODCSUiServer) ? ((ODCSUiServer) server).getServer() : null;
     }
 

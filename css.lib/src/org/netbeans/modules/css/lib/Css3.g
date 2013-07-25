@@ -425,7 +425,12 @@ mediaExpression
     
 mediaFeatureValue
     :
-    ws? COLON ws? expression
+    ws? COLON ws? 
+    (
+        {isCssPreprocessorSource()}? cp_expression
+        |
+        expression
+    )
     ;
  
 mediaFeature

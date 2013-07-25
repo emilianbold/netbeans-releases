@@ -66,8 +66,8 @@ import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.project.LinkLabel;
 import org.netbeans.modules.odcs.ui.utils.Utils;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.QueryAccessor;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryAccessor;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
