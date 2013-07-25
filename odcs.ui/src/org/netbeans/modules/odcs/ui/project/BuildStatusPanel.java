@@ -56,9 +56,9 @@ import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
-import org.netbeans.modules.team.ui.spi.BuilderAccessor;
-import org.netbeans.modules.team.ui.spi.JobHandle;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.BuilderAccessor;
+import org.netbeans.modules.team.server.ui.spi.JobHandle;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 

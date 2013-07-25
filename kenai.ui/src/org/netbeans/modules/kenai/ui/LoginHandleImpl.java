@@ -43,7 +43,7 @@ package org.netbeans.modules.kenai.ui;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
-import org.netbeans.modules.team.ui.spi.LoginHandle;
+import org.netbeans.modules.team.server.ui.spi.LoginHandle;
 
 /**
  * Implementation of LoginHandle. Currently fires events when user logs in/out

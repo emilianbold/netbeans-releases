@@ -51,7 +51,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.team.spi.TeamBugtrackingConnector.BugtrackingType;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.team.ui.spi.QueryHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryHandle;
 
 /**
  *

@@ -47,8 +47,8 @@ import java.net.PasswordAuthentication;
 import javax.swing.Action;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.SourceAccessor;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.SourceAccessor;
 import org.openide.util.Lookup;
 
 /**

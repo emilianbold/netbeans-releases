@@ -442,7 +442,7 @@ public abstract class GlassfishConfiguration implements
         return module.getMetadataModel(type);
     }
 
-    /** !PW FIXME web freeform project does not implement J2eeModulePrvoider so
+    /** !PW FIXME web free form project does not implement J2eeModulePrvoider so
      *  this method will fail for that project type.  This method is used for:
      *
      *  * Getting the server instance id => install location for determining
