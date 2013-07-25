@@ -2,7 +2,6 @@
 MyBean MyBean
 applicationScope
 cookie
-FlowDiscoveryCDIHelper csfFLOW
 javax.faces.context.FacesConte
 header
 headerValues
@@ -142,7 +141,6 @@ End cursor position = 294
 MyBean MyBean
 applicationScope
 cookie
-FlowDiscoveryCDIHelper csfFLOW
 javax.faces.context.FacesConte
 header
 headerValues

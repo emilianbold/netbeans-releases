@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,40 +34,28 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.metamodel;
+package org.netbeans.modules.web.jsf.api.metamodel;
 
-import org.netbeans.modules.web.jsf.metamodel.*;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import static junit.framework.Assert.assertNotNull;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
-import static org.netbeans.junit.NbTestCase.assertGC;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
-import org.netbeans.modules.projectapi.TimedWeakReference;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
-
 
 /**
+ * Provides JSF model created for given project.
+ * <p>
+ * Model is created lazy once somebody requests it.
+ *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-public class ModelUnitTest extends CommonTestCase {
+public interface JsfModelProvider {
 
-    public ModelUnitTest( String testName ) {
-        super(testName);
-    }
-
-    public void testModelUnitGC() throws IOException, InterruptedException {
-        Project p = FileOwnerQuery.getOwner(projectFo);
-        assertNotNull(p);
-        MetadataModel<JsfModel> model = JsfModelFactory.getModel(p);
-        assertNotNull(model);
-        WeakReference<Project> projectReference = new WeakReference<Project>(p);
-        p = null;
-        Thread.sleep(TimedWeakReference.TIMEOUT);
-        assertGC("Project was not GCed.", projectReference);
-    }
+    /**
+     * Provides JSF metadata model of the project.
+     * @return JSF metadata model
+     */
+    MetadataModel<JsfModel> getModel();
 
 }

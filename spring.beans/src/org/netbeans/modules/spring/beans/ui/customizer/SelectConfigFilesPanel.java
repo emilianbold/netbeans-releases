@@ -70,6 +70,7 @@ import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.NbCollections;
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
 
@@ -317,7 +318,7 @@ public class SelectConfigFilesPanel extends javax.swing.JPanel {
             final Set<File> result = new HashSet<File>();
             // Search in the source groups of the projects.
             for (SourceGroup group : ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
-                for (FileObject fo : group.getRootFolder().getChildren()) {
+                for (FileObject fo : NbCollections.iterable(group.getRootFolder().getChildren(true))) {
                     if (Thread.currentThread().isInterrupted()) {
                         return;
                     }
