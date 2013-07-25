@@ -67,9 +67,11 @@ import org.netbeans.modules.php.editor.parser.astnodes.DereferencedArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.EchoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.ExpressionArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FinallyClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -276,6 +278,12 @@ public class DefaultVisitor implements Visitor {
     }
 
     @Override
+    public void visit(ExpressionArrayAccess node) {
+        scan(node.getExpression());
+        scan(node.getDimension());
+    }
+
+    @Override
     public void visit(ExpressionStatement node) {
         scan(node.getExpression());
     }
@@ -289,6 +297,11 @@ public class DefaultVisitor implements Visitor {
     @Override
     public void visit(FieldsDeclaration node) {
         scan(node.getFields());
+    }
+
+    @Override
+    public void visit(FinallyClause node) {
+        scan(node.getBody());
     }
 
     @Override
@@ -491,6 +504,7 @@ public class DefaultVisitor implements Visitor {
     public void visit(TryStatement node) {
         scan(node.getCatchClauses());
         scan(node.getBody());
+        scan(node.getFinallyClause());
     }
 
     @Override
