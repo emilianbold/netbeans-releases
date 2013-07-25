@@ -1,6 +1,6 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
 <!--
-Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
+Copyright &copy; 2007, 2013 Oracle and/or its affiliates. All rights reserved.
  -->
 <html>
   <head>
@@ -34,11 +34,12 @@ Copyright &copy; 2007, 2012 Oracle and/or its affiliates. All rights reserved.
       Build Tools</a>.
     </p>
     <p>
-       <b>Access project files via.</b> Select the type of file synchronization you want to use to make the
-      project files accessible to the remote server.
-      If the local host
-      and the remote host share access to the file system where the project files are located,
-      you can select System level file sharing.
+       <b>Access project files via.</b> Select the method you want to use to make the
+      project files accessible to the remote server.  If the project files are located
+      on a shared file system where the local host and the remote host can both
+      access the files, you can select System level file sharing.  Otherwise you
+      should select Automatic copying so that the IDE can automatically copy
+      the necessary files between the local and remote hosts. 
     </p>
     <p>Click Finish.</p>
     <p>The Build Hosts Manager dialog box displays the list of build hosts 

@@ -48,10 +48,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import jdk.nashorn.internal.runtime.ParserException;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.lib.editor.util.StringEscapeUtils;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
@@ -84,6 +85,16 @@ public class JsErrorManager extends ErrorManager {
             return 0;
         }
     };
+
+    // message pattern is for example "index.html:2:16 Exepcted ;"
+    private static final Pattern ERROR_MESSAGE_PATTERN = Pattern.compile(".*:\\d+:\\d+ (.*)", Pattern.DOTALL); // NOI18N
+
+    // used to replace pointers from mesage such as
+    // Expected ( but found else
+    // else
+    // ^
+    // with this pattern we replace last two lines and related new lines
+    private static final Pattern REPLACE_POINTER_PATTERN = Pattern.compile("(\\n)+.*\\n\\s*\\^\\s*"); // NOI18N
 
     /** Keyword from the error.message which identifies missing char in the JS source. */
     private static final String EXPECTED = "Expected"; //NOI18N
@@ -147,11 +158,7 @@ public class JsErrorManager extends ErrorManager {
 
     @Override
     public void error(ParserException e) {
-        StringBuilder message = new StringBuilder();
-        message.append("<html><pre>");          //NOI18N
-        message.append(StringEscapeUtils.escapeHtml(e.getMessage()).replaceAll("\n", "<br/>"));//NOI18N
-        message.append("</pre></html>");        //NOI18N
-        addParserError(new ParserError(message.toString(), e.getLineNumber(), e.getColumnNumber(), e.getToken()));
+        addParserError(new ParserError(e.getMessage(), e.getLineNumber(), e.getColumnNumber(), e.getToken()));
     }
 
     @Override
@@ -210,6 +217,13 @@ public class JsErrorManager extends ErrorManager {
     private SimpleError convert(ParserError error) {
         String message = error.message;
         int offset = -1;
+        Matcher matcher = ERROR_MESSAGE_PATTERN.matcher(message);
+        if (matcher.matches()) {
+            message = matcher.group(1);
+        }
+        message = REPLACE_POINTER_PATTERN.matcher(message).replaceAll(""); // NOI18N
+
+
         if (error.token > 0) {
             offset = Token.descPosition(error.token);
             if (Token.descType(error.token) == TokenType.EOF
@@ -230,15 +244,16 @@ public class JsErrorManager extends ErrorManager {
                 }
             }
         } else if (error.line == -1 && error.column == -1) {
+            // is this still used ?
             String parts[] = error.message.split(":");
-            if (parts.length > 4) {
-                message = parts[4];
-                int index = message.indexOf('\n');
-                if (index > 0) {
-                    message = message.substring(0, index);
-                }
-
-            }
+//            if (parts.length > 4) {
+//                message = parts[4];
+//                int index = message.indexOf('\n');
+//                if (index > 0) {
+//                    message = message.substring(0, index);
+//                }
+//
+//            }
             if (parts.length > 3) {
                 try {
                     offset = Integer.parseInt(parts[3]);

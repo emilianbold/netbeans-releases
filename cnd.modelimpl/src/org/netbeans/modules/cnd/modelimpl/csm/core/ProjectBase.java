@@ -108,6 +108,7 @@ import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.debug.DebugUtils;
 import org.netbeans.modules.cnd.indexing.api.CndTextIndex;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.modelimpl.cache.impl.WeakContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.ClassifierContainer;
 import org.netbeans.modules.cnd.modelimpl.content.project.DeclarationContainerProject;
@@ -156,11 +157,14 @@ import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.repository.api.CacheLocation;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.spi.project.CacheDirectoryProvider;
+import org.netbeans.spi.project.ProjectConfiguration;
+import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
 import org.openide.util.CharSequences;
+import org.openide.util.Lookup;
 import org.openide.util.Lookup.Provider;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -1389,11 +1393,12 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
     }
 
     protected final APTPreprocHandler createEmptyPreprocHandler(CharSequence absPath) {
+        MakeConfiguration projectConfiguration = getMakeConfiguration(findNativeProjectHolder(new HashSet<ProjectBase>(10)));
         StartEntry startEntry = new StartEntry(getFileSystem(), FileContainer.getFileKey(absPath, true).toString(),
                 RepositoryUtils.UIDtoKey(getUID()));
-        return APTHandlersSupport.createEmptyPreprocHandler(startEntry);
+        return APTHandlersSupport.createEmptyPreprocHandler(startEntry, projectConfiguration);
     }
-
+    
     protected final APTPreprocHandler createPreprocHandler(NativeFileItem nativeFile) {
         assert (nativeFile != null);
         APTMacroMap macroMap = getMacroMap(nativeFile);
@@ -1430,7 +1435,8 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
                     ProjectBase.getUniqueName(fileSystem, aPlatformProject),
                     getCacheLocation()));
         }
-        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths, searcher);
+        
+        return APTHandlersSupport.createIncludeHandler(startEntry, sysIncludePaths, userIncludePaths, searcher, getMakeConfiguration(nativeFile.getNativeProject()));
     }
 
     private APTMacroMap getMacroMap(NativeFileItem nativeFile) {
@@ -3354,6 +3360,20 @@ public abstract class ProjectBase implements CsmProject, Persistent, SelfPersist
         }
         assert out != null : "failed creating default ppState for " + interestedFile;
         return out;
+    }
+    
+    private MakeConfiguration getMakeConfiguration(NativeProject project) {
+        MakeConfiguration projectConfiguration = null;
+        if (project != null) {
+            ProjectConfigurationProvider projectConfigurationProvider = project.getProject().getLookup().lookup(ProjectConfigurationProvider.class);
+            if (projectConfigurationProvider != null) {
+                ProjectConfiguration configuration = projectConfigurationProvider.getActiveConfiguration();
+                if (configuration instanceof MakeConfiguration) {
+                    projectConfiguration = (MakeConfiguration) configuration;
+                }
+            }
+        }
+        return projectConfiguration;
     }
 
     final APTFile getAPTLight(CsmFile csmFile) throws IOException {

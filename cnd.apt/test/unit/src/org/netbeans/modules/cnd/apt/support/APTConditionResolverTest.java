@@ -150,7 +150,7 @@ public class APTConditionResolverTest {
 
         public TestWalker(APTFile apt, APTMacroMap macros) {
             super(apt, APTHandlersSupport.createPreprocHandler(macros, 
-                    new APTIncludeHandlerImpl(null, new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), null),
+                    new APTIncludeHandlerImpl(null, new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), new ArrayList<IncludeDirEntry>(0), null, null),
                     true, CharSequences.empty(), CharSequences.empty()), null);
         }
 

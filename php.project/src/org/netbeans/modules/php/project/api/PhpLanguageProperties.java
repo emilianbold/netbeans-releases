@@ -61,7 +61,7 @@ public final class PhpLanguageProperties {
     /**
      * The default value for short tags (&lt?) (<code>{@value #SHORT_TAGS_ENABLED}</code>).
      */
-    public static final boolean SHORT_TAGS_ENABLED = false;
+    public static final boolean SHORT_TAGS_ENABLED = true;
     /**
      * The default value for ASP tags (&lt% and %&gt;) (boolean value of system property <code>netbeans.php.aspTags.enabled</code>).
      */

@@ -934,31 +934,36 @@ public class ProjectProblemsProviders {
                             new Callable<Result>() {
                         @Override
                         public Result call() throws Exception {
-                            if (changeVersion.isDowngradeLevel()) {
-                                final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                for (String p : invalidVersionProps) {
-                                    props.put(p, platformVersion.toString());
-                                }
-                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                                ProjectManager.getDefault().saveProject(FileOwnerQuery.getOwner(helper.getProjectDirectory()));
-                                return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED);
-                            } else {
-                                final JavaPlatform jp = changeVersion.getSelectedPlatform();
-                                if (jp != null) {
-                                    final String antName = jp.getProperties().get("platform.ant.name"); //NOI18N
-                                    if (antName != null) {
+                            return ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Result>(){
+                                @Override
+                                public Result run() throws IOException {
+                                    if (changeVersion.isDowngradeLevel()) {
                                         final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                                        props.setProperty(platformProp, antName);
-                                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
-                                        if (hook != null) {
-                                            hook.platformPropertyUpdated(jp);
+                                        for (String p : invalidVersionProps) {
+                                            props.put(p, platformVersion.toString());
                                         }
-                                        ProjectManager.getDefault().saveProject(project);
+                                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                        ProjectManager.getDefault().saveProject(FileOwnerQuery.getOwner(helper.getProjectDirectory()));
                                         return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED);
+                                    } else {
+                                        final JavaPlatform jp = changeVersion.getSelectedPlatform();
+                                        if (jp != null) {
+                                            final String antName = jp.getProperties().get("platform.ant.name"); //NOI18N
+                                            if (antName != null) {
+                                                final EditableProperties props = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                                                props.setProperty(platformProp, antName);
+                                                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, props);
+                                                if (hook != null) {
+                                                    hook.platformPropertyUpdated(jp);
+                                                }
+                                                ProjectManager.getDefault().saveProject(project);
+                                                return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.RESOLVED);
+                                            }
+                                        }
                                     }
+                                    return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED);
                                 }
-                            }
-                            return ProjectProblemsProvider.Result.create(ProjectProblemsProvider.Status.UNRESOLVED);
+                            });
                         }
                     };
                     final RunnableFuture<Result> result = new FutureTask<Result>(resultFnc);
