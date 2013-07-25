@@ -650,6 +650,12 @@ public final class Utilities {
         return inAnonymousOrLocalClass(parentPath);
     }
 
+    public static boolean isBoolean(TypeMirror type) {
+        return type.getKind() == TypeKind.BOOLEAN
+                || type.getKind() == TypeKind.DECLARED
+                && "java.lang.Boolean".contentEquals(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName()); //NOI18N
+    }
+
     public static Set<Element> getUsedElements(final CompilationInfo info) {
         final Set<Element> ret = new HashSet<Element>();
         final Trees trees = info.getTrees();
