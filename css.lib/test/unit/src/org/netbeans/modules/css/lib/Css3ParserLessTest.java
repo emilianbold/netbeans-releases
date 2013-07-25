@@ -474,7 +474,7 @@ public class Css3ParserLessTest extends CssTestBase {
     }
     
     //https://netbeans.org/bugzilla/show_bug.cgi?id=231698
-    public void testMixinCallPredicate() {
+    public void testMixinDeclarationPredicate() {
         String source =
                 ".mxc(\"param\");\n"
                 + ".next {\n"
