@@ -1,4 +1,4 @@
-<?
+<?php
 
 if (isset($this->record['message'])) {
           $message = $this->record['message'];

@@ -1,4 +1,4 @@
-<?
+<?php
 // If done processing a 'param', append it to the 'params' array. -> manually added
 if (!strcmp($name, 'param')) {
 $this->record['params'][] = array_pop($this->stack);

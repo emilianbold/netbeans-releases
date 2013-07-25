@@ -1,4 +1,4 @@
-<?
+<?php
 $testArray = array(
     'subarray1' => array(
         'field1' => 1,
