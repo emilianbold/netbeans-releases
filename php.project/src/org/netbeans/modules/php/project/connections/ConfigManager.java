@@ -66,7 +66,7 @@ import org.openide.util.NbBundle;
  */
 public final class ConfigManager {
     static final Logger LOGGER = Logger.getLogger(ConfigManager.class.getName());
-    private static final String PROP_DISPLAY_NAME = "$label"; // NOI18N
+    public static final String PROP_DISPLAY_NAME = "$label"; // NOI18N
 
     private final Map<String/*|null*/, Map<String, String/*|null*/>/*|null*/> configs;
     // error messages for configruations
