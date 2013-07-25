@@ -46,7 +46,7 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.modules.kenai.api.KenaiProjectMember;
 import org.netbeans.modules.kenai.collab.chat.ChatNotifications;
 import org.netbeans.modules.kenai.collab.chat.KenaiConnection;
-import org.netbeans.modules.team.ui.spi.MemberHandle;
+import org.netbeans.modules.team.server.ui.spi.MemberHandle;
 import org.openide.util.NbBundle;
 
 /**

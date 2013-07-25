@@ -63,7 +63,7 @@ import org.netbeans.modules.kenai.api.*;
 import org.netbeans.modules.kenai.ui.Utilities;
 import org.netbeans.modules.kenai.ui.api.KenaiUserUI;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
-import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.awt.ActionID;
 import org.openide.awt.TabbedPaneFactory;
 import org.openide.util.*;

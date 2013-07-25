@@ -50,7 +50,7 @@ import java.util.LinkedList;
 import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
-import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
 import org.openide.util.NbBundle;
 
 /**

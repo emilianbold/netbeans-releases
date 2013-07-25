@@ -54,6 +54,61 @@ public class MoveMethodTest extends MoveBaseTest {
         super(name);
     }
     
+    public void test232604() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    /** Something about i */\n"
+                + "    int i(D d, B b) { return b.b; }\n"
+                + "    public void foo() {\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(i(null, new B()));\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public int b = 5;\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        System.out.println(a.i(null, this));\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(a.i(null, b));\n"
+                + "    }\n"
+                + "}\n"));
+        performMove(src.getFileObject("t/A.java"), new int[]{1}, src.getFileObject("t/B.java"), Visibility.PUBLIC, false);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(new B().i(null));\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/B.java", "package t;\n"
+                + "public class B {\n"
+                + "    public int b = 5;\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        System.out.println(i(null));\n"
+                + "    }\n"
+                + "    /** Something about i */\n"
+                + "    public int i(D d) { return this.b; }\n"
+                + "}\n"),
+                new File("t/C.java", "package t;\n"
+                + "public class C {\n"
+                + "    public void foo() {\n"
+                + "        A a = new A();\n"
+                + "        B b = new B();\n"
+                + "        System.out.println(b.i(null));\n"
+                + "    }\n"
+                + "}\n"));
+    }
 
     public void test232902() throws Exception {
         writeFilesAndWaitForScan(src,

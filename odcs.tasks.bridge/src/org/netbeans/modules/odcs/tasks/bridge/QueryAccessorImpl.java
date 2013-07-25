@@ -53,17 +53,17 @@ import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.QueryAccessor;
-import org.netbeans.modules.team.ui.spi.QueryHandle;
-import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryAccessor;
+import org.netbeans.modules.team.server.ui.spi.QueryHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
 import org.openide.util.NbBundle;
 
 /**
  *
  * @author Tomas Stupka, Ondrej Vrabec
  */
-@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.team.ui.spi.QueryAccessor.class)
+@org.openide.util.lookup.ServiceProvider(service = org.netbeans.modules.team.server.ui.spi.QueryAccessor.class)
 public class QueryAccessorImpl extends QueryAccessor<ODCSProject> {
     private QueryHandle naQueryHandle;
 

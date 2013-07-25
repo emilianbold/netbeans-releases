@@ -47,11 +47,11 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
-import org.netbeans.modules.team.ui.util.treelist.LinkButton;
-import org.netbeans.modules.team.ui.util.treelist.ColorManager;
-import org.netbeans.modules.team.ui.util.treelist.LeafNode;
-import org.netbeans.modules.team.ui.util.treelist.ProgressLabel;
-import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.commons.treelist.LinkButton;
+import org.netbeans.modules.team.commons.treelist.ColorManager;
+import org.netbeans.modules.team.commons.treelist.LeafNode;
+import org.netbeans.modules.team.commons.treelist.ProgressLabel;
+import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.openide.util.NbBundle;
 
 /**

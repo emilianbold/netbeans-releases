@@ -175,6 +175,8 @@ public class DarkNimbusTheme {
         UIManager.put("nb.dataview.table.altbackground", new RelativeColor(new Color(0,0,0), new Color(30,30,30), "Table.background")); //NOI18N
         UIManager.put("Table.selectionBackground", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "Table[Enabled+Selected].textBackground")); //NOI18N
         UIManager.put("nb.dataview.table.rollOverRowBackground", new RelativeColor(new Color(0,0,0), new Color(30,30,30), "Table[Enabled+Selected].textBackground"));
+        
+        UIManager.put("selection.highlight", new Color(202, 152, 0));
 
         UIManager.put( "nb.laf.postinstall.callable", new Callable<Object>() { //NOI18N
 
