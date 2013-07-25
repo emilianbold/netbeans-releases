@@ -64,8 +64,8 @@ public class ScriptingSetup extends PerformanceTestCase2 {
         CommonUtilities.closeMemoryToolbar();
     }
 
-    public void testAddTomcatServer() {
-        CommonUtilities.addTomcatServer();
+    public void testAddGlassFishServer() {
+        CommonUtilities.addApplicationServer();
     }
     
     public void testOpenScriptingProject() {
