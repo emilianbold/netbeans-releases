@@ -77,22 +77,26 @@ public class JQueryModel {
     private static JsObject jQuery = null;
     private static JsObject rjQuery = null;
     private static JsFunction globalObject = null;
-    
-    public static  JsObject getGlobalObject(ModelElementFactory modelElementFactory) {
+
+    // XXX this should be synchronized I guess
+    public static JsObject getGlobalObject(ModelElementFactory modelElementFactory) {
         if (skipInTest) {
             return null;
         }
-        File apiFile = InstalledFileLocator.getDefault().locate(JQueryCodeCompletion.HELP_LOCATION, "org.netbeans.modules.javascript2.jquery", false); //NoI18N
-        if (globalObject == null && apiFile != null) {
-            globalObject = modelElementFactory.newGlobalObject(
-                    FileUtil.toFileObject(apiFile), (int) apiFile.length());
-            JsFunction function = new JQFunction(modelElementFactory.newFunction(
-                    (DeclarationScope) globalObject, globalObject, "jQuery", Collections.<String>emptyList())); // NOI18N
-            jQuery =  modelElementFactory.putGlobalProperty(globalObject, function);
-            rjQuery = modelElementFactory.newReference("$", jQuery, false); // NOI18N
-            
-            SelectorsLoader.addToModel(apiFile, modelElementFactory, jQuery);
-            globalObject.addProperty(rjQuery.getName(), rjQuery);
+
+        if (globalObject == null) {
+            File apiFile = InstalledFileLocator.getDefault().locate(JQueryCodeCompletion.HELP_LOCATION, "org.netbeans.modules.javascript2.jquery", false); //NoI18N
+            if (apiFile != null) {
+                globalObject = modelElementFactory.newGlobalObject(
+                        FileUtil.toFileObject(apiFile), (int) apiFile.length());
+                JsFunction function = new JQFunction(modelElementFactory.newFunction(
+                        (DeclarationScope) globalObject, globalObject, "jQuery", Collections.<String>emptyList())); // NOI18N
+                jQuery =  modelElementFactory.putGlobalProperty(globalObject, function);
+                rjQuery = modelElementFactory.newReference("$", jQuery, false); // NOI18N
+
+                SelectorsLoader.addToModel(apiFile, modelElementFactory, jQuery);
+                globalObject.addProperty(rjQuery.getName(), rjQuery);
+            }
         }
         return globalObject;
     }

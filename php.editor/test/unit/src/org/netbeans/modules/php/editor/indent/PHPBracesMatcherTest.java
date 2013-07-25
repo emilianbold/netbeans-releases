@@ -68,7 +68,7 @@ public class PHPBracesMatcherTest extends PHPCodeCompletionTestBase {
 
     private static String wrapAsPhp(String s) {
         // XXX: remove \n
-        return "<?\n" + s + "\n?>";
+        return "<?php\n" + s + "\n?>";
     }
 
     public void testFindMatching2() throws Exception {

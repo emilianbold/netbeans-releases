@@ -1,4 +1,4 @@
-token #0 PHP_OPENTAG <?
+token #0 PHP_OPENTAG <?php
 token #1 WHITESPACE  
 token #2 PHP_FOREACH foreach
 token #3 WHITESPACE  

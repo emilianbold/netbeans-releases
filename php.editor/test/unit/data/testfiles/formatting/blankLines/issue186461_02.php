@@ -1,4 +1,4 @@
-<?
+<?php
 
 echo 'fasfda';  //comment 1
 echo 'fasfda';  //comment 2
