@@ -617,11 +617,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
             fixImportedAttributes(ip, instanceFO);
             instance = create(ip,GlassfishInstanceProvider.getProvider(),false);
-            // Display warning popup message for GlassFish 3.1.2 which is known
-            // to have bug in WS.
-            if (instance.getVersion() == GlassFishVersion.GF_3_1_2) {
-                WarnPanel.gf312WSWarning(instance.getName());
-            }
         } else {
             LOGGER.log(Level.FINER,
                     "GlassFish folder {0} is not a valid install.",

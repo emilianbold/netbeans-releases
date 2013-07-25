@@ -145,7 +145,7 @@ public class KOHtmlExtension extends HtmlExtension {
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
         Document document = context.getResult().getSnapshot().getSource().getDocument(true);
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
-        TokenSequence<HTMLTokenId> ts = tokenHierarchy.tokenSequence(HTMLTokenId.language());
+        TokenSequence<HTMLTokenId> ts = LexerUtils.getTokenSequence(tokenHierarchy, context.getOriginalOffset(), HTMLTokenId.language(), false);
         if (ts != null) {
             int diff = ts.move(context.getOriginalOffset());
             if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
