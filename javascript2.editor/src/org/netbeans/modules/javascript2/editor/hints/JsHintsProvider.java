@@ -43,9 +43,12 @@ package org.netbeans.modules.javascript2.editor.hints;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
@@ -56,6 +59,8 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.Lines;
 import org.openide.util.NbBundle;
 
 /**
@@ -63,6 +68,8 @@ import org.openide.util.NbBundle;
  * @author Petr Pisl
  */
 public class JsHintsProvider implements HintsProvider {
+
+    private static final Logger LOGGER = Logger.getLogger(JsHintsProvider.class.getName());
 
     private volatile boolean cancel = false;
 
@@ -150,7 +157,7 @@ public class JsHintsProvider implements HintsProvider {
         // if in embedded
         if (parserResult.isEmbedded()) {
             String mimeType = ErrorCheckingSupport.getMimeType(parserResult);
-            List<HintFix> defaultFixes = new ArrayList<HintFix>(4);
+            List<HintFix> defaultFixes = new ArrayList<HintFix>(2);
             if (!ErrorCheckingSupport.isErrorCheckingEnabledForFile(parserResult)) {
                 defaultFixes.add(ErrorCheckingSupport.createErrorFixForFile(parserResult.getSnapshot(), true));
             }
@@ -161,25 +168,50 @@ public class JsHintsProvider implements HintsProvider {
 
             if (!errors.isEmpty()) {
                 if (ErrorCheckingSupport.isErrorCheckingEnabled(parserResult, mimeType)) {
-                    unhandled.addAll(errors);
-
+                    List<HintFix> errorFixes = new ArrayList<HintFix>(2);
                     if (ErrorCheckingSupport.isErrorCheckingEnabledForFile(parserResult)) {
-                        defaultFixes.add(ErrorCheckingSupport.createErrorFixForFile(parserResult.getSnapshot(), false));
+                        errorFixes.add(ErrorCheckingSupport.createErrorFixForFile(parserResult.getSnapshot(), false));
                     }
                     if (ErrorCheckingSupport.isErrorCheckingEnabledForMimetype(mimeType)) {
-                        defaultFixes.add(ErrorCheckingSupport.createErrorFixForMimeType(
+                        errorFixes.add(ErrorCheckingSupport.createErrorFixForMimeType(
                                 parserResult.getSnapshot(), mimeType, false));
+                    }
+
+                    Snapshot snapshot = parserResult.getSnapshot();
+                    Lines lines = new Lines(snapshot.getText());
+                    Set<Integer> linesWithHints = new HashSet<Integer>();
+
+                    for (Error error : errors) {
+                        boolean contains = false;
+                        try {
+                            int line = lines.getLineIndex(error.getStartPosition());
+                            contains = !linesWithHints.add(line);
+                        } catch (BadLocationException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                        }
+
+                        int start = snapshot.getOriginalOffset(error.getStartPosition());
+                        int end = snapshot.getOriginalOffset(error.getEndPosition());
+                        Hint h = new Hint(new JsErrorRule(),
+                                error.getDisplayName(),
+                                error.getFile(),
+                                new OffsetRange(start, end),
+                                contains ? Collections.<HintFix>emptyList() : errorFixes,
+                                100);
+                        hints.add(h);
                     }
                 }
             }
 
-            Hint h = new Hint(new JsErrorRule(),
-                    Bundle.MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR(),
-                    parserResult.getSnapshot().getSource().getFileObject(),
-                    new OffsetRange(0, 0),
-                    defaultFixes,
-                    50);
-            hints.add(h);
+            if (!defaultFixes.isEmpty()) {
+                Hint h = new Hint(new JsSwitchRule(),
+                        Bundle.MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR(),
+                        parserResult.getSnapshot().getSource().getFileObject(),
+                        new OffsetRange(0, 0),
+                        defaultFixes,
+                        50);
+                hints.add(h);
+            }
         } else {
             unhandled.addAll(errors);
         }
@@ -213,7 +245,7 @@ public class JsHintsProvider implements HintsProvider {
 
     }
 
-    private static class JsErrorRule implements Rule.ErrorRule {
+    private static class JsSwitchRule implements Rule.ErrorRule {
 
         @Override
         public Set<?> getCodes() {
@@ -225,9 +257,12 @@ public class JsHintsProvider implements HintsProvider {
             return true;
         }
 
+        @NbBundle.Messages({
+            "JsSwitchRule.displayName=Error checking"
+        })
         @Override
         public String getDisplayName() {
-            return "js";
+            return Bundle.JsSwitchRule_displayName();
         }
 
         @Override
@@ -238,6 +273,33 @@ public class JsHintsProvider implements HintsProvider {
         @Override
         public HintSeverity getDefaultSeverity() {
             return HintSeverity.INFO;
+        }
+    }
+
+    // XXX Rule or subclass ?
+    private static class JsErrorRule implements Rule {
+
+        @Override
+        public boolean appliesTo(RuleContext context) {
+            return true;
+        }
+
+        @NbBundle.Messages({
+            "JsErrorRule.displayName=JavaScript Error"
+        })
+        @Override
+        public String getDisplayName() {
+            return Bundle.JsErrorRule_displayName();
+        }
+
+        @Override
+        public boolean showInTasklist() {
+            return true;
+        }
+
+        @Override
+        public HintSeverity getDefaultSeverity() {
+            return HintSeverity.ERROR;
         }
     }
 }
