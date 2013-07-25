@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.apt.support.APTMacroCallback;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.utils.APTIncludeUtils;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.FilePathCache;
 import org.openide.filesystems.FileSystem;
@@ -68,17 +69,22 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
     private final List<IncludeDirEntry> userIncludePaths;
     private final APTFileSearch fileSearch;
     private final FileSystem fileSystem;
+    private final APTIncludeUtils.FilePathResolver generalFilePathResolver;
+    
 //    private static final boolean TRACE = Boolean.getBoolean("apt.trace.resolver");
     
     public APTIncludeResolverImpl(FileSystem fs, CharSequence path, int baseFileIncludeDirIndex,
                                     List<IncludeDirEntry> systemIncludePaths,
-                                    List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch) {
+                                    List<IncludeDirEntry> userIncludePaths, 
+                                    APTFileSearch fileSearch,
+                                    MakeConfiguration projectConfiguration) {
         this.fileSystem = fs;
         this.baseFile = FilePathCache.getManager().getString(path);
         this.systemIncludePaths = systemIncludePaths;
         this.userIncludePaths = userIncludePaths;
         this.baseFileIncludeDirIndex = baseFileIncludeDirIndex;
         this.fileSearch = fileSearch;
+        this.generalFilePathResolver = new APTIncludeUtils.QtPathResolver(projectConfiguration);
 //        if (TRACE) { 
 //            System.err.printf("APTIncludeResolverImpl.ctor %s %s systemIncludePaths: %s\n", fileSystem, path, systemIncludePaths); // NOI18N
 //        }
@@ -124,10 +130,9 @@ public class APTIncludeResolverImpl implements APTIncludeResolver {
             }
             if ( result == null) {
                 int startOffset = includeNext ? baseFileIncludeDirIndex+1 : 0;
-                PathsCollectionIterator paths = 
-                        new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
-                result = APTIncludeUtils.resolveFilePath(paths, includedFile, startOffset);
-                }
+                PathsCollectionIterator paths = new PathsCollectionIterator(userIncludePaths, systemIncludePaths, startOffset);
+                result = generalFilePathResolver.resolve(paths, includedFile, startOffset);
+            }
             if ( result == null && system && !includeNext) {
                 // <system> was skipped above, check now, but not for #include_next
                 result = APTIncludeUtils.resolveFilePath(fileSystem, includedFile, baseFile);
