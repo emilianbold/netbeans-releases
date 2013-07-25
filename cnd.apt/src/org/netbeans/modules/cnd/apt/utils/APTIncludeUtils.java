@@ -200,6 +200,9 @@ public class APTIncludeUtils {
     
     /**
      * This resolver provides a hack for resolving QT headers on MAC OS.
+     * 
+     * In fact it is a way better to parse generated qt makefile and extract paths from it,
+     * but in this case Qt project will be all red until first build.
      */
     public static class QtPathResolver extends FrameworksPathResolver {
         
@@ -266,6 +269,15 @@ public class APTIncludeUtils {
                 
             },
             
+            QtWidgets {
+                
+                @Override
+                public boolean isEnabled(QmakeConfiguration conf) {
+                    return conf.isWidgetsEnabled().getValue();
+                }                
+                
+            },
+            
             QtMultimedia {
                 
                 @Override
@@ -279,7 +291,7 @@ public class APTIncludeUtils {
                 
                 @Override
                 public boolean isEnabled(QmakeConfiguration conf) {
-                    return conf.isGuiEnabled().getValue();
+                    return conf.isNetworkEnabled().getValue();
                 }                
                 
             },
