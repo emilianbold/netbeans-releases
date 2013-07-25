@@ -79,7 +79,7 @@ public class BugtrackingRootNode extends AbstractNode {
     /** The only instance of the BugtrackingRootNode in the system */
     private static BugtrackingRootNode defaultInstance;
     
-    /**
+    /** 
      * Creates a new instance of BugtrackingRootNode
      */
     private BugtrackingRootNode() {

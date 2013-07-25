@@ -61,7 +61,7 @@ import org.netbeans.modules.team.server.ui.spi.SourceHandle;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.mercurial.api.Mercurial;
 import org.netbeans.modules.subversion.api.Subversion;
-import org.netbeans.modules.team.server.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.netbeans.modules.versioning.system.cvss.api.CVS;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

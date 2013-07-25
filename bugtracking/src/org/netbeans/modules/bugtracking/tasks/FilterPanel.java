@@ -47,7 +47,7 @@ import javax.swing.*;
 import javax.swing.event.DocumentListener;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.filter.OpenedCategorizedTaskFilter;
-import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
+import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.netbeans.modules.team.commons.treelist.ColorManager;
 import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
