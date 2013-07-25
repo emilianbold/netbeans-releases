@@ -553,6 +553,10 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("elaboratedTypeForwards.cpp");
     }
     
+    public void testBug233263() throws Exception {
+        performTest("bug233263.cpp");
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

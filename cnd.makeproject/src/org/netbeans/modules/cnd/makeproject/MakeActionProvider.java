@@ -1259,7 +1259,12 @@ public final class MakeActionProvider implements ActionProvider {
         }
 
         if (!ret) {
-            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("ERR_EMPTY_PROJECT"), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(getString("ERR_EMPTY_PROJECT"), NotifyDescriptor.ERROR_MESSAGE)); // NOI18N
+                }
+            });
         }
 
         return ret;

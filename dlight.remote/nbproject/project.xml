@@ -155,6 +155,7 @@
                 <friend>org.netbeans.modules.dlight.previse</friend>
                 <friend>org.netbeans.modules.dlight.remote.impl</friend>
                 <friend>org.netbeans.modules.dlight.uncover</friend>
+                <friend>org.netbeans.modules.remotefs.versioning</friend>
                 <package>org.netbeans.modules.remote.api</package>
                 <package>org.netbeans.modules.remote.api.ui</package>
                 <package>org.netbeans.modules.remote.spi</package>

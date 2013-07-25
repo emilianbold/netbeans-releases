@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.spi;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Collection;
 import java.util.concurrent.Callable;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
@@ -59,6 +60,7 @@ import org.openide.filesystems.FileSystem;
  */
 public interface FileSystemProviderImplementation {
     FileSystem getFileSystem(ExecutionEnvironment env, String root);
+    FileSystem getFileSystem(URI uri);
     String normalizeAbsolutePath(String absPath, ExecutionEnvironment env);
     String normalizeAbsolutePath(String absPath, FileSystem fileSystem);
     FileObject getFileObject(FileObject baseFileObject, String relativeOrAbsolutePath);
@@ -71,6 +73,7 @@ public interface FileSystemProviderImplementation {
     boolean isMine(String absoluteURL);
     boolean isMine(FileSystem fileSystem);
     boolean isMine(File file);
+    boolean isMine(URI uri);
     boolean isAbsolute(String path);
     ExecutionEnvironment getExecutionEnvironment(FileSystem fileSystem);
     boolean waitWrites(ExecutionEnvironment env, Collection<String> failedFiles) throws InterruptedException;
