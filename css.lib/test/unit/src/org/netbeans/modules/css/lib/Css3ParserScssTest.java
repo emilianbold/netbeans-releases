@@ -1457,4 +1457,14 @@ public class Css3ParserScssTest extends CssTestBase {
                 "styleSheet/body/bodyItem/cp_mixin_declaration/cp_mixin_block/declarations/declaration/propertyDeclaration/property");
         assertNotNull(node);
     }
+
+    public void testPercentageInExpression() throws ParseException, BadLocationException {
+        CssParserResult result = TestUtil.parse("$size: 20;\n"
+                + ".clz {\n"
+                + "    font: %/20;\n"
+                + "}");
+        
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+    }
 }
