@@ -124,6 +124,7 @@ public final class Utilities {
     private static String javaCompletionAutoPopupTriggers = CodeCompletionPanel.JAVA_AUTO_COMPLETION_TRIGGERS_DEFAULT;
     private static String javaCompletionSelectors = CodeCompletionPanel.JAVA_COMPLETION_SELECTORS_DEFAULT;
     private static String javadocCompletionAutoPopupTriggers = CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS_DEFAULT;
+    private static String javadocCompletionSelectors = CodeCompletionPanel.JAVADOC_COMPLETION_SELECTORS_DEFAULT;
     
     private static final AtomicBoolean inited = new AtomicBoolean(false);
     private static Preferences preferences;
@@ -151,6 +152,9 @@ public final class Utilities {
             }
             if (settingName == null || CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS.equals(settingName)) {
                 javadocCompletionAutoPopupTriggers = preferences.get(CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS, CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS_DEFAULT);
+            }
+            if (settingName == null || CodeCompletionPanel.JAVADOC_COMPLETION_SELECTORS.equals(settingName)) {
+                javadocCompletionSelectors = preferences.get(CodeCompletionPanel.JAVADOC_COMPLETION_SELECTORS, CodeCompletionPanel.JAVADOC_COMPLETION_SELECTORS_DEFAULT);
             }
             if (settingName == null || CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST.equals(settingName)) {
                 String blacklist = preferences.get(CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST, CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST_DEFAULT);
@@ -309,6 +313,11 @@ public final class Utilities {
     public static String getJavadocCompletionAutoPopupTriggers() {
         lazyInit();
         return javadocCompletionAutoPopupTriggers;
+    }
+
+    public static String getJavadocCompletionSelectors() {
+        lazyInit();
+        return javadocCompletionSelectors;
     }
 
     static private final AtomicReference<Collection<String>> excludeRef = new AtomicReference<Collection<String>>();
