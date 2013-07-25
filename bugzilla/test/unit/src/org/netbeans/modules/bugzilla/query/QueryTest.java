@@ -44,6 +44,7 @@ package org.netbeans.modules.bugzilla.query;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import org.netbeans.modules.bugzilla.*;
@@ -56,14 +57,13 @@ import java.util.logging.Level;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.junit.RandomlyFails;
-import org.netbeans.modules.bugtracking.api.Issue;
 import org.netbeans.modules.bugtracking.spi.QueryProvider;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.issue.BugzillaIssue;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
-import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.util.test.MockLookup;
+import static org.osgi.util.measurement.Unit.m;
 
 /**
  *
@@ -99,7 +99,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         LogHandler h = new LogHandler("Finnished populate", LogHandler.Compare.STARTS_WITH);
 
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary);
-        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), p, true, false, true);
+        BugzillaQuery q = new BugzillaQuery(QUERY_NAME + ts, QueryTestUtil.getRepository(), p, true, false, true);
         ts = System.currentTimeMillis();
         h.waitUntilDone();
 
@@ -139,7 +139,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         // query for issue1
         String p =  MessageFormat.format(PARAMETERS_FORMAT, summary1);
-        BugzillaQuery q = new BugzillaQuery(QUERY_NAME, QueryTestUtil.getRepository(), p, true, false, true);
+        BugzillaQuery q = new BugzillaQuery(QUERY_NAME + ts, QueryTestUtil.getRepository(), p, true, false, true);
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
         
         Collection<BugzillaIssue> bugzillaIssues = q.getIssues();
@@ -234,7 +234,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
     }
 
     @RandomlyFails
-    public void testSaveAterSearch() throws MalformedURLException, CoreException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InterruptedException {
+    public void testSaveAterSearch() throws MalformedURLException, CoreException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InterruptedException, NoSuchFieldException {
         long ts = System.currentTimeMillis();
         String summary = "somary" + ts;
         BugzillaRepository repository = QueryTestUtil.getRepository();
@@ -274,7 +274,9 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         nl.reset();
         String name = QUERY_NAME + ts;
         h = new LogHandler(" saved", LogHandler.Compare.ENDS_WITH);
-        save(c, name); // save button
+        q.setName(name);
+        q.setSaved(true);
+        save(c); // save button
         h.waitUntilDone();
         assertTrue(q.isSaved());
         // create a new repo instance and check if our query is between them
@@ -288,7 +290,7 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertTrue(bl);
     }
 
-    public void testSaveBeforeSearch() throws MalformedURLException, CoreException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InterruptedException {
+    public void testSaveBeforeSearch() throws MalformedURLException, CoreException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, InterruptedException, NoSuchFieldException {
         long ts = System.currentTimeMillis();
         String summary = "somary" + ts;
         String id1 = TestUtil.createIssue(QueryTestUtil.getRepository(), summary);
@@ -307,12 +309,15 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
 
         TestQueryNotifyListener nl = new TestQueryNotifyListener(q);
         nl.reset();
+        
+        q.setName(QUERY_NAME + ts);
+        q.setSaved(true);
         QueryListener ql = new QueryListener();
         q.addPropertyChangeListener(ql);
 
         h = new LogHandler("refresh finish", LogHandler.Compare.STARTS_WITH); // we wan't to check
-                                                                              // if the refresh is made after save
-        save(c, QUERY_NAME + ts); // save button
+                                                                              // if the refresh is made after save  
+        save(c); // save button
         h.waitUntilDone();
         assertEquals(1, ql.saved);
 
@@ -338,11 +343,16 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         Collection<BugzillaQuery> qs = QueryTestUtil.getRepository().getQueries();
         int queriesCount = qs.size();
 
+
+        q.setName(QUERY_NAME + ts);
+        q.setSaved(true);        
+        
         QueryListener ql = new QueryListener();
         q.addPropertyChangeListener(ql);
+        
         // save
         h = new LogHandler(" saved", LogHandler.Compare.ENDS_WITH);
-        save(c, QUERY_NAME + ts);
+        save(c);
         h.waitUntilDone();
         assertEquals(1, ql.saved);
 
@@ -356,10 +366,10 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         assertEquals(queriesCount, qs.size());
     }
 
-    private void save(QueryController c, String name) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        Method m = c.getClass().getDeclaredMethod("save", String.class);
+    private void save(QueryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        Method m = c.getClass().getDeclaredMethod("onSave", boolean.class);
         m.setAccessible(true);
-        m.invoke(c, name);
+        m.invoke(c, false);
     }
 
     private void remove(QueryController c) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
@@ -374,10 +384,13 @@ public class QueryTest extends NbTestCase implements TestConstants, QueryConstan
         m.invoke(c);
     }
 
-    private void populate(QueryController c, String summary) {
+    private void populate(QueryController c, String summary) throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException {
         QueryPanel p = (QueryPanel) c.getComponent();
         p.summaryTextField.setText(summary);
         p.productList.getSelectionModel().clearSelection(); // no product
+        Field f = c.getClass().getDeclaredField("populated");
+        f.setAccessible(true);
+        f.set(c, true);
     }
 
     private void cleanupStoredIssues() throws NoSuchFieldException, IllegalArgumentException, IllegalAccessException, ClassNotFoundException, NoSuchMethodException, NoSuchMethodException, InstantiationException, InvocationTargetException {
