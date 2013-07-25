@@ -408,30 +408,32 @@ public class PlatformsCustomizer extends javax.swing.JPanel implements PropertyC
         JComponent target = messageArea;
         JComponent owner = messageArea;
         JavaPlatform platform = pNode.getLookup().lookup(JavaPlatform.class);
-        if (platform != null) {
-            this.removeButton.setEnabled (canRemove(platform, pNode.getLookup().lookup(DataObject.class)));
-            if (!platform.getInstallFolders().isEmpty()) {
-                this.platformName.setText(pNode.getDisplayName());
-                for (FileObject installFolder : platform.getInstallFolders()) {
-                    File file = FileUtil.toFile(installFolder);
-                    if (file != null) {
-                        this.platformHome.setText (file.getAbsolutePath());
+        if (pNode != getExplorerManager().getRootContext()) {
+            if (platform != null) {
+                this.removeButton.setEnabled (canRemove(platform, pNode.getLookup().lookup(DataObject.class)));
+                if (!platform.getInstallFolders().isEmpty()) {
+                    this.platformName.setText(pNode.getDisplayName());
+                    for (FileObject installFolder : platform.getInstallFolders()) {
+                        File file = FileUtil.toFile(installFolder);
+                        if (file != null) {
+                            this.platformHome.setText (file.getAbsolutePath());
+                        }
                     }
+                    target = clientArea;
+                    owner = jPanel1;
                 }
-                target = clientArea;
-                owner = jPanel1;
             }
+            Component component = null;
+            if (pNode.hasCustomizer()) {
+                component = pNode.getCustomizer();
+            }
+            if (component == null) {
+                final PropertySheet sp = new PropertySheet();
+                sp.setNodes(new Node[] {pNode});
+                component = sp;
+            }
+            addComponent(target, component);
         }
-        Component component = null;
-        if (pNode.hasCustomizer()) {
-            component = pNode.getCustomizer();
-        }
-        if (component == null) {
-            final PropertySheet sp = new PropertySheet();
-            sp.setNodes(new Node[] {pNode});
-            component = sp;
-        }
-        addComponent(target, component);
         if (lastSize != null) {
             final Dimension newSize = owner.getPreferredSize();
             final Dimension updatedSize = new Dimension(
