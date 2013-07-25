@@ -111,13 +111,15 @@ public class J2SELibrarySourceJavadocAttacher implements SourceJavadocAttacherIm
                             root,
                             lib.getURIContent(volume),
                             new SelectFolder(volume, lib.getName(), baseFolder),
-                            new Convertor(volume, baseFolder));
+                            new Convertor(volume, baseFolder),
+                            null);
                     } else if (volume == J2SELibraryTypeProvider.VOLUME_TYPE_JAVADOC) {
                         selected = SourceJavadocAttacherUtil.selectJavadoc(
                             root,
                             lib.getURIContent(volume),
                             new SelectFolder(volume, lib.getName(), baseFolder),
-                            new Convertor(volume, baseFolder));
+                            new Convertor(volume, baseFolder),
+                            null);
                     } else {
                         throw new IllegalStateException();
                     }
