@@ -296,6 +296,9 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
+                if(!OneProjectDashboardPicker.this.isShowing()) {
+                    return;
+                }
                 final MegaMenu mm = MegaMenu.create();
                 if(server != null) {
                     mm.setInitialSelection(server, currentProjectNode);
