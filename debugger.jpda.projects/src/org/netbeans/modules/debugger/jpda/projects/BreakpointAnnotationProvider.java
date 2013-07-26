@@ -313,8 +313,8 @@ public class BreakpointAnnotationProvider extends DebuggerManagerAdapter
         }
         
         private void refreshAnnotation(JPDABreakpoint b) {
+            removeAnnotations(b);
             if (remove) {
-                removeAnnotations(b);
                 if (!add) {
                     breakpointToAnnotations.remove(b);
                 }

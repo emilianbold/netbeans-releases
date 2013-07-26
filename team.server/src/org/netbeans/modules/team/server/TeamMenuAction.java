@@ -72,7 +72,7 @@ public final class TeamMenuAction extends AbstractAction implements DynamicMenuC
 
     @ActionID(category = CATEGORY_TEAM, id = "org.netbeans.modules.team.server.ui.TeamMenuAction")
     @ActionRegistration(displayName = "#CTL_TeamServer", lazy = false)
-    @ActionReference(path = "Menu/Versioning", position = 50)
+    @ActionReference(path = "Menu/Versioning", position = 180, separatorBefore = 179, separatorAfter = 181)
     public static synchronized TeamMenuAction getDefault () {
         if (inst == null) {
             inst = new TeamMenuAction();
@@ -86,7 +86,7 @@ public final class TeamMenuAction extends AbstractAction implements DynamicMenuC
     @Override
     public JComponent[] getMenuPresenters () {
         return synchMenuPresenters(null);
-    }
+    }   
 
     @Override
     public JComponent[] synchMenuPresenters (JComponent[] items) {

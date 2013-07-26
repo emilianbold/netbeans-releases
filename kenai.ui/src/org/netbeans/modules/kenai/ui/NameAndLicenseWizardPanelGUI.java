@@ -48,7 +48,6 @@
 
 package org.netbeans.modules.kenai.ui;
 
-import org.netbeans.modules.kenai.ui.impl.TeamServerProviderImpl;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -82,14 +81,12 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.PopupMenuEvent;
 import javax.swing.event.PopupMenuListener;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiLicense;
-import org.netbeans.modules.team.server.ui.common.AddInstanceAction;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
 import org.openide.awt.Mnemonics;
@@ -97,9 +94,10 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import org.netbeans.modules.kenai.ui.api.KenaiServer;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -141,6 +139,9 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 
         panel = pnl;
         initComponents();
+
+        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
+        proxyConfigButton.setVisible(ide != null && ide.providesProxyConfiguration());
         
         Kenai kenai = panel.getKenai();
         assert kenai != null;
@@ -553,7 +554,10 @@ public class NameAndLicenseWizardPanelGUI extends JPanel {
 }//GEN-LAST:event_loginButtonActionPerformed
 
     private void proxyConfigButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_proxyConfigButtonActionPerformed
-        OptionsDisplayer.getDefault().open("General"); // NOI18N
+        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
+        if(ide != null && ide.providesProxyConfiguration()) {
+            ide.openProxyConfiguration();
+        }
     }//GEN-LAST:event_proxyConfigButtonActionPerformed
 
     private void projectLicenseComboBoxPopupMenuWillBecomeVisible(PopupMenuEvent evt) {//GEN-FIRST:event_projectLicenseComboBoxPopupMenuWillBecomeVisible

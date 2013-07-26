@@ -43,12 +43,14 @@
 package org.netbeans.modules.bugzilla.commands;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.MalformedURLException;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
+import org.netbeans.modules.bugzilla.util.FileUtils;
 import org.netbeans.modules.mylyn.util.BugtrackingCommand;
 
 /**
@@ -69,7 +71,8 @@ public class GetAttachmentCommand extends BugtrackingCommand {
 
     @Override
     public void execute() throws CoreException, IOException, MalformedURLException {
-        Bugzilla.getInstance().getClient(repository).getAttachmentData(id, os, new NullProgressMonitor());
+        InputStream is = Bugzilla.getInstance().getClient(repository).getAttachmentData(id, new NullProgressMonitor());
+        FileUtils.copyStream(is, os);
     }
 
     @Override

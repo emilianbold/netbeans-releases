@@ -120,33 +120,32 @@ public class FileUtils {
         if (!directory.exists() && !directory.mkdirs()) {
             throw new IOException("Could not create directory '" + directory + "'"); // NOI18N
         }
+        copyStream(inputStream, createOutputStream(targetFile));
+    }
 
-        OutputStream outputStream = null;
+    public static void copyStream(InputStream inputStream, OutputStream outputStream) throws IOException {
+        if (inputStream == null || outputStream == null) {
+            throw new NullPointerException("sourcStream and targetFile must not be null"); // NOI18N
+        }
         try {            
-            outputStream = createOutputStream(targetFile);
             try {
                 byte[] buffer = new byte[32768];
-                for (int readBytes = inputStream.read(buffer);
-                     readBytes > 0;
-                     readBytes = inputStream.read(buffer)) {
+                for (int readBytes = inputStream.read(buffer); readBytes > 0; readBytes = inputStream.read(buffer)) {
                     outputStream.write(buffer, 0, readBytes);
                 }
             }
             catch (IOException ex) {
-                targetFile.delete();
+                outputStream.close();
                 throw ex;
             }
         }
         finally {
-            if (inputStream != null) {
                 try {
                     inputStream.close();
                 }
                 catch (IOException ex) {
                     // ignore
                 }
-            }
-            if (outputStream != null) {
                 try {
                     outputStream.close();
                 }
@@ -155,7 +154,6 @@ public class FileUtils {
                 }
             }
         }
-    }
 
     /**
      * Reads the data from the <code>file</code> and returns it as an array of bytes.

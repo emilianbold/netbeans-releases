@@ -1,9 +1,9 @@
-Name: Mylyn Commons NET library
-Version: 3.8.2
+Name: Mylyn Tasks Core library
+Version: 3.9.0
 License: EPL-v10
-OSR: 5852
+OSR: 10108
 Origin: http://www.eclipse.org/mylyn/
-Description: Mylyn Commons NET library
+Description: Mylyn Tasks Core library
 
 Eclipse Public License - v 1.0
 

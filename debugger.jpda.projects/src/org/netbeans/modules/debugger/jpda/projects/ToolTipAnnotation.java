@@ -119,6 +119,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         /*"class",*/    "finally", 	"long", 	"strictfp", 	"volatile",
         "const",        "float", 	"native", 	"super", 	"while",
     }));
+    private static final int MAX_TOOLTIP_TEXT = 100000;
 
     private Part lp;
     private EditorCookie ec;
@@ -268,6 +269,7 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
             }
         }
 
+        toolTipText = truncateLongText(toolTipText);
         if (tooltipVariable != null) {
             final ObjectVariable var = tooltipVariable;
             final String toolTip = toolTipText;
@@ -309,6 +311,13 @@ public class ToolTipAnnotation extends Annotation implements Runnable {
         } else {
             firePropertyChange (PROP_SHORT_DESCRIPTION, null, toolTipText);
         }
+    }
+    
+    private static String truncateLongText(String text) {
+        if (text.length() > MAX_TOOLTIP_TEXT) {
+            text = text.substring(0, MAX_TOOLTIP_TEXT) + "...";
+        }
+        return text;
     }
 
     @Override
