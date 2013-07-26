@@ -107,6 +107,10 @@ public abstract class BaseProjectPathSupport extends BasePathSupport {
      * !! This method creates references in the project !!
      */
     public String[] encodeToStrings(Iterator<Item> classpath) {
+        return encodeToStrings(classpath, true);
+    }
+
+    public String[] encodeToStrings(Iterator<Item> classpath, boolean createReferences) {
         List<String> result = new ArrayList<>();
         while (classpath.hasNext()) {
             Item item = classpath.next();
@@ -116,8 +120,13 @@ public abstract class BaseProjectPathSupport extends BasePathSupport {
                     if (reference == null) {
                         // new file
                         File file = new File(item.getFilePath());
-                        // pass null as expected artifact type to always get file reference
-                        reference = referenceHelper.createForeignFileReference(file, null);
+                        if (createReferences) {
+                            // pass null as expected artifact type to always get file reference
+                            reference = referenceHelper.createForeignFileReference(file, null);
+                        } else {
+                            // simply use file path
+                            reference = file.getPath();
+                        }
                         item.property = reference;
                     }
                     break;
