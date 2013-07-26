@@ -296,7 +296,19 @@ public class CasualDiff {
         String originalText = isCUT ? origText : origText.substring(start, end);
         userInfo.putAll(td.diffInfo);
 
-        return DiffUtilities.diff(originalText, resultSrc, start);
+        return td.checkDiffs(DiffUtilities.diff(originalText, resultSrc, start));
+    }
+    
+    private List<Diff> checkDiffs(List<Diff> theDiffs) {
+        if (theDiffs != null) {
+            for (Diff d : theDiffs) {
+                if (diffContext.positionConverter.getOriginalPosition(d.getPos()) > diffContext.textLength || 
+                    diffContext.positionConverter.getOriginalPosition(d.getEnd()) > diffContext.textLength) {
+                    LOG.warning("Invalid diff: " + d);
+                }
+            }
+        }
+        return theDiffs;
     }
 
     public static Collection<Diff> diff(Context context,
@@ -331,7 +343,7 @@ public class CasualDiff {
         String originalText = td.diffContext.origText.substring(start, end);
         userInfo.putAll(td.diffInfo);
 
-        return DiffUtilities.diff(originalText, resultSrc, start);
+        return td.checkDiffs(DiffUtilities.diff(originalText, resultSrc, start));
     }
 
     public int endPos(JCTree t) {
@@ -4917,6 +4929,7 @@ public class CasualDiff {
             sb.append(type.toString());
             sb.append(") pos=");
             sb.append(pos);
+            sb.append(", end=").append(endOffset);
             if (trailing)
                 sb.append(" trailing comment");
             sb.append("\n");
