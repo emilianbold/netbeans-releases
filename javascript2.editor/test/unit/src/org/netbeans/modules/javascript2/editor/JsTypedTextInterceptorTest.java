@@ -330,6 +330,22 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("window.console.log(\"^\")", 'a', "window.console.log(\"a^\")", null, true);
     }
 
+    public void testIssue233292_1() throws Exception {
+        insertChar("var a = \"test\"^", ';', "var a = \"test\";^");
+    }
+    
+    public void testIssue233292_2() throws Exception {
+        insertChar("a.replace(\"aaa\"^)", ',', "a.replace(\"aaa\",^)");
+    }
+    
+    public void testIssue233292_3() throws Exception {
+        insertChar("test(\"asasa\", {pes:\"1\"^)", '}', "test(\"asasa\", {pes:\"1\"}^)");
+    }
+
+    public void testIssue233292_4() throws Exception {
+        insertChar("var a = {\n    pes: \"1\"^\n}\n", ',', "var a = {\n    pes: \"1\",^\n}\n");
+    }
+
     public void testIssue189443() throws Exception {
         insertChar("function x() {\n"
             + "for(var j in child)^\n"
