@@ -595,16 +595,28 @@ class DiffSidebar extends JPanel implements DocumentListener, ComponentListener,
         textComponent.addComponentListener(this);
         foldHierarchy.addFoldHierarchyListener(this);
         refreshOriginalContent();
-        if (fileObject != null) {
-            fileObject.addFileChangeListener(this);
+        final FileObject fo = fileObject;
+        if (fo != null) {
+            DiffSidebarManager.getInstance().createDiffSidebarTask(new Runnable() {
+                @Override
+                public void run () {
+                    fileObject.addFileChangeListener(DiffSidebar.this);
+                }
+            }).schedule(0);
         }
     }
 
     private void shutdown() {
         assert SwingUtilities.isEventDispatchThread();
         refreshDiffTask.cancel();
-        if (fileObject != null) {
-            fileObject.removeFileChangeListener(this);
+        final FileObject fo = fileObject;
+        if (fo != null) {
+            DiffSidebarManager.getInstance().createDiffSidebarTask(new Runnable() {
+                @Override
+                public void run () {
+                    fileObject.removeFileChangeListener(DiffSidebar.this);
+                }
+            }).schedule(0);
         }
         foldHierarchy.removeFoldHierarchyListener(this);
         textComponent.removeComponentListener(this);
