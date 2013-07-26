@@ -59,6 +59,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import javax.accessibility.AccessibleContext;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
@@ -71,25 +72,24 @@ import javax.swing.ListSelectionModel;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
-import javax.swing.event.CellEditorListener;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
-import org.netbeans.installer.product.RegistryType;
-import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.RegistryNode;
+import org.netbeans.installer.product.RegistryType;
 import org.netbeans.installer.product.components.Group;
+import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.product.components.StatusInterface;
 import org.netbeans.installer.product.dependencies.Conflict;
 import org.netbeans.installer.product.dependencies.Requirement;
 import org.netbeans.installer.utils.ErrorManager;
 import org.netbeans.installer.utils.ResourceUtils;
+import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.UiUtils;
 import org.netbeans.installer.utils.helper.Dependency;
 import org.netbeans.installer.utils.helper.Status;
-import org.netbeans.installer.utils.StringUtils;
 import org.netbeans.installer.utils.helper.swing.NbiButton;
 import org.netbeans.installer.utils.helper.swing.NbiCheckBox;
 import org.netbeans.installer.utils.helper.swing.NbiDialog;
@@ -99,7 +99,9 @@ import org.netbeans.installer.utils.helper.swing.NbiList;
 import org.netbeans.installer.utils.helper.swing.NbiPanel;
 import org.netbeans.installer.utils.helper.swing.NbiScrollPane;
 import org.netbeans.installer.utils.helper.swing.NbiTextPane;
-import static org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi.*;
+import static org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi.EMPTY_ICON;
+import static org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi.ERROR_ICON;
+import static org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.ErrorMessagePanelSwingUi.WARNING_ICON;
 
 
 /**
@@ -109,10 +111,10 @@ import static org.netbeans.installer.wizard.components.panels.ErrorMessagePanel.
 public class NbCustomizeSelectionDialog extends NbiDialog {
     /////////////////////////////////////////////////////////////////////////////////
     // Instance
-    private NbWelcomePanel panel;
-    private Runnable callback;
+    private final NbWelcomePanel panel;
+    private final Runnable callback;
     
-    private List<RegistryNode> registryNodes;
+    private final List<RegistryNode> registryNodes;
     
     private NbiLabel messageLabel;
     
@@ -133,9 +135,9 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     
     private NbiPanel buttonsPanel;
     
-    private Icon errorIcon;
-    private Icon warningIcon;
-    private Icon emptyIcon;
+    private final Icon errorIcon;
+    private final Icon warningIcon;
+    private final Icon emptyIcon;
     
     public NbCustomizeSelectionDialog(
             final NbiFrame parent,
@@ -212,6 +214,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 ListSelectionModel.SINGLE_SELECTION);
         componentsList.getSelectionModel().addListSelectionListener(
                 new ListSelectionListener() {
+            @Override
             public void valueChanged(ListSelectionEvent event) {
                 updateDescription();
             }
@@ -244,6 +247,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         componentsList.getActionMap().put(
                 KEYBOARD_TOGGLE_ACTION_NAME,
                 new AbstractAction(KEYBOARD_TOGGLE_ACTION_NAME) {
+            @Override
             public void actionPerformed(ActionEvent event) {
                 ComponentsListModel model =
                         (ComponentsListModel) componentsList.getModel();
@@ -291,6 +295,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         // okButton /////////////////////////////////////////////////////////////////
         okButton = new NbiButton();
         okButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent event) {
                 okButtonPressed();
             }
@@ -299,6 +304,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         // cancelButton /////////////////////////////////////////////////////////////
         cancelButton = new NbiButton();
         cancelButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent event) {
                 cancelButtonPressed();
             }
@@ -366,7 +372,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 0, 0));                           // padx, pady - ???
         
         // this /////////////////////////////////////////////////////////////////////
-        setTitle(panel.getProperty(panel.CUSTOMIZE_TITLE_PROPERTY));
+        setTitle(panel.getProperty(NbWelcomePanel.CUSTOMIZE_TITLE_PROPERTY));
         setModal(true);
         setDefaultCloseOperation(NbiDialog.DO_NOTHING_ON_CLOSE);
         addWindowListener(new WindowAdapter() {
@@ -380,6 +386,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 KeyStroke.getKeyStroke(KeyEvent.VK_ESCAPE, 0, true),
                 CANCEL_ACTION_NAME);
         getRootPane().getActionMap().put(CANCEL_ACTION_NAME, new AbstractAction(){
+            @Override
             public void actionPerformed(ActionEvent e) {
                 cancelButtonPressed();
             }
@@ -393,18 +400,18 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     
     private void initialize() {
         if (!isThereAnythingVisibleToInstall()) {
-            messageLabel.setText(panel.getProperty(panel.MESSAGE_UNINSTALL_PROPERTY));
+            messageLabel.setText(panel.getProperty(NbWelcomePanel.MESSAGE_UNINSTALL_PROPERTY));
         } else if (!isThereAnythingVisibleToUninstall()) {
-            messageLabel.setText(panel.getProperty(panel.MESSAGE_INSTALL_PROPERTY));
+            messageLabel.setText(panel.getProperty(NbWelcomePanel.MESSAGE_INSTALL_PROPERTY));
         } else {
-            messageLabel.setText(panel.getProperty(panel.MESSAGE_INSTALL_PROPERTY));
+            messageLabel.setText(panel.getProperty(NbWelcomePanel.MESSAGE_INSTALL_PROPERTY));
         }
         
         componentsList.setModel(
                 new ComponentsListModel(registryNodes));
         
         descriptionPane.setContentType(
-                panel.getProperty(panel.COMPONENT_DESCRIPTION_CONTENT_TYPE_PROPERTY));
+                panel.getProperty(NbWelcomePanel.COMPONENT_DESCRIPTION_CONTENT_TYPE_PROPERTY));
         
         if (!isThereAnythingVisibleToInstall()) {
             sizesLabel.setVisible(false);
@@ -414,8 +421,8 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         updateSizes();
         updateErrorMessage();
         
-        okButton.setText(panel.getProperty(panel.OK_BUTTON_TEXT_PROPERTY));
-        cancelButton.setText(panel.getProperty(panel.CANCEL_BUTTON_TEXT_PROPERTY));
+        okButton.setText(panel.getProperty(NbWelcomePanel.OK_BUTTON_TEXT_PROPERTY));
+        cancelButton.setText(panel.getProperty(NbWelcomePanel.CANCEL_BUTTON_TEXT_PROPERTY));
 	
         componentsList.setVisibleRowCount(componentsList.getModel().getSize());
         componentsList.getUI().getPreferredSize(componentsList);
@@ -439,7 +446,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             descriptionPane.setText(node.getDescription());
         } else {
             descriptionPane.setText(panel.getProperty(
-                    panel.DEFAULT_COMPONENT_DESCRIPTION_PROPERTY));
+                    NbWelcomePanel.DEFAULT_COMPONENT_DESCRIPTION_PROPERTY));
         }
         
         descriptionPane.setCaretPosition(0);
@@ -455,18 +462,18 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             downloadSize += product.getDownloadSize();
         }
         
-        String template = panel.getProperty(panel.SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY);
+        String template = panel.getProperty(NbWelcomePanel.SIZES_LABEL_TEXT_NO_DOWNLOAD_PROPERTY);
         for (RegistryNode remoteNode: registry.getNodes(RegistryType.REMOTE)) {
             if (remoteNode.isVisible()) {
-                template = panel.getProperty(panel.SIZES_LABEL_TEXT_PROPERTY);
+                template = panel.getProperty(NbWelcomePanel.SIZES_LABEL_TEXT_PROPERTY);
             }
         }
         
         if (installationSize == 0) {
             sizesLabel.setText(StringUtils.format(
                     template,
-                    panel.getProperty(panel.DEFAULT_INSTALLATION_SIZE_PROPERTY),
-                    panel.getProperty(panel.DEFAULT_DOWNLOAD_SIZE_PROPERTY)));
+                    panel.getProperty(NbWelcomePanel.DEFAULT_INSTALLATION_SIZE_PROPERTY),
+                    panel.getProperty(NbWelcomePanel.DEFAULT_DOWNLOAD_SIZE_PROPERTY)));
         } else {
             sizesLabel.setText(StringUtils.format(
                     template,
@@ -483,18 +490,18 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         final List<Product> toUninstall =
                 registry.getProducts(Status.TO_BE_UNINSTALLED);
         
-        if ((toInstall.size() == 0) && (toUninstall.size() == 0)) {
+        if ((toInstall.isEmpty()) && (toUninstall.isEmpty())) {
             if (isThereAnythingVisibleToInstall() &&
                     Boolean.getBoolean(Registry.SUGGEST_INSTALL_PROPERTY)) {
                 return isVisibleNetBeansInstalled()?
-                    panel.getProperty(panel.ERROR_NO_RUNTIMES_INSTALL_ONLY_PROPERTY):
-                    panel.getProperty(panel.ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
+                    panel.getProperty(NbWelcomePanel.ERROR_NO_RUNTIMES_INSTALL_ONLY_PROPERTY):
+                    panel.getProperty(NbWelcomePanel.ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
             }
             if (isThereAnythingVisibleToUninstall() &&
                     Boolean.getBoolean(Registry.SUGGEST_UNINSTALL_PROPERTY)) {
-                return panel.getProperty(panel.ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY);
+                return panel.getProperty(NbWelcomePanel.ERROR_NO_CHANGES_UNINSTALL_ONLY_PROPERTY);
             }
-            return panel.getProperty(panel.ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
+            return panel.getProperty(NbWelcomePanel.ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
         }
         
         for (Product product: toInstall) {
@@ -513,7 +520,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 
                 if (!satisfied) {
                     return StringUtils.format(
-                            panel.getProperty(panel.ERROR_REQUIREMENT_INSTALL_PROPERTY),
+                            panel.getProperty(NbWelcomePanel.ERROR_REQUIREMENT_INSTALL_PROPERTY),
                             getProductNameByGroup(product),
                             getProductNameByGroup(requirees.get(0)));
                 }
@@ -536,7 +543,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 
                 if (!satisfied) {
                     return StringUtils.format(
-                            panel.getProperty(panel.ERROR_CONFLICT_INSTALL_PROPERTY),
+                            panel.getProperty(NbWelcomePanel.ERROR_CONFLICT_INSTALL_PROPERTY),
                             getProductNameByGroup(product),
                             getProductNameByGroup(unsatisfiedConflict));
                 }
@@ -564,7 +571,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                         
                         if (!satisfied) {
                             return StringUtils.format(
-                                    panel.getProperty(panel.ERROR_REQUIREMENT_UNINSTALL_PROPERTY),
+                                    panel.getProperty(NbWelcomePanel.ERROR_REQUIREMENT_UNINSTALL_PROPERTY),
                                     product.getDisplayName(),
                                     dependent.getDisplayName());
                         }
@@ -669,10 +676,9 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
     /////////////////////////////////////////////////////////////////////////////////
     // Inner Classes
     public class ComponentsListModel implements ListModel {
-        private List<RegistryNode> registryNodes;
-        private Map<Product, Status> initialStatuses;
-        
-        private List<ListDataListener> listeners;
+        private final List<RegistryNode> registryNodes;
+        private final Map<Product, Status> initialStatuses;        
+        private final List<ListDataListener> listeners;
         
         public ComponentsListModel(List<RegistryNode> registryNodes) {
             this.registryNodes = registryNodes;
@@ -689,20 +695,24 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             }
         }
         
+        @Override
         public int getSize() {
             return registryNodes.size();
         }
         
+        @Override
         public Object getElementAt(int index) {
             return registryNodes.get(index);
         }
         
+        @Override
         public void addListDataListener(ListDataListener listener) {
             synchronized (listeners) {
                 listeners.add(listener);
             }
         }
         
+        @Override
         public void removeListDataListener(ListDataListener listener) {
             synchronized (listeners) {
                 listeners.remove(listener);
@@ -765,11 +775,8 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         }
     }
     
-    public class ComponentsListCellRenderer implements ListCellRenderer {
-        private List<CellEditorListener> listeners =
-                new LinkedList<CellEditorListener>();
-        
-        private NbiPanel panel;
+    public class ComponentsListCellRenderer implements ListCellRenderer {    
+        private RegistryNodePanel panel;
         private NbiCheckBox checkBox;
         private NbiLabel titleLabel;
         
@@ -779,13 +786,14 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             initComponents();
         }
         
+        @Override
         public Component getListCellRendererComponent(
                 JList list,
                 Object value,
                 int index,
                 boolean selected,
                 boolean focus) {
-            currentIndex = index;
+            currentIndex = index;                        
             
             if (selected) {
                 titleLabel.setOpaque(true);
@@ -812,7 +820,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                         (node.getUid().equals(NB_IDE_GROUP_UID))) {
                     titleLabel.setFont(titleLabel.getFont().deriveFont(Font.PLAIN));
                     checkBox.setVisible(true);
-                    checkBox.setToolTipText(tooltip);                    
+                    checkBox.setToolTipText(tooltip);
                     switch (((StatusInterface)value).getStatus()) {
                         case INSTALLED:                         
                             titleLabel.setText(StringUtils.format(
@@ -837,13 +845,13 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                 } else if (node instanceof Group) {                   
                     titleLabel.setText(title);                
                     titleLabel.setToolTipText(tooltip);                    
-                    titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));                                
+                    titleLabel.setFont(titleLabel.getFont().deriveFont(Font.BOLD));
                     checkBox.setVisible(false);
                 }
             } 
 
-            titleLabel.setPreferredSize(titleLabel.getMinimumSize());
-
+            titleLabel.setPreferredSize(titleLabel.getMinimumSize());                       
+            
             // l&f-specific tweaks
             if (UIManager.getLookAndFeel().getID().equals("GTK")) {
                 panel.setOpaque(false);
@@ -855,7 +863,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
         // private //////////////////////////////////////////////////////////////////
         private void initComponents() {
             // panel ////////////////////////////////////////////////////////////////
-            panel = new NbiPanel();
+            panel = new RegistryNodePanel();                        
             panel.setLayout(new GridBagLayout());
             panel.setOpaque(false);
             panel.addMouseListener(new MouseAdapter() {
@@ -865,7 +873,7 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                             checkBox.getBounds().contains(event.getPoint())) {
                         ComponentsListModel model =
                                 (ComponentsListModel) componentsList.getModel();
-                        
+            
                         model.toggleSelection(currentIndex);
                     }
                 }
@@ -887,6 +895,9 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
             titleLabel.setFocusable(false);
             titleLabel.setPreferredSize(preferredSize);
             
+            panel.setCheckBox(checkBox);
+            panel.setTitleLabel(titleLabel);
+            
             // panel ////////////////////////////////////////////////////////////////
             panel.add(checkBox, new GridBagConstraints(
                     0, 0,                             // x, y
@@ -905,6 +916,31 @@ public class NbCustomizeSelectionDialog extends NbiDialog {
                     new Insets(0, 0, 0, 0),           // padding
                     0, 0));                           // padx, pady - ???);
         }
+    }
+    
+    private class RegistryNodePanel extends NbiPanel {
+        
+        private NbiCheckBox checkBox;
+        private NbiLabel titleLabel;
+        
+        public void setCheckBox(NbiCheckBox checkBox) {
+            this.checkBox = checkBox;
+        }
+
+        public void setTitleLabel(NbiLabel titleLabel) {
+            this.titleLabel = titleLabel;
+        }                
+        
+        @Override
+        public AccessibleContext getAccessibleContext() {
+            if (checkBox != null && checkBox.isVisible()) {
+                return checkBox.getAccessibleContext();
+            } else if (titleLabel != null) {
+                return titleLabel.getAccessibleContext();
+            } else {
+                return super.getAccessibleContext();
+            }
+        }        
     }
     
     /////////////////////////////////////////////////////////////////////////////////
