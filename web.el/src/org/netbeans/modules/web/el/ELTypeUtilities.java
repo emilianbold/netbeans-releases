@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.*;
-import java.lang.reflect.ParameterizedType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -156,7 +155,7 @@ public final class ELTypeUtilities {
      * @return the element or {@code null}.
      */
     public static Element resolveElement(CompilationContext info, final ELElement elem, final Node target) {
-        return resolveElement(info, elem, target, Collections.<AstIdentifier, Node>emptyMap());
+        return resolveElement(info, elem, target, Collections.<AstIdentifier, Node>emptyMap(), Collections.<VariableInfo>emptyList());
     }
 
     /**
@@ -165,8 +164,8 @@ public final class ELTypeUtilities {
      * @param target
      * @return the element or {@code null}.
      */
-    public static Element resolveElement(CompilationContext info, final ELElement elem, final Node target, Map<AstIdentifier, Node> assignments) {
-        TypeResolverVisitor typeResolver = new TypeResolverVisitor(info, elem, target, assignments);
+    public static Element resolveElement(CompilationContext info, final ELElement elem, final Node target, Map<AstIdentifier, Node> assignments, List<VariableInfo> variableInfos) {
+        TypeResolverVisitor typeResolver = new TypeResolverVisitor(info, elem, target, assignments, variableInfos);
         elem.getNode().accept(typeResolver);
         return typeResolver.getResult();
     }
@@ -362,7 +361,7 @@ public final class ELTypeUtilities {
         return false;
     }
 
-    public static boolean isRawObjectReference(CompilationContext info, Node target) {
+    public static boolean isRawObjectReference(CompilationContext info, Node target, boolean directly) {
 //        Parse tree for #{cc.attrs.muj} expression
 //
 //        CompositeExpression
@@ -372,6 +371,7 @@ public final class ELTypeUtilities {
 //                    PropertySuffix[attrs]
 //                    PropertySuffix[muj]
 
+        int repeation = directly ? 2 : Integer.MAX_VALUE;
         do {
             if (target instanceof AstIdentifier) {
                 for (ImplicitObject each : getImplicitObjects(info)) {
@@ -380,12 +380,12 @@ public final class ELTypeUtilities {
                         return true;
                     }
                 }
-            } 
-            
+            }
+
             target = NodeUtil.getSiblingBefore(target);
-            
-        } while (target != null);
-        
+            repeation--;
+        } while (target != null && repeation > 0);
+
         return false;
     }
     
@@ -726,14 +726,16 @@ public final class ELTypeUtilities {
         private final ELElement elem;
         private final Node target;
         private final Map<AstIdentifier, Node> assignments;
+        private final List<ELVariableResolver.VariableInfo> variableInfos;
         private Element result;
         private CompilationContext info;
 
-        public TypeResolverVisitor(CompilationContext info, ELElement elem, Node target, Map<AstIdentifier, Node> assignments) {
+        public TypeResolverVisitor(CompilationContext info, ELElement elem, Node target, Map<AstIdentifier, Node> assignments, List<ELVariableResolver.VariableInfo> variableInfos) {
             this.info = info;
             this.elem = elem;
             this.target = target;
             this.assignments = assignments;
+            this.variableInfos = variableInfos;
         }
 
         public Element getResult() {
@@ -777,6 +779,19 @@ public final class ELTypeUtilities {
                                     }
                                     // it's a managed bean in a scope
                                     propertyType = getTypeFor(info, clazz);
+                                }
+
+                                // cc.attrs.<xxx> resolving - XXX better way how to detect this special case?
+                                if ("cc".equals(node.getImage())) {
+                                    if ("attrs".equals(child.getImage())) {
+                                        propertyType = info.info().getElements().getTypeElement("java.lang.Object"); //NOI18N
+                                    } else {
+                                        for (VariableInfo property : variableInfos) {
+                                            if (child.getImage().equals(property.name)) {
+                                                propertyType = info.info().getElements().getTypeElement(property.clazz);
+                                            }
+                                        }
+                                    }
                                 }
 
                                 // maps
