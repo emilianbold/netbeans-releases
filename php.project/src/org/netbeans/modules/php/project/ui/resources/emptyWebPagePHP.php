@@ -1,8 +1,8 @@
+${doctype}
 <#assign licenseFirst = "<!--">
 <#assign licensePrefix = "">
 <#assign licenseLast = "-->">
 <#include "${project.licensePath}">
-${doctype}
 <html>
     <head>
         <meta charset="${project.encoding}">
