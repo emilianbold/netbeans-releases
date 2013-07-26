@@ -292,11 +292,12 @@ public class ToolTipAnnotation extends Annotation
         }
         column = Math.min(column, t.length());
         int identStart = column;
+        boolean wasDot = false;
         while (identStart > 0) {
             char c = t.charAt (identStart - 1);
             if (Character.isJavaIdentifierPart(c) ||
-                c == '.' ||
-                c == ']' || c == '[') {
+                (c == '.' && (wasDot = true)) ||        // Please note that '=' is intentional here.
+                (wasDot && (c == ']' || c == '['))) {
                 
                 identStart--;
             } else {

@@ -7,11 +7,25 @@
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
-                            <file name="org-netbeans-modules-html-knockout-htmlcoloring.xml" url="htmlFontsColors.xml">
+                            <file name="org-netbeans-modules-html-knockout-coloring.xml" url="fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.knockout.Bundle"/>
                             </file>
                         </folder>
                     </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-html-knockout-coloring-citylights.xml" url="fontsColors_dark.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.angular.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>                    
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-html-knockout-coloring-bluetheme.xml" url="fontsColors_dark.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.angular.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>                                        
                 </folder>
             </folder>
             
@@ -19,7 +33,7 @@
                 <folder name="FontsColors">
                     <folder name="NetBeans">
                         <folder name="Defaults">
-                            <file name="org-netbeans-modules-html-knockout-coloring.xml" url="fontsColors.xml">
+                            <file name="org-netbeans-modules-html-knockout-coloring.xml" url="fontsColors_ko.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.html.knockout.Bundle"/>
                             </file>
                         </folder>

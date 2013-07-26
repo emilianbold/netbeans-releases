@@ -1,2 +1,2 @@
-<div style="color: red"><? echo "hello"; ?></div>
+<div style="color: red"><?php echo "hello"; ?></div>
 

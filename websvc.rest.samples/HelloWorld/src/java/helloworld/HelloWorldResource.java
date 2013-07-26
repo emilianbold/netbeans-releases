@@ -60,7 +60,7 @@ import javax.ws.rs.Consumes;
  */
 
 @Stateless
-@Path("/helloWorld")
+@Path("/greeting")
 public class HelloWorldResource {
 
     @EJB
@@ -71,7 +71,7 @@ public class HelloWorldResource {
      */
     @GET
     @Produces("text/html")
-    public String getXml() {
+    public String getGreeting() {
         return "<html><body><h1>Hello "+nameStorage.getName()+"!</h1></body></html>";
     }
 
@@ -82,7 +82,7 @@ public class HelloWorldResource {
      */
     @PUT
     @Consumes("text/plain")
-    public void putXml(String content) {
+    public void setName(String content) {
         nameStorage.setName(content);
     }
 }

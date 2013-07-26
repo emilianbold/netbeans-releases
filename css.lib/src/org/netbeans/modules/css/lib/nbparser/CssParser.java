@@ -75,7 +75,7 @@ public class CssParser extends Parser {
     private static final CharSequence TEMPLATING_MARK = "@@@"; //NOI18N
     private static final Logger LOG = Logger.getLogger(CssParser.class.getSimpleName());
     
-    private boolean cancelled;
+    private final AtomicBoolean cancelled = new AtomicBoolean();
     private final String topLevelSnapshotMimetype;
 
     //cache
@@ -93,7 +93,7 @@ public class CssParser extends Parser {
 
     @Override
     public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        cancelled = false;
+        cancelled.set(false);
         if (snapshot == null) {
             return;
         }
@@ -111,12 +111,12 @@ public class CssParser extends Parser {
             NbParseTreeBuilder builder = new NbParseTreeBuilder(source);
             ExtCss3Parser parser = new ExtCss3Parser(tokenstream, builder, mimeType);
             
-            if(cancelled) {
+            if(cancelled.get()) {
                 return ;
             }
             parser.styleSheet();
 
-            if(cancelled) {
+            if(cancelled.get()) {
                 return ;
             }
             
@@ -130,7 +130,7 @@ public class CssParser extends Parser {
             filterProblemsInVirtualCode(snapshot, problems_local);
             filterTemplatingProblems(snapshot, problems_local);
 
-            if(cancelled) {
+            if(cancelled.get()) {
                 return ;
             }
             
@@ -148,13 +148,13 @@ public class CssParser extends Parser {
 
     @Override
     public CssParserResult getResult(Task task) throws ParseException {
-        return cancelled || (tree == null) ? null : new CssParserResult(snapshot, tree, problems);
+        return cancelled.get() || (tree == null) ? null : new CssParserResult(snapshot, tree, problems);
     }
 
     @Override
     public void cancel(CancelReason reason, SourceModificationEvent event) {
-        if (CancelReason.SOURCE_MODIFICATION_EVENT == reason) {
-            cancelled = true;
+        if (CancelReason.SOURCE_MODIFICATION_EVENT == reason && event.sourceChanged()) {
+            cancelled.set(true);
             tree = null;
             problems = null;
             snapshot = null;

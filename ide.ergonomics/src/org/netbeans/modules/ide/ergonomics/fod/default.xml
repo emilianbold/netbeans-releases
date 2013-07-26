@@ -84,15 +84,6 @@
             <file name="Debug_hidden"/>
             <file name="Navigator_hidden"/>
             <file name="Other_hidden"/>
-            <folder name="Output">
-                <file name="AnalyzerAction.shadow_hidden"/>
-                <file name="CallGraphAction.shadow_hidden"/>
-                <file name="FindUsagesOpenAction.shadow_hidden"/>
-                <file name="GsfTestRunnerResultWindowOpenAction.shadow_hidden"/>
-                <file name="RefactoringPreviewOpenAction.shadow_hidden"/>
-                <file name="ResultViewOpenAction.shadow_hidden"/>
-                <file name="org-netbeans-modules-versioning-util-OpenVersioningOutputAction.shadow_hidden"/>
-            </folder>
             <file name="Profile_hidden"/>
             <file name="ShowPaletteAction.shadow_hidden"/>
             <file name="org-netbeans-core-actions-GlobalPropertiesAction.shadow_hidden"/>

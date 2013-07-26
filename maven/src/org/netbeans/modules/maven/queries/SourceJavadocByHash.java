@@ -55,19 +55,12 @@ import org.openide.util.NbPreferences;
 
 /**
  * Utility to maintain sources and Javadoc associated with JARs outside the repo (#205649).
+ * More or less deprecated since issue 215971 was implemented.
  */
 class SourceJavadocByHash {
 
     private static Preferences node(boolean javadoc) {
         return NbPreferences.forModule(SourceJavadocByHash.class).node(javadoc ? "attachedJavadoc" : "attachedSource");
-    }
-
-    public static void register(@NonNull URL root, @NonNull File[] result, boolean javadoc) {
-        StringBuilder sb = new StringBuilder();
-        for (File res : result) {
-            sb.append("||").append(res.getAbsolutePath());
-        }
-        node(javadoc).put(root.toString(), sb.substring(2));
     }
 
     public static @CheckForNull File[] find(@NonNull URL root, boolean javadoc) {

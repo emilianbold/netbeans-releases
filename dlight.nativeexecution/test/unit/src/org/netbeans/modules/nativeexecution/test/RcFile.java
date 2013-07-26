@@ -56,6 +56,7 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.openide.util.Utilities;
 
 /**
  * A common class for reading rc files in format
@@ -135,10 +136,20 @@ public final class RcFile {
         return (sect == null) ? Collections.<String>emptyList() : sect.getKeys();
     }
 
-    public RcFile(File file) throws IOException, FormatException {
+    public static RcFile createDummy() throws IOException, FormatException {
+        return new RcFile(new File(Utilities.isWindows() ? "NUL" : "/dev/null"), false);
+    }
+
+    public static RcFile create(File file) throws IOException, FormatException {
+        return new RcFile(file, true);
+    }
+
+    private RcFile(File file, boolean read) throws IOException, FormatException {
         this.file = file;
         try {
-            read();
+            if (read) {
+                read();
+            }
         } catch (FileNotFoundException e) {
             // no rcFile, no problems ;-)
         }

@@ -77,8 +77,4 @@ made subject to such option by the copyright holder.
     <!-- undeclared foreign tags -->
     <fontcolor name="mod-class" waveUnderlined="red"/> 
 
-<!--     AngularJS attribute 
-    <fontcolor name="mod-constructor" foreColor="ff0000" bgColor="888888"> 
-        <font style="bold" />
-    </fontcolor>-->
 </fontscolors>

@@ -165,8 +165,6 @@ if [ -z "$jdkhome" ] ; then
         elif [ -f "/Library/Java/JavaVirtualMachines/jdk1.7.0_10.jdk/Contents/Home/bin/java" ] ; then
             jdkhome="/Library/Java/JavaVirtualMachines/jdk1.7.0_10.jdk/Contents/Home"
         fi
-
-        echo Found jdkhome=$jdkhome
         ;;
         *) javac=`which javac`
         if [ -z "$javac" ] ; then

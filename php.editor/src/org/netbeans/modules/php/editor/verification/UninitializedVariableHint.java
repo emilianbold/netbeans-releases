@@ -142,7 +142,7 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
         private final FileObject fileObject;
         private final Stack<ASTNode> parentNodes = new Stack<>();
         private final Map<ASTNode, List<Variable>> initializedVariablesAll = new HashMap<>();
-        private final Map<ASTNode, List<Variable>> uninitializedVariablesAll = new HashMap<ASTNode, List<Variable>>();
+        private final Map<ASTNode, List<Variable>> uninitializedVariablesAll = new HashMap<>();
         private final List<Hint> hints = new ArrayList<>();
         private final Model model;
         private final Map<String, Set<BaseFunctionElement>> invocationCache = new HashMap<>();
@@ -203,8 +203,11 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
 
         @Override
         public void visit(LambdaFunctionDeclaration node) {
+            scan(node.getLexicalVariables());
             parentNodes.push(node);
-            super.visit(node);
+            initializeExpressions(node.getLexicalVariables());
+            scan(node.getFormalParameters());
+            scan(node.getBody());
             parentNodes.pop();
         }
 
@@ -380,6 +383,12 @@ public class UninitializedVariableHint extends HintRule implements CustomisableR
                 retval = identifier.getName();
             }
             return retval;
+        }
+
+        private void initializeExpressions(List<Expression> expressions) {
+            for (Expression expression : expressions) {
+                initializeExpression(expression);
+            }
         }
 
         private void initializeExpression(Expression expression) {

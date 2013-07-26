@@ -6,9 +6,10 @@
         javax.servlet.http.*
         javax.servlet.jsp.*
       dependants:
+        /WEB-INF/META-INF/c.tld
       taglibsMap:
         tag library: /WEB-INF/META-INF/c.tld
-            tlibversion : null
+            tlibversion : 1.0
             jspversion  : 1.2
             shortname   : c
             urn         : http://java.sun.com/jstl/core
@@ -57,7 +58,7 @@
                   class    : org.apache.taglibs.standard.tag.el.core.WhenTag
                   attribs  : [test]
         tag library: http://java.sun.com/jsp/jstl/fmt
-            tlibversion : null
+            tlibversion : 1.1
             jspversion  : 2.0
             shortname   : fmt
             urn         : http://java.sun.com/jsp/jstl/fmt

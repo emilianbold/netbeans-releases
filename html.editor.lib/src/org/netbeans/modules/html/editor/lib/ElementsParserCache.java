@@ -171,7 +171,10 @@ public class ElementsParserCache {
             return getElements().get(index - getStartIndex());
         }
 
-        public List<Element> getElements() {
+        //synchronized as the new CacheBlockContent(...) creates a new instance
+        //of ElementsParser which however operates on shared TokenSequence and
+        //repositions it.
+        public synchronized List<Element> getElements() {
             CacheBlockContent block = blockReference.get();
             if (block == null) {
                 //reload the content

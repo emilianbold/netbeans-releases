@@ -54,7 +54,7 @@ import javax.swing.JList;
 import javax.swing.ListCellRenderer;
 import javax.swing.border.EmptyBorder;
 import org.netbeans.modules.kenai.api.KenaiManager;
-import org.netbeans.modules.team.ui.common.ColorManager;
+import org.netbeans.modules.team.server.ui.common.ColorManager;
 import org.openide.awt.HtmlRenderer;
 import org.openide.util.ImageUtilities;
 

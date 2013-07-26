@@ -55,10 +55,10 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.QueryHandle;
-import org.netbeans.modules.team.ui.spi.QueryResultHandle;
-import org.netbeans.modules.team.ui.spi.QueryResultHandle.ResultType;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryResultHandle.ResultType;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 

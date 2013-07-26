@@ -107,7 +107,7 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
 
     private static String wrapAsPhp(String s) {
         // XXX: remove \n
-        return "<?\n" + s + "\n?>";
+        return "<?php\n" + s + "\n?>";
     }
 
     @Override

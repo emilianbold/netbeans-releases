@@ -3104,17 +3104,19 @@ public class JavaCompletionProvider implements CompletionProvider {
             } else if (tm.getKind() == TypeKind.DECLARED) {
                 dts = Collections.singleton((DeclaredType)tm);
             }
-            ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
-                public boolean accept(Element e, TypeMirror t) {
-                    return e.getKind() == FIELD && e.getSimpleName().contentEquals(CLASS_KEYWORD);
-                }
-            };
-            for (DeclaredType dt : dts) {
-                if (startsWith(env, dt.asElement().getSimpleName().toString())) {
-                    for (Element ee : controller.getElementUtilities().getMembers(dt, acceptor)) {
-                        results.add(JavaCompletionItem.createStaticMemberItem(env.getController(), dt, ee, asMemberOf(ee, dt, types), false, anchorOffset, elements.isDeprecated(ee), env.addSemicolon(), env.getWhiteList()));
+            if (dts != null) {
+                ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+                    public boolean accept(Element e, TypeMirror t) {
+                        return e.getKind() == FIELD && e.getSimpleName().contentEquals(CLASS_KEYWORD);
                     }
-                }                                    
+                };
+                for (DeclaredType dt : dts) {
+                    if (startsWith(env, dt.asElement().getSimpleName().toString())) {
+                        for (Element ee : controller.getElementUtilities().getMembers(dt, acceptor)) {
+                            results.add(JavaCompletionItem.createStaticMemberItem(env.getController(), dt, ee, asMemberOf(ee, dt, types), false, anchorOffset, elements.isDeprecated(ee), env.addSemicolon(), env.getWhiteList()));
+                        }
+                    }                                    
+                }
             }
         }
 
@@ -4289,7 +4291,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (!name.contentEquals(ERROR)) {
                         boolean isStatic = variableElement.getModifiers().contains(Modifier.STATIC);
                         String setterName = CodeStyleUtils.computeSetterName(name, isStatic, codeStyle);
-                        String getterName = CodeStyleUtils.computeGetterName(name, variableElement.asType().getKind() == TypeKind.BOOLEAN, isStatic, codeStyle);
+                        String getterName = CodeStyleUtils.computeGetterName(name, Utilities.isBoolean(variableElement.asType()), isStatic, codeStyle);
                         if ((prefix == null || startsWith(env, getterName)) && !GeneratorUtils.hasGetter(controller, te, variableElement, methods, codeStyle)) {
                             results.add(JavaCompletionItem.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, getterName, false));
                         }

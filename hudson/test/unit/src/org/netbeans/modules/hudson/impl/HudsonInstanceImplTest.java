@@ -199,4 +199,25 @@ public class HudsonInstanceImplTest {
             HudsonManager.removeInstance(hi);
         }
     }
+
+    @Test
+    public void testIgnoreNullListener() {
+        String url = "http://testIgnoreNullListener/";
+        HudsonInstanceImpl i = HudsonInstanceImpl.createHudsonInstance(
+                "testIgnoreNullListener", url, "1");
+        if (i == null) {
+            i = HudsonManagerImpl.getDefault().getInstance(url);
+        }
+        if (i == null) {
+            System.out.println("Cannot get instance, skipping this test.");
+            return;
+        }
+        try {
+            i.addHudsonChangeListener(null);
+            i.addHudsonChangeListener(null);
+            i.terminate(); // shouldn't throw any exception
+        } finally {
+            HudsonManager.removeInstance(i);
+        }
+    }
 }

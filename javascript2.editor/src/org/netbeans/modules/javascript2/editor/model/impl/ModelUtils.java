@@ -803,10 +803,10 @@ public class ModelUtils {
                         Collection<? extends IndexResult> indexResults = null;        
                         for (String fqn : prototypeChain) {
                             // at first look at the properties of the object
-                            indexResults = jsIndex.findFQN(fqn + "." + name); //NOI18N
+                            indexResults = jsIndex.findByFqn(fqn + "." + name, JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES); //NOI18N
                             if (indexResults.isEmpty()) {
                                 // if the property was not found, try to look at the prototype of the object
-                                indexResults = jsIndex.findFQN(fqn + ".prototype." + name); //NOI18N
+                                indexResults = jsIndex.findByFqn(fqn + ".prototype." + name, JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES); //NOI18N
                             }
                             if(!indexResults.isEmpty()) {
                                 // if the property / method was already found, we don't need to continue. 
@@ -970,7 +970,7 @@ public class ModelUtils {
         if (!alreadyProcessed.contains(fqn)) {
             alreadyProcessed.add(fqn);
             if (!fqn.startsWith("@")) {
-                Collection<? extends IndexResult> indexResults = jsIndex.findFQN(fqn);
+                Collection<? extends IndexResult> indexResults = jsIndex.findByFqn(fqn, JsIndex.FIELD_ASSIGNMENTS);
                 boolean hasAssignments = false;
                 boolean isType = false;
                 for (IndexResult indexResult: indexResults) {
@@ -1048,7 +1048,7 @@ public class ModelUtils {
             Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
             for (IndexedElement property : properties) {
                 if(ModelUtils.PROTOTYPE.equals(property.getName())) {  //NOI18N
-                    Collection<? extends IndexResult> indexResults = jsIndex.findFQN(property.getFQN());
+                    Collection<? extends IndexResult> indexResults = jsIndex.findByFqn(property.getFQN(), JsIndex.FIELD_ASSIGNMENTS);
                     for (IndexResult indexResult : indexResults) {
                         Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
                         for (TypeUsage typeUsage : assignments) {

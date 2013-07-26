@@ -127,6 +127,7 @@ class HTMLDocView extends JEditorPane {
             
             javax.swing.text.html.StyleSheet css = new javax.swing.text.html.StyleSheet();
             java.awt.Font f = getFont();
+            setFont(f);
             css.addRule(new StringBuffer("body { font-size: ").append(f.getSize()) // NOI18N
                         .append("; font-family: ").append(f.getName()).append("; }").toString()); // NOI18N
             css.addStyleSheet(htmlKit.getStyleSheet());

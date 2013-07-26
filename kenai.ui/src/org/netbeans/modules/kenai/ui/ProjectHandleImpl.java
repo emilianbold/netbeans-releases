@@ -47,7 +47,7 @@ import java.beans.PropertyChangeListener;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.util.Exceptions;
 import org.openide.util.WeakListeners;
 

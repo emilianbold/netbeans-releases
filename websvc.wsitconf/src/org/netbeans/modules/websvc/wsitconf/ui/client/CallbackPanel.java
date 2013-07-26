@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.client;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dialog;
 import java.text.NumberFormat;
@@ -66,7 +65,6 @@ import org.netbeans.modules.websvc.wsitmodelext.security.proprietary.CallbackHan
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.openide.filesystems.FileObject;
@@ -167,7 +165,7 @@ public class CallbackPanel extends SectionInnerPanel {
         tstampff.setDefaultFormatter(timestampFormatter);
 
         initComponents();
-        
+        /* issue 232988: the background color issues with dark metal L&F
         samlHandlerField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         samlHandlerLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         iterationLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -175,6 +173,7 @@ public class CallbackPanel extends SectionInnerPanel {
         devDefaultsChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         cbTimestampLbl.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         cbTimestampField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        */
         cbTimestampField.setFocusLostBehavior(JFormattedTextField.COMMIT_OR_REVERT);
 
         inSync = true;
@@ -264,9 +263,10 @@ public class CallbackPanel extends SectionInnerPanel {
             NodeSectionPanel panel = view.getActivePanel();
             active = (panel == null) ? false : panel.isActive();
         }
-
+        /* issue 232988: the background color issues with dark metal L&F
         Color c = active ? SectionVisualTheme.getSectionActiveBackgroundColor() : SectionVisualTheme.getDocumentBackgroundColor();
         credPanel.setBackground(c);
+        */
         refreshLayout();
     }
 

@@ -72,8 +72,9 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
-import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
+import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.openide.awt.ActionReferences;
+import org.openide.util.RequestProcessor;
 
 /**
  * Top component which displays something.
@@ -378,22 +379,30 @@ public final class DashboardTopComponent extends TopComponent {
 
     private class FilterTimerListener implements ActionListener {
 
+        private final RequestProcessor RP = new RequestProcessor(FilterTimerListener.class.getName());
+
         @Override
         public void actionPerformed(ActionEvent e) {
             if (e.getSource() == filterTimer) {
                 filterTimer.stop();
-                if (!filterPanel.getFilterText().isEmpty()) {
-                    DisplayTextTaskFilter newTaskFilter = new DisplayTextTaskFilter(filterPanel.getFilterText());
-                    int hits = dashboard.updateTaskFilter(displayTextTaskFilter, newTaskFilter);
-                    displayTextTaskFilter = newTaskFilter;
-                    filterPanel.setHitsCount(hits);
-                } else {
-                    if (displayTextTaskFilter != null) {
-                        dashboard.removeTaskFilter(displayTextTaskFilter, true);
-                        displayTextTaskFilter = null;
+                RP.post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        if (!filterPanel.getFilterText().isEmpty()) {
+                            DisplayTextTaskFilter newTaskFilter = new DisplayTextTaskFilter(filterPanel.getFilterText());
+                            int hits = dashboard.updateTaskFilter(displayTextTaskFilter, newTaskFilter);
+                            displayTextTaskFilter = newTaskFilter;
+                            filterPanel.setHitsCount(hits);
+                        } else {
+                            if (displayTextTaskFilter != null) {
+                                dashboard.removeTaskFilter(displayTextTaskFilter, true);
+                                displayTextTaskFilter = null;
+                            }
+                            filterPanel.clear();
+                        }
                     }
-                    filterPanel.clear();
-                }
+                });
             }
         }
     }

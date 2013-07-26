@@ -291,6 +291,7 @@ public class ElementsParserCacheTest extends CslTestBase {
             public void run() {
                 Iterator<Element> ei = parserCache.createElementsIterator();
                 while(ei.hasNext()) {
+                    System.out.println("T1"+ei.next());
                 }
             }
         });
@@ -299,6 +300,7 @@ public class ElementsParserCacheTest extends CslTestBase {
             public void run() {
                 Iterator<Element> ei = parserCache.createElementsIterator();
                 while(ei.hasNext()) {
+                    System.out.println("T2"+ei.next());
                 }
             }
         });
@@ -307,6 +309,7 @@ public class ElementsParserCacheTest extends CslTestBase {
             public void run() {
                 Iterator<Element> ei = parserCache.createElementsIterator();
                 while(ei.hasNext()) {
+                    System.out.println("T3"+ei.next());
                 }
             }
         });

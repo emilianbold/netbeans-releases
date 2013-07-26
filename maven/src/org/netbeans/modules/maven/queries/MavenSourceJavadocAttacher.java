@@ -42,12 +42,15 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.artifact.repository.ArtifactRepository;
 import org.apache.maven.artifact.resolver.AbstractArtifactResolutionException;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.java.queries.SourceJavadocAttacher.AttachmentListener;
 import org.netbeans.api.progress.aggregate.AggregateProgressFactory;
 import org.netbeans.api.progress.aggregate.AggregateProgressHandle;
 import org.netbeans.api.progress.aggregate.ProgressContributor;
@@ -60,31 +63,23 @@ import org.netbeans.modules.maven.indexer.api.RepositoryQueries;
 import org.netbeans.spi.java.queries.SourceJavadocAttacherImplementation;
 import org.openide.awt.StatusDisplayer;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle.Messages;
-import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.openide.util.lookup.ServiceProvider;
 
-@ServiceProvider(service=SourceJavadocAttacherImplementation.class, position=200)
-public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplementation {
-
-    private static final RequestProcessor RP = new RequestProcessor(MavenSourceJavadocAttacher.class.getName(), 5);
-
-    @Override public boolean attachSources(@NonNull URL root, @NonNull AttachmentListener listener) throws IOException {
-        return attach(root, listener, false);
-    }
-
-    @Override public boolean attachJavadoc(@NonNull URL root, @NonNull AttachmentListener listener) throws IOException {
-        return attach(root, listener, true);
-    }
+@ServiceProvider(service=SourceJavadocAttacherImplementation.Definer.class)
+public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplementation.Definer {
+    private static final Logger LOG = Logger.getLogger(MavenSourceJavadocAttacher.class.getName());
 
     @Messages({"# {0} - artifact ID", "attaching=Attaching {0}", 
         "LBL_DOWNLOAD_REPO=Downloading source jar from known Maven repositories for local repository file.",
         "LBL_DOWNLOAD_SHA1=Downloading source jar from known Maven repositories for jar with SHA1 match in Maven repository indexes."
     })
-    private boolean attach(@NonNull final URL root, @NonNull final AttachmentListener listener, final boolean javadoc) throws IOException {
+    private List<? extends URL> attach(@NonNull final URL root, @NonNull Callable<Boolean> cancel, final boolean javadoc) throws Exception {
         final File file = FileUtil.archiveOrDirForURL(root);
         if (file == null) {
-            return false;
+            return Collections.emptyList();
         }
         String[] coordinates = MavenFileOwnerQueryImpl.findCoordinates(file);
         final boolean byHash = coordinates == null;
@@ -92,12 +87,16 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
         // without the indexes present locally, we return fast but nothing, only the next invokation after indexing finish is accurate..
         NBVersionInfo defined = null;
         StatusDisplayer.Message message = null;
+        if (Boolean.TRUE.equals(cancel.call())) {
+            return Collections.emptyList();
+        }
         if (!byHash) { //from local repository, known coordinates and we always return a maven SFBQ.Result for it, no reason to let people choose a jar via the default SJAI
             //TODO classifier?
             defined = new NBVersionInfo(null, coordinates[0], coordinates[1], coordinates[2], null, null, null, null, null);
             message = StatusDisplayer.getDefault().setStatusText(Bundle.LBL_DOWNLOAD_REPO(), StatusDisplayer.IMPORTANCE_ERROR_HIGHLIGHT);
         } else if (file.isFile()) {
-            List<NBVersionInfo> candidates = RepositoryQueries.findBySHA1Result(file, null).getResults();
+            RepositoryQueries.Result<NBVersionInfo> res = RepositoryQueries.findBySHA1Result(file, null);
+            List<NBVersionInfo> candidates = res.getResults();
             for (NBVersionInfo nbvi : candidates) {
                 if (javadoc ? nbvi.isJavadocExists() : nbvi.isSourcesExists()) {
                     defined = nbvi;
@@ -105,82 +104,112 @@ public class MavenSourceJavadocAttacher implements SourceJavadocAttacherImplemen
                     break;
                 }
             }
-        } else {
-            return false;
+            if (defined == null && res.isPartial()) {
+                //TODO should we wait?
+            }
         }
-        final NBVersionInfo _defined;
-        if (defined != null) {
-            _defined = defined;
-        } else {
-            return false;
+
+        if (defined == null) {
+            return Collections.emptyList();
         }
-        RP.post(new Runnable() {
-            @Override public void run() {
-                boolean attached = false;
-                try {
-                    MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
-                    Artifact art = online.createArtifactWithClassifier(_defined.getGroupId(), _defined.getArtifactId(), _defined.getVersion(), "jar", javadoc ? "javadoc" : "sources");
-                    AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Bundle.attaching(art.getId()),
-                        new ProgressContributor[] {AggregateProgressFactory.createProgressContributor("attach")},
-                        ProgressTransferListener.cancellable(), null);
-                    ProgressTransferListener.setAggregateHandle(hndl);
-                    try {
-                        hndl.start();
-                        // XXX should this be limited to _defined.getRepoId()?
-                        List<ArtifactRepository> repos = RepositoryPreferences.getInstance().remoteRepositories(online);
-                        online.resolve(art, repos, online.getLocalRepository());
-                        File result = art.getFile();
-                        if (result.isFile()) {
-                            attached = true;
-                            if (byHash) {
-                                SourceJavadocByHash.register(root, new File[] {result}, javadoc);
+        if (Boolean.TRUE.equals(cancel.call())) {
+            return Collections.emptyList();
+        }
+
+        MavenEmbedder online = EmbedderFactory.getOnlineEmbedder();
+        Artifact art = online.createArtifactWithClassifier(defined.getGroupId(), defined.getArtifactId(), defined.getVersion(), "jar", javadoc ? "javadoc" : "sources");
+        if (Boolean.TRUE.equals(cancel.call())) {
+            return Collections.emptyList();
+        }
+
+        AggregateProgressHandle hndl = AggregateProgressFactory.createHandle(Bundle.attaching(art.getId()),
+                new ProgressContributor[]{AggregateProgressFactory.createProgressContributor("attach")},
+                ProgressTransferListener.cancellable(), null);
+        ProgressTransferListener.setAggregateHandle(hndl);
+        try {
+            hndl.start();
+            // XXX should this be limited to _defined.getRepoId()?
+            List<ArtifactRepository> repos = RepositoryPreferences.getInstance().remoteRepositories(online);
+            online.resolve(art, repos, online.getLocalRepository());
+            File result = art.getFile();
+            if (result.isFile()) {
+                return Collections.singletonList(Utilities.toURI(result).toURL());
+            } else {
+                if (Boolean.TRUE.equals(cancel.call())) {
+                    return Collections.emptyList();
+                }
+                if (file.isFile()) {
+                    List<RepositoryForBinaryQueryImpl.Coordinates> coordinates2 = RepositoryForBinaryQueryImpl.getShadedCoordinates(result);
+                    List<URL> res = new ArrayList<URL>();
+                    if (coordinates2 != null) {
+                        for (RepositoryForBinaryQueryImpl.Coordinates coordinate : coordinates2) {
+                            if (Boolean.TRUE.equals(cancel.call())) {
+                                return Collections.emptyList();
                             }
-                        } else {
-                            if (file.isFile()) {
-                                List<RepositoryForBinaryQueryImpl.Coordinates> coordinates = RepositoryForBinaryQueryImpl.getShadedCoordinates(result);
-                                List<File> res = new ArrayList<File>();
-                                if (coordinates != null) {
-                                    for (RepositoryForBinaryQueryImpl.Coordinates coordinate : coordinates) {
-                                        Artifact sources = EmbedderFactory.getOnlineEmbedder().createArtifactWithClassifier(
-                                                     coordinate.groupId,
-                                                     coordinate.artifactId,
-                                                     coordinate.version,
-                                                     "jar",
-                                                     javadoc ? "javadoc" : "sources"); //NOI18N
-                                        online.resolve(sources, repos, online.getLocalRepository());
-                                        if (sources.getFile() != null && sources.getFile().isFile()) {
-                                            res.add(sources.getFile());
-                                        }
-                                    }
-                                    attached = true;
-                                    if (byHash) {
-                                        SourceJavadocByHash.register(root, res.toArray(new File[0]), javadoc);
-                                    } else {
-                                        //we have a problem here, there is noone listening on these source jars being downloaded.
-                                    }                                    
-                                }
+                            Artifact sources = EmbedderFactory.getOnlineEmbedder().createArtifactWithClassifier(
+                                    coordinate.groupId,
+                                    coordinate.artifactId,
+                                    coordinate.version,
+                                    "jar",
+                                    javadoc ? "javadoc" : "sources"); //NOI18N
+                            online.resolve(sources, repos, online.getLocalRepository());
+                            if (sources.getFile() != null && sources.getFile().isFile()) {
+                                res.add(Utilities.toURI(sources.getFile()).toURL());
                             }
                         }
-                    } catch (ThreadDeath d) {
-                    } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
-                        if (!(ise.getCause() instanceof ThreadDeath)) {
-                            throw ise;
+                        if (!res.isEmpty()) {
+                            return res;
                         }
-                    } catch (AbstractArtifactResolutionException x) {
-                        // XXX probably ought to display some sort of notification in status bar
-                    } finally {
-                        hndl.finish();
-                        ProgressTransferListener.clearAggregateHandle();
-                    }
-                } finally {
-                    if (attached) {
-                        listener.attachmentSucceeded();
-                    } else {
-                        listener.attachmentFailed();
                     }
                 }
             }
-        });
-        return true;
+        } catch (ThreadDeath d) {
+        } catch (IllegalStateException ise) { //download interrupted in dependent thread. #213812
+            if (!(ise.getCause() instanceof ThreadDeath)) {
+                throw ise;
+            }
+        } catch (AbstractArtifactResolutionException x) {
+            // XXX probably ought to display some sort of notification in status bar
+        } finally {
+            hndl.finish();
+            ProgressTransferListener.clearAggregateHandle();
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    @Messages("NAME_SourceJavadocAttacher=Maven")
+    public String getDisplayName() {
+        return Bundle.NAME_SourceJavadocAttacher();
+    }
+
+    @Override
+    @Messages("DESC_SourceJavadocAttacher=Lookup javadoc/sources in know Maven repositories")
+    public String getDescription() {
+        return Bundle.DESC_SourceJavadocAttacher();
+    }
+
+    @Override
+    public List<? extends URL> getSources(URL root, Callable<Boolean> cancel) {
+        try {
+            return attach(root, cancel, false);
+        } catch (IOException io) {
+            LOG.log(Level.INFO, "IO error while retrieving the source for " + root, io);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return Collections.emptyList();
+    }
+
+    @Override
+    public List<? extends URL> getJavadoc(URL root, Callable<Boolean> cancel) {
+        try {
+            return attach(root, cancel, true);
+        } catch (IOException io) {
+            LOG.log(Level.INFO, "IO error while retrieving the javadoc for " + root, io);
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return Collections.emptyList();
     }
 }

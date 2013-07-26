@@ -271,14 +271,19 @@ public class FmtOptions {
             jep.setIgnoreRepaint(true);
             jep.setText(previewText);
             
-            BaseDocument bd = (BaseDocument)jep.getDocument();
-            FortranCodeStyle codeStyle = FortranCodeStyle.get(bd, previewPrefs);
+            final BaseDocument bd = (BaseDocument)jep.getDocument();
+            final FortranCodeStyle codeStyle = FortranCodeStyle.get(bd, previewPrefs);
             codeStyle.setupLexerAttributes(bd);
-            try {
-                new FortranReformatter(bd, codeStyle).reformat();
-            } catch (BadLocationException ex) {
-                Exceptions.printStackTrace(ex);
-            }
+            bd.runAtomicAsUser(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        new FortranReformatter(bd, codeStyle).reformat();
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            });
 
             jep.setIgnoreRepaint(false);
             jep.scrollRectToVisible(new Rectangle(0,0,10,10) );

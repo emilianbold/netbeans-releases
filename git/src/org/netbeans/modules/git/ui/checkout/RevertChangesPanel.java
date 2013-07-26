@@ -71,10 +71,10 @@ public class RevertChangesPanel extends javax.swing.JPanel {
         revertbButtonGroup = new javax.swing.ButtonGroup();
         workingTreeGroup = new javax.swing.ButtonGroup();
 
-        removeAllNewCheckBox.setText(org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.removeAllNewCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeAllNewCheckBox, org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.removeAllNewCheckBox.text")); // NOI18N
 
         revertbButtonGroup.add(revertWTRadioButton);
-        revertWTRadioButton.setText(org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.revertWTRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(revertWTRadioButton, org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.revertWTRadioButton.text")); // NOI18N
         revertWTRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 revertWTRadioButtonActionPerformed(evt);
@@ -82,7 +82,7 @@ public class RevertChangesPanel extends javax.swing.JPanel {
         });
 
         revertbButtonGroup.add(revertIndexRadioButton);
-        revertIndexRadioButton.setText(org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.revertIndexRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(revertIndexRadioButton, org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.revertIndexRadioButton.text")); // NOI18N
         revertIndexRadioButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 revertIndexRadioButtonActionPerformed(evt);
@@ -90,9 +90,9 @@ public class RevertChangesPanel extends javax.swing.JPanel {
         });
 
         revertbButtonGroup.add(revertAllRadioButton);
-        revertAllRadioButton.setText(org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.revertAllRadioButton.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(revertAllRadioButton, org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.revertAllRadioButton.text")); // NOI18N
 
-        removeWTNewCheckBox.setText(org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.removeWTNewCheckBox.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(removeWTNewCheckBox, org.openide.util.NbBundle.getMessage(RevertChangesPanel.class, "RevertChangesPanel.removeWTNewCheckBox.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

@@ -65,7 +65,7 @@ import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.ODCSDialogDescriptor;
-import org.netbeans.modules.team.ui.util.treelist.TreeListUI;
+import org.netbeans.modules.team.commons.treelist.TreeListUI;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;

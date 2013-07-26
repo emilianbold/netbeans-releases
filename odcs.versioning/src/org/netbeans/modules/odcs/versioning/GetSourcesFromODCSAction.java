@@ -97,7 +97,7 @@ public final class GetSourcesFromODCSAction extends AbstractAction {
         options[0] = getOption;
         options[1] = cancelOption;
 
-        org.netbeans.modules.team.ui.spi.TeamUIUtils.activateTeamDashboard();
+        org.netbeans.modules.team.server.api.TeamUIUtils.activateTeamDashboard();
 
         GetSourcesFromODCSPanel getSourcesPanel = server != null ? 
                                                     new GetSourcesFromODCSPanel(server) : 

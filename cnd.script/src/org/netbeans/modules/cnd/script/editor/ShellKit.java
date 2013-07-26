@@ -42,8 +42,16 @@
 
 package org.netbeans.modules.cnd.script.editor;
 
+import javax.swing.Action;
+import static javax.swing.text.DefaultEditorKit.nextWordAction;
+import static javax.swing.text.DefaultEditorKit.previousWordAction;
+import static javax.swing.text.DefaultEditorKit.selectionNextWordAction;
+import static javax.swing.text.DefaultEditorKit.selectionPreviousWordAction;
 import javax.swing.text.Document;
+import javax.swing.text.TextAction;
 import org.netbeans.editor.BaseDocument;
+import static org.netbeans.editor.BaseKit.removeNextWordAction;
+import static org.netbeans.editor.BaseKit.removePreviousWordAction;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.editor.NbEditorKit;
 
@@ -51,6 +59,7 @@ import org.netbeans.modules.editor.NbEditorKit;
  * @author Alexey Vladykin
  */
 public class ShellKit extends NbEditorKit {
+    private static final String COMMENT_LINE = "#"; //NOI18N
 
     @Override
     public Document createDefaultDocument() {
@@ -63,5 +72,17 @@ public class ShellKit extends NbEditorKit {
     public String getContentType() {
         return MIMENames.SHELL_MIME_TYPE;
     }
+    
+    protected 
+    @Override
+    Action[] createActions() {
+        Action[] superActions = super.createActions();
+        Action[] ccActions = new Action[]{
+            new CommentAction(COMMENT_LINE),
+            new UncommentAction(COMMENT_LINE),
+            new ToggleCommentAction(COMMENT_LINE)};
+        ccActions = TextAction.augmentList(superActions, ccActions);
 
+        return ccActions;
+    }
 }

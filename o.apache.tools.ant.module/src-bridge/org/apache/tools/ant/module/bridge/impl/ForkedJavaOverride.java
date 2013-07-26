@@ -403,7 +403,9 @@ public class ForkedJavaOverride extends Java {
 
         private void clearHandle() {
             if (foldHandle != null) {
-                foldHandle.finish();
+                if (!foldHandle.isFinished()) {
+                    foldHandle.finish();
+                }
                 foldHandle = null;
             }
         }

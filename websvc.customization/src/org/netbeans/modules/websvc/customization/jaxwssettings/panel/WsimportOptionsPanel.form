@@ -19,7 +19,7 @@
           <Group type="102" attributes="0">
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="jaxbOptionsPanel" max="32767" attributes="0"/>
+                  <Component id="jaxbOptionsPanel" pref="563" max="32767" attributes="0"/>
                   <Component id="wsimportOptionsPanel" alignment="0" max="32767" attributes="0"/>
                   <Group type="102" attributes="0">
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -31,10 +31,7 @@
                               <Component id="jvmLabel" min="-2" pref="92" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Group type="102" alignment="0" attributes="0">
-                                      <Component id="jvmDescriptionLabel" min="-2" pref="439" max="-2" attributes="0"/>
-                                      <EmptySpace min="0" pref="8" max="32767" attributes="0"/>
-                                  </Group>
+                                  <Component id="jvmDescriptionLabel" max="32767" attributes="0"/>
                                   <Component id="jvmTextField" max="32767" attributes="0"/>
                               </Group>
                           </Group>
