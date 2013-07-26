@@ -84,8 +84,8 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
 
     private static final String CND_REMOTE = "cnd.remote"; // NOI18N
     private static final String REMOTE_SERVERS = CND_REMOTE + ".servers"; // NOI18N
-    private static final String DEFAULT_INDEX = CND_REMOTE + ".default"; // NOI18N
-    private int defaultIndex;
+    private static final String DEFAULT_RECORD = CND_REMOTE + ".defaultEnv"; // NOI18N
+    private RemoteServerRecord defaultRecord;
     private final PropertyChangeSupport pcs;
     private final ChangeSupport cs;
     private final ArrayList<RemoteServerRecord> unlisted;
@@ -94,7 +94,6 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
     private static final RequestProcessor RP = new RequestProcessor("Remote setup", 1); // NOI18N
 
     public RemoteServerList() {
-        defaultIndex = getPreferences().getInt(DEFAULT_INDEX, 0);
         pcs = new PropertyChangeSupport(this);
         cs = new ChangeSupport(this);
         unlisted = new ArrayList<RemoteServerRecord>();
@@ -115,7 +114,25 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
                 items.add(record);
             }
         }
-        defaultIndex = Math.min(defaultIndex, items.size() - 1);
+        defaultRecord = localRecord;
+        String defaultEnvId = getPreferences().get(DEFAULT_RECORD, null);
+        if (defaultEnvId == null) {
+            // Previously, we stored an index; trying to restore...
+            int defaultIndex = getPreferences().getInt(".default", 0); //NOI18N
+            defaultIndex = Math.min(defaultIndex, items.size() - 1);
+            if (defaultIndex >= 0) {
+                defaultRecord = items.get(defaultIndex);
+            }            
+        } else {
+            ExecutionEnvironment defEnv = ExecutionEnvironmentFactory.fromUniqueID(defaultEnvId);
+            for (RemoteServerRecord r : items) {
+                if (r.getExecutionEnvironment().equals(defEnv)) {
+                    defaultRecord = r;
+                    break;
+                }
+            }
+        }
+
         refresh();
         ConnectionManager.getInstance().addConnectionListener(WeakListeners.create(ConnectionListener.class, this, null));
     }
@@ -214,26 +231,19 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
     @Override
     public ServerRecord getDefaultRecord() {
         synchronized (lock) {
-            return items.get(defaultIndex);
+            return defaultRecord;
         }
     }
 
-    private void setDefaultIndexImpl(int defaultIndex) {
-        synchronized (lock) {
-            int oldValue = this.defaultIndex;
-            this.defaultIndex = defaultIndex;
-            getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
-            firePropertyChange(ServerList.PROP_DEFAULT_RECORD, oldValue, defaultIndex);
-        }
-    }
-    
     @Override
     public void setDefaultRecord(ServerRecord record) {
         synchronized (lock) {
             assert record != null;
-            for (int i = 0; i < items.size(); i++) {
-                if (items.get(i).equals(record)) {
-                    setDefaultIndexImpl(i);
+            for (RemoteServerRecord r : items) {
+                if (r.equals(record)) {
+                    RemoteServerRecord old = defaultRecord;
+                    defaultRecord = r;
+                    firePropertyChange(ServerList.PROP_DEFAULT_RECORD, old, r);
                     return;
                 }
             }
@@ -272,8 +282,8 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             for (RemoteServerRecord r : items) {
                 if (r.getExecutionEnvironment().equals(execEnv)) {
                     if (asDefault) {
-                        defaultIndex = items.indexOf(r);
-                        getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
+                        defaultRecord = r;
+                        getPreferences().put(DEFAULT_RECORD, ExecutionEnvironmentFactory.toUniqueID(defaultRecord.getExecutionEnvironment()));
                     }
                     return r;
                 }
@@ -299,12 +309,12 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
             items.add(record);
             Collections.sort(items, RECORDS_COMPARATOR);
             if (asDefault) {
-                defaultIndex = items.indexOf(record);
+                defaultRecord = record;
             }
             if (fireChanges) {
                 refresh();
                 storePreferences();
-                getPreferences().putInt(DEFAULT_INDEX, defaultIndex);
+                getPreferences().put(DEFAULT_RECORD, ExecutionEnvironmentFactory.toUniqueID(defaultRecord.getExecutionEnvironment()));
                 firePropertyChange(ServerList.PROP_RECORD_LIST, oldItems, new ArrayList<RemoteServerRecord>(items));
             }
             return record;
