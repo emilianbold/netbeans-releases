@@ -101,7 +101,7 @@ public final class AutoupdateSupport {
      * @param url the repository to check the version for
      */
     @NbBundle.Messages({"CTL_Yes=Yes",
-                        "# {0} - pluginName", "CTL_AutoupdateTitle=Newer {0} plugin version available"})
+                        "# {0} - stands for an issue tracking plugins name available for download - e.g. Bugzilla of JIRA", "CTL_AutoupdateTitle=Newer {0} plugin version available"})
     public void checkAndNotify(String url) {
         LOG.log(Level.FINEST, "{0} AutoupdateSupport.checkAndNotify start", pluginName); // NOI18N
         
