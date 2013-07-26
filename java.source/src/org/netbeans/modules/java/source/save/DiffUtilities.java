@@ -48,7 +48,10 @@ import java.util.Comparator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import javax.swing.text.Position.Bias;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.PositionConverter;
@@ -59,13 +62,15 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.text.CloneableEditorSupport;
+import org.openide.text.PositionRef;
 
 /**
  *
  * @author lahvac
  */
 public class DiffUtilities {
-
+    private static final Logger LOG = Logger.getLogger(DiffUtilities.class.getName());
+    
     public static List<ModificationResult.Difference> diff2ModificationResultDifference(FileObject fo, PositionConverter converter, Map<Integer, String> userInfo, String originalCode, String newCode) throws IOException, BadLocationException {
         return diff2ModificationResultDifference(fo, converter, userInfo, originalCode, diff(originalCode, newCode, 0));
     }
@@ -133,8 +138,18 @@ public class DiffUtilities {
                 diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.CHANGE, diff.getStartPosition(), diff.getEndPosition(), diff.getOldText(), s, diff.getDescription()));
             } else {
                 int off = converter != null ? converter.getOriginalPosition(offset) : offset;
-                if (off >= 0)
-                    diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.INSERT, ces.createPositionRef(off, Bias.Forward), ces.createPositionRef(off, Bias.Backward), null, s, userInfo.get(offset)));
+                if (off >= 0) {
+                    Document d = ces.getDocument();
+                    PositionRef endRef = ces.createPositionRef(off, Bias.Backward);
+                    int l;
+                    if (d != null && endRef.getOffset() > (l = d.getLength())) {
+                        LOG.log(Level.WARNING, 
+                                "Invalid diff position: {0}, doc.length: {1}", new Object[] {
+                                    off, l
+                                });
+                    }
+                    diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.INSERT, ces.createPositionRef(off, Bias.Forward), endRef, null, s, userInfo.get(offset)));
+                }
             }
         }
 
@@ -146,8 +161,18 @@ public class DiffUtilities {
                 diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.CHANGE, diff.getStartPosition(), diff.getEndPosition(), origText, diff.getNewText(), diff.getDescription()));
             } else {
                 int off = converter != null ? converter.getOriginalPosition(offset) : offset;
-                if (off >= 0)
-                    diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.REMOVE, ces.createPositionRef(off, Bias.Forward), ces.createPositionRef(off + origText.length(), Bias.Backward), origText, null, userInfo.get(offset)));
+                if (off >= 0) {
+                    Document d = ces.getDocument();
+                    PositionRef endRef = ces.createPositionRef(off + origText.length(), Bias.Backward);
+                    int l;
+                    if (d != null && endRef.getOffset() > (l = d.getLength())) {
+                        LOG.log(Level.WARNING, 
+                                "Invalid diff position: {0}, doc.length: {1}", new Object[] {
+                                    off, l
+                                });
+                    }
+                    diffs.add(JavaSourceAccessor.getINSTANCE().createDifference(ModificationResult.Difference.Kind.REMOVE, ces.createPositionRef(off, Bias.Forward), endRef, origText, null, userInfo.get(offset)));
+                }
             }
             offset = pos;
         }

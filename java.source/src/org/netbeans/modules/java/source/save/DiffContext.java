@@ -78,6 +78,8 @@ public class DiffContext {
     
     public final JCCompilationUnit mainUnit;
     public final String mainCode;
+    
+    public final int textLength;
 
     public DiffContext(CompilationInfo copy) {
         this(copy, new HashSet<Tree>());
@@ -94,6 +96,8 @@ public class DiffContext {
         this.positionConverter = copy.getPositionConverter();
         this.file = copy.getFileObject();
         this.syntheticTrees = syntheticTrees;
+        
+        this.textLength = copy.getSnapshot() == null ? Integer.MAX_VALUE : copy.getSnapshot().getOriginalOffset(copy.getSnapshot().getText().length());
     }
 
     public DiffContext(CompilationInfo copy, CompilationUnitTree cut, String code, PositionConverter positionConverter, FileObject file, Set<Tree> syntheticTrees, CompilationUnitTree mainUnit, String mainCode) {
@@ -109,6 +113,8 @@ public class DiffContext {
         this.syntheticTrees = syntheticTrees;
         this.mainUnit = (JCCompilationUnit) mainUnit;
         this.mainCode = mainCode;
+        
+        this.textLength = copy.getSnapshot() == null ? Integer.MAX_VALUE : copy.getSnapshot().getOriginalOffset(copy.getSnapshot().getText().length());
     }
 
     public static CodeStyle getCodeStyle(CompilationInfo info) {
