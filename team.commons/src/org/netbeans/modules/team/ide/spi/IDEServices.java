@@ -158,14 +158,14 @@ public interface IDEServices {
      * May return null.
      * 
      * @return <code>BusyIcon</code> implementation of an animated busy icon, or
-     *         null if no specific implementation is available
+     *         <code>null</code> if no specific implementation is available
      */
     public BusyIcon createBusyIcon();
 
     /**
      * Determines whether the capability of opening a directory in a file browse
      * UI (e.g. Favorites window in NetBeans) is available.
-     * @return true if can open a directory in a Favorites UI
+     * @return <code>true</code> if can open a directory in a Favorites UI, otherwise <code>false</code>
      */
     public boolean canOpenInFavorites();
 
@@ -175,6 +175,19 @@ public interface IDEServices {
      */
     public void openInFavorites(File workingDir);
 
+    /**
+     * Determines whether the capability of opening a http proxy configuration UI
+     * is available.
+     * 
+     * @return <code>true</code> if there is a http proxy configuration UI available, otherwise <code>false</code>
+     */
+    public boolean providesProxyConfiguration();
+    
+    /**
+     * Opens the http proxy configuration UI
+     */
+    public void openProxyConfiguration();
+    
     /**
      * Provides access to a downloadable plugin - e.g. from the NetBeans UC
      */
