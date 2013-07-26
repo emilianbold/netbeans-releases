@@ -60,7 +60,7 @@ public final class LogoutAction extends AbstractAction {
 
     private static LogoutAction instance;
     private static final String LOGOUT = NbBundle.getMessage(LogoutAction.class, "CTL_LogoutAction");
-    public static final String ID = "org.netbeans.modules.team.server.ui.LogoutAction";
+    public static final String ID = "org.netbeans.modules.team.server.LogoutAction";
 
     private LogoutAction() {
         super(LOGOUT);
