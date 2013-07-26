@@ -84,6 +84,11 @@ public class ClosedCategoryNode extends CategoryNode {
     }
 
     @Override
+    int indexOf(IssueImpl task) {
+        return -1;
+    }
+
+    @Override
     public boolean isOpened() {
         return false;
     }
