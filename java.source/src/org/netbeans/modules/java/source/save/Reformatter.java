@@ -3823,9 +3823,17 @@ public class Reformatter implements ReformatTask {
         private void reformatComment() {
             if (tokens.token().id() != BLOCK_COMMENT && tokens.token().id() != JAVADOC_COMMENT)
                 return;
+            TokenSequence<JavadocTokenId> javadocTokens = null;
+            TokenSequence<?> embedded = tokens.embedded();
+            if (embedded != null) {
+                if (JavadocTokenId.language().equals(embedded.language())) {
+                    javadocTokens = (TokenSequence<JavadocTokenId>) embedded;
+                } else {
+                    return;
+                }
+            }
             String text = tokens.token().text().toString();
             int offset = tokens.offset();
-            TokenSequence<JavadocTokenId> javadocTokens = tokens.embedded(JavadocTokenId.language());
             LinkedList<Pair<Integer, Integer>> marks = new LinkedList<Pair<Integer, Integer>>();
             int maxParamNameLength = 0;
             int maxExcNameLength = 0;
