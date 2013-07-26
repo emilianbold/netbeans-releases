@@ -199,15 +199,14 @@ public class LineDebuggerTest extends JavaScriptDebugger {
         evt.waitNoEvent(1000);
         EditorOperator currentFile = EditorWindowOperator.getEditor();
         currentFile.setCaretPositionToEndOfLine(3);
-        type(currentFile, "\nconsole.log(\"1js\");\nconsole.log(\"2js\");\nconsole.log(\"3js\");");
-
+        currentFile.insert("\nconsole.log(\"1js\");\nconsole.log(\"2js\");\nconsole.log(\"3js\");");
 //        if (LineDebuggerTest.inEmbeddedBrowser) { // workaround for 226022
 //            (new EmbeddedBrowserOperator("Web Browser")).close();
 //            saveAndWait(currentFile, 1000);
 //            runFile(LineDebuggerTest.current_project, "debugMod.html");
 //            evt.waitNoEvent(GeneralHTMLProject.RUN_WAIT_TIMEOUT);
 //        } else {
-        saveAndWait(currentFile, 1000);
+        saveAndWait(currentFile, 1500);
 
         new ContinueAction().performMenu();
         evt.waitNoEvent(1000);
@@ -223,7 +222,7 @@ public class LineDebuggerTest extends JavaScriptDebugger {
 //            runFile(LineDebuggerTest.current_project, "debugMod.html");
 //            evt.waitNoEvent(GeneralHTMLProject.RUN_WAIT_TIMEOUT);
 //        } else {
-        saveAndWait(currentFile, 1000);
+        saveAndWait(currentFile, 1500);
 
         new ContinueAction().performMenu();
         evt.waitNoEvent(1000);
@@ -233,7 +232,7 @@ public class LineDebuggerTest extends JavaScriptDebugger {
 
 
         currentFile.setCaretPositionToEndOfLine(3);
-        type(currentFile, "\nconsole.log(\"1js\");\nconsole.log(\"2js\");\nconsole.log(\"3js\");");
+        currentFile.insert("\nconsole.log(\"1js\");\nconsole.log(\"2js\");\nconsole.log(\"3js\");");        
 
 //        if (LineDebuggerTest.inEmbeddedBrowser) {
 //            (new EmbeddedBrowserOperator("Web Browser")).close();
@@ -241,7 +240,7 @@ public class LineDebuggerTest extends JavaScriptDebugger {
 //            runFile(LineDebuggerTest.current_project, "debugMod.html");
 //            evt.waitNoEvent(GeneralHTMLProject.RUN_WAIT_TIMEOUT);
 //        } else {
-        saveAndWait(currentFile, 1000);
+        saveAndWait(currentFile, 1500);
 
         new ContinueAction().performMenu();
         evt.waitNoEvent(1000);
