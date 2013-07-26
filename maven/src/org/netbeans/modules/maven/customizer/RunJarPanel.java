@@ -96,10 +96,6 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private static final String RUN_PARAMS = "exec.args"; //NOI18N
     private static final String RUN_WORKDIR = "exec.workingdir"; //NOI18N
     private static final String DEFAULT_DEBUG_PARAMS = "-Xdebug -Xrunjdwp:transport=dt_socket,server=n,address=${jpda.address}"; //NOI18N
-    private static final String DEFAULT_PROFILE_PARAMS = "${profiler.args}"; // NOI18N
-    private static final String DEFAULT_PROFILER_EXEC = "${profiler.java}"; // NOI18N
-    private static final String RUN_EXEC = "exec.executable"; // NOI18N
-
     private static final String PROFILE_CMD = "profile"; // NOI18N
     
     private ModelHandle2 handle;
@@ -469,14 +465,13 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             if (isCurrentProfile) {
                 boolean changed = false;
                 if (!oldAllParams.equals(newAllParams)) {
-                    profile.addProperty(RUN_PARAMS, DEFAULT_PROFILE_PARAMS + " " + newAllParams);
+                    profile.addProperty(RUN_PARAMS, newAllParams);
                     changed = true;
                 }
                 if (!oldWorkDir.equals(newWorkDir)) {
                     profile.addProperty(RUN_WORKDIR, newWorkDir);
                     changed = true;
                 }
-                profile.addProperty(RUN_EXEC, DEFAULT_PROFILER_EXEC);
                 if (changed) {
                     ModelHandle2.setUserActionMapping(profile, a2gm);
                     handle.markAsModified(a2gm);
