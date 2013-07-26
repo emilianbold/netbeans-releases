@@ -46,7 +46,7 @@ import java.io.Serializable;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
-import org.netbeans.modules.team.server.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;

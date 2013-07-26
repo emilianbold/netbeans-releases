@@ -59,6 +59,7 @@ import org.netbeans.modules.cnd.apt.support.APTPreprocHandler;
 import org.netbeans.modules.cnd.apt.support.APTPreprocHandler.State;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.repository.spi.Key;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.openide.util.CharSequences;
@@ -77,15 +78,15 @@ public class APTHandlersSupportImpl {
         return new APTPreprocHandlerImpl(macroMap, inclHandler, compileContext, lang, flavor);
     }
 
-    public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file) {
-        return new APTPreprocHandlerImpl(new APTFileMacroMap(), new APTIncludeHandlerImpl(file), false, CharSequences.empty(), CharSequences.empty());
+    public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file, MakeConfiguration projectConfiguration) {
+        return new APTPreprocHandlerImpl(new APTFileMacroMap(), new APTIncludeHandlerImpl(file, projectConfiguration), false, CharSequences.empty(), CharSequences.empty());
     }
 
     public static void invalidatePreprocHandler(APTPreprocHandler preprocHandler) {
         ((APTPreprocHandlerImpl)preprocHandler).setValid(false);
     }
 
-    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch) {
+    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch, MakeConfiguration projectConfiguration) {
         // user paths could contain "-include file" elements
         List<IncludeDirEntry> fileEntries = new ArrayList<IncludeDirEntry>(0);
         SupportAPIAccessor accessor = SupportAPIAccessor.get();
@@ -97,7 +98,7 @@ public class APTHandlersSupportImpl {
                 }
             }
         }
-        return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch);
+        return new APTIncludeHandlerImpl(startFile, sysIncludePaths, userIncludePaths, fileEntries, fileSearch, projectConfiguration);
     }
     
     public static long getCompilationUnitCRC(APTPreprocHandler preprocHandler){

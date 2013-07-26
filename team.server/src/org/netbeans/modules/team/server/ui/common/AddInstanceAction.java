@@ -42,34 +42,23 @@
 
 package org.netbeans.modules.team.server.ui.common;
 
-import java.beans.PropertyVetoException;
 import java.net.MalformedURLException;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.team.server.TeamServerManager;
+import org.netbeans.modules.team.server.TeamServerInstanceCustomizer;
 import org.netbeans.modules.team.server.TeamView;
+import org.netbeans.modules.team.server.api.TeamServerManager;
 import static org.netbeans.modules.team.server.ui.common.Bundle.*;
-import org.netbeans.modules.team.server.ui.nodes.TeamRootNode;
-import org.netbeans.modules.team.server.ui.nodes.TeamServerInstanceCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
-import org.openide.explorer.ExplorerManager;
-import org.openide.nodes.Node;
-import org.openide.nodes.NodeNotFoundException;
-import org.openide.nodes.NodeOp;
-import org.openide.util.Mutex;
 import org.openide.util.RequestProcessor;
-import org.openide.windows.TopComponent;
-import org.openide.windows.WindowManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 import org.openide.awt.ActionID;
@@ -92,7 +81,6 @@ public class AddInstanceAction extends AbstractAction {
 
     private TeamServer teamServer;
     private JDialog dialog;
-    private boolean expandNewNode = false;
     private TeamServerProvider provider;
 
     public AddInstanceAction() {
@@ -106,11 +94,6 @@ public class AddInstanceAction extends AbstractAction {
     public AddInstanceAction(TeamServerProvider teamProvider, String actionName) {
         super(actionName);
         this.provider = teamProvider;
-    }
-
-    public AddInstanceAction(boolean expandNewNode) {
-        this();
-        this.expandNewNode = expandNewNode;
     }
 
     @ActionID(id = ID, category = "Team")
@@ -153,7 +136,6 @@ public class AddInstanceAction extends AbstractAction {
                                 } else {
                                     AddInstanceAction.this.teamServer = teamServer;
                                     SwingUtilities.invokeLater(new Runnable() {
-
                                         @Override
                                         public void run() {
                                             tsInstanceCustomizer.stopProgress();
@@ -163,9 +145,6 @@ public class AddInstanceAction extends AbstractAction {
                                                 ((JComboBox) ae.getSource()).setSelectedItem(AddInstanceAction.this.teamServer);
                                             } else {
                                                 TeamView.getInstance().setSelectedServer(AddInstanceAction.this.teamServer);
-                                            }
-                                            if (expandNewNode) {
-                                                selectNode(AddInstanceAction.this.teamServer.getUrl().toString());
                                             }
                                         }
                                     });
@@ -212,58 +191,6 @@ public class AddInstanceAction extends AbstractAction {
         dialog.validate();
         dialog.pack();
         dialog.setVisible(true);
-    }
-
-    private static final Logger LOG = Logger.getLogger(AddInstanceAction.class.getName());
-
-    private static void selectNode(final String... path) {
-        Mutex.EVENT.readAccess(new Runnable() {
-            @Override
-            public void run() {
-                TopComponent tab = WindowManager.getDefault().findTopComponent("services"); // NOI18N
-                if (tab == null) {
-                    // XXX have no way to open it, other than by calling ServicesTabAction
-                    LOG.fine("No ServicesTab found");
-                    return;
-                }
-                tab.open();
-                tab.requestActive();
-                if (!(tab instanceof ExplorerManager.Provider)) {
-                    LOG.fine("ServicesTab not an ExplorerManager.Provider");
-                    return;
-                }
-                final ExplorerManager mgr = ((ExplorerManager.Provider) tab).getExplorerManager();
-                final Node root = mgr.getRootContext();
-                RequestProcessor.getDefault().post(new Runnable() {
-                    @Override
-                    public void run() {
-                        Node hudson = NodeOp.findChild(root, TeamRootNode.TEAM_NODE_NAME);
-                        if (hudson == null) {
-                            LOG.fine("ServicesTab does not contain " + TeamRootNode.TEAM_NODE_NAME);
-                            return;
-                        }
-                        Node _selected;
-                        try {
-                            _selected = NodeOp.findPath(hudson, path);
-                        } catch (NodeNotFoundException x) {
-                            LOG.log(Level.FINE, "Could not find subnode", x);
-                            _selected = x.getClosestNode();
-                        }
-                        final Node selected = _selected;
-                        Mutex.EVENT.readAccess(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    mgr.setSelectedNodes(new Node[] {selected});
-                                } catch (PropertyVetoException x) {
-                                    LOG.log(Level.FINE, "Could not select path", x);
-                                }
-                            }
-                        });
-                    }
-                });
-            }
-        });
     }
 
     public TeamServer getTeamServer() {

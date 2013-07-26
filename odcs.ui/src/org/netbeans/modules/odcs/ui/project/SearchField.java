@@ -63,7 +63,7 @@ import org.netbeans.modules.odcs.api.ODCSManager;
 import org.netbeans.modules.odcs.ui.ODCSServerProviderImpl;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.team.server.ui.common.AddInstanceAction;
-import org.netbeans.modules.team.server.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;

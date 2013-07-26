@@ -48,6 +48,7 @@ import com.sun.jdi.Field;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.ThreadReference;
+import com.sun.jdi.VirtualMachine;
 import com.sun.jdi.event.Event;
 import com.sun.jdi.event.ModificationWatchpointEvent;
 import com.sun.jdi.event.WatchpointEvent;
@@ -135,15 +136,19 @@ public class FieldBreakpointImpl extends ClassBasedBreakpoint {
         
         boolean access = (breakpoint.getBreakpointType () & 
                           FieldBreakpoint.TYPE_ACCESS) != 0;
+        VirtualMachine vm = getVirtualMachine();
+        if (vm == null) {
+            return ;
+        }
         try {
-            if (access && !VirtualMachineWrapper.canWatchFieldAccess(getVirtualMachine())) {
+            if (access && !VirtualMachineWrapper.canWatchFieldAccess(vm)) {
                 setValidity(VALIDITY.INVALID,
                         NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoFieldAccess"));
                 return ;
             }
             boolean modification = (breakpoint.getBreakpointType () &
                                     FieldBreakpoint.TYPE_MODIFICATION) != 0;
-            if (modification && !VirtualMachineWrapper.canWatchFieldModification(getVirtualMachine())) {
+            if (modification && !VirtualMachineWrapper.canWatchFieldModification(vm)) {
                 setValidity(VALIDITY.INVALID,
                         NbBundle.getMessage(FieldBreakpointImpl.class, "MSG_NoFieldModification"));
                 return ;

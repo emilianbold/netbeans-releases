@@ -49,7 +49,6 @@ import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.spi.indexing.Context;
@@ -78,7 +77,17 @@ public class CndIndexer extends CustomIndexer {
             FileObject fo = root.getFileObject(idx.getRelativePath());
             CsmFile file = CsmUtilities.getCsmFile(fo, false, false);
             if (file != null) {
-                ((ProjectImpl)file.getProject()).onFileImplExternalChange((FileImpl)file);
+                CsmProject prj = file.getProject();
+                if (prj instanceof ProjectBase) {
+                    ((ProjectBase)prj).onFileImplExternalChange((FileImpl)file);
+                }
+            } else {
+                Collection<CsmProject> ownerCsmProjects = CsmUtilities.getOwnerCsmProjects(fo);
+                for (CsmProject prj : ownerCsmProjects) {
+                    if (prj instanceof ProjectBase) {
+                        ((ProjectBase) prj).onFileObjectExternalCreate(fo);
+                    }
+                }
             }
         }
     }

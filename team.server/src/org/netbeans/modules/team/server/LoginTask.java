@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.team.server;
 
+import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 import org.openide.util.Exceptions;
 

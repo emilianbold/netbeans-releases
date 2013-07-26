@@ -73,7 +73,7 @@ import static org.netbeans.modules.kenai.ui.impl.Bundle.*;
 import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.netbeans.modules.team.server.ui.spi.PopupMenuProvider;
-import org.netbeans.modules.team.server.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.openide.DialogDisplayer;
 import org.openide.WizardDescriptor;
 import org.openide.util.Exceptions;

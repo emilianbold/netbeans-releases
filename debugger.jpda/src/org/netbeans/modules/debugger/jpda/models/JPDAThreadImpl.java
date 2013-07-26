@@ -716,6 +716,10 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
             AbsentInformationException aiex = new AbsentInformationException(ex.getLocalizedMessage());
             aiex.initCause(ex);
             throw aiex;
+        } catch (InvalidStackFrameExceptionWrapper ex) {
+            AbsentInformationException aiex = new AbsentInformationException(ex.getLocalizedMessage());
+            aiex.initCause(ex);
+            throw aiex;
         } catch (ObjectCollectedExceptionWrapper ocex) {
             AbsentInformationException aiex = new AbsentInformationException(ocex.getLocalizedMessage());
             aiex.initCause(ocex);
@@ -774,6 +778,7 @@ public final class JPDAThreadImpl implements JPDAThread, Customizer, BeanContext
         } catch (IllegalThreadStateExceptionWrapper ex) {
             // Thrown when thread has exited
         } catch (IncompatibleThreadStateException e) {
+        } catch (InvalidStackFrameExceptionWrapper e) {
         } finally {
             accessLock.readLock().unlock();
         }

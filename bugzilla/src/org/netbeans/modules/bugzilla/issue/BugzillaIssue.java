@@ -251,7 +251,7 @@ public class BugzillaIssue {
         return task.getSynchronizationState() == SynchronizationState.OUTGOING_NEW;
     }
 
-    void opened() {
+    public void opened() {
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open start", new Object[] {getID()});
         list = new NbTaskDataModelListener() {
             @Override
@@ -295,7 +295,7 @@ public class BugzillaIssue {
         if(Bugzilla.LOG.isLoggable(Level.FINE)) Bugzilla.LOG.log(Level.FINE, "issue {0} open finish", new Object[] {getID()});
     }
 
-    void closed () {
+    public void closed () {
         final NbTaskDataModel m = model;
         final boolean markedAsNewUnread = isMarkedNewUnread();
         if (m != null) {
@@ -647,7 +647,7 @@ public class BugzillaIssue {
         return getFieldValue(td, f);
     }
     
-    String getFieldValue(IssueField f) {
+    public String getFieldValue(IssueField f) {
         NbTaskDataModel m = model;
         return getFieldValue(m == null ? null : m.getLocalTaskData(), f);
     }
@@ -744,7 +744,7 @@ public class BugzillaIssue {
         return getFieldValues(m == null ? getRepositoryTaskData() : m.getRepositoryTaskData(), f);
     }
 
-    List<String> getFieldValues(IssueField f) {
+    public List<String> getFieldValues(IssueField f) {
         NbTaskDataModel m = model;
         return getFieldValues(m == null ? null : m.getLocalTaskData(), f);
     }
@@ -784,7 +784,7 @@ public class BugzillaIssue {
      * @param f IssueField
      * @return a status value
      */
-    int getFieldStatus(IssueField f) {
+    public int getFieldStatus(IssueField f) {
         NbTaskDataModel m = model;
         if (m == null) {
             return FIELD_STATUS_UPTODATE;
@@ -814,7 +814,7 @@ public class BugzillaIssue {
         }
     }
 
-    void resolve (final String resolution) {
+    public void resolve (final String resolution) {
         assert !isNew();
 
         runWithModelLoaded(new Runnable() {
@@ -1690,4 +1690,8 @@ public class BugzillaIssue {
         
     }
 
+    void makeClean() throws CoreException {
+        save(model);
+    }
+    
 }

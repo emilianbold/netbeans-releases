@@ -137,7 +137,7 @@ public class testCC extends GeneralGroovy {
         EditorOperator file = new EditorOperator("AAA.groovy");
         file.setCaretPosition("AAA {", false);
         type(file, "\n ");
-        type(file, "  AAA() { \n } \n AAA(int i) {\n}");
+        type(file, "  AAA() { \n } \n AAA(int i) {\n");
         file.save();
 
         createGroovyFile(TEST_BASE_NAME + (name_iterator - 1), "Groovy Class", "BBB");
@@ -195,8 +195,13 @@ public class testCC extends GeneralGroovy {
         CompletionInfo completion = getCompletion();
 
         List t = completion.listItems;
+        String item;
         for (int i = 0; i < t.size(); i++) {
-            assertTrue("Package that does not start with in is offered", t.get(i).toString().toLowerCase().startsWith("in"));
+            item = t.get(i).toString().toLowerCase();
+            if(item.contains("codetemplatecompletionitem")){
+                continue;
+            }
+            assertTrue("Package that does not start with in is offered "+item, item.startsWith("in"));
         }
 
         completion.listItself.hideAll();

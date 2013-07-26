@@ -57,14 +57,14 @@ public class AngularAttributeCompletionItem extends HtmlCompletionItem.Attribute
     
 //    public AngularAttributeCompletionItem(String value, int offset, boolean required, String helpId, boolean autoCompleteValue, boolean isInAngularPage) {
     public AngularAttributeCompletionItem(CustomAttribute ca, int offset, boolean isInAngularPage) {
-        super(ca.getName(), offset, false, ca.getHelp());
+        super(ca.getName(), offset, true /* not required, but makes them bold */, ca.getHelp());
         this.isInAngularPage = isInAngularPage;
     }
 
-//    @Override
-//    protected ImageIcon getIcon() {
-//        return Constants.ANGULAR_ICON;
-//    }
+    @Override
+    protected ImageIcon getIcon() {
+        return Constants.ANGULAR_ICON;
+    }
 
     @Override
     protected Color getAttributeColor() {

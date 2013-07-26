@@ -540,6 +540,9 @@ public final class TreePathHandle {
             }
             if ((this.file != null && info.getFileObject() != null) && info.getFileObject().equals(this.file) && this.position != null) {
                 TreePath tp = this.resolve(info);
+                if (tp == null) {
+                    return null;
+                }
                 Element el = info.getTrees().getElement(tp);
                 if (el == null) {
                     Logger.getLogger(TreePathHandle.class.toString()).fine("info.getTrees().getElement(tp) returned null for " + tp);

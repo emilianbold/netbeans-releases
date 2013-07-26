@@ -4291,7 +4291,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     if (!name.contentEquals(ERROR)) {
                         boolean isStatic = variableElement.getModifiers().contains(Modifier.STATIC);
                         String setterName = CodeStyleUtils.computeSetterName(name, isStatic, codeStyle);
-                        String getterName = CodeStyleUtils.computeGetterName(name, variableElement.asType().getKind() == TypeKind.BOOLEAN, isStatic, codeStyle);
+                        String getterName = CodeStyleUtils.computeGetterName(name, Utilities.isBoolean(variableElement.asType()), isStatic, codeStyle);
                         if ((prefix == null || startsWith(env, getterName)) && !GeneratorUtils.hasGetter(controller, te, variableElement, methods, codeStyle)) {
                             results.add(JavaCompletionItem.createGetterSetterMethodItem(env.getController(), variableElement, asMemberOf(variableElement, clsType, types), anchorOffset, getterName, false));
                         }

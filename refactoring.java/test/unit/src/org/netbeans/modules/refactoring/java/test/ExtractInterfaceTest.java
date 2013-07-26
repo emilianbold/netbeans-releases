@@ -73,6 +73,21 @@ public class ExtractInterfaceTest extends RefactoringTestBase {
         super(name);
     }
     
+    public void test231147() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "public class ExtractBaseClass {\n"
+                + "    // Method comments\n"
+                + "    public void method() {\n"
+                + "        //method body\n"
+                + "        System.out.println(\"Hello\");\n"
+                + "    } // Trailing comments\n"
+                + "}\n"
+                + "interface ExtractInterface { }\n"));
+        performExtractInterface(src.getFileObject("extract/ExtractBaseClass.java"), 0, "ExtractInterface", Boolean.FALSE, new Problem(true, "ERR_ClassClash"));
+    }
+    
     public void test228474() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"

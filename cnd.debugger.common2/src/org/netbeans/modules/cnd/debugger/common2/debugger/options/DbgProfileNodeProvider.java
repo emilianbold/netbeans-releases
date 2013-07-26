@@ -135,7 +135,7 @@ public class DbgProfileNodeProvider implements CustomizerNodeProvider {
 
         @Override
         public HelpCtx getHelpCtx() {
-            return new HelpCtx("DebuggerOptions");
+            return new HelpCtx("ProjectPropsDebugging");
         }
 
         public String getFamily() {
@@ -158,7 +158,7 @@ public class DbgProfileNodeProvider implements CustomizerNodeProvider {
 
         @Override
 	public HelpCtx getHelpCtx() {
-	    return new HelpCtx("DebuggerOptions" );
+	    return new HelpCtx("ProjectPropsDebugging" );
 	}
 
         public String getFamily() {

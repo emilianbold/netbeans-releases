@@ -1,4 +1,4 @@
-<?
+<?php
      function someStupidFunction() {
                //this is function body
                $a = 10;
@@ -8,6 +8,6 @@
                }
                return "ok";
      }
-     
+
      class MyNewClass {^
 

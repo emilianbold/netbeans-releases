@@ -6,12 +6,12 @@ else:
         ?>
         Hlavny obrazek:
         <img src="images/property_pictures/<?= $this->id ?>thumbs/<?= $this->cover ?>"/>
-        <?
+        <?php
     endif;
     foreach ($this->pictures as $picture):
         ?>
         <img src="images/property_pictures/<?= $this->id ?>thumbs/<?= $picture->getImage_path() ?>"/>
-        <?
+        <?php
     endforeach;
 endif;
 ?>
