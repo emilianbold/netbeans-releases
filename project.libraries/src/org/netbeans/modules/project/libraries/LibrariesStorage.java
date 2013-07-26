@@ -265,9 +265,9 @@ implements WritableLibraryProvider<LibraryImplementation>, ChangeListener {
 
     private static void readLibrary (FileObject descriptorFile, LibraryDeclarationParser parser) throws SAXException, ParserConfigurationException, IOException {
         final URL baseURL = descriptorFile.toURL();
-        InputSource input = new InputSource(baseURL.toExternalForm());
-        input.setByteStream(descriptorFile.getInputStream()); // #33554 workaround
-        try {
+        InputSource input = new InputSource(baseURL.toExternalForm());        
+        try (InputStream in = descriptorFile.getInputStream()) {
+            input.setByteStream(in); // #33554 workaround
             parser.parse(input);
         } catch (SAXException e) {
             throw Exceptions.attachMessage(e, "From: " + baseURL);  //NOI18N
