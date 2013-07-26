@@ -115,15 +115,15 @@ public class CodeCompletionPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        autoStringConcatenationCheckBox = new JCheckBox();
         autoCompletionSmartQuotesLabel = new JLabel();
         autoCompletionSmartQuotesCheckBox = new JCheckBox();
-        autoStringConcatenationCheckBox = new JCheckBox();
+
+        Mnemonics.setLocalizedText(autoStringConcatenationCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoStringConcatenationCheckBox.text")); // NOI18N
 
         Mnemonics.setLocalizedText(autoCompletionSmartQuotesLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionSmartQuotesLabel.text")); // NOI18N
 
         Mnemonics.setLocalizedText(autoCompletionSmartQuotesCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionSmartQuotesCheckBox.text")); // NOI18N
-
-        Mnemonics.setLocalizedText(autoStringConcatenationCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoStringConcatenationCheckBox.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -133,8 +133,7 @@ public class CodeCompletionPanel extends JPanel {
                 .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(autoCompletionSmartQuotesLabel)
-                    .addComponent(autoCompletionSmartQuotesCheckBox)
-                    .addComponent(autoStringConcatenationCheckBox))
+                    .addComponent(autoCompletionSmartQuotesCheckBox))
                 .addContainerGap(30, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
@@ -144,8 +143,6 @@ public class CodeCompletionPanel extends JPanel {
                 .addComponent(autoCompletionSmartQuotesLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(autoCompletionSmartQuotesCheckBox)
-                .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(autoStringConcatenationCheckBox)
                 .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
