@@ -61,6 +61,7 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.Lines;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -182,6 +183,10 @@ public class JsHintsProvider implements HintsProvider {
                     Set<Integer> linesWithHints = new HashSet<Integer>();
 
                     for (Error error : errors) {
+                        FileObject fo = error.getFile();
+                        if (fo == null) {
+                            continue;
+                        }
                         boolean contains = false;
                         try {
                             int line = lines.getLineIndex(error.getStartPosition());
@@ -192,9 +197,10 @@ public class JsHintsProvider implements HintsProvider {
 
                         int start = snapshot.getOriginalOffset(error.getStartPosition());
                         int end = snapshot.getOriginalOffset(error.getEndPosition());
+
                         Hint h = new Hint(new JsErrorRule(),
                                 error.getDisplayName(),
-                                error.getFile(),
+                                fo,
                                 new OffsetRange(start, end),
                                 contains ? Collections.<HintFix>emptyList() : errorFixes,
                                 100);
@@ -203,10 +209,11 @@ public class JsHintsProvider implements HintsProvider {
                 }
             }
 
-            if (!defaultFixes.isEmpty()) {
+            FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
+            if (fo != null && !defaultFixes.isEmpty()) {
                 Hint h = new Hint(new JsSwitchRule(),
                         Bundle.MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR(),
-                        parserResult.getSnapshot().getSource().getFileObject(),
+                        fo,
                         new OffsetRange(0, 0),
                         defaultFixes,
                         50);
