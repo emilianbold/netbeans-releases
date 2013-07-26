@@ -303,6 +303,7 @@ public class ProgressPanel extends JPanel {
         summaryPanelHolder = new JPanel();
         progressPanelHolder = new JPanel();
         progressMessagePanelHolder = new JPanel();
+
         Mnemonics.setLocalizedText(autoCloseCheckBox, NbBundle.getMessage(ProgressPanel.class, "ProgressPanel.autoCloseCheckBox.text")); // NOI18N
 
         summaryPanelHolder.setLayout(new BorderLayout());
@@ -314,16 +315,25 @@ public class ProgressPanel extends JPanel {
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(Alignment.LEADING).addComponent(summaryPanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addComponent(summaryPanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-
-                .addGroup(layout.createParallelGroup(Alignment.LEADING).addComponent(progressPanelHolder, GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE).addComponent(progressMessagePanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)).addContainerGap())
+                .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                    .addComponent(progressPanelHolder, GroupLayout.DEFAULT_SIZE, 383, Short.MAX_VALUE)
+                    .addComponent(progressMessagePanelHolder, GroupLayout.DEFAULT_SIZE, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap())
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(Alignment.LEADING).addGroup(layout.createSequentialGroup()
+            layout.createParallelGroup(Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
-
-                .addComponent(summaryPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.UNRELATED).addComponent(progressPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addPreferredGap(ComponentPlacement.RELATED).addComponent(progressMessagePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE).addGap(0, 0, 0))
+                .addComponent(summaryPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
+                .addComponent(progressPanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(progressMessagePanelHolder, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 

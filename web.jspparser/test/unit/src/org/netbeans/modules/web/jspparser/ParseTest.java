@@ -138,7 +138,8 @@ public class ParseTest extends NbTestCase {
     public JspParserAPI.ParseResult parserTestInProject(String projectFolderName, String pagePath) throws Exception {
         FileObject jspFo = TestUtil.getProjectFile(this, projectFolderName, pagePath);
         WebModule webModule = TestUtil.getWebModule(jspFo);
-        JspParserAPI jspParser = JspParserFactory.getJspParser();
+        // every test should have new environment (parser) to not influence the other one (by running in various order)
+        JspParserAPI jspParser = new JspParserImpl();
         JspParserAPI.ParseResult result = jspParser.analyzePage(jspFo, webModule, JspParserAPI.ERROR_IGNORE);
         assertNotNull("The result from the parser was not obtained.", result);
 
