@@ -86,7 +86,7 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
-                        <specification-version>1.35</specification-version>
+                        <specification-version>1.49</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -362,7 +362,7 @@ made subject to such option by the copyright holder.
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.40</specification-version>
+                        <specification-version>1.42</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -411,6 +411,14 @@ made subject to such option by the copyright holder.
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>8.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.openide.windows</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>6.64</specification-version>
                     </run-dependency>
                 </dependency>
             </module-dependencies>
@@ -505,7 +513,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.maven.spi.debug</package>
                 <package>org.netbeans.modules.maven.spi.grammar</package>
                 <package>org.netbeans.modules.maven.spi.nodes</package>
-                <package>org.netbeans.modules.maven.spi.queries</package>                
+                <package>org.netbeans.modules.maven.spi.queries</package>
             </friend-packages>
             <extra-compilation-unit>
                 <package-root>mavensrc</package-root>

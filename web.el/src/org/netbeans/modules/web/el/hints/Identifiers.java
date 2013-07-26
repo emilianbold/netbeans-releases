@@ -109,7 +109,7 @@ public final class Identifiers extends ELRule {
                     } else if (node instanceof AstIdentifier) {
                         if (ELTypeUtilities.resolveElement(info, each, node) == null
                                 // issue #232089 - cc.attrs is marked as an Unknown property
-                                || ELTypeUtilities.isRawObjectReference(info, node)) {
+                                || ELTypeUtilities.isRawObjectReference(info, node, false)) {
                             // currently we can't reliably resolve all identifiers, so 
                             // if we couldn't resolve the base identifier skip checking properties / methods
                             finished = true;

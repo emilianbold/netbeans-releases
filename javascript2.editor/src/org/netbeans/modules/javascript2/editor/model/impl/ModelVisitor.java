@@ -69,7 +69,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import jdk.nashorn.internal.ir.Block;
 import jdk.nashorn.internal.ir.ExecuteNode;
 import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Modifier;
@@ -92,7 +91,6 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
@@ -754,7 +752,7 @@ public class ModelVisitor extends PathNodeVisitor {
             }
 
             // mark constructors 
-            if (fncScope != null && functionNode.getKind() != FunctionNode.Kind.SCRIPT && docHolder.isClass(functionNode)) {
+            if (functionNode.getKind() != FunctionNode.Kind.SCRIPT && docHolder.isClass(functionNode)) {
                 // needs to be marked before going through the nodes
                 fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
             }
@@ -764,53 +762,50 @@ public class ModelVisitor extends PathNodeVisitor {
                 node.accept(this);
             }
 
-
-            if (fncScope != null) {
-                // check parameters and return types of the function.
-                fncScope.setDeprecated(docHolder.isDeprecated(functionNode));
-                List<Type> types = docHolder.getReturnType(functionNode);
-                if (types != null && !types.isEmpty()) {
-                    for(Type type : types) {
-                        fncScope.addReturnType(new TypeUsageImpl(type.getType(), type.getOffset(), ModelUtils.isKnownGLobalType(type.getType())));
-                    }
+            // check parameters and return types of the function.
+            fncScope.setDeprecated(docHolder.isDeprecated(functionNode));
+            List<Type> types = docHolder.getReturnType(functionNode);
+            if (types != null && !types.isEmpty()) {
+                for(Type type : types) {
+                    fncScope.addReturnType(new TypeUsageImpl(type.getType(), type.getOffset(), ModelUtils.isKnownGLobalType(type.getType())));
                 }
-                if (fncScope.areReturnTypesEmpty()) {
-                    // the function doesn't have return statement -> returns undefined
-                    fncScope.addReturnType(new TypeUsageImpl(Type.UNDEFINED, -1, false));
-                }
+            }
+            if (fncScope.areReturnTypesEmpty()) {
+                // the function doesn't have return statement -> returns undefined
+                fncScope.addReturnType(new TypeUsageImpl(Type.UNDEFINED, -1, false));
+            }
 
-                List<DocParameter> docParams = docHolder.getParameters(functionNode);
-                for (DocParameter docParameter : docParams) {
-                    DocIdentifier paramName = docParameter.getParamName();
-                    if (paramName != null) {
-                        String sParamName = paramName.getName();
-                        if(sParamName != null && !sParamName.isEmpty()) {
-                            JsObjectImpl param = (JsObjectImpl) fncScope.getParameter(sParamName);
-                            if (param != null) {
-                                for (Type type : docParameter.getParamTypes()) {
-                                    param.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), param.getOffset());
-                                }
-                                // param occurence in the doc
-                                addDocNameOccurence(param);
+            List<DocParameter> docParams = docHolder.getParameters(functionNode);
+            for (DocParameter docParameter : docParams) {
+                DocIdentifier paramName = docParameter.getParamName();
+                if (paramName != null) {
+                    String sParamName = paramName.getName();
+                    if(sParamName != null && !sParamName.isEmpty()) {
+                        JsObjectImpl param = (JsObjectImpl) fncScope.getParameter(sParamName);
+                        if (param != null) {
+                            for (Type type : docParameter.getParamTypes()) {
+                                param.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), param.getOffset());
                             }
+                            // param occurence in the doc
+                            addDocNameOccurence(param);
                         }
                     }
                 }
-
-                List<Type> extendTypes = docHolder.getExtends(functionNode);
-                if (!extendTypes.isEmpty()) {
-                    JsObject prototype = fncScope.getProperty(ModelUtils.PROTOTYPE);
-                    if (prototype == null) {
-                        prototype = new JsObjectImpl(fncScope, ModelUtils.PROTOTYPE, true, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parserResult.getSnapshot().getMimeType(), null);
-                        fncScope.addProperty(ModelUtils.PROTOTYPE, prototype);
-                    }
-                    for (Type type : extendTypes) {
-                        prototype.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), type.getOffset());
-                    }
-                }
-
-                setModifiersFromDoc(fncScope, docHolder.getModifiers(functionNode));
             }
+
+            List<Type> extendTypes = docHolder.getExtends(functionNode);
+            if (!extendTypes.isEmpty()) {
+                JsObject prototype = fncScope.getProperty(ModelUtils.PROTOTYPE);
+                if (prototype == null) {
+                    prototype = new JsObjectImpl(fncScope, ModelUtils.PROTOTYPE, true, OffsetRange.NONE, EnumSet.of(Modifier.PUBLIC), parserResult.getSnapshot().getMimeType(), null);
+                    fncScope.addProperty(ModelUtils.PROTOTYPE, prototype);
+                }
+                for (Type type : extendTypes) {
+                    prototype.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), type.getOffset());
+                }
+            }
+
+            setModifiersFromDoc(fncScope, docHolder.getModifiers(functionNode));
 
             for (FunctionNode fn : functions) {
                 // go through all functions defined as function fn () {...}
