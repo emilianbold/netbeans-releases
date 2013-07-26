@@ -57,6 +57,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
 import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 
 /**
@@ -102,6 +103,10 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         return true;
     }
 
+    private boolean isSmartQuotingEnabled() {
+        return OptionsUtils.forLanguage(language).autoCompletionSmartQuotes();
+    }
+
     @Override
     public void afterInsert(final Context context) throws BadLocationException {
         final BaseDocument doc = (BaseDocument) context.getDocument();
@@ -143,8 +148,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                         case '(':
                         case '[':
                             if (!isInsertMatchingEnabled()) {
-                            break;
-                        }
+                                break;
+                            }
                         case '}':
                         case ')':
                         case ']':
@@ -206,7 +211,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         boolean isTemplate = GsfUtilities.isCodeTemplateEditing(doc);
 
         if (selection != null && selection.length() > 0) {    
-            if (!isTemplate && (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[')) {
+            if (!isTemplate && (((ch == '"' || ch == '\'') && isSmartQuotingEnabled())
+                    || ((ch == '(' || ch == '{' || ch == '[')) && isInsertMatchingEnabled())) {
                     // Bracket the selection
                     char firstChar = selection.charAt(0);
                     if (firstChar != ch) {
@@ -288,7 +294,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             beginTokenId = JsTokenId.REGEXP_BEGIN;
         }
 
-        if (stringTokens != null) {
+        if (stringTokens != null && isSmartQuotingEnabled()) {
             completeQuote(context, ch, stringTokens, beginTokenId, isTemplate);
         }
     }
