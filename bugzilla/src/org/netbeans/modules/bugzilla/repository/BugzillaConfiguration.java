@@ -44,6 +44,7 @@ package org.netbeans.modules.bugzilla.repository;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaCustomField;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
@@ -145,7 +146,9 @@ public class BugzillaConfiguration {
         if(rc == null) {
             return Collections.emptyList();
         }
-        return rc.getStatusValues();
+        List<String> ret = new LinkedList<String>(rc.getOpenStatusValues());
+        ret.addAll(rc.getClosedStatusValues());
+        return ret;
     }
 
     /**

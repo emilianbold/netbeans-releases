@@ -1,9 +1,9 @@
-Name: Mylyn Commons Repositories library
-Version: 1.0.2
+Name: Eclipse Mylyn Commons Core library
+Version: 3.9.0
 License: EPL-v10
 OSR: 5852
 Origin: http://www.eclipse.org/mylyn/
-Description: Mylyn Commons SOAP library
+Description: Eclipse Mylyn Commons Core library
 
 Eclipse Public License - v 1.0
 

@@ -46,6 +46,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.text.SimpleDateFormat;
@@ -78,6 +79,7 @@ import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.eclipse.mylyn.tasks.core.data.TaskDataCollector;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.bugzilla.util.FileUtils;
 
 /**
  *
@@ -416,11 +418,12 @@ public class BugzillaTest extends NbTestCase implements TestConstants {
         TaskAttribute attribute = attributes.get(0);
         TaskAttachmentMapper attachment = TaskAttachmentMapper.createFrom(attribute);
         ByteArrayOutputStream os = new ByteArrayOutputStream();
-        brc.getClientManager().getClient(repository, nullProgressMonitor).getAttachmentData(attachment.getAttachmentId(), os, nullProgressMonitor);
+        InputStream is = brc.getClientManager().getClient(repository, nullProgressMonitor).getAttachmentData(attachment.getAttachmentId(), nullProgressMonitor);
+        FileUtils.copyStream(is, os);
 
         try {
-//			byte[] d = new byte[4];
-//			os.read(d);
+//          byte[] d = new byte[4];
+//          os.read(d);
 			assertEquals(content, os.toString());
         } finally {
 			if(os != null) os.close();
