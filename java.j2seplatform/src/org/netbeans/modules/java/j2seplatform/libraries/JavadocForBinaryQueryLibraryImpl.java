@@ -52,7 +52,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
@@ -74,7 +74,7 @@ import org.openide.util.Exceptions;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.java.queries.JavadocForBinaryQueryImplementation.class, position=150)
 public class JavadocForBinaryQueryLibraryImpl implements JavadocForBinaryQueryImplementation {
     
-    private final Map<URI,URL> normalizedURLCache = new HashMap<URI, URL>();
+    private final Map<URI,URL> normalizedURLCache = new ConcurrentHashMap<>();
 
     /** Default constructor for lookup. */
     public JavadocForBinaryQueryLibraryImpl() {
