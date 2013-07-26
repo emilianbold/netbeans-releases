@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.javascript2.editor.formatter.ui;
 
+import org.netbeans.modules.javascript2.editor.formatter.Utils;
 import java.io.IOException;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.javascript2.editor.formatter.FmtOptions;

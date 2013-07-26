@@ -71,6 +71,7 @@ import org.netbeans.modules.javascript2.editor.formatter.FmtOptions;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.*;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.formatter.Utils;
 
 /**
  *

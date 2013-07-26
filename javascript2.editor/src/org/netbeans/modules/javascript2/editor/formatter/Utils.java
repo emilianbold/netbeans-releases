@@ -40,9 +40,8 @@
  * Portions Copyrighted 2010 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.javascript2.editor.formatter.ui.json;
+package org.netbeans.modules.javascript2.editor.formatter;
 
-import org.netbeans.modules.javascript2.editor.formatter.ui.*;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
