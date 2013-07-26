@@ -71,6 +71,7 @@ import org.openide.util.Exceptions;
 public class InstanceImpl implements Instance {
     
     private ObjectVariable var;
+    private JavaClass varClass;
     protected HeapImpl heap;
     
     /** Creates a new instance of InstanceImpl */
@@ -80,7 +81,7 @@ public class InstanceImpl implements Instance {
     }
     
     public static Instance createInstance(HeapImpl heap, ObjectVariable var) {
-        Instance instance;
+        InstanceImpl instance;
         JPDAClassType type = var.getClassType();
         if (type instanceof JPDAArrayType) {
             boolean isPrimitiveArray = false;
@@ -93,16 +94,21 @@ public class InstanceImpl implements Instance {
         } else {
             instance = new InstanceImpl(heap, var);
         }
+        instance.varClass = getJavaClass(heap, var);
         return instance;
     }
 
-    public JavaClass getJavaClass() {
+    private static JavaClass getJavaClass(HeapImpl heap, ObjectVariable var) {
         JPDAClassType type = var.getClassType();
         if (type != null) {
             return new JavaClassImpl(heap, type);
         } else {
             return new JavaClassImpl(var.getType());
         }
+    }
+    
+    public JavaClass getJavaClass() {
+        return varClass;
     }
 
     public long getInstanceId() {

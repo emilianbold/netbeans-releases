@@ -74,7 +74,7 @@ import org.netbeans.modules.team.server.ui.common.LinkButton;
 import org.netbeans.modules.team.server.ui.common.EditInstanceAction;
 import org.netbeans.modules.team.server.ui.common.OneProjectDashboard;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
-import org.netbeans.modules.team.server.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.netbeans.modules.team.commons.treelist.ListNode;
 import org.netbeans.modules.team.commons.treelist.SelectionList;
 import org.openide.util.ImageUtilities;

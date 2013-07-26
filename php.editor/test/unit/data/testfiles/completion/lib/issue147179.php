@@ -4,6 +4,6 @@ class Test147179 {
 }
 ?>
 
-<? Test147179::foo(); ?>
+<?php Test147179::foo(); ?>
 
 <?= Test147179::foo() ?>

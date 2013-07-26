@@ -86,6 +86,14 @@ public class ValidateCommand extends BugtrackingCommand {
         return sb.toString();
     }
 
+    String getUrl() {
+        return taskRepository.getUrl();
+    }
+    
+    String getUser() {
+        return taskRepository.getCredentials(AuthenticationType.REPOSITORY).getUserName();
+    }
+    
     private void log() {
         Bugzilla.LOG.log(
             Level.INFO,

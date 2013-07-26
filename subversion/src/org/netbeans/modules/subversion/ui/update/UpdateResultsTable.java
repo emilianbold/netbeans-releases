@@ -89,7 +89,7 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
     private JScrollPane component;
     private UpdateResultNode[] nodes = new UpdateResultNode[0];
     
-    private String [] tableColumns; 
+    private String [] tableColumns = new String[0];
     private TableSorter sorter;
     /**
      * File is in conflict and is not a directory
@@ -150,10 +150,10 @@ class UpdateResultsTable implements MouseListener, ListSelectionListener, Ancest
         table.addMouseListener(this);
         table.setDefaultRenderer(Node.Property.class, new UpdateResultsTable.SyncTableCellRenderer());
         table.getSelectionModel().addListSelectionListener(this);
-        table.addAncestorListener(this);
         table.getAccessibleContext().setAccessibleName(NbBundle.getMessage(UpdateResultsTable.class, "ACSN_UpdateResults")); // NOI18N
         table.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(UpdateResultsTable.class, "ACSD_UpdateResults")); // NOI18N
         setColumns(new String [] { UpdateResultNode.COLUMN_NAME_NAME, UpdateResultNode.COLUMN_NAME_STATUS, UpdateResultNode.COLUMN_NAME_PATH });
+        table.addAncestorListener(this);
     }
 
     void setDefaultColumnSizes() {

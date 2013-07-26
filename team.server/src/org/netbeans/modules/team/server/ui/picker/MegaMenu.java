@@ -55,10 +55,10 @@ import javax.swing.JPanel;
 import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
-import org.netbeans.modules.team.server.TeamServerManager;
 import org.netbeans.modules.team.server.ui.common.TeamServerComparator;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.commons.treelist.ListNode;
+import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.openide.util.WeakListeners;
 
 /**

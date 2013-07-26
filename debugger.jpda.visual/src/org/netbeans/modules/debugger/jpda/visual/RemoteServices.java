@@ -394,6 +394,15 @@ public class RemoteServices {
                 final CountDownLatch latch = new CountDownLatch(1);
                 lock.unlock();
                 lock = null;
+                VirtualMachine vm = ((JPDAThreadImpl) thread).getThreadReference().virtualMachine();
+                ClassObjectReference serviceClassObject;
+                synchronized (remoteServiceClasses) {
+                    serviceClassObject = remoteServiceClasses.get(((JPDAThreadImpl) thread).getDebugger());
+                }
+                if (serviceClassObject == null) {
+                    // The debugger session has finished already, do not run anything.
+                    return ;
+                }
                 switch(sType) {
                     case AWT: {
                         runOnBreakpoint(
@@ -403,11 +412,6 @@ public class RemoteServices {
                             run,
                             latch
                         );
-                        VirtualMachine vm = ((JPDAThreadImpl) thread).getThreadReference().virtualMachine();
-                        ClassObjectReference serviceClassObject;
-                        synchronized (remoteServiceClasses) {
-                            serviceClassObject = remoteServiceClasses.get(((JPDAThreadImpl) thread).getDebugger());
-                        }
                         try {
                             ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
                             Field awtAccess = ReferenceTypeWrapper.fieldByName(serviceClass, "awtAccess"); // NOI18N
@@ -427,11 +431,6 @@ public class RemoteServices {
                             run,
                             latch
                         );
-                        VirtualMachine vm = ((JPDAThreadImpl) thread).getThreadReference().virtualMachine();
-                        ClassObjectReference serviceClassObject;
-                        synchronized (remoteServiceClasses) {
-                            serviceClassObject = remoteServiceClasses.get(((JPDAThreadImpl) thread).getDebugger());
-                        }
                         try {
                             ClassType serviceClass = (ClassType) ClassObjectReferenceWrapper.reflectedType(serviceClassObject);//getClass(vm, "org.netbeans.modules.debugger.jpda.visual.remote.RemoteService");
                             Field fxAccess = ReferenceTypeWrapper.fieldByName(serviceClass, "fxAccess"); // NOI18N

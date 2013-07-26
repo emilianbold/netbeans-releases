@@ -1,4 +1,4 @@
-<?
+<?php
 class A {
     public function one() {
         return  'one';

@@ -1,4 +1,4 @@
-<?
+<?php
 
 function someStupidFunction() {
     //this is function body

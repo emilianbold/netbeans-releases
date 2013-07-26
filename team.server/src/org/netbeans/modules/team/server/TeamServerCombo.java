@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import javax.accessibility.AccessibleContext;
 import javax.swing.JComboBox;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 import org.openide.util.NbBundle;

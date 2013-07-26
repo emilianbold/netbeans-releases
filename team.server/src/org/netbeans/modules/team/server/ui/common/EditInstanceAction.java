@@ -49,7 +49,7 @@ import javax.swing.AbstractAction;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
-import org.netbeans.modules.team.server.ui.nodes.TeamServerInstanceCustomizer;
+import org.netbeans.modules.team.server.TeamServerInstanceCustomizer;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;

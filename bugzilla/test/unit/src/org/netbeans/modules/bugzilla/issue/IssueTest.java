@@ -53,14 +53,18 @@ import java.util.logging.LogRecord;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugzilla.*;
 import java.util.logging.Level;
+import javax.swing.SwingUtilities;
+import junit.framework.Test;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
+import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.bugtracking.BugtrackingManager;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.IssueField;
+import org.netbeans.modules.bugzilla.repository.RepositoryTest;
 import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.modules.mylyn.util.NbTask;
 import org.netbeans.modules.mylyn.util.SubmitCommand;
@@ -91,6 +95,10 @@ public class IssueTest extends NbTestCase implements TestConstants {
         BugtrackingUtil.getBugtrackingConnectors(); // ensure conector
     }
 
+    public static Test suite () {
+        return NbModuleSuite.createConfiguration(IssueTest.class).gui(false).suite();
+    }
+        
 //    public void testStatusOpenIssue() throws MalformedURLException, CoreException, InterruptedException, IOException, Throwable {
 //        long ts = System.currentTimeMillis();
 //        String summary = "somary" + ts;
@@ -400,7 +408,7 @@ public class IssueTest extends NbTestCase implements TestConstants {
         setFieldValue(td, IssueField.NEWCC, REPO_USER);
         getRepository().getExecutor().execute(new SubmitCommand(brc, getRepository().getTaskRepository(), td));
         issue.refresh();
-
+        
         assertEquals(REPO_USER, issue.getFieldValue(IssueField.CC));
         assertStatus(BugzillaIssue.FIELD_STATUS_MODIFIED, issue, IssueField.CC);
 
@@ -812,6 +820,10 @@ public class IssueTest extends NbTestCase implements TestConstants {
                 return "Modified";
             case BugzillaIssue.FIELD_STATUS_UPTODATE :
                 return "Uptodate";
+            case BugzillaIssue.FIELD_STATUS_OUTGOING :
+                return "Outgoing";
+            case BugzillaIssue.FIELD_STATUS_CONFLICT :
+                return "Conflict";
             default :
                 throw new IllegalStateException("Wrong status " + s);
         }
