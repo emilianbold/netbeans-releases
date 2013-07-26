@@ -41,30 +41,29 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.actions;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-
 import org.netbeans.jellytools.NewJavaFileNameLocationStepOperator;
 import org.netbeans.jellytools.NewFileWizardOperator;
 import org.netbeans.jellytools.EditorOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.JemmyProperties;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 
 /**
  * Test create Web Pack projects
  *
- * @author  mkhramov@netbeans.org, mmirilovic@netbeans.org
+ * @author mkhramov@netbeans.org, mmirilovic@netbeans.org
  */
 public class CreateScriptingPackFilesTest extends PerformanceTestCase {
-   
+
     private String doccategory, doctype, docname, suffix, projectfolder, buildedname;
     private NewJavaFileNameLocationStepOperator location;
     private String project_name = "";
@@ -72,89 +71,85 @@ public class CreateScriptingPackFilesTest extends PerformanceTestCase {
 
     /**
      * Creates a new instance of CreateWebPackFiles
+     *
      * @param testName the name of the test
      */
     public CreateScriptingPackFilesTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 2000;
     }
-    
+
     /**
      * Creates a new instance of CreateWebPackFiles
+     *
      * @param testName the name of the test
      * @param performanceDataName measured values will be saved under this name
      */
     public CreateScriptingPackFilesTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 2000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(CreateScriptingPackFilesTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(CreateScriptingPackFilesTest.class).suite();
     }
-    
-    public void testCreatePHPPage(){
+
+    public void testCreatePHPPage() {
         docname = "PHPPage"; //NOI18N
         doccategory = "PHP"; //NOI18N        
-        doctype ="PHP Web Page"; //NOI18N
+        doctype = "PHP Web Page"; //NOI18N
         suffix = ".php";
         projectfolder = ScriptingUtilities.SOURCE_PACKAGES;
-        project_name = Projects.PHP_PROJECT;        
+        project_name = Projects.PHP_PROJECT;
         doMeasurement();
     }
-    
-    public void testCreatePHPFile(){
+
+    public void testCreatePHPFile() {
         docname = "PHPFile"; //NOI18N
         doccategory = "PHP"; //NOI18N        
-        doctype ="PHP File"; //NOI18N
-    	suffix = ".php";
+        doctype = "PHP File"; //NOI18N
+        suffix = ".php";
         projectfolder = ScriptingUtilities.SOURCE_PACKAGES;
         project_name = Projects.PHP_PROJECT;
-    	doMeasurement();
+        doMeasurement();
     }
-    
-    
-    public ComponentOperator open(){
-        repaintManager().addRegionFilter(repaintManager().EDITOR_FILTER);
+
+    public ComponentOperator open() {
+        repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         location.finish();
         return new EditorOperator(buildedname);
     }
-    
+
     @Override
-    public void initialize(){
+    public void initialize() {
         closeAllModal();
     }
 
-    public void prepare(){
+    public void prepare() {
         try {
             projectRoot = ScriptingUtilities.invokePTO().getProjectRootNode(project_name);
             projectRoot.select();
         } catch (org.netbeans.jemmy.TimeoutExpiredException ex) {
             fail("Cannot find and select project root node");
         }
-   
+
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.QUEUE_MODEL_MASK);
         NewFileWizardOperator wizard = NewFileWizardOperator.invoke();
         JemmyProperties.setCurrentDispatchingModel(JemmyProperties.ROBOT_MODEL_MASK);
-        
+
         wizard.selectCategory(doccategory);
         wizard.selectFileType(doctype);
         wizard.next();
 
         location = new NewJavaFileNameLocationStepOperator();
-        buildedname = docname+"_"+System.currentTimeMillis();
+        buildedname = docname + "_" + System.currentTimeMillis();
         location.txtObjectName().setText(buildedname);
     }
 
     @Override
-    public void close(){
+    public void close() {
         EditorOperator.closeDiscardAll();
     }
-
 }

@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.setup;
 
 import java.io.IOException;
@@ -55,7 +54,7 @@ import org.openide.util.Exceptions;
  * @author mkhramov@netbeans.org
  */
 public class ScriptingSetup extends PerformanceTestCase2 {
-    
+
     public ScriptingSetup(String testName) {
         super(testName);
     }
@@ -67,7 +66,7 @@ public class ScriptingSetup extends PerformanceTestCase2 {
     public void testAddGlassFishServer() {
         CommonUtilities.addApplicationServer();
     }
-    
+
     public void testOpenScriptingProject() {
 
         try {

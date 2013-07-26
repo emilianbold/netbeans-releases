@@ -41,10 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages;
 
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.menus.*;
@@ -54,6 +53,7 @@ import org.netbeans.performance.languages.menus.*;
  * @author mkhramov@netbeans.org
  */
 public class ScriptingMeasureMenusTest {
+
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
@@ -61,13 +61,11 @@ public class ScriptingMeasureMenusTest {
         System.setProperty("suitename", ScriptingMeasureMenusTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Scripting Menus suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-        .addTest(ScriptingProjectNodePopupTest.class)
-        .addTest(ScriptingNodePopupTest.class)
-        .addTest(EditorMenuPopupTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
-        
+        suite.addTest(JellyTestCase.emptyConfiguration().reuseUserDir(true)
+                .addTest(ScriptingProjectNodePopupTest.class)
+                .addTest(ScriptingNodePopupTest.class)
+                .addTest(EditorMenuPopupTest.class)
+                .suite());
         return suite;
     }
-
 }
