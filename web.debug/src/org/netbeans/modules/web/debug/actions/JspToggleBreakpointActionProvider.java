@@ -92,6 +92,14 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
     public void propertyChange (PropertyChangeEvent evt) {
         //#67910 - setting of a bp allowed only in JSP contained in some web module
         FileObject fo = Context.getCurrentFile();
+        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, isJSP(fo));
+        if ( debugger != null && 
+             debugger.getState () == debugger.STATE_DISCONNECTED
+        ) 
+            destroy ();
+    }
+    
+    private boolean isJSP(FileObject fo) {
         WebModule owner = null;
         if (fo != null) {
             owner = WebModule.getWebModule(fo);
@@ -108,11 +116,7 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
         //we allow bp setting only if the file is JSP or TAG file
         //TODO it should be solved by adding new API into j2eeserver which should announce whether the target server
         //supports JSP debugging or not
-        setEnabled(ActionsManager.ACTION_TOGGLE_BREAKPOINT, owner != null && webRoot != null && isJsp);
-        if ( debugger != null && 
-             debugger.getState () == debugger.STATE_DISCONNECTED
-        ) 
-            destroy ();
+        return owner != null && webRoot != null && isJsp;
     }
     
     public Set getActions () {
@@ -124,8 +128,11 @@ public class JspToggleBreakpointActionProvider extends ActionsProviderSupport im
         
         // 1) get source name & line number
         int ln = Context.getCurrentLineNumber ();
-        String url = Context.getCurrentURL ();
-        if (url == null) return;
+        FileObject fo = Context.getCurrentFile();
+        if (!isJSP(fo)) {
+            return ;
+        }
+        String url = fo.toURL().toString();
                 
         // 2) find and remove existing line breakpoint
         JspLineBreakpoint lb = getJspBreakpointAnnotationListener().findBreakpoint(url, ln);        

@@ -162,4 +162,8 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug218848.cpp", 260, 15, "bug218848.cpp", 248, 9);
     }        
     
+    public void testBug232383() throws Exception {
+        // Bug 232383 - auto const & identifier cannot be resolved
+        performTest("bug232383.cpp", 31, 20, "bug232383.cpp", 3, 9);
+    }    
 }
