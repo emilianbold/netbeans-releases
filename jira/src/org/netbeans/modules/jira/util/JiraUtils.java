@@ -57,6 +57,7 @@ import java.util.ResourceBundle;
 import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.mylyn.tasks.core.data.TaskAttribute;
@@ -384,5 +385,13 @@ public class JiraUtils {
     public static void openQuery(JiraQuery jiraQuery) {
         Repository repository = getRepository(jiraQuery.getRepository());
         Jira.getInstance().getBugtrackingFactory().openQuery(repository, jiraQuery);
+    }    
+    
+    public static void runInAWT(Runnable r) {
+        if(SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
     }    
 }

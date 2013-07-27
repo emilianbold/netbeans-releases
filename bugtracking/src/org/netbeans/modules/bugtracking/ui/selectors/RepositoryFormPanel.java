@@ -58,6 +58,7 @@ import javax.swing.event.ChangeListener;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import static java.lang.Character.MAX_RADIX;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.team.TeamRepositoryPanel;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
@@ -159,17 +160,24 @@ public class RepositoryFormPanel extends JPanel {
         }
     }
 
-    private void updateErrorMessage(String errorMessage) {
-        if (errorMessage != null) {
-            errorMessage = errorMessage.trim();
-        }
-
-        if ((errorMessage != null) && (errorMessage.length() != 0)) {
-            errorLabel.setText(errorMessage);
-            errorLabel.setVisible(true);
+    private void updateErrorMessage(final String errorMessage) {
+        final String msg = errorMessage != null ? errorMessage.trim() : null;
+        Runnable r = new Runnable() {
+            @Override
+            public void run() {
+                if (msg != null && msg.length() != 0) {
+                    errorLabel.setText(msg);
+                    errorLabel.setVisible(true);
+                } else {
+                    errorLabel.setVisible(false);
+                    errorLabel.setText(" ");                                    //NOI18N
+                }
+            }
+        };
+        if(SwingUtilities.isEventDispatchThread()) {
+            r.run();
         } else {
-            errorLabel.setVisible(false);
-            errorLabel.setText(" ");                                    //NOI18N
+            SwingUtilities.invokeLater(r);
         }
     }
 
