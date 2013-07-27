@@ -249,8 +249,8 @@ namespace bug218848 {
         }
     };
     int main() {
-        vector<Foo> v;
-        Foo a[10];
+        vector<Foo*> v;
+        Foo *a[10];
 
         for (auto p : a) {
           p->bar();
