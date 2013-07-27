@@ -49,7 +49,6 @@ import java.util.List;
 import java.util.Map;
 import org.netbeans.modules.cnd.apt.impl.support.APTBaseMacroMap;
 import org.netbeans.modules.cnd.apt.impl.support.APTHandlersSupportImpl;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 
 /**
  * utilities for working with APT states (macro-state, include-state, preproc-state)
@@ -66,16 +65,16 @@ public class APTHandlersSupport {
         return APTHandlersSupportImpl.createPreprocHandler(macroMap, inclHandler, compileContext, lang, flavor);
     }
     
-    public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file, MakeConfiguration projectConfiguration) {
-        return APTHandlersSupportImpl.createEmptyPreprocHandler(file, projectConfiguration);
+    public static APTPreprocHandler createEmptyPreprocHandler(StartEntry file) {
+        return APTHandlersSupportImpl.createEmptyPreprocHandler(file);
     }
 
     public static void invalidatePreprocHandler(APTPreprocHandler preprocHandler) {
         APTHandlersSupportImpl.invalidatePreprocHandler(preprocHandler);
     }
  
-    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch, MakeConfiguration projectConfiguration) {
-        return APTHandlersSupportImpl.createIncludeHandler(startFile, sysIncludePaths, userIncludePaths, fileSearch, projectConfiguration);
+    public static APTIncludeHandler createIncludeHandler(StartEntry startFile, List<IncludeDirEntry> sysIncludePaths, List<IncludeDirEntry> userIncludePaths, APTFileSearch fileSearch) {
+        return APTHandlersSupportImpl.createIncludeHandler(startFile, sysIncludePaths, userIncludePaths, fileSearch);
     }
 
     public static long getCompilationUnitCRC(APTPreprocHandler preprocHandler){
