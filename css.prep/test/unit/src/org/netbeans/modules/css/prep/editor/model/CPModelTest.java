@@ -66,9 +66,17 @@ public class CPModelTest extends CssTestBase {
 
     @Override
     protected void setUp() throws Exception {
+        super.setUp();
         setScssSource();
+        CPModel.topLevelSnapshotMimetype = "text/sass";
     }
 
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        CPModel.topLevelSnapshotMimetype = null;
+    }
+    
     public void testVariables() {
         String source = "#navbar {\n"
                 + "  $navbar-width: 800px;\n"

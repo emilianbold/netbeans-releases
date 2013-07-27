@@ -1,4 +1,4 @@
-<?
+<?php
 interface If1 { public function testIf1(); }
 interface If2 { public function testIf2(); }
 class TestClass {

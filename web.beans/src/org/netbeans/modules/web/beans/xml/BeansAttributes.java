@@ -48,6 +48,7 @@ import org.netbeans.modules.xml.xam.dom.Attribute;
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public enum BeansAttributes implements Attribute {
+    XMLNS("xmlns", String.class), //NOI18N
     VERSION("version", String.class), //NOI18N
     BEAN_DISCOVERY_MODE("bean-discovery-mode", String.class); //NOI18N
 

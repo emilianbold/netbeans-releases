@@ -117,11 +117,9 @@ import org.netbeans.modules.cnd.utils.MIMEExtensions;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
-import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.spi.java.classpath.ClassPathFactory;
 import org.netbeans.spi.java.classpath.ClassPathImplementation;
-import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.FilteringPathResourceImplementation;
 import org.netbeans.spi.java.classpath.PathResourceImplementation;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
@@ -535,10 +533,12 @@ public final class MakeProject implements Project, MakeProjectListener {
 
     private synchronized void registerClassPath(boolean register) {
         if (register) {
+            MakeProjectClassPathProvider.addProjectCP(sourcepath.getClassPath());
             if (MakeOptions.getInstance().isFullFileIndexer()) {
                 GlobalPathRegistry.getDefault().register(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
             }
         } else {
+            MakeProjectClassPathProvider.removeProjectCP(sourcepath.getClassPath());
             try {
                 GlobalPathRegistry.getDefault().unregister(MakeProjectPaths.SOURCES, sourcepath.getClassPath());
             } catch (Throwable ex) {
@@ -1397,7 +1397,6 @@ public final class MakeProject implements Project, MakeProjectListener {
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
             MakeOptions.getInstance().addPropertyChangeListener(indexerListener);
-            MakeProjectClassPathProvider.addProjectSources(sources);
             // project is in opened state
             openStateAndLock.set(true);
             // post-initialize configurations in external worker
@@ -1454,7 +1453,6 @@ public final class MakeProject implements Project, MakeProjectListener {
             save();            
             MakeOptions.getInstance().removePropertyChangeListener(indexerListener);
             MakeProjectFileProviderFactory.removeSearchBase(this);
-            MakeProjectClassPathProvider.removeProjectSources(sources);
             // project is in closed state
             openStateAndLock.set(false);
             RP.post(new Runnable() {

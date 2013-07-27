@@ -80,7 +80,6 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.client.api.ODCSException;
@@ -90,9 +89,11 @@ import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
-import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import static org.netbeans.modules.odcs.ui.Bundle.*;
 import org.netbeans.modules.odcs.ui.api.OdcsUIUtil;
+import org.netbeans.modules.team.ide.spi.IDEServices;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle.Messages;
 
 /**
@@ -112,6 +113,9 @@ public class NameWizardPanelGUI extends JPanel {
 
         panel = pnl;
         initComponents();
+        
+        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
+        proxyConfigButton.setVisible(ide != null && ide.providesProxyConfiguration());
         
         ODCSServer server = panel.getServer();
         assert server != null;
@@ -417,7 +421,10 @@ public class NameWizardPanelGUI extends JPanel {
 }//GEN-LAST:event_loginButtonActionPerformed
 
     private void proxyConfigButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_proxyConfigButtonActionPerformed
-        OptionsDisplayer.getDefault().open("General"); //NOI18N
+        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
+        if(ide != null && ide.providesProxyConfiguration()) {
+            ide.openProxyConfiguration();
+        }
     }//GEN-LAST:event_proxyConfigButtonActionPerformed
 
     private void projectWikiComboBoxActionPerformed(ActionEvent evt) {//GEN-FIRST:event_projectWikiComboBoxActionPerformed

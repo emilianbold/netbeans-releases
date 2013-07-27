@@ -136,7 +136,8 @@ public class CordovaPerformer implements BuildPerformer {
     })
     @Override
     public ExecutorTask perform(final String target, final Project project) {
-        if (ClientProjectUtilities.getStartFile(project) == null) {
+        if ((target.startsWith("build") || target.startsWith("sim"))
+                && ClientProjectUtilities.getStartFile(project) == null) {
             DialogDisplayer.getDefault().notify(
                     new DialogDescriptor.Message(
                     Bundle.ERR_StartFileNotFound()));

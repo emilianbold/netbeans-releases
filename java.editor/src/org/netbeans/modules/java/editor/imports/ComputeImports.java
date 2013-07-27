@@ -92,6 +92,7 @@ import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.Symbols;
 import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
@@ -412,7 +413,9 @@ public class ComputeImports {
         public Void visitIdentifier(IdentifierTree tree, Map<String, Object> p) {
             super.visitIdentifier(tree, p);
             
-            if (getCurrentPath().getParentPath() != null && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION) {
+            boolean methodInvocation = getCurrentPath().getParentPath() != null && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION;
+            
+            if (methodInvocation) {
                 MethodInvocationTree mit = (MethodInvocationTree) getCurrentPath().getParentPath().getLeaf();
                 
                 if (mit.getMethodSelect() == tree) {
@@ -425,22 +428,35 @@ public class ComputeImports {
             }
             
 //            System.err.println("tree=" + tree);
-            Element el = info.getTrees().getElement(getCurrentPath());
+            final Element el = info.getTrees().getElement(getCurrentPath());
             if (el != null && (el.getKind().isClass() || el.getKind().isInterface() || el.getKind() == ElementKind.PACKAGE)) {
                 TypeMirror type = el.asType();
                 String simpleName = null;
                 
                 if (type != null) {
                     if (type.getKind() == TypeKind.ERROR) {
-                        boolean isAssignmentVariable = false;
+                        boolean allowImport = true;
 
                         if (getCurrentPath().getParentPath() != null && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.ASSIGNMENT) {
                             AssignmentTree at = (AssignmentTree) getCurrentPath().getParentPath().getLeaf();
 
-                            isAssignmentVariable = at.getVariable() == tree;
+                            allowImport = at.getVariable() != tree;
+                        }
+                        
+                        if (methodInvocation) {
+                            Scope s = info.getTrees().getScope(getCurrentPath());
+
+                            while (s != null) {
+                                allowImport &= !info.getElementUtilities().getLocalMembersAndVars(s, new ElementAcceptor() {
+                                    @Override public boolean accept(Element e, TypeMirror type) {
+                                        return e.getSimpleName().contentEquals(el.getSimpleName());
+                                    }
+                                }).iterator().hasNext();
+                                s = s.getEnclosingScope();
+                            }
                         }
 
-                        if (!isAssignmentVariable) {
+                        if (allowImport) {
                             simpleName = el.getSimpleName().toString();
                         }
                     }

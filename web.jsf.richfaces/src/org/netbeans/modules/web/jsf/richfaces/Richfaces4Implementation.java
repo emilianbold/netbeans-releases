@@ -78,8 +78,8 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
 
     // ICEfaces Maven resources
     private static final String MAVEN_REPO = "default:https://repository.jboss.org/nexus/content/groups/public-jboss/"; //NOI18N
-    private static final String MAVEN_DEP_CORE = "org.richfaces.core:richfaces-core-impl:4.2.3.Final:jar";      //NOI18N
-    private static final String MAVEN_DEP_UI = "org.richfaces.ui:richfaces-components-ui:4.2.3.Final:jar";      //NOI18N
+    private static final String MAVEN_DEP_CORE = "org.richfaces.core:richfaces-core-impl:4.3.3.Final:jar";      //NOI18N
+    private static final String MAVEN_DEP_UI = "org.richfaces.ui:richfaces-components-ui:4.3.3.Final:jar";      //NOI18N
 
     public static final Set<String> RF_LIBRARIES = new HashSet<String>();
     public static final Map<String, String> RF_DEPENDENCIES = new HashMap<String, String>();

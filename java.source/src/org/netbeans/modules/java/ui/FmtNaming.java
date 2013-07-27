@@ -43,57 +43,34 @@
  */
 package org.netbeans.modules.java.ui;
 
-import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
-import javax.swing.DefaultListModel;
-import javax.swing.JEditorPane;
-import javax.swing.JList;
 import javax.swing.JPanel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-
-import com.sun.source.tree.AssignmentTree;
-import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
-import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ModifiersTree;
-import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
 import javax.lang.model.type.TypeKind;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CodeStyleUtils;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
-import org.netbeans.modules.java.ui.FmtOptions.CategorySupport;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -350,130 +327,50 @@ public class FmtNaming extends javax.swing.JPanel implements Runnable {
         
     }
 
-    private static final class NamingCategorySupport extends CategorySupport {
-
-        private Source source = null;
+    private static final class NamingCategorySupport extends DocumentCategorySupport {
 
         private NamingCategorySupport(Preferences preferences, JPanel panel) {
             super(preferences, "naming", panel, NbBundle.getMessage(FmtNaming.class, "SAMPLE_Naming"), //NOI18N
                   new String[]{FmtOptions.blankLinesBeforeFields, "1"}); //NOI18N
         }
 
-        @Override
-        public void refreshPreview() {
-            final JEditorPane jep = (JEditorPane) getPreviewComponent();
-            try {
-                Class.forName(CodeStyle.class.getName(), true, CodeStyle.class.getClassLoader());
-            } catch (ClassNotFoundException cnfe) {
-                // ignore
-            }
-
+        protected void doModification(ResultIterator resultIterator) throws Exception {
             final CodeStyle codeStyle = codeStyleProducer.create(previewPrefs);
-            jep.setIgnoreRepaint(true);
-            try {
-                if (source == null) {
-                    FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("org.netbeans.samples.ClassA", "java"); //NOI18N
-                    source = Source.create(fo);
-                }
-                final Document doc = source.getDocument(true);
-                if (doc.getLength() > 0) {
-                    doc.remove(0, doc.getLength());
-                }
-                doc.insertString(0, previewText, null);
-                doc.putProperty(CodeStyle.class, codeStyle);
-                jep.setDocument(doc);
-                ModificationResult result = ModificationResult.runModificationTask(Collections.singleton(source), new UserTask() {
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
-                        copy.toPhase(Phase.RESOLVED);
-                        TreeMaker tm = copy.getTreeMaker();
-                        GeneratorUtilities gu = GeneratorUtilities.get(copy);
-                        CompilationUnitTree cut = copy.getCompilationUnit();
-                        ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
-                        List<Tree> members = new ArrayList<Tree>();
-                        String name = CodeStyleUtils.addPrefixSuffix("name",
-                                codeStyle.getFieldNamePrefix(),
-                                codeStyle.getFieldNameSuffix());
-                        VariableTree field = tm.Variable(tm.Modifiers(Collections.singleton(Modifier.PRIVATE)), name, tm.Type("String"), null);
-                        members.add(field);
-                        String cond = CodeStyleUtils.addPrefixSuffix("cond",
-                                codeStyle.getFieldNamePrefix(),
-                                codeStyle.getFieldNameSuffix());
-                        VariableTree booleanField = tm.Variable(tm.Modifiers(Collections.singleton(Modifier.PRIVATE)), cond, tm.PrimitiveType(TypeKind.BOOLEAN), null);
-                        members.add(booleanField);
-                        members.add(gu.createConstructor(ct, Collections.singletonList(field)));
-                        members.add(gu.createGetter(field));
-                        members.add(gu.createSetter(ct, field));
-                        members.add(gu.createGetter(booleanField));
-                        members.add(gu.createSetter(ct, booleanField));
-                        ModifiersTree mods = tm.Modifiers(EnumSet.of(Modifier.PRIVATE, Modifier.STATIC));
-                        ClassTree nested = tm.Class(mods, "Nested", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>emptyList()); //NOI18N
-                        members.add(nested);
-                        IdentifierTree nestedId = tm.Identifier("Nested"); //NOI18N
-                        String instance = CodeStyleUtils.addPrefixSuffix("instance",
-                                codeStyle.getStaticFieldNamePrefix(),
-                                codeStyle.getStaticFieldNameSuffix());
-                        VariableTree staticField = tm.Variable(mods, instance, nestedId, null); //NOI18N
-                        members.add(staticField);
-                        members.add(gu.createGetter(staticField));
-                        members.add(gu.createSetter(ct, staticField));
-                        ClassTree newCT = gu.insertClassMembers(ct, members);
-                        copy.rewrite(ct, newCT);
-                    }
-                });
-                result.commit();
-                final Reformat reformat = Reformat.get(doc);
-                reformat.lock();
-                try {
-                    if (doc instanceof BaseDocument) {
-                        ((BaseDocument) doc).runAtomicAsUser(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    reformat.reformat(0, doc.getLength());
-                                } catch (BadLocationException ble) {
-                                }
-                            }
-                        });
-                    } else {
-                        reformat.reformat(0, doc.getLength());
-                    }
-                } finally {
-                    reformat.unlock();
-                }
-                DataObject dataObject = DataObject.find(source.getFileObject());
-                SaveCookie sc = dataObject.getLookup().lookup(SaveCookie.class);
-                if (sc != null) {
-                    sc.save();
-                }
-            } catch (Exception ex) {
-            }
-            jep.setIgnoreRepaint(false);
-            jep.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
-            jep.repaint(100);
-        }
-
-        private static class Element {
-
-            private boolean isStatic;
-            private ElementKind kind;
-
-            @Override
-            public String toString() {
-                return (isStatic ? NbBundle.getMessage(FmtNaming.class, "VAL_gen_STATIC") + " " : "") //NOI18N
-                       + NbBundle.getMessage(FmtNaming.class, "VAL_gen_" + kind.name()); //NOI18N
-            }
-        }
-
-        private static class Visibility {
-
-            private String kind;
-
-            @Override
-            public String toString() {
-                return NbBundle.getMessage(FmtNaming.class, "VAL_gen_" + kind); //NOI18N
-            }
+            WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
+            copy.toPhase(Phase.RESOLVED);
+            TreeMaker tm = copy.getTreeMaker();
+            GeneratorUtilities gu = GeneratorUtilities.get(copy);
+            CompilationUnitTree cut = copy.getCompilationUnit();
+            ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+            List<Tree> members = new ArrayList<Tree>();
+            String name = CodeStyleUtils.addPrefixSuffix("name",
+                    codeStyle.getFieldNamePrefix(),
+                    codeStyle.getFieldNameSuffix());
+            VariableTree field = tm.Variable(tm.Modifiers(Collections.singleton(Modifier.PRIVATE)), name, tm.Type("String"), null);
+            members.add(field);
+            String cond = CodeStyleUtils.addPrefixSuffix("cond",
+                    codeStyle.getFieldNamePrefix(),
+                    codeStyle.getFieldNameSuffix());
+            VariableTree booleanField = tm.Variable(tm.Modifiers(Collections.singleton(Modifier.PRIVATE)), cond, tm.PrimitiveType(TypeKind.BOOLEAN), null);
+            members.add(booleanField);
+            members.add(gu.createConstructor(ct, Collections.singletonList(field)));
+            members.add(gu.createGetter(field));
+            members.add(gu.createSetter(ct, field));
+            members.add(gu.createGetter(booleanField));
+            members.add(gu.createSetter(ct, booleanField));
+            ModifiersTree mods = tm.Modifiers(EnumSet.of(Modifier.PRIVATE, Modifier.STATIC));
+            ClassTree nested = tm.Class(mods, "Nested", Collections.<TypeParameterTree>emptyList(), null, Collections.<Tree>emptyList(), Collections.<Tree>emptyList()); //NOI18N
+            members.add(nested);
+            IdentifierTree nestedId = tm.Identifier("Nested"); //NOI18N
+            String instance = CodeStyleUtils.addPrefixSuffix("instance",
+                    codeStyle.getStaticFieldNamePrefix(),
+                    codeStyle.getStaticFieldNameSuffix());
+            VariableTree staticField = tm.Variable(mods, instance, nestedId, null); //NOI18N
+            members.add(staticField);
+            members.add(gu.createGetter(staticField));
+            members.add(gu.createSetter(ct, staticField));
+            ClassTree newCT = gu.insertClassMembers(ct, members);
+            copy.rewrite(ct, newCT);
         }
     }
 }

@@ -180,20 +180,6 @@ public final class JaxWsDataObject extends MultiDataObject {
             return super.getCookie(type);
         }
 
-        @Override
-        public boolean canCopy() {
-            return false;
-        }
-        
-        @Override
-        public boolean canRename() {
-            return false;
-        }
-        
-        @Override
-        public boolean canCut() {
-            return false;
-        }
     }
 
     public static final class JaxWsJavaEditorSupport extends DataEditorSupport implements OpenCookie, EditCookie, EditorCookie, PrintCookie, EditorCookie.Observable {

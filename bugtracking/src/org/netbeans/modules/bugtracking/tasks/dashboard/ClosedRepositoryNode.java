@@ -46,7 +46,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
-import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.netbeans.modules.team.commons.treelist.TreeListNode;
 
 public class ClosedRepositoryNode extends RepositoryNode {
 

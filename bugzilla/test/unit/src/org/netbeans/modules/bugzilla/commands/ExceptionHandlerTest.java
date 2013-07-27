@@ -232,8 +232,8 @@ public class ExceptionHandlerTest extends NbTestCase implements TestConstants {
     private Object getHandler(BugzillaRepository repository, CoreException ce) throws NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException, ClassNotFoundException {
         BugzillaExecutor executor = repository.getExecutor();
         Class c = Class.forName(EXCEPTION_HANDLER_CLASS_NAME);
-        Method m = c.getDeclaredMethod("createHandler", CoreException.class, BugzillaExecutor.class, BugzillaRepository.class, boolean.class);
+        Method m = c.getDeclaredMethod("createHandler", CoreException.class, BugzillaExecutor.class, BugzillaRepository.class, ValidateCommand.class, boolean.class);
         m.setAccessible(true);
-        return  m.invoke(executor, new Object[]{ce, executor, repository, true});
+        return  m.invoke(executor, new Object[]{ce, executor, repository, null, true});
     }
 }

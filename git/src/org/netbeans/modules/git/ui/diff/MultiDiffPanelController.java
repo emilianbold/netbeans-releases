@@ -226,7 +226,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
     }
 
     public MultiDiffPanelController (File file) {
-        this(null, Revision.BASE, Revision.LOCAL, true);
+        this(null, Revision.HEAD, Revision.LOCAL, true);
         this.currentFile = file;
         replaceVerticalSplitPane(diffViewPanel);
         initToolbarButtons();
@@ -743,7 +743,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         JMenuItem item = menu.add(new OpenInEditorAction(selectedFiles));
         Mnemonics.setLocalizedText(item, item.getText());
         if (isLocal()) {
-            if (revisionLeft == Revision.BASE) {
+            if (revisionLeft == Revision.HEAD) {
                 menu.addSeparator();
                 final JMenuItem dummyItem = menu.add(Bundle.CTL_MultiDiffPanelController_popup_initializing());
                 dummyItem.setEnabled(false);
@@ -891,7 +891,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                     changedEvent.getOldInfo(),
                     changedEvent.getNewInfo() } );
             }
-            if (revisionLeft == Revision.BASE // remove when we're able to refresh single file changes for Local vs. any revision 
+            if (revisionLeft == Revision.HEAD // remove when we're able to refresh single file changes for Local vs. any revision 
                     && revisionRight == Revision.LOCAL && affectsView(changedEvent)) {
                 applyChange(changedEvent);
             }
@@ -1041,12 +1041,12 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 if (isLocal()) {
                     switch (mode) {
                         case HEAD_VS_WORKING_TREE:
-                            noContentLabel = revisionLeft == Revision.BASE
+                            noContentLabel = revisionLeft == Revision.HEAD
                                     ? Bundle.MSG_No_Changes_HeadWorking()
                                     : Bundle.MSG_No_Changes_RevisionWorking(revisionLeft.getRevision());
                             break;
                         case HEAD_VS_INDEX:
-                            noContentLabel = revisionLeft == Revision.BASE
+                            noContentLabel = revisionLeft == Revision.HEAD
                                     ? Bundle.MSG_No_Changes_HeadIndex()
                                     : Bundle.MSG_No_Changes_RevisionIndex(revisionLeft.getRevision());
                             break;
@@ -1072,7 +1072,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
                 fileTable.getComponent().setPreferredSize(null);
                 Dimension dim = fileTable.getComponent().getPreferredSize();
                 fileTable.getComponent().setPreferredSize(new Dimension(dim.width + 1, dim.height));
-                boolean buttonsEnabled = revisionRight == Revision.LOCAL && revisionLeft == Revision.BASE;
+                boolean buttonsEnabled = revisionRight == Revision.LOCAL && revisionLeft == Revision.HEAD;
                 panel.btnCommit.setEnabled(buttonsEnabled);
                 panel.btnRevert.setEnabled(buttonsEnabled);
             }
@@ -1092,7 +1092,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             final List<DiffNode> nodes = new LinkedList<DiffNode>();
             final Map<File, Setup> localSetups;
             if (isLocal()) {
-                if (revisionLeft == Revision.BASE) {
+                if (revisionLeft == Revision.HEAD) {
                     localSetups = getLocalToBaseSetups(nodes);
                 } else {
                     localSetups = getLocalToRevisionSetups(nodes);
@@ -1309,15 +1309,15 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             final List<Object> modelRight = new ArrayList<Object>(10);
             final List<Object> modelLeft = new ArrayList<Object>(10);
             modelLeft.add(revisionOriginalLeft);
-            if (revisionOriginalLeft != Revision.BASE) {
-                modelLeft.add(Revision.BASE);
+            if (revisionOriginalLeft != Revision.HEAD) {
+                modelLeft.add(Revision.HEAD);
             }
             modelRight.add(revisionOriginalRight);            
             if (revisionOriginalRight != Revision.LOCAL) {
                 modelRight.add(Revision.LOCAL);
             }
-            if (revisionOriginalRight != Revision.BASE) {
-                modelRight.add(Revision.BASE);
+            if (revisionOriginalRight != Revision.HEAD) {
+                modelRight.add(Revision.HEAD);
             }
             modelLeft.add(REVISION_SELECT_SEP);
             modelRight.add(REVISION_SELECT_SEP);

@@ -43,7 +43,6 @@
 package org.netbeans.modules.maven.profiler;
 
 import java.util.*;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -59,7 +58,6 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.RequestProcessor;
-import org.openide.util.Utilities;
 import org.openide.windows.InputOutput;
 
 /**
@@ -73,11 +71,11 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
     private static final Logger LOG = Logger.getLogger(RunCheckerImpl.class.getName());
     
 //    private static final String EXEC_ARGS = "exec.args"; // NOI18N
-    private static final String PROFILER_ARGS = "${profiler.args}"; // NOI18N
-    private static final String PROFILER_ARGS_PREFIXED = "${profiler.args.prefixed}"; // NOI18N
+//    private static final String PROFILER_ARGS = "${profiler.args}"; // NOI18N
+//    private static final String PROFILER_ARGS_PREFIXED = "${profiler.args.prefixed}"; // NOI18N
 //    private static final String EXEC_EXECUTABLE = "exec.executable"; // NOI18N
-    private static final String PROFILER_JAVA = "${profiler.java}"; // NOI18N
-    private static final String PROFILER_JDKHOME_OPT = "${profiler.jdkhome.opt}"; // NOI18N
+//    private static final String PROFILER_JAVA = "${profiler.java}"; // NOI18N
+//    private static final String PROFILER_JDKHOME_OPT = "${profiler.jdkhome.opt}"; // NOI18N
     
     private final Project project;
 
@@ -126,9 +124,7 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
         if (ActionProvider.COMMAND_PROFILE.equals(config.getActionName()) ||
                ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(config.getActionName()) ||
               (config.getActionName() != null && config.getActionName().startsWith(ActionProvider.COMMAND_PROFILE_SINGLE))) {
-            Map<String, String> props = new HashMap<String, String>();
-            props.putAll(configProperties);
-
+            
             ProfilerLauncher.Session session = ProfilerLauncher.getLastSession();
             
             if (session == null) {
@@ -141,8 +137,6 @@ public class RunCheckerImpl implements LateBoundPrerequisitesChecker {
                 closeInputOuptut(context);
                 return false;
             }
-            
-            props.putAll(sProps);
             
             session.setAttribute("mvn-run-checker.config", config);
                         

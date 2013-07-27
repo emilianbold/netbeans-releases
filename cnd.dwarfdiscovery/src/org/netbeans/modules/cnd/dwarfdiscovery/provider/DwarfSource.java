@@ -768,7 +768,9 @@ public class DwarfSource extends RelocatableImpl implements SourceFileProperties
         List<DwarfMacinfoEntry> table = dwarfTable.getCommandLineMarcos();
         for (Iterator<DwarfMacinfoEntry> it = table.iterator(); it.hasNext();) {
             DwarfMacinfoEntry entry = it.next();
-            if (entry.type == MACINFO.DW_MACINFO_define && entry.definition != null) {
+            if ((entry.type == MACINFO.DW_MACINFO_define ||
+                 entry.type == MACINFO.DW_MACRO_define_indirect) &&
+                 entry.definition != null) {
                 String def = entry.definition;
                 int i = def.indexOf(' ');
                 String macro;

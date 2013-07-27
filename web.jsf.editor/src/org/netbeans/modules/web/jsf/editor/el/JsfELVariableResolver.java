@@ -178,7 +178,8 @@ public final class JsfELVariableResolver implements ELVariableResolver {
                         if (name == null) {
                             continue;
                         }
-                        variables.add(VariableInfo.createResolvedVariable(name, Object.class.getName()));//NOI18N
+                        String clazz = attrsMap.get("class") == null ? Object.class.getName() : attrsMap.get("class"); //NOI18N
+                        variables.add(VariableInfo.createResolvedVariable(name, clazz));
                     }
                 }
             } catch (ParseException e) {

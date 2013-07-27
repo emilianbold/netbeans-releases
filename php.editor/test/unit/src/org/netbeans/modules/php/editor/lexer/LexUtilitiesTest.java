@@ -23,7 +23,7 @@
  * License Header, with the fields enclosed by brackets [] replaced by
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
- * 
+ *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -34,9 +34,9 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
- * 
+ *
  * Contributor(s):
- * 
+ *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.lexer;
@@ -74,7 +74,7 @@ public class LexUtilitiesTest extends PHPLexerTestBase {
         LexUtilities.getMostEmbeddedTokenSequence(doc, 0, true);
         LexUtilities.getMostEmbeddedTokenSequence(doc, 0, false);
     }
-    
+
     public void testGetMostEmbeddedTokenSequence() throws Exception {
         FileObject file = getTestFile("testfiles/embeddings.php");
         //the file content:
@@ -82,10 +82,10 @@ public class LexUtilitiesTest extends PHPLexerTestBase {
         //01234567890123456789012345678901234567890123456789
         //0         1         2         3         4
         Document doc = getDocument(file);
-        
+
         check(doc, 0, HTMLTokenId.language());
         check(doc, 5, HTMLTokenId.language());
-        check(doc, 44, HTMLTokenId.language());
+        check(doc, 47, HTMLTokenId.language());
         check(doc, 26, PHPTokenId.language());
         check(doc, 40, PHPTokenId.language());
         check(doc, 14, CssTokenId.language());

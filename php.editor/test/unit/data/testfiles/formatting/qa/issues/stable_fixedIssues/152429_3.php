@@ -1,4 +1,4 @@
-<?
+<?php
 switch ($anything) {
     case 'error':
         break;

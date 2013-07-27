@@ -236,6 +236,9 @@ public class JiraRepository {
         }
         try {
             NbJiraIssue issue = getIssueCache().getIssue(key);
+            if(issue != null) {
+                issue.setTaskData(taskData);
+            }             
             return getIssueCache().setIssueData(key, issue != null ? issue : new NbJiraIssue(taskData, this));
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);
@@ -557,6 +560,10 @@ public class JiraRepository {
                                 Jira.LOG.log(Level.WARNING, "No task data available for issue with id {0}", id); // NOI18N
                             } else {
                                 NbJiraIssue issue = getIssueCache().getIssue(id);
+                                if(issue != null) {
+                                    issue.setTaskData(data);
+                                } 
+                                issue = (NbJiraIssue) cache.setIssueData(id, issue != null ? issue : new NbJiraIssue(data, JiraRepository.this));
                                 getIssueCache().setIssueData(id, issue != null ? issue : new NbJiraIssue(data, JiraRepository.this));
                             }
                         } catch (IOException ex) {

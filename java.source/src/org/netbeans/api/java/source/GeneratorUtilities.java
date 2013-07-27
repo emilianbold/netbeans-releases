@@ -546,7 +546,9 @@ public final class GeneratorUtilities {
             mods.add(Modifier.STATIC);
         }
         TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), field);
-        String getterName = CodeStyleUtils.computeGetterName(field.getSimpleName(), type.getKind() == TypeKind.BOOLEAN, isStatic, cs);
+        boolean isBoolean = type.getKind() == TypeKind.BOOLEAN
+                || type.getKind() == TypeKind.DECLARED && "java.lang.Boolean".contentEquals(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName()); //NOI18N
+        String getterName = CodeStyleUtils.computeGetterName(field.getSimpleName(), isBoolean, isStatic, cs);
         BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(field.getSimpleName()))), false);
         return make.Method(make.Modifiers(mods), getterName, make.Type(type), Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
     }
@@ -568,7 +570,9 @@ public final class GeneratorUtilities {
             mods.add(Modifier.STATIC);
         }
         Tree type = field.getType();
-        boolean isBoolean = type.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree) type).getPrimitiveTypeKind() == TypeKind.BOOLEAN;
+        boolean isBoolean = type.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree) type).getPrimitiveTypeKind() == TypeKind.BOOLEAN
+                || type.getKind() == Tree.Kind.IDENTIFIER && "Boolean".equals(name(type)) //NOI18N
+                || type.getKind() == Tree.Kind.MEMBER_SELECT && "java.lang.Boolean".equals(name(type)); //NOI18N
         String getterName = CodeStyleUtils.computeGetterName(field.getName(), isBoolean, isStatic, cs);
         BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(field.getName()))), false);
         return make.Method(make.Modifiers(mods), getterName, type, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
@@ -1426,6 +1430,10 @@ public final class GeneratorUtilities {
                 return ((MethodTree)tree).getName().toString();
             case CLASS:
                 return ((ClassTree)tree).getSimpleName().toString();
+            case IDENTIFIER:
+                return ((IdentifierTree)tree).getName().toString();
+            case MEMBER_SELECT:
+                return name(((MemberSelectTree)tree).getExpression()) + '.' + ((MemberSelectTree)tree).getIdentifier();
         }
         return ""; //NOI18N
     }

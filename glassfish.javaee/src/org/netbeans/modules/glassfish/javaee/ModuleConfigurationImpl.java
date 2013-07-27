@@ -64,12 +64,12 @@ import org.netbeans.modules.j2ee.deployment.plugins.spi.config.MessageDestinatio
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 
-/** Implementation of ModuleConfiguration.
- *
- *  Primarily serves to delegate directly to the specified DeploymentConfiguration
- *  instance, as that is in shared code and has appropriate access and this instance
- *  is not.
- *
+/**
+ * Implementation of ModuleConfiguration.
+ * <p/>
+ * Primarily serves to delegate directly to the specified
+ * DeploymentConfiguration instance, as that is in shared code
+ * and has appropriate access and this instance is not.
  */
 public class ModuleConfigurationImpl implements
         ModuleConfiguration,
@@ -87,6 +87,7 @@ public class ModuleConfigurationImpl implements
     private static final Map<J2eeModule,ModuleConfigurationImpl> configs = 
             new HashMap<J2eeModule,ModuleConfigurationImpl>();
 
+    @SuppressWarnings("LeakingThisInConstructor")
     ModuleConfigurationImpl(J2eeModule module, Hk2Configuration config, Hk2DeploymentManager hk2Dm) throws ConfigurationException {
         synchronized (configs) {
             this.module = module;

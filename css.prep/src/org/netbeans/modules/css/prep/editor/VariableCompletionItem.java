@@ -46,8 +46,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
 import org.netbeans.modules.css.prep.editor.model.CPElementHandle;
 import org.netbeans.modules.css.prep.editor.model.CPElementType;
 import org.openide.util.ImageUtilities;
@@ -56,13 +54,8 @@ import org.openide.util.ImageUtilities;
  *
  * @author marekfukala
  */
-public class VariableCompletionItem extends CssCompletionItem {
+public class VariableCompletionItem extends CPCompletionItem {
 
-    private static final int LOCAL_VAR_SORT_IMPORTANCE = 200;
-    private static final int GLOBAL_VAR_SORT_IMPORTANCE = 100;
-    
-    private String origin;
-    private CPElementHandle handle;
     private static final ImageIcon LOCAL_VAR_ICON = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/css/prep/editor/resources/localVariable.gif")); //NOI18N
 
     /**
@@ -73,9 +66,7 @@ public class VariableCompletionItem extends CssCompletionItem {
      * @param origin Origin is null for current file. File displayname otherwise.
      */
     public VariableCompletionItem(@NonNull ElementHandle elementHandle, @NonNull CPElementHandle handle, int anchorOffset, @NullAllowed String origin) {
-        super(elementHandle, handle.getName(), anchorOffset, false);
-        this.handle = handle;
-        this.origin = origin;
+        super(elementHandle, handle, anchorOffset, origin);
     }
 
     @Override
@@ -83,25 +74,6 @@ public class VariableCompletionItem extends CssCompletionItem {
         return ElementKind.VARIABLE;
     }
 
-    @Override
-    public int getSortPrioOverride() {
-        int prio = 1000;
-        if(origin == null) {
-            prio -= 500; //current file items have precedence
-        }
-        
-        switch(handle.getType()) {
-            case VARIABLE_GLOBAL_DECLARATION:
-                prio -= GLOBAL_VAR_SORT_IMPORTANCE;
-                break;
-            case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
-            case VARIABLE_LOCAL_DECLARATION:
-                prio -= LOCAL_VAR_SORT_IMPORTANCE;
-                break;
-            default:
-        }
-        return prio;
-    }
     
     @Override
     public ImageIcon getIcon() {
@@ -126,37 +98,6 @@ public class VariableCompletionItem extends CssCompletionItem {
     
     private boolean isGlobalVar() {
         return handle.getType() == CPElementType.VARIABLE_GLOBAL_DECLARATION;
-    }
-    
-    @Override
-    public String getLhsHtml(HtmlFormatter formatter) {
-        switch (handle.getType()) {
-            case VARIABLE_GLOBAL_DECLARATION:
-                formatter.appendHtml("<font color=000000><b>"); //NOI18N
-                break;
-        }
-        
-        formatter.appendText(getName());
-        
-        switch (handle.getType()) {
-            case VARIABLE_GLOBAL_DECLARATION:
-                formatter.appendHtml("</b></font>"); //NOI18N);
-                break;
-        }
-        
-        return formatter.getText();
-    }
-
-    @Override
-    public String getRhsHtml(HtmlFormatter formatter) {
-        if(origin == null) {
-            return super.getRhsHtml(formatter);
-        } else {
-            formatter.appendHtml("<font color=999999>");
-            formatter.appendText(origin);
-            formatter.appendHtml("</font>"); //NOI18N
-            return formatter.getText();
-        }
     }
 
     @Override
@@ -190,6 +131,25 @@ public class VariableCompletionItem extends CssCompletionItem {
         return true;
     }
 
+     @Override
+    public int getSortPrioOverride() {
+        int prio = 50;
+        if (origin == null) {
+            prio -= 40; //current file items have precedence
+        }
+
+        switch (handle.getType()) {
+            case VARIABLE_GLOBAL_DECLARATION:
+                prio -= 5;
+                break;
+            case VARIABLE_DECLARATION_IN_BLOCK_CONTROL:
+            case VARIABLE_LOCAL_DECLARATION:
+                prio -= 10;
+                break;
+            default:
+        }
+        return prio;
+    }
     
     
 }

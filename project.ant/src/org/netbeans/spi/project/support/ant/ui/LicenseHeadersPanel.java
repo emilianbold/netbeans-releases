@@ -261,6 +261,7 @@ class LicenseHeadersPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(lblLicense, org.openide.util.NbBundle.getMessage(LicenseHeadersPanel.class, "LicenseHeadersPanel.lblLicense.text")); // NOI18N
 
+        epLicense.setEditable(false); //default is Use global license value
         epLicense.setContentType("text/x-freemarker"); // NOI18N
         jScrollPane2.setViewportView(epLicense);
 

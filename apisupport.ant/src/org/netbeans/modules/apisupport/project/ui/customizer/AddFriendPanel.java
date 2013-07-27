@@ -80,9 +80,9 @@ public class AddFriendPanel extends JPanel {
                 }
             });
         }
-        friends.setEnabled(false);
+        friends.setEnabled(true);
         friends.setModel(UIUtil.createComboWaitModel());
-        friends.setSelectedItem(UIUtil.WAIT_VALUE);
+        friends.setSelectedIndex(-1);
         ModuleProperties.RP.post(new Runnable() {
             public void run() {
                 final String[] friendCNBs = props.getAvailableFriends();
@@ -92,8 +92,12 @@ public class AddFriendPanel extends JPanel {
                         for (int i = 0; i < friendCNBs.length; i++) {
                             model.addElement(friendCNBs[i]);
                         }
+                        friends.setEnabled(false);
+                        String cachedItem = friends.getEditor().getItem().toString();
                         friends.setModel(model);
+                        friends.getEditor().setItem(cachedItem);
                         friends.setEnabled(true);
+                        friends.requestFocus();
                         checkValidity();
                         // data are loaded lets LayoutManager do its work
                         friends.setPrototypeDisplayValue(null);
@@ -111,8 +115,6 @@ public class AddFriendPanel extends JPanel {
         String cnb = getFriendCNB();
         if (cnb.length() == 0) {
             setErrorMessage(NbBundle.getMessage(AddFriendPanel.class, "MSG_FriendMayNotBeBlank"));
-        } else if (UIUtil.WAIT_VALUE == friends.getSelectedItem()) {
-            setErrorMessage(""); // do not show errormessage during "Please wait..." state
         } else if (!ApisupportAntUtils.isValidJavaFQN(cnb)) {
             setErrorMessage(NbBundle.getMessage(AddFriendPanel.class, "MSG_FriendIsNotValidCNB"));
         } else {

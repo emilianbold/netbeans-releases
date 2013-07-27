@@ -75,6 +75,22 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
     
 //    MyClass<D extends Comparable<? super D>>
     
+    public void test231146() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("extract/ExtractBaseClass.java", "package extract;\n"
+                + "\n"
+                + "public class ExtractBaseClass {\n"
+                + "    // Method comments\n"
+                + "    public void method() {\n"
+                + "        //method body\n"
+                + "        System.out.println(\"Hello\");\n"
+                + "    } // Trailing comments\n"
+                + "}\n"
+                + "class ExtractSuperClass { }\n"));
+        performExtractSuperclass(src.getFileObject("extract/ExtractBaseClass.java"), 1, "ExtractSuperClass", Boolean.FALSE, new Problem(true, "ERR_ClassClash"));
+    }
+    
+    
     public void test231639() throws Exception { //#231639 - StackOverflowError at com.sun.tools.javac.code.Type$WildcardType.getExtendsBound 
         writeFilesAndWaitForScan(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"

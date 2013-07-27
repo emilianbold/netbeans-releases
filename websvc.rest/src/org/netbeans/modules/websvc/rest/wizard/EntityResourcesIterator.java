@@ -59,7 +59,7 @@ import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
-import org.netbeans.modules.websvc.rest.spi.RestSupport;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
 import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
@@ -183,7 +183,7 @@ public class EntityResourcesIterator implements WizardDescriptor.ProgressInstant
         WizardDescriptor.Panel<?> thirdPanel =new EntityResourcesSetupPanel(
                 NbBundle.getMessage(EntityResourcesIterator.class,
                 "LBL_RestResourcesAndClasses"), wizard,         // NOI18N
-                RestUtils.isJavaEE6AndHigher(Templates.getProject(wizard)) ||
+                MiscUtilities.isJavaEE6AndHigher(Templates.getProject(wizard)) ||
                         RestUtils.hasSpringSupport(Templates.getProject(wizard)));
         panels = new WizardDescriptor.Panel[] { secondPanel, thirdPanel };
         String names[] = new String[] {

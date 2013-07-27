@@ -171,15 +171,22 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                 public void run(CompilationController info) throws Exception {
                     info.toPhase(JavaSource.Phase.RESOLVED);
                     CompilationContext ccontext = CompilationContext.create(file, info);
-                    Element resolved = ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve, assignments);
 
                     // assignments to resolve
                     Node node = nodeToResolve instanceof AstIdentifier && assignments.containsKey((AstIdentifier) nodeToResolve) ?
                             assignments.get((AstIdentifier) nodeToResolve) : nodeToResolve;
 
+                    // fetch information from the JSF editor for resolving beans if necessary for cc:interface elements
+                    List<VariableInfo> attrsObjects = Collections.<VariableInfo>emptyList();
+                    if (ELTypeUtilities.isRawObjectReference(ccontext, node, false)) {
+                        attrsObjects = ELVariableResolvers.getRawObjectProperties(ccontext, "attrs", context.getParserResult().getSnapshot()); //NOI18N
+                    }
+                    // resolve the element
+                    Element resolved = ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve, assignments, attrsObjects);
+
                     if (ELTypeUtilities.isStaticIterableElement(ccontext, node)) {
                         proposeStream(ccontext, context, prefixMatcher, proposals);
-                    } else if (ELTypeUtilities.isRawObjectReference(ccontext, node)) {
+                    } else if (ELTypeUtilities.isRawObjectReference(ccontext, node, true)) {
                         proposeRawObjectProperties(ccontext, context, prefixMatcher, node, proposals);
                     } else if (ELTypeUtilities.isScopeObject(ccontext, node)) {
                         // seems to be something like "sessionScope.^", so complete beans from the scope

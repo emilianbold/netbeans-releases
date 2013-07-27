@@ -425,7 +425,7 @@ public class TimeCustomizer extends ValidityAwarePanel implements ActionListener
         triggerRadiosContainer.add(timeFrequencySpinner, constraints);
 
         // timeFrequencyCombo
-        timeFrequencyCombo = new JComboBox(new Object[] { Bundle.TimeCustomizer_UnitsMinutes(), Bundle.TimeCustomizer_UnitsMinutes() }) {
+        timeFrequencyCombo = new JComboBox(new Object[] { Bundle.TimeCustomizer_UnitsMinutes(), Bundle.TimeCustomizer_UnitsHours() }) {
                 public Dimension getPreferredSize() {
                     return new Dimension(Math.min(super.getPreferredSize().width, 200), super.getPreferredSize().height);
                 }

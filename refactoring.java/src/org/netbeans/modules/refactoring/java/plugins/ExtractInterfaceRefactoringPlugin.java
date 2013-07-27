@@ -117,7 +117,19 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
             }
         }
 
-        return null;
+        return super.fastCheckParameters();
+    }
+
+    @Override
+    protected Problem fastCheckParameters(CompilationController javac) throws IOException {
+        Problem result = null;
+        String newName = refactoring.getInterfaceName();
+        TypeMirror parsedType = javac.getTreeUtilities().parseType(newName, classHandle.resolve(javac));
+        if(parsedType != null) {
+            result = createProblem(result, true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ClassClash", newName, pkgName)); // NOI18N
+            return result;
+        }
+        return super.fastCheckParameters(javac);
     }
 
     @Override

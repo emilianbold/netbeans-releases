@@ -57,6 +57,7 @@ import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
 import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
 
 /**
@@ -102,6 +103,10 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         return true;
     }
 
+    private boolean isSmartQuotingEnabled() {
+        return OptionsUtils.forLanguage(language).autoCompletionSmartQuotes();
+    }
+
     @Override
     public void afterInsert(final Context context) throws BadLocationException {
         final BaseDocument doc = (BaseDocument) context.getDocument();
@@ -143,8 +148,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                         case '(':
                         case '[':
                             if (!isInsertMatchingEnabled()) {
-                            break;
-                        }
+                                break;
+                            }
                         case '}':
                         case ')':
                         case ']':
@@ -206,7 +211,8 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         boolean isTemplate = GsfUtilities.isCodeTemplateEditing(doc);
 
         if (selection != null && selection.length() > 0) {    
-            if (!isTemplate && (ch == '"' || ch == '\'' || ch == '(' || ch == '{' || ch == '[')) {
+            if (!isTemplate && (((ch == '"' || ch == '\'') && isSmartQuotingEnabled())
+                    || ((ch == '(' || ch == '{' || ch == '[')) && isInsertMatchingEnabled())) {
                     // Bracket the selection
                     char firstChar = selection.charAt(0);
                     if (firstChar != ch) {
@@ -245,8 +251,7 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
             return;
         }
 
-        int checkOffset = caretOffset - context.getText().length();
-        ts.move(checkOffset);
+        ts.move(caretOffset);
 
         if (!ts.moveNext() && !ts.movePrevious()) {
             return;
@@ -256,15 +261,6 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
         JsTokenId id = token.id();
         TokenId[] stringTokens = null;
         TokenId beginTokenId = null;
-
-// XXX / -> to // removed right ?
-//        if (ch == '*' && id == JsTokenId.LINE_COMMENT && caretOffset == ts.offset()+1) {
-//            // Just typed "*" inside a "//" -- the user has typed "/", which automatched to
-//            // "//" and now they're typing "*" (e.g. to type "/*", but ended up with "/*/".
-//            // Remove the auto-matched /.
-//            doc.remove(caretOffset, 1);
-//            return; // false: continue to insert the "*"
-//        }
 
         // "/" is handled AFTER the character has been inserted since we need the lexer's help
         if (ch == '\"' || (ch == '\'' && singleQuote)) {
@@ -283,22 +279,22 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
                 beginTokenId = JsTokenId.REGEXP_BEGIN;
             }
         } else if (isCompletableStringBoundary(token, singleQuote, false) &&
-                (checkOffset == (ts.offset() + 1))) {
+                (caretOffset == (ts.offset() + 1))) {
             if (!Character.isLetter(ch)) { // %q, %x, etc. Only %[], %!!, %<space> etc. is allowed
                 stringTokens = STRING_TOKENS;
                 beginTokenId = id;
             }
-        } else if ((isCompletableStringBoundary(token, singleQuote, false) && (checkOffset == (ts.offset() + 2))) ||
+        } else if ((isCompletableStringBoundary(token, singleQuote, false) && (caretOffset == (ts.offset() + 2))) ||
                 isCompletableStringBoundary(token, singleQuote, true)) {
             stringTokens = STRING_TOKENS;
             beginTokenId = JsTokenId.STRING_BEGIN;
-        } else if (((id == JsTokenId.REGEXP_BEGIN) && (checkOffset == (ts.offset() + 2))) ||
+        } else if (((id == JsTokenId.REGEXP_BEGIN) && (caretOffset == (ts.offset() + 2))) ||
                 (id == JsTokenId.REGEXP_END)) {
             stringTokens = REGEXP_TOKENS;
             beginTokenId = JsTokenId.REGEXP_BEGIN;
         }
 
-        if (stringTokens != null) {
+        if (stringTokens != null && isSmartQuotingEnabled()) {
             completeQuote(context, ch, stringTokens, beginTokenId, isTemplate);
         }
     }
@@ -383,8 +379,10 @@ public class JsTypedTextInterceptor implements TypedTextInterceptor {
     private void completeQuote(MutableContext context, char bracket,
             TokenId[] stringTokens, TokenId beginToken, boolean isTemplate) throws BadLocationException {
         if (isTemplate) {
-            String text = context.getText() + bracket;
-            context.setText(text, text.length() - 1);
+            if (bracket == '"' || bracket == '\'' || bracket == '(' || bracket == '{' || bracket == '[') {
+                String text = context.getText() + matching(bracket);
+                context.setText(text, text.length() - 1);
+            }
             return;
         }
         int dotPos = context.getOffset();

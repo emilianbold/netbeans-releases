@@ -182,9 +182,9 @@ public final class HintsPanel extends javax.swing.JPanel   {
                     @Override
                     public void run() {
                         HintsPanel.this.removeAll();
-                        HintsPanel.this.init(filter, false, overlay != null, true, true, true, true);
+                        HintsPanel.this.init(filter, false, overlay != null, true, true, true, true, false);
                         if (overlay != null) {
-                            HintsPanel.this.setOverlayPreferences(overlay);
+                            HintsPanel.this.setOverlayPreferences(overlay, false);
                         }
                         buttonsPanel.setVisible(false);
                         searchPanel.setVisible(false);
@@ -202,14 +202,14 @@ public final class HintsPanel extends javax.swing.JPanel   {
         this.cpBased = cpBased;
         this.queryStatus = QueryStatus.ONLY_ENABLED;
         this.showHeavyInspections = true;
-        init(null, true, false, false, true, true, true);
+        init(null, true, false, false, true, true, true, false);
         configCombo.setSelectedItem(preselected);
     }
     public HintsPanel(HintMetadata preselected, @NullAllowed final CustomizerContext<?, ?> cc, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
         this.queryStatus = cc == null ? QueryStatus.NEVER : QueryStatus.SHOW_QUERIES;
         this.showHeavyInspections = true;
-        init(null, true, false, false, false, cc == null, false);
+        init(null, true, false, false, false, cc == null, false, cc != null);
         select(preselected);
         configurationsPanel.setVisible(false);
         
@@ -226,18 +226,18 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
     }
 
-    public HintsPanel(Preferences configurations, ClassPathBasedHintWrapper cpBased) {
+    public HintsPanel(Preferences configurations, ClassPathBasedHintWrapper cpBased, boolean direct) {
         this.cpBased = cpBased;
         this.queryStatus = QueryStatus.SHOW_QUERIES;
         this.showHeavyInspections = true;
-        init(null, true, false, false, false, false, true);
-        setOverlayPreferences(HintsSettings.createPreferencesBasedHintsSettings(configurations, false, Severity.VERIFIER));
+        init(null, true, false, false, false, false, true, direct);
+        setOverlayPreferences(HintsSettings.createPreferencesBasedHintsSettings(configurations, false, Severity.VERIFIER), direct);
         configurationsPanel.setVisible(false);
     }
     
-    public void setOverlayPreferences(HintsSettings configurations) {
+    public void setOverlayPreferences(HintsSettings configurations, boolean direct) {
         if (logic != null)
-            logic.setOverlayPreferences(configurations);
+            logic.setOverlayPreferences(configurations, direct);
     }
 
     public boolean hasNewHints() {
@@ -254,7 +254,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
     }
     
-    private void init(@NullAllowed OptionsFilter filter, boolean batchOnly, boolean filterSuggestions, boolean ignoreMissingFilter, boolean showSeverityCombo, boolean showOkCancel, boolean showCheckBoxes) {
+    private void init(@NullAllowed OptionsFilter filter, boolean batchOnly, boolean filterSuggestions, boolean ignoreMissingFilter, boolean showSeverityCombo, boolean showOkCancel, boolean showCheckBoxes, boolean direct) {
         initComponents();
         scriptScrollPane.setVisible(false);
         optionsFilter = null;
@@ -305,7 +305,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                         DefaultMutableTreeNode o = (DefaultMutableTreeNode) path.getLastPathComponent();
                         if (o.getUserObject() instanceof HintMetadata) {
                             HintMetadata hint = (HintMetadata) o.getUserObject();
-                            if (hint.category.equals(HintCategory.CUSTOM_CATEGORY)) {
+                            if (hint.category.equals(Utilities.CUSTOM_CATEGORY)) {
                                 JPopupMenu popup = new JPopupMenu();
                                 popup.add(new JMenuItem(new RenameHint(o, hint, path)));
                                 popup.add(new JMenuItem(new RemoveHint(o, hint)));
@@ -333,7 +333,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
 
         initialized.set(true);
-        update();
+        update(direct);
         
         if (toSelect != null) {
             select(toSelect, true);
@@ -868,7 +868,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         return null;
     }    
-    synchronized void update() {
+    synchronized void update(boolean direct) {
         if (!initialized.get()) return;
         HintsSettings overlay = null;
         if ( logic != null ) {
@@ -876,7 +876,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             overlay = logic.getOverlayPreferences();
         }
         logic = new HintsPanelLogic();
-        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo, editScriptButton, overlay);
+        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo, editScriptButton, overlay, direct);
     }
     
     void cancel() {
@@ -1107,22 +1107,6 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
     }
 
-    static String getFileObjectLocalizedName( FileObject fo ) {
-        Object o = fo.getAttribute("SystemFileSystem.localizingBundle"); // NOI18N
-        if ( o instanceof String ) {
-            String bundleName = (String)o;
-            try {
-                ResourceBundle rb = NbBundle.getBundle(bundleName);            
-                String localizedName = rb.getString(fo.getPath());                
-                return localizedName;
-            }
-            catch(MissingResourceException ex ) {
-                // Do nothing return file path;
-            }
-        }
-        return fo.getPath();
-    } 
-        
     // Variables declaration - do not modify                     
         
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -1175,7 +1159,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
                 }
             }
             if (   m.options.contains(Options.QUERY)
-                && !HintCategory.CUSTOM_CATEGORY.equals(m.category)) {
+                && !Utilities.CUSTOM_CATEGORY.equals(m.category)) {
                 if (queryStatus == QueryStatus.NEVER) {
                     continue;
                 }
@@ -1333,7 +1317,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
     private Collection<? extends HintMetadata> filterCustom(Set<HintMetadata> keySet, boolean filterSuggestions) {
         ArrayList<HintMetadata> list = new ArrayList<HintMetadata>();
         for (HintMetadata hint:keySet) {
-            if (HintCategory.CUSTOM_CATEGORY.equals(hint.category)) {
+            if (Utilities.CUSTOM_CATEGORY.equals(hint.category)) {
                 continue;
             }
             if (hint.kind == Kind.ACTION && filterSuggestions) continue;
@@ -1458,7 +1442,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             DefaultMutableTreeNode o = (DefaultMutableTreeNode) path.getLastPathComponent();
             if (o.getUserObject() instanceof HintMetadata) {
                 HintMetadata hint = (HintMetadata) o.getUserObject();
-                if (hint.category.equals(HintCategory.CUSTOM_CATEGORY)) {
+                if (hint.category.equals(Utilities.CUSTOM_CATEGORY)) {
                     return true;
                 }
             }

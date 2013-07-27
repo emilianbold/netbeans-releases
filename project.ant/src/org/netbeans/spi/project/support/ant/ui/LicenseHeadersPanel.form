@@ -141,6 +141,9 @@
           <Properties>
             <Property name="contentType" type="java.lang.String" value="text/x-freemarker" noResource="true"/>
           </Properties>
+          <AuxValues>
+            <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="epLicense.setEditable(false); //default is Use global license value"/>
+          </AuxValues>
         </Component>
       </SubComponents>
     </Container>

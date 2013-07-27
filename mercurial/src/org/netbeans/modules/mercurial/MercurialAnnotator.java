@@ -325,10 +325,10 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 actions.add(new DiffMenu(null));
                 actions.add(SystemAction.get(AddAction.class));
                 actions.add(SystemAction.get(CommitAction.class));
+                actions.add(SystemAction.get(UpdateAction.class));
                 actions.add(SystemAction.get(RevertModificationsAction.class));
                 actions.add(SystemAction.get(AnnotateAction.class));
                 actions.add(SystemAction.get(LogAction.class));                
-                actions.add(SystemAction.get(UpdateAction.class));
                 actions.add(new ConflictsMenu(null));
                 actions.add(null);
                 actions.add(new IgnoreMenu(null, null));
@@ -356,13 +356,13 @@ public class MercurialAnnotator extends VCSAnnotator implements PropertyChangeLi
                 actions.add(new DiffMenu(context));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "CTL_PopupMenuItem_Add"), context)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), loc.getString("CTL_PopupMenuItem_Commit"), context)); //NOI18N
+                actions.add(SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(RevertModificationsAction.class), loc.getString("CTL_PopupMenuItem_Revert"), context)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AnnotateAction.class),
                         ((AnnotateAction)SystemAction.get(AnnotateAction.class)).visible(nodes)
                         ? loc.getString("CTL_PopupMenuItem_HideAnnotations") //NOI18N
                         : loc.getString("CTL_PopupMenuItem_ShowAnnotations"), context)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(LogAction.class), loc.getString("CTL_PopupMenuItem_Log"), context)); //NOI18N
-                actions.add(SystemActionBridge.createAction(SystemAction.get(UpdateAction.class), loc.getString("CTL_PopupMenuItem_Update"), context)); //NOI18N
                 actions.add(new ConflictsMenu(context));
                 actions.add(null);
                 actions.add(new IgnoreMenu(context, ctx));
