@@ -49,8 +49,6 @@ import org.netbeans.modules.cnd.apt.debug.APTTraceFlags;
 import org.netbeans.modules.cnd.apt.impl.support.SupportAPIAccessor;
 import org.netbeans.modules.cnd.apt.support.IncludeDirEntry;
 import org.netbeans.modules.cnd.apt.support.ResolvedPath;
-import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.cache.CharSequenceUtils;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
@@ -94,6 +92,46 @@ public class APTIncludeUtils {
         }   
         return null;
     }    
+    
+    public static ResolvedPath resolveFilePath(Iterator<IncludeDirEntry> searchPaths, String anIncludedFile, int dirOffset) {        
+        SupportAPIAccessor accessor = SupportAPIAccessor.get();
+        while( searchPaths.hasNext() ) {
+            IncludeDirEntry dirPrefix = searchPaths.next();
+            if (accessor.isExistingDirectory(dirPrefix)) {
+                FileSystem fs = dirPrefix.getFileSystem();
+                char fileSeparatorChar = CndFileUtils.getFileSeparatorChar(fs);
+                String includedFile = anIncludedFile.replace('/', fileSeparatorChar);
+                CharSequence prefix = dirPrefix.getAsSharedCharSequence();
+                int len = prefix.length();
+                String absolutePath;
+                if (len > 0 && prefix.charAt(len - 1) == fileSeparatorChar) {
+                    absolutePath = prefix + includedFile;
+                } else {
+                    absolutePath = CharSequenceUtils.toString(prefix, fileSeparatorChar, includedFile);
+                }
+                if (isExistingFile(fs, absolutePath)) {
+                    return new ResolvedPath(fs, prefix, normalize(fs, absolutePath), false, dirOffset);
+                } else {
+                    if (dirPrefix.isFramework()) {
+                        int i = includedFile.indexOf('/'); // NOI18N
+                        if (i > 0) {
+                            // possible it is framework include (see IZ#160043)
+                            // #include <GLUT/glut.h>
+                            // header is located in the /System/Library/Frameworks/GLUT.framework/Headers
+                            // system path is /System/Library/Frameworks
+                            // So convert framework path
+                            absolutePath = dirPrefix.getPath()+"/"+includedFile.substring(0,i)+".framework/Headers"+includedFile.substring(i); // NOI18N
+                            if (isExistingFile(fs, absolutePath)) {
+                                return new ResolvedPath(fs, dirPrefix.getAsSharedCharSequence(), normalize(fs, absolutePath), false, dirOffset);
+                            }
+                        }
+                    }
+                }
+            }
+            dirOffset++;
+        }
+        return null;
+    }
 
     private static String normalize(FileSystem fs, String path) {
         return CndFileUtils.normalizeAbsolutePath(fs, path);
@@ -101,364 +139,5 @@ public class APTIncludeUtils {
 
     private static boolean isExistingFile(FileSystem fs, String filePath) {
         return CndFileUtils.isExistingFile(fs, filePath);
-    }
-        
-    /**
-     * Resolves file path in a given search paths
-     */
-    public static interface FilePathResolver {
-        
-        ResolvedPath resolve(Iterator<IncludeDirEntry> searchPaths, String anIncludedFile, int dirOffset);                
-    }
-    
-    /**
-     * Abstract path resolver iterates over search paths and provides some convenient methods
-     */
-    public static abstract class AbstractPathResolver implements FilePathResolver {
-
-        @Override
-        public ResolvedPath resolve(Iterator<IncludeDirEntry> searchPaths, String anIncludedFile, int dirOffset) {
-            SupportAPIAccessor accessor = SupportAPIAccessor.get();
-            while( searchPaths.hasNext() ) {
-                IncludeDirEntry dirPrefix = searchPaths.next();
-                if (accessor.isExistingDirectory(dirPrefix)) {
-                    FileSystem fs = dirPrefix.getFileSystem();
-                    char fileSeparatorChar = CndFileUtils.getFileSeparatorChar(fs);
-                    String includedFile = anIncludedFile.replace('/', fileSeparatorChar);
-                    CharSequence prefix = dirPrefix.getAsSharedCharSequence();
-                    int len = prefix.length();
-                    String absolutePath;
-                    if (len > 0 && prefix.charAt(len - 1) == fileSeparatorChar) {
-                        absolutePath = prefix + includedFile;
-                    } else {
-                        absolutePath = CharSequenceUtils.toString(prefix, fileSeparatorChar, includedFile);
-                    }
-                    ResolvedPath resolvedPath = resolvePrepared(dirPrefix, prefix, includedFile, absolutePath, dirOffset);
-                    if (resolvedPath != null) {
-                        return resolvedPath;
-                    }
-                }
-                dirOffset++;
-            }
-            return null;
-        }
-        
-        protected abstract ResolvedPath resolvePrepared(IncludeDirEntry dirPrefix, CharSequence prefix, String includedFile, String absolutePath, int dirOffset);
-        
-        protected String normilize(FileSystem fs, String path) {
-            return APTIncludeUtils.normalize(fs, path);
-        }
-        
-        protected boolean isExistingFile(FileSystem fs, String filePath) {
-            return APTIncludeUtils.isExistingFile(fs, filePath);
-        }
-    }
-    
-    /**
-     * Default path resolver just checks if file exists and returns resolved path if so.
-     */
-    public static class DefaultPathResolver extends AbstractPathResolver {        
-        
-        @Override
-        protected ResolvedPath resolvePrepared(IncludeDirEntry dirPrefix, CharSequence prefix, String includedFile, String absolutePath, int dirOffset) {
-            FileSystem fs = dirPrefix.getFileSystem();
-            if (isExistingFile(fs, absolutePath)) {
-                return new ResolvedPath(fs, prefix, normalize(fs, absolutePath), false, dirOffset);
-            }
-            return null;
-        }    
-    }
-    
-    /**
-     * This resolver provides a hack for some frameworks on MAC OS.
-     */
-    public static class FrameworksPathResolver extends DefaultPathResolver {
-
-        @Override
-        protected ResolvedPath resolvePrepared(IncludeDirEntry dirPrefix, CharSequence prefix, String includedFile, String absolutePath, int dirOffset) {
-            ResolvedPath result = super.resolvePrepared(dirPrefix, prefix, includedFile, absolutePath, dirOffset);
-            if (result == null && dirPrefix.isFramework()) {
-                FileSystem fs = dirPrefix.getFileSystem();
-                
-                // 1. Old hack which tries to handle different frameworks (GLUT, Qt, ...)
-                int i = includedFile.indexOf('/'); // NOI18N
-                if (i > 0) {
-                    // possible it is framework include (see IZ#160043)
-                    // #include <GLUT/glut.h>
-                    // header is located in the /System/Library/Frameworks/GLUT.framework/Headers
-                    // system path is /System/Library/Frameworks
-                    // So convert framework path
-                    absolutePath = dirPrefix.getPath()+"/"+includedFile.substring(0,i)+".framework/Headers"+includedFile.substring(i); // NOI18N
-                    if (isExistingFile(fs, absolutePath)) {
-                        return new ResolvedPath(fs, dirPrefix.getAsSharedCharSequence(), normalize(fs, absolutePath), false, dirOffset);
-                    }
-                }                  
-            }
-            return result;
-        }
-    }
-    
-    /**
-     * This resolver provides a hack for resolving QT headers on MAC OS.
-     */
-    public static class QtPathResolver extends FrameworksPathResolver {
-        
-        protected final MakeConfiguration projectConfiguration;
-
-        public QtPathResolver(MakeConfiguration projectConfiguration) {
-            this.projectConfiguration = projectConfiguration;
-        }        
-
-        @Override
-        protected ResolvedPath resolvePrepared(IncludeDirEntry dirPrefix, CharSequence prefix, String includedFile, String absolutePath, int dirOffset) {
-            ResolvedPath result = super.resolvePrepared(dirPrefix, prefix, includedFile, absolutePath, dirOffset);
-            if (result == null && projectConfiguration != null && dirPrefix.isFramework()) {
-                FileSystem fs = dirPrefix.getFileSystem();
-                
-                // New hack because in Qt4/5 one can include headers without paths (#include <QApplication>), 
-                // but on MAC OS search paths from qmake do not contain such headers. Qmake includes special augmented
-                // paths only into Makefile during build. Here we should include these special paths                
-                QmakeConfiguration qmakeConf = projectConfiguration.getQmakeConfiguration();
-                if (qmakeConf != null) {                                       
-                    for (QtModuleDescriptor module : QtModules.values()) {
-                        if (module.isEnabled(qmakeConf)) {
-                            absolutePath = dirPrefix.getPath()+"/"+module.getName()+".framework/Headers/"+includedFile; // NOI18N
-                            if (isExistingFile(fs, absolutePath)) {
-                                return new ResolvedPath(fs, dirPrefix.getAsSharedCharSequence(), normalize(fs, absolutePath), false, dirOffset);
-                            }                            
-                        }
-                    }
-                }
-            }
-            return result;
-        }
-        
-        /*
-        ************************************************************************
-        *   List of Qt modules
-        ************************************************************************
-        */
-        
-        private static interface QtModuleDescriptor {
-            
-            String getName();
-            
-            boolean isEnabled(QmakeConfiguration conf);
-        }
-        
-        private static enum QtModules implements QtModuleDescriptor {
-            
-            QtCore {
-
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return conf.isCoreEnabled().getValue();
-                }
-                
-            },
-            
-            QtGui {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return conf.isGuiEnabled().getValue();
-                }                
-                
-            },
-            
-            QtMultimedia {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return false;
-                }                
-                
-            },
-            
-            QtNetwork {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return conf.isGuiEnabled().getValue();
-                }                
-                
-            },
-            
-            QtOpenGL {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return conf.isOpenglEnabled().getValue();
-                }                
-                       
-            },
-            
-            QtOpenVG {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return false;
-                }                
-                       
-            },
-            
-            QtScript {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return false;
-                }                
-                
-            },
-            
-            QtScriptTools {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return false;
-                }                
-                
-            },
-            
-            QtSql {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return conf.isSqlEnabled().getValue();
-                }                
-                
-            },
-            
-            QtSvg {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return conf.isSvgEnabled().getValue();
-                }                
-                
-            },
-            
-            QtWebKit {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return conf.isWebkitEnabled().getValue();
-                }                
-                
-            },
-            
-            QtXml {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return conf.isXmlEnabled().getValue();
-                }                
-                
-            },
-            
-            QtXmlPatterns {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return false;
-                }                
-                
-            },
-            
-            QtDeclarative {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return false;
-                }                
-                
-            },
-            
-            Phonon {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return conf.isPhononEnabled().getValue();
-                }                
-                
-            },
-            
-            Qt3Support {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return conf.isQt3SupportEnabled().getValue();
-                }                
-                
-            },
-            
-            QtDesigner {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return false;
-                }                
-                
-            },
-            
-            QtUiTools {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return false;
-                }                
-                
-            },
-            
-            QtHelp {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return false;
-                }                
-                
-            },
-            
-            QtTest {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return false;
-                }                
-                
-            },
-            
-            QAxContainer {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return false;
-                }                
-                
-            },
-            
-            QAxServer {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return false;
-                }                
-                
-            },
-            
-            QtDBus {
-                
-                @Override
-                public boolean isEnabled(QmakeConfiguration conf) {
-                    return false;
-                }                
-                
-            };
-
-            @Override
-            public String getName() {
-                return name();
-            }
-        }
     }
 }
