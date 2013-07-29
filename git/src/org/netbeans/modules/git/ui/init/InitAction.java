@@ -87,6 +87,10 @@ import org.openide.util.HelpCtx;
 @ActionReferences({
    @ActionReference(path="Versioning/Git/Actions/Unversioned", position=300)
 })
+@NbBundle.Messages({
+    "LBL_InitAction.popupName=Initialize &Git Repository...",
+    "LBL_InitAction_Name=I&nitialize Repository..."
+})
 public class InitAction implements ActionListener, HelpCtx.Provider {
 
     private static final Logger LOG = Logger.getLogger(InitAction.class.getName());
