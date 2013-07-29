@@ -57,12 +57,12 @@ import javax.swing.JLabel;
 import javax.swing.SwingUtilities;
 import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
-import org.netbeans.modules.team.ui.util.treelist.LinkButton;
+import org.netbeans.modules.team.commons.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.filter.AppliedFilters;
-import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
-import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
-import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
-import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.netbeans.modules.bugtracking.settings.DashboardSettings;
+import org.netbeans.modules.team.commons.treelist.AsynchronousNode;
+import org.netbeans.modules.team.commons.treelist.TreeLabel;
+import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -221,7 +221,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
         
         synchronized (LOCK) {
             DashboardViewer dashboard = DashboardViewer.getInstance();
-            AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
+            AppliedFilters<TaskNode> appliedFilters = dashboard.getAppliedTaskFilters();
             removeTaskListeners();
             if (taskListener == null) {
                 taskListener = new TaskListener();
@@ -261,7 +261,7 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
 
             filteredTaskNodes = new ArrayList<TaskNode>(tasks.size());
             for (TaskNode taskNode : taskNodes) {
-                if (appliedFilters.isInFilter(taskNode.getTask())) {
+                if (appliedFilters.isInFilter(taskNode)) {
                     filteredTaskNodes.add(taskNode);
                 }
             }
@@ -349,10 +349,10 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
 
     private void refilterTaskNodes() {
         DashboardViewer dashboard = DashboardViewer.getInstance();
-        AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
+        AppliedFilters<TaskNode> appliedFilters = dashboard.getAppliedTaskFilters();
         filteredTaskNodes.clear();
         for (TaskNode taskNode : taskNodes) {
-            if (appliedFilters.isInFilter(taskNode.getTask())) {
+            if (appliedFilters.isInFilter(taskNode)) {
                 filteredTaskNodes.add(taskNode);
             }
         }

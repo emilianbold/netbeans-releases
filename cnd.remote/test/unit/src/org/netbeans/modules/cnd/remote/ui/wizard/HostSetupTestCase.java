@@ -42,17 +42,22 @@
 
 package org.netbeans.modules.cnd.remote.ui.wizard;
 
+import java.io.IOException;
+import java.net.ConnectException;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import junit.framework.Test;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSetManager;
 import org.netbeans.modules.cnd.remote.test.RemoteDevelopmentTest;
 import org.netbeans.modules.cnd.remote.test.RemoteTestBase;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.test.ForAllEnvironments;
 import org.netbeans.modules.nativeexecution.test.NativeExecutionTestSupport;
 import org.netbeans.modules.nativeexecution.test.RcFile;
+import org.openide.util.Exceptions;
 
 /**
  * Tests for setting up a remote host
@@ -62,6 +67,19 @@ public class HostSetupTestCase extends RemoteTestBase {
 
     public HostSetupTestCase(String testName, ExecutionEnvironment execEnv) {
         super(testName, execEnv);
+    }
+
+    private RcFile getRcFileWithNonEmptySection(String section) throws Exception {
+        try {
+            RcFile rcFile = getRemoteRcFile();
+            Collection<String> keys = rcFile.getKeys(section);
+            if (!keys.isEmpty()) {
+                return rcFile;
+            }
+        } catch (Exception ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return getLocalRcFile();
     }
 
     @ForAllEnvironments
@@ -74,8 +92,8 @@ public class HostSetupTestCase extends RemoteTestBase {
 
         String mspec = NativeExecutionTestSupport.getMspec(execEnv);
 
-        RcFile rcFile = NativeExecutionTestSupport.getRcFile();
         String section = "remote." + mspec + ".compilerSets";
+        RcFile rcFile = getRcFileWithNonEmptySection(section);
         Collection<String> compilerSetNames = rcFile.getKeys(section);
         for (String csReferenceName : compilerSetNames) {
             boolean found = false;

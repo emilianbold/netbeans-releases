@@ -96,6 +96,44 @@ public class IOFoldingTest {
         assertFalse(IOFolding.isSupported(new DummyInputOutput()));
     }
 
+    @Test
+    public void testIsFinished() {
+        InputOutputWithFolding io = new InputOutputWithFolding();
+        FoldHandle fold1 = IOFolding.startFold(io, true);
+        assertFalse(fold1.isFinished());
+        FoldHandle fold2 = fold1.startFold(true);
+        assertFalse(fold2.isFinished());
+        fold2.finish();
+        assertTrue(fold2.isFinished());
+        fold1.finish();
+        assertTrue(fold1.isFinished());
+    }
+
+    @Test
+    public void testSilentFinish() {
+        InputOutputWithFolding io = new InputOutputWithFolding();
+        FoldHandle fold1 = IOFolding.startFold(io, true);
+        FoldHandle fold2 = fold1.startFold(true);
+        fold1.silentFinish();
+        assertTrue(fold2.isFinished());
+        fold1.silentFinish(); // no exception when calling again
+        fold1.silentFinish(); // still no exception
+    }
+
+    @Test
+    public void testSilentFoldStart() {
+        InputOutputWithFolding io = new InputOutputWithFolding();
+        FoldHandle fold1 = IOFolding.startFold(io, true);
+        FoldHandle fold2 = fold1.startFold(true);
+        FoldHandle fold3 = fold1.silentStartFold(true);
+        assertTrue(fold2.isFinished());
+        assertNotNull(fold3);
+        fold1.silentFinish();
+        assertTrue(fold1.isFinished());
+        FoldHandle fold4 = fold1.silentStartFold(true);
+        assertNull(fold4);
+    }
+
     /**
      * Dummy InputOutput that supports folding.
      */
@@ -129,6 +167,7 @@ public class IOFoldingTest {
 
                 private DummyFoldHandleDef nested = null;
                 private final DummyFoldHandleDef parent;
+                private boolean finished = false;
 
                 public DummyFoldHandleDef(DummyFoldHandleDef parent) {
                     this.parent = parent;
@@ -144,11 +183,14 @@ public class IOFoldingTest {
                         parent.nested = null;
                     }
                     currentLevel--;
+                    finished = true;
                 }
 
                 @Override
                 public FoldHandleDefinition startFold(boolean expanded) {
-                    if (nested != null) {
+                    if (finished) {
+                        throw new IllegalStateException("Already finished.");
+                    } else if (nested != null) {
                         throw new IllegalStateException("Last fold not finished.");
                     } else {
                         nested = new DummyFoldHandleDef(this);

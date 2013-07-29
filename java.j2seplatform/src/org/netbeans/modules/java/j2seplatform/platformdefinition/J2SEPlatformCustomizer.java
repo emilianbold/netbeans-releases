@@ -104,6 +104,9 @@ import org.openide.util.lookup.Lookups;
 
 public class J2SEPlatformCustomizer extends JTabbedPane {
 
+    static final int PREF_WIDTH = 600;
+    static final int PREF_HEIGHT = 350;
+
     private static final Logger LOG = Logger.getLogger(J2SEPlatformCustomizer.class.getName());
 
     private static final String CUSTOMIZERS_PATH =
@@ -336,7 +339,7 @@ public class J2SEPlatformCustomizer extends JTabbedPane {
                 c.insets = new Insets (5,6,6,6);
                 ((GridBagLayout)this.getLayout()).setConstraints(moveDownButton,c);
                 this.add (moveDownButton);
-            }
+            }            
         }
 
         private void addURLElement() {

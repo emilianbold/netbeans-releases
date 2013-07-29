@@ -59,6 +59,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.PrimitiveTypeTree;
 import com.sun.source.tree.ReturnTree;
 import com.sun.source.tree.Scope;
 import com.sun.source.tree.StatementTree;
@@ -476,8 +477,11 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     }
                     
                     if (pathToClass != null) { //XXX: should actually produce two different names: one when replacing duplicates, one when not replacing them
-                        guessedName = Utilities.makeNameUnique(info, info.getTrees().getScope(pathToClass),
-                                guessedName, cs.getFieldNamePrefix(), cs.getFieldNameSuffix());
+                        guessedName = Utilities.makeNameUnique(info,
+                                                               info.getTrees().getScope(pathToClass),
+                                                               guessedName,
+                                                               statik ? cs.getStaticFieldNamePrefix() : cs.getFieldNamePrefix(),
+                                                               statik ? cs.getStaticFieldNameSuffix() : cs.getFieldNameSuffix());
                     }
                 }
 
@@ -715,7 +719,10 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         else break OUTTER;
                     case IF: break;
                     case METHOD:
-                        exits = Collections.emptyList();
+                        Tree returnType = ((MethodTree) search.getLeaf()).getReturnType();
+                        if (returnType == null || (returnType.getKind() == Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree) returnType).getPrimitiveTypeKind() == TypeKind.VOID)) {
+                            exits = Collections.emptyList();
+                        }
                         break OUTTER;
                     default:
                         break OUTTER;

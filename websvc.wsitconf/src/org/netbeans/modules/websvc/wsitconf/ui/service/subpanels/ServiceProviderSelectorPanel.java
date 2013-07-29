@@ -45,7 +45,6 @@
 package org.netbeans.modules.websvc.wsitconf.ui.service.subpanels;
 
 import org.netbeans.modules.websvc.wsitconf.ui.ComboConstants;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 
 /**
  *
@@ -63,6 +62,7 @@ public class ServiceProviderSelectorPanel extends javax.swing.JPanel {
         
         initComponents();
         
+        /* issue 232988: the background color issues with dark metal L&F
         certAliasTextField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         certAliasLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         spUrlLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -71,6 +71,7 @@ public class ServiceProviderSelectorPanel extends javax.swing.JPanel {
         tokenTypeLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         tokenTypeCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         tokenTypeLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        */
         
         inSync = true;
         tokenTypeCombo.removeAllItems();

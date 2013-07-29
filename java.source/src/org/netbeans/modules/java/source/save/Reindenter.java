@@ -147,33 +147,36 @@ public class Reindenter implements IndentTask {
                     int startOffset = getEmbeddedOffset(originalStartOffset);
                     int endOffset = getEmbeddedOffset(originalEndOffset);
                     String blockCommentLine;
-                    int delta = 0;
-                    if (cs.addLeadingStarInComment() && ((delta = ts.move(startOffset)) > 0 && ts.moveNext() || ts.movePrevious())
-                            && (ts.token().id() == JavaTokenId.BLOCK_COMMENT && cs.enableBlockCommentFormatting()
-                            || ts.token().id() == JavaTokenId.JAVADOC_COMMENT && cs.enableJavadocFormatting())) {
-                        blockCommentLine = ts.token().text().toString();
-                        if (delta > 0) {
-                            int idx = blockCommentLine.indexOf('\n', delta); //NOI18N
-                            blockCommentLine = (idx < 0 ? blockCommentLine.substring(delta) : blockCommentLine.substring(delta, idx)).trim();
-                            int off = getOriginalOffset(ts.offset() + delta - 1);
-                            int prevLineStartOffset = context.lineStartOffset(off < 0 ? originalStartOffset : off);
-                            Integer prevLineIndent = newIndents.get(prevLineStartOffset);
-                            newIndents.put(originalStartOffset, (prevLineIndent != null ? prevLineIndent : context.lineIndent(prevLineStartOffset)) + (prevLineStartOffset > getOriginalOffset(ts.offset()) ? 0 : 1)); //NOI18N
-                        } else {
-                            int idx = blockCommentLine.lastIndexOf('\n'); //NOI18N
-                            if (idx > 0) {
-                                blockCommentLine = blockCommentLine.substring(idx).trim();
+                    int delta = ts.move(startOffset);
+                    if (((startOffset == 0 || delta > 0) && ts.moveNext() || ts.movePrevious())
+                            && (ts.token().id() != JavaTokenId.BLOCK_COMMENT || ts.embedded() == null)) {
+                        if (cs.addLeadingStarInComment()
+                                && (ts.token().id() == JavaTokenId.BLOCK_COMMENT && cs.enableBlockCommentFormatting()
+                                || ts.token().id() == JavaTokenId.JAVADOC_COMMENT && cs.enableJavadocFormatting())) {
+                            blockCommentLine = ts.token().text().toString();
+                            if (delta > 0) {
+                                int idx = blockCommentLine.indexOf('\n', delta); //NOI18N
+                                blockCommentLine = (idx < 0 ? blockCommentLine.substring(delta) : blockCommentLine.substring(delta, idx)).trim();
+                                int off = getOriginalOffset(ts.offset() + delta - 1);
+                                int prevLineStartOffset = context.lineStartOffset(off < 0 ? originalStartOffset : off);
+                                Integer prevLineIndent = newIndents.get(prevLineStartOffset);
+                                newIndents.put(originalStartOffset, (prevLineIndent != null ? prevLineIndent : context.lineIndent(prevLineStartOffset)) + (prevLineStartOffset > getOriginalOffset(ts.offset()) ? 0 : 1)); //NOI18N
+                            } else {
+                                int idx = blockCommentLine.lastIndexOf('\n'); //NOI18N
+                                if (idx > 0) {
+                                    blockCommentLine = blockCommentLine.substring(idx).trim();
+                                }
+                                newIndents.put(originalStartOffset, getNewIndent(startOffset, endOffset) + 1);
                             }
-                            newIndents.put(originalStartOffset, getNewIndent(startOffset, endOffset) + 1);
-                        }
-                        if (!blockCommentLine.startsWith("*")) { //NOI18N
-                            linesToAddStar.add(originalStartOffset);
-                        }
-                    } else {
-                        if (delta == 0 && ts.moveNext() && ts.token().id() == JavaTokenId.LINE_COMMENT) {
-                            newIndents.put(originalStartOffset, 0);
+                            if (!blockCommentLine.startsWith("*")) { //NOI18N
+                                linesToAddStar.add(originalStartOffset);
+                            }
                         } else {
-                            newIndents.put(originalStartOffset, getNewIndent(startOffset, endOffset));
+                            if (delta == 0 && ts.moveNext() && ts.token().id() == JavaTokenId.LINE_COMMENT) {
+                                newIndents.put(originalStartOffset, 0);
+                            } else {
+                                newIndents.put(originalStartOffset, getNewIndent(startOffset, endOffset));
+                            }
                         }
                     }
                 }
@@ -184,7 +187,9 @@ public class Reindenter implements IndentTask {
                         context.modifyIndent(startOffset, 0);
                         context.document().insertString(startOffset, "* ", null); //NOI18N
                     }
-                    context.modifyIndent(startOffset, newIndent);
+                    if (newIndent != null) {
+                        context.modifyIndent(startOffset, newIndent);
+                    }
                     if (!startOffsets.isEmpty()) {
                         char c;
                         int len = 0;

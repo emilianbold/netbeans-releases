@@ -1,4 +1,4 @@
-<?
+<?php
 if ($menu != false) {
     ?>
     <span class="sumbenu_btns"> //wrong, should be as inside if

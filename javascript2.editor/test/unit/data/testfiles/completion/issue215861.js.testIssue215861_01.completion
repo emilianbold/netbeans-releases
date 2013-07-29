@@ -15,12 +15,12 @@ METHOD     isExtensible(O: Object): Boole  [PUBLIC,   JS Platform
 METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   JS Platform
 METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   JS Platform
 METHOD     isSealed(O: Object): Boolean    [PUBLIC,   JS Platform
-METHOD     javaEnabled(): Boolean          [PUBLIC]   JS Platform
+METHOD     javaEnabled(): Boolean          [PUBLIC,   JS Platform
 METHOD     keys(O: Object): Array          [PUBLIC,   JS Platform
 METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
 METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
-METHOD     registerContentHandler(mimeTyp  [PUBLIC]   JS Platform
-METHOD     registerProtocolHandler(protoc  [PUBLIC]   JS Platform
+METHOD     registerContentHandler(mimeTyp  [PUBLIC,   JS Platform
+METHOD     registerProtocolHandler(protoc  [PUBLIC,   JS Platform
 METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
 METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
 METHOD     toString(): String              [PUBLIC]   JS Platform

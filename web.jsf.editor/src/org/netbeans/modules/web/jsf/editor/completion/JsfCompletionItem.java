@@ -41,9 +41,13 @@
  */
 package org.netbeans.modules.web.jsf.editor.completion;
 
+import java.awt.Color;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import javax.swing.UIManager;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
@@ -67,6 +71,15 @@ public class JsfCompletionItem {
     //html items priority varies from 10 to 20
     private static final int JSF_DEFAULT_SORT_PRIORITY = 5;
 
+    /** Replacements for tags and attributes to color properly documentation window colors (#232983). */
+    private static final Map<String, String> COLORING_REPLACEMENTS = new HashMap<String, String>() {{
+        put("<p>", "<p" + getColorStyleAttribute() + ">");      //NOI18N
+        put("<div>", "<div" + getColorStyleAttribute() + ">");  //NOI18N
+        put("<ol>", "<ol" + getColorStyleAttribute() + ">");    //NOI18N
+        put("class=[^>]*", getColorStyleAttribute());           //NOI18N
+    }};
+    private static final Pattern REPLACEMENT_PATTERN = getPattern();
+
     //----------- Factory methods --------------
     public static JsfTag createTag(int substitutionOffset, LibraryComponent component, String declaredPrefix, boolean autoimport, boolean isJsf22Plus) {
         return new JsfTag(substitutionOffset, component, declaredPrefix, autoimport, isJsf22Plus);
@@ -74,6 +87,39 @@ public class JsfCompletionItem {
 
     public static JsfTagAttribute createAttribute(String name, int substitutionOffset, Library library, org.netbeans.modules.web.jsfapi.api.Tag tag, org.netbeans.modules.web.jsfapi.api.Attribute attr) {
         return new JsfTagAttribute(name, substitutionOffset, library, tag, attr);
+    }
+
+
+    private static String convertTextColors(String content) {
+        // Hack to recolor HTML defined by JSF library in the metadata.
+        //   This recoloring is tuned for Mojarra implementation.
+        Matcher matcher = REPLACEMENT_PATTERN.matcher(content);
+        StringBuffer result = new StringBuffer();
+        while (matcher.find()) {
+            matcher.appendReplacement(result, getFromReplacementMap(matcher.group()));
+        }
+        matcher.appendTail(result);
+        return result.toString();
+    }
+
+    private static String getFromReplacementMap(String string) {
+        String result = COLORING_REPLACEMENTS.get(string);
+        return result != null ? result : getColorStyleAttribute();
+    }
+
+    private static Pattern getPattern() {
+        StringBuilder patternString = new StringBuilder("");
+        String delimiter = ""; //NOI18N
+        for (String toReplace : COLORING_REPLACEMENTS.keySet()) {
+            patternString.append(delimiter).append(toReplace);
+            delimiter = "|"; //NOI18N
+        }
+        return Pattern.compile(patternString.toString());
+    }
+
+    private static String getColorStyleAttribute() {
+        Color textColor = UIManager.getColor("Tree.textForeground"); //NOI18N
+        return " style=\"color: #" + Integer.toHexString(textColor.getRGB()).substring(2, 8) + ";\""; //NOI18N
     }
 
     public static class JsfTag extends HtmlCompletionItem.Tag {
@@ -159,6 +205,7 @@ public class JsfCompletionItem {
 
             org.netbeans.modules.web.jsfapi.api.Tag tag = component.getTag();
             if (tag != null) {
+                sb.append("<div>");
                 //there is TLD available
                 String descr = tag.getDescription();
                 if (descr == null) {
@@ -166,6 +213,7 @@ public class JsfCompletionItem {
                 } else {
                     sb.append(descr);
                 }
+                sb.append("</div>");
             } else {
                 //extract some simple info from the component
                 sb.append("<table border=\"1\">"); //NOI18N
@@ -196,8 +244,7 @@ public class JsfCompletionItem {
                 }
             } 
             // Bug 208982 <--
-
-            return sb.toString();
+            return convertTextColors(sb.toString());
         }
 
         @Override
@@ -247,8 +294,8 @@ public class JsfCompletionItem {
                 sb.append(NbBundle.getMessage(JsfCompletionItem.class, "MSG_NoAttributeDescription"));
             }
             sb.append("</p>");
-            
-            return sb.toString();
+
+            return convertTextColors(sb.toString());
         }
 
         @Override

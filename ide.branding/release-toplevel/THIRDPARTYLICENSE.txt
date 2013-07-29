@@ -34,12 +34,10 @@ enterprise/modules/ext/jsf-1_2/commons-collections.jar                Apache-2.0
 enterprise/modules/ext/jsf-1_2/commons-digester.jar                   Apache-2.0
 enterprise/modules/ext/jsf-1_2/commons-logging.jar                    Apache-2.0
 enterprise/modules/ext/jsf-2_2                                        CDDL-1.0 (see also enterprise/modules/ext/jsf-2_2/license.txt)
-enterprise/modules/ext/jstl.jar                                       Apache-2.0
 enterprise/modules/ext/metro/webservices-rt.jar                       CDDL-1.0, incl. Apache-2.0
 enterprise/modules/ext/metro/webservices-tools.jar                    CDDL-1.0, incl. Apache-2.0
 enterprise/modules/ext/primefaces/primefaces-3.5.jar                  Apache-2.0
 enterprise/modules/ext/spring/spring-webmvc-2.5.6.SEC03.jar           Apache-2.0
-enterprise/modules/ext/standard.jar                                   Apache-2.0
 enterprise/modules/ext/struts/antlr-2.7.2.jar                         Apache-2.0
 enterprise/modules/ext/struts/bsf-2.3.0.jar                           Apache-2.0
 enterprise/modules/ext/struts/commons-beanutils-1.8.0.jar             Apache-2.0
@@ -81,7 +79,7 @@ ide/modules/org-apache-commons-httpclient.jar                         Apache-2.0
 ide/modules/org-apache-commons-io.jar                                 Apache-2.0
 ide/modules/org-apache-commons-lang.jar                               Apache-2.0
 ide/modules/org-apache-commons-logging.jar                            Apache-2.0
-ide/modules/ext/commons-net-3.2.jar                                   Apache-2.0
+ide/modules/ext/commons-net-3.3.jar                                   Apache-2.0
 ide/modules/org-apache-ws-commons-util.jar                            Apache-2.0
 ide/modules/org-apache-xmlrpc.jar                                     Apache-2.0
 ide/modules/ext/freemarker-2.3.19.jar                                 freemarker

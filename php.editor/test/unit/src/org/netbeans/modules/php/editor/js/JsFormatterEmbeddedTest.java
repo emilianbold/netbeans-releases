@@ -77,31 +77,27 @@ public class JsFormatterEmbeddedTest extends PHPCodeCompletionTestBase {
         }
     }
 
-    public void testPlaceHolder() {
-
+    public void testEmbeddedSimple1() throws Exception {
+        reformatFileContents("testfiles/js/embeddedSimple1.php", new IndentPrefs(4,4));
     }
 
-//    public void testEmbeddedSimple1() throws Exception {
-//        reformatFileContents("testfiles/js/embeddedSimple1.php", new IndentPrefs(4,4));
-//    }
-//
-//    public void testEmbeddedSimple2() throws Exception {
-//        reformatFileContents("testfiles/js/embeddedSimple2.php", new IndentPrefs(4,4));
-//    }
-//
-//    public void testEmbeddedSimple3() throws Exception {
-//        reformatFileContents("testfiles/js/embeddedSimple3.php", new IndentPrefs(4,4));
-//    }
-//
-//    public void testEmbeddedSimple4() throws Exception {
-//        reformatFileContents("testfiles/js/embeddedSimple4.php", new IndentPrefs(4,4));
-//    }
-//
-//    public void testEmbeddedSimple5() throws Exception {
-//        reformatFileContents("testfiles/js/embeddedSimple5.php", new IndentPrefs(4,4));
-//    }
-//
-//    public void testEmbeddedMultipleSections1() throws Exception {
-//        reformatFileContents("testfiles/js/embeddedMultipleSections1.php", new IndentPrefs(4,4));
-//    }
+    public void testEmbeddedSimple2() throws Exception {
+        reformatFileContents("testfiles/js/embeddedSimple2.php", new IndentPrefs(4,4));
+    }
+
+    public void testEmbeddedSimple3() throws Exception {
+        reformatFileContents("testfiles/js/embeddedSimple3.php", new IndentPrefs(4,4));
+    }
+
+    public void testEmbeddedSimple4() throws Exception {
+        reformatFileContents("testfiles/js/embeddedSimple4.php", new IndentPrefs(4,4));
+    }
+
+    public void testEmbeddedSimple5() throws Exception {
+        reformatFileContents("testfiles/js/embeddedSimple5.php", new IndentPrefs(4,4));
+    }
+
+    public void testEmbeddedMultipleSections1() throws Exception {
+        reformatFileContents("testfiles/js/embeddedMultipleSections1.php", new IndentPrefs(4,4));
+    }
 }

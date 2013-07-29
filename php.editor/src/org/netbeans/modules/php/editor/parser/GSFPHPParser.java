@@ -247,7 +247,7 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
         if (statement instanceof ASTError) {
             // if there is an errot, try to sanitize only if there
             // is a class or function inside the error
-            String errorCode = "<?" + context.getSanitizedSource().substring(statement.getStartOffset(), statement.getEndOffset()) + "?>";
+            String errorCode = "<?php " + context.getSanitizedSource().substring(statement.getStartOffset(), statement.getEndOffset()) + "?>";
             ASTPHP5Scanner fcScanner = new ASTPHP5Scanner(new StringReader(errorCode), shortTags, aspTags);
             Symbol token = fcScanner.next_token();
             while (token.sym != ASTPHP5Symbols.EOF) {
@@ -362,7 +362,8 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
     protected boolean sanitizeRequireAndInclude(Context context, int start, int end) {
         try {
             String source = context.getBaseSource();
-            String phpOpenDelimiter = "<?";
+            String shortOpenTag = "<?";
+            String phpOpenDelimiter = shortOpenTag + "php ";
             String actualSource = phpOpenDelimiter + source.substring(start, end) + "?>";
             ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(actualSource), shortTags, aspTags);
             char delimiter = '0';
@@ -426,7 +427,8 @@ public class GSFPHPParser extends Parser implements PropertyChangeListener {
                         if (canBeSanitized) {
                             int sanitizedChars = numberOfSanitizedChars(containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese);
                             context.setSanitizedPart(new SanitizedPartImpl(
-                                    new OffsetRange(start + currentLeftOffset - 1, start + currentLeftOffset + sanitizedChars - phpOpenDelimiter.length() + 1),
+                                    new OffsetRange(start + currentLeftOffset - 1 - (phpOpenDelimiter.length() - shortOpenTag.length()), 
+                                            start + currentLeftOffset + sanitizedChars - phpOpenDelimiter.length() + 1),
                                     sanitizationString(delimiter, containsOpenParenthese, hasCloseDelimiter, hasCloseParenthese)));
                             return true;
                         } else {

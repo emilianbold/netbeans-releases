@@ -146,8 +146,8 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+          <Group type="102" attributes="0">
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="jSeparator1" max="32767" attributes="1"/>
                   <Component id="jSeparator2" max="32767" attributes="1"/>
@@ -157,11 +157,6 @@
                           <Component id="javaAutoPopupOnIdentifierPart" alignment="0" min="-2" max="-2" attributes="1"/>
                           <Component id="javaCompletionExcluderMethodsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                           <Component id="javaCompletionExcluderLabel" alignment="0" min="-2" max="-2" attributes="0"/>
-                          <Group type="102" alignment="0" attributes="0">
-                              <Component id="javadocAutoCompletionTriggersLabel" min="-2" max="-2" attributes="0"/>
-                              <EmptySpace max="32767" attributes="0"/>
-                              <Component id="javadocAutoCompletionTriggersField" min="-2" pref="86" max="-2" attributes="1"/>
-                          </Group>
                           <Group type="102" alignment="0" attributes="0">
                               <Component id="javaCompletionSelectorsLabel" min="-2" max="-2" attributes="1"/>
                               <EmptySpace max="32767" attributes="0"/>
@@ -174,6 +169,17 @@
                           </Group>
                           <Component id="javaAutoCompletionSubwords" alignment="0" min="-2" max="-2" attributes="1"/>
                           <Component id="javaCompletionExcluderTab" alignment="0" max="32767" attributes="0"/>
+                          <Group type="102" alignment="1" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="javadocAutoCompletionTriggersLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="javadocCompletionSelectorsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="20" max="32767" attributes="0"/>
+                              <Group type="103" groupAlignment="0" max="-2" attributes="0">
+                                  <Component id="javadocAutoCompletionTriggersField" pref="86" max="32767" attributes="1"/>
+                                  <Component id="javadocCompletionSelectorsField" max="32767" attributes="0"/>
+                              </Group>
+                          </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
@@ -183,7 +189,7 @@
                       </Group>
                   </Group>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -232,6 +238,11 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="javadocAutoCompletionTriggersLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="javadocAutoCompletionTriggersField" alignment="3" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="javadocCompletionSelectorsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+                  <Component id="javadocCompletionSelectorsField" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="32767" attributes="0"/>
           </Group>
@@ -528,6 +539,18 @@
           <ResourceString bundle="org/netbeans/modules/java/editor/options/Bundle.properties" key="ACSD_JavaCompletionSelectors" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
         </Property>
       </AccessibilityProperties>
+    </Component>
+    <Component class="javax.swing.JLabel" name="javadocCompletionSelectorsLabel">
+      <Properties>
+        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
+          <ComponentRef name="javadocCompletionSelectorsField"/>
+        </Property>
+        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+          <ResourceString bundle="org/netbeans/modules/java/editor/options/Bundle.properties" key="LBL_JavadocCompletionSelectors" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+        </Property>
+      </Properties>
+    </Component>
+    <Component class="javax.swing.JTextField" name="javadocCompletionSelectorsField">
     </Component>
   </SubComponents>
 </Form>

@@ -116,7 +116,7 @@ abstract class RebaseKind {
         }
 
         @Override
-        @NbBundle.Messages("LBL_RebaseKind.basic.displayName=Basic")
+        @NbBundle.Messages("LBL_RebaseKind.basic.displayName=Current Revision To Tipmost Head")
         public String getDisplayName () {
             return Bundle.LBL_RebaseKind_basic_displayName();
         }
@@ -180,7 +180,7 @@ abstract class RebaseKind {
         }
 
         @Override
-        @NbBundle.Messages("LBL_RebaseKind.destination.displayName=Current Revision To Arbitrary Destination")
+        @NbBundle.Messages("LBL_RebaseKind.destination.displayName=Current Revision To Any Destination")
         public String getDisplayName () {
             return Bundle.LBL_RebaseKind_destination_displayName();
         }

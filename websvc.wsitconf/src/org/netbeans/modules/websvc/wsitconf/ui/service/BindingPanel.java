@@ -68,7 +68,6 @@ import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.RMModelHelper;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.SecurityPolicyModelHelper;
 import org.netbeans.modules.xml.multiview.ui.SectionInnerPanel;
 import org.netbeans.modules.xml.multiview.ui.SectionView;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.Binding;
 import org.netbeans.modules.xml.wsdl.model.WSDLModel;
 import org.netbeans.modules.xml.xam.ComponentEvent;
@@ -152,6 +151,7 @@ public class BindingPanel extends SectionInnerPanel {
             isFromJava = false;
         }
 
+        /* issue 232988: the background color issues with dark metal L&F
         mtomChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         rmChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         orderedChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -159,7 +159,6 @@ public class BindingPanel extends SectionInnerPanel {
         profileComboLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         profileCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         profileInfoField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        profileInfoField.setFont(mtomChBox.getFont());
         stsChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         tcpChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         fiChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
@@ -171,6 +170,8 @@ public class BindingPanel extends SectionInnerPanel {
         cfgVersionLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         cfgVersionCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         addrChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        */
+        profileInfoField.setFont(mtomChBox.getFont());
 
         // detect and fill appropriate config options
         WSStackVersion wsStackVersion = WSITConfigProvider.getDefault().getHighestWSStackVersion(project);

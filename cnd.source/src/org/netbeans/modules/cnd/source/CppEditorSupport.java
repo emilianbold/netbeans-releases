@@ -89,6 +89,7 @@ import org.openide.nodes.Node;
 import org.openide.text.CloneableEditorSupport;
 import org.openide.text.DataEditorSupport;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.Lookups;
@@ -102,6 +103,7 @@ import org.openide.windows.CloneableOpenSupport;
 public class CppEditorSupport extends DataEditorSupport implements EditCookie,
         EditorCookie, EditorCookie.Observable, OpenCookie, CloseCookie, PrintCookie, ReadOnlySupport {
 
+    private static final RequestProcessor RP = new RequestProcessor("slowDocumentPropertiesSetup", 1); // NOI18N
     /** SaveCookie for this support instance. The cookie is adding/removing 
      * data object's cookie set depending on if modification flag was set/unset. */
     private final SaveCookie saveCookie = new SaveCookie() {
@@ -351,21 +353,16 @@ public class CppEditorSupport extends DataEditorSupport implements EditCookie,
     }
 
     @Override
-    protected StyledDocument createStyledDocument(EditorKit kit) {
-        StyledDocument doc = super.createStyledDocument(kit);
-        if (!SwingUtilities.isEventDispatchThread()) {
-            setupSlowDocumentProperties(doc);
-        }
-        return doc;
-    }
-
-    @Override
     public Task prepareDocument() {
-        Task task = super.prepareDocument();
-        if (!SwingUtilities.isEventDispatchThread()) {
-            setupSlowDocumentProperties(super.getDocument());
-        }
-        return task;
+        // refer to IZ233191 for the explanation of why this task is posted
+        // each time
+        return RP.post(new Runnable() {
+            @Override
+            public void run() {
+                CppEditorSupport.super.prepareDocument().waitFinished();
+                setupSlowDocumentProperties(CppEditorSupport.super.getDocument());
+            }
+        });
     }
 
     /** Nested class. Environment for this support. Extends <code>DataEditorSupport.Env</code> abstract class. */

@@ -275,7 +275,8 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     return ;
                 }
                 resubmit();
-            } else if (LineBreakpoint.PROP_LINE_NUMBER.equals(propertyName)) {
+            } else if (LineBreakpoint.PROP_LINE_NUMBER.equals(propertyName) ||
+                       LineBreakpoint.PROP_FILE.equals(propertyName)) {
                 lineChanged.set(true);
             } else if (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint.PROP_LOCATION.equals(propertyName)) {
                 if (resubmitting.get()) {

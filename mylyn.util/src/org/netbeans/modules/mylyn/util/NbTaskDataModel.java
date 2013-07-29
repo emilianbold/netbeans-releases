@@ -85,28 +85,24 @@ public final class NbTaskDataModel {
     }
 
     public boolean hasIncomingChanges (TaskAttribute taskAttribute, boolean includeConflicts) {
+        TaskData repositoryData = workingCopy.getRepositoryData();
+        if (repositoryData == null) {
+            return false;
+        }
+        taskAttribute = repositoryData.getRoot().getMappedAttribute(taskAttribute.getPath());
+        if (taskAttribute == null) {
+            return false;
+        }
         boolean incoming = delegateModel.hasIncomingChanges(taskAttribute);
         if (includeConflicts && !incoming && delegateModel.hasOutgoingChanges(taskAttribute)) {
             TaskData lastReadData = workingCopy.getLastReadData();
             if (lastReadData == null) {
-                    return true;
+                return true;
             }
-
             TaskAttribute oldAttribute = lastReadData.getRoot().getMappedAttribute(taskAttribute.getPath());
             if (oldAttribute == null) {
-                    return true;
+                return true;
             }
-            
-            TaskData repositoryData = workingCopy.getRepositoryData();
-            if (repositoryData == null) {
-                    return true;
-            }
-
-            taskAttribute = repositoryData.getRoot().getMappedAttribute(taskAttribute.getPath());
-            if (taskAttribute == null) {
-                    return true;
-            }
-
             return !repositoryData.getAttributeMapper().equals(taskAttribute, oldAttribute);
         }
         return incoming;
@@ -154,6 +150,16 @@ public final class NbTaskDataModel {
 
     public void refresh () throws CoreException {
         delegateModel.refresh(null);
+        Set<TaskAttribute> changedAttributes = delegateModel.getChangedAttributes();
+        for (TaskAttribute ta : changedAttributes) {
+            // there are still local unsaved changes, keep them in local taskdata
+            TaskAttribute attribute = getLocalTaskData().getRoot().getAttribute(ta.getId());
+            if (attribute == null) {
+                getLocalTaskData().getRoot().deepAddCopy(ta);
+            } else {
+                attribute.setValues(ta.getValues());
+            }
+        }
     }
 
     public void save () throws CoreException {

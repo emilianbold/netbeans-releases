@@ -45,6 +45,7 @@ import javax.swing.text.Document;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.prep.editor.model.CPModel;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.openide.filesystems.FileObject;
 
@@ -57,27 +58,27 @@ public class RefactoringElementContext {
     private int caretOffset;
     private int selectionFrom, selectionTo;
     private Node element;
-    private CssParserResult result;
-    private Snapshot topLevelSnapshot;
+    private Snapshot snapshot;
+    private CPModel cpModel;
 
     public RefactoringElementContext(CssParserResult result, int caretOffset) {
         this(result, caretOffset, -1, -1);
     }
     
     public RefactoringElementContext(CssParserResult result, int caretOffset, int selectionFrom, int selectionTo) {
-        this.result = result;
         this.caretOffset = caretOffset;
         this.selectionFrom = selectionFrom;
         this.selectionTo = selectionTo;
-        this.element = findCurrentElement();
-
+        this.snapshot = result.getSnapshot();
+        this.element = findCurrentElement(result);
         assert element != null; //at least the root node should always be found
+        this.cpModel = CPModel.getModel(result);
     }
 
     //XXX make it only caret position sensitive for now
-    private Node findCurrentElement() {
-        Node root = getParserResult().getParseTree();
-        int astOffset = getParserResult().getSnapshot().getEmbeddedOffset(caretOffset);
+    private Node findCurrentElement(CssParserResult result) {
+        Node root = result.getParseTree();
+        int astOffset = result.getSnapshot().getEmbeddedOffset(caretOffset);
         Node leaf = NodeUtil.findNodeAtOffset(root, astOffset);
         if (leaf != null) {
             //we found token node, use its encolosing node - parent
@@ -89,15 +90,15 @@ public class RefactoringElementContext {
     }
 
     public Document getDocument() {
-        return result.getSnapshot().getSource().getDocument(false);
-    }
-
-    public CssParserResult getParserResult() {
-        return result;
+        return snapshot.getSource().getDocument(false);
     }
 
     public FileObject getFileObject() {
-        return getParserResult().getSnapshot().getSource().getFileObject();
+        return snapshot.getSource().getFileObject();
+    }
+    
+    public CPModel getCPModel() {
+        return cpModel;
     }
 
     public int getCaret() {

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.jira.repository;
 
+import com.atlassian.connector.eclipse.internal.jira.core.util.JiraUtil;
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -65,6 +66,7 @@ import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
 import org.netbeans.modules.jira.Jira;
 import org.netbeans.modules.jira.JiraConnector;
 import org.netbeans.modules.jira.commands.ValidateCommand;
+import org.netbeans.modules.jira.util.JiraUtils;
 import org.openide.util.*;
 import org.openide.util.RequestProcessor.Task;
 
@@ -325,7 +327,12 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
                 } else {
                     logValidateMessage("validate for [{0},{1},{2},{3},{4},{5}] worked.", // NOI18N
                                        Level.INFO, name, url, user, password, httpUser, httpPassword);
-                    panel.connectionLabel.setVisible(true);
+                    JiraUtils.runInAWT(new Runnable() {
+                        @Override
+                        public void run() {
+                            panel.connectionLabel.setVisible(true);
+                        }
+                    });
                 }
                 fireChange();
             }
@@ -378,18 +385,25 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
 
         protected void preRun() {
             handle = ProgressHandleFactory.createHandle(labelText, this);
-            JComponent comp = ProgressHandleFactory.createProgressComponent(handle);
-            panel.progressPanel.removeAll();
-            panel.progressPanel.add(comp, BorderLayout.CENTER);
+            final JComponent comp = ProgressHandleFactory.createProgressComponent(handle);
+            handle.start();            
             panel.cancelButton.addActionListener(this);
-            panel.connectionLabel.setVisible(false);
-            handle.start();
-            panel.progressPanel.setVisible(true);
-            panel.validateLabel.setVisible(true);
-            panel.cancelButton.setVisible(true);
-            panel.validateButton.setVisible(false);
-            panel.enableFields(false);
-            panel.validateLabel.setText(labelText); // NOI18N
+            
+            JiraUtils.runInAWT(new Runnable() {
+                @Override
+                public void run() {
+                    panel.progressPanel.removeAll();
+                    panel.progressPanel.add(comp, BorderLayout.CENTER);
+                    panel.connectionLabel.setVisible(false);
+                    panel.progressPanel.setVisible(true);
+                    panel.validateLabel.setVisible(true);
+                    panel.cancelButton.setVisible(true);
+                    panel.validateButton.setVisible(false);
+                    panel.enableFields(false);
+                    panel.validateLabel.setText(labelText); // NOI18N
+                }
+            });
+
         }
 
         protected void postRun() {
@@ -397,7 +411,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
                 handle.finish();
             }
             panel.cancelButton.removeActionListener(this);
-            SwingUtilities.invokeLater(new Runnable() {
+            JiraUtils.runInAWT(new Runnable() {
                 @Override
                 public void run() {
                     panel.progressPanel.setVisible(false);

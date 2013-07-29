@@ -87,6 +87,7 @@ public final class JSchChannelsSupport {
     // We use ConcurrentHashMap to be able fast isConnected() check; in most other cases sessions is guarded bu "this"
     private final ConcurrentHashMap<Session, AtomicInteger> sessions = new ConcurrentHashMap<Session, AtomicInteger>();
     private final Set<Channel> knownChannels = new HashSet<Channel>();
+    private final PortForwarding portForwarding = new PortForwarding();
 
     static {
         Set<Entry<Object, Object>> data = new HashSet<Entry<Object, Object>>(System.getProperties().entrySet());
@@ -269,6 +270,10 @@ public final class JSchChannelsSupport {
                 throw new InterruptedException("StartNewSession was cancelled ..."); // NOI18N
             }
 
+            // In case of any port-forwarding previously set for this env
+            // init the new session appropriately
+            portForwarding.initSession(newSession);
+
             sessions.put(newSession, new AtomicInteger(JSCH_CHANNELS_PER_SESSION - (acquireChannel ? 1 : 0)));
 
             log.log(Level.FINE, "New session [{0}] started.", new Object[]{System.identityHashCode(newSession)}); // NOI18N
@@ -304,9 +309,9 @@ public final class JSchChannelsSupport {
                 if (entry.getValue().get() > 0) {
                     log.log(Level.FINE, "Found another session [{0}] with {1} free slots. Will remove this one [{2}].", // NOI18N
                             new Object[]{
-                                System.identityHashCode(entry.getKey()),
-                                entry.getValue().get(),
-                                System.identityHashCode(s)});
+                        System.identityHashCode(entry.getKey()),
+                        entry.getValue().get(),
+                        System.identityHashCode(s)});
 
                     sessionsToRemove.add(s);
                     break;
@@ -323,8 +328,8 @@ public final class JSchChannelsSupport {
                 if (entry.getValue().get() == JSCH_CHANNELS_PER_SESSION) {
                     log.log(Level.FINE, "Found empty session [{0}] while this one is also has free slots [{1}].", // NOI18N
                             new Object[]{
-                                System.identityHashCode(entry.getKey()),
-                                System.identityHashCode(s)});
+                        System.identityHashCode(entry.getKey()),
+                        System.identityHashCode(s)});
                     sessionsToRemove.add(entry.getKey());
                 }
             }
@@ -342,5 +347,60 @@ public final class JSchChannelsSupport {
         } finally {
             sessionsLock.unlock();
         }
+    }
+
+    public String getServerVersion() {
+        for (Session s : sessions.keySet()) {
+            if (s.isConnected()) {
+                return s.getServerVersion();
+            }
+        }
+        return null;
+    }
+
+    public int setPortForwardingL(int lport, String host, int rport) throws JSchException {
+        portForwarding.addPortForwardingInfoL(lport, host, rport);
+        for (Session s : sessions.keySet()) {
+            if (s.isConnected()) {
+                return s.setPortForwardingL(lport, host, rport);
+            }
+        }
+        return -1;
+    }
+
+    public void setPortForwardingR(String bind_address, int rport, String host, int lport) throws JSchException {
+        portForwarding.addPortForwardingInfoR(bind_address, rport, host, lport);
+        for (Session s : sessions.keySet()) {
+            if (s.isConnected()) {
+                s.setPortForwardingR(bind_address, rport, host, lport);
+            }
+        }
+    }
+
+    public void delPortForwardingR(int rport) throws JSchException {
+        portForwarding.removePortForwardingInfoR(rport);
+        for (Session s : sessions.keySet()) {
+            if (s.isConnected()) {
+                s.delPortForwardingR(rport);
+            }
+        }
+    }
+
+    public void delPortForwardingL(int lport) throws JSchException {
+        portForwarding.removePortForwardingInfoL(lport);
+        for (Session s : sessions.keySet()) {
+            if (s.isConnected()) {
+                s.delPortForwardingL(lport);
+            }
+        }
+    }
+
+    public String getConfig(String key) {
+        for (Session s : sessions.keySet()) {
+            if (s.isConnected()) {
+                return s.getConfig(key);
+            }
+        }
+        return null;
     }
 }

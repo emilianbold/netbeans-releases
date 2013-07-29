@@ -605,6 +605,10 @@ made subject to such option by the copyright holder.
                         <code-name-base>org.openide.util</code-name-base>
                         <compile-dependency/>
                     </test-dependency>
+                    <test-dependency>
+                        <code-name-base>org.netbeans.modules.java.editor</code-name-base>
+                        <compile-dependency/>
+                    </test-dependency>
                 </test-type>
             </test-dependencies>
             <public-packages>

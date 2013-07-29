@@ -69,7 +69,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Stack;
-import jdk.nashorn.internal.ir.Block;
 import jdk.nashorn.internal.ir.ExecuteNode;
 import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Modifier;
@@ -79,6 +78,10 @@ import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
+import static org.netbeans.modules.javascript2.editor.doc.spi.JsModifier.PRIVATE;
+import static org.netbeans.modules.javascript2.editor.doc.spi.JsModifier.PUBLIC;
+import static org.netbeans.modules.javascript2.editor.doc.spi.JsModifier.STATIC;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.Identifier;
@@ -88,7 +91,6 @@ import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.spi.model.FunctionArgument;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Model;
-import org.netbeans.modules.javascript2.editor.model.ModelFactory;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
@@ -215,8 +217,28 @@ public class ModelVisitor extends PathNodeVisitor {
                             property.addOccurrence(name.getOffsetRange());
                         }
                     } else {
+                        boolean setDocumentation = false;
+                        if (isPriviliged(accessNode) && getPath().size() > 1 && getPreviousFromPath(2) instanceof ExecuteNode ) {
+                            // google style declaration of properties:  this.buildingID;    
+                            onLeftSite = true;
+                            setDocumentation = true;
+                        }
                         property = new JsObjectImpl(fromAN, name, name.getOffsetRange(), onLeftSite, parserResult.getSnapshot().getMimeType(), null);
                         property.addOccurrence(name.getOffsetRange());
+                        if (setDocumentation) {
+                            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+                            if (docHolder != null) {    
+                                property.setDocumentation(docHolder.getDocumentation(accessNode));
+                                property.setDeprecated(docHolder.isDeprecated(accessNode));
+                                List<Type> returnTypes = docHolder.getReturnType(accessNode);
+                                if (!returnTypes.isEmpty()) {
+                                    for (Type type : returnTypes) {
+                                        property.addAssignment(new TypeUsageImpl(type.getType(), type.getOffset(), true), accessNode.getFinish());
+                                    }
+                                }
+                                setModifiersFromDoc(property, docHolder.getModifiers(accessNode));
+                            }
+                        }
                     }
                     fromAN.addProperty(name.getName(), property);
                 }
@@ -684,63 +706,62 @@ public class ModelVisitor extends PathNodeVisitor {
                 modelBuilder.setCurrentObject((JsObjectImpl)fncScope);
             }
         }
-        JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
-        // create variables that are declared in the function
-        // They has to be created here for tracking occurrences
-        if (canBeSingletonPattern()) {
-            parent = resolveThis(fncScope);
-        } else {
-            parent = fncScope;
-        }
-        for (VarNode varNode : functionNode.getDeclarations()) {
-            Identifier varName = new IdentifierImpl(varNode.getName().getName(), new OffsetRange(varNode.getName().getStart(), varNode.getName().getFinish()));
-            OffsetRange range = varNode.getInit() instanceof ObjectNode ? new OffsetRange(varNode.getName().getStart(), ((ObjectNode)varNode.getInit()).getFinish()) 
-                    : varName.getOffsetRange();
-            JsObject variable = handleArrayCreation(varNode.getInit(), parent, varName);
-            if (variable == null) {
-                JsObjectImpl newObject = new JsObjectImpl(parent, varName, range, parserResult.getSnapshot().getMimeType(), null);
-                newObject.setDeclared(true);
-                if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
-                    // here are the variables allways private
-                    newObject.getModifiers().remove(Modifier.PUBLIC);
-                    newObject.getModifiers().add(Modifier.PRIVATE);
-                }
-                variable = newObject;
-            }
-            
-            variable.addOccurrence(varName.getOffsetRange());
-            parent.addProperty(varName.getName(), variable);
-            if (docHolder != null) {
-                ((JsObjectImpl)variable).setDocumentation(docHolder.getDocumentation(varNode));
-                ((JsObjectImpl)variable).setDeprecated(docHolder.isDeprecated(varNode));
-            }
-            
-        }
-                
-        for (FunctionNode fn : functions) {
-            if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
-                // go through all functions defined via reference
-                String functionName = fn.getIdent().getName();
-                if (!(functionName.startsWith("get ") || functionName.startsWith("set "))) {  //NOI18N
-                    // don't visit setter and getters in object literal
-                    fn.accept(this);
-                }
-            }
-        }
-
-        // mark constructors 
-        if (fncScope != null && functionNode.getKind() != FunctionNode.Kind.SCRIPT && docHolder.isClass(functionNode)) {
-            // needs to be marked before going through the nodes
-            fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
-        }
-        
-        // go through all function statements
-        for (Node node : functionNode.getStatements()) {
-            node.accept(this);
-        }
-
-
         if (fncScope != null) {
+            JsDocumentationHolder docHolder = parserResult.getDocumentationHolder();
+            // create variables that are declared in the function
+            // They has to be created here for tracking occurrences
+            if (canBeSingletonPattern()) {
+                parent = resolveThis(fncScope);
+            } else {
+                parent = fncScope;
+            }
+            for (VarNode varNode : functionNode.getDeclarations()) {
+                Identifier varName = new IdentifierImpl(varNode.getName().getName(), new OffsetRange(varNode.getName().getStart(), varNode.getName().getFinish()));
+                OffsetRange range = varNode.getInit() instanceof ObjectNode ? new OffsetRange(varNode.getName().getStart(), ((ObjectNode)varNode.getInit()).getFinish()) 
+                        : varName.getOffsetRange();
+                JsObject variable = handleArrayCreation(varNode.getInit(), parent, varName);
+                if (variable == null) {
+                    JsObjectImpl newObject = new JsObjectImpl(parent, varName, range, parserResult.getSnapshot().getMimeType(), null);
+                    newObject.setDeclared(true);
+                    if (functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
+                        // here are the variables allways private
+                        newObject.getModifiers().remove(Modifier.PUBLIC);
+                        newObject.getModifiers().add(Modifier.PRIVATE);
+                    }
+                    variable = newObject;
+                }
+
+                variable.addOccurrence(varName.getOffsetRange());
+                parent.addProperty(varName.getName(), variable);
+                if (docHolder != null) {
+                    ((JsObjectImpl)variable).setDocumentation(docHolder.getDocumentation(varNode));
+                    ((JsObjectImpl)variable).setDeprecated(docHolder.isDeprecated(varNode));
+                }
+
+            }
+
+            for (FunctionNode fn : functions) {
+                if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
+                    // go through all functions defined via reference
+                    String functionName = fn.getIdent().getName();
+                    if (!(functionName.startsWith("get ") || functionName.startsWith("set "))) {  //NOI18N
+                        // don't visit setter and getters in object literal
+                        fn.accept(this);
+                    }
+                }
+            }
+
+            // mark constructors 
+            if (functionNode.getKind() != FunctionNode.Kind.SCRIPT && docHolder.isClass(functionNode)) {
+                // needs to be marked before going through the nodes
+                fncScope.setJsKind(JsElement.Kind.CONSTRUCTOR);
+            }
+
+            // go through all function statements
+            for (Node node : functionNode.getStatements()) {
+                node.accept(this);
+            }
+
             // check parameters and return types of the function.
             fncScope.setDeprecated(docHolder.isDeprecated(functionNode));
             List<Type> types = docHolder.getReturnType(functionNode);
@@ -771,7 +792,7 @@ public class ModelVisitor extends PathNodeVisitor {
                     }
                 }
             }
-            
+
             List<Type> extendTypes = docHolder.getExtends(functionNode);
             if (!extendTypes.isEmpty()) {
                 JsObject prototype = fncScope.getProperty(ModelUtils.PROTOTYPE);
@@ -784,14 +805,16 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
             }
 
-        }
+            setModifiersFromDoc(fncScope, docHolder.getModifiers(functionNode));
 
-        for (FunctionNode fn : functions) {
-            // go through all functions defined as function fn () {...}
-            if (fn.getIdent().getStart() >= fn.getIdent().getFinish()) {
-                fn.accept(this);
+            for (FunctionNode fn : functions) {
+                // go through all functions defined as function fn () {...}
+                if (fn.getIdent().getStart() >= fn.getIdent().getFinish()) {
+                    fn.accept(this);
+                }
             }
         }
+        
         if (fncScope != null && functionNode.getKind() != FunctionNode.Kind.SCRIPT) {
             // pop the current level from model builder stack
             modelBuilder.reset();
@@ -1718,6 +1741,39 @@ public class ModelVisitor extends PathNodeVisitor {
                     && getPreviousFromPath(pathIndex + 3) instanceof UnaryNode
                     && (getPreviousFromPath(pathIndex + 4) instanceof BinaryNode
                         || getPreviousFromPath(pathIndex + 4) instanceof VarNode));
+    }
+    
+    private boolean isPriviliged(AccessNode aNode) {
+        Node node = aNode.getBase();
+        while (node instanceof AccessNode) {
+            node = ((AccessNode)node).getBase();
+        }
+        if (node instanceof IdentNode && "this".endsWith(((IdentNode)node).getName())) {
+            return true;
+        }
+        return false;
+    }
+    
+    private void setModifiersFromDoc(JsObject object, Set<JsModifier> modifiers) {
+        if (modifiers != null && !modifiers.isEmpty()) {
+            for (JsModifier jsModifier : modifiers) {
+                switch (jsModifier) {
+                    case PRIVATE:
+                        object.getModifiers().remove(Modifier.PROTECTED);
+                        object.getModifiers().remove(Modifier.PUBLIC);
+                        object.getModifiers().add(Modifier.PRIVATE);
+                        break;
+                    case PUBLIC:
+                        object.getModifiers().remove(Modifier.PROTECTED);
+                        object.getModifiers().remove(Modifier.PRIVATE);
+                        object.getModifiers().add(Modifier.PUBLIC);
+                        break;
+                    case STATIC:
+                        object.getModifiers().add(Modifier.STATIC);
+                        break;
+                }
+            }
+        }
     }
     
     public static class FunctionCall {

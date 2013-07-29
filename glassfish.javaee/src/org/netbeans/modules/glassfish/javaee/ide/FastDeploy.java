@@ -69,6 +69,7 @@ import org.netbeans.modules.glassfish.javaee.ResourceRegistrationHelper;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule2;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeApplication;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.plugins.api.AppChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.plugins.api.DeploymentChangeDescriptor;
@@ -122,6 +123,27 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
     }
 
 
+    /**
+     * Get web application context root from module configuration.
+     * @param module Java EE module containing context root (WAR archive).
+     * @param dir    Web application root.
+     * @return 
+     */
+    private String getContextRoot(final J2eeModule module, final File dir) {
+        ModuleConfigurationImpl mci = ModuleConfigurationImpl.get(module);
+        if (null != mci) {
+            try {
+                return mci.getContextRoot();
+            } catch (ConfigurationException ex) {
+                Logger.getLogger("glassfish").log(Level.WARNING,
+                        "could not getContextRoot() for {0}", dir);
+                return null;
+            }
+        } else {
+            return null;
+        }
+    }
+
     private ProgressObject initialDeploy(Target target, J2eeModule module, final File dir, final File[] requiredLibraries) {
         final GlassfishModule commonSupport = dm.getCommonServerSupport();
         String url = commonSupport.getInstanceProperties().get(GlassfishModule.URL_ATTR);
@@ -132,16 +154,9 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
         final String moduleName = org.netbeans.modules.glassfish.spi.Utils.sanitizeName(Utils.computeModuleID(module, dir, Integer.toString(hashCode()))) +
                 nameSuffix;
         String contextRoot = null;
-        if (module.getType() == J2eeModule.Type.WAR) {
-            // compute cr 
-            ModuleConfigurationImpl mci = ModuleConfigurationImpl.get(module);
-            if (null != mci) {
-                try {
-                    contextRoot = mci.getContextRoot();
-                } catch (ConfigurationException ex) {
-                    Logger.getLogger("glassfish").log(Level.WARNING, "could not getContextRoot() for {0}",dir);
-                }
-            }
+        J2eeModule.Type type = module.getType();
+        if (type == J2eeModule.Type.WAR) {
+            contextRoot = getContextRoot(module, dir);
             // drop a glassfish-web.xml file in here.. if necessary
             FileObject rootOfWebApp = FileUtil.toFileObject(FileUtil.normalizeFile(dir));
             if (null != rootOfWebApp) {
@@ -165,10 +180,20 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
                     addDescriptorToDeployedDirectory(module, sunDDFile);                    
                 }
             }
+        // Context root is in encapsulated WAR
+        } else if (type == J2eeModule.Type.EAR) {
+            if (module instanceof J2eeApplication) {
+                for (J2eeModule child : ((J2eeApplication)module).getModules()) {
+                    if (child.getType() == J2eeModule.Type.WAR) {
+                        contextRoot = getContextRoot(child, dir);
+                        break;
+                    }
+                }
+            }
         }
         // XXX fix cast -- need error instance for ProgressObject to return errors
-        Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target, moduleName,
-                contextRoot, dir.getAbsolutePath());
+        Hk2TargetModuleID moduleId = Hk2TargetModuleID.get((Hk2Target) target,
+                moduleName, contextRoot, dir.getAbsolutePath());
 
         // prevent issues by protecting against triggering
         //   http://java.net/jira/browse/GLASSFISH-15690

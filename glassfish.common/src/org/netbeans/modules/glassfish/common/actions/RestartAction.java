@@ -45,9 +45,8 @@
 package org.netbeans.modules.glassfish.common.actions;
 
 import java.awt.event.ActionEvent;
-import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
+import org.netbeans.modules.glassfish.common.GlassFishState;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
-import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
@@ -108,17 +107,7 @@ public class RestartAction extends NodeAction {
     }
     
     private static boolean enableImpl(final GlassfishModule commonSupport) {
-        ServerState state = commonSupport.getServerState();
-        if(state != ServerState.RUNNING
-                // !PW FIXME support other states - debugging, profiling, etc.
-//            && state != ServerInstance.STATE_DEBUGGING
-//            && state != ServerInstance.STATE_PROFILING
-//            && state != ServerInstance.STATE_PROFILER_BLOCKING) {
-                ) {
-            return false;
-        }
-        
-        return true;
+        return GlassFishState.isOnline(commonSupport.getInstance());
     }
 
     @Override

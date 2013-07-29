@@ -50,22 +50,22 @@ import org.netbeans.modules.parsing.spi.ParseException;
  * @author marekfukala
  */
 public class Css3ParserScssTest extends CssTestBase {
-
+    
     public Css3ParserScssTest(String testName) {
         super(testName);
     }
-
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         setScssSource();
     }
-
+    
     @Override
     protected void tearDown() throws Exception {
         setPlainSource();
     }
-
+    
     public void testAllANTLRRulesHaveNodeTypes() {
         for (String rule : Css3Parser.ruleNames) {
             if (!rule.startsWith("synpred") && !rule.toLowerCase().endsWith("predicate")) {
@@ -73,7 +73,7 @@ public class Css3ParserScssTest extends CssTestBase {
             }
         }
     }
-
+    
     public void testDisabledScssSupport() {
         try {
             ExtCss3Parser.isScssSource_unit_tests = false;
@@ -85,7 +85,7 @@ public class Css3ParserScssTest extends CssTestBase {
                     + "h2 {\n"
                     + "  color: $color;\n"
                     + "}";
-
+            
             CssParserResult result = TestUtil.parse(source);
 
             //there must be some css parsing errors as the less support is disabled
@@ -94,7 +94,7 @@ public class Css3ParserScssTest extends CssTestBase {
             ExtCss3Parser.isScssSource_unit_tests = true;
         }
     }
-
+    
     public void testVariable() {
         String source = "$color: #4D926F;\n"
                 + "\n"
@@ -104,37 +104,37 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "h2 {\n"
                 + "  color: $color;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testVariable2() {
         String source = "#header {\n"
                 + "  border: 2px $color solid;\n"
                 + "}\n";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testVariableAsPropertyName() {
         String source = ".class {\n"
                 + "    $var: 2;\n"
                 + "    three: $var;\n"
                 + "    $var: 3;\n"
                 + "  }";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testFunction() {
         String source =
                 "#header {\n"
@@ -142,13 +142,13 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  border-left: $the-border;\n"
                 + "  border-right: ($the-border * 2);\n"
                 + "}\n";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testFunction2() {
         String source =
                 "#footer {\n"
@@ -160,7 +160,7 @@ public class Css3ParserScssTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testMixinDeclaration() {
         String source =
                 "@mixin rounded-corners ($radius: 5px) {\n"
@@ -175,7 +175,7 @@ public class Css3ParserScssTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testMixinDeclaration2() {
         String source =
                 "@mixin box-shadow ($x: 0, $y: 0, $blur: 1px, $color: #000) {\n"
@@ -183,13 +183,13 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  -moz-box-shadow: $arguments;\n"
                 + "  -webkit-box-shadow: $arguments;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testMixinDeclarationWithoutParams() {
         String source =
                 "@mixin box-shadow {\n"
@@ -266,26 +266,26 @@ public class Css3ParserScssTest extends CssTestBase {
                 ".class {\n"
                 + "  @include mixin($switch, #888);\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testMixinCall2() {
         String source =
                 "#menu a {\n"
                 + "  color: #111;\n"
                 + "  @include bordered;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testFunctions() {
         String source = ".class {\n"
                 + "  width: percentage(0.5);\n"
@@ -297,7 +297,7 @@ public class Css3ParserScssTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testFunctions2() {
         String source = "#navbar {\n"
                 + "  $navbar-width: 800px;\n"
@@ -324,7 +324,7 @@ public class Css3ParserScssTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testRulesNesting() {
         String source = "#header {\n"
                 + "  color: black;\n"
@@ -340,9 +340,9 @@ public class Css3ParserScssTest extends CssTestBase {
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testAmpCombinatorInNestedRules() {
         String source = "#header        { color: black;\n"
                 + "  .navigation  { font-size: 12px; }\n"
@@ -350,28 +350,28 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    &:hover    { text-decoration: none; }\n"
                 + "  }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testAmpCombinatorInNestedRules2() {
         String source = ".shape{\n"
                 + "    &:hover{ \n"
                 + "        background:$lightRed;   \n"
                 + "    }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testNestedRules() {
         String source = "#header{\n"
                 + "    /* #header styles */\n"
@@ -383,128 +383,128 @@ public class Css3ParserScssTest extends CssTestBase {
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testOperationsInVariableDeclaration() {
         String source = "$darkBlue: $lightBlue - #555;";
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testLessExpressionNotInParens() {
         String source = "div {"
                 + "width: $pageWidth * .75;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testMixinCallWithoutParams() {
         String source = "#shape1{ @include mymixin; }";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testPropertyValueWithParenthesis() {
         String source = "div {\n"
                 + "width: ($u * $unit) - (($margin * 2) + $gpadding + $gborder);\n "
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testPropertyValue() {
         String source = "div {\n"
                 + "border-top: 1px solid $color1 - #222; "
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testInterpolationInClassSelector() {
         String source =
                 ".rounded-#{$vert}-#{$horz} {\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testInterpolationInIdSelector() {
         String source =
                 ".navb#{$navbar}ar {\n"
                 + "  $navbar-width: 800px;"
                 + "}\n";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testInterpolationInPropertyName() {
         String source =
                 ".rounded {\n"
                 + "  border-#{$vert}-#{$horz}-radius: $radius;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testInterpolationExpressionInSelectorWithWS() {
         String source =
                 ".body.firefox #{$selector}:before {\n"
                 + "    content: \"Hi, Firefox users!\";\n"
                 + "  }";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testInterpolationExpressionInFunctionInTheExpression() {
         String source =
                 ".body.firefox #{ie-hex-str($green)}:before {\n"
                 + "    content: \"Hi, Firefox users!\";\n"
                 + "  }";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testInterpolationExpressionInPropertyValue() {
         String source =
                 "p {\n"
@@ -512,12 +512,12 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  $line-height: 30px;\n"
                 + "  font: #{$font-size}/#{$line-height};\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
 
     //fails as the 
@@ -532,14 +532,14 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    content: \"Hi, Firefox users!\";\n"
                 + "  }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testMixinsWithArgumentsComplex() {
         String source =
                 "/* style.scss */\n"
@@ -553,12 +553,12 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "#navbar li { @include rounded(top, left); }\n"
                 + "#footer { @include rounded(top, left, 5px); }\n"
                 + "#sidebar { @include rounded(top, left, 8px); }";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
 
     //like normal css import, but the ref. file doesn't need to have an extension,
@@ -567,14 +567,14 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testImport() {
         String source =
                 "@import \"rounded\";\n";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testNestedProperties() {
         String source =
                 ".funky {\n"
@@ -584,14 +584,14 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    weight: bold;\n"
                 + "  }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testNestedPropertiesWithValue() {
         String source =
                 ".funky {\n"
@@ -601,60 +601,60 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    weight: bold;\n"
                 + "  }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testLineComment() {
         String source =
                 ".funky {\n"
                 + " //line comment\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testMixinCallInStylesheet() {
         String source =
                 "@include firefox-message(\".header\");\n";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testDefaultVariable() {
         String source =
                 "$content: \"Second content?\" !default;\n";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testMultipleImport() {
         String source =
                 "@import \"rounded-corners\", \"text-shadow\";\n";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testInterpolationExpressionInImport() {
         String source =
                 "@import url(\"http://fonts.googleapis.com/css?family=#{$family}\");\n";
@@ -662,7 +662,7 @@ public class Css3ParserScssTest extends CssTestBase {
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
 
     //the grammar defines the imports needs to be at the very beginning of the file,
@@ -670,14 +670,14 @@ public class Css3ParserScssTest extends CssTestBase {
     public void testSASSCodeMayPrecedeImport() {
         String source = "$var: my;\n"
                 + "@import url(\"#{$var}\");\n";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testNestedMediaQueries() {
         String source = ".sidebar {\n"
                 + "  width: 300px;\n"
@@ -687,14 +687,14 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  }\n"
                 + "}\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testNestedMediaQueryInMediaQuery() {
         String source = "@media screen {\n"
                 + "  .sidebar {\n"
@@ -703,12 +703,12 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    }\n"
                 + "  }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
 
     //the media query can the property declarations directly.
@@ -716,28 +716,28 @@ public class Css3ParserScssTest extends CssTestBase {
         String source = "@media screen and (orientation: landscape) {\n"
                 + "    width: 500px;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testInterpolationExpressionInMediaQuery() {
         String source = "@media #{$media} {\n"
                 + "  .sidebar {\n"
                 + "    width: 500px;\n"
                 + "  }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testInterpolationExpressionWithParenMediaQuery() {
         String source = "$media: screen;\n"
                 + "$feature: -webkit-min-device-pixel-ratio;\n"
@@ -748,65 +748,65 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    width: 500px;\n"
                 + "  }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testExtend() {
         String source = ".seriousError {\n"
                 + "  @extend .error;\n"
                 + "  border-width: 3px;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testExtendComplex() {
         String source = ".hoverlink {\n"
                 + "  @extend a:hover;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testExtendOnlySelectors() {
         String source = "#context a%extreme {\n"
                 + "  color: blue;\n"
                 + "  font-weight: bold;\n"
                 + "  font-size: 2em;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testExtendOnlySelectorCall() {
         String source = ".notice {\n"
                 + "  @extend %extreme;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testDebug() {
         String source = "@debug 10em + 12em;\n"
                 + ".class {\n"
@@ -815,14 +815,14 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "@mixin mymixin {\n"
                 + "@debug 20;"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testWarn() {
         String source = "@warn 10em + 12em;\n"
                 + ".class {\n"
@@ -831,105 +831,105 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "@mixin mymixin {\n"
                 + "@warn 20;"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testIf() {
         String source = "p {\n"
                 + "  @if 1 + 1 == 2 { border: 1px solid;  }\n"
                 + "  @if 5 < 3      { border: 2px dotted; }\n"
                 + "  @if null       { border: 3px double; }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testFor() {
         String source = "@for $i from 1 through 3 {\n"
                 + "  .item-#{$i} { width: 2em * $i; }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testEach() {
         String source = "@each $animal in puma, sea-slug, egret, salamander {\n"
                 + "  .#{$animal}-icon {\n"
                 + "    background-image: url('/images/#{$animal}.png');\n"
                 + "  }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testWhile() {
         String source = "$i: 6;\n"
                 + "@while $i > 0 {\n"
                 + "  .item-#{$i} { width: 2em * $i; }\n"
                 + "  $i: $i - 2;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testDefineOwnFunction() {
         String source = "@function grid-width($n) {\n"
                 + "  @return $n * $grid-width + ($n - 1) * $gutter-width;\n"
                 + "}\n"
                 + "\n"
                 + "#sidebar { width: grid-width(5); }";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testMixinCallWithFunctionWithNoArgs() {
         String source = ".ease-out-expo-animation {\n"
                 + "  @include transition-timing-function(ease-out-expo()); \n"
                 + "  color: best-color();\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testVariableDeclarationWithCommaSeparatedValues() {
         String source = "$blueprint-font-family: Helvetica Neue, Arial, Helvetica, sans-serif;";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testAmpProblem() {
         String source =
                 ".clazz {\n"
@@ -937,12 +937,12 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    left: ($i * -910px); \n"
                 + "}\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
 
     //commented out as the parser testing file contains a lot of unknown properties from the css point of view.
@@ -958,7 +958,7 @@ public class Css3ParserScssTest extends CssTestBase {
                 "p {\n"
                 + "  $width: 1000px;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
@@ -967,9 +967,9 @@ public class Css3ParserScssTest extends CssTestBase {
         //the "$width: 1000px;" is supposed to be parsed as variable declaration, not property declaration!
         assertNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration/propertyDeclaration"));
         assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration/cp_variable_declaration"));
-
+        
     }
-
+    
     public void testMixinCallWithWSBeforeFirstArgument() {
         String source =
                 "@mixin a {\n"
@@ -979,26 +979,26 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    )\n"
                 + "  );\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testUnexpectedANDInMedia() {
         String source =
                 "@media screen and ($width-name : $target-width) {\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testIf_Else() {
         String source =
                 "$type: monster;\n"
@@ -1013,7 +1013,7 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    color: black;\n"
                 + "  }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
@@ -1028,14 +1028,14 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    color: red;\n"
                 + "  }\n"
                 + "}";
-
+        
         result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertTrue(result.getDiagnostics().size() > 0);
-
+        
     }
-
+    
     public void testContentDirective() {
         String source =
                 "@mixin apply-to-ie6-only {\n"
@@ -1043,14 +1043,14 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    @content;\n"
                 + "  }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testContentDirectiveInMedia() {
         String source =
                 "@mixin respond-to($media) {\n"
@@ -1064,14 +1064,14 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    @media only screen and (min-width: $break-large) { @content; }\n"
                 + "  }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testMixinCallArgWithPropertyName() {
         String source =
                 "@mixin border-radius($radius: 5px, $moz: true, $webkit: true, $ms: true) {\n"
@@ -1079,27 +1079,27 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "div{\n"
                 + "    @include border-radius($webkit:false);\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testMixinCallArgWithValueSeparatedByWS() {
         String source =
                 "#id {\n"
                 + "    @include border-radius(5px, -moz -webkit);\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testPropertyValueSyntacticPredicateBoundary() {
         //the scss_declaration_property_value_interpolation_expression synt. predicate
         //was terminated just by colon so it seen the interpolation expression
@@ -1109,40 +1109,40 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    background-color: cyan\n"
                 + "}\n"
                 + "#test#{$i} { }";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testMultiplicityOperatorInPropertyValueFunction() {
         String source =
                 ".c {\n"
                 + "    background-color: darken(orange, $i*5);\n"
                 + "}\n"
                 + "";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testIfControlExpression() {
         assertParses(" @if $arg != null and $arg2 != transparent { }");
         assertParses(" @if not $arg != null and $arg2 != transparent { }");
         assertParses(" @if not $arg != null or not $arg2 != transparent { }");
         assertParses(" @if true or not $arg2 != transparent { }");
     }
-
+    
     public void testMixinWithFirstParamOnNewLine() {
         assertParses("@mixin color(\n"
                 + "$bgcolor: red,"
                 + "$fgcolor: blue) {\n"
                 + "}");
     }
-
+    
     public void testFunctionInIfStatementExpression() {
         assertParses("@function myfn($color) {\n"
                 + "    @if lightness($color) > 50 {\n"
@@ -1152,32 +1152,32 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    }\n"
                 + "}");
     }
-
+    
     public void testImportInDeclarations() {
         assertParses(".clz { @import \"hello\"; }");
     }
-
+    
     public void testCommaInSelectorInterpolationExpression() {
         assertParses(".#{$prefix}sg,.#{$prefix}ag .#{$prefix}xx { }");
     }
-
+    
     public void testIfCondition() {
         assertParses(" @if ($mode == light) {}");
     }
-
+    
     public void testSassFunctionWhereWithArgDefiningValue() {
         assertParses("@function color-by-background($bg-color, $contrast: $default-text-contrast) {\n"
                 + "    @return color-offset($bg-color, $contrast, $tmpmode, $inverse: true);\n"
                 + "}");
     }
-
+    
     public void testWeirdControlBlockOperator() {
         assertParses("@if $right =< 0 {}");
         assertParses("@if $right <= 0 {}");
         assertParses("@if $right >= 0 {}");
         assertParses("@if $right => 0 {}");
     }
-
+    
     public void testWSBetweenMixinCallArgAndComma() {
         assertParses(".clz {\n"
                 + "     @include background-gradient(\n"
@@ -1186,66 +1186,66 @@ public class Css3ParserScssTest extends CssTestBase {
                 + ");\n"
                 + "}");
     }
-
+    
     public void testControlBlockExpression() {
         assertParses("@if $arg != null and ($arg2 == val1 or $arg2 == val2) {}");
     }
-
+    
     public void testControlBlockExpression2() {
         assertParses("@if (not $arg or $arg2) and $arg3 != null {}");
     }
-
+    
     public void testControlBlockExpression3() {
         assertParses("@if ($arg or $arg2) and arg3 != null {}");
     }
-
+    
     public void testControlBlockExpression4() {
         assertParses("@if $arg != null and ($arg2 or arg3) {}");
     }
-
+    
     public void testDashInSelectorInterpolationExpression() {
         assertParses(".#{$v1}#{$v2}-post {}");
     }
-
+    
     public void testFunctionReturnBooleanExpression() {
         assertParses("@function even($number) {\n"
                 + "    @return ceil($number / 2) == ($number / 2);\n"
                 + "}");
     }
-
+    
     public void testStarInSelectorInterpolationExpression() {
         assertParses(".#{$prefix}border-box * {}");
     }
-
+    
     public void testGreaterSymbolInSelectorInterpolationExpression() {
         assertParses(".#{$prefix}rtl > .#{$prefix}box-item {}");
     }
-
+    
     public void testLRPARENInPropertyValueInterpolationExpression() {
         assertParses(".clz { $rotation: rotate(#{$angle}deg); }");
         assertParses(".clz { background-image: slicer-corner-sprite(btn-#{$ui}-over, 'btn/btn-#{$ui}-over-corners'); }");
     }
-
+    
     public void testCPExpressionInPropertyValue() {
         assertParses(".clz { background-position: 0 ($accordion-header-tool-size * -17); }");
     }
-
+    
     public void testCPExpressionInPropertyValue2() {
         assertParses(".clz { padding: $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2) $toolbar-vertical-spacing ($toolbar-horizontal-spacing / 2); }");
     }
-
+    
     public void testCPExpressionInPropertyValue3() {
         assertParses(".clz { $fieldset-collapse-tool-background-position-over: 0 (-$fieldset-collapse-tool-size) !default; }");
     }
-
+    
     public void testFunctionInsideSASSInterpolationExpression() {
         assertParses(".clz { padding-left: #{left($fieldset-header-padding) - 2}; }");
     }
-
+    
     public void testSimplePropertyValue() {
         assertParses(".clz { padding: 2cm 10px; }", false);
     }
-
+    
     public void testPropertyValue2() {
         assertParses(".clz { padding-left: "
                 + "top($form-error-under-padding) "
@@ -1254,24 +1254,24 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "(left($form-error-under-padding) + $form-error-icon-width + $form-error-under-icon-spacing); "
                 + "}");
     }
-
+    
     public void testPropertyValue3() {
         assertParses(".clz { background-position: 0 (0 - $form-checkbox-size); }");
     }
-
+    
     public void testPropertyValue4() {
         assertParses(".clz { background-position: (-$html-editor-toolbar-icon-size) 0; }");
         assertParses(".clz { background-position: 0 (-$spinner-btn-height); }");
     }
-
+    
     public void testPropertyValue5() {
         assertParses(".clz { background-position: 0 (-$spinner-btn-height); }");
     }
-
+    
     public void testPropertyValueUnaryOperatorBeforeBrace() {
         assertParses(".clz { background-position: -($form-trigger-width * 3) (-$spinner-btn-height); }");
     }
-
+    
     public void testCPVariableDeclaration() {
         assertParses("$panel-frame-header-padding:\n"
                 + "    (top($panel-header-padding) - top($panel-frame-border-width))\n"
@@ -1280,52 +1280,52 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    (left($panel-header-padding) - left($panel-frame-border-width))\n"
                 + "    !default;");
     }
-
+    
     public void testSASSInterpolationExpressionInCPVariableDeclaration() {
         assertParses("$fieldset-header-font: #{$fieldset-header-font-size}/#{$fieldset-header-line-height} $fieldset-header-font-weight $fieldset-header-font-family !default;");
         assertParses("$form-label-font: $form-label-font-weight #{$form-label-font-size}/#{$form-label-line-height} $form-label-font-family !default;");
         assertParses("$grid-editor-font: normal #{$grid-row-cell-font-size}/#{$grid-editor-line-height} $font-family !default;");
         assertParses("$grid-row-cell-font: normal #{$grid-row-cell-font-size}/#{$grid-row-cell-line-height} $font-family !default;");
     }
-
+    
     public void testImportantKeywordInCPVariableDeclaration() {
         assertParses("$grid-row-editor-border: $grid-row-editor-border-width solid $grid-row-editor-border-color !important !default;");
     }
-
+    
     public void testCommaSeparatedPropertyValues() {
         assertParses(".x { background-size: $majorsteps $majorsteps, $majorsteps $majorsteps, $minorsteps $minorsteps, $minorsteps $minorsteps; }");
     }
-
+    
     public void testImportantSymbolJustAfterPropertyValue() throws ParseException, BadLocationException {
         assertParses(".x { z-index: 1000000!important; }");
         assertParses(".x { z-index: 1000000 !important; }");
     }
-
+    
     public void testInclude() throws ParseException, BadLocationException {
         assertParses(".x { @include x-slicer($panel-header-ui + '-top'); }");
     }
-
+    
     public void testMSPropertyValueAndInterpolationExpression() throws ParseException, BadLocationException {
         assertParses(".x { filter: progid:DXImageTransform.Microsoft.BasicImage(rotation=#{$ie-rotation}); }");
     }
-
+    
     public void testLastItemInBlockDoesntNeedToBeTerminatedWithSemicolon() throws ParseException, BadLocationException {
         assertParses(".x { $image-search-path: '.' !default }"); //doesn't work
         assertParses(".x { $image-search-path: '.' !default; }"); //works
     }
-
+    
     public void testUnaryOperatorWithIE() throws ParseException, BadLocationException {
         assertParses(".x { margin-top: -#{top($fieldset-border-width)}; }");
     }
-
+    
     public void testFunctionArgumentsCanBeBooleanExpression() throws ParseException, BadLocationException {
         assertParses("$foo: if($direction == top or $direction == bottom, 0, 1);");
     }
-
+    
     public void testFunction3() throws ParseException, BadLocationException {
         assertParses(".clz { @include linear-gradient(#3875d7 20%, #2a62bc 90%); }");
     }
-
+    
     public void testFont_FaceInMixin() throws ParseException, BadLocationException {
         assertParses("@mixin font-face($name){\n"
                 + "    @font-face {\n"
@@ -1333,14 +1333,14 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    }\n"
                 + "}");
     }
-
+    
     public void testCommaInCPExpression() throws ParseException, BadLocationException {
         assertParses(".highlighted {\n"
                 + "    @include linear-gradient((#3875d7 20%, #2a62bc 90%));\n"
                 + "    color: #fff;\n"
                 + "}");
     }
-
+    
     public void testSassInclude() throws ParseException, BadLocationException {
         assertParses(".clz { @include extjs-button-ui(\n"
                 + "    $ui: 'default-small',\n"
@@ -1348,7 +1348,7 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "    $border-radius: $button-small-border-radius,\n"
                 + "    $border-width: $button-small-border-width); }");
     }
-
+    
     public void testSassInclude2() throws ParseException, BadLocationException {
         assertParses(".clz { @include extjs-toolbar-ui(\n"
                 + "    'default',\n"
@@ -1358,62 +1358,62 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "); "
                 + "}");
     }
-
+    
     public void testNestedRules2() throws ParseException, BadLocationException {
         assertParses("x { y {} z {} }");
         assertParses("x { y {} }");
     }
-
+    
     public void testNestedIfs() throws ParseException, BadLocationException {
         assertParses("x { @if true {} }");
         assertParses("x { @if $a==10 {} }");
         assertParses("x { @if true {} @if false {} }");
     }
-
+    
     public void testNestedRuleNotParsedAsDeclaration() {
         String cssCode = "x {\n"
                 + "    a, a:hover {\n"
                 + "    }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(cssCode);
         Node tree = result.getParseTree();
 //        NodeUtil.dumpTree(tree);
         Node node = NodeUtil.query(tree, "styleSheet/body/bodyItem/rule/declarations/declaration/rule");
         assertNotNull(node);
         assertEquals(NodeType.rule, node.type());
-
+        
         assertResultOK(result);
-
+        
     }
-
+    
     public void testMixinCallWithBlock() throws ParseException, BadLocationException {
         assertParses("@include respond_to ( handhelds ) { \n"
                 + "    font-size: 1em;\n"
                 + "}  ");
-
+        
         assertParses("h1 {"
                 + "     @include respond_to ( handhelds ) { \n"
                 + "         font-size: 1em;\n"
                 + "     }\n"
                 + "}");
-
+        
     }
-
+    
     public void testParseCommentAtTheFileEnd() throws ParseException, BadLocationException {
         assertParses("div {}\n"
                 + "/*comment*/");
-
+        
         assertParses("//comment1\n"
                 + "div {}\n"
                 + "//comment2");
-
+        
     }
-
+    
     public void testMixinDeclarationWithVarargs() throws ParseException, BadLocationException {
         assertParses("@mixin box-shadow($shadows...) {}\n");
     }
-
+    
     public void testMixinCallWithVarargs() throws ParseException, BadLocationException {
         assertParses("@include colors($values...);");
     }
@@ -1431,7 +1431,7 @@ public class Css3ParserScssTest extends CssTestBase {
         assertParses("&.primary, input[type=\"submit\"]& { }\n");
         assertParses("&.primary, & { }\n");
     }
-
+    
     public void testIncompleteSelectors() throws ParseException, BadLocationException {
         assertParses(".pills {\n"
                 + "  @include clearfix;\n"
@@ -1443,12 +1443,37 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "  }\n"
                 + "}");
     }
+
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=233038#c2
+    public void testCPExpressionInMediaQuery() throws ParseException, BadLocationException {
+        assertParses("@media only tv and (resolution: 120 * 3 + \"dpi\"){\n"
+                + "\n"
+                + "}");
+    }
     
- public void testMixinBodyPropertyRecovery() throws ParseException, BadLocationException {
+    public void testMixinBodyPropertyRecovery() throws ParseException, BadLocationException {
         CssParserResult result = TestUtil.parse("@mixin mymixin() { color: }");
-        Node node = NodeUtil.query(result.getParseTree(), 
+        Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/cp_mixin_declaration/cp_mixin_block/declarations/declaration/propertyDeclaration/property");
         assertNotNull(node);
     }
- 
+    
+    public void testPercentageInExpression() throws ParseException, BadLocationException {
+        CssParserResult result = TestUtil.parse("$size: 20;\n"
+                + ".clz {\n"
+                + "    font: %/20;\n"
+                + "}");
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+        
+        //original sample
+        assertParses("@mixin base-type($weight, $line-height, $font-size, $font-family...) {\n"
+                + "    @if $serif-boolean {\n"
+                + "        font: $weight #{$font-size}%/#{$line-height} $font-family;\n"
+                + "    }@else {\n"
+                + "        font: $weight #{$font-size}%/#{$line-height} $font-family-sans;\n"
+                + "    }\n"
+                + "}");
+    }
 }

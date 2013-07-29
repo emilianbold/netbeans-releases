@@ -298,7 +298,7 @@ public class PHPCodeCompletionTest extends PHPCodeCompletionTestBase {
 
     public void test147179_1() throws Exception {
         checkCompletion("testfiles/completion/lib/issue147179.php",
-                "<? Test147179::^", false);
+                "<?php Test147179::^", false);
     }
 
     public void test147179_2() throws Exception {

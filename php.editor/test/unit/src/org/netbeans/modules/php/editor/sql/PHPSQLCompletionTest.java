@@ -85,7 +85,7 @@ public class PHPSQLCompletionTest extends ParserTestBase {
     }
 
     public void testVariables_004() {
-        checkPHPSQLStatement("<?oho echo \"SELECT ${foo}, c.| FROM bar\" ?>", "SELECT __UNKNOWN__, c. FROM bar");
+        checkPHPSQLStatement("<?php echo \"SELECT ${foo}, c.| FROM bar\" ?>", "SELECT __UNKNOWN__, c. FROM bar");
     }
 
     public void testVariables_005() {

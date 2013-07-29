@@ -103,6 +103,7 @@ import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.Configur
 import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.openide.cookies.OpenCookie;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  * Create a fresh J2MEProject from scratch.
@@ -129,6 +130,8 @@ public class J2MEProjectGenerator {
     private static final String NAME = "name"; // NOI18N
     private static final String MIDLET = "MIDlet-"; // NOI18N
     private static final String IMLET_PROFILE_PREFIX = "IMP"; // NOI18N
+    
+    public static final RequestProcessor RP = new RequestProcessor(J2MEProjectGenerator.class);
     
     private J2MEProjectGenerator() {
         //Just to avoid accessor class creation
@@ -1141,6 +1144,7 @@ public class J2MEProjectGenerator {
             this.library = library;
         }
 
+        @Override
         public void doPostGeneration(Project project, AntProjectHelper helper, FileObject projectLocation, @SuppressWarnings(value = "unused")
         File projectLocationFile, ArrayList<String> configurations) throws IOException {
             this.project = project;
@@ -1149,11 +1153,13 @@ public class J2MEProjectGenerator {
             this.projectLocation = projectLocation;
             this.projectLocationFile = projectLocationFile;
             this.configurations = configurations;
-            //hotfix for issue 147403 - get this out of the event thread
-            //((J2MEProject) project).getRequestProcessor().post(this);
-            run();
+
+            setupLibraryProject();
+            setupConfigurations();
+            RP.post(this);
         }
 
+        @Override
         public void run() {
             try {
                 final FileObject src = projectLocation.createFolder(SRC); // NOI18N
@@ -1195,59 +1201,63 @@ public class J2MEProjectGenerator {
                         }
                     }
                 }
+                refreshProject(projectLocation, src);
+            } catch (Exception e) {
+                Exceptions.printStackTrace(e);
+            }
+        }
 
-                if (library) {
-                    final EditableProperties proj = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    String pr = proj.getProperty("platform.profile"); //NOI18N
-                    if (pr != null && pr.startsWith("MIDP-3")) { //NOI18N
-                        HashMap<String,String> manifestOthers = new HashMap<String,String>();
-                        manifestOthers.put("LIBlet-Name", proj.getProperty(NAME));  //NOI18N
-                        manifestOthers.put("LIBlet-Vendor", "Vendor");  //NOI18N
-                        manifestOthers.put("LIBlet-Version", "1.0");  //NOI18N
-                        storeManifestProperties(proj, DefaultPropertiesDescriptor.MANIFEST_OTHERS, manifestOthers);
-                        proj.put(DefaultPropertiesDescriptor.MANIFEST_IS_LIBLET, TRUE);
-                        helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, proj);
-                    }
-                }
-
-                if (cfgTemplates != null) {
-                    final EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
-                    final EditableProperties proj = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                    for (ConfigurationTemplateDescriptor desc : cfgTemplates) {
-                        String cfgName = desc.getCfgName();
-                        String prefix = J2MEProjectProperties.CONFIG_PREFIX + cfgName + '.';
-                        if (!configurations.contains(cfgName)) {
-                            configurations.add(cfgName);
-                            Map<String, String> p = desc.getPrivateProperties();
-                            if (p != null) {
-                                for (Map.Entry<String, String> en : p.entrySet()) {
-                                    if (!priv.containsKey(en.getKey())) {
-                                        priv.put(en.getKey(), en.getValue());
-                                    }
-                                }
-                            }
-                            p = desc.getProjectGlobalProperties();
-                            if (p != null) {
-                                for (Map.Entry<String, String> en : p.entrySet()) {
-                                    if (!proj.containsKey(en.getKey())) {
-                                        proj.put(en.getKey(), en.getValue());
-                                    }
-                                }
-                            }
-                            p = desc.getProjectConfigurationProperties();
-                            if (p != null) {
-                                for (Map.Entry<String, String> en : p.entrySet()) {
-                                    proj.put(prefix + en.getKey(), en.getValue());
+        private void setupConfigurations() {
+            if (cfgTemplates != null) {
+                final EditableProperties priv = helper.getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+                final EditableProperties proj = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                for (ConfigurationTemplateDescriptor desc : cfgTemplates) {
+                    String cfgName = desc.getCfgName();
+                    String prefix = J2MEProjectProperties.CONFIG_PREFIX + cfgName + '.';
+                    if (!configurations.contains(cfgName)) {
+                        configurations.add(cfgName);
+                        Map<String, String> p = desc.getPrivateProperties();
+                        if (p != null) {
+                            for (Map.Entry<String, String> en : p.entrySet()) {
+                                if (!priv.containsKey(en.getKey())) {
+                                    priv.put(en.getKey(), en.getValue());
                                 }
                             }
                         }
+                        p = desc.getProjectGlobalProperties();
+                        if (p != null) {
+                            for (Map.Entry<String, String> en : p.entrySet()) {
+                                if (!proj.containsKey(en.getKey())) {
+                                    proj.put(en.getKey(), en.getValue());
+                                }
+                            }
+                        }
+                        p = desc.getProjectConfigurationProperties();
+                        if (p != null) {
+                            for (Map.Entry<String, String> en : p.entrySet()) {
+                                proj.put(prefix + en.getKey(), en.getValue());
+                            }
+                        }
                     }
-                    helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
+                }
+                helper.putProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH, priv);
+                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, proj);
+            }
+        }
+
+        private void setupLibraryProject() {
+            if (library) {
+                final EditableProperties proj = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+                String pr = proj.getProperty("platform.profile"); //NOI18N
+                if (pr != null && pr.startsWith("MIDP-3")) { //NOI18N
+                    HashMap<String, String> manifestOthers = new HashMap<String, String>();
+                    manifestOthers.put("LIBlet-Name", proj.getProperty(NAME));  //NOI18N
+                    manifestOthers.put("LIBlet-Vendor", "Vendor");  //NOI18N
+                    manifestOthers.put("LIBlet-Version", "1.0");  //NOI18N
+                    storeManifestProperties(proj, DefaultPropertiesDescriptor.MANIFEST_OTHERS, manifestOthers);
+                    proj.put(DefaultPropertiesDescriptor.MANIFEST_IS_LIBLET, TRUE);
                     helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, proj);
                 }
-                refreshProject(projectLocation, src);
-            } catch (Exception e) {
-                Exceptions.printStackTrace (e);
             }
         }
     }

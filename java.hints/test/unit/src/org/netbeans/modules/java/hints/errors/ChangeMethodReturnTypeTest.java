@@ -91,6 +91,16 @@ public class ChangeMethodReturnTypeTest extends ErrorHintsTestBase {
                             "package test; public class Test { private void t() { return nu|ll; } }");
     }
 
+    public void test233213() throws Exception {
+        performAnalysisTest("test/Test.java",
+                            "package test;" +
+                            "public class Test {\n" +
+                            "    public void setSeverity(String hint, int severity) {\n" +
+                            "        return this.setSeverity(|hint);\n" +
+                            "    }\n" +
+                            "}");
+    }
+    
     @Override
     protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws Exception {
         return new ChangeMethodReturnType().run(info, null, pos, path, null);

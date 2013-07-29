@@ -111,8 +111,13 @@ public class CndCoreTestUtils {
             ex.confirmed();
             doc = cookie.openDocument();
         }
-        
-        return doc instanceof BaseDocument ? (BaseDocument)doc : null;
+
+        if (doc instanceof BaseDocument) {
+            cookie.prepareDocument().waitFinished();
+            return (BaseDocument) doc;
+        }
+
+        return null;
     }
     
     private static final long OPENING_TIMEOUT = 60 * 1000;

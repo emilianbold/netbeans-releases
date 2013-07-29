@@ -42,15 +42,17 @@
 
 package org.netbeans.modules.maven.api.execute;
 
+import java.awt.Cursor;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 import org.apache.maven.artifact.Artifact;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.Constants;
-import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.execute.BeanRunConfig;
 import org.netbeans.modules.maven.execute.MavenCommandLineExecutor;
 import org.netbeans.modules.maven.execute.MavenExecutor;
@@ -63,6 +65,7 @@ import org.openide.execution.ExecutionEngine;
 import org.openide.execution.ExecutorTask;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
+import org.openide.windows.WindowManager;
 
 /**
  * Utility method for executing a maven build, using the RunConfig.
@@ -83,6 +86,16 @@ public final class RunUtils {
      * @since 2.18
      */
     public static @CheckForNull ExecutorTask run(RunConfig config) {
+        SwingUtilities.invokeLater(new Runnable() { //#233275
+            @Override
+            public void run() {
+                JFrame frm = (JFrame) WindowManager.getDefault().getMainWindow();
+                frm.getGlassPane().setVisible(true);
+                frm.getGlassPane().setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+                frm.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+            }
+        });
+        try {
         for (PrerequisitesChecker elem : config.getProject().getLookup().lookupAll(PrerequisitesChecker.class)) {
             if (!elem.checkRunConfig(config)) {
                 return null;
@@ -94,6 +107,17 @@ public final class RunUtils {
             }
         }
         return executeMaven(config);
+        } finally {
+            SwingUtilities.invokeLater(new Runnable() { //#233275
+            @Override
+            public void run() {
+                JFrame frm = (JFrame) WindowManager.getDefault().getMainWindow();
+                frm.getGlassPane().setVisible(false);
+                frm.getGlassPane().setCursor(null);
+                frm.setCursor(null);
+            }
+        });
+        }
     }
     
     /**

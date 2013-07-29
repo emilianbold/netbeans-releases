@@ -248,7 +248,6 @@ public class LibraryDeclarationHandlerImpl implements LibraryDeclarationHandler 
     public void end_property() throws SAXException {
         state = State.PROPERTIES;
         assert propName != null;
-        assert propValue != null;
         properties.put(propName, propValue);
     }
 

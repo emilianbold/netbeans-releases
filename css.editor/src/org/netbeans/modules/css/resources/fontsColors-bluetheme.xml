@@ -51,11 +51,48 @@ made subject to such option by the copyright holder.
         <font style="bold" />
     </fontcolor>
     
-    <fontcolor name="mark-occurrences" foreColor="white"/>
+    <!--"semantic" highlighting:-->
+    
+    <!-- css property name -->
+    <fontcolor name="mod-custom1" default="keyword"/> 
+    
+    <!-- vendor specific property name -->
+    <fontcolor name="mod-custom2" default="keyword">
+        <font style="italic" />
+    </fontcolor>
     
     <!-- media queries: media type (screen, printer, ...) -->
     <fontcolor name="mod-custom3" foreColor="pink">
         <font style="italic" />
     </fontcolor>
+    
+    <!-- element, class, id selectors -->
+    <fontcolor name="mod-method" foreColor="B2CCFF" >
+        <!--<font style="bold" />-->
+    </fontcolor>
+    
+    <!-- namespace prefix -->
+    <fontcolor name="mod-constructor">
+        <!--<font style="bold" />-->
+    </fontcolor>
+
+    <!-- pseudo class -->
+    <fontcolor name="mod-class" >
+        <font style="italic" />
+    </fontcolor>
+    
+    <!-- less/sass variable -->
+    <fontcolor name="mod-local-variable" foreColor="009090" >
+        <!--<font style="bold" />-->
+    </fontcolor>
+    
+    <!-- less/sass keywords -->
+    <fontcolor name="mod-private" foreColor="009090"> <!-- 00007C -->
+        <font style="bold" />
+    </fontcolor>
+    
+    <!--mark occurrences:-->
+    <fontcolor name="mark-occurrences" bgColor="38566F" foreColor="white"/>
+
     
 </fontscolors>

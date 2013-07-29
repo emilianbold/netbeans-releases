@@ -53,8 +53,8 @@ import javax.swing.TransferHandler;
 import org.netbeans.modules.bugtracking.tasks.dashboard.CategoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
-import org.netbeans.modules.team.ui.util.treelist.TreeList;
-import org.netbeans.modules.team.ui.util.treelist.TreeListModel;
+import org.netbeans.modules.team.commons.treelist.TreeList;
+import org.netbeans.modules.team.commons.treelist.TreeListModel;
 
 /**
  *

@@ -565,7 +565,16 @@ public class Utilities {
             TypeMirror extendsBound = ((WildcardType) tm).getExtendsBound();
             TypeMirror rct = resolveCapturedTypeInt(info, extendsBound != null ? extendsBound : ((WildcardType) tm).getSuperBound());
             if (rct != null) {
-                return rct.getKind() == TypeKind.WILDCARD ? rct : info.getTypes().getWildcardType(extendsBound != null ? rct : null, extendsBound == null ? rct : null);
+                switch (rct.getKind()) {
+                    case WILDCARD:
+                        return rct;
+                    case ARRAY:
+                    case DECLARED:
+                    case ERROR:
+                    case TYPEVAR:
+                    case OTHER:
+                        return info.getTypes().getWildcardType(extendsBound != null ? rct : null, extendsBound == null ? rct : null);
+                }
             }
         }
         

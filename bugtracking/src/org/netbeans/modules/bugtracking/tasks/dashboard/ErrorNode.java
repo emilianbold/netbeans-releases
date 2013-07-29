@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.bugtracking.tasks.dashboard;
 
-import org.netbeans.modules.team.ui.util.treelist.LinkButton;
+import org.netbeans.modules.team.commons.treelist.LinkButton;
 import java.awt.Color;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -51,9 +51,9 @@ import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
-import org.netbeans.modules.team.ui.util.treelist.ColorManager;
-import org.netbeans.modules.team.ui.util.treelist.LeafNode;
-import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.commons.treelist.ColorManager;
+import org.netbeans.modules.team.commons.treelist.LeafNode;
+import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 

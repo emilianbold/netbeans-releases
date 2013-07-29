@@ -76,6 +76,7 @@ public class PHPHintsProvider implements HintsProvider {
 
     @Override
     public void computeHints(HintsManager mgr, RuleContext context, List<Hint> hints) {
+        resume();
         Map<?, List<? extends Rule.AstRule>> allHints = mgr.getHints(false, context);
         List<? extends AstRule> modelHints = allHints.get(DEFAULT_HINTS);
         RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<>(mgr, initializeContext(context), hints);
@@ -85,6 +86,7 @@ public class PHPHintsProvider implements HintsProvider {
 
     @Override
     public void computeSuggestions(HintsManager mgr, RuleContext context, List<Hint> suggestions, int caretOffset) {
+        resume();
         RulesRunner<Hint> rulesRunner = new RulesRunnerImpl<>(mgr, initializeContext(context), suggestions);
         RuleAdjuster forAllAdjusters = new ForAllAdjusters(Arrays.asList(new PreferencesAdjuster(mgr), new CaretOffsetAdjuster(caretOffset)));
         Map<?, List<? extends AstRule>> hintsOnLine = mgr.getHints(true, context);
@@ -105,6 +107,7 @@ public class PHPHintsProvider implements HintsProvider {
 
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+        resume();
         List<? extends Error> errors = context.parserResult.getDiagnostics();
         unhandled.addAll(errors);
         Map<?, List<? extends ErrorRule>> allErrors = manager.getErrors();
@@ -166,7 +169,6 @@ public class PHPHintsProvider implements HintsProvider {
 
         @Override
         public void run(List<? extends Rule> rules, RuleAdjuster adjuster) {
-            resume();
             for (Rule rule : rules) {
                 if (cancel) {
                     break;
@@ -183,9 +185,15 @@ public class PHPHintsProvider implements HintsProvider {
         }
 
         private void adjustAndInvoke(Rule rule, RuleAdjuster adjuster) {
+            if (cancel) {
+                return;
+            }
             if (rule instanceof InvokableRule) {
                 adjuster.adjust(rule);
                 InvokableRule<T> invokableRule = (InvokableRule<T>) rule;
+                if (cancel) {
+                    return;
+                }
                 invokableRule.invoke(ruleContext, result);
             }
         }
