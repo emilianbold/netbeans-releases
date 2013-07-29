@@ -43,8 +43,6 @@
 package org.netbeans.modules.maven.j2ee.ear;
 
 import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -54,9 +52,15 @@ import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.application.Module;
 import org.netbeans.modules.j2ee.dd.api.application.Web;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationProvider;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
+import org.netbeans.modules.javaee.project.spi.ear.EarDDGeneratorImplementation;
+import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -64,48 +68,75 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Janicek
  */
-public final class EarDDHelper {
+@ProjectServiceProvider(
+    service = {
+        EarDDGeneratorImplementation.class
+    },
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR
+    }
+)
+public class EarDDGeneratorImpl implements EarDDGeneratorImplementation {
 
     private static final String APPLICATION_XML = "application.xml"; //NOI18N
+    private final Project project;
 
-    private EarDDHelper() {
+    public EarDDGeneratorImpl(Project project) {
+        this.project = project;
     }
 
+    @Override
+    public FileObject setupDD(boolean force) {
+        J2eeApplicationProvider applicationProvider = project.getLookup().lookup(J2eeApplicationProvider.class);
+        if (applicationProvider != null) {
+            Profile profile = JavaEEProjectSettings.getProfile(project);
+
+            return createApplicationXML(project, profile, applicationProvider.getChildModuleProviders());
+        }
+        return null;
+    }
 
     /**
-     * Generate deployment descriptor (<i>application.xml</i>) if needed or forced (applies for JAVA EE 5).
-     * <p>
-     * For J2EE 1.4 or older the deployment descriptor is always generated if missing.
-     * For JAVA EE 5 it is only generated if missing and forced as well.
+     * Creates application.xml deployment descriptor for given project (see #228191)
      *
-     * @param j2eeProfile J2EE profile.
-     * @param docBase Configuration directory.
-     * @param project EAR project instance.
-     * @param force if <code>true</code> <i>application.xml</i> is generated even if it's not needed
-     *              (applies only for JAVA EE 5).
-     *
-     * @return {@link FileObject} of the deployment descriptor or <code>null</code>.
+     * @param project project for which should DD be generated
+     * @param serverID server ID of given project
      */
-    public static FileObject setupDD(
-            final Profile j2eeProfile,
+    public FileObject createApplicationXML(Project project, Profile profile, J2eeModuleProvider[] childProviders) {
+        EarModuleProviderImpl earProvider = project.getLookup().lookup(EarModuleProviderImpl.class);
+
+        if (earProvider != null) {
+            EarImplementation2 earImpl = earProvider.getEarImplementation();
+
+            FileObject applicationXML = earImpl.getDeploymentDescriptor();
+            FileObject metaInf = earImpl.getMetaInf();
+
+            if (applicationXML == null) {
+                return setupApplicationXML(profile, metaInf, project, childProviders, true);
+            }
+        }
+        return null;
+    }
+
+    private FileObject setupApplicationXML(
+            final Profile profile,
             final FileObject docBase,
             final Project project,
-            final Set<Project> childProjects,
+            final J2eeModuleProvider[] childProviders,
             boolean force) {
 
         try {
             FileObject dd = docBase.getFileObject(APPLICATION_XML);
             if (dd == null && (force || DDHelper.isApplicationXMLCompulsory(project))) {
-                dd = DDHelper.createApplicationXml(j2eeProfile, docBase, true);
+                dd = DDHelper.createApplicationXml(profile, docBase, true);
             }
 
             if (dd != null) {
                 Application app = DDProvider.getDefault().getDDRoot(dd);
                 app.setDisplayName(ProjectUtils.getInformation(project).getDisplayName());
 
-                if (app.getModule().length == 0) {
-
-                    for (J2eeModuleProvider moduleProvider : getChildModuleProviders(childProjects)) {
+                if (app.getModule().length == 0 && childProviders.length > 0) {
+                    for (J2eeModuleProvider moduleProvider : childProviders) {
                         addModuleToDD(app, moduleProvider);
                     }
                 }
@@ -118,21 +149,7 @@ public final class EarDDHelper {
         }
     }
 
-    private static Set<J2eeModuleProvider> getChildModuleProviders(Set<Project> childProjects) {
-        Set<J2eeModuleProvider> moduleProviders = new HashSet<J2eeModuleProvider>();
-
-        for (Project project : childProjects) {
-            J2eeModuleProvider moduleProvider = project.getLookup().lookup(J2eeModuleProvider.class);
-
-            if (moduleProvider != null) {
-                moduleProviders.add(moduleProvider);
-            }
-        }
-
-        return moduleProviders;
-    }
-
-    private static void addModuleToDD(Application app, J2eeModuleProvider moduleProvider) {
+    private void addModuleToDD(Application app, J2eeModuleProvider moduleProvider) {
         final J2eeModule j2eeModule = moduleProvider.getJ2eeModule();
         final J2eeModule.Type type = j2eeModule.getType();
 
@@ -149,8 +166,13 @@ public final class EarDDHelper {
 
                 if (moduleProvider instanceof WebModuleProviderImpl) {
                     WebModuleImpl webModuleImpl = ((WebModuleProviderImpl) moduleProvider).getModuleImpl();
-
-                    w.setContextRoot(webModuleImpl.getContextPath());
+                    String contextPath = webModuleImpl.getContextPath();
+                    
+                    if (!contextPath.isEmpty()) {
+                        w.setContextRoot(contextPath);
+                    } else {
+                        w.setContextRoot("/"); //NOI18N
+                    }
                 }
                 module.setWeb(w);
 

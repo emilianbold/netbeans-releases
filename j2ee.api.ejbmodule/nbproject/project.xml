@@ -231,6 +231,7 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.identity.profile.ui</friend>
                 <friend>org.netbeans.modules.j2ee.archive</friend>
                 <friend>org.netbeans.modules.j2ee.clientproject</friend>
+                <friend>org.netbeans.modules.j2ee.common</friend>
                 <friend>org.netbeans.modules.j2ee.dd.webservice</friend>
                 <friend>org.netbeans.modules.j2ee.ddloaders</friend>
                 <friend>org.netbeans.modules.j2ee.earproject</friend>
@@ -240,16 +241,16 @@ made subject to such option by the copyright holder.
                 <friend>org.netbeans.modules.j2ee.ejbrefactoring</friend>
                 <friend>org.netbeans.modules.j2ee.ejbverification</friend>
                 <friend>org.netbeans.modules.j2ee.performancetests</friend>
+                <friend>org.netbeans.modules.javaee.project</friend>
                 <friend>org.netbeans.modules.maven.j2ee</friend>
                 <friend>org.netbeans.modules.maven.jaxws</friend>
                 <friend>org.netbeans.modules.profiler.j2ee</friend>
-                <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.web.beans</friend>
+                <friend>org.netbeans.modules.web.project</friend>
                 <friend>org.netbeans.modules.websvc.core</friend>
                 <friend>org.netbeans.modules.websvc.dev</friend>
                 <friend>org.netbeans.modules.websvc.jaxrpc</friend>
                 <friend>org.netbeans.modules.websvc.wsitconf</friend>
-                <friend>org.netbeans.modules.j2ee.common</friend>
                 <package>org.netbeans.modules.j2ee.api.ejbjar</package>
                 <package>org.netbeans.modules.j2ee.spi.ejbjar</package>
                 <package>org.netbeans.modules.j2ee.spi.ejbjar.support</package>
