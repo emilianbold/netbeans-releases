@@ -396,6 +396,68 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         //</editor-fold>
     }
     
+    public void testStaticInnerClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "public class A {\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        Inner e = new Inner();\n"
+                + "    }\n"
+                + "\n"
+                + "    public static class Inner {\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduceLocalExtension("LocalExt", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "public class A {\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        LocalExt e = new LocalExt();\n"
+                + "    }\n"
+                + "\n"
+                + "    public static class Inner {\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/LocalExt.java", "/*\n"
+                + " * Refactoring License\n"
+                + " */\n"
+                + "\n"
+                + "package t;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class LocalExt {\n"
+                + "    private A.Inner delegate;\n"
+                + "\n"
+                + "    public LocalExt(A.Inner delegate) {\n"
+                + "        this.delegate = delegate;\n"
+                + "    }\n"
+                + "\n"
+                + "    public LocalExt() {\n"
+                + "        this.delegate = new A.Inner();\n"
+                + "    }\n"
+                + "\n"
+                + "    public boolean equals(Object o) {\n"
+                + "        Object target = o;\n"
+                + "        if (o instanceof LocalExt) {\n"
+                + "            target = ((LocalExt) o).delegate;\n"
+                + "        }\n"
+                + "        return this.delegate.equals(target);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int hashCode() {\n"
+                + "        return this.delegate.hashCode();\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"));
+    }
+    
     public void testGenericClass() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/Generics.java", "package t;\n"

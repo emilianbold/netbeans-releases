@@ -129,6 +129,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             Tree newClassTree;
             final Set<Modifier> modifiers = new HashSet(source.getModifiers());
             modifiers.remove(Modifier.ABSTRACT);
+            modifiers.remove(Modifier.STATIC);
             if(noInterface) {
                 newClassTree = make.Class(
                    make.Modifiers(modifiers), //classModifiersTree,
