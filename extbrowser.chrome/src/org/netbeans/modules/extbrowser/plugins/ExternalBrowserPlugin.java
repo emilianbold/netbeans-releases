@@ -102,6 +102,7 @@ public final class ExternalBrowserPlugin {
     private static final ExternalBrowserPlugin INSTANCE = new ExternalBrowserPlugin();
     
     private static final RequestProcessor RP = new RequestProcessor("ExternalBrowserPlugin", 5); // NOI18N
+    private static final RequestProcessor BROWSER_CHANGES = new RequestProcessor("Chrome Browser Changes", 1); // NOI18N
 
     @NbBundle.Messages({"# {0} - port", "ServerStartFailed=Internal WebSocket server failed to start "
             + "and communication with the external Chrome browser will not work. Check the IDE log "
@@ -321,7 +322,7 @@ public final class ExternalBrowserPlugin {
                     handleSaveResizeOptions(msg.getValue());
                     break;
                 case RESOURCE_CHANGED:
-                    handleResourceChanged(msg.getValue());
+                    handleResourceChanged(msg.getValue(), key);
                     break;
                 case READY:
                     break;
@@ -604,15 +605,23 @@ public final class ExternalBrowserPlugin {
             removeKey( key );
         }
 
-        private void handleResourceChanged(JSONObject value) {
+        private void handleResourceChanged(JSONObject value, SelectionKey key) {
             final String content = String.valueOf(value.get("content"));
             JSONObject resource = (JSONObject)value.get("resource");
             final String url = String.valueOf(resource.get("url"));
             final String type = String.valueOf(resource.get("type"));
-            RP.post(new Runnable() {
+            URL mainDocumentUrl = null;
+            for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
+                BrowserTabDescriptor browserTab = iterator.next();
+                if (key.equals(browserTab.keyForFeature(FEATURE_ROS))) {
+                    mainDocumentUrl = browserTab.browserImpl.getURL();
+                }
+            }
+            final URL uu = mainDocumentUrl;
+            BROWSER_CHANGES.post(new Runnable() {
                 @Override
                 public void run() {
-                    ExternalModificationsSupport.handle(url, type, content);
+                    ExternalModificationsSupport.handle(url, type, content, uu);
                 }
             });
         }

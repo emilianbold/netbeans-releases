@@ -47,6 +47,7 @@ import java.beans.PropertyChangeListener;
 import java.net.URL;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.web.browser.Helper;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -233,7 +234,7 @@ public final class BrowserSupport {
      * remember last URL opened.
      */
     public boolean canReload(URL url) {
-        return currentURL != null && currentURL.equals(url) &&
+        return currentURL != null && currentURL.equals(url) && !url.toExternalForm().equals(Helper.urlBeingRefreshedFromBrowser.get()) &&
                 getWebBrowserPane().canReloadPage();
     }
 
