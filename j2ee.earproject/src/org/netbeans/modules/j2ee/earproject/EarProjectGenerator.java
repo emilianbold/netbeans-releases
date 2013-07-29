@@ -64,7 +64,6 @@ import org.netbeans.api.project.ant.AntArtifactQuery;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectCreateData;
 import org.netbeans.modules.j2ee.clientproject.api.AppClientProjectGenerator;
 import org.netbeans.modules.j2ee.common.SharabilityUtility;
-import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.javaee.project.api.ant.ui.J2EEProjectProperties;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
@@ -77,7 +76,6 @@ import org.netbeans.api.java.classpath.JavaClassPathConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.javaee.project.api.ant.AntProjectConstants;
 import org.netbeans.modules.javaee.project.api.ant.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.earproject.ui.customizer.EarProjectProperties;
@@ -85,6 +83,7 @@ import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectCreateData;
 import org.netbeans.modules.j2ee.ejbjarproject.api.EjbJarProjectGenerator;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.javaee.project.api.ear.EarDDGenerator;
 import org.netbeans.modules.web.project.api.WebProjectCreateData;
 import org.netbeans.modules.web.project.api.WebProjectUtilities;
 import org.netbeans.spi.project.support.ant.AntProjectHelper;
@@ -487,46 +486,9 @@ public final class EarProjectGenerator {
     
     static FileObject setupDD(final Profile j2eeProfile, final FileObject docBase,
             final EarProject earProject) throws IOException {
-        return setupDD(j2eeProfile, docBase, earProject, false);
+        return EarDDGenerator.setupDD(earProject, false);
     }
 
-    /**
-     * Generate deployment descriptor (<i>application.xml</i>) if needed or forced (applies for JAVA EE 5).
-     * <p>
-     * For J2EE 1.4 or older the deployment descriptor is always generated if missing.
-     * For JAVA EE 5 it is only generated if missing and forced as well.
-     * @param j2eeprofile J2EE profile.
-     * @param docBase Configuration directory.
-     * @param earProject EAR project instance.
-     * @param force if <code>true</code> <i>application.xml</i> is generated even if it's not needed
-     *              (applies only for JAVA EE 5).
-     * @return {@link FileObject} of the deployment descriptor or <code>null</code>.
-     * @throws java.io.IOException if any error occurs.
-     */
-    public static FileObject setupDD(final Profile j2eeProfile, final FileObject docBase,
-            final Project earProject, boolean force) throws IOException {
-        FileObject dd = docBase.getFileObject(ProjectEar.FILE_DD);
-        if (dd != null) {
-            return dd; // already created
-        }
-        boolean create = force || DDHelper.isApplicationXMLCompulsory(earProject);
-        dd = DDHelper.createApplicationXml(j2eeProfile, docBase, create);
-        if (dd != null) {
-            Application app = DDProvider.getDefault().getDDRoot(dd);
-            app.setDisplayName(ProjectUtils.getInformation(earProject).getDisplayName());
-            //#118047 avoiding the use of EarProject not possible here.
-            // API for retrieval of getJarContentAdditional() not present.
-            EarProject defInst = earProject.getLookup().lookup(EarProject.class);
-            if (defInst != null) {
-                for (ClassPathSupport.Item vcpi : EarProjectProperties.getJarContentAdditional(defInst)) {
-                    EarProjectProperties.addItemToAppDD(defInst, app, vcpi);
-                }
-            }
-            app.write(dd);
-        }
-        return dd;
-    }
-    
     /** Check that the J2EE version requested for the EAR is also supported for
      * the module type and if not suggest a different version.
      * For now the only check is to use J2EE 1.4 if JavaEE5 is not supported.

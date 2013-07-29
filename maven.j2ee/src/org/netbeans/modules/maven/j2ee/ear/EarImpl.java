@@ -62,6 +62,7 @@ import org.codehaus.plexus.util.xml.Xpp3Dom;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.dd.api.application.Application;
@@ -487,9 +488,28 @@ public class EarImpl implements EarImplementation, EarImplementation2,
                             } else {
                                 toRet.add(owner);
                             }
-
+                            
                         }
                     }
+                }
+            }
+        }
+        // This might happened if someone calls getProjects() before the EAR childs were actually opened
+        // Typically if childs are needed during the project creation
+        if (toRet.isEmpty()) {
+            FileObject parentFO = project.getProjectDirectory().getParent();
+            for (FileObject childFO : parentFO.getChildren()) {
+                if (childFO.isData()) {
+                    continue;
+                }
+                
+                try {
+                    Project childProject = ProjectManager.getDefault().findProject(childFO);
+                    if (childProject != null && !childProject.equals(project)) {
+                        toRet.add(childProject);
+                    }
+                } catch (IOException | IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
                 }
             }
         }
