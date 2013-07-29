@@ -200,6 +200,11 @@ public class DarkMetalTheme extends DefaultMetalTheme {
                 return null;
             }
         });
+
+        //#232854 - menu item accelerators are too dark
+        UIManager.put( "MenuItem.acceleratorForeground", new Color(198,198,198) );
+        UIManager.put( "CheckBoxMenuItem.acceleratorForeground", new Color(198,198,198) );
+        UIManager.put( "RadioButtonMenuItem.acceleratorForeground", new Color(198,198,198) );
     }
 
     @Override
