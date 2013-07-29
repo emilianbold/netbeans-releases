@@ -93,6 +93,7 @@ public class EntityResourcesIterator implements WizardDescriptor.ProgressInstant
 
     @Override
     public Set instantiate(ProgressHandle pHandle) throws IOException {
+        pHandle.start(100);
         final Project project = Templates.getProject(wizard);
 
         String restAppPackage = (String) wizard.getProperty(WizardProperties.APPLICATION_PACKAGE);
@@ -143,6 +144,7 @@ public class EntityResourcesIterator implements WizardDescriptor.ProgressInstant
         final EntityResourcesGenerator generator = EntityResourcesGeneratorFactory.newInstance(project);
         generator.initialize(model, project, targetFolder, targetPackage, 
                 resourcePackage, controllerPackage, pu);
+        pHandle.progress(50);
         
         // create application config class if required
         final FileObject restAppPack = restAppPackage == null ? null :  
@@ -154,6 +156,7 @@ public class EntityResourcesIterator implements WizardDescriptor.ProgressInstant
             }
             RestUtils.disableRestServicesChangeListner(project);
             generator.generate(pHandle);
+            pHandle.progress(80);
             restSupport.configure(resourcePackage);
         } catch(Exception iox) {
             Exceptions.printStackTrace(iox);
@@ -169,7 +172,7 @@ public class EntityResourcesIterator implements WizardDescriptor.ProgressInstant
         params[2] = j2eeModule == null ? null : j2eeModule.getModuleVersion()+"(WAR)"; //NOI18N
         params[3] = "REST FROM ENTITY"; //NOI18N
         LogUtils.logWsWizard(params);
-        
+        pHandle.finish();
         return Collections.<DataObject>singleton(DataFolder.findFolder(targetFolder));
     }
     

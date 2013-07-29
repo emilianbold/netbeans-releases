@@ -38,6 +38,7 @@
  */
 package org.netbeans.modules.php.smarty.editor.lexer;
 
+import java.util.Objects;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.lexer.InputAttributes;
@@ -72,14 +73,14 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         private SubState lexerSubState;
         private int embeddingLevel;
         private TplTopTokenId lastState;
-        private int lastChar;
+        private String stringDelimiter;
 
-        public CompoundState(State lexerState, SubState lexerSubState, int embeddingLevel, TplTopTokenId lastState, int lastChar) {
+        public CompoundState(State lexerState, SubState lexerSubState, int embeddingLevel, TplTopTokenId lastState, String stringDelimiter) {
             this.lexerState = lexerState;
             this.lexerSubState = lexerSubState;
             this.embeddingLevel = embeddingLevel;
             this.lastState = lastState;
-            this.lastChar = lastChar;
+            this.stringDelimiter = stringDelimiter;
         }
 
         @Override
@@ -103,7 +104,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
             if (this.lastState != other.lastState) {
                 return false;
             }
-            if (this.lastChar != other.lastChar) {
+            if (this.stringDelimiter == null ? other.stringDelimiter != null : !this.stringDelimiter.equals(other.stringDelimiter)) {
                 return false;
             }
             return true;
@@ -112,24 +113,28 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         @Override
         public int hashCode() {
             int hash = 3;
-            hash = 17 * hash + this.lexerState.ordinal();
-            hash = 17 * hash + this.lexerSubState.ordinal();
-            hash = 17 * hash + this.embeddingLevel;
-            hash = 17 * hash + this.lastState.ordinal();
-            hash = 17 * hash + this.lastChar;
+            hash = 17 * hash + lexerState.ordinal();
+            hash = 17 * hash + lexerSubState.ordinal();
+            hash = 17 * hash + embeddingLevel;
+            hash = 17 * hash + lastState.ordinal();
+            if (stringDelimiter != null) {
+                hash = 17 * hash + stringDelimiter.hashCode();
+            } else {
+                hash = 17 * hash;
+            }
             return hash;
         }
 
         @Override
         public String toString() {
-            return "State(hash=" + hashCode() + ",s=" + lexerState + ",ss=" + lexerSubState + ",ls=" + lastState + ",lch=" + (char)lastChar + ")"; //NOI18N
+            return "State(hash=" + hashCode() + ",s=" + lexerState + ",ss=" + lexerSubState + ",ls=" + lastState + ",sdel=" + stringDelimiter + ")"; //NOI18N
         }
     }
 
     private TplTopLexer(LexerRestartInfo<TplTopTokenId> info) {
         CompoundState state;
         if (info.state() == null) {
-            state = new CompoundState(State.INIT, SubState.NO_SUB_STATE, 0, TplTopTokenId.T_HTML, -1);
+            state = new CompoundState(State.INIT, SubState.NO_SUB_STATE, 0, TplTopTokenId.T_HTML, null);
         } else {
             state = (CompoundState) info.state();
         }
@@ -181,6 +186,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         CLOSE_DELIMITER,
         IN_COMMENT,
         IN_SMARTY,
+        IN_STRING,
         IN_PHP,
         AFTER_SUBSTATE,
         IN_LITERAL
@@ -202,7 +208,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         private SubState subState;
         private int embeddingLevel;
         private TplTopTokenId lastState;
-        private int lastChar;
+        private String stringDelimiter;
 
         public TplTopColoringLexer(LexerRestartInfo<TplTopTokenId> info, CompoundState state, TplMetaData metadata) {
             this.input = info.input();
@@ -210,7 +216,7 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
             this.subState = state.lexerSubState;
             this.embeddingLevel = state.embeddingLevel;
             this.lastState = state.lastState;
-            this.lastChar = state.lastChar;
+            this.stringDelimiter = state.stringDelimiter;
             if (metadata != null) {
                 this.metadata = metadata;
             } else {
@@ -389,23 +395,14 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                                 state = getStateFromEmbeddingLevel(embeddingLevel);
                                 return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
                             } else {
-                                if (LexerUtils.isWS(lastChar) && getSmartyVersion() == SmartyFramework.Version.SMARTY3) {
-                                    if (lastState == TplTopTokenId.T_SMARTY) {
-                                        state = State.IN_SMARTY;
-                                    } else {
-                                        state = State.OUTER;
-                                    }
-                                    return lastState;
+                                embeddingLevel--;
+                                state = getStateFromEmbeddingLevel(embeddingLevel);
+                                if (state == State.IN_SMARTY) {
+                                    lastState = TplTopTokenId.T_SMARTY;
                                 } else {
-                                    embeddingLevel--;
-                                    state = getStateFromEmbeddingLevel(embeddingLevel);
-                                    if (state == State.IN_SMARTY) {
-                                        lastState = TplTopTokenId.T_SMARTY;
-                                    } else {
-                                        lastState = TplTopTokenId.T_HTML;
-                                    }
-                                    return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
+                                    lastState = TplTopTokenId.T_HTML;
                                 }
+                                return TplTopTokenId.T_SMARTY_CLOSE_DELIMITER;
                             }
                         } else {
                             switch (subState) {
@@ -453,6 +450,14 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                         }
                         break;
 
+                    case IN_STRING:
+                        String currentStringDelimiter = endingStringDelimiter(text);
+                        if (currentStringDelimiter != null && stringDelimiter.equals(currentStringDelimiter)) {
+                            state = State.IN_SMARTY;
+                            stringDelimiter = null;
+                        }
+                        break;
+
                     case IN_SMARTY:
                         if (isSmartyCloseDelimiter(text)) {
                             if (textLength == closeDelimiterLength) {
@@ -467,29 +472,20 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
                                 }
                             }
                         } else if (isSmartyOpenDelimiter(text)) {
-                            if (isSmartyOpenDelimiter(text)) {
-                                state = State.OPEN_DELIMITER;
-                                input.backup(openDelimiterLength);
-                                if (textLength > openDelimiterLength) {
-                                    return TplTopTokenId.T_SMARTY;
-                                }
+                            state = State.OPEN_DELIMITER;
+                            input.backup(openDelimiterLength);
+                            if (textLength > openDelimiterLength) {
+                                return TplTopTokenId.T_SMARTY;
                             }
+                        } else if ((stringDelimiter = endingStringDelimiter(text)) != null) {
+                            state = State.IN_STRING;
                         }
                         switch (c) {
-                            case '\n':
-                                return TplTopTokenId.T_SMARTY;
                             case LexerInput.EOF:
                                 return TplTopTokenId.T_SMARTY;
-//                        case '<':
-//                           state = State.OUTER;
-//                           input.backup(1);
-//                           if (input.readLength() > 1) {
-//                                return TplTopTokenId.T_SMARTY;
-//                           }
                         }
                         break;
                 }
-                lastChar = c;
                 c = input.read();
             }
 
@@ -518,7 +514,17 @@ public class TplTopLexer implements Lexer<TplTopTokenId> {
         }
 
         Object getState() {
-            return new CompoundState(state, subState, embeddingLevel, lastState, lastChar);
+            return new CompoundState(state, subState, embeddingLevel, lastState, stringDelimiter);
+        }
+
+        private String endingStringDelimiter(CharSequence text) {
+            if (CharSequenceUtilities.endsWith(text, "\"")) {       //NOI18N
+                return "\"";                                        //NOI18N
+            } else if (CharSequenceUtilities.endsWith(text, "'")) { //NOI18N
+                return "'";                                         //NOI18N
+            } else {
+                return null;
+            }
         }
 
         private boolean isSmartyOpenDelimiter(CharSequence text) {

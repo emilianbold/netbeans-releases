@@ -444,24 +444,24 @@ public class FmtOptions {
 
     public static class CategorySupport implements ActionListener, DocumentListener, PreviewProvider, PreferencesCustomizer {
 
-        public static final String OPTION_ID = "org.netbeans.modules.javascript2.editor.formatter.FormatingOptions.ID";
-
-        private static final int LOAD = 0;
-        private static final int STORE = 1;
-        private static final int ADD_LISTENERS = 2;
-
-        private static final ComboItem  bracePlacement[] = new ComboItem[] {
-                new ComboItem( OBRACE_NEWLINE, "LBL_bp_NEWLINE" ), // NOI18N
-		new ComboItem( OBRACE_NEWLINE_INDENTED, "LBL_bp_NEWLINE_INDENTED" ), // NOI18N
-                new ComboItem( OBRACE_SAMELINE, "LBL_bp_SAMELINE" ), // NOI18N
-                new ComboItem( OBRACE_PRESERVE, "LBL_bp_PRESERVE" ), // NOI18N
-            };
-
-	private static final ComboItem  wrap[] = new ComboItem[] {
-                new ComboItem( WrapStyle.WRAP_ALWAYS.name(), "LBL_wrp_WRAP_ALWAYS" ), // NOI18N
-                new ComboItem( WrapStyle.WRAP_IF_LONG.name(), "LBL_wrp_WRAP_IF_LONG" ), // NOI18N
-                new ComboItem( WrapStyle.WRAP_NEVER.name(), "LBL_wrp_WRAP_NEVER" ) // NOI18N
-            };
+//        public static final String OPTION_ID = "org.netbeans.modules.javascript2.editor.formatter.FormatingOptions.ID";
+//
+//        private static final int LOAD = 0;
+//        private static final int STORE = 1;
+//        private static final int ADD_LISTENERS = 2;
+//
+//        private static final ComboItem  bracePlacement[] = new ComboItem[] {
+//                new ComboItem( OBRACE_NEWLINE, "LBL_bp_NEWLINE" ), // NOI18N
+//		new ComboItem( OBRACE_NEWLINE_INDENTED, "LBL_bp_NEWLINE_INDENTED" ), // NOI18N
+//                new ComboItem( OBRACE_SAMELINE, "LBL_bp_SAMELINE" ), // NOI18N
+//                new ComboItem( OBRACE_PRESERVE, "LBL_bp_PRESERVE" ), // NOI18N
+//            };
+//
+//	private static final ComboItem  wrap[] = new ComboItem[] {
+//                new ComboItem( WrapStyle.WRAP_ALWAYS.name(), "LBL_wrp_WRAP_ALWAYS" ), // NOI18N
+//                new ComboItem( WrapStyle.WRAP_IF_LONG.name(), "LBL_wrp_WRAP_IF_LONG" ), // NOI18N
+//                new ComboItem( WrapStyle.WRAP_NEVER.name(), "LBL_wrp_WRAP_NEVER" ) // NOI18N
+//            };
 
         private final String previewText;
 //        private String forcedOptions[][];
@@ -470,7 +470,7 @@ public class FmtOptions {
 //        private boolean loaded = false;
         private final String id;
         protected final JPanel panel;
-        private final List<JComponent> components = new LinkedList<>();
+//        private final List<JComponent> components = new LinkedList<>();
         private JEditorPane previewPane;
 
         private final Preferences preferences;
@@ -486,7 +486,7 @@ public class FmtOptions {
             this.previewText = previewText != null ? previewText : NbBundle.getMessage(FmtOptions.class, "SAMPLE_Default"); //NOI18N
 
             // Scan the panel for its components
-            scan(panel, components);
+//            scan(panel, components);
 
             // Initialize the preview preferences
             Preferences forcedPrefs = new PreviewPreferences();
@@ -496,17 +496,17 @@ public class FmtOptions {
             this.previewPrefs = new ProxyPreferences(preferences, forcedPrefs);
 
             // Load and hook up all the components
-            loadFrom(preferences);
-            addListeners();
+//            loadFrom(preferences);
+//            addListeners();
         }
 
         protected void addListeners() {
-            scan(ADD_LISTENERS, null);
+//            scan(ADD_LISTENERS, null);
         }
 
         protected void loadFrom(Preferences preferences) {
 //            loaded = true;
-            scan(LOAD, preferences);
+//            scan(LOAD, preferences);
 //            loaded = false;
         }
 //
@@ -515,7 +515,7 @@ public class FmtOptions {
 //        }
 //
         protected void storeTo(Preferences p) {
-            scan(STORE, p);
+//            scan(STORE, p);
         }
 
         public void notifyChanged() {
@@ -660,185 +660,185 @@ public class FmtOptions {
 
         // Private methods -----------------------------------------------------
 
-        private void performOperation(int operation, JComponent jc, String optionID, Preferences p) {
-            switch (operation) {
-                case LOAD:
-                    loadData(jc, optionID, p);
-                    break;
-                case STORE:
-                    storeData(jc, optionID, p);
-                    break;
-                case ADD_LISTENERS:
-                    addListener(jc);
-                    break;
-                default:
-                    LOGGER.log(Level.WARNING, "Unknown operation value {0}", operation);
-                    break;
-            }
-        }
-
-        private void scan(int what, Preferences p ) {
-            for (JComponent jc : components) {
-                Object o = jc.getClientProperty(OPTION_ID);
-                if (o instanceof String) {
-                    performOperation(what, jc, (String)o, p);
-                } else if (o instanceof String[]) {
-                    for(String oid : (String[])o) {
-                        performOperation(what, jc, oid, p);
-                    }
-                }
-            }
-        }
-
-        private void scan(Container container, List<JComponent> components) {
-            for (Component c : container.getComponents()) {
-                if (c instanceof JComponent) {
-                    JComponent jc = (JComponent)c;
-                    Object o = jc.getClientProperty(OPTION_ID);
-                    if (o instanceof String || o instanceof String[])
-                        components.add(jc);
-                }
-                if (c instanceof Container)
-                    scan((Container)c, components);
-            }
-        }
-
-        /** Very smart method which tries to set the values in the components correctly
-         */
-        private void loadData( JComponent jc, String optionID, Preferences node ) {
-
-            if ( jc instanceof JTextField ) {
-                JTextField field = (JTextField)jc;
-                field.setText( node.get(optionID, getDefaultAsString(optionID)) );
-            }
-            else if ( jc instanceof JCheckBox ) {
-                JCheckBox checkBox = (JCheckBox)jc;
-                boolean df = getDefaultAsBoolean(optionID);
-                checkBox.setSelected( node.getBoolean(optionID, df));
-            }
-            else if ( jc instanceof JComboBox) {
-                JComboBox cb  = (JComboBox)jc;
-                String value = node.get(optionID, getDefaultAsString(optionID) );
-                ComboBoxModel model = createModel(value);
-                cb.setModel(model);
-                ComboItem item = whichItem(value, model);
-                cb.setSelectedItem(item);
-            }
-
-        }
-
-        private void storeData( JComponent jc, String optionID, Preferences node ) {
-
-            if ( jc instanceof JTextField ) {
-                JTextField field = (JTextField)jc;
-
-                String text = field.getText();
-
-                // XXX test for numbers
-                if ( isInteger(optionID) ) {
-                    try {
-                        Integer.parseInt(text);
-                    } catch (NumberFormatException e) {
-                        return;
-                    }
-                }
-
-                // XXX: watch out, tabSize, spacesPerTab, indentSize and expandTabToSpaces
-                // fall back on getGlopalXXX() values and not getDefaultAsXXX value,
-                // which is why we must not remove them. Proper solution would be to
-                // store formatting preferences to MimeLookup and not use NbPreferences.
-                // The problem currently is that MimeLookup based Preferences do not support subnodes.
-                if (!optionID.equals(tabSize) &&
-                    !optionID.equals(spacesPerTab) && !optionID.equals(indentSize) &&
-                    getDefaultAsString(optionID).equals(text)
-                ) {
-                    node.remove(optionID);
-                } else {
-                    node.put(optionID, text);
-                }
-            }
-            else if ( jc instanceof JCheckBox ) {
-                JCheckBox checkBox = (JCheckBox)jc;
-                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == checkBox.isSelected())
-                    node.remove(optionID);
-                else
-                    node.putBoolean(optionID, checkBox.isSelected());
-            }
-            else if ( jc instanceof JComboBox) {
-                JComboBox cb  = (JComboBox)jc;
-                ComboItem comboItem = ((ComboItem) cb.getSelectedItem());
-                String value = comboItem == null ? getDefaultAsString(optionID) : comboItem.value;
-
-                if (getDefaultAsString(optionID).equals(value))
-                    node.remove(optionID);
-                else
-                    node.put(optionID,value);
-            }
-        }
-
-        private void addListener( JComponent jc ) {
-            if ( jc instanceof JTextField ) {
-                JTextField field = (JTextField)jc;
-                field.addActionListener(this);
-                field.getDocument().addDocumentListener(this);
-            }
-            else if ( jc instanceof JCheckBox ) {
-                JCheckBox checkBox = (JCheckBox)jc;
-                checkBox.addActionListener(this);
-            }
-            else if ( jc instanceof JComboBox) {
-                JComboBox cb  = (JComboBox)jc;
-                cb.addActionListener(this);
-            }
-        }
-
-
-        private ComboBoxModel createModel( String value ) {
-
-            // is it braces placement?
-            for (ComboItem comboItem : bracePlacement) {
-                if ( value.equals( comboItem.value) ) {
-                    return new DefaultComboBoxModel( bracePlacement );
-                }
-            }
-
-	    // is it wrap
-            for (ComboItem comboItem : wrap) {
-                if ( value.equals( comboItem.value) ) {
-                    return new DefaultComboBoxModel( wrap );
-                }
-            }
-
-            return null;
-        }
-
-        private static ComboItem whichItem(String value, ComboBoxModel model) {
-
-            for (int i = 0; i < model.getSize(); i++) {
-                ComboItem item = (ComboItem)model.getElementAt(i);
-                if ( value.equals(item.value)) {
-                    return item;
-                }
-            }
-            return null;
-        }
-
-        private static class ComboItem {
-
-            String value;
-            String displayName;
-
-            public ComboItem(String value, String key) {
-                this.value = value;
-                this.displayName = NbBundle.getMessage(FmtOptions.class, key);
-            }
-
-            @Override
-            public String toString() {
-                return displayName;
-            }
-
-        }
+//        private void performOperation(int operation, JComponent jc, String optionID, Preferences p) {
+//            switch (operation) {
+//                case LOAD:
+//                    loadData(jc, optionID, p);
+//                    break;
+//                case STORE:
+//                    storeData(jc, optionID, p);
+//                    break;
+//                case ADD_LISTENERS:
+//                    addListener(jc);
+//                    break;
+//                default:
+//                    LOGGER.log(Level.WARNING, "Unknown operation value {0}", operation);
+//                    break;
+//            }
+//        }
+//
+//        private void scan(int what, Preferences p ) {
+//            for (JComponent jc : components) {
+//                Object o = jc.getClientProperty(OPTION_ID);
+//                if (o instanceof String) {
+//                    performOperation(what, jc, (String)o, p);
+//                } else if (o instanceof String[]) {
+//                    for(String oid : (String[])o) {
+//                        performOperation(what, jc, oid, p);
+//                    }
+//                }
+//            }
+//        }
+//
+//        private void scan(Container container, List<JComponent> components) {
+//            for (Component c : container.getComponents()) {
+//                if (c instanceof JComponent) {
+//                    JComponent jc = (JComponent)c;
+//                    Object o = jc.getClientProperty(OPTION_ID);
+//                    if (o instanceof String || o instanceof String[])
+//                        components.add(jc);
+//                }
+//                if (c instanceof Container)
+//                    scan((Container)c, components);
+//            }
+//        }
+//
+//        /** Very smart method which tries to set the values in the components correctly
+//         */
+//        private void loadData( JComponent jc, String optionID, Preferences node ) {
+//
+//            if ( jc instanceof JTextField ) {
+//                JTextField field = (JTextField)jc;
+//                field.setText( node.get(optionID, getDefaultAsString(optionID)) );
+//            }
+//            else if ( jc instanceof JCheckBox ) {
+//                JCheckBox checkBox = (JCheckBox)jc;
+//                boolean df = getDefaultAsBoolean(optionID);
+//                checkBox.setSelected( node.getBoolean(optionID, df));
+//            }
+//            else if ( jc instanceof JComboBox) {
+//                JComboBox cb  = (JComboBox)jc;
+//                String value = node.get(optionID, getDefaultAsString(optionID) );
+//                ComboBoxModel model = createModel(value);
+//                cb.setModel(model);
+//                ComboItem item = whichItem(value, model);
+//                cb.setSelectedItem(item);
+//            }
+//
+//        }
+//
+//        private void storeData( JComponent jc, String optionID, Preferences node ) {
+//
+//            if ( jc instanceof JTextField ) {
+//                JTextField field = (JTextField)jc;
+//
+//                String text = field.getText();
+//
+//                // XXX test for numbers
+//                if ( isInteger(optionID) ) {
+//                    try {
+//                        Integer.parseInt(text);
+//                    } catch (NumberFormatException e) {
+//                        return;
+//                    }
+//                }
+//
+//                // XXX: watch out, tabSize, spacesPerTab, indentSize and expandTabToSpaces
+//                // fall back on getGlopalXXX() values and not getDefaultAsXXX value,
+//                // which is why we must not remove them. Proper solution would be to
+//                // store formatting preferences to MimeLookup and not use NbPreferences.
+//                // The problem currently is that MimeLookup based Preferences do not support subnodes.
+//                if (!optionID.equals(tabSize) &&
+//                    !optionID.equals(spacesPerTab) && !optionID.equals(indentSize) &&
+//                    getDefaultAsString(optionID).equals(text)
+//                ) {
+//                    node.remove(optionID);
+//                } else {
+//                    node.put(optionID, text);
+//                }
+//            }
+//            else if ( jc instanceof JCheckBox ) {
+//                JCheckBox checkBox = (JCheckBox)jc;
+//                if (!optionID.equals(expandTabToSpaces) && getDefaultAsBoolean(optionID) == checkBox.isSelected())
+//                    node.remove(optionID);
+//                else
+//                    node.putBoolean(optionID, checkBox.isSelected());
+//            }
+//            else if ( jc instanceof JComboBox) {
+//                JComboBox cb  = (JComboBox)jc;
+//                ComboItem comboItem = ((ComboItem) cb.getSelectedItem());
+//                String value = comboItem == null ? getDefaultAsString(optionID) : comboItem.value;
+//
+//                if (getDefaultAsString(optionID).equals(value))
+//                    node.remove(optionID);
+//                else
+//                    node.put(optionID,value);
+//            }
+//        }
+//
+//        private void addListener( JComponent jc ) {
+//            if ( jc instanceof JTextField ) {
+//                JTextField field = (JTextField)jc;
+//                field.addActionListener(this);
+//                field.getDocument().addDocumentListener(this);
+//            }
+//            else if ( jc instanceof JCheckBox ) {
+//                JCheckBox checkBox = (JCheckBox)jc;
+//                checkBox.addActionListener(this);
+//            }
+//            else if ( jc instanceof JComboBox) {
+//                JComboBox cb  = (JComboBox)jc;
+//                cb.addActionListener(this);
+//            }
+//        }
+//
+//
+//        private ComboBoxModel createModel( String value ) {
+//
+//            // is it braces placement?
+//            for (ComboItem comboItem : bracePlacement) {
+//                if ( value.equals( comboItem.value) ) {
+//                    return new DefaultComboBoxModel( bracePlacement );
+//                }
+//            }
+//
+//	    // is it wrap
+//            for (ComboItem comboItem : wrap) {
+//                if ( value.equals( comboItem.value) ) {
+//                    return new DefaultComboBoxModel( wrap );
+//                }
+//            }
+//
+//            return null;
+//        }
+//
+//        private static ComboItem whichItem(String value, ComboBoxModel model) {
+//
+//            for (int i = 0; i < model.getSize(); i++) {
+//                ComboItem item = (ComboItem)model.getElementAt(i);
+//                if ( value.equals(item.value)) {
+//                    return item;
+//                }
+//            }
+//            return null;
+//        }
+//
+//        private static class ComboItem {
+//
+//            String value;
+//            String displayName;
+//
+//            public ComboItem(String value, String key) {
+//                this.value = value;
+//                this.displayName = NbBundle.getMessage(FmtOptions.class, key);
+//            }
+//
+//            @Override
+//            public String toString() {
+//                return displayName;
+//            }
+//
+//        }
     }
 
     public static class PreviewPreferences extends AbstractPreferences {

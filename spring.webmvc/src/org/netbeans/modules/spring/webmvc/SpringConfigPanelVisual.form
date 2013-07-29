@@ -1,4 +1,4 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.4" maxVersion="1.4" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
   <AuxValues>
@@ -53,11 +53,14 @@
                           <Group type="102" attributes="0">
                               <Component id="springVersionLabel" min="-2" max="-2" attributes="0"/>
                               <EmptySpace type="separate" max="-2" attributes="0"/>
-                              <Component id="cbSpringVersion" min="-2" max="-2" attributes="0"/>
+                              <Component id="cbSpringVersion" pref="450" max="32767" attributes="0"/>
                           </Group>
-                          <Component id="includeJstlCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="includeJstlCheckBox" min="-2" max="-2" attributes="0"/>
+                              <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                          </Group>
                       </Group>
-                      <EmptySpace pref="310" max="32767" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                   </Group>
               </Group>
             </DimensionLayout>
@@ -107,10 +110,8 @@
             </Component>
             <Component class="javax.swing.JComboBox" name="cbSpringVersion">
               <Properties>
-                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.editors2.ComboBoxModelEditor">
-                  <StringArray count="1">
-                    <StringItem index="0" value="No Library found"/>
-                  </StringArray>
+                <Property name="model" type="javax.swing.ComboBoxModel" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+                  <Connection code="getLibrariesComboBoxModel()" type="code"/>
                 </Property>
               </Properties>
               <Events>
@@ -141,7 +142,7 @@
                       </Group>
                       <EmptySpace min="-2" pref="8" max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
-                          <Component id="dispatcherNameText" pref="416" max="32767" attributes="0"/>
+                          <Component id="dispatcherNameText" pref="418" max="32767" attributes="0"/>
                           <Component id="dispatcherMappingText" alignment="0" pref="416" max="32767" attributes="0"/>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>

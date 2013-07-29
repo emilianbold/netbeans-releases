@@ -41,32 +41,19 @@
  */
 package org.netbeans.modules.html.knockout;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.Map;
-import java.util.WeakHashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.knockout.model.Binding;
 
 /**
- *
- * todo: possibly distribute the external help w/ the module. Now it's loaded
- * from the external knockout website.
- *
  * @author marekfukala
  */
-public class KOBindingCompletionItem extends HtmlCompletionItem {
-
-    private static final Map<Binding, String> HELP_CACHE = new WeakHashMap<>();
-    private static final String CANNOT_LOAD_HELP = Bundle.cannot_load_help();
+public class KOBindingCompletionItem extends HtmlCompletionItem.Attribute {
+    
     private final Binding binding;
 
     public KOBindingCompletionItem(Binding binding, int substituteOffset) {
-        super(binding.getName(), substituteOffset);
+        super(binding.getName(), substituteOffset, true, new HelpItemImpl(binding));
         this.binding = binding;
     }
 
@@ -78,7 +65,7 @@ public class KOBindingCompletionItem extends HtmlCompletionItem {
     @Override
     protected String getLeftHtmlText() {
         return new StringBuilder()
-                .append("<font color=#628FB5>")
+                .append("<font color=#628FB5>") //NOI18N
                 .append(getItemText())
                 .append("</font>").toString();  //NOI18N
     }
@@ -87,45 +74,10 @@ public class KOBindingCompletionItem extends HtmlCompletionItem {
     protected String getSubstituteText() {
         return new StringBuilder().append(binding.getName()).append(": ").toString(); //NOI18N
     }
-
-    @Override
-    public URL getHelpURL() {
-        try {
-            return new URL(binding.getExternalDocumentationURL());
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(KOBindingCompletionItem.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    @Override
-    public void prepareHelp() {
-        getHelp();
-    }
-
-    @Override
-    public String getHelp() {
-        String helpContent = HELP_CACHE.get(binding);
-        if (helpContent != null) {
-            return helpContent;
-        }
-        try {
-            URL url = getHelpURL();
-            if (url == null) {
-                return CANNOT_LOAD_HELP;
-            } else {
-                helpContent = HelpSupport.getKnockoutDocumentationContent(HelpSupport.loadURLContent(url, Binding.DOC_CHARSET));
-                HELP_CACHE.put(binding, helpContent);
-                return helpContent;
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(KOBindingCompletionItem.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return CANNOT_LOAD_HELP;
-    }
-
+   
     @Override
     public boolean hasHelp() {
         return true;
     }
+     
 }

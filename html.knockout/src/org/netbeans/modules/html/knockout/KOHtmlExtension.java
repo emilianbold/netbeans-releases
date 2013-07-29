@@ -96,7 +96,7 @@ public class KOHtmlExtension extends HtmlExtension {
         KOModel model = KOModel.getModel(result);
         for (Attribute ngAttr : model.getBindings()) {
             OffsetRange dor = KOUtils.getValidDocumentOffsetRange(ngAttr.from(), ngAttr.from() + ngAttr.name().length(), result.getSnapshot());
-            if(dor != null) {
+            if (dor != null) {
                 highlights.put(dor, ColoringAttributes.CONSTRUCTOR_SET);
             }
         }
@@ -171,8 +171,8 @@ public class KOHtmlExtension extends HtmlExtension {
                                     return getBindingItems("", context.getOriginalOffset());
                                 case WS:
                                     //key: value, |
-                                    if(embedded.movePrevious()) {
-                                        switch(embedded.token().id()) {
+                                    if (embedded.movePrevious()) {
+                                        switch (embedded.token().id()) {
                                             case COMMA:
                                                 return getBindingItems("", context.getOriginalOffset());
                                         }
@@ -180,7 +180,7 @@ public class KOHtmlExtension extends HtmlExtension {
                                         //just WS is before the caret, no token before
                                         //   |
                                         return getBindingItems("", context.getOriginalOffset());
-                                        
+
                                     }
                                     break;
                             }
@@ -213,6 +213,18 @@ public class KOHtmlExtension extends HtmlExtension {
     public Collection<CustomAttribute> getCustomAttributes(String elementName) {
         return Collections.singleton(KO_DATA_BIND_CUSTOM_ATTRIBUTE);
     }
+    private static final String DOC_URL = "http://knockoutjs.com/documentation/binding-syntax.html"; //NOI18N
+    static final KOHelpItem KO_DATA_BIND_HELP_ITEM = new KOHelpItem() {
+        @Override
+        public String getName() {
+            return KOUtils.KO_DATA_BIND_ATTR_NAME;
+        }
+
+        @Override
+        public String getExternalDocumentationURL() {
+            return DOC_URL;
+        }
+    };
     private static final CustomAttribute KO_DATA_BIND_CUSTOM_ATTRIBUTE = new CustomAttribute() {
         @Override
         public String getName() {
@@ -231,7 +243,7 @@ public class KOHtmlExtension extends HtmlExtension {
 
         @Override
         public HelpItem getHelp() {
-            return null;
+            return new HelpItemImpl(KO_DATA_BIND_HELP_ITEM);
         }
     };
 }

@@ -338,40 +338,57 @@
                       <Component id="showInBrowserButton" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Group type="102" alignment="0" attributes="0">
-                      <Group type="103" groupAlignment="1" attributes="0">
-                          <Component id="urlLabel" min="-2" max="-2" attributes="0"/>
-                          <Component id="componentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="productLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="versionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="platformLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="dummyLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="priorityLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="targetMilestoneLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="dummyLabel2" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="keywordsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="statusWhiteboardLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="issueTypeLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="dummyLabel3" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="dummyTimetrackingLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="summaryLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="timetrackingLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="attachmentsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="addCommentLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                          <Component id="customFieldsPanelLeft" alignment="1" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Group type="102" attributes="0">
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="statusWhiteboardWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="keywordsWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="urlWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="milestoneWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="issueTypeWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="versionWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="componentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="productWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="summaryWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="timetrackingWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                  <Component id="commentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                              </Group>
+                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                              <Group type="103" groupAlignment="0" attributes="0">
+                                  <Component id="keywordsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="statusWhiteboardLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="timetrackingLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="attachmentsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="summaryLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="urlLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="targetMilestoneLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="issueTypeLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="versionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="componentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="productLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="addCommentLabel" min="-2" max="-2" attributes="0"/>
+                              </Group>
+                          </Group>
+                          <Component id="customFieldsPanelLeft" alignment="0" min="-2" max="-2" attributes="0"/>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="platformWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                              <Component id="platformLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
+                          <Group type="102" alignment="0" attributes="0">
+                              <Component id="priorityWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                              <EmptySpace max="-2" attributes="0"/>
+                              <Component id="priorityLabel" min="-2" max="-2" attributes="0"/>
+                          </Group>
                       </Group>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace max="-2" attributes="0"/>
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="dummyTimetrackingPanel" alignment="0" max="32767" attributes="0"/>
                           <Component id="dummyAttachmentsPanel" max="32767" attributes="0"/>
                           <Component id="scrollPane1" alignment="0" max="32767" attributes="0"/>
-                          <Group type="102" alignment="1" attributes="0">
-                              <Component id="summaryField" max="32767" attributes="0"/>
-                              <EmptySpace min="-2" max="-2" attributes="0"/>
-                              <Component id="summaryWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                          </Group>
                           <Component id="customFieldsPanelRight" alignment="0" max="32767" attributes="0"/>
                           <Component id="messagePanel" alignment="0" max="32767" attributes="0"/>
-                          <Group type="102" attributes="0">
+                          <Group type="102" alignment="0" attributes="0">
                               <Group type="103" groupAlignment="0" attributes="0">
                                   <Group type="102" attributes="0">
                                       <Group type="103" groupAlignment="0" max="-2" attributes="0">
@@ -387,14 +404,10 @@
                                           <Group type="102" alignment="0" attributes="0">
                                               <Component id="priorityCombo" linkSize="9" min="-2" max="-2" attributes="0"/>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="priorityWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                              <EmptySpace max="-2" attributes="0"/>
                                               <Component id="severityCombo" linkSize="9" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                           <Group type="102" alignment="0" attributes="0">
-                                              <Component id="platformCombo" linkSize="9" max="32767" attributes="1"/>
-                                              <EmptySpace max="-2" attributes="0"/>
-                                              <Component id="platformWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                              <Component id="platformCombo" linkSize="9" min="-2" max="-2" attributes="1"/>
                                               <EmptySpace max="-2" attributes="0"/>
                                               <Component id="osCombo" linkSize="9" min="-2" max="-2" attributes="0"/>
                                           </Group>
@@ -404,30 +417,42 @@
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
-                                          <Component id="componentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="productWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="versionWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="osWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="issueTypeWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="severityWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="milestoneWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="urlWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="keywordsWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
-                                          <Component id="statusWhiteboardWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                          <Group type="103" groupAlignment="0" attributes="0">
+                                              <Group type="102" alignment="1" attributes="0">
+                                                  <Component id="dependsOnWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                                  <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                                              </Group>
+                                              <Group type="102" alignment="1" attributes="0">
+                                                  <Component id="assignedToWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                                  <EmptySpace min="-2" pref="4" max="-2" attributes="0"/>
+                                              </Group>
+                                              <Group type="102" alignment="0" attributes="0">
+                                                  <Component id="blocksWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                                  <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                                              </Group>
+                                          </Group>
+                                          <Group type="102" attributes="0">
+                                              <Group type="103" groupAlignment="0" attributes="0">
+                                                  <Component id="qaContactWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                                  <Component id="statusWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                                  <Component id="ccWarning" min="-2" pref="16" max="-2" attributes="0"/>
+                                                  <Component id="resolutionWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                                              </Group>
+                                              <EmptySpace min="-2" pref="5" max="-2" attributes="0"/>
+                                          </Group>
+                                      </Group>
+                                      <Group type="103" groupAlignment="0" attributes="0">
+                                          <Component id="blocksLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="dependsLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="duplicateLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="resolutionLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="statusLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="ccLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="qaContactLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="assignedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                                          <Component id="reportedLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                                       </Group>
                                       <EmptySpace max="-2" attributes="0"/>
-                                      <Group type="103" groupAlignment="1" attributes="0">
-                                          <Component id="reportedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="blocksLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="assignedLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="statusLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="resolutionLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="dependsLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="duplicateLabel" alignment="1" min="-2" max="-2" attributes="0"/>
-                                          <Component id="ccLabel" min="-2" max="-2" attributes="0"/>
-                                          <Component id="qaContactLabel" min="-2" max="-2" attributes="0"/>
-                                      </Group>
-                                      <EmptySpace min="-2" max="-2" attributes="0"/>
                                       <Group type="103" groupAlignment="0" attributes="0">
                                           <Group type="102" alignment="0" attributes="0">
                                               <Component id="reportedField" min="-2" max="-2" attributes="0"/>
@@ -463,19 +488,7 @@
                                                   <Component id="qaContactField" alignment="0" max="32767" attributes="1"/>
                                               </Group>
                                               <EmptySpace max="-2" attributes="0"/>
-                                              <Group type="103" groupAlignment="0" attributes="0">
-                                                  <Group type="102" attributes="0">
-                                                      <Component id="assignedToStatusLabel" min="-2" max="-2" attributes="0"/>
-                                                      <EmptySpace max="-2" attributes="0"/>
-                                                      <Component id="assignedToWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                                  </Group>
-                                                  <Component id="qaContactWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                                  <Component id="ccWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                                  <Component id="statusWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                                  <Component id="resolutionWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                                  <Component id="blocksWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                                  <Component id="dependsOnWarning" min="-2" pref="16" max="-2" attributes="0"/>
-                                              </Group>
+                                              <Component id="assignedToStatusLabel" min="-2" max="-2" attributes="0"/>
                                           </Group>
                                       </Group>
                                   </Group>
@@ -495,7 +508,18 @@
                               </Group>
                               <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
                           </Group>
+                          <Component id="summaryField" alignment="0" max="32767" attributes="0"/>
                       </Group>
+                  </Group>
+                  <Group type="102" alignment="1" attributes="0">
+                      <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
+                      <Group type="103" groupAlignment="0" attributes="0">
+                          <Component id="dummyLabel1" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="dummyLabel2" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="dummyLabel3" alignment="1" min="-2" max="-2" attributes="0"/>
+                          <Component id="dummyTimetrackingLabel" alignment="1" min="-2" max="-2" attributes="0"/>
+                      </Group>
+                      <EmptySpace min="849" pref="849" max="-2" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace min="-2" pref="24" max="-2" attributes="0"/>
@@ -516,75 +540,72 @@
                   <Component id="separatorLabel3" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="showInBrowserButton" linkSize="6" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="productLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="productCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="productWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="reportedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="reportedField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="modifiedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="modifiedField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="reportedStatusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
+              <EmptySpace type="unrelated" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="reportedField" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="reportedStatusLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="modifiedField" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="modifiedLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="productWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="productLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="productCombo" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="reportedLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+              </Group>
+              <EmptySpace max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="componentWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="componentLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="componentCombo" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="assignedToWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="assignedLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="assignedField" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="componentLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="componentCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="componentWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="assignedLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="assignedField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="assignedToStatusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="assignedToWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="versionWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="versionLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="versionCombo" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="assignToDefaultCheckBox" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="versionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="versionCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="versionWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="assignToDefaultCheckBox" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="platformWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="platformLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="platformCombo" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="osCombo" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="qaContactWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="qaContactLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="qaContactField" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="platformLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="platformCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="platformWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="osCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="osWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="qaContactLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="qaContactField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="qaContactWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-              </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="issueTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="issueTypeCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="issueTypeWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="ccLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="ccField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="ccWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="issueTypeWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="issueTypeLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="issueTypeCombo" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="ccWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="ccLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="ccField" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="dummyLabel1" linkSize="8" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="priorityLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="priorityCombo" linkSize="8" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="priorityWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="severityCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="severityWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="statusLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="statusCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="statusWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="priorityLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="priorityWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="priorityCombo" linkSize="8" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="severityCombo" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="statusLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="statusWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="statusCombo" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="targetMilestoneLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="targetMilestoneCombo" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="milestoneWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="resolutionLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="resolutionField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="resolutionWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="milestoneWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="targetMilestoneLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="targetMilestoneCombo" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="resolutionWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="resolutionLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="resolutionField" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -594,49 +615,53 @@
                   <Component id="duplicateButton" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="urlLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="urlField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="urlWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="dependsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="dependsField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="dependsOnWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="dependsOnButton" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="urlWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="urlLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="urlField" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="dependsOnWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="dependsLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="dependsField" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="dependsOnButton" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="keywordsLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="keywordsField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="keywordsButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="keywordsWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="blocksLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="blocksField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="blocksWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="blocksButton" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="keywordsWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="keywordsLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="keywordsField" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="keywordsButton" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="blocksLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="blocksWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="blocksField" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="blocksButton" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="statusWhiteboardLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="statusWhiteboardField" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="statusWhiteboardWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="statusWhiteboardWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="statusWhiteboardLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="statusWhiteboardField" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace type="unrelated" min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="timetrackingLabel" min="-2" max="-2" attributes="0"/>
+                      <Group type="103" groupAlignment="2" attributes="0">
+                          <Component id="timetrackingWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                          <Component id="timetrackingLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                      </Group>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="dummyTimetrackingLabel" linkSize="8" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <Component id="dummyTimetrackingPanel" min="-2" max="-2" attributes="0"/>
               </Group>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
-                      <Component id="attachmentsLabel" min="-2" max="-2" attributes="0"/>
-                      <EmptySpace min="-2" max="-2" attributes="0"/>
+                      <EmptySpace min="-2" pref="21" max="-2" attributes="0"/>
                       <Component id="dummyLabel3" linkSize="8" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="dummyAttachmentsPanel" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" alignment="0" groupAlignment="1" attributes="0">
+                      <Component id="attachmentsLabel" min="-2" max="-2" attributes="0"/>
+                      <Component id="dummyAttachmentsPanel" min="-2" max="-2" attributes="0"/>
+                  </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
@@ -644,15 +669,16 @@
                   <Component id="customFieldsPanelLeft" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Group type="103" groupAlignment="3" attributes="0">
-                  <Component id="summaryLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="summaryWarning" alignment="3" min="-2" pref="16" max="-2" attributes="0"/>
-                  <Component id="summaryField" alignment="3" min="-2" max="-2" attributes="0"/>
+              <Group type="103" groupAlignment="2" attributes="0">
+                  <Component id="summaryWarning" alignment="2" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="summaryLabel" alignment="2" min="-2" max="-2" attributes="0"/>
+                  <Component id="summaryField" alignment="2" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="addCommentLabel" min="-2" max="-2" attributes="0"/>
-                  <Component id="scrollPane1" min="-2" max="-2" attributes="0"/>
+                  <Component id="commentWarning" alignment="0" min="-2" pref="16" max="-2" attributes="0"/>
+                  <Component id="addCommentLabel" alignment="0" min="-2" max="-2" attributes="0"/>
+                  <Component id="scrollPane1" alignment="0" min="-2" max="-2" attributes="0"/>
               </Group>
               <Group type="103" groupAlignment="0" attributes="0">
                   <Group type="102" attributes="0">
@@ -670,11 +696,16 @@
                   </Group>
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="messagePanel" pref="3" max="32767" attributes="0"/>
+              <Component id="messagePanel" max="32767" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Component id="separator" min="-2" max="-2" attributes="0"/>
               <EmptySpace min="-2" max="-2" attributes="0"/>
-              <Component id="dummyCommentsPanel" pref="37" max="32767" attributes="0"/>
+              <Component id="dummyCommentsPanel" max="32767" attributes="0"/>
+          </Group>
+          <Group type="102" attributes="0">
+              <EmptySpace min="65" pref="65" max="-2" attributes="0"/>
+              <Component id="assignedToStatusLabel" min="-2" max="-2" attributes="0"/>
+              <EmptySpace min="539" pref="539" max="-2" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
@@ -704,8 +735,6 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JLabel" name="dependsOnWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="osWarning">
     </Component>
     <Container class="javax.swing.JPanel" name="messagePanel">
 
@@ -978,8 +1007,6 @@
     <Component class="javax.swing.JLabel" name="keywordsWarning">
     </Component>
     <Component class="javax.swing.JLabel" name="milestoneWarning">
-    </Component>
-    <Component class="javax.swing.JLabel" name="severityWarning">
     </Component>
     <Component class="javax.swing.JLabel" name="platformWarning">
     </Component>
@@ -1479,6 +1506,10 @@
       <Events>
         <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDeleteTaskActionPerformed"/>
       </Events>
+    </Component>
+    <Component class="javax.swing.JLabel" name="timetrackingWarning">
+    </Component>
+    <Component class="javax.swing.JLabel" name="commentWarning">
     </Component>
   </SubComponents>
 </Form>

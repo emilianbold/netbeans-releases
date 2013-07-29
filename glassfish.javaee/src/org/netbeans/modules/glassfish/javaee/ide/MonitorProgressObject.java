@@ -240,7 +240,7 @@ public class MonitorProgressObject
             try {
                 ResultMap<String, String> result = CommandGetProperty
                         .getProperties(dm.getCommonServerSupport()
-                        .getInstance(), query, 60000);
+                        .getInstance(), propertyPattern.toString(), 60000);
                 if (result.getState() == TaskState.COMPLETED) {
                     Map<String, String> values = result.getValue();
                     for (Entry<String, String> e : values.entrySet()) {
