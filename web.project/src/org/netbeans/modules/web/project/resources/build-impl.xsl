@@ -2127,18 +2127,33 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="run-display-browser">
-                <xsl:attribute name="depends">run-deploy,-init-display-browser,-display-browser-nb,-display-browser-cl</xsl:attribute>
+                <xsl:attribute name="depends">run-deploy,-init-display-browser,-display-browser-nb-old,-display-browser-nb,-display-browser-cl</xsl:attribute>
             </target>
             
             <target name="-init-display-browser" if="do.display.browser">
+                <condition property="do.display.browser.nb.old">
+                    <and>
+                        <isset property="netbeans.home"/>
+                        <not>
+                            <isset property="browser.context"/>
+                        </not>
+                    </and>
+                </condition>
                 <condition property="do.display.browser.nb">
-                    <isset property="netbeans.home"/>
+                    <and>
+                        <isset property="netbeans.home"/>
+                        <isset property="browser.context"/>
+                    </and>
                 </condition>
                 <condition property="do.display.browser.cl">
                     <isset property="deploy.ant.enabled"/>
                 </condition>
             </target>
             
+            <target name="-display-browser-nb-old" if="do.display.browser.nb.old">
+                <nbbrowse url="${{client.url}}"/>
+            </target>
+
             <target name="-display-browser-nb" if="do.display.browser.nb">
                 <nbbrowse url="${{client.url}}" context="${{browser.context}}" urlPath="${{client.urlPart}}"/>
             </target>

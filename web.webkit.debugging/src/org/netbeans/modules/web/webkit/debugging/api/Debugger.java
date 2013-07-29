@@ -133,7 +133,11 @@ public final class Debugger {
                 return true;
             }
             breakpointsActive = true; // By default, breakpoints are active initially.
-            transport.sendBlockingCommand(new Command(COMMAND_ENABLE));
+            Response resp = transport.sendBlockingCommand(new Command(COMMAND_ENABLE));
+            if (resp != null && resp.getResponse() != null && resp.getResponse().get("error") != null) {
+                LOG.info("Enable failed: "+resp.getResponse()); // NOI18N
+                return false;
+            }
 
             // always enable Page and Network; at the moment only Live HTML is using them
             // but I expect that soon it will be used somewhere else as well

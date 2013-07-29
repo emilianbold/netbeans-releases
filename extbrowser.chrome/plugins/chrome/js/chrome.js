@@ -76,8 +76,11 @@ NetBeans.browserAttachDebugger = function(tabId) {
         console.log('debugger attach for tab ' + tabId);
     }
     chrome.debugger.attach({tabId : tabId}, "1.0", function(){
-        if (chrome.extension.lastError) {
-            console.log('debugger attach result code: ' + chrome.extension.lastError);
+        var err = chrome.runtime.lastError;
+        if (err) {
+            if (err.message) {
+                console.log('NetBeans cannot debug this tab because: ' + err.message);
+            }
         } else {
             if (NetBeans.debuggedTab !== null && NetBeans.debuggedTab !== tabId) {
                 NetBeans.hidePageIcon(NetBeans.debuggedTab);
@@ -261,8 +264,8 @@ NetBeans.browserSendCommand = function(tabId, id, method, params, callback) {
     }
     chrome.debugger.sendCommand({tabId : tabId}, method, params,
         function(result) {
-            if (chrome.extension.lastError) {
-                var error = JSON.stringify(chrome.extension.lastError);
+            if (chrome.runtime.lastError) {
+                var error = JSON.stringify(chrome.runtime.lastError);
                 console.log('debugger send command result code: ' + error);
                 NetBeans.sendDebuggingResponse(tabId, {id : id, error : error});
             } else {
