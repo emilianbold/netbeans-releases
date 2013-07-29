@@ -50,7 +50,7 @@ Ext        : OBJECT Ext [ANONYMOUS: false, DECLARED: true - Ext, MODIFIERS: PUBL
                           # PROPERTIES
                           arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
            namespace      : OBJECT namespace [ANONYMOUS: false, DECLARED: true - namespace, MODIFIERS: PUBLIC, PROPERTY]
-           undefine       : FUNCTION undefine [ANONYMOUS: false, DECLARED: true - undefine, MODIFIERS: PUBLIC, METHOD]
+           undefine       : FUNCTION undefine [ANONYMOUS: false, DECLARED: true - undefine, MODIFIERS: PRIVATE, METHOD]
                           # RETURN TYPES
                           undefined, RESOLVED: true
                           # PARAMETERS
@@ -344,7 +344,7 @@ _L214      : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS:
                                     # PROPERTIES
                                     arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                      namespace      : OBJECT namespace [ANONYMOUS: false, DECLARED: true - namespace, MODIFIERS: PUBLIC, PROPERTY]
-                     undefine       : FUNCTION undefine [ANONYMOUS: false, DECLARED: true - undefine, MODIFIERS: PUBLIC, METHOD]
+                     undefine       : FUNCTION undefine [ANONYMOUS: false, DECLARED: true - undefine, MODIFIERS: PRIVATE, METHOD]
                                     # RETURN TYPES
                                     undefined, RESOLVED: true
                                     # PARAMETERS
@@ -496,7 +496,7 @@ _L214      : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS:
                                                      ctor      : OBJECT ctor [ANONYMOUS: false, DECLARED: true - ctor, MODIFIERS: PRIVATE, OBJECT]
                                                                # PROPERTIES
                                                                displayName : OBJECT displayName [ANONYMOUS: false, DECLARED: true - displayName, MODIFIERS: PUBLIC, PROPERTY]
-                     createNamespaces                : FUNCTION createNamespaces [ANONYMOUS: false, DECLARED: true - createNamespaces, MODIFIERS: PUBLIC, METHOD]
+                     createNamespaces                : FUNCTION createNamespaces [ANONYMOUS: false, DECLARED: true - createNamespaces, MODIFIERS: PRIVATE, METHOD]
                                                      # RETURN TYPES
                                                      @exp;_L214@pro;Manager@pro;createNamespaces@pro;root, RESOLVED: false
                                                      # PROPERTIES
@@ -570,7 +570,7 @@ _L214      : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS:
                                                      uses                : OBJECT uses [ANONYMOUS: false, DECLARED: true - uses, MODIFIERS: PRIVATE, VARIABLE]
                      createdListeners                : OBJECT createdListeners [ANONYMOUS: false, DECLARED: true - createdListeners, MODIFIERS: PUBLIC, PROPERTY]
                      defaultPostprocessors           : OBJECT defaultPostprocessors [ANONYMOUS: false, DECLARED: true - defaultPostprocessors, MODIFIERS: PUBLIC, PROPERTY]
-                     dynInstantiate                  : FUNCTION dynInstantiate [ANONYMOUS: false, DECLARED: true - dynInstantiate, MODIFIERS: PUBLIC, METHOD]
+                     dynInstantiate                  : FUNCTION dynInstantiate [ANONYMOUS: false, DECLARED: true - dynInstantiate, MODIFIERS: PRIVATE, METHOD]
                                                      # RETURN TYPES
                                                      _L214.Manager@pro;instantiate@call;apply, RESOLVED: false
                                                      # PARAMETERS
@@ -632,7 +632,7 @@ _L214      : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS:
                                                              self : OBJECT self [ANONYMOUS: false, DECLARED: false - self, MODIFIERS: PUBLIC, PROPERTY]
                                                      # PROPERTIES
                                                      arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                     getInstantiator                 : FUNCTION getInstantiator [ANONYMOUS: false, DECLARED: true - getInstantiator, MODIFIERS: PUBLIC, METHOD]
+                     getInstantiator                 : FUNCTION getInstantiator [ANONYMOUS: false, DECLARED: true - getInstantiator, MODIFIERS: PRIVATE, METHOD]
                                                      # RETURN TYPES
                                                      @exp;_L214@pro;Manager@pro;getInstantiator@pro;instantiator, RESOLVED: false
                                                      # PARAMETERS
@@ -728,7 +728,7 @@ _L214      : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS:
                                                                            arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                      possibleName     : OBJECT possibleName [ANONYMOUS: false, DECLARED: true - possibleName, MODIFIERS: PRIVATE, VARIABLE]
                                                      regex            : OBJECT regex [ANONYMOUS: false, DECLARED: true - regex, MODIFIERS: PRIVATE, VARIABLE]
-                     instantiate                     : FUNCTION instantiate [ANONYMOUS: false, DECLARED: true - instantiate, MODIFIERS: PUBLIC, METHOD]
+                     instantiate                     : FUNCTION instantiate [ANONYMOUS: false, DECLARED: true - instantiate, MODIFIERS: PRIVATE, METHOD]
                                                      # RETURN TYPES
                                                      _L214.Manager@call;@call;getInstantiator, RESOLVED: false
                                                      # PROPERTIES
@@ -790,7 +790,7 @@ _L214      : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS:
                      nameCreatedListeners            : OBJECT nameCreatedListeners [ANONYMOUS: false, DECLARED: true - nameCreatedListeners, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                      namespaceParseCache             : OBJECT namespaceParseCache [ANONYMOUS: false, DECLARED: true - namespaceParseCache, MODIFIERS: PUBLIC, OBJECT_LITERAL]
                      namespaceRewrites               : OBJECT namespaceRewrites [ANONYMOUS: false, DECLARED: true - namespaceRewrites, MODIFIERS: PUBLIC, PROPERTY]
-                     onCreated                       : FUNCTION onCreated [ANONYMOUS: false, DECLARED: true - onCreated, MODIFIERS: PUBLIC, METHOD]
+                     onCreated                       : FUNCTION onCreated [ANONYMOUS: false, DECLARED: true - onCreated, MODIFIERS: PRIVATE, METHOD]
                                                      # RETURN TYPES
                                                      undefined, RESOLVED: true
                                                      # PARAMETERS
@@ -824,7 +824,7 @@ _L214      : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS:
                                                                         # PROPERTIES
                                                                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                      nameListeners : OBJECT nameListeners [ANONYMOUS: false, DECLARED: true - nameListeners, MODIFIERS: PRIVATE, VARIABLE]
-                     parseNamespace                  : FUNCTION parseNamespace [ANONYMOUS: false, DECLARED: true - parseNamespace, MODIFIERS: PUBLIC, METHOD]
+                     parseNamespace                  : FUNCTION parseNamespace [ANONYMOUS: false, DECLARED: true - parseNamespace, MODIFIERS: PRIVATE, METHOD]
                                                      # RETURN TYPES
                                                      @arr;cache, RESOLVED: false
                                                      @exp;_L214@pro;Manager@pro;parseNamespace@pro;parts, RESOLVED: false
@@ -923,7 +923,7 @@ _L214      : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS:
                                                                         OBJECT param5 [ANONYMOUS: false, DECLARED: true - param5, MODIFIERS: PUBLIC, PARAMETER]
                                                                         # PROPERTIES
                                                                         arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
-                     registerPostprocessor           : FUNCTION registerPostprocessor [ANONYMOUS: false, DECLARED: true - registerPostprocessor, MODIFIERS: PUBLIC, METHOD]
+                     registerPostprocessor           : FUNCTION registerPostprocessor [ANONYMOUS: false, DECLARED: true - registerPostprocessor, MODIFIERS: PRIVATE, METHOD]
                                                      # RETURN TYPES
                                                      _L214.Manager, RESOLVED: true
                                                      # PARAMETERS
@@ -990,7 +990,7 @@ _L214      : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS:
                                                      arguments        : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                      className        : OBJECT className [ANONYMOUS: false, DECLARED: true - className, MODIFIERS: PRIVATE, VARIABLE]
                                                      nameToAliasesMap : OBJECT nameToAliasesMap [ANONYMOUS: false, DECLARED: true - nameToAliasesMap, MODIFIERS: PRIVATE, VARIABLE]
-                     setDefaultPostprocessorPosition : FUNCTION setDefaultPostprocessorPosition [ANONYMOUS: false, DECLARED: true - setDefaultPostprocessorPosition, MODIFIERS: PUBLIC, METHOD]
+                     setDefaultPostprocessorPosition : FUNCTION setDefaultPostprocessorPosition [ANONYMOUS: false, DECLARED: true - setDefaultPostprocessorPosition, MODIFIERS: PRIVATE, METHOD]
                                                      # RETURN TYPES
                                                      Ext.ClassManager, RESOLVED: false
                                                      _L214.Manager, RESOLVED: true
@@ -1013,7 +1013,7 @@ _L214      : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS:
                                                                                    # PROPERTIES
                                                                                    arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]
                                                      index                 : OBJECT index [ANONYMOUS: false, DECLARED: true - index, MODIFIERS: PRIVATE, VARIABLE]
-                     setDefaultPostprocessors        : FUNCTION setDefaultPostprocessors [ANONYMOUS: false, DECLARED: true - setDefaultPostprocessors, MODIFIERS: PUBLIC, METHOD]
+                     setDefaultPostprocessors        : FUNCTION setDefaultPostprocessors [ANONYMOUS: false, DECLARED: true - setDefaultPostprocessors, MODIFIERS: PRIVATE, METHOD]
                                                      # RETURN TYPES
                                                      Ext.ClassManager, RESOLVED: false
                                                      _L214.Manager, RESOLVED: true
@@ -1038,7 +1038,7 @@ _L214      : FUNCTION _L214 [ANONYMOUS: true, DECLARED: true - _L214, MODIFIERS:
                                                                # PROPERTIES
                                                                length : OBJECT length [ANONYMOUS: false, DECLARED: false - length, MODIFIERS: PUBLIC, PROPERTY]
                                                      root      : OBJECT root [ANONYMOUS: false, DECLARED: true - root, MODIFIERS: PRIVATE, VARIABLE]
-                     triggerCreated                  : FUNCTION triggerCreated [ANONYMOUS: false, DECLARED: true - triggerCreated, MODIFIERS: PUBLIC, METHOD]
+                     triggerCreated                  : FUNCTION triggerCreated [ANONYMOUS: false, DECLARED: true - triggerCreated, MODIFIERS: PRIVATE, METHOD]
                                                      # RETURN TYPES
                                                      undefined, RESOLVED: true
                                                      # PARAMETERS
