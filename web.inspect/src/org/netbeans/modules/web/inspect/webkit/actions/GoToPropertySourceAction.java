@@ -101,7 +101,7 @@ public class GoToPropertySourceAction extends AbstractAction {
             Property property = lookup.lookup(Property.class);
             Resource resource = lookup.lookup(Resource.class);
             FileObject fob = resource.toFileObject();
-            if (fob == null) {
+            if (fob == null || fob.isFolder() /* issue 233463 */) {
                 StyleSheetBody body = rule.getParentStyleSheet();
                 fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
                 if (fob == null) {
