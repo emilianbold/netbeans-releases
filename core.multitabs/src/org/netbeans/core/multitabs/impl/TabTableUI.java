@@ -78,7 +78,10 @@ final class TabTableUI extends BasicTableUI {
             Color background = UIManager.getColor( "TabbedPane.background"); //NOI18N
             Color highglightBackground = UIManager.getColor( "TabbedPane.highlight" ); //NOI18N
             if( null != background && null != highglightBackground ) {
-                table.setBackground( background );
+                final int factor = 16;
+                table.setBackground( new Color( Math.max( background.getRed()-factor, 0),
+                        Math.max( background.getGreen()-factor, 0 ),
+                        Math.max( background.getBlue()-factor, 0 ) ) );
                 table.setSelectionBackground( highglightBackground );
                 table.setSelectionForeground( table.getForeground() );
             }

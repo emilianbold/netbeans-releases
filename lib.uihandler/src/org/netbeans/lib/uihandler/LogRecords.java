@@ -315,6 +315,7 @@ public final class LogRecords {
         try {
             raf = new RandomAccessFile(f, "rw");
             String line;
+            String lastLine = null;
             long recordEndPos = -1l;
             long recordStartPos = -1l;
             while ((line = raf.readLine()) != null) {
@@ -341,6 +342,13 @@ public final class LogRecords {
                     }
                     recordStartPos = elmStart;
                 }
+                if (!line.trim().isEmpty()) {
+                    lastLine = line;
+                }
+            }
+            if (lastLine != null && !RECORD_ELM_END.equals(lastLine) && recordEndPos > 0) {
+                deletePart(raf, recordEndPos, raf.length());
+                repaired = true;
             }
             return repaired;
         } catch (IOException ioex) {

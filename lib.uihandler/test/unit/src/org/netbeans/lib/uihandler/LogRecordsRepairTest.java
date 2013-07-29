@@ -81,6 +81,15 @@ public class LogRecordsRepairTest extends NbTestCase {
         assertEquals("Sequence number of the first record", 165, records.get(0).getSequenceNumber());
     }
     
+    public void testScanTruncated() throws Exception {
+        File f = createTempFileFrom("FileTruncated.xml");
+        RecordsHandler rh = new RecordsHandler();
+        LogRecords.scan(f, rh);
+        List<LogRecord> records = rh.getRecords();
+        assertEquals("Records count", 2, records.size());
+        assertEquals("Sequence number of the last record", 965, records.get(1).getSequenceNumber());
+    }
+    
     private File createTempFileFrom(String resource) throws IOException {
         InputStream is = getClass().getResourceAsStream("resources/"+resource);
         File f = File.createTempFile("LR_", resource);
