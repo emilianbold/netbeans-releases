@@ -1,5 +1,5 @@
 var |>GLOBAL:slideIndex<| = {
-    |>FIELD:host<|: host,
+    |>FIELD:host<|: |>GLOBAL:host<|,
     |>CLASS:content<|: {
         |>FIELD:title<|: "",
         |>FIELD:numberOfSlide<|: 0,

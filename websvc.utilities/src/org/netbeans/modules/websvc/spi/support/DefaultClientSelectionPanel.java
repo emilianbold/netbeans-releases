@@ -45,6 +45,7 @@ package org.netbeans.modules.websvc.spi.support;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import javax.swing.tree.TreeSelectionModel;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
@@ -122,8 +123,10 @@ public abstract class DefaultClientSelectionPanel
                 NbBundle.getMessage(DefaultClientSelectionPanel.class, "ACSD_AvailableWebServicesTree"));
         treeView.getAccessibleContext().setAccessibleDescription(
                 NbBundle.getMessage(DefaultClientSelectionPanel.class, "ACSD_AvailableWebServicesTree"));
+        treeView.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
     }
 
+    @Override
     public ExplorerManager getExplorerManager() {
         return manager;
     }

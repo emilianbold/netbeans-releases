@@ -311,21 +311,21 @@ public class VariablesModel extends ViewModelSupport implements TreeModel, Exten
                         value = var.getDescription();
                     }
                 }
-                return value;
+                return toHTML(value);
             } else if (LOCALS_TYPE_COLUMN_ID.equals(columnID)) {
                 RemoteObject.Type type = var.getType();
                 if (type == RemoteObject.Type.OBJECT) {
                     String clazz = var.getClassName();
                     if (clazz == null) {
-                        return type.getName();
+                        return toHTML(type.getName());
                     } else {
-                        return clazz;
+                        return toHTML(clazz);
                     }
                 } else {
-                    return type.getName();
+                    return toHTML(type.getName());
                 }
             } else if (LOCALS_TO_STRING_COLUMN_ID.equals(columnID)) {
-                return var.getValueAsString();
+                return toHTML(var.getValueAsString());
             }
         }
         throw new UnknownTypeException(node);

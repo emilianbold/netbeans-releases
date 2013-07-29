@@ -57,14 +57,12 @@ import org.netbeans.modules.j2ee.dd.api.application.Application;
 import org.netbeans.modules.j2ee.dd.api.application.ApplicationMetadata;
 import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.earproject.EarProject;
-import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
-import org.netbeans.modules.j2ee.earproject.util.EarProjectUtil;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelImplementation;
+import org.netbeans.modules.javaee.project.api.ear.EarDDGenerator;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Mutex;
-import org.openide.util.Exceptions;
 import org.openide.util.MutexException;
 
 /**
@@ -135,17 +133,8 @@ public class ApplicationMetadataModelImpl implements MetadataModelImplementation
     
     private FileObject getDeploymentDescriptor(final EarProject earProject) {
         FileObject ddFO = earProject.getAppModule().getDeploymentDescriptor();
-        if (ddFO == null
-                && DDHelper.isApplicationXMLCompulsory(earProject)) {
-            try {
-                ddFO = EarProjectGenerator.setupDD(
-                        earProject.getJ2eeProfile(),
-                        earProject.getAppModule().getMetaInf(),
-                        earProject,
-                        true);
-            } catch (IOException ioe) {
-                Exceptions.printStackTrace(ioe);
-            }
+        if (ddFO == null && DDHelper.isApplicationXMLCompulsory(earProject)) {
+            ddFO = EarDDGenerator.setupDD(earProject, true);
         }
         return ddFO;
     }
