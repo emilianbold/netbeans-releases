@@ -964,7 +964,7 @@ public class FormatVisitor extends DefaultVisitor {
         scan(node.getFormalParameters());
         scan(node.getLexicalVariables());
         Block body = node.getBody();
-        if (body != null && body instanceof Block) {
+        if (body != null) {
             addAllUntilOffset(body.getStartOffset());
             formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), -1 * options.continualIndentSize));
             scan(body);
