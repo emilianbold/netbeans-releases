@@ -44,7 +44,11 @@
 
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 
 /**
  * @todo Try typing in whole source files and other than tracking missing end and } closure
@@ -62,6 +66,12 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
 
     public JsTypedBreakInterceptorTest(String testName) {
         super(testName);
+    }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class).clear();
     }
 
     @Override
@@ -122,20 +132,6 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
     public void testSplitStrings3() throws Exception {
         insertBreak("  x = \"te^st\"", "  x = \"te\\n\\\n^st\"");
     }
-
-// multiline regexps are not allowed by specification
-// lexer gives us different tokens
-//    public void testSplitRegexps1() throws Exception {
-//        insertBreak("  x = /te^st/", "  x = /te\\n\\\n^st/");
-//    }
-//
-//    public void testSplitRegexps1b() throws Exception {
-//        insertBreak("  x = /^test/", "  x = /\\\n^test/");
-//    }
-//
-//    public void testSplitRegexps2() throws Exception {
-//        insertBreak("  x = /test^/", "  x = /test\\n\\\n^/");
-//    }
 
     public void testInsertNewLine1() throws Exception {
         insertBreak("x^", "x\n^");
@@ -331,6 +327,12 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
                 + "}\n"
                 + "/** */\n"
                 + "window.SYNERGY = new Synergy();");
+    }
+
+    public void testDisabledBrackets() throws Exception {
+        MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class)
+                .putBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
+         insertBreak("function test() {^", "function test() {\n    ^");
     }
 
     // FIXME are those actually indenter tests ?
