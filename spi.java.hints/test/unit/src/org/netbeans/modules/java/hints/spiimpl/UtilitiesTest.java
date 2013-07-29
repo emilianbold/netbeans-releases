@@ -452,6 +452,18 @@ public class UtilitiesTest extends TestBase {
         assertEquals(golden.replaceAll("[ \n\r]+", " "), result.toString().replaceAll("[ \n\r]+", " "));
     }
     
+    public void testAttributionErrors233526() throws Exception {
+        prepareTest("test/Test.java", "package test; public class Test{}");
+
+        SourcePositions[] positions = new SourcePositions[1];
+        String code = "{\n   $4\n};;";
+        Scope s = Utilities.constructScope(info, Collections.<String, TypeMirror>emptyMap());
+        Collection<Diagnostic<? extends JavaFileObject>> errors = new LinkedList<>();
+        Tree result = Utilities.parseAndAttribute(info, code, s, positions, errors);
+
+        assertDiagnostics(errors, "7-7:compiler.err.expected", "5-7:compiler.err.cant.resolve");
+    }
+    
     public void testAnnotation() throws Exception {
         prepareTest("test/Test.java", "package test; public class Test{}");
 

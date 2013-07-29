@@ -93,7 +93,7 @@ public class DefaultLocaleQueryImplementation implements LocaleQueryImplementati
             
             String localeLine = r.readLine();
             
-            if (localeLine == null)
+            if (localeLine == null || localeLine.trim().isEmpty())
                 return null;
             
             String language = "";
