@@ -54,6 +54,7 @@ import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import org.netbeans.swing.plaf.util.DarkIconFilter;
 import org.netbeans.swing.plaf.util.RelativeColor;
+import sun.swing.SwingLazyValue;
 
 /**
  *
@@ -106,6 +107,10 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         table.put( "nb.heapview.grid3.end", new Color( 105, 103, 95 ) ); //NOI18N
         table.put( "nb.heapview.grid4.start", new Color( 107, 105, 97 ) ); //NOI18N
         table.put( "nb.heapview.grid4.end", new Color( 109, 107, 99 ) ); //NOI18N
+
+        table.put( "ToolTip.borderInactive", new SwingLazyValue(
+                          "javax.swing.plaf.BorderUIResource$LineBorderUIResource",
+                          new Object[] {new ColorUIResource( 128, 128, 128 )}) );
 
         UIManager.put( "nb.bugtracking.comment.background", new Color(71, 71, 75) ); //NOI18N
         UIManager.put( "nb.bugtracking.comment.foreground", new Color(230, 230, 230) ); //NOI18N
