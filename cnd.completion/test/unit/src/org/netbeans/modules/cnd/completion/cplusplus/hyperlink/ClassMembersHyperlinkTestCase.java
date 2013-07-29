@@ -1092,6 +1092,11 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug224062.cpp", 25, 62, "bug224062.cpp", 14, 3);
     }
     
+    public void testBug232033() throws Exception {
+        // Bug 232033 - StringStream.fail() marked as error.
+        performTest("bug232033.cpp", 15, 21, "bug232033.cpp", 3, 9);
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

@@ -1,9 +1,9 @@
-Name: Mylyn Commons SOAP library
-Version: 3.8.2
+Name: Mylyn Commons XMLRPC library
+Version: 3.9.0
 License: EPL-v10
 OSR: 5852
 Origin: http://www.eclipse.org/mylyn/
-Description: Mylyn Commons SOAP library
+Description: Mylyn Commons XMLRPC library
 
 Eclipse Public License - v 1.0
 

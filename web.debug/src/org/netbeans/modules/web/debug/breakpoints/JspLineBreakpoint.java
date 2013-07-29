@@ -61,10 +61,14 @@ import org.netbeans.modules.debugger.jpda.ui.DebuggerOutput;
 import org.netbeans.modules.debugger.jpda.ui.IOManager;
 
 import org.netbeans.modules.web.debug.util.Utils;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileChangeListener;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -98,6 +102,9 @@ public class JspLineBreakpoint extends Breakpoint {
     private String                      condition = ""; // NOI18N
     
     private LineBreakpoint javalb;
+    private FileObject fo;
+    private FileChangeListener fileListener;
+    private JSPFileChangeListener fileListenerImpl = new JSPFileChangeListener();
         
     /** Creates a new instance of JspLineBreakpoint */
     public JspLineBreakpoint() { }
@@ -110,6 +117,7 @@ public class JspLineBreakpoint extends Breakpoint {
         this.lineNumber = lineNumber;
         String pt = NbBundle.getMessage(JspLineBreakpoint.class, "CTL_Default_Print_Text");
         this.printText = pt.replace("{jspName}", Utils.getJspName(url));
+        addFileURLListener(url);
         
         DebuggerManager d = DebuggerManager.getDebuggerManager();
         
@@ -254,6 +262,9 @@ public class JspLineBreakpoint extends Breakpoint {
         if (javalb != null) {
             DebuggerManager.getDebuggerManager().removeBreakpoint(javalb);
         }
+        if (fo != null && fileListener != null) {
+            fo.removeFileChangeListener(fileListener);
+        }
     }
 
     /**
@@ -300,6 +311,7 @@ public class JspLineBreakpoint extends Breakpoint {
         ) return;
         String old = this.url;
         this.url = url;
+        addFileURLListener(url);
         firePropertyChange(PROP_URL, old, url);
     }
 
@@ -413,6 +425,35 @@ public class JspLineBreakpoint extends Breakpoint {
                                                               getURL(), getLineNumber());
             }
         }
+    }
+    
+    private void addFileURLListener(String url) {
+        if (fo != null) {
+            fo.removeFileChangeListener(fileListener);
+        }
+        if (url.length() > 0) {
+            try {
+                fo = URLMapper.findFileObject(new URL(url));
+                if (fo != null) {
+                    fileListener = WeakListeners.create(FileChangeListener.class, fileListenerImpl, fo);
+                    fo.addFileChangeListener(fileListener);
+                }
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(new IllegalArgumentException("URL = '"+url+"'", ex));
+            } catch (IllegalArgumentException ex) {
+                Exceptions.printStackTrace(new IllegalArgumentException("URL = '"+url+"'", ex));
+            }
+        }
+    }
+    
+    private final class JSPFileChangeListener extends FileChangeAdapter {
+
+        @Override
+        public void fileDeleted(FileEvent fe) {
+            DebuggerManager.getDebuggerManager().removeBreakpoint(JspLineBreakpoint.this);
+            fo = null;
+        }
+        
     }
             
     private final class JspLineGroupProperties extends GroupProperties {

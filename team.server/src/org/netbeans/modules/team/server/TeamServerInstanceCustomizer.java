@@ -55,12 +55,13 @@ import javax.swing.JComponent;
 import javax.swing.JList;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 import org.openide.DialogDescriptor;
 import org.openide.NotificationLineSupport;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
 
@@ -87,6 +88,10 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
     public TeamServerInstanceCustomizer(JButton okButton, Collection<TeamServerProvider> providers) {
         this.okButton = okButton;
         initComponents();
+        
+        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
+        proxy.setVisible(ide != null && ide.providesProxyConfiguration());
+        
         progress.setVisible(false);
         if(providers == null) {
             cmbProvider.setVisible(false);
@@ -247,7 +252,10 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
     }// </editor-fold>//GEN-END:initComponents
 
     private void proxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_proxyActionPerformed
-        OptionsDisplayer.getDefault().open("General"); // NOI18N
+        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
+        if(ide != null && ide.providesProxyConfiguration()) {
+            ide.openProxyConfiguration();
+        }
     }//GEN-LAST:event_proxyActionPerformed
 
 

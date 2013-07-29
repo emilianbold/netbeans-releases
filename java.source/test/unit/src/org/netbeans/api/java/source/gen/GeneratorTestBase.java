@@ -62,6 +62,7 @@ import org.netbeans.api.java.source.*;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.modules.java.source.transform.Transformer;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.editor.java.JavaKit;
 import org.netbeans.modules.java.JavaDataLoader;
 import org.netbeans.modules.java.source.ClassIndexTestCase;
 import org.netbeans.modules.java.source.indexing.TransactionContext;
@@ -113,7 +114,10 @@ public abstract class GeneratorTestBase extends ClassIndexTestCase {
     protected void setUp() throws Exception {
         super.setUp();
         SourceUtilsTestUtil.prepareTest(new String[0], new Object[0]);
-        MockMimeLookup.setInstances(MimePath.get("text/x-java"), new Reindenter.Factory());
+        // ensure JavaKit is present, so that NbEditorDocument is eventually created.
+        // it handles PositionRefs differently than PlainDocument/PlainEditorKit.
+        MockMimeLookup.setInstances(MimePath.get("text/x-java"), 
+                new Reindenter.Factory(), new JavaKit());
         dataDir = SourceUtilsTestUtil.makeScratchDir(this);
         FileObject dataTargetPackage = FileUtil.createFolder(dataDir, getSourcePckg());
         assertNotNull(dataTargetPackage);

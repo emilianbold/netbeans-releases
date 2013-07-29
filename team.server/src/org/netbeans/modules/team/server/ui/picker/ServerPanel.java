@@ -148,7 +148,7 @@ class ServerPanel extends JPanel {
         public void contentsChanged(ListDataEvent e) { }
         
         private void rebuildAndPack() {
-            SwingUtilities.invokeLater(new Runnable() {
+            runInAWT(new Runnable() {
                 @Override
                 public void run() {                        
                     rebuild();
@@ -158,7 +158,7 @@ class ServerPanel extends JPanel {
         }
         
         private void pack() {
-            SwingUtilities.invokeLater(new Runnable() {
+            runInAWT(new Runnable() {
                 @Override
                 public void run() {    
                     synchronized ( LOADER_LOCK ) {
@@ -347,18 +347,23 @@ class ServerPanel extends JPanel {
     }
 
     private void rebuild() {
-        removeAll();
-
-        add( createHeader(), BorderLayout.NORTH );
-
-        if( isOnline() || openProjectAction != null ) {
-            add( createProjects(), BorderLayout.CENTER );
-        } else {
-            add( createButtonPanel(), BorderLayout.CENTER );
-        }
-        invalidate();
-        revalidate();
-        doLayout();
+        runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                removeAll();
+                
+                add(createHeader(), BorderLayout.NORTH);
+                
+                if (isOnline() || openProjectAction != null) {
+                    add(createProjects(), BorderLayout.CENTER);
+                } else {
+                    add(createButtonPanel(), BorderLayout.CENTER);
+                }
+                invalidate();
+                revalidate();
+                doLayout();
+            }
+        });
     }
 
     private JComponent createProjects() {
@@ -455,7 +460,6 @@ class ServerPanel extends JPanel {
             final SelectionList res = projects;
             final boolean error = wasError;
             SwingUtilities.invokeLater( new Runnable() {
-
                 @Override
                 public void run() {
                     onProjectsLoaded( res, error, loaderToken );
@@ -528,4 +532,12 @@ class ServerPanel extends JPanel {
             return Math.max( orig.getIconHeight(), arrow.getIconHeight() );
         }
     }    
+    
+    private void runInAWT(Runnable r) {
+        if(SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
+    }
 }
