@@ -99,14 +99,14 @@ public class ServerSelectionHelper {
 
             @Override
             public Component getListCellRendererComponent(JList list, Object value, int index, boolean isSelected, boolean cellHasFocus) {
-                String displayValue = null;
+                String profileName = null;
                 if (value instanceof Profile) {
-                    displayValue = ((Profile) value).getDisplayName();
+                    profileName = ((Profile) value).getDisplayName();
                 }
                 if (value instanceof String) {
-                    displayValue = (String) value;
+                    profileName = (String) value;
                 }
-                return delegate.getListCellRendererComponent(list, displayValue, index, isSelected, cellHasFocus);
+                return delegate.getListCellRendererComponent(list, profileName, index, isSelected, cellHasFocus);
             }
 
         });
