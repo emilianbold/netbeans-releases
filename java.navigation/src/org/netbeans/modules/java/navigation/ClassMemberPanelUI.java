@@ -45,6 +45,7 @@
 package org.netbeans.modules.java.navigation;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -78,6 +79,7 @@ import javax.swing.JPanel;
 import javax.swing.JToolBar;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
@@ -171,11 +173,20 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
     private static final Logger PERF_LOG = Logger.getLogger(ClassMemberPanelUI.class.getName() + ".perf"); //NOI18N
     private static final RequestProcessor RP = new RequestProcessor(ClassMemberPanelUI.class.getName(), 1);
     private static final RequestProcessor WATCHER_RP = new RequestProcessor(ClassMemberPanelUI.class.getName() + ".watcher", 1, false, false);  //NOI18N
-    private static final int WATCHER_TIME = 30000; 
+    private static final int WATCHER_TIME = 30000;
+    private static final String INHERITED_COLOR_KEY = "nb.navigator.inherited.color";   //NOI18N
+    private static final String TYPE_COLOR_KEY = "nb.navigator.type.color";    //NOI18N
+    private static final Color DEFAULT_TYPE_COLOR = new Color(0x70,0x70,0x70); //NOI18N
+    private static final Color DEFAULT_INHERITED_COLOR = new Color(0x7D,0x69, 0x4A);    //NOI18N
+
+    private final Color inheritedColor;
+    private final Color typeColor;
     
     
     /** Creates new form ClassMemberPanelUi */
     public ClassMemberPanelUI() {
+        inheritedColor = UIManager.getColor(INHERITED_COLOR_KEY);
+        typeColor = UIManager.getColor(TYPE_COLOR_KEY);
         history = HistorySupport.getInstnace(this.getClass());
         jdocFinder = SelectJavadocTask.create(this);
         jdocTask = RP.create(jdocFinder);
@@ -235,10 +246,46 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
         return lookup;
     }
     
-    public org.netbeans.modules.java.navigation.ElementScanningTask getTask() {
-        
-        return new ElementScanningTask(this);
-        
+    public org.netbeans.modules.java.navigation.ElementScanningTask getTask() {        
+        return new ElementScanningTask(this);        
+    }
+
+    @NonNull
+    String getInheritedColor() {
+        return getHtmlColor(
+           inheritedColor == null ?
+           DEFAULT_INHERITED_COLOR :
+           inheritedColor);
+    }
+
+    @NonNull
+    String getTypeColor() {
+        return getHtmlColor(
+            typeColor == null ?
+            DEFAULT_TYPE_COLOR :
+            typeColor);
+    }
+
+    @NonNull
+    private static String getHtmlColor(@NonNull final Color c) {
+        final int r = c.getRed();
+        final int g = c.getGreen();
+        final int b = c.getBlue();
+        final StringBuilder result = new StringBuilder();
+        result.append ("#");        //NOI18N
+        final String rs = Integer.toHexString (r);
+        final String gs = Integer.toHexString (g);
+        final String bs = Integer.toHexString (b);
+        if (r < 0x10)
+            result.append('0');
+        result.append(rs);
+        if (g < 0x10)
+            result.append ('0');
+        result.append(gs);
+        if (b < 0x10)
+            result.append ('0');
+        result.append(bs);
+        return result.toString();
     }
     
     
