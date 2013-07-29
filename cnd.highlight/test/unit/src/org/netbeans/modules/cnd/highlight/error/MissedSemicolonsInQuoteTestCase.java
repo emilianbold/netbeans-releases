@@ -66,7 +66,7 @@ public class MissedSemicolonsInQuoteTestCase extends ErrorHighlightingBaseTestCa
     
     @Override
     protected File getTestCaseDataDir() {
-	String dataPath = getDataDir().getAbsolutePath().replaceAll("/highlight/", "/modelimpl/").replaceAll("\\\\highlight\\\\", "\\modelimpl\\"); //NOI18N
+	String dataPath = getDataDir().getAbsolutePath().replaceAll("highlight/build/", "modelimpl/").replaceAll("highlight\\\\", "modelimpl\\"); //NOI18N
         String filePath = "common/quote_nosyshdr";
         return Manager.normalizeFile(new File(dataPath, filePath));
     }
