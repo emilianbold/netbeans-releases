@@ -67,5 +67,6 @@ public final class BeansElements {
     public static final String PROPERTY = "property"; // NOI18N
     public static final String LOOKUP_METHOD = "lookup-method"; // NOI18N
     public static final String REPLACED_METHOD = "replaced-method";  // NOI18N
+    public static final String COMPONENT_SCAN = "component-scan";  // NOI18N
     
 }
