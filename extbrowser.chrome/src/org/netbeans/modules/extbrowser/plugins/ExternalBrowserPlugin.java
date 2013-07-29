@@ -53,6 +53,7 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.api.debugger.Session;
@@ -777,6 +778,8 @@ public final class ExternalBrowserPlugin {
             return callback;
         }
 
+        @NbBundle.Messages({"DebuggerEnableFailed=Browser refused to debug this tab.\n"
+                + "Close Chrome Developer Tools (or any other browser debugger) and try again."})
         private void init() {
             if (initialized || !browserImpl.hasEnhancedMode() || doNotInitialize ||
                     browserImpl.getBrowserFeatures() == null ||
@@ -805,7 +808,18 @@ public final class ExternalBrowserPlugin {
             if (browserImpl.getBrowserFeatures().isLiveHTMLEnabled()) {
                 webkitDebugger.getDebugger().enableDebuggerInLiveHTMLMode();
             } else {
-                webkitDebugger.getDebugger().enable();
+                if (!webkitDebugger.getDebugger().enable()) {
+                    initialized = false;
+                    doNotInitialize = true;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                Bundle.DebuggerEnableFailed(), NotifyDescriptor.Message.ERROR_MESSAGE));
+                        }
+                    });
+                    return;
+                }
             }
             if (browserImpl.getBrowserFeatures().isJsDebuggerEnabled()) {
                 session = WebKitUIManager.getDefault().createDebuggingSession(webkitDebugger, projectContext);
