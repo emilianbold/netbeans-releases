@@ -110,7 +110,7 @@ public class NestedBlocksHint extends HintRule implements CustomisableRule {
 
         @NbBundle.Messages(
                 "NestedBlocksHintText=Too Many Nested Blocks in Function Declaration"
-                + "\n- It is a good practise to introduce a new function rather than to use more nested blocks."
+                + "\n- It is a good practice to introduce a new function rather than to use more nested blocks."
         )
         private Collection<? extends Hint> getHints() {
             for (ASTNode block : unallowedNestedBlocks) {
@@ -320,7 +320,7 @@ public class NestedBlocksHint extends HintRule implements CustomisableRule {
     }
 
     @Override
-    @NbBundle.Messages("NestedBlocksHintDesc=It is a good practise to introduce a new function (method) rather than to use more nested blocks.")
+    @NbBundle.Messages("NestedBlocksHintDesc=It is a good practice to introduce a new function (method) rather than to use more nested blocks.")
     public String getDescription() {
         return Bundle.NestedBlocksHintDesc();
     }

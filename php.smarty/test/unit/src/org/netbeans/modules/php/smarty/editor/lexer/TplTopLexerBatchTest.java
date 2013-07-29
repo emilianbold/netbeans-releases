@@ -271,17 +271,33 @@ public class TplTopLexerBatchTest extends TplTestBase {
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
     }
 
-    public void testIssue205540() {
+    public void testIssue205540_1() {
         String text = "{button type=\"add\" url=\"{$root}\" href=\"foo\"}";
 
         TokenSequence ts = createTokenSequence(text);
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "button type=\"add\" url=\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "button type=\"add\" url=\"{$root}\" href=\"foo\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+    }
+
+    public void testIssue205540_2() {
+        String text = "{foofunction param=\"{barfunction param={bazfunction}\"} ";
+
+        TokenSequence ts = createTokenSequence(text);
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "$root");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "foofunction param=\"{barfunction param={bazfunction}\"");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "\" href=\"foo\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " ");
+    }
+
+    public void testIssue205540_3() {
+        String text = "{foo var=\"bar'baz\"} ";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "foo var=\"bar'baz\"");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " ");
     }
 
     public void testIssue215941() {
@@ -306,15 +322,7 @@ public class TplTopLexerBatchTest extends TplTestBase {
 
         TokenSequence ts = createTokenSequence(text);
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "$script = \"var p = ");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "{");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, " a: 0, b: 0 ");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "}");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, " ; var s = ");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "{");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, " t: true, u: false ");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "}");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, " ;\"");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "$script = \"var p = { a: 0, b: 0 } ; var s = { t: true, u: false } ;\"");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
     }
 
@@ -323,11 +331,7 @@ public class TplTopLexerBatchTest extends TplTestBase {
 
         TokenSequence ts = createTokenSequence(text);
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "$script = \"var p = ");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "{");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, " a : 0 ");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "}");
-        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, " \"");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "$script = \"var p = { a : 0 } \"");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " ");
     }
@@ -343,6 +347,30 @@ public class TplTopLexerBatchTest extends TplTestBase {
         LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, "</title><style type=\"text/css\">.a { margin-left: 15px; }</style>");
     }
 
+    public void testIssue232290_1() {
+        String text = "{include file=\"admin/inc/availability.tpl\"\n" +
+                        "    availability_color=$product->availability_color\n" +
+                        "    availability_value=$product->availability_value } ";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "include file=\"admin/inc/availability.tpl\"\n    availability_color=$product->availability_color\n    availability_value=$product->availability_value ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " ");
+    }
+
+    public void testIssue232290_2() {
+        String text = "{include file=\"admin/inc/availability.tpl\"\n" +
+                        "        availability_color=$product->availability_color\n" +
+                        "        availability_value=$product->availability_value\n" +
+                        "    } ";
+
+        TokenSequence ts = createTokenSequence(text);
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_OPEN_DELIMITER, "{");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY, "include file=\"admin/inc/availability.tpl\"\n        availability_color=$product->availability_color\n        availability_value=$product->availability_value\n    ");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_SMARTY_CLOSE_DELIMITER, "}");
+        LexerTestUtilities.assertNextTokenEquals(ts, TplTopTokenId.T_HTML, " ");
+    }
 
     private TokenSequence createTokenSequence(String text) {
         TokenHierarchy<?> hi = TokenHierarchy.create(text, TplTopTokenId.language());

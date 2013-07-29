@@ -349,10 +349,10 @@ public abstract class TaskContainerNode extends AsynchronousNode<List<IssueImpl>
 
     private void refilterTaskNodes() {
         DashboardViewer dashboard = DashboardViewer.getInstance();
-        AppliedFilters appliedFilters = dashboard.getAppliedTaskFilters();
+        AppliedFilters<TaskNode> appliedFilters = dashboard.getAppliedTaskFilters();
         filteredTaskNodes.clear();
         for (TaskNode taskNode : taskNodes) {
-            if (appliedFilters.isInFilter(taskNode.getTask())) {
+            if (appliedFilters.isInFilter(taskNode)) {
                 filteredTaskNodes.add(taskNode);
             }
         }

@@ -98,6 +98,13 @@
                             </file>
                         </folder>
                     </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="FontAndColors-bluetheme.xml" url="FontAndColors-bluetheme.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.languages.apacheconf.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
         </folder>

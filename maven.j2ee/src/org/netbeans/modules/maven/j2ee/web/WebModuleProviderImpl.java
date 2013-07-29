@@ -70,9 +70,17 @@ import org.openide.util.Exceptions;
  * web module provider implementation for maven2 project type.
  * @author  Milos Kleint 
  */
-@ProjectServiceProvider(service = {WebModuleProviderImpl.class, WebModuleProvider.class, J2eeModuleProvider.class}, projectType = {
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR
-})
+@ProjectServiceProvider(
+    service = {
+        WebModuleProviderImpl.class,
+        WebModuleProvider.class,
+        J2eeModuleProvider.class
+    },
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR // #233476
+    }
+)
 public class WebModuleProviderImpl extends BaseEEModuleProvider implements WebModuleProvider {
     
     private WebModuleImpl implementation;

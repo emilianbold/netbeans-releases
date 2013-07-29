@@ -258,7 +258,8 @@ public final class CallStackModel extends ViewModelSupport implements TreeModel,
             } else {
                 throw new UnknownTypeException("Unknown Type Node: " + node);   // NOI18N
             }
-            return file + ":" + (frame.getLineNumber()+1);
+            boolean current = frame == debugger.getCurrentCallFrame();
+            return toHTML(file + ":" + (frame.getLineNumber()+1), current, false, null);
         } else {
             throw new UnknownTypeException("Unknown columnID: " + columnID);
         }

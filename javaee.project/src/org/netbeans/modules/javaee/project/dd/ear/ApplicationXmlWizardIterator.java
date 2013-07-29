@@ -42,20 +42,16 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.earproject.ui.wizards.dd;
+package org.netbeans.modules.javaee.project.dd.ear;
 
 import java.awt.Component;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.netbeans.api.j2ee.core.Profile;
-import org.netbeans.modules.j2ee.earproject.EarProjectGenerator;
-import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
+import org.netbeans.modules.javaee.project.api.ear.EarDDGenerator;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 
@@ -111,16 +107,11 @@ public final class ApplicationXmlWizardIterator implements WizardDescriptor.Inst
     public Set instantiate() throws IOException {
         ApplicationXmlWizardPanel1 panel = (ApplicationXmlWizardPanel1) panels[0];
         FileObject confRoot = panel.getSelectedLocation();
-        //#118047 avoid using the EarProject instance directly to allow for alternate implementations.
-        EarImplementation projectEar = panel.getProject().getLookup().lookup(EarImplementation.class);
-        if (confRoot != null && projectEar != null) {
-            try {
-                // FIXME mix of two API constants
-                FileObject dd =
-                        EarProjectGenerator.setupDD(Profile.fromPropertiesString(projectEar.getJ2eePlatformVersion()), projectEar.getMetaInf(), panel.getProject(), true);
+
+        if (confRoot != null) {
+            FileObject dd = EarDDGenerator.setupDD(panel.getProject(), true);
+            if (dd != null) {
                 return Collections.singleton(dd);
-            } catch (IOException ioe) {
-                Logger.getLogger("global").log(Level.INFO, null, ioe);
             }
         }
         return Collections.EMPTY_SET;

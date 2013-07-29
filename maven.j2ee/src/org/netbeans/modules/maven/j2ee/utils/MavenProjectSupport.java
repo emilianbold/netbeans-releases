@@ -44,7 +44,6 @@ package org.netbeans.modules.maven.j2ee.utils;
 import java.awt.event.ActionEvent;
 import java.io.IOException;
 import java.util.Collections;
-import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
@@ -65,7 +64,6 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
@@ -73,7 +71,6 @@ import org.netbeans.modules.maven.api.problem.ProblemReporter;
 import org.netbeans.modules.maven.j2ee.CopyOnSave;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import org.netbeans.modules.maven.j2ee.SessionContent;
-import org.netbeans.modules.maven.j2ee.ear.EarDDHelper;
 import org.netbeans.modules.maven.j2ee.ear.EarModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.ejb.EjbModuleProviderImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
@@ -382,43 +379,6 @@ public class MavenProjectSupport {
 
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-    
-    /**
-     * Creates application.xml deployment descriptor if it's required for given project (see #228191)
-     * 
-     * @param project project for which should DD be generated
-     * @param serverID server ID of given project
-     */
-    public static void createApplicationXMLIfRequired(
-            Project project,
-            Set<Project> childProjects,
-            String serverID,
-            String javaeeVersion) {
-        
-        if (serverID == null) {
-            serverID = readServerID(project);
-        }
-        // TODO change condition to use ConfigSupportImpl.isDescriptorRequired
-        if (serverID != null && serverID.contains("WebLogic")) { //NOI18N
-            createApplicationXML(project, childProjects, javaeeVersion);
-        }
-    }
-    
-    private static void createApplicationXML(Project project, Set<Project> childProjects, String javaeeVersion) {
-        EarModuleProviderImpl earProvider = project.getLookup().lookup(EarModuleProviderImpl.class);
-        
-        if (earProvider != null) {
-            EarImplementation2 earImpl = earProvider.getEarImplementation();
-            
-            FileObject applicationXML = earImpl.getDeploymentDescriptor();
-            FileObject metaInf = earImpl.getMetaInf();
-
-            if (applicationXML == null) {
-                Profile profile = Profile.fromPropertiesString(javaeeVersion);
-                EarDDHelper.setupDD(profile, metaInf, project, childProjects, true);
             }
         }
     }
