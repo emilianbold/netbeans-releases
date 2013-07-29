@@ -396,6 +396,263 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         //</editor-fold>
     }
     
+    public void testGenericSuperClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void usage() {\n"
+                + "        ExtendsGeneric e = new ExtendsGeneric();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/ExtendsGeneric.java", "package t;\n"
+                + "public class ExtendsGeneric extends MyGeneric<String>{\n"
+                + "\n"
+                + "}"),
+                new File("t/MyGeneric.java", "package t;\n"
+                + "public class MyGeneric<T> {\n"
+                + "    public T get(T in) {\n"
+                + "        return in;\n"
+                + "    }\n"
+                + "}"));
+        performIntroduceLocalExtension("LocalExt", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void usage() {\n"
+                + "        LocalExt e = new LocalExt();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/ExtendsGeneric.java", "package t;\n"
+                + "public class ExtendsGeneric extends MyGeneric<String>{\n"
+                + "\n"
+                + "}"),
+                new File("t/MyGeneric.java", "package t;\n"
+                + "public class MyGeneric<T> {\n"
+                + "    public T get(T in) {\n"
+                + "        return in;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/LocalExt.java", "/*\n"
+                + " * Refactoring License\n"
+                + " */\n"
+                + "\n"
+                + "package t;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class LocalExt {\n"
+                + "    private ExtendsGeneric delegate;\n"
+                + "\n"
+                + "    public LocalExt(ExtendsGeneric delegate) {\n"
+                + "        this.delegate = delegate;\n"
+                + "    }\n"
+                + "\n"
+                + "    public LocalExt() {\n"
+                + "        this.delegate = new ExtendsGeneric();\n"
+                + "    }\n"
+                + "\n"
+                + "    public String get(String in) {\n"
+                + "        return delegate.get(in);\n"
+                + "    }\n"
+                + "\n"
+                + "    public boolean equals(Object o) {\n"
+                + "        Object target = o;\n"
+                + "        if (o instanceof LocalExt) {\n"
+                + "            target = ((LocalExt) o).delegate;\n"
+                + "        }\n"
+                + "        return this.delegate.equals(target);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int hashCode() {\n"
+                + "        return this.delegate.hashCode();\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
+    public void testStaticInnerClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "public class A {\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        Inner e = new Inner();\n"
+                + "    }\n"
+                + "\n"
+                + "    public static class Inner {\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduceLocalExtension("LocalExt", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "public class A {\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        LocalExt e = new LocalExt();\n"
+                + "    }\n"
+                + "\n"
+                + "    public static class Inner {\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/LocalExt.java", "/*\n"
+                + " * Refactoring License\n"
+                + " */\n"
+                + "\n"
+                + "package t;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class LocalExt {\n"
+                + "    private A.Inner delegate;\n"
+                + "\n"
+                + "    public LocalExt(A.Inner delegate) {\n"
+                + "        this.delegate = delegate;\n"
+                + "    }\n"
+                + "\n"
+                + "    public LocalExt() {\n"
+                + "        this.delegate = new A.Inner();\n"
+                + "    }\n"
+                + "\n"
+                + "    public boolean equals(Object o) {\n"
+                + "        Object target = o;\n"
+                + "        if (o instanceof LocalExt) {\n"
+                + "            target = ((LocalExt) o).delegate;\n"
+                + "        }\n"
+                + "        return this.delegate.equals(target);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int hashCode() {\n"
+                + "        return this.delegate.hashCode();\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"));
+    }
+    
+    public void testGenericClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/Generics.java", "package t;\n"
+                + "\n"
+                + "public class Generics<T> {\n"
+                + "    public T get(T in) {\n"
+                + "        return in;\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        Generics<String> g = new Generics<>();\n"
+                + "        String get = g.get(\"\");\n"
+                + "    }\n"
+                + "}"));
+        performIntroduceLocalExtension("Generics1", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+                verifyContent(src,
+                new File("t/Generics.java", "package t;\n"
+                + "\n"
+                + "public class Generics<T> {\n"
+                + "    public T get(T in) {\n"
+                + "        return in;\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        Generics1<String> g = new Generics1<>();\n"
+                + "        String get = g.get(\"\");\n"
+                + "    }\n"
+                + "}"),
+                new File("t/Generics1.java", "/*\n"
+                + " * Refactoring License\n"
+                + " */\n"
+                + "\n"
+                + "package t;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class Generics1<T> {\n"
+                + "    private Generics<T> delegate;\n"
+                + "\n"
+                + "    public Generics1(Generics<T> delegate) {\n"
+                + "        this.delegate = delegate;\n"
+                + "    }\n"
+                + "\n"
+                + "    public Generics1() {\n"
+                + "        this.delegate = new Generics<T>();\n"
+                + "    }\n"
+                + "\n"
+                + "    public T get(T in) {\n"
+                + "        return delegate.get(in);\n"
+                + "    }\n"
+                + "\n"
+                + "    public boolean equals(Object o) {\n"
+                + "        Object target = o;\n"
+                + "        if (o instanceof Generics1) {\n"
+                + "            target = ((Generics1) o).delegate;\n"
+                + "        }\n"
+                + "        return this.delegate.equals(target);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int hashCode() {\n"
+                + "        return this.delegate.hashCode();\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"));
+    }
+    
+    public void testInnerClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "        LocalExtension le = new LocalExtension();\n"
+                + "        LocalExtension.InnerStatic innerStatic = null;\n"
+                + "        LocalExtension.Inner inner = le.new Inner();\n"
+                + "    }\n"
+                + "\n"
+                + "    private enum En { A, B, C, D, E };\n"
+                + "}"),
+                new File("t/LocalExtension.java", "package t;\n"
+                + "public class LocalExtension {\n"
+                + "\n"
+                + "    static class InnerStatic {\n"
+                + "    }\n"
+                + "\n"
+                + "    class Inner {\n"
+                + "    }\n"
+                + "}"));
+        performIntroduceLocalExtension("EnM", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE, new Problem(true, "ERR_IntroduceLEInnerType"));
+                verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "        LocalExtension le = new LocalExtension();\n"
+                + "        LocalExtension.InnerStatic innerStatic = null;\n"
+                + "        LocalExtension.Inner inner = le.new Inner();\n"
+                + "    }\n"
+                + "\n"
+                + "    private enum En { A, B, C, D, E };\n"
+                + "}"),
+                new File("t/LocalExtension.java", "package t;\n"
+                + "public class LocalExtension {\n"
+                + "\n"
+                + "    static class InnerStatic {\n"
+                + "    }\n"
+                + "\n"
+                + "    class Inner {\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void testEnum() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -654,7 +911,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     * Create a new SingleList. This list will hold only one element.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList() {")
-                .append("\n").append("        this.delegate = new SingleList();")
+                .append("\n").append("        this.delegate = new SingleList<E>();")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
@@ -662,7 +919,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     * @param element the element for this list.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList(E element) {")
-                .append("\n").append("        this.delegate = new SingleList(element);")
+                .append("\n").append("        this.delegate = new SingleList<E>(element);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
@@ -1053,7 +1310,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     * Create a new SingleList. This list will hold only one element.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList() {")
-                .append("\n").append("        this.delegate = new SingleList();")
+                .append("\n").append("        this.delegate = new SingleList<E>();")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
@@ -1061,7 +1318,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     * @param element the element for this list.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList(E element) {")
-                .append("\n").append("        this.delegate = new SingleList(element);")
+                .append("\n").append("        this.delegate = new SingleList<E>(element);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("    /**")
                 .append("\n").append("     * @return the someMagicNumber")

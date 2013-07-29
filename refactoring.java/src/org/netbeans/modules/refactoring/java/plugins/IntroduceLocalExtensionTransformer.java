@@ -52,6 +52,7 @@ import javax.lang.model.SourceVersion;
 import javax.lang.model.element.*;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
+import javax.lang.model.type.ExecutableType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.ElementFilter;
@@ -104,8 +105,8 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
 
             boolean noInterface = source.getKind() != ElementKind.INTERFACE;
             
-            List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(source.getTypeParameters().size());
-            transformTypeParameters(source.getTypeParameters(), make, genUtils, newTypeParams);
+            List<TypeParameterTree> newTypeParams = new ArrayList<>(source.getTypeParameters().size());
+            transformTypeParameters(source, source.getTypeParameters(), make, genUtils, newTypeParams);
 
             List<Tree> implementsList = wrap ? addInterfaces(source) : Collections.EMPTY_LIST;
 
@@ -129,6 +130,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             Tree newClassTree;
             final Set<Modifier> modifiers = new HashSet(source.getModifiers());
             modifiers.remove(Modifier.ABSTRACT);
+            modifiers.remove(Modifier.STATIC);
             if(noInterface) {
                 newClassTree = make.Class(
                    make.Modifiers(modifiers), //classModifiersTree,
@@ -374,30 +376,34 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         }
     }
 
-    private void addMember(TypeElement source, ExecutableElement method, GeneratorUtilities genUtils, List<Tree> members) throws IllegalStateException {
-        List<ExpressionTree> paramList = new ArrayList<ExpressionTree>();
-        for (VariableElement variableElement : method.getParameters()) {
+    private void addMember(TypeElement source, ExecutableElement member, GeneratorUtilities genUtils, List<Tree> members) throws IllegalStateException {
+        List<ExpressionTree> paramList = new ArrayList<>();
+        ExecutableType method = (ExecutableType) workingCopy.getTypes().asMemberOf((DeclaredType) source.asType(), member);
+        for (int i = 0;i < method.getParameterTypes().size(); i++) {
+            TypeMirror variableElement = method.getParameterTypes().get(i);
             final ExpressionTree identifier;
-            if (workingCopy.getTypes().isSameType(variableElement.asType(), source.asType())) {
-                identifier = make.MemberSelect(make.Identifier(variableElement), "delegate"); //NOI18N
+            if (workingCopy.getTypes().isSameType(variableElement, source.asType())) {
+                identifier = make.MemberSelect(make.Identifier(member.getParameters().get(i)), "delegate"); //NOI18N
             } else {
-                identifier = make.Identifier(variableElement);
+                identifier = make.Identifier(member.getParameters().get(i));
             }
             paramList.add(identifier);
         }
-        List<ExpressionTree> typeArguments = new ArrayList<ExpressionTree>();
-        final List<? extends TypeParameterElement> typeParameters = method.getTypeParameters();
+        List<ExpressionTree> typeArguments = new ArrayList<>();
+        final List<? extends TypeParameterElement> typeParameters = member.getTypeParameters();
         for (TypeParameterElement typeParameterElement : typeParameters) {
-            IdentifierTree identifier = make.Identifier(typeParameterElement);
-            typeArguments.add(identifier);
+            if(typeParameterElement.getEnclosingElement().equals(member)) {
+                IdentifierTree identifier = make.Identifier(typeParameterElement);
+                typeArguments.add(identifier);
+            }
         }
         MemberSelectTree memberSelect;
-        final Set<Modifier> mods = EnumSet.copyOf(method.getModifiers());
+        final Set<Modifier> mods = EnumSet.copyOf(member.getModifiers());
         mods.remove(Modifier.ABSTRACT);
         if (mods.contains(Modifier.STATIC)) {
-            memberSelect = make.MemberSelect(make.QualIdent(source), method);
+            memberSelect = make.MemberSelect(make.QualIdent(source), member);
         } else {
-            memberSelect = make.MemberSelect(make.Identifier("delegate"), method); //NOI18N
+            memberSelect = make.MemberSelect(make.Identifier("delegate"), member); //NOI18N
         }
         ExpressionTree methodInvocation = make.MethodInvocation(typeArguments,
                 memberSelect,
@@ -436,18 +442,21 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
 
         ModifiersTree modifiers = make.Modifiers(mods);
 
-        List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParameters.size());
-        transformTypeParameters(typeParameters, make, genUtils, newTypeParams);
+        List<TypeParameterTree> newTypeParams = new ArrayList<>(member.getTypeParameters().size());
+        transformTypeParameters(member, member.getTypeParameters(), make, genUtils, newTypeParams);
 
-        final List<? extends VariableElement> parameters = method.getParameters();
-        List<VariableTree> newParameters = new ArrayList<VariableTree>(parameters.size());
-        for (VariableElement variableElement : parameters) {
-            if (workingCopy.getTypes().isSameType(variableElement.asType(), source.asType())) {
+        final List<? extends TypeMirror> parameterTypes = method.getParameterTypes();
+        List<? extends VariableElement> parameterElements = member.getParameters();
+        List<VariableTree> newParameters = new ArrayList<>(parameterTypes.size());
+        for (int i = 0; i < parameterTypes.size(); i++) {
+            TypeMirror variableType = parameterTypes.get(i);
+            VariableElement variableElement = parameterElements.get(i);
+            if (workingCopy.getTypes().isSameType(variableType, source.asType())) {
                 Tree ident = make.QualIdent(fqn);
-                if (variableElement.asType().getKind() == TypeKind.DECLARED) {
-                    DeclaredType declaredType = (DeclaredType) variableElement.asType();
+                if (variableType.getKind() == TypeKind.DECLARED) {
+                    DeclaredType declaredType = (DeclaredType) variableType;
                     List<? extends TypeMirror> arguments = declaredType.getTypeArguments();
-                    List<Tree> newArguments = new ArrayList<Tree>(arguments.size());
+                    List<Tree> newArguments = new ArrayList<>(arguments.size()); 
                     for (TypeMirror typeMirror : arguments) {
                         newArguments.add(make.Type(typeMirror));
                     }
@@ -457,19 +466,19 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                 }
                 newParameters.add(make.Variable(make.Modifiers(variableElement.getModifiers()), variableElement.getSimpleName(), ident, null));
             } else {
-                newParameters.add(make.Variable(variableElement, null));
+                newParameters.add(make.Variable(make.Modifiers(variableElement.getModifiers()), variableElement.getSimpleName(), make.Type(variableType), null));
             }
         }
 
         final List<? extends TypeMirror> thrownTypes = method.getThrownTypes();
-        List<ExpressionTree> newThrownTypes = new ArrayList<ExpressionTree>(thrownTypes.size());
+        List<ExpressionTree> newThrownTypes = new ArrayList<>(thrownTypes.size());
         for (TypeMirror typeMirror : thrownTypes) {
             newThrownTypes.add((ExpressionTree) make.Type(typeMirror));
         }
 
-        MethodTree newMethod = make.Method(modifiers, method.getSimpleName(), methodReturnType, newTypeParams, newParameters, newThrownTypes, make.Block(Collections.singletonList(statement), false), null, method.isVarArgs());
+        MethodTree newMethod = make.Method(modifiers, member.getSimpleName(), methodReturnType, newTypeParams, newParameters, newThrownTypes, make.Block(Collections.singletonList(statement), false), null, member.isVarArgs());
         newMethod = genUtils.importFQNs(newMethod);
-        Doc javadoc = workingCopy.getElementUtilities().javaDocFor(method);
+        Doc javadoc = workingCopy.getElementUtilities().javaDocFor(member);
         if (!javadoc.getRawCommentText().isEmpty()) {
             Comment comment = Comment.create(Comment.Style.JAVADOC, javadoc.getRawCommentText());
             make.addComment(newMethod, comment, true);
@@ -514,22 +523,24 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         return implementsList;
     }
 
-    private void transformTypeParameters(List<? extends TypeParameterElement> source, TreeMaker make, GeneratorUtilities genUtils, List<TypeParameterTree> newTypeParams) {
-        for (TypeParameterElement typeParam : source) {
-            List<? extends TypeMirror> bounds = typeParam.getBounds();
-            List<ExpressionTree> newBounds = new ArrayList<ExpressionTree>(bounds.size());
-            for (TypeMirror typeMirror : bounds) {
-                TypeMirror typeObject = workingCopy.getElements().getTypeElement("java.lang.Object").asType();
-                if (!workingCopy.getTypes().isSameType(typeMirror, typeObject)) {
-                    ExpressionTree type = (ExpressionTree) make.Type(typeMirror);
-                    newBounds.add(type);
+    private void transformTypeParameters(Element source, List<? extends TypeParameterElement> typeParams, TreeMaker make, GeneratorUtilities genUtils, List<TypeParameterTree> newTypeParams) {
+        for (TypeParameterElement typeParam : typeParams) {
+            if(typeParam.getEnclosingElement().equals(source)) {
+                List<? extends TypeMirror> bounds = typeParam.getBounds();
+                List<ExpressionTree> newBounds = new ArrayList<>(bounds.size());
+                for (TypeMirror typeMirror : bounds) {
+                    TypeMirror typeObject = workingCopy.getElements().getTypeElement("java.lang.Object").asType();
+                    if (!workingCopy.getTypes().isSameType(typeMirror, typeObject)) {
+                        ExpressionTree type = (ExpressionTree) make.Type(typeMirror);
+                        newBounds.add(type);
+                    }
                 }
+                TypeParameterTree typeParameterTree = make.TypeParameter(typeParam.getSimpleName(), newBounds);
+                if (!typeParameterTree.getBounds().isEmpty()) {
+                    typeParameterTree = (TypeParameterTree) genUtils.importFQNs(typeParameterTree);
+                }
+                newTypeParams.add(typeParameterTree);
             }
-            TypeParameterTree typeParameterTree = make.TypeParameter(typeParam.getSimpleName(), newBounds);
-            if (!typeParameterTree.getBounds().isEmpty()) {
-                typeParameterTree = (TypeParameterTree) genUtils.importFQNs(typeParameterTree);
-            }
-            newTypeParams.add(typeParameterTree);
         }
     }
 
@@ -538,7 +549,6 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
 
         Tree type = make.Type(origClass.asType());
         VariableTree parameter = make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), "delegate", type, null);
-
 
         EnumSet<Modifier> modifiers = EnumSet.copyOf(origClass.getModifiers());
         modifiers.remove(Modifier.STATIC);
@@ -562,29 +572,30 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             newConstr = genUtils.importFQNs(newConstr);
             members.add(newConstr);
         }
+        final boolean isAbstract = origClass.getModifiers().contains(Modifier.ABSTRACT);
         for (ExecutableElement constr : ElementFilter.constructorsIn(origClass.getEnclosedElements())) {
-            if (workingCopy.getElementUtilities().isSynthetic(constr)) {
+            if (isAbstract && workingCopy.getElementUtilities().isSynthetic(constr)) {
                 continue;
             }
 
             final List<? extends TypeParameterElement> typeParameters = constr.getTypeParameters();
-            List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParameters.size());
-            transformTypeParameters(typeParameters, make, genUtils, newTypeParams);
+            List<TypeParameterTree> newTypeParams = new ArrayList<>(typeParameters.size());
+            transformTypeParameters(constr, typeParameters, make, genUtils, newTypeParams);
 
-            List<ExpressionTree> newTypeArguments = new ArrayList<ExpressionTree>();
+            List<ExpressionTree> newTypeArguments = new ArrayList<>();
             for (TypeParameterElement typeParameterElement : typeParameters) {
                 IdentifierTree identifier = make.Identifier(typeParameterElement);
                 newTypeArguments.add(identifier);
             }
 
-            List<ExpressionTree> newArguments = new ArrayList<ExpressionTree>();
+            List<ExpressionTree> newArguments = new ArrayList<>();
             for (VariableElement variableElement : constr.getParameters()) {
                 IdentifierTree identifier = make.Identifier(variableElement);
                 newArguments.add(identifier);
             }
 
             List<? extends VariableElement> parameters = constr.getParameters();
-            List<VariableTree> newParams = new ArrayList<VariableTree>(typeParameters.size());
+            List<VariableTree> newParams = new ArrayList<>(typeParameters.size());
             for (VariableElement variableElement : parameters) {
                 VariableTree var = make.Variable(variableElement, null);
                 newParams.add(var);
@@ -598,7 +609,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
 
             ExpressionTree expression;
             if (refactoring.getWrap()) {
-                ExpressionTree newClassTree = make.NewClass(null, newTypeArguments, make.QualIdent(origClass), newArguments, null);
+                ExpressionTree newClassTree = make.NewClass(null, newTypeArguments, (ExpressionTree)type, newArguments, null);
                 expression = make.Assignment(make.MemberSelect(make.Identifier("this"), "delegate"), newClassTree); //NOI18N
             } else {
                 expression = make.MethodInvocation(newTypeArguments, make.Identifier("super"), newArguments); //NOI18N
