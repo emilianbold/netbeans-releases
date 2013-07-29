@@ -211,20 +211,19 @@ public class FilterPanel extends javax.swing.JPanel {
                     public void run() {
                         boolean selected = chbShowFinished.isSelected();
                         if (selected) {
-                            int hits = DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, true);
-                            manageHitCount(hits);
-                            DashboardSettings.getInstance().setFinishedTaskFilter(true);
-                        } else {
                             int hits = DashboardViewer.getInstance().removeTaskFilter(openedTaskFilter, true);
                             manageHitCount(hits);
-                            DashboardSettings.getInstance().setFinishedTaskFilter(false);
+                        } else {
+                            int hits = DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, true);
+                            manageHitCount(hits);
                         }
+                        DashboardSettings.getInstance().setShowFinishedTasks(selected);
                     }
                 });
             }
         };
         chbShowFinished.setAction(action);
-        chbShowFinished.setSelected(DashboardSettings.getInstance().isFinishedTaskFilter());
+        chbShowFinished.setSelected(DashboardSettings.getInstance().showFinishedTasks());
         popup.add(chbShowFinished);
 
         //<editor-fold defaultstate="collapsed" desc="schedule filters section">

@@ -162,11 +162,11 @@ public class DashboardSettings {
         }
     }
     
-    public boolean isFinishedTaskFilter() {
+    public boolean showFinishedTasks() {
         return getPreferences().getBoolean(FINISHED_TASK_FILTER, DEFAULT_FINISHED_TASK_FILTER);
     }
 
-    public void setFinishedTaskFilter(boolean tasksLimitQuery) {
+    public void setShowFinishedTasks(boolean tasksLimitQuery) {
         getPreferences().putBoolean(FINISHED_TASK_FILTER, tasksLimitQuery);
     }
 
