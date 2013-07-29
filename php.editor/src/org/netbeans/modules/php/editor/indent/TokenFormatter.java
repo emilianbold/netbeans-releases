@@ -1069,7 +1069,7 @@ public class TokenFormatter {
                                         switch (docOptions.wrapArrayInit) {
                                             case WRAP_ALWAYS:
                                                 indentRule = true;
-                                                newLines = 1;
+                                                newLines = isEmptyArray(formatTokens, index) ? 0 : 1;
                                                 countSpaces = docOptions.alignMultilineArrayInit ? lastAnchor.getAnchorColumn() : indent;
                                                 break;
                                             case WRAP_NEVER:
@@ -1085,7 +1085,7 @@ public class TokenFormatter {
                                                 if (isAfterLineComment(formatTokens, index)
                                                         || column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
                                                     indentRule = true;
-                                                    newLines = 1;
+                                                    newLines = isEmptyArray(formatTokens, index) ? 0 : 1;
                                                     countSpaces = docOptions.alignMultilineArrayInit ? lastAnchor.getAnchorColumn() : indent;
                                                 } else {
                                                     newLines = 0;
@@ -1757,6 +1757,18 @@ public class TokenFormatter {
                     long end = System.currentTimeMillis();
                     LOGGER.log(Level.FINE, "Applaying format stream took: {0} ms", (end - start.get())); // NOI18N
                 }
+            }
+
+            private boolean isEmptyArray(List<FormatToken>  formatTokens, int index) {
+                boolean result = false;
+                if (formatTokens.size() >= index + 2) {
+                    FormatToken possibleParenToken = formatTokens.get(index + 1);
+                    if (possibleParenToken.getId() == FormatToken.Kind.WHITESPACE) {
+                        possibleParenToken = formatTokens.get(index + 2);
+                    }
+                    result = possibleParenToken.getId() == FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN;
+                }
+                return result;
             }
 
             private int countSpacesForArrayDeclParens(int index, int indent, List<FormatToken> formatTokens) {
