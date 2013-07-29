@@ -45,9 +45,9 @@ made subject to such option by the copyright holder.
 -->
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 <fontscolors>
-    <fontcolor name="tag" default="keyword" foreColor="F8BB00" />
-    <fontcolor name="directiveparam" default="keyword" foreColor="FFFFFF" />
-    <fontcolor name="directive" default="keyword" foreColor="92CDF9">
-        <font style="bold"/>
+    <fontcolor name="valuedblock" default="separator" foreColor="F6F683" />
+    <fontcolor name="block" default="valuedblock" foreColor="AF65FA">
+		<font style="bold"/>
     </fontcolor>
+    <fontcolor name="reference" default="identifier" foreColor="92CDF9" />
 </fontscolors>

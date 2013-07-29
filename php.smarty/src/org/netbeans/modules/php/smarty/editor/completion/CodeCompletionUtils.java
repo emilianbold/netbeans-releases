@@ -40,11 +40,12 @@ package org.netbeans.modules.php.smarty.editor.completion;
 
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.php.smarty.SmartyFramework;
 import org.netbeans.modules.php.smarty.editor.completion.entries.SmartyCodeCompletionOffer;
@@ -58,7 +59,7 @@ import org.openide.util.Exceptions;
  * @author Martin Fousek
  */
 public class CodeCompletionUtils {
-
+    private static final Logger LOG = Logger.getLogger(CodeCompletionUtils.class.getName());
     private static final int COMPLETION_MAX_FILTER_LENGHT = 20;
     private static final int SCANNING_MAX_FILTER_LENGHT = 100;
 
@@ -100,7 +101,7 @@ public class CodeCompletionUtils {
         if (tokenSequence.moveNext() || tokenSequence.movePrevious()) {
             Object tokenID = tokenSequence.token().id();
 
-            if (tokenID == TplTopTokenId.T_HTML && isDefaultOpenDelimOnMinusOnePosition(doc, offset)) {
+            if (tokenID == TplTopTokenId.T_HTML && isDefaultOpenDelimOnPreviousPosition(doc, offset)) {
                 return true;
             }
 
@@ -123,7 +124,7 @@ public class CodeCompletionUtils {
         while (!tokenSequence.isEmpty()) {
             if (tokenSequence.token().id() == TplTopTokenId.T_SMARTY_OPEN_DELIMITER
                     || tokenSequence.token().id() == TplTopTokenId.T_HTML
-                    && isDefaultOpenDelimOnMinusOnePosition(doc, caretOffset)) {
+                    && isDefaultOpenDelimOnPreviousPosition(doc, caretOffset)) {
                 return false;
             } else if (tokenSequence.token().id() == TplTopTokenId.T_SMARTY) {
                 if (tokenSequence.token().text().toString().contains("|")) {
@@ -135,17 +136,17 @@ public class CodeCompletionUtils {
         return false;
     }
 
-    private static boolean isDefaultOpenDelimOnMinusOnePosition(Document doc, int possition) {
-        TokenHierarchy tokenHierarchy = TokenHierarchy.get(doc);
-        TokenSequence tokenSequence = tokenHierarchy.tokenSequence();
-        if (possition == 0) {
+    private static boolean isDefaultOpenDelimOnPreviousPosition(Document doc, int currentOffset) {
+        if (currentOffset == 0 || doc.getLength() < 1) {
             return false;
         }
-        
-        tokenSequence.move(possition - 1);
-        tokenSequence.movePrevious(); tokenSequence.moveNext();
-
-        return CharSequenceUtilities.textEquals(SmartyFramework.OPEN_DELIMITER, tokenSequence.token().text());
+        try {
+            String text = doc.getText(currentOffset - 1, 1);
+            return SmartyFramework.OPEN_DELIMITER.equals(text);
+        } catch (BadLocationException ex) {
+            LOG.log(Level.WARNING, ex.getMessage(), ex);
+        }
+        return false;
     }
 
     static ArrayList<String> afterSmartyCommand(Document doc, int offset) {
