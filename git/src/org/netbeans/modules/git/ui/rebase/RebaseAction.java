@@ -423,7 +423,7 @@ public class RebaseAction extends SingleRepositoryAction {
             }
         }
 
-        @NbBundle.Messages("MSG_RebaseAction.updatingHooks=updating push hooks")
+        @NbBundle.Messages("MSG_RebaseAction.updatingHooks=Updating push hooks")
         private void updatePushHooks () {
             if (onto != null && upstream != null && origHead != null) {
                 Collection<GitHook> hooks = VCSHooks.getInstance().getHooks(GitHook.class);

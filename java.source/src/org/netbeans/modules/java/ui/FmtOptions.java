@@ -48,13 +48,16 @@ import java.awt.Container;
 import java.awt.Rectangle;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.prefs.AbstractPreferences;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
@@ -69,6 +72,7 @@ import javax.swing.JSpinner;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.JToggleButton;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -77,16 +81,31 @@ import javax.swing.event.ListDataEvent;
 import javax.swing.event.ListDataListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.ModificationResult;
+import org.netbeans.editor.BaseDocument;
+import org.netbeans.modules.editor.indent.api.Reformat;
 import static org.netbeans.api.java.source.CodeStyle.*;
 import org.netbeans.modules.java.source.save.Reformatter;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.modules.options.editor.spi.PreviewProvider;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
+import org.openide.cookies.SaveCookie;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataObject;
 
 import org.openide.text.CloneableEditorSupport;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -584,6 +603,134 @@ public class FmtOptions {
  
     
     // Support section ---------------------------------------------------------
+    // do not increase throughput; otherwise sources/sourceIndex below must be synchronized somehow.
+    private static final RequestProcessor REFORMAT_RP = new RequestProcessor("Java Format Previewer");
+
+    static abstract class DocumentCategorySupport extends CategorySupport {
+        /**
+         * Two Sources are used. While one Source document is displayed by the preview JEditorPane, 
+         * the other source may be formatted in the RP. The editor then switch between those sources.
+         */
+        private final Source[] sources = new Source[2];
+        
+        /**
+         * Index of the next Source to be used. Not synchronized, incremented only from the RP.
+         */
+        private int sourceIndex;
+        
+        public DocumentCategorySupport(Preferences preferences, String id, JPanel panel, String previewText, String[]... forcedOptions) {
+            super(preferences, id, panel, previewText, forcedOptions);
+        }
+        
+        private String getSourceName(int index) {
+            if (index == 0) {
+                return "org.netbeans.samples.ClassA"; // NOI18N
+            } else {
+                return "org.netbeans.samples" + (index + 1) + ".ClassA"; // NOI18N
+            }
+        }
+        
+        private Document reformatDocument(int index) {
+            assert REFORMAT_RP.isRequestProcessorThread();
+            try {
+                Class.forName(CodeStyle.class.getName(), true, CodeStyle.class.getClassLoader());
+            } catch (ClassNotFoundException cnfe) {
+                // ignore
+            }
+            final CodeStyle codeStyle = codeStyleProducer.create(previewPrefs);
+            final Document doc;
+            try {
+                Source s;
+                if (sources[index] == null) {
+                    FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData(getSourceName(index), "java"); //NOI18N
+                    sources[index] = Source.create(fo);
+                }
+                s = sources[index];
+                doc = s.getDocument(true);
+                if (doc.getLength() > 0) {
+                    doc.remove(0, doc.getLength());
+                }
+                doc.insertString(0, previewText, null);
+                doc.putProperty(CodeStyle.class, codeStyle);
+                
+                reformatSource(doc, s);
+                
+                final Reformat reformat = Reformat.get(doc);
+                reformat.lock();
+                try {
+                    if (doc instanceof BaseDocument) {
+                        ((BaseDocument) doc).runAtomicAsUser(new Runnable() {
+                            @Override
+                            public void run() {
+                                try {
+                                    reformat.reformat(0, doc.getLength());
+                                } catch (BadLocationException ble) {}
+                            }
+                        });
+                    } else {
+                        reformat.reformat(0, doc.getLength());
+                    }
+                } finally {
+                    reformat.unlock();
+                }
+                DataObject dataObject = DataObject.find(s.getFileObject());
+                SaveCookie sc = dataObject.getLookup().lookup(SaveCookie.class);
+                if (sc != null)
+                    sc.save();
+                return doc;
+            } catch (Exception ex) {}
+            return null;
+        }
+        
+        protected void doModification(ResultIterator iterator) throws Exception {}
+        
+        protected void reformatSource(Document d, Source s) throws ParseException, IOException {
+            ModificationResult result = ModificationResult.runModificationTask(Collections.singleton(s), new UserTask() {
+
+                @Override
+                public void run(ResultIterator resultIterator) throws Exception {
+                    doModification(resultIterator);
+                }
+                
+            });
+            result.commit();
+        }
+
+        @Override
+        public void refreshPreview() {
+            if (pendingRefresh.getAndSet(true)) {
+                return;
+            }
+            final JEditorPane jep = (JEditorPane) getPreviewComponent();
+            int rm = previewPrefs.getInt(rightMargin, getDefaultAsInt(rightMargin));
+            jep.putClientProperty("TextLimitLine", rm); //NOI18N
+            jep.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
+            jep.getDocument().putProperty(SimpleValueNames.TAB_SIZE, ""); //NOI18N
+            jep.getDocument().putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, ""); //NOI18N
+            
+            REFORMAT_RP.post(new Runnable() {
+                private Document doc;
+                
+                public void run() {
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        jep.setIgnoreRepaint(true);
+                        if (doc != null) {
+                            jep.setDocument(doc);
+                        }
+                        jep.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
+                        jep.repaint(100);
+                        jep.setIgnoreRepaint(false);
+                    } else {
+                        pendingRefresh.getAndSet(false);
+                        int index = DocumentCategorySupport.this.sourceIndex;
+                        doc = reformatDocument(index);
+                        sourceIndex = (sourceIndex + 1) % sources.length;
+                        SwingUtilities.invokeLater(this);
+                    }
+                }
+            }, 100);
+        }
+    }
       
     public static class CategorySupport implements ActionListener, ChangeListener, ListDataListener, TableModelListener, DocumentListener, PreviewProvider, PreferencesCustomizer {
 
@@ -631,6 +778,8 @@ public class FmtOptions {
         protected final Preferences preferences;
         protected final Preferences previewPrefs;
     
+        /* package private */ AtomicBoolean pendingRefresh = new AtomicBoolean(false);
+
         protected CategorySupport(Preferences preferences, String id, JPanel panel, String previewText, String[]... forcedOptions) {
             this.preferences = preferences;
             this.id = id;
@@ -674,7 +823,10 @@ public class FmtOptions {
 //            if (loaded)
 //                return;
             storeTo(preferences);
-            refreshPreview();
+            // give other listeners a chance to refresh their data, too
+            SwingUtilities.invokeLater(new Runnable() { public void run() { 
+                refreshPreview(); 
+            } });
         }
         
         protected void loadListData(final JList list, final String optionID, final Preferences p) {
@@ -753,29 +905,45 @@ public class FmtOptions {
         }
 
         public void refreshPreview() {
-            JEditorPane jep = (JEditorPane) getPreviewComponent();
-            try {
-                int rm = previewPrefs.getInt(rightMargin, getDefaultAsInt(rightMargin));
-                jep.putClientProperty("TextLimitLine", rm); //NOI18N
-                jep.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
-                jep.getDocument().putProperty(SimpleValueNames.TAB_SIZE, ""); //NOI18N
-                jep.getDocument().putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, ""); //NOI18N
+            if (pendingRefresh.getAndSet(true)) {
+                return;
             }
-            catch( NumberFormatException e ) {
-                // Ignore it
-            }
-            try {
-                Class.forName(CodeStyle.class.getName(), true, CodeStyle.class.getClassLoader());
-            } catch (ClassNotFoundException cnfe) {
-                // ignore
-            }
-
-            CodeStyle codeStyle = codeStyleProducer.create(previewPrefs);
+            final JEditorPane jep = (JEditorPane) getPreviewComponent();
+            
             jep.setIgnoreRepaint(true);
-            jep.setText(Reformatter.reformat(previewText, codeStyle));
-            jep.setIgnoreRepaint(false);
-            jep.scrollRectToVisible(new Rectangle(0,0,10,10) );
-            jep.repaint(100);
+            REFORMAT_RP.post(new Runnable() {
+                private String text;
+                
+                public void run() {
+                    if (SwingUtilities.isEventDispatchThread()) {
+                        try {
+                            int rm = previewPrefs.getInt(rightMargin, getDefaultAsInt(rightMargin));
+                            jep.putClientProperty("TextLimitLine", rm); //NOI18N
+                            jep.getDocument().putProperty(SimpleValueNames.TEXT_LINE_WRAP, ""); //NOI18N
+                            jep.getDocument().putProperty(SimpleValueNames.TAB_SIZE, ""); //NOI18N
+                            jep.getDocument().putProperty(SimpleValueNames.TEXT_LIMIT_WIDTH, ""); //NOI18N
+                        }
+                        catch( NumberFormatException e ) {
+                            // Ignore it
+                        }
+                        jep.setIgnoreRepaint(true);
+                        jep.setText(text);
+                        jep.setIgnoreRepaint(false);
+                        jep.scrollRectToVisible(new Rectangle(0,0,10,10) );
+                        jep.repaint(100);
+                        return;
+                    }
+                    try {
+                        Class.forName(CodeStyle.class.getName(), true, CodeStyle.class.getClassLoader());
+                    } catch (ClassNotFoundException cnfe) {
+                        // ignore
+                    }
+                    pendingRefresh.getAndSet(false);
+                    CodeStyle codeStyle = codeStyleProducer.create(previewPrefs);
+                    text = Reformatter.reformat(previewText, codeStyle);
+                    SwingUtilities.invokeLater(this);
+                }
+            }, 100);
         }
 
         // PreferencesCustomizer implementation --------------------------------

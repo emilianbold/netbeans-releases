@@ -50,6 +50,7 @@ import java.util.Map.Entry;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.prefs.Preferences;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.modules.analysis.spi.Analyzer;
 import org.netbeans.modules.java.hints.providers.spi.HintDescription;
@@ -104,12 +105,13 @@ public class AnalyzerImpl implements Analyzer {
         final List<ErrorDescription> result = new ArrayList<ErrorDescription>();
         ProgressHandleWrapper w = new ProgressHandleWrapper(ctx, 10, 90);
         Collection<HintDescription> hints = new ArrayList<HintDescription>();
-        HintsSettings settings = HintsSettings.createPreferencesBasedHintsSettings(ctx.getSettings(), false, null);
+        Preferences incomingSettings = ctx.getSettings();
+        HintsSettings settings = incomingSettings != null ? HintsSettings.createPreferencesBasedHintsSettings(incomingSettings, false, null) : null;
 
         for (Entry<? extends HintMetadata, ? extends Collection<? extends HintDescription>> e : Utilities.getBatchSupportedHints(new ClassPathBasedHintWrapper()).entrySet()) {
             if (singleWarning != null) {
                 if (!singleWarning.equals(e.getKey().id)) continue;
-            } else if (ctx.getSettings() != null) {
+            } else if (incomingSettings != null) {
                 if (!settings.isEnabled(e.getKey())) continue;
             }
 
@@ -157,7 +159,6 @@ public class AnalyzerImpl implements Analyzer {
 
         private  static final String HINTS_FOLDER = "org-netbeans-modules-java-hints/rules/hints/";  // NOI18N
 
-        @Messages("DN_UnknownCategory=Unknown")
         @Override
         public Iterable<? extends WarningDescription> getWarnings() {
             List<WarningDescription> result = new ArrayList<WarningDescription>();
@@ -166,8 +167,7 @@ public class AnalyzerImpl implements Analyzer {
                 if (e.getKey().options.contains(Options.NON_GUI)) continue;
                 String displayName = e.getKey().displayName;
                 String category = e.getKey().category;
-                FileObject catFO = FileUtil.getConfigFile(HINTS_FOLDER + category);
-                String categoryDisplayName = catFO != null ? getFileObjectLocalizedName(catFO) : Bundle.DN_UnknownCategory();
+                String categoryDisplayName = Utilities.categoryDisplayName(category);
 
                 result.add(WarningDescription.create(ID_JAVA_HINTS_PREFIX + e.getKey().id, displayName, category, categoryDisplayName));
             }
@@ -204,10 +204,10 @@ public class AnalyzerImpl implements Analyzer {
                     if (context.getPreselectId() == null) {
                         HintsPanel prev = context.getPreviousComponent();
                         if (prev != null) {
-                            prev.setOverlayPreferences(HintsSettings.createPreferencesBasedHintsSettings(context.getSettings(), false, Severity.VERIFIER));
+                            prev.setOverlayPreferences(HintsSettings.createPreferencesBasedHintsSettings(context.getSettings(), false, Severity.VERIFIER), true);
                             return prev;
                         }
-                        return new HintsPanel(context.getSettings(), context.getData());
+                        return new HintsPanel(context.getSettings(), context.getData(), true);
                     } else {
                         HintMetadata toSelect = null;
                         for (HintMetadata hm : Utilities.getBatchSupportedHints(context.getData()).keySet()) {

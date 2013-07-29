@@ -52,6 +52,7 @@ import org.netbeans.lib.profiler.heap.Value;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -60,6 +61,7 @@ import org.netbeans.api.debugger.jpda.JPDAArrayType;
 import org.netbeans.api.debugger.jpda.JPDAClassType;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
 import org.netbeans.api.debugger.jpda.Variable;
+import org.netbeans.lib.profiler.heap.ObjectFieldValue;
 import org.openide.util.Exceptions;
 
 /**
@@ -69,6 +71,7 @@ import org.openide.util.Exceptions;
 public class InstanceImpl implements Instance {
     
     private ObjectVariable var;
+    private JavaClass varClass;
     protected HeapImpl heap;
     
     /** Creates a new instance of InstanceImpl */
@@ -78,7 +81,7 @@ public class InstanceImpl implements Instance {
     }
     
     public static Instance createInstance(HeapImpl heap, ObjectVariable var) {
-        Instance instance;
+        InstanceImpl instance;
         JPDAClassType type = var.getClassType();
         if (type instanceof JPDAArrayType) {
             boolean isPrimitiveArray = false;
@@ -91,16 +94,21 @@ public class InstanceImpl implements Instance {
         } else {
             instance = new InstanceImpl(heap, var);
         }
+        instance.varClass = getJavaClass(heap, var);
         return instance;
     }
 
-    public JavaClass getJavaClass() {
+    private static JavaClass getJavaClass(HeapImpl heap, ObjectVariable var) {
         JPDAClassType type = var.getClassType();
         if (type != null) {
             return new JavaClassImpl(heap, type);
         } else {
             return new JavaClassImpl(var.getType());
         }
+    }
+    
+    public JavaClass getJavaClass() {
+        return varClass;
     }
 
     public long getInstanceId() {
@@ -154,8 +162,27 @@ public class InstanceImpl implements Instance {
     }
 
     public Object getValueOfField(String name) {
-        // TODO
-        return null;
+        Iterator fIt = getFieldValues().iterator();
+        FieldValue matchingFieldValue = null;
+
+        while (fIt.hasNext()) {
+            FieldValue fieldValue = (FieldValue) fIt.next();
+
+            if (fieldValue.getField().getName().equals(name)) {
+                matchingFieldValue = fieldValue;
+            }
+        }
+
+        if (matchingFieldValue == null) {
+            return null;
+        }
+
+        if (matchingFieldValue instanceof ObjectFieldValue) {
+            return ((ObjectFieldValue) matchingFieldValue).getInstance();
+        } else {
+            return ((FieldValue) matchingFieldValue).getValue();
+        }
+
    }
 
     public List<FieldValue> getStaticFieldValues() {

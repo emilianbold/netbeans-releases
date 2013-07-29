@@ -85,6 +85,7 @@ import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGenerator;
 import org.netbeans.modules.websvc.rest.codegen.EntityResourcesGeneratorFactory;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceModelBuilder;
+import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper;
 import org.netbeans.modules.websvc.rest.support.PersistenceHelper.PersistenceUnit;
@@ -288,7 +289,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             
             boolean useJersey = Boolean.TRUE.equals(wizard.getProperty(WizardProperties.USE_JERSEY));
             if (!useJersey) {
-                RestSupport.RestConfig.IDE.setAppClassName(restAppPackage+"."+restAppClass);
+                RestSupport.RestConfig.IDE.setAppClassName(restAppPackage+"."+restAppClass); //NOI18N
             }
             if ( restSupport!= null ){
                 restSupport.ensureRestDevelopmentReady(useJersey ?
@@ -297,7 +298,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             
             final Set<String> entities = Util.getEntities(project, files);
             
-            if (!RestUtils.hasSpringSupport(project) && RestUtils.isJavaEE6AndHigher(project)) {
+            if (!RestUtils.hasSpringSupport(project) && MiscUtilities.isJavaEE6AndHigher(project)) {
                 String targetPackage = null;
                 String resourcePackage = null;
                 String controllerPackage = null;
@@ -511,7 +512,7 @@ public final class DatabaseResourceWizardIterator implements WizardDescriptor.In
             String wizardBundleKey = "Templates/WebServices/RestServicesFromDatabase"; // NOI18N
             String wizardTitle = NbBundle.getMessage(EntityResourcesIterator.class, wizardBundleKey); // NOI18N
             Project project = Templates.getProject(wizard);
-            boolean withoutController = RestUtils.isJavaEE6AndHigher( project ) || 
+            boolean withoutController = MiscUtilities.isJavaEE6AndHigher( project ) || 
                 RestUtils.hasSpringSupport(project);
             panels = new WizardDescriptor.Panel[]{
                         //new DatabaseResourceWizardPanel1()

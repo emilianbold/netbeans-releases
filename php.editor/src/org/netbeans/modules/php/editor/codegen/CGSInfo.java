@@ -87,6 +87,8 @@ import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeNode;
 import org.netbeans.modules.php.editor.parser.astnodes.PHPDocTypeTag;
 import org.netbeans.modules.php.editor.parser.astnodes.Program;
 import org.netbeans.modules.php.editor.parser.astnodes.SingleFieldDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -221,9 +223,9 @@ public final class CGSInfo {
                     PHPParseResult info = (PHPParseResult) resultIterator.getParserResult();
                     if (info != null) {
                         int caretOffset = textComp.getCaretPosition();
-                        ClassDeclaration classDecl = findEnclosingClass(info, caretOffset);
-                        if (classDecl != null) {
-                            className = classDecl.getName().getName();
+                        TypeDeclaration typeDecl = findEnclosingClassOrTrait(info, caretOffset);
+                        if (typeDecl != null) {
+                            className = typeDecl.getName().getName();
                             if (className != null) {
                                 FileObject fileObject = info.getSnapshot().getSource().getFileObject();
                                 Index index = ElementQueryFactory.getIndexQuery(info);
@@ -259,7 +261,7 @@ public final class CGSInfo {
                             List<String> existingSetters = new ArrayList<>();
 
                             PropertiesVisitor visitor = new PropertiesVisitor(existingGetters, existingSetters, Utils.getRoot(info));
-                            visitor.scan(classDecl);
+                            visitor.scan(typeDecl);
                             String propertyName;
                             boolean existGetter, existSetter;
                             for (Property property : getProperties()) {
@@ -291,14 +293,14 @@ public final class CGSInfo {
      * @param offset caret offset
      * @return class declaration or null
      */
-    private ClassDeclaration findEnclosingClass(ParserResult info, int offset) {
+    private TypeDeclaration findEnclosingClassOrTrait(ParserResult info, int offset) {
         List<ASTNode> nodes = NavUtils.underCaret(info, offset);
         int count = nodes.size();
         if (count > 2) {  // the cursor has to be in class block see issue #142417
             ASTNode declaration = nodes.get(count - 2);
             ASTNode block = nodes.get(count - 1);
-            if (block instanceof Block &&  declaration instanceof ClassDeclaration) {
-                return (ClassDeclaration) declaration;
+            if (block instanceof Block &&  (declaration instanceof ClassDeclaration || declaration instanceof TraitDeclaration)) {
+                return (TypeDeclaration) declaration;
             }
         }
         return null;

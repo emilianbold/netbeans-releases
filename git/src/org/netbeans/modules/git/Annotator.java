@@ -139,10 +139,10 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(new DiffMenu(destination, null));
                 actions.add(SystemAction.get(AddAction.class));
                 actions.add(SystemAction.get(CommitAction.class));
+                actions.add(new CheckoutMenu(ActionDestination.MainMenu, null));
                 actions.add(SystemAction.get(RevertChangesAction.class));
                 actions.add(SystemAction.get(AnnotateAction.class));
                 actions.add(SystemAction.get(SearchHistoryAction.class));
-                actions.add(new CheckoutMenu(ActionDestination.MainMenu, null));
                 actions.add(SystemAction.get(ResolveConflictsAction.class));
                 actions.add(null);
                 
@@ -168,12 +168,12 @@ public class Annotator extends VCSAnnotator implements PropertyChangeListener {
                 actions.add(new DiffMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AddAction.class), NbBundle.getMessage(AddAction.class, "LBL_AddAction.popupName"), lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(CommitAction.class), NbBundle.getMessage(CommitAction.class, "LBL_CommitAction.popupName"), lkp));
+                actions.add(new CheckoutMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(RevertChangesAction.class), NbBundle.getMessage(RevertChangesAction.class, "LBL_RevertChangesAction_PopupName"), lkp)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(AnnotateAction.class), SystemAction.get(AnnotateAction.class).visible(nodes)
                         ? NbBundle.getMessage(AnnotateAction.class, "LBL_HideAnnotateAction_PopupName") //NOI18N
                         : NbBundle.getMessage(AnnotateAction.class, "LBL_ShowAnnotateAction_PopupName"), lkp)); //NOI18N
                 actions.add(SystemActionBridge.createAction(SystemAction.get(SearchHistoryAction.class), NbBundle.getMessage(SearchHistoryAction.class, "LBL_SearchHistoryAction_PopupName"), lkp)); //NOI18N
-                actions.add(new CheckoutMenu(ActionDestination.PopupMenu, lkp));
                 actions.add(SystemActionBridge.createAction(SystemAction.get(ResolveConflictsAction.class), NbBundle.getMessage(ResolveConflictsAction.class, "LBL_ResolveConflictsAction_PopupName"), lkp));
                 actions.add(null);
                 

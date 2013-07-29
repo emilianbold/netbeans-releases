@@ -95,7 +95,7 @@ public class InspectionTest extends GeneralHTMLProject {
         eb.checkInspectModeButton(true);
         EditorOperator eo = new EditorOperator("index.html");
         eo.setCaretPositionToLine(19);
-        type(eo, "window.setTimeout(function() {document.getElementById(\"el1\").setAttribute(\":netbeans_selected\", \"set\")}, 3000);\n"
+        eo.insert("window.setTimeout(function() {document.getElementById(\"el1\").setAttribute(\":netbeans_selected\", \"set\")}, 3000);\n"
                 + "window.setTimeout(function() {document.getElementById(\"el2\").setAttribute(\":netbeans_selected\", \"add\")}, 5000);");
         eo.save();
         waitElementsSelected(2, 0);
@@ -121,7 +121,7 @@ public class InspectionTest extends GeneralHTMLProject {
         eb.checkInspectModeButton(true);
         EditorOperator eo = new EditorOperator("index.html");
         eo.setCaretPositionToLine(19);
-        type(eo, "window.setTimeout(function() {document.getElementById(\"el2\").setAttribute(\":netbeans_selected\", \"set\")}, 1000);");
+        eo.insert("window.setTimeout(function() {document.getElementById(\"el2\").setAttribute(\":netbeans_selected\", \"set\")}, 1000);");
         eo.save();
         waitElementsSelected(1, 2000);
         HTMLElement[] el = getSelectedElements();
@@ -189,7 +189,7 @@ public class InspectionTest extends GeneralHTMLProject {
         eb.checkInspectModeButton(true);
         EditorOperator eo = new EditorOperator("index.html");
         eo.setCaretPositionToLine(19);
-        type(eo, "window.setTimeout(function() {document.getElementById(\"el2\").setAttribute(\":netbeans_selected\", \"set\")}, 1000);");
+        eo.insert("window.setTimeout(function() {document.getElementById(\"el2\").setAttribute(\":netbeans_selected\", \"set\")}, 1000);");
         eo.save();
         waitElementsSelected(1, 2000);
 
@@ -246,7 +246,7 @@ public class InspectionTest extends GeneralHTMLProject {
         eb.checkInspectModeButton(true);
         EditorOperator eo = new EditorOperator("index.html");
         eo.setCaretPositionToLine(19);
-        type(eo, "window.setTimeout(function() {document.getElementById(\"el2\").setAttribute(\":netbeans_selected\", \"set\")}, 1000);");
+        eo.insert("window.setTimeout(function() {document.getElementById(\"el2\").setAttribute(\":netbeans_selected\", \"set\")}, 1000);");
         eo.save();
         waitElementsSelected(1, 2000);
 
@@ -276,6 +276,7 @@ public class InspectionTest extends GeneralHTMLProject {
         runFile("simpleProject", "index.html");
 
         EmbeddedBrowserOperator eb = new EmbeddedBrowserOperator("Web Browser");
+        evt.waitNoEvent(2000);
         eb.checkInspectModeButton(true);
 
         DomOperator no = new DomOperator();
@@ -312,7 +313,7 @@ public class InspectionTest extends GeneralHTMLProject {
         EditorOperator eo = new EditorOperator("index.html");
 
         eo.setCaretPositionToLine(19);
-        type(eo, "window.setTimeout(function() {document.getElementById(\"el2\").setAttribute(\":netbeans_highlighted\", \"set\")}, 500);");
+        eo.insert("window.setTimeout(function() {document.getElementById(\"el2\").setAttribute(\":netbeans_highlighted\", \"set\")}, 500);");
         eo.save();
         waitElementsHighlighted(1, 1000);
         HTMLElement[] el = getHighlightedElements();
@@ -333,6 +334,7 @@ public class InspectionTest extends GeneralHTMLProject {
         createSampleProject("Responsive Rabbits", InspectionTest.current_project);
         setRunConfiguration("Embedded WebKit Browser", true, true);
         runFile(InspectionTest.current_project, "index.html");
+        evt.waitNoEvent(1000);
         DomOperator no = new DomOperator();
         no.focusElement("html|body|div|div|div|div|h1", "0|0|1|0|0|0|0");
         CSSStylesOperator co = new CSSStylesOperator("h1");

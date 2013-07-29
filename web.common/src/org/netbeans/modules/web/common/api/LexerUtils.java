@@ -47,6 +47,7 @@ import java.util.Collection;
 import java.util.Collections;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -164,7 +165,20 @@ public class LexerUtils {
     }
     
     public static TokenSequence getTokenSequence(Document doc, int offset, Language language, boolean joined) {
-        TokenHierarchy th = TokenHierarchy.get(doc);
+        return getTokenSequence(TokenHierarchy.get(doc), offset, language, joined);
+    }
+    
+    /**
+     * Gets instance of {@link TokenSequence} for the given {@link TokenHierarchy} and offset.
+     * 
+     * @since 1.55
+     * @param th
+     * @param offset
+     * @param language
+     * @param joined
+     * @return 
+     */
+    public static TokenSequence getTokenSequence(TokenHierarchy th, int offset, Language language, boolean joined) {
         TokenSequence ts = th.tokenSequence();
         if(ts == null) {
             return null;

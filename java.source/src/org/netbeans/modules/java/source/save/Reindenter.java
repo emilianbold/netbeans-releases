@@ -147,33 +147,36 @@ public class Reindenter implements IndentTask {
                     int startOffset = getEmbeddedOffset(originalStartOffset);
                     int endOffset = getEmbeddedOffset(originalEndOffset);
                     String blockCommentLine;
-                    int delta = 0;
-                    if (cs.addLeadingStarInComment() && ((delta = ts.move(startOffset)) > 0 && ts.moveNext() || ts.movePrevious())
-                            && (ts.token().id() == JavaTokenId.BLOCK_COMMENT && cs.enableBlockCommentFormatting()
-                            || ts.token().id() == JavaTokenId.JAVADOC_COMMENT && cs.enableJavadocFormatting())) {
-                        blockCommentLine = ts.token().text().toString();
-                        if (delta > 0) {
-                            int idx = blockCommentLine.indexOf('\n', delta); //NOI18N
-                            blockCommentLine = (idx < 0 ? blockCommentLine.substring(delta) : blockCommentLine.substring(delta, idx)).trim();
-                            int off = getOriginalOffset(ts.offset() + delta - 1);
-                            int prevLineStartOffset = context.lineStartOffset(off < 0 ? originalStartOffset : off);
-                            Integer prevLineIndent = newIndents.get(prevLineStartOffset);
-                            newIndents.put(originalStartOffset, (prevLineIndent != null ? prevLineIndent : context.lineIndent(prevLineStartOffset)) + (prevLineStartOffset > getOriginalOffset(ts.offset()) ? 0 : 1)); //NOI18N
-                        } else {
-                            int idx = blockCommentLine.lastIndexOf('\n'); //NOI18N
-                            if (idx > 0) {
-                                blockCommentLine = blockCommentLine.substring(idx).trim();
+                    int delta = ts.move(startOffset);
+                    if (((startOffset == 0 || delta > 0) && ts.moveNext() || ts.movePrevious())
+                            && (ts.token().id() != JavaTokenId.BLOCK_COMMENT || ts.embedded() == null)) {
+                        if (cs.addLeadingStarInComment()
+                                && (ts.token().id() == JavaTokenId.BLOCK_COMMENT && cs.enableBlockCommentFormatting()
+                                || ts.token().id() == JavaTokenId.JAVADOC_COMMENT && cs.enableJavadocFormatting())) {
+                            blockCommentLine = ts.token().text().toString();
+                            if (delta > 0) {
+                                int idx = blockCommentLine.indexOf('\n', delta); //NOI18N
+                                blockCommentLine = (idx < 0 ? blockCommentLine.substring(delta) : blockCommentLine.substring(delta, idx)).trim();
+                                int off = getOriginalOffset(ts.offset() + delta - 1);
+                                int prevLineStartOffset = context.lineStartOffset(off < 0 ? originalStartOffset : off);
+                                Integer prevLineIndent = newIndents.get(prevLineStartOffset);
+                                newIndents.put(originalStartOffset, (prevLineIndent != null ? prevLineIndent : context.lineIndent(prevLineStartOffset)) + (prevLineStartOffset > getOriginalOffset(ts.offset()) ? 0 : 1)); //NOI18N
+                            } else {
+                                int idx = blockCommentLine.lastIndexOf('\n'); //NOI18N
+                                if (idx > 0) {
+                                    blockCommentLine = blockCommentLine.substring(idx).trim();
+                                }
+                                newIndents.put(originalStartOffset, getNewIndent(startOffset, endOffset) + 1);
                             }
-                            newIndents.put(originalStartOffset, getNewIndent(startOffset, endOffset) + 1);
-                        }
-                        if (!blockCommentLine.startsWith("*")) { //NOI18N
-                            linesToAddStar.add(originalStartOffset);
-                        }
-                    } else {
-                        if (delta == 0 && ts.moveNext() && ts.token().id() == JavaTokenId.LINE_COMMENT) {
-                            newIndents.put(originalStartOffset, 0);
+                            if (!blockCommentLine.startsWith("*")) { //NOI18N
+                                linesToAddStar.add(originalStartOffset);
+                            }
                         } else {
-                            newIndents.put(originalStartOffset, getNewIndent(startOffset, endOffset));
+                            if (delta == 0 && ts.moveNext() && ts.token().id() == JavaTokenId.LINE_COMMENT) {
+                                newIndents.put(originalStartOffset, 0);
+                            } else {
+                                newIndents.put(originalStartOffset, getNewIndent(startOffset, endOffset));
+                            }
                         }
                     }
                 }
@@ -184,7 +187,9 @@ public class Reindenter implements IndentTask {
                         context.modifyIndent(startOffset, 0);
                         context.document().insertString(startOffset, "* ", null); //NOI18N
                     }
-                    context.modifyIndent(startOffset, newIndent);
+                    if (newIndent != null) {
+                        context.modifyIndent(startOffset, newIndent);
+                    }
                     if (!startOffsets.isEmpty()) {
                         char c;
                         int len = 0;
@@ -319,12 +324,9 @@ public class Reindenter implements IndentTask {
         if (path.isEmpty()) {
             return 0;
         }
-        Tree last = path.get(0);
+        Tree last = path.getFirst();
         int lastPos = (int)sp.getStartPosition(cut, last);
-        int lastOriginalOffset = getOriginalOffset(lastPos);
-        int lastLineStartOffset = context.lineStartOffset(lastOriginalOffset < 0 ? currentEmbeddingStartOffset : lastOriginalOffset);
-        Integer newIndent = newIndents.get(lastLineStartOffset);
-        int currentIndent = newIndent != null ? newIndent : context.lineIndent(lastLineStartOffset);
+        int currentIndent = getCurrentIndent(last, path);
         switch (last.getKind()) {
             case COMPILATION_UNIT:
                 break;
@@ -354,7 +356,7 @@ public class Reindenter implements IndentTask {
                         t = member;
                     }
                     if (t != null) {
-                        int i = getCurrentIndent(t);
+                        int i = getCurrentIndent(t, path);
                         currentIndent = i < 0 ? currentIndent + (cs.indentTopLevelClassMembers() ? cs.getIndentSize() : 0) : i;
                     } else {
                         token = findFirstNonWhitespaceToken(startOffset, lastPos);
@@ -582,7 +584,7 @@ public class Reindenter implements IndentTask {
                     if (isNextLabeledStatement && cs.absoluteLabelIndent()) {
                         currentIndent = 0;
                     } else if (t != null) {
-                        int i = getCurrentIndent(t);
+                        int i = getCurrentIndent(t, path);
                         currentIndent = i < 0 ? currentIndent + cs.getIndentSize() : i;
                     } else if (isStatic) {
                         currentIndent += cs.getIndentSize();
@@ -597,7 +599,7 @@ public class Reindenter implements IndentTask {
                                 break;
                         }
                     } else {
-                        int i = getCurrentIndent(path.get(1));
+                        int i = getCurrentIndent(path.get(1), path);
                         currentIndent = (i < 0 ? currentIndent : i) + cs.getIndentSize();
                     }
                     if (nextTokenId != null && nextTokenId == JavaTokenId.LBRACE) {
@@ -620,7 +622,7 @@ public class Reindenter implements IndentTask {
                             break;
                     }
                 } else if (!isLeftBraceOnNewLine(lastPos, startOffset)) {
-                    int i = getCurrentIndent(path.get(1));
+                    int i = getCurrentIndent(path.get(1), path);
                     if (i >= 0) {
                         currentIndent = i;
                     }
@@ -649,7 +651,7 @@ public class Reindenter implements IndentTask {
                         t = ct;
                     }
                     if (t != null) {
-                        int i = getCurrentIndent(t);
+                        int i = getCurrentIndent(t, path);
                         currentIndent = i < 0 ? currentIndent + (cs.indentCasesFromSwitch() ? cs.getIndentSize() : 0) : i;
                         if (nextTokenId == null || !EnumSet.of(JavaTokenId.CASE, JavaTokenId.DEFAULT).contains(nextTokenId)) {
                             token = findFirstNonWhitespaceToken(startOffset, lastPos);
@@ -676,7 +678,7 @@ public class Reindenter implements IndentTask {
                     t = st;
                 }
                 if (t != null) {
-                    int i = getCurrentIndent(t);
+                    int i = getCurrentIndent(t, path);
                     currentIndent = i < 0 ? getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.COLON), (int)sp.getEndPosition(cut, ((CaseTree)last).getExpression()), currentIndent) : i;
                 } else {
                     currentIndent = getStmtIndent(startOffset, endOffset, EnumSet.of(JavaTokenId.COLON), (int)sp.getEndPosition(cut, ((CaseTree)last).getExpression()), currentIndent);
@@ -770,24 +772,6 @@ public class Reindenter implements IndentTask {
                 token = findFirstNonWhitespaceToken(startOffset, lastPos);
                 if (token == null || token.token().id() != JavaTokenId.COLON) {
                     currentIndent = getContinuationIndent(path, currentIndent);
-                } else if (cs.absoluteLabelIndent()) {
-                    Tree parent = path.get(1);
-                    if (parent.getKind() == Kind.BLOCK) {
-                        t = null;
-                        for (StatementTree st : ((BlockTree)parent).getStatements()) {
-                            if (sp.getEndPosition(cut, st) > startOffset) {
-                                break;
-                            }
-                            t = st;
-                        }
-                        if (t != null) {
-                            int i = getCurrentIndent(t);
-                            currentIndent = i < 0 ? currentIndent + cs.getIndentSize() : i;
-                        } else {
-                            int i = getCurrentIndent(parent);
-                            currentIndent = (i < 0 ? currentIndent : i) + cs.getIndentSize();
-                        }
-                    }
                 }
                 break;
             default:
@@ -928,14 +912,40 @@ public class Reindenter implements IndentTask {
         return getCol(context.document().getText(lineStartOffset, startOffset - lineStartOffset));
     }
 
-    private int getCurrentIndent(Tree tree) throws BadLocationException {
+    private int getCurrentIndent(Tree tree, List<? extends Tree> path) throws BadLocationException {
         int startOffset = getOriginalOffset((int)sp.getStartPosition(cut, tree));
         if (startOffset < 0) {
-            return -1;
+            startOffset = currentEmbeddingStartOffset;
         }
         int lineStartOffset = context.lineStartOffset(startOffset);
         Integer newIndent = newIndents.get(lineStartOffset);
-        return newIndent != null ? newIndent : context.lineIndent(lineStartOffset);
+        int currentIndent = newIndent != null ? newIndent : context.lineIndent(lineStartOffset);
+        if (cs.absoluteLabelIndent()) {
+            for (Iterator<? extends Tree> it = path.iterator(); it.hasNext();) {
+                Tree t = it.next();
+                if (t.getKind() == Tree.Kind.LABELED_STATEMENT && (int)sp.getStartPosition(cut, t) == lineStartOffset) {
+                    Tree parent = it.hasNext() ? it.next() : null;
+                    if (parent != null && parent.getKind() == Kind.BLOCK) {
+                        Tree stat = null;
+                        for (StatementTree st : ((BlockTree)parent).getStatements()) {
+                            if (sp.getEndPosition(cut, st) > startOffset) {
+                                break;
+                            }
+                            stat = st;
+                        }
+                        if (stat != null) {
+                            int i = getCurrentIndent(stat, path);
+                            currentIndent = i < 0 ? currentIndent + cs.getIndentSize() : i;
+                        } else {
+                            int i = getCurrentIndent(parent, path);
+                            currentIndent = (i < 0 ? currentIndent : i) + cs.getIndentSize();
+                        }
+                    }
+                    break;
+                }
+            }
+        }
+        return currentIndent;
     }
 
     private int getContinuationIndent(LinkedList<? extends Tree> path, int currentIndent) throws BadLocationException {
@@ -964,7 +974,7 @@ public class Reindenter implements IndentTask {
                 case BREAK:
                 case EMPTY_STATEMENT:
                 case DO_WHILE_LOOP:
-                    int i = getCurrentIndent(tree);
+                    int i = getCurrentIndent(tree, path);
                     return (i < 0 ? currentIndent : i) + cs.getContinuationIndentSize();
                 case ASSIGNMENT:
                 case MULTIPLY_ASSIGNMENT:

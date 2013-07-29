@@ -936,4 +936,20 @@ public class PHPFormatterSpacesTest extends PHPFormatterTestBase {
         HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
         reformatFileContents("testfiles/formatting/spaces/issue231387.php", options);
     }
+
+    public void testIssue233050_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_WITHIN_METHOD_CALL_PARENS, true);
+        options.put(FmtOptions.SPACE_WITHIN_ARRAY_DECL_PARENS, true);
+        options.put(FmtOptions.SPACE_WITHIN_ARRAY_BRACKETS, true);
+        reformatFileContents("testfiles/formatting/spaces/issue233050_01.php", options);
+    }
+
+    public void testIssue233050_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.SPACE_WITHIN_METHOD_CALL_PARENS, true);
+        options.put(FmtOptions.SPACE_WITHIN_ARRAY_DECL_PARENS, true);
+        options.put(FmtOptions.SPACE_WITHIN_ARRAY_BRACKETS, true);
+        reformatFileContents("testfiles/formatting/spaces/issue233050_02.php", options);
+    }
 }

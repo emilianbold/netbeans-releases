@@ -49,6 +49,7 @@ import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ErroneousTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
@@ -63,6 +64,7 @@ import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
 import com.sun.source.util.TreeScanner;
 
+import java.awt.Color;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -99,7 +101,9 @@ import org.netbeans.editor.ext.java.JavaTokenContext;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
 import org.netbeans.modules.java.editor.options.CodeCompletionPanel;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Pair;
 import org.openide.util.WeakListeners;
 
 /**
@@ -120,6 +124,7 @@ public final class Utilities {
     private static String javaCompletionAutoPopupTriggers = CodeCompletionPanel.JAVA_AUTO_COMPLETION_TRIGGERS_DEFAULT;
     private static String javaCompletionSelectors = CodeCompletionPanel.JAVA_COMPLETION_SELECTORS_DEFAULT;
     private static String javadocCompletionAutoPopupTriggers = CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS_DEFAULT;
+    private static String javadocCompletionSelectors = CodeCompletionPanel.JAVADOC_COMPLETION_SELECTORS_DEFAULT;
     
     private static final AtomicBoolean inited = new AtomicBoolean(false);
     private static Preferences preferences;
@@ -147,6 +152,9 @@ public final class Utilities {
             }
             if (settingName == null || CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS.equals(settingName)) {
                 javadocCompletionAutoPopupTriggers = preferences.get(CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS, CodeCompletionPanel.JAVADOC_AUTO_COMPLETION_TRIGGERS_DEFAULT);
+            }
+            if (settingName == null || CodeCompletionPanel.JAVADOC_COMPLETION_SELECTORS.equals(settingName)) {
+                javadocCompletionSelectors = preferences.get(CodeCompletionPanel.JAVADOC_COMPLETION_SELECTORS, CodeCompletionPanel.JAVADOC_COMPLETION_SELECTORS_DEFAULT);
             }
             if (settingName == null || CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST.equals(settingName)) {
                 String blacklist = preferences.get(CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST, CodeCompletionPanel.JAVA_COMPLETION_BLACKLIST_DEFAULT);
@@ -307,6 +315,11 @@ public final class Utilities {
         return javadocCompletionAutoPopupTriggers;
     }
 
+    public static String getJavadocCompletionSelectors() {
+        lazyInit();
+        return javadocCompletionSelectors;
+    }
+
     static private final AtomicReference<Collection<String>> excludeRef = new AtomicReference<Collection<String>>();
     static private final AtomicReference<Collection<String>> includeRef = new AtomicReference<Collection<String>>();
 
@@ -407,6 +420,15 @@ public final class Utilities {
         else if (fqn.startsWith("sun") || fqn.startsWith("sunw") || fqn.startsWith("netscape")) // NOI18N
             weight += 30;
         return weight;
+    }
+    
+    public static String getHTMLColor(int r, int g, int b) {
+        Color c = LFCustoms.shiftColor(new Color(r, g, b));
+        return "<font color=#" //NOI18N
+                + LFCustoms.getHexString(c.getRed())
+                + LFCustoms.getHexString(c.getGreen())
+                + LFCustoms.getHexString(c.getBlue())
+                + ">"; //NOI18N
     }
     
     public static boolean hasAccessibleInnerClassConstructor(Element e, Scope scope, Trees trees) {
@@ -626,6 +648,12 @@ public final class Utilities {
         if (TreeUtilities.CLASS_TREE_KINDS.contains(path.getLeaf().getKind()) && parentPath.getLeaf().getKind() != Tree.Kind.COMPILATION_UNIT && !TreeUtilities.CLASS_TREE_KINDS.contains(parentPath.getLeaf().getKind()))                
             return true;
         return inAnonymousOrLocalClass(parentPath);
+    }
+
+    public static boolean isBoolean(TypeMirror type) {
+        return type.getKind() == TypeKind.BOOLEAN
+                || type.getKind() == TypeKind.DECLARED
+                && "java.lang.Boolean".contentEquals(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName()); //NOI18N
     }
 
     public static Set<Element> getUsedElements(final CompilationInfo info) {
@@ -915,28 +943,43 @@ public final class Utilities {
             }
 
             String methodName;
-            TypeMirror on;
+            List<Pair<TypeMirror, Boolean>> on = new ArrayList<>();
 
             switch (mit.getMethodSelect().getKind()) {
                 case IDENTIFIER:
+                    methodName = ((IdentifierTree) mit.getMethodSelect()).getName().toString();
                     Scope s = info.getTrees().getScope(path);
                     TypeElement enclosingClass = s.getEnclosingClass();
-                    on = enclosingClass != null ? enclosingClass.asType() : null;
-                    methodName = ((IdentifierTree) mit.getMethodSelect()).getName().toString();
+                    while (enclosingClass != null) {
+                        on.add(Pair.of(enclosingClass.asType(), false));
+                        enclosingClass = info.getElementUtilities().enclosingTypeElement(enclosingClass);
+                    }
+                    CompilationUnitTree cut = info.getCompilationUnit();
+                    for (ImportTree imp : cut.getImports()) {
+                        if (!imp.isStatic() || imp.getQualifiedIdentifier() == null || imp.getQualifiedIdentifier().getKind() != Kind.MEMBER_SELECT) continue;
+                        Name selected = ((MemberSelectTree) imp.getQualifiedIdentifier()).getIdentifier();
+                        if (!selected.contentEquals("*") && !selected.contentEquals(methodName)) continue;
+                        TreePath tp = new TreePath(new TreePath(new TreePath(new TreePath(cut), imp), imp.getQualifiedIdentifier()), ((MemberSelectTree) imp.getQualifiedIdentifier()).getExpression());
+                        Element el = info.getTrees().getElement(tp);
+                        if (el != null) on.add(Pair.of(el.asType(), true));
+                    }
                     break;
                 case MEMBER_SELECT:
-                    on = info.getTrees().getTypeMirror(new TreePath(path, ((MemberSelectTree) mit.getMethodSelect()).getExpression()));
+                    on.add(Pair.of(info.getTrees().getTypeMirror(new TreePath(path, ((MemberSelectTree) mit.getMethodSelect()).getExpression())), false));
                     methodName = ((MemberSelectTree) mit.getMethodSelect()).getIdentifier().toString();
                     break;
                 default:
                     throw new IllegalStateException();
             }
 
-            if (on == null || on.getKind() != TypeKind.DECLARED) {
-                return Collections.emptyList();
+            List<ExecutableElement> result = new ArrayList<>();
+            
+            for (Pair<TypeMirror, Boolean> type : on) {
+                if (type.first() == null || type.first().getKind() != TypeKind.DECLARED) continue;
+                result.addAll(resolveMethod(info, actualTypes, (DeclaredType) type.first(), type.second(), false, methodName, proposed, index));
             }
             
-            return resolveMethod(info, actualTypes, (DeclaredType) on, false, false, methodName, proposed, index);
+            return result;
         }
         
         if (path.getLeaf().getKind() == Kind.NEW_CLASS) {
@@ -976,7 +1019,7 @@ public final class Utilities {
         return result;
     }
     
-    private static List<ExecutableElement> resolveMethod(CompilationInfo info, List<TypeMirror> foundTypes, DeclaredType on, boolean statik, boolean constr, String name, List<TypeMirror> candidateTypes, int[] index) {
+    private static List<ExecutableElement> resolveMethod(CompilationInfo info, List<TypeMirror> foundTypes, DeclaredType on, boolean onlyStatic, boolean constr, String name, List<TypeMirror> candidateTypes, int[] index) {
         if (on.asElement() == null) return Collections.emptyList();
         
         List<ExecutableElement> found = new LinkedList<ExecutableElement>();
@@ -986,6 +1029,7 @@ public final class Utilities {
             TypeMirror currType = ((TypeElement) ee.getEnclosingElement()).asType();
             if (!info.getTypes().isSubtype(on, currType) && !on.asElement().equals(((DeclaredType)currType).asElement())) //XXX: fix for #132627, a clearer fix may exist
                 continue;
+            if (onlyStatic && !ee.getModifiers().contains(Modifier.STATIC)) continue;
             if (ee.getParameters().size() == foundTypes.size() /*XXX: variable arg count*/) {
                 TypeMirror innerCandidate = null;
                 int innerIndex = -1;

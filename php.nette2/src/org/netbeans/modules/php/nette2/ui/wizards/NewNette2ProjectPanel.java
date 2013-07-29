@@ -112,7 +112,6 @@ public class NewNette2ProjectPanel extends javax.swing.JPanel implements ChangeL
         optionsLabel = new javax.swing.JLabel();
         copyNetteCheckBox = new javax.swing.JCheckBox();
 
-        optionsLabel.setForeground(new java.awt.Color(0, 0, 255));
         org.openide.awt.Mnemonics.setLocalizedText(optionsLabel, org.openide.util.NbBundle.getMessage(NewNette2ProjectPanel.class, "NewNette2ProjectPanel.optionsLabel.text")); // NOI18N
         optionsLabel.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {

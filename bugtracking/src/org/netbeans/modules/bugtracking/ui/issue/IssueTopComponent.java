@@ -391,7 +391,12 @@ public final class IssueTopComponent extends TopComponent implements PropertyCha
                         }
                     });
                 } finally {
-                    preparingLabel.setVisible(false);
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            preparingLabel.setVisible(false);
+                        }
+                    });
                     handle.finish();
                     prepareTask = null;
                 }

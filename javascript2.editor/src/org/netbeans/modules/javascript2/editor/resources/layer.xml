@@ -27,6 +27,13 @@
                             </file>
                         </folder>
                     </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="coloring.xml" url="fontsColors-citylights.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.javascript2.editor.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
 
                 <!-- custom editor folding -->
@@ -260,6 +267,24 @@
                             <attr name="position" intvalue="750"/>
                         </file>
 
+                    </folder>
+                </folder>
+            </folder>
+            <folder name="CodeCompletion">
+                <folder name="text">
+                    <folder name="javascript">
+                        <file name="JavaScriptCodeCompletion.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.options.ui.CodeCompletionPanel.getCustomizerFactory"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
+                    </folder>
+                    <folder name="x-json">
+                        <file name="JsonCodeCompletion.instance">
+                            <attr name="instanceOf" stringvalue="org.netbeans.modules.options.editor.spi.PreferencesCustomizer$Factory"/>
+                            <attr name="instanceCreate" methodvalue="org.netbeans.modules.javascript2.editor.options.ui.json.CodeCompletionPanel.getCustomizerFactory"/>
+                            <attr name="position" intvalue="100"/>
+                        </file>
                     </folder>
                 </folder>
             </folder>

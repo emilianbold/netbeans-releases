@@ -62,9 +62,11 @@ import org.w3c.dom.NodeList;
 class AlternativesImpl extends BaseClassContainerImpl implements
         Alternatives
 {
+    private final WebBeansModelImpl model;
 
     AlternativesImpl( WebBeansModelImpl model, Element e ) {
         super(model, e);
+        this.model = model;
     }
     
     AlternativesImpl( WebBeansModelImpl model) {
@@ -101,7 +103,7 @@ class AlternativesImpl extends BaseClassContainerImpl implements
         List<String> result = new ArrayList<String>( nl.getLength());
         if (nl != null) {
             for (int i=0; i<nl.getLength(); i++) {
-                if (WebBeansElements.STEREOTYPE.getQName().equals(
+                if (WebBeansElements.STEREOTYPE.getQName(model).equals(
                         getQName(nl.item(i)))) 
                 {
                     result.add(getText((Element) nl.item(i)));

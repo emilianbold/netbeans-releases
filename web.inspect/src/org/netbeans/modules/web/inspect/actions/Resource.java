@@ -46,6 +46,8 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
@@ -61,6 +63,8 @@ import org.openide.nodes.Children;
  * @author Jan Stola
  */
 public final class Resource {
+    /** Cached mappings from {@code Resource} to {@code FileObject}. */
+    private static final Map<Ref,FileObject> cache = new HashMap<Ref, FileObject>();
     /** URI of the resource. */
     private final String name;
     /** Owning project of the resource. */
@@ -103,29 +107,96 @@ public final class Resource {
      * or if the corresponding {@code FileObject} cannot be found.
      */
     public FileObject toFileObject() {
+        Ref ref = new Ref(this);
+        synchronized (cache) {
+            if (cache.containsKey(ref)) {
+                return cache.get(ref);
+            }
+        }
+        FileObject result = null;
         // Issue 227766 and 228154
         assert !Children.MUTEX.isReadAccess() && !Children.MUTEX.isWriteAccess();
         if (project != null) {
             try {
-                return ServerURLMapping.fromServer(project, new URL(name));
+                result = ServerURLMapping.fromServer(project, new URL(name));
+                synchronized (cache) {
+                    cache.put(ref, result);
+                }
+                return result;
             } catch (MalformedURLException ex) {
             }
         }
-        if (name == null || !name.startsWith("file://")) { // NOI18N
-            return null;
-        }
-        try {
-            URI uri = new URI(name);
-            if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
-                uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
+        if (name != null && name.startsWith("file://")) { // NOI18N
+            try {
+                URI uri = new URI(name);
+                if ((uri.getAuthority() != null) || (uri.getFragment() != null) || (uri.getQuery() != null)) {
+                    uri = new URI(uri.getScheme(), null, uri.getPath(), null, null);
+                }
+                File file = new File(uri);
+                file = FileUtil.normalizeFile(file);
+                result = FileUtil.toFileObject(file);
+            } catch (URISyntaxException ex) {
+                Logger.getLogger(Resource.class.getName()).log(Level.INFO, null, ex);
             }
-            File file = new File(uri);
-            file = FileUtil.normalizeFile(file);
-            return FileUtil.toFileObject(file);
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(Resource.class.getName()).log(Level.INFO, null, ex);
         }
-        return null;
+        synchronized (cache) {
+            cache.put(ref, result);
+        }
+        return result;
+    }
+
+    /**
+     * Clears the cached mappings.
+     */
+    public static void clearCache() {
+        synchronized (cache) {
+            cache.clear();
+        }
+    }
+
+    /**
+     * Wrapper of {@code Resource} that defines {@code equals()}
+     * and {@code hashCode()} methods. These methods cannot be added
+     * into {@code Resource} directly because they would break
+     * {@code CSSStylesSelectionPanel.resourceCache} because
+     * it is {@code WeakHashMap}.
+     */
+    static class Ref {
+        /** Wrapped {@code Resource}. */
+        private final Resource resource;
+
+        /**
+         * Creates a new {@code Ref}.
+         * 
+         * @param resource wrapped {@code Resource}.
+         */
+        Ref(Resource resource) {
+            this.resource = resource;
+        }
+
+        @Override
+        public int hashCode() {
+            int hash = 5;
+            hash = 97 * hash + (resource.name == null ? 0 : resource.name.hashCode());
+            hash = 97 * hash + (resource.project == null ? 0 : resource.project.hashCode());
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object object) {
+            if (!(object instanceof Ref)) {
+                return false;
+            }
+            Ref other = (Ref)object;
+            if ((resource.name == null)
+                    ? (other.resource.name != null)
+                    : !resource.name.equals(other.resource.name)) {
+                return false;
+            }
+            return resource.project == other.resource.project
+                    || (resource.project != null && resource.project.equals(other.resource.project));
+        }
+
     }
 
 }

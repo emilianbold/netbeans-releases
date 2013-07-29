@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,6 +45,7 @@
 package org.netbeans.modules.autoupdate.ui.wizards;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.text.Collator;
 import java.util.ArrayList;
@@ -52,6 +53,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTextArea;
@@ -226,6 +228,9 @@ public final class OperationPanel extends javax.swing.JPanel {
         area.setLineWrap (true);
         area.setEditable (false);
         area.setOpaque (false);
+        area.setBorder(BorderFactory.createEmptyBorder());
+        area.setBackground(new Color(0, 0, 0, 0));
+        area.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         return area;
     }
     
@@ -243,6 +248,7 @@ public final class OperationPanel extends javax.swing.JPanel {
         area.setContentType ("text/html"); // NOI18N
         area.setText (msg);
         area.setOpaque (false);
+        area.setBackground(new Color(0, 0, 0, 0));
         area.putClientProperty( JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE );
         return area;
     }
@@ -299,6 +305,7 @@ public final class OperationPanel extends javax.swing.JPanel {
             .addGap(0, 65, Short.MAX_VALUE)
         );
 
+        pProgress.setOpaque(false);
         pProgress.setLayout(new java.awt.BorderLayout());
 
         pbPlaceHolder.setPreferredSize(new java.awt.Dimension(0, 20));

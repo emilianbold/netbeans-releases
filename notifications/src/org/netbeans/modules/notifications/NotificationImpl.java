@@ -239,7 +239,7 @@ public class NotificationImpl extends Notification implements Comparable<Notific
 
     private JComponent createDetails(String text, ActionListener action) {
         try {
-            text = (action == null ? "<html>" : "<html><u>") + XMLUtil.toElementContent(text); //NOI18N
+            text = (action == null ? "<html>" : "<html><a href=\"_blank\">") + XMLUtil.toElementContent(text); //NOI18N
         } catch (CharConversionException ex) {
             throw new IllegalArgumentException(ex);
         }
@@ -255,7 +255,7 @@ public class NotificationImpl extends Notification implements Comparable<Notific
         btn.setContentAreaFilled(false);
         btn.addActionListener(action);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        btn.setForeground(Color.blue);
+//        btn.setForeground(Color.blue);
         return btn;
     }
 

@@ -54,7 +54,15 @@ import org.openide.filesystems.FileObject;
  *
  * @author marekfukala
  */
-@ProjectServiceProvider(service = ProjectWebRootProvider.class, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
+@ProjectServiceProvider(
+    service = {
+        ProjectWebRootProvider.class
+    },
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR // #233476
+    }
+)
 public class MavenWebProjectWebRootProvider implements ProjectWebRootProvider {
 
     private WebModuleProvider webModuleProvider;

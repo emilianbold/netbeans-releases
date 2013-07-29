@@ -2788,7 +2788,7 @@ yybegin(ST_DOCBLOCK);
         case 105:
           { String text = yytext();
     if ((text.charAt(1)=='%' && asp_tags)
-        || (text.charAt(1)=='?' && short_tags_allowed)) {
+        || (text.charAt(1)=='?')) {
         yypushback(1);
         yybegin(ST_IN_SHORT_ECHO);
     } else {

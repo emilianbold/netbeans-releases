@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.derby;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -57,6 +58,7 @@ import org.netbeans.api.db.explorer.JDBCDriver;
 import org.netbeans.api.db.explorer.JDBCDriverManager;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.derby.api.DerbyDatabases;
 import org.netbeans.spi.db.explorer.DatabaseRuntime;
 import org.openide.DialogDisplayer;
@@ -98,7 +100,17 @@ public class RegisterDerby implements DatabaseRuntime {
     public static synchronized RegisterDerby getDefault(){
         if (reg==null) {
             reg= new RegisterDerby();
-            DerbyActivator.activate();
+            if (EventQueue.isDispatchThread()) { // #229741
+                RequestProcessor.getDefault().post(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        DerbyActivator.activate();
+                    }
+                });
+            } else {
+                DerbyActivator.activate();
+            }
         }
         return reg;
     }

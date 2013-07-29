@@ -61,12 +61,15 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
+import org.netbeans.modules.web.beans.CdiUtil;
+import org.netbeans.modules.web.beans.api.model.BeanArchiveType;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
 import org.netbeans.modules.web.beans.api.model.ModelUnit;
 import org.netbeans.modules.web.beans.xml.Alternatives;
 import org.netbeans.modules.web.beans.xml.BeanClass;
 import org.netbeans.modules.web.beans.xml.BeanClassContainer;
 import org.netbeans.modules.web.beans.xml.Beans;
+import org.netbeans.modules.web.beans.xml.BeansAttributes;
 import org.netbeans.modules.web.beans.xml.Decorators;
 import org.netbeans.modules.web.beans.xml.Interceptors;
 import org.netbeans.modules.web.beans.xml.Stereotype;
@@ -74,6 +77,7 @@ import org.netbeans.modules.web.beans.xml.WebBeansModel;
 import org.netbeans.modules.web.beans.xml.WebBeansModelFactory;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
+import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -94,6 +98,8 @@ public class BeansModelImpl implements BeansModel {
     private static final String BEANS_XML   ="beans.xml";  //NOI18N
     
     private static final String WEB_INF = "WEB-INF/";       //NOI18N
+    
+    private BeanArchiveType beanArchType = null;
     
     public BeansModelImpl( ModelUnit unit ){
         myUnit = unit;
@@ -178,6 +184,43 @@ public class BeansModelImpl implements BeansModel {
         }
         return result;
     }
+
+    @Override
+    public BeanArchiveType getBeanArchiveType() {
+        if(beanArchType == null) {
+            Project project = getUnit().getProject();
+            if(project != null) {
+                //
+                CdiUtil lookup = project.getLookup().lookup( CdiUtil.class );
+                //
+                if( lookup == null ) {
+                    if (!CdiUtil.isCdiEnabled(project)) {
+                        // no CDI
+                        beanArchType = BeanArchiveType.NONE;
+                    } else if (!CdiUtil.isCdi11OrLater(project)) {
+                        // CDI 1.0 behaves like explicit bean archive
+                        beanArchType = BeanArchiveType.EXPLICIT;
+                    } else {
+                        beanArchType = getBeansArchiveType();
+                    } 
+                } else {
+                    if (!lookup.isCdiEnabled()) {
+                        // no CDI
+                        beanArchType = BeanArchiveType.NONE;
+                    } else if (!lookup.isCdi11OrLater()) {
+                        // CDI 1.0 behaves like explicit bean archive
+                        beanArchType = BeanArchiveType.EXPLICIT;
+                    } else {
+                        beanArchType = getBeansArchiveType();
+                    } 
+                }
+            } else {
+                //there is no perfect solution. may happens in tests and may be in stand alone file opening, default as in cdi1.0
+                beanArchType = BeanArchiveType.EXPLICIT;
+            }
+        }
+        return beanArchType;
+    }
     
     private void registerChangeListeners() {
         
@@ -221,6 +264,11 @@ public class BeansModelImpl implements BeansModel {
             }
 
             public void fileChanged( FileEvent event ) {
+                //TODO, drop beanArchType here? if it's beans.xml
+                if ( !checkBeansFile(event.getFile())){//heavy operation?
+                    return;
+                }
+                beanArchType = null;
             }
 
             public void fileDataCreated( FileEvent event ) {
@@ -229,6 +277,7 @@ public class BeansModelImpl implements BeansModel {
                     return;
                 }
                 ModelSource source=  getModelSource(file,  true );
+                beanArchType = null;
                 if (  source!= null ){
                     WebBeansModel model = WebBeansModelFactory.getInstance().
                         getModel( source );
@@ -247,6 +296,7 @@ public class BeansModelImpl implements BeansModel {
                     return;
                 }
                 WebBeansModel model = null;
+                beanArchType = null;
                 synchronized (myLock) {
                     if ( myModels == null){
                         return;
@@ -340,15 +390,62 @@ public class BeansModelImpl implements BeansModel {
     }
 
     private void addCompileModels( FileObject root , List<WebBeansModel> list ) {
-        FileObject beans = root.getFileObject(META_INF+BEANS_XML);
-        if ( beans!= null){
-            addCompileModel( beans, root , list );
+        FileObject beans = getBeansFile(root);
+        if (beans != null){
+            addCompileModel(beans, root, list);
+        }
+    }
+
+    /**
+     * is based on cdi 1.1, do not use for 1.0
+     * @return 
+     */
+    private synchronized BeanArchiveType getBeansArchiveType() {
+        for (FileObject fileObject : getUnit().getSourcePath().getRoots()) {
+            FileObject beans = getBeansFile(fileObject);
+            if (beans != null) {
+                beanArchiveType = detectArchiveType(beans);
+                return beanArchiveType;
+            }
+        }
+        for (FileObject fileObject : getUnit().getCompilePath().getRoots()) {
+            FileObject beans = getBeansFile(fileObject);
+            if (beans != null) {
+                beanArchiveType = detectArchiveType(beans);
+                return beanArchiveType;
+            }
+        }
+        beanArchiveType = BeanArchiveType.IMPLICIT;//no beans.xmk is found, in 1.1 it means implicit/annotated
+        return beanArchiveType;
+    }
+
+    private BeanArchiveType detectArchiveType(FileObject beans) {
+        WebBeansModel model = WebBeansModelFactory.getInstance().getModel(getModelSource(beans, true));
+        if (model == null) {
+            return BeanArchiveType.IMPLICIT;
         }
 
-        beans = root.getFileObject(WEB_INF+BEANS_XML);
-        if ( beans!= null){
-            addCompileModel( beans, root ,list );
+        String attribute = model.getRootComponent().getAttribute(BeansAttributes.BEAN_DISCOVERY_MODE);
+        if(attribute == null) {
+            attribute = "all";//NOI18N, got this for cdi 1.0, but there should be a better place for check, CdiUtil.isCdi11OrLater isn't good for ee7 server wih 1.0 beans.xml
         }
+        switch(attribute) {
+            case "none":        //NOI18N
+                return BeanArchiveType.NONE;
+            case "all":         //NOI18N
+                return BeanArchiveType.EXPLICIT;
+            case "annotated":   //NOI18N
+            default:
+                return BeanArchiveType.IMPLICIT;
+        }
+    }
+
+    private FileObject getBeansFile(FileObject root) {
+        FileObject beans = root.getFileObject(META_INF + BEANS_XML);
+        if (beans != null) {
+            return beans;
+        }
+        return root.getFileObject(WEB_INF + BEANS_XML);
     }
     
     void addCompileModel(FileObject fileObject, FileObject compileRoot, 
@@ -360,7 +457,7 @@ public class BeansModelImpl implements BeansModel {
             modelList.add( model );
             List<WebBeansModel> list = myCompileRootToModel.get(compileRoot );
             if ( list == null ){
-                list = new ArrayList<WebBeansModel>(2);
+                list = new ArrayList<>(2);
                 myCompileRootToModel.put( compileRoot , list );
             }
             list.add( model );
@@ -368,12 +465,8 @@ public class BeansModelImpl implements BeansModel {
     }
 
     private void addModels( FileObject root , List<WebBeansModel> list ) {
-        FileObject beans = root.getFileObject(META_INF+BEANS_XML);
-        if ( beans!= null ){
-            addModel(beans, list );
-        }
-        beans = root.getFileObject(WEB_INF+BEANS_XML);
-        if ( beans!= null ){
+        FileObject beans = getBeansFile(root);
+        if (beans != null){
             addModel(beans, list );
         }
     }
@@ -409,7 +502,7 @@ public class BeansModelImpl implements BeansModel {
     private ModelUnit myUnit;
     private Object myLock;
     private List<WebBeansModel> myModels;
-    private Map<FileObject, List<WebBeansModel>> myCompileRootToModel = 
-            new HashMap<FileObject,List<WebBeansModel>>();
+    private Map<FileObject, List<WebBeansModel>> myCompileRootToModel = new HashMap<>();
     private FileChangeListener myListener;
+    private BeanArchiveType beanArchiveType;
 }

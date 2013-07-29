@@ -42,8 +42,10 @@
 package org.netbeans.modules.css.visual.api;
 
 import java.awt.BorderLayout;
+import java.awt.EventQueue;
 import javax.swing.JComponent;
 import org.netbeans.modules.css.visual.CssStylesPanel;
+import org.netbeans.modules.css.visual.CssStylesTCController;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.filesystems.FileObject;
@@ -66,7 +68,7 @@ import org.openide.windows.TopComponent;
 persistenceType = TopComponent.PERSISTENCE_ALWAYS,
 iconBase = "org/netbeans/modules/css/visual/resources/css_rule.png") // NOI18N
 @TopComponent.Registration(
-        mode = "properties", // NOI18N
+        mode = CssStylesTCController.CSS_TC_MODE, // NOI18N
 openAtStartup = false)
 @ActionID(
         category = "Window", // NOI18N
@@ -83,7 +85,7 @@ preferredID = CssStylesTC.ID)
     "HINT_CssStylesTC=This window shows matched style rules of an element and allows to edit them." // NOI18N
 })
 public final class CssStylesTC extends TopComponent {
-
+    
     /**
      * Help ID of this TopComponent.
      */
@@ -118,7 +120,13 @@ public final class CssStylesTC extends TopComponent {
         }
     }
 
+    /**
+     * Sets context file to the CSSStylesTC.
+     * Must be called in EDT
+     */
     public void setContext(FileObject file) {
+        assert EventQueue.isDispatchThread();
+        
         setContent(cssStylesPanel);
 
         cssStylesPanel.setContext(file);

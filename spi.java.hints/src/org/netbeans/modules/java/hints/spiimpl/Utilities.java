@@ -86,6 +86,7 @@ import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.parser.ScannerFactory;
 import com.sun.tools.javac.parser.Tokens.Token;
 import com.sun.tools.javac.parser.Tokens.TokenKind;
+import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
@@ -513,7 +514,7 @@ public class Utilities {
 
         if (errors != null) {
             for (Diagnostic<? extends JavaFileObject> d : patternTreeErrors) {
-                errors.add(new OffsetDiagnostic<JavaFileObject>(d, -offset));
+                errors.add(new OffsetDiagnostic<JavaFileObject>(d, sourcePositions[0], -offset));
             }
         }
 
@@ -1490,10 +1491,12 @@ public class Utilities {
 
     private static final class OffsetDiagnostic<S> implements Diagnostic<S> {
         private final Diagnostic<? extends S> delegate;
+        private final SourcePositions sp;
         private final long offset;
 
-        public OffsetDiagnostic(Diagnostic<? extends S> delegate, long offset) {
+        public OffsetDiagnostic(Diagnostic<? extends S> delegate, SourcePositions sp, long offset) {
             this.delegate = delegate;
+            this.sp = sp;
             this.offset = offset;
         }
 
@@ -1514,6 +1517,18 @@ public class Utilities {
         }
 
         public long getEndPosition() {
+            if (delegate instanceof JCDiagnostic) {
+                JCDiagnostic dImpl = (JCDiagnostic) delegate;
+                
+                return dImpl.getDiagnosticPosition().getEndPosition(new EndPosTable() {
+                    @Override public int getEndPos(JCTree tree) {
+                        return (int) sp.getEndPosition(null, tree);
+                    }
+                    @Override public int replaceTree(JCTree oldtree, JCTree newtree) {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+                }) + offset;
+            }
             return delegate.getEndPosition() + offset;
         }
 

@@ -44,9 +44,7 @@
 
 package org.netbeans.modules.websvc.wsitconf.ui.client.subpanels;
 
-import org.netbeans.modules.websvc.wsitconf.ui.service.subpanels.*;
 import org.netbeans.modules.websvc.wsitconf.wsdlmodelext.ProprietarySecurityPolicyModelHelper;
-import org.netbeans.modules.xml.multiview.ui.SectionVisualTheme;
 import org.netbeans.modules.xml.wsdl.model.WSDLComponent;
 import javax.swing.*;
 import org.netbeans.api.project.Project;
@@ -68,11 +66,13 @@ public class KerberosConfigPanel extends JPanel {
         
         initComponents();
 
+        /* issue 232988: the background color issues with dark metal L&F
         loginModuleCombo.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         loginModuleLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         servicePrincipalLabel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         servicePrincipalField.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         credDelegationChBox.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        */
 
         sync();
     }

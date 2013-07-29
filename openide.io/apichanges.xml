@@ -107,6 +107,23 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
 <changes>
+    <change id="enhancedFoldHandleApi">
+      <api name="io"/>
+      <summary>Created new user-friendly methods for working with FoldHandle instances.</summary>
+      <version major="1" minor="42"/>
+      <date day="17" month="7" year="2013"/>
+      <author login="jhavlin"/>
+      <compatibility addition="yes" binary="compatible" semantic="compatible" />
+      <description>
+          <p>
+              Added methods that provide better info about state of fold
+              handles, and methods that handle unexpected situations silently
+              instead of throwing exceptions.
+          </p>
+      </description>
+      <class package="org.openide.windows" name="FoldHandle"/>
+      <issue number="232316" />
+    </change>
     <change id="coloredLoggingText">
       <api name="io"/>
       <summary>Added LOG_SUCCESS, LOG_FAILURE, LOG_WARNING and LOG_DEBUG into IOColors.OutputType to be able to specify a color of logging messages.</summary>

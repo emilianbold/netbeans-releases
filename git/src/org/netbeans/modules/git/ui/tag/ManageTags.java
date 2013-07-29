@@ -53,6 +53,7 @@ import java.util.Map;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.Icon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JOptionPane;
@@ -147,9 +148,9 @@ class ManageTags implements ListSelectionListener, ActionListener {
         if (selectedTag != null) {
             panel.txtTagName.setText(selectedTag.getTagName());
             if (selectedTag.isLightWeight()) {
-                panel.panelTagObjectInfo.setVisible(false);
+                displayObjectInfo(false);
             } else {
-                panel.panelTagObjectInfo.setVisible(true);
+                displayObjectInfo(true);
                 setText(panel.txtTagId, selectedTag.getTagId());
                 setText(panel.txtTagMessage, selectedTag.getMessage());
                 setText(panel.txtTagger, selectedTag.getTagger().toString());
@@ -170,7 +171,7 @@ class ManageTags implements ListSelectionListener, ActionListener {
 
     private void initTagInfo () {
         revisionInfoController.loadInfo(null);
-        panel.panelTagObjectInfo.setVisible(false);
+        displayObjectInfo(false);
         panel.lblTaggedObject.setVisible(false);
         panel.txtTaggedObject.setVisible(false);
         revisionInfoController.loadInfo(null);
@@ -268,4 +269,13 @@ class ManageTags implements ListSelectionListener, ActionListener {
             panel.btnDelete.setEnabled(editable);
         }        
     };
+    
+    private void displayObjectInfo (boolean visible) {
+        for (JComponent comp : new JComponent[] {
+            panel.lblTagId, panel.lblTagger, panel.lblTagMessage,
+            panel.txtTagId, panel.txtTagger, panel.jScrollPane2
+        }) {
+            comp.setVisible(visible);
+        }
+    }
 }

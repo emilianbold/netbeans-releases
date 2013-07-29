@@ -137,6 +137,8 @@ import org.openide.text.PositionRef;
 import org.openide.util.Exceptions;
 
 import static com.sun.source.tree.Tree.Kind.*;
+import org.netbeans.api.java.source.CodeStyle;
+import org.netbeans.api.java.source.CodeStyleUtils;
 import org.openide.util.Pair;
 
 /**
@@ -170,6 +172,13 @@ public class Utilities {
         return makeNameUnique(info, s, name, prefix, suffix);
     }
     
+    private static final Map<String, String> TYPICAL_KEYWORD_CONVERSIONS = new HashMap<String, String>() {{
+        put("class", "clazz");
+        put("interface", "intf");
+        put("new", "nue");
+        put("static", "statik");
+    }};
+    
     public static String makeNameUnique(CompilationInfo info, Scope s, String name, String prefix, String suffix) {
         if(prefix != null && prefix.length() > 0) {
             if(Character.isAlphabetic(prefix.charAt(prefix.length()-1))) {
@@ -186,6 +195,16 @@ public class Utilities {
             proposedName = safeString(prefix) + name + (counter != 0 ? String.valueOf(counter) : "") + safeString(suffix);
             
             cont = false;
+            
+            String converted = TYPICAL_KEYWORD_CONVERSIONS.get(proposedName);
+            
+            if (converted != null) {
+                proposedName = converted;
+            } else if (SourceVersion.isKeyword(proposedName)) {
+                counter++;
+                cont = true;
+                continue;
+            }
             
             for (Element e : info.getElementUtilities().getLocalMembersAndVars(s, new VariablesFilter())) {
                 if (proposedName.equals(e.getSimpleName().toString())) {
@@ -546,7 +565,16 @@ public class Utilities {
             TypeMirror extendsBound = ((WildcardType) tm).getExtendsBound();
             TypeMirror rct = resolveCapturedTypeInt(info, extendsBound != null ? extendsBound : ((WildcardType) tm).getSuperBound());
             if (rct != null) {
-                return rct.getKind() == TypeKind.WILDCARD ? rct : info.getTypes().getWildcardType(extendsBound != null ? rct : null, extendsBound == null ? rct : null);
+                switch (rct.getKind()) {
+                    case WILDCARD:
+                        return rct;
+                    case ARRAY:
+                    case DECLARED:
+                    case ERROR:
+                    case TYPEVAR:
+                    case OTHER:
+                        return info.getTypes().getWildcardType(extendsBound != null ? rct : null, extendsBound == null ? rct : null);
+                }
             }
         }
         
@@ -930,6 +958,8 @@ public class Utilities {
             method = null;
         }
         
+        CodeStyle codeStyle = CodeStyle.getDefault(info.getFileObject());
+        
         for (ExpressionTree arg : realArguments) {
             TreePath argPath = new TreePath(invocation, arg);
             TypeMirror tm = info.getTrees().getTypeMirror(argPath);
@@ -969,19 +999,19 @@ public class Utilities {
             if (proposedName == null) {
                 proposedName = "arg"; // NOI18N
             }
+            
+            String augmentedName = CodeStyleUtils.addPrefixSuffix(proposedName, codeStyle.getParameterNamePrefix(), codeStyle.getParameterNameSuffix());
 
-            if (usedArgumentNames.contains(proposedName)) {
+            if (usedArgumentNames.contains(augmentedName)) {
                 int num = 0;
 
-                while (usedArgumentNames.contains(proposedName + num)) {
+                while (usedArgumentNames.contains(augmentedName = CodeStyleUtils.addPrefixSuffix(proposedName + num, codeStyle.getParameterNamePrefix(), codeStyle.getParameterNameSuffix()))) {
                     num++;
                 }
-
-                proposedName = proposedName + num;
             }
 
-            argumentNames.add(proposedName);
-            usedArgumentNames.add(proposedName);
+            argumentNames.add(augmentedName);
+            usedArgumentNames.add(augmentedName);
         }
         
         List<TypeMirror> typeParamTypes = new LinkedList<TypeMirror>();

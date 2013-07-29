@@ -59,8 +59,8 @@ import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListCellRenderer;
 import org.netbeans.modules.odcs.api.ODCSProject;
-import org.netbeans.modules.team.ui.common.ColorManager;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.common.ColorManager;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 
 /**

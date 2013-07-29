@@ -908,6 +908,13 @@ public final class PhpProjectProperties implements ConfigManager.ConfigProvider 
             }
 
             Configuration configuration = configManager.configurationFor(name);
+            // #233356 - display name
+            String displayName = configuration.getValue(ConfigManager.PROP_DISPLAY_NAME);
+            if (displayName != null) {
+                EditableProperties ep = getProject().getHelper().getProperties(sharedPath);
+                ep.setProperty(ConfigManager.PROP_DISPLAY_NAME, displayName);
+                getProject().getHelper().putProperties(sharedPath, ep);
+            }
             for (String prop : CFG_PROPS) {
                 String value = configuration.getValue(prop);
                 String path = isPrivateProperty(prop) ? privatePath : sharedPath;

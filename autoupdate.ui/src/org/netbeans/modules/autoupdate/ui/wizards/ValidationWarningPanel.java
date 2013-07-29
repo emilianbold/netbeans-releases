@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -47,6 +47,8 @@ package org.netbeans.modules.autoupdate.ui.wizards;
 import java.awt.Color;
 import java.util.ArrayList;
 import java.util.List;
+import javax.swing.BorderFactory;
+import javax.swing.JTextPane;
 import org.netbeans.api.autoupdate.UpdateElement;
 
 /**
@@ -59,7 +61,9 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
     public ValidationWarningPanel (List<UpdateElement> unsigned, List<UpdateElement> untrusted) {
         initComponents ();
         taHead.setBackground( new Color(0,0,0,0) );
+        taHead.setBorder(BorderFactory.createEmptyBorder());
         taWarning.setBackground( new Color(0,0,0,0) );
+        taWarning.setBorder(BorderFactory.createEmptyBorder());
         postInitComponents (unsigned, untrusted);
     }
     
@@ -72,6 +76,9 @@ public class ValidationWarningPanel extends javax.swing.JPanel {
         for (UpdateElement el : plugins) {
             s = s + el.getDisplayName () + "\n";
         }
+        tpPlugins.setBackground(new Color(0, 0, 0, 0));
+        tpPlugins.setOpaque(false);
+        tpPlugins.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         tpPlugins.setText (s);
         if (untrusted.isEmpty ()) {
             // not signed

@@ -74,11 +74,13 @@ import java.util.Collections;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.J2eePlatformImpl2;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils;
 import org.netbeans.modules.j2ee.jboss4.ide.ui.JBPluginUtils.Version;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
+import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
 import org.openide.modules.InstalledFileLocator;
@@ -517,9 +519,72 @@ public class JBJ2eePlatformFactory extends J2eePlatformFactory {
         public Lookup getLookup() {
             WSStack<JaxWs> wsStack = WSStackFactory.createWSStack(JaxWs.class,
                     new JBossJaxWsStack(properties.getRootDir()), WSStack.Source.SERVER);
-            Lookup baseLookup = Lookups.fixed(properties.getRootDir(), wsStack, new JpaSupportImpl(this));
+            Lookup baseLookup = Lookups.fixed(properties.getRootDir(), 
+                    wsStack,
+                    new JpaSupportImpl(this),
+                    new JaxRsStackSupportImpl(this));
             return LookupProviderSupport.createCompositeLookup(baseLookup, 
                     "J2EE/DeploymentPlugins/JBoss4/Lookup"); //NOI18N
+        }
+        
+        private class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
+
+            private static final String JAX_RS_APPLICATION_CLASS = "javax.ws.rs.core.Application"; //NOI18N
+            private J2eePlatformImplImpl j2eePlatform;
+            
+            JaxRsStackSupportImpl(J2eePlatformImplImpl j2eePlatform) {
+                this.j2eePlatform = j2eePlatform;
+            }
+            
+            @Override
+            public boolean addJsr311Api(Project project) {
+                // return true (behaves like added) when JAX-RS is on classpath 
+                if (isBundled(JAX_RS_APPLICATION_CLASS)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            @Override
+            public boolean extendsJerseyProjectClasspath(Project project) {
+                // declared as extended when JAX-RS is on classpath 
+                // suppose that JBoss has its own implementation of JAX-RS
+                if (isBundled(JAX_RS_APPLICATION_CLASS)) {
+                    return true;
+                } else {
+                    return false;
+                }
+            }
+
+            @Override
+            public void removeJaxRsLibraries(Project project) {
+            }
+
+            @Override
+            public void configureCustomJersey(Project project) {
+            }
+
+            @Override
+            public boolean isBundled(String classFqn) {
+                j2eePlatform.getLibraries();
+                for (LibraryImplementation lib : j2eePlatform.getLibraries()) {
+                    List<URL> urls = lib.getContent(J2eeLibraryTypeProvider.VOLUME_TYPE_CLASSPATH);
+                    for (URL url: urls) {
+                        FileObject root = URLMapper.findFileObject(url);
+                        if ( FileUtil.isArchiveFile(root)){
+                            root = FileUtil.getArchiveRoot(root);
+                        }
+                        String path = classFqn.replace('.', '/')+".class"; //NOI18N
+                        if ( root.getFileObject(path )!= null ) {
+                            return true;
+                        }
+                    }
+                }
+                
+                return false;
+            }
+            
         }
         
     }

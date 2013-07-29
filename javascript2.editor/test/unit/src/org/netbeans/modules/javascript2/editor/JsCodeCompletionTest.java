@@ -45,7 +45,7 @@ package org.netbeans.modules.javascript2.editor;
  *
  * @author Petr Pisl
  */
-public class JsCodeCompletionTest extends JsCodeComplationBase {
+public class JsCodeCompletionTest extends JsCodeCompletionBase {
 
     public JsCodeCompletionTest(String testName) {
         super(testName);
@@ -226,5 +226,9 @@ public class JsCodeCompletionTest extends JsCodeComplationBase {
     
     public void testIssue224650() throws Exception {
         checkCompletion("testfiles/completion/issue224650.js", "this.^ // cc here", false);
+    }
+    
+    public void testIssue223593() throws Exception {
+        checkCompletion("testfiles/completion/issue223593.js", "obj.^propertyC = \"B\";", false);
     }
 }

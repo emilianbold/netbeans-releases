@@ -231,7 +231,9 @@ public class SafeDeleteUI implements RefactoringUI, RefactoringUIBypass, JavaRef
                         @Override
                         public void run() throws IOException {
                             for (FileObject file : getRefactoring().getRefactoringSource().lookupAll(FileObject.class)) {
-                                DataObject.find(file).delete();
+                                if(file.isValid()) {
+                                    DataObject.find(file).delete();
+                                }
                             }
                             NonRecursiveFolder f = (NonRecursiveFolder) getRefactoring().getRefactoringSource().lookup(NonRecursiveFolder.class);
                             if (f != null) {

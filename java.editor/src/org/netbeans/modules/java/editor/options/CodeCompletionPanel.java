@@ -70,6 +70,8 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     public static final String JAVA_COMPLETION_SELECTORS_DEFAULT = ".,;:([+-="; //NOI18N
     public static final String JAVADOC_AUTO_COMPLETION_TRIGGERS = "javadocAutoCompletionTriggers"; //NOI18N
     public static final String JAVADOC_AUTO_COMPLETION_TRIGGERS_DEFAULT = ".#@"; //NOI18N
+    public static final String JAVADOC_COMPLETION_SELECTORS = "javadocCompletionSelectors"; //NOI18N
+    public static final String JAVADOC_COMPLETION_SELECTORS_DEFAULT = ".#"; //NOI18N
     public static final String GUESS_METHOD_ARGUMENTS = "guessMethodArguments"; //NOI18N
     public static final boolean GUESS_METHOD_ARGUMENTS_DEFAULT = true;
     public static final String JAVA_COMPLETION_WHITELIST = "javaCompletionWhitelist"; //NOI18N
@@ -98,6 +100,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         javaCompletionSelectorsField.setText(preferences.get(JAVA_COMPLETION_SELECTORS, JAVA_COMPLETION_SELECTORS_DEFAULT));
         javaAutoCompletionSubwords.setSelected(preferences.getBoolean(JAVA_AUTO_COMPLETION_SUBWORDS, JAVA_AUTO_COMPLETION_SUBWORDS_DEFAULT));        
         javadocAutoCompletionTriggersField.setText(preferences.get(JAVADOC_AUTO_COMPLETION_TRIGGERS, JAVADOC_AUTO_COMPLETION_TRIGGERS_DEFAULT));        
+        javadocCompletionSelectorsField.setText(preferences.get(JAVADOC_COMPLETION_SELECTORS, JAVADOC_COMPLETION_SELECTORS_DEFAULT));
         String blacklist = preferences.get(JAVA_COMPLETION_BLACKLIST, JAVA_COMPLETION_BLACKLIST_DEFAULT);
         initExcluderList(javaCompletionExcludeJlist, blacklist);
         String whitelist = preferences.get(JAVA_COMPLETION_WHITELIST, JAVA_COMPLETION_WHITELIST_DEFAULT);
@@ -111,6 +114,7 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         javaAutoCompletionTriggersField.getDocument().addDocumentListener(this);
         javaCompletionSelectorsField.getDocument().addDocumentListener(this);
         javadocAutoCompletionTriggersField.getDocument().addDocumentListener(this);
+        javadocCompletionSelectorsField.getDocument().addDocumentListener(this);
     }
 
     private void initExcluderList(JList jList, String list) {
@@ -185,6 +189,8 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         javaAutoPopupOnIdentifierPart = new javax.swing.JCheckBox();
         javadocAutoCompletionTriggersLabel = new javax.swing.JLabel();
         javaCompletionSelectorsField = new javax.swing.JTextField();
+        javadocCompletionSelectorsLabel = new javax.swing.JLabel();
+        javadocCompletionSelectorsField = new javax.swing.JTextField();
 
         javaCompletionExcluderDialog2.setTitle(org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "ExcluderDialogTitle")); // NOI18N
         javaCompletionExcluderDialog2.setModal(true);
@@ -338,6 +344,9 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
         javadocAutoCompletionTriggersLabel.setLabelFor(javadocAutoCompletionTriggersField);
         org.openide.awt.Mnemonics.setLocalizedText(javadocAutoCompletionTriggersLabel, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "LBL_JavadocAutoCompletionTriggers")); // NOI18N
 
+        javadocCompletionSelectorsLabel.setLabelFor(javadocCompletionSelectorsField);
+        org.openide.awt.Mnemonics.setLocalizedText(javadocCompletionSelectorsLabel, org.openide.util.NbBundle.getMessage(CodeCompletionPanel.class, "LBL_JavadocCompletionSelectors")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -354,10 +363,6 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
                             .addComponent(javaCompletionExcluderMethodsCheckBox)
                             .addComponent(javaCompletionExcluderLabel)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(javadocAutoCompletionTriggersLabel)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(javadocAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
                                 .addComponent(javaCompletionSelectorsLabel)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                                 .addComponent(javaCompletionSelectorsField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
@@ -366,7 +371,15 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
                                 .addGap(46, 46, 46)
                                 .addComponent(javaAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, 86, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(javaAutoCompletionSubwords)
-                            .addComponent(javaCompletionExcluderTab))
+                            .addComponent(javaCompletionExcluderTab)
+                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(javadocAutoCompletionTriggersLabel)
+                                    .addComponent(javadocCompletionSelectorsLabel))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                    .addComponent(javadocAutoCompletionTriggersField, javax.swing.GroupLayout.DEFAULT_SIZE, 86, Short.MAX_VALUE)
+                                    .addComponent(javadocCompletionSelectorsField))))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(javaCompletionExcluderRemoveButton)
@@ -417,6 +430,10 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(javadocAutoCompletionTriggersLabel)
                     .addComponent(javadocAutoCompletionTriggersField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(javadocCompletionSelectorsLabel)
+                    .addComponent(javadocCompletionSelectorsField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
@@ -536,6 +553,8 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
             preferences.put(JAVA_COMPLETION_SELECTORS, javaCompletionSelectorsField.getText());
         else if (e.getDocument() == javadocAutoCompletionTriggersField.getDocument())
             preferences.put(JAVADOC_AUTO_COMPLETION_TRIGGERS, javadocAutoCompletionTriggersField.getText());
+        else if (e.getDocument() == javadocCompletionSelectorsField.getDocument())
+            preferences.put(JAVADOC_COMPLETION_SELECTORS, javadocCompletionSelectorsField.getText());
     }
 
     private void updateExcluder(JList list) {
@@ -598,6 +617,8 @@ public class CodeCompletionPanel extends javax.swing.JPanel implements DocumentL
     private javax.swing.JLabel javaCompletionSelectorsLabel;
     private javax.swing.JTextField javadocAutoCompletionTriggersField;
     private javax.swing.JLabel javadocAutoCompletionTriggersLabel;
+    private javax.swing.JTextField javadocCompletionSelectorsField;
+    private javax.swing.JLabel javadocCompletionSelectorsLabel;
     // End of variables declaration//GEN-END:variables
     
     private static class CodeCompletionPreferencesCustomizer implements PreferencesCustomizer {

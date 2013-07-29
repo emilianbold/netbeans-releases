@@ -44,16 +44,27 @@
 
 package org.netbeans.modules.php.dbgp.breakpoints;
 
+import java.util.logging.Logger;
+import javax.swing.text.Element;
+import javax.swing.text.StyledDocument;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.debugger.DebuggerManager;
+import org.netbeans.api.lexer.TokenHierarchy;
+import org.netbeans.api.lexer.TokenId;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.php.dbgp.DebugSession;
 import org.netbeans.modules.php.dbgp.SessionId;
+import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.text.DataEditorSupport;
 import org.openide.text.Line;
+import org.openide.text.NbDocument;
 import org.openide.util.WeakListeners;
 
 
@@ -62,6 +73,7 @@ import org.openide.util.WeakListeners;
  * @author ads
  */
 public class LineBreakpoint extends AbstractBreakpoint {
+    private static final Logger LOGGER = Logger.getLogger(LineBreakpoint.class.getName());
 
     public LineBreakpoint(Line line) {
         myLine = line;
@@ -77,14 +89,60 @@ public class LineBreakpoint extends AbstractBreakpoint {
         }
     }
 
-    public final void setValid(String message) {
-        setValidity(VALIDITY.VALID, message);
+    public final void refreshValidity() {
+        setValidity(isValid() ? VALIDITY.VALID : VALIDITY.INVALID, null);
     }
 
-    public final void setInvalid(String message) {
-        setValidity(VALIDITY.INVALID, message);
-    }
+    private boolean isValid() {
+        final boolean[] result = new boolean[1];
+        result[0] = false;
+        Line line = getLine();
+        DataObject dataObject = DataEditorSupport.findDataObject(line);
+        EditorCookie editorCookie = (EditorCookie) dataObject.getLookup().lookup(EditorCookie.class);
+        final StyledDocument document = editorCookie.getDocument();
+        if (document != null) {
+            try {
+                int l = line.getLineNumber();
+                Element lineElem = NbDocument.findLineRootElement(document).getElement(l);
+                final int startOffset = lineElem.getStartOffset();
+                final int endOffset = lineElem.getEndOffset();
+                document.render(new Runnable() {
 
+                    @Override
+                    public void run() {
+                        TokenHierarchy th = TokenHierarchy.get(document);
+                        TokenSequence<TokenId> ts = th.tokenSequence();
+                        if (ts != null) {
+                            ts.move(startOffset);
+                            boolean moveNext = ts.moveNext();
+                            for (; moveNext && !result[0] && ts.offset() < endOffset;) {
+                                TokenId id = ts.token().id();
+                                if (id == PHPTokenId.PHPDOC_COMMENT
+                                        || id == PHPTokenId.PHPDOC_COMMENT_END
+                                        || id == PHPTokenId.PHPDOC_COMMENT_START
+                                        || id == PHPTokenId.PHP_LINE_COMMENT
+                                        || id == PHPTokenId.PHP_COMMENT_START
+                                        || id == PHPTokenId.PHP_COMMENT_END
+                                        || id == PHPTokenId.PHP_COMMENT
+                                        ) {
+                                    break;
+                                }
+
+                                result[0] = id != PHPTokenId.T_INLINE_HTML && id != PHPTokenId.WHITESPACE;
+                                if (!ts.moveNext()) {
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (IndexOutOfBoundsException ex) {
+                LOGGER.fine("Line number is no more valid.");
+                result[0] = false;
+            }
+        }
+        return result[0];
+    }
 
     public Line getLine() {
         return myLine;

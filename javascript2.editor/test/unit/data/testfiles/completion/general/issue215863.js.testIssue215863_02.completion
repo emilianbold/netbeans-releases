@@ -3,71 +3,71 @@ window.|location.toString();
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
 CLASS      prototype                       [PUBLIC]   JS Platform
-METHOD     Image(width: Number, height: N  [PUBLIC]   JS Platform
-METHOD     Option(text: String, value: St  [PUBLIC]   JS Platform
-METHOD     Worker(uri: String): Worker     [PUBLIC]   JS Platform
-METHOD     addEventListener(type: String,  [PUBLIC]   JS Platform
-METHOD     alert(): undefined              [PUBLIC]   JS Platform
-METHOD     atob(encodedData: String): Str  [PUBLIC]   JS Platform
-METHOD     back(): undefined               [PUBLIC]   JS Platform
-METHOD     blur(): undefined               [PUBLIC]   JS Platform
-METHOD     btoa(stringToEncode: String):   [PUBLIC]   JS Platform
-METHOD     clearImmediate(immediateID: Nu  [PUBLIC]   JS Platform
-METHOD     clearInterval(intervalID: Numb  [PUBLIC]   JS Platform
-METHOD     clearTimeout(timeoutID: Number  [PUBLIC]   JS Platform
-METHOD     close(): undefined              [PUBLIC]   JS Platform
-METHOD     confirm(message: String): Bool  [PUBLIC]   JS Platform
+METHOD     Image(width: Number, height: N  [PUBLIC,   JS Platform
+METHOD     Option(text: String, value: St  [PUBLIC,   JS Platform
+METHOD     Worker(uri: String): window.Wo  [PUBLIC,   JS Platform
+METHOD     addEventListener(type: String,  [PUBLIC,   JS Platform
+METHOD     alert(): undefined              [PUBLIC,   JS Platform
+METHOD     atob(encodedData: String): Str  [PUBLIC,   JS Platform
+METHOD     back(): undefined               [PUBLIC,   JS Platform
+METHOD     blur(): undefined               [PUBLIC,   JS Platform
+METHOD     btoa(stringToEncode: String):   [PUBLIC,   JS Platform
+METHOD     clearImmediate(immediateID: Nu  [PUBLIC,   JS Platform
+METHOD     clearInterval(intervalID: Numb  [PUBLIC,   JS Platform
+METHOD     clearTimeout(timeoutID: Number  [PUBLIC,   JS Platform
+METHOD     close(): undefined              [PUBLIC,   JS Platform
+METHOD     confirm(message: String): Bool  [PUBLIC,   JS Platform
 METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
 METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
 METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
-METHOD     dump(message: String): undefin  [PUBLIC]   JS Platform
-METHOD     escape(regular: String): Strin  [PUBLIC]   JS Platform
-METHOD     find(aString: String, aCaseSen  [PUBLIC]   JS Platform
-METHOD     focus(): undefined              [PUBLIC]   JS Platform
-METHOD     forward(): undefined            [PUBLIC]   JS Platform
+METHOD     dump(message: String): undefin  [PUBLIC,   JS Platform
+METHOD     escape(regular: String): Strin  [PUBLIC,   JS Platform
+METHOD     find(aString: String, aCaseSen  [PUBLIC,   JS Platform
+METHOD     focus(): undefined              [PUBLIC,   JS Platform
+METHOD     forward(): undefined            [PUBLIC,   JS Platform
 METHOD     freeze(O: Object): Object       [PUBLIC,   JS Platform
-METHOD     getAttention(): undefined       [PUBLIC]   JS Platform
-METHOD     getComputedStyle(element: Elem  [PUBLIC]   JS Platform
+METHOD     getAttention(): undefined       [PUBLIC,   JS Platform
+METHOD     getComputedStyle(element: Elem  [PUBLIC,   JS Platform
 METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   JS Platform
 METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   JS Platform
 METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   JS Platform
-METHOD     getSelection(): Selection       [PUBLIC]   JS Platform
+METHOD     getSelection(): Selection       [PUBLIC,   JS Platform
 METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   JS Platform
 METHOD     isExtensible(O: Object): Boole  [PUBLIC,   JS Platform
 METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   JS Platform
 METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   JS Platform
 METHOD     isSealed(O: Object): Boolean    [PUBLIC,   JS Platform
 METHOD     keys(O: Object): Array          [PUBLIC,   JS Platform
-METHOD     matchMedia(mediaQueryString: S  [PUBLIC]   JS Platform
-METHOD     moveBy(deltaX: Number, deltaY:  [PUBLIC]   JS Platform
-METHOD     moveTo(x: Number, y: Number):   [PUBLIC]   JS Platform
-METHOD     open(strUrl: String, strWindow  [PUBLIC]   JS Platform
-METHOD     openDialog(url: String, name:   [PUBLIC]   JS Platform
-METHOD     postMessage(message: String, t  [PUBLIC]   JS Platform
+METHOD     matchMedia(mediaQueryString: S  [PUBLIC,   JS Platform
+METHOD     moveBy(deltaX: Number, deltaY:  [PUBLIC,   JS Platform
+METHOD     moveTo(x: Number, y: Number):   [PUBLIC,   JS Platform
+METHOD     open(strUrl: String, strWindow  [PUBLIC,   JS Platform
+METHOD     openDialog(url: String, name:   [PUBLIC,   JS Platform
+METHOD     postMessage(message: String, t  [PUBLIC,   JS Platform
 METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
-METHOD     print(): undefined              [PUBLIC]   JS Platform
-METHOD     prompt(text: String, value: St  [PUBLIC]   JS Platform
+METHOD     print(): undefined              [PUBLIC,   JS Platform
+METHOD     prompt(text: String, value: St  [PUBLIC,   JS Platform
 METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
-METHOD     removeEventListener(type: Stri  [PUBLIC]   JS Platform
-METHOD     resizeBy(xDelta: Number, yDelt  [PUBLIC]   JS Platform
-METHOD     resizeTo(iWidth: Number, iHeig  [PUBLIC]   JS Platform
-METHOD     scroll(xcoord: Number, ycoord:  [PUBLIC]   JS Platform
-METHOD     scrollBy(X: Number, Y: Number)  [PUBLIC]   JS Platform
-METHOD     scrollByLines(lines: Number):   [PUBLIC]   JS Platform
-METHOD     scrollByPages(pages: Number):   [PUBLIC]   JS Platform
-METHOD     scrollTo(xcoord: Number, ycoor  [PUBLIC]   JS Platform
+METHOD     removeEventListener(type: Stri  [PUBLIC,   JS Platform
+METHOD     resizeBy(xDelta: Number, yDelt  [PUBLIC,   JS Platform
+METHOD     resizeTo(iWidth: Number, iHeig  [PUBLIC,   JS Platform
+METHOD     scroll(xcoord: Number, ycoord:  [PUBLIC,   JS Platform
+METHOD     scrollBy(X: Number, Y: Number)  [PUBLIC,   JS Platform
+METHOD     scrollByLines(lines: Number):   [PUBLIC,   JS Platform
+METHOD     scrollByPages(pages: Number):   [PUBLIC,   JS Platform
+METHOD     scrollTo(xcoord: Number, ycoor  [PUBLIC,   JS Platform
 METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
-METHOD     setCursor(): undefined          [PUBLIC]   JS Platform
-METHOD     setImmediate(func: Function):   [PUBLIC]   JS Platform
-METHOD     setInterval(func: Function, de  [PUBLIC]   JS Platform
-METHOD     setTimeout(func: Function, del  [PUBLIC]   JS Platform
-METHOD     showModalDialog(uri: String):   [PUBLIC]   JS Platform
-METHOD     sizeToContent(): undefined      [PUBLIC]   JS Platform
-METHOD     stop(): undefined               [PUBLIC]   JS Platform
+METHOD     setCursor(): undefined          [PUBLIC,   JS Platform
+METHOD     setImmediate(func: Function):   [PUBLIC,   JS Platform
+METHOD     setInterval(func: Function, de  [PUBLIC,   JS Platform
+METHOD     setTimeout(func: Function, del  [PUBLIC,   JS Platform
+METHOD     showModalDialog(uri: String):   [PUBLIC,   JS Platform
+METHOD     sizeToContent(): undefined      [PUBLIC,   JS Platform
+METHOD     stop(): undefined               [PUBLIC,   JS Platform
 METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
 METHOD     toString(): String              [PUBLIC]   JS Platform
-METHOD     unescape(escaped: String): Str  [PUBLIC]   JS Platform
-METHOD     updateCommands(sCommandName):   [PUBLIC]   JS Platform
+METHOD     unescape(escaped: String): Str  [PUBLIC,   JS Platform
+METHOD     updateCommands(sCommandName):   [PUBLIC,   JS Platform
 METHOD     valueOf(): Object               [PUBLIC]   JS Platform
 FIELD      Components: Components          [PUBLIC]   JS Platform
 FIELD      TEST: Test                      [PUBLIC]   issue220101.js

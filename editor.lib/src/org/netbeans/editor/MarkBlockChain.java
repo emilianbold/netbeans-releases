@@ -94,7 +94,7 @@ public class MarkBlockChain {
     *   as startPos when insert is made
     * @return relation of currentBlock to the given block
     */
-    public int compareBlock(int startPos, int endPos) {
+    public synchronized int compareBlock(int startPos, int endPos) {
         if (currentBlock == null) {
             currentBlock = chain;
             if (currentBlock == null) {
@@ -219,7 +219,7 @@ public class MarkBlockChain {
     /** Add non-empty block to the chain of blocks
     * @param concat whether concatenate adjacent blocks
     */
-    public void addBlock(int startPos, int endPos, boolean concat) {
+    public synchronized void addBlock(int startPos, int endPos, boolean concat) {
         if (startPos == endPos) {
             return;
         }
@@ -280,6 +280,7 @@ public class MarkBlockChain {
             return;
         }
         try {
+            synchronized (this) {
             int rel;
             while (((rel = compareBlock(startPos, endPos)) & MarkBlock.OVERLAP) != 0) {
                 if ((rel & MarkBlock.THIS_EMPTY) != 0) { // currentBlock is empty
@@ -305,6 +306,7 @@ public class MarkBlockChain {
                     }
                 }
             }
+            }
             PCS.firePropertyChange(PROP_BLOCKS_CHANGED, startPos, endPos);
         } catch (BadLocationException e) {
             Utilities.annotateLoggable(e);
@@ -316,7 +318,7 @@ public class MarkBlockChain {
     /** Removes mark block and possibly updates the chain.
     * @return next block after removed one
     */
-    protected MarkBlock checkedRemove(MarkBlock blk) {
+    protected synchronized MarkBlock checkedRemove(MarkBlock blk) {
         boolean first = (blk == chain);
         blk = blk.removeChain();
         if (first) {
@@ -326,7 +328,7 @@ public class MarkBlockChain {
         return blk;
     }
 
-    public int adjustToBlockEnd(int pos) {
+    public synchronized int adjustToBlockEnd(int pos) {
         int rel = compareBlock(pos, pos) & MarkBlock.IGNORE_EMPTY;
         if (rel == MarkBlock.INSIDE_BEGIN || rel == MarkBlock.INNER) { // inside blk
             pos = currentBlock.getEndOffset();
@@ -336,7 +338,7 @@ public class MarkBlockChain {
 
     /** Return the position adjusted to the start of the next mark-block.
     */
-    public int adjustToNextBlockStart(int pos) {
+    public synchronized int adjustToNextBlockStart(int pos) {
         // !!! what about empty blocks
         int rel = compareBlock(pos, pos) & MarkBlock.IGNORE_EMPTY;
         if ((rel & MarkBlock.BEFORE) != 0) {
@@ -356,7 +358,7 @@ public class MarkBlockChain {
         return pos;
     }
 
-    public @Override String toString() {
+    public synchronized @Override String toString() {
         return "MarkBlockChain: currentBlock=" + currentBlock + "\nblock chain: " // NOI18N
                + (chain != null ? ("\n" + chain.toStringChain()) : " Empty"); // NOI18N
     }

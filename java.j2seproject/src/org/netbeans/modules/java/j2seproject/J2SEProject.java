@@ -54,6 +54,7 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -77,7 +78,6 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.java.platform.JavaPlatform;
-import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
@@ -99,6 +99,7 @@ import org.netbeans.modules.java.j2seproject.api.J2SEPropertyEvaluator;
 import org.netbeans.modules.java.j2seproject.ui.J2SELogicalViewProvider;
 import org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerProviderImpl;
 import org.netbeans.modules.java.j2seproject.ui.customizer.J2SEProjectProperties;
+import org.netbeans.modules.project.ui.spi.TemplateCategorySorter;
 import org.netbeans.spi.java.project.support.ExtraSourceJavadocSupport;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
@@ -147,6 +148,7 @@ import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_OLD
 import static org.netbeans.spi.project.support.ant.GeneratedFilesHelper.FLAG_UNKNOWN;
 import org.netbeans.spi.whitelist.support.WhiteListQueryMergerSupport;
 import org.openide.filesystems.URLMapper;
+import org.openide.loaders.DataObject;
 import org.openide.modules.SpecificationVersion;
 import org.openide.util.RequestProcessor;
 import org.openide.xml.XMLUtil;
@@ -741,7 +743,7 @@ public final class J2SEProject implements Project {
 
     }
 
-    private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates {
+    private static final class RecommendedTemplatesImpl implements RecommendedTemplates, PrivilegedTemplates, TemplateCategorySorter {
         RecommendedTemplatesImpl (UpdateHelper helper) {
             this.helper = helper;
         }
@@ -804,18 +806,72 @@ public final class J2SEProject implements Project {
             "Templates/WebServices/WebServiceClient"   // NOI18N
         };
 
-        @Override
-        public String[] getRecommendedTypes() {
+        private static final Map<String,Integer>  CAT_MAP;
+        static {
+            final Map<String,Integer> m = new HashMap<>();
+            m.put("Classes",0);     //NOI18N
+            m.put("GUIForms",1);    //NOI18N
+            m.put("Beans",2);       //NOI18N
+            m.put("AWTForms",3);    //NOI18N
+            m.put("UnitTests",4);   //NOI18N
+            CAT_MAP = Collections.unmodifiableMap(m);
+        };
 
-            EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-            // if the project has no main class, it's not really an application
-            boolean isLibrary = ep.getProperty (ProjectProperties.MAIN_CLASS) == null || "".equals (ep.getProperty (ProjectProperties.MAIN_CLASS)); // NOI18N
-            return isLibrary ? LIBRARY_TYPES : APPLICATION_TYPES;
+        @Override
+        public String[] getRecommendedTypes() {            
+            return isLibrary() ? LIBRARY_TYPES : APPLICATION_TYPES;
         }
 
         @Override
         public String[] getPrivilegedTemplates() {
             return PRIVILEGED_NAMES;
+        }
+
+        @Override
+        @NonNull
+        public List<DataObject> sort(@NonNull final List<DataObject> original) {
+            if (!isLibrary()) {
+                return original;
+            }
+            final List<DataObject> result = new ArrayList<>(Collections.<DataObject>nCopies(CAT_MAP.size(), null));
+            for (DataObject dobj : original) {
+                final String name = dobj.getName();
+                final Integer index = CAT_MAP.get(name);
+                if (index == null) {
+                    result.add(dobj);
+                } else {
+                    result.set (index, dobj);
+                }
+            }
+            return filterNulls(result);
+        }
+
+        @NonNull
+        private List<DataObject> filterNulls(@NonNull final List<DataObject> list) {
+            boolean hasNull = false;
+            for (int i=0; i<CAT_MAP.size(); i++) {
+                if (list.get(i) == null) {
+                    hasNull = true;
+                    break;
+                }
+            }
+            if (!hasNull) {
+                //No copy needed
+                return list;
+            }
+            final List<DataObject> result = new ArrayList<>(list.size());
+            for (DataObject dobj : list) {
+                if (dobj != null) {
+                    result.add(dobj);
+                }
+            }
+            return result;
+        }
+
+        private boolean isLibrary() {
+            final EditableProperties ep = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
+            // if the project has no main class, it's not really an application
+            return ep.getProperty (ProjectProperties.MAIN_CLASS) == null || "".equals (ep.getProperty (ProjectProperties.MAIN_CLASS)); // NOI18N
         }
 
     }

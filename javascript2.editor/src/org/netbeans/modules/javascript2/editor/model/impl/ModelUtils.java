@@ -224,6 +224,10 @@ public class ModelUtils {
         if (result.getParent() != null && result.getParent() instanceof DeclarationScope) {
             result = result.getParent();
         } 
+        if (!(result instanceof DeclarationScope)) {
+            // this shouldn't happened, basically it means that the model is broken and has an object without parent
+            result = getGlobalObject(object);
+        }
         return (DeclarationScope)result;
     }
 
@@ -281,17 +285,29 @@ public class ModelUtils {
      * @return 
      */
     public static Collection<? extends JsObject> getVariables(DeclarationScope inScope) {
-        List<JsObject> result = new ArrayList<JsObject>();
+        HashMap<String, JsObject> result = new HashMap<String, JsObject>();
         while (inScope != null) {
             for (JsObject object : ((JsObject)inScope).getProperties().values()) {
-                result.add(object);
+                if (!result.containsKey(object.getName()) && object.getModifiers().contains(Modifier.PRIVATE)) {
+                    result.put(object.getName(), object);
+                }
             }
             for (JsObject object : ((JsFunction)inScope).getParameters()) {
-                result.add(object);
+                if (!result.containsKey(object.getName())) {
+                    result.put(object.getName(), object);
+                }
+            }
+            for (JsObject object : ((JsObject)inScope).getProperties().values()) {
+                if (!result.containsKey(object.getName())) {
+                    result.put(object.getName(), object);
+                }
+            }
+            if (!result.containsKey(((JsObject)inScope).getName())) {
+                result.put(((JsObject)inScope).getName(), (JsObject)inScope);
             }
             inScope = inScope.getParentScope();
         }
-        return result;
+        return result.values();
     }
     
 
@@ -389,7 +405,7 @@ public class ModelUtils {
                             JsFunction function = rObject instanceof JsFunctionImpl
                                     ? (JsFunctionImpl) rObject
                                     : rObject instanceof JsFunctionReference ? ((JsFunctionReference) rObject).getOriginal() : null;
-                            if (function != null && function != object.getParent()) {
+                            if (function != null && function.getParent().equals(object.getParent())) {
                                 // creates reference to the original function
                                 object.getParent().addProperty(object.getName(), new JsFunctionReference(
                                         object.getParent(), object.getDeclarationName(), function, true, null));
@@ -787,10 +803,10 @@ public class ModelUtils {
                         Collection<? extends IndexResult> indexResults = null;        
                         for (String fqn : prototypeChain) {
                             // at first look at the properties of the object
-                            indexResults = jsIndex.findFQN(fqn + "." + name); //NOI18N
+                            indexResults = jsIndex.findByFqn(fqn + "." + name, JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES); //NOI18N
                             if (indexResults.isEmpty()) {
                                 // if the property was not found, try to look at the prototype of the object
-                                indexResults = jsIndex.findFQN(fqn + ".prototype." + name); //NOI18N
+                                indexResults = jsIndex.findByFqn(fqn + ".prototype." + name, JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES); //NOI18N
                             }
                             if(!indexResults.isEmpty()) {
                                 // if the property / method was already found, we don't need to continue. 
@@ -954,7 +970,7 @@ public class ModelUtils {
         if (!alreadyProcessed.contains(fqn)) {
             alreadyProcessed.add(fqn);
             if (!fqn.startsWith("@")) {
-                Collection<? extends IndexResult> indexResults = jsIndex.findFQN(fqn);
+                Collection<? extends IndexResult> indexResults = jsIndex.findByFqn(fqn, JsIndex.FIELD_ASSIGNMENTS);
                 boolean hasAssignments = false;
                 boolean isType = false;
                 for (IndexResult indexResult: indexResults) {
@@ -1032,7 +1048,7 @@ public class ModelUtils {
             Collection<IndexedElement> properties = jsIndex.getProperties(fqn);
             for (IndexedElement property : properties) {
                 if(ModelUtils.PROTOTYPE.equals(property.getName())) {  //NOI18N
-                    Collection<? extends IndexResult> indexResults = jsIndex.findFQN(property.getFQN());
+                    Collection<? extends IndexResult> indexResults = jsIndex.findByFqn(property.getFQN(), JsIndex.FIELD_ASSIGNMENTS);
                     for (IndexResult indexResult : indexResults) {
                         Collection<TypeUsage> assignments = IndexedElement.getAssignments(indexResult);
                         for (TypeUsage typeUsage : assignments) {

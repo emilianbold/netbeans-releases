@@ -173,10 +173,14 @@ public final class Mutex extends Object {
         { true, false, false, false },{ true, false, false, true }
     };
 
-    /** granted mode */
+    /** granted mode 
+     * @GuaredBy("LOCK")
+     */
     private int grantedMode = NONE;
     
-    /** The mode the mutex was in before it started chaining */
+    /** The mode the mutex was in before it started chaining 
+     * @GuaredBy("LOCK")
+     */
     private int origMode;
 
     /** protects internal data structures */
@@ -185,8 +189,10 @@ public final class Mutex extends Object {
     /** wrapper, if any */
     private final Executor wrapper;
 
-    /** threads that - owns or waits for this mutex */
-    private /*final*/ Map<Thread,ThreadInfo> registeredThreads;
+    /** threads that - owns or waits for this mutex 
+     * @GuaredBy("LOCK")
+     */
+    private final Map<Thread,ThreadInfo> registeredThreads = new HashMap<Thread,ThreadInfo>(7);
 
     /** number of threads that holds S mode (readersNo == "count of threads in registeredThreads that holds S") */
 
@@ -253,7 +259,6 @@ public final class Mutex extends Object {
 
     /** Initiates this Mutex */
     private Object init(Object lock) {
-        this.registeredThreads = new HashMap<Thread,ThreadInfo>(7);
         this.waiters = new LinkedList<QueueCell>();
         this.cnt = counter++;
         if (LOG.isLoggable(Level.FINER)) {
@@ -598,10 +603,10 @@ public final class Mutex extends Object {
         StringBuilder sbuff = new StringBuilder(512);
 
         synchronized (LOCK) {
-            sbuff.append("threads: ").append(registeredThreads).append(newline); // NOI18N
+            sbuff.append("threads: ").append(getRegisteredThreads()).append(newline); // NOI18N
             sbuff.append("readersNo: ").append(readersNo).append(newline); // NOI18N
             sbuff.append("waiters: ").append(waiters).append(newline); // NOI18N
-            sbuff.append("grantedMode: ").append(grantedMode).append(newline); // NOI18N
+            sbuff.append("grantedMode: ").append(getGrantedMode(false)).append(newline); // NOI18N
         }
 
         return sbuff.toString();
@@ -651,15 +656,15 @@ public final class Mutex extends Object {
                 ThreadInfo info = getThreadInfo(t);
 
                 if (info != null) {
-                    if (grantedMode == NONE) {
+                    if (getGrantedMode(false) == NONE) {
                         // defensive
                         throw new IllegalStateException();
                     }
                     // reenters
                     // requested == S -> always succeeds
                     // info.mode == X -> always succeeds
-                    if (((info.mode == S) && (grantedMode == X)) ||
-                        ((info.mode == X) && (grantedMode == S))) {
+                    if (((info.mode == S) && (getGrantedMode(false) == X)) ||
+                        ((info.mode == X) && (getGrantedMode(false) == S))) {
                         // defensive
                         throw new IllegalStateException();
                     }
@@ -692,9 +697,9 @@ public final class Mutex extends Object {
                         info.mode = X;
                         info.counts[requested]++;
                         info.rsnapshot = info.counts[S];
-                        if (grantedMode == S) {
+                        if (getGrantedMode(false) == S) {
                             setGrantedMode(X);
-                        } else if (grantedMode == X) {
+                        } else if (getGrantedMode(false) == X) {
                             // defensive
                             throw new IllegalStateException();
                         }
@@ -711,7 +716,7 @@ public final class Mutex extends Object {
                 } else {
                     if (isCompatible(requested)) {
                         setGrantedMode(requested);
-                        registeredThreads.put(t,
+                        getRegisteredThreads().put(t,
                                               info = new ThreadInfo(t, requested));
                         if (requested == S) {
                             readersNo++;
@@ -748,7 +753,7 @@ public final class Mutex extends Object {
     private boolean reenterImpl(Thread t, int mode) {
         // from leaveX -> grantedMode is NONE or S
         if (mode == S) {
-            if ((grantedMode != NONE) && (grantedMode != S)) {
+            if ((getGrantedMode(false) != NONE) && (getGrantedMode(false) != S)) {
                 throw new IllegalStateException(this.toString());
             }
 
@@ -759,10 +764,10 @@ public final class Mutex extends Object {
 
         // assert (mode == X)
         ThreadInfo tinfo = getThreadInfo(t);
-        boolean chainFromLeaveX = ((grantedMode == CHAIN) && (tinfo != null) && (tinfo.counts[X] > 0));
+        boolean chainFromLeaveX = ((getGrantedMode(false) == CHAIN) && (tinfo != null) && (tinfo.counts[X] > 0));
 
         // process grantedMode == X or CHAIN from leaveX OR grantedMode == NONE from leaveS
-        if ((grantedMode == X) || (grantedMode == NONE) || chainFromLeaveX) {
+        if ((getGrantedMode(false) == X) || (getGrantedMode(false) == NONE) || chainFromLeaveX) {
             enter(mode, t, true);
 
             return false;
@@ -773,7 +778,7 @@ public final class Mutex extends Object {
             }
 
             ThreadInfo info = new ThreadInfo(t, mode);
-            registeredThreads.put(t, info);
+            getRegisteredThreads().put(t, info);
 
             // prevent from grantedMode == NONE (another thread - leaveS)
             readersNo += 2;
@@ -836,11 +841,11 @@ public final class Mutex extends Object {
     final void leave(Thread t) {
         boolean log = LOG.isLoggable(Level.FINER);
 
-        if (log) doLog("Leaving {0}", grantedMode); // NOI18N
+        if (log) doLog("Leaving {0}", getGrantedMode(true)); // NOI18N
 
         leaveImpl(t);
 
-        if (log) doLog("Leaving exit: {0}", grantedMode); // NOI18N
+        if (log) doLog("Leaving exit: {0}", getGrantedMode(true)); // NOI18N
     }
 
     private void leaveImpl(Thread t) {
@@ -851,7 +856,7 @@ public final class Mutex extends Object {
         synchronized (LOCK) {
             info = getThreadInfo(t);
 
-            switch (grantedMode) {
+            switch (getGrantedMode(false)) {
             case NONE:
                 throw new IllegalStateException();
 
@@ -953,7 +958,7 @@ public final class Mutex extends Object {
                 } else {
                     info.mode = NONE;
                     setGrantedMode(NONE);
-                    registeredThreads.remove(info.t);
+                    getRegisteredThreads().remove(info.t);
                 }
 
                 if (info.getRunnableCount(S) > 0) {
@@ -999,7 +1004,7 @@ public final class Mutex extends Object {
         if (info.counts[S] == 0) {
             // remove the thread
             info.mode = NONE;
-            registeredThreads.remove(info.t);
+            getRegisteredThreads().remove(info.t);
 
             // downsize readersNo
             if (readersNo <= 0) {
@@ -1021,7 +1026,7 @@ public final class Mutex extends Object {
                 wakeUpOthers();
             } else if (info.getRunnableCount(X) > 0) {
                 return X;
-            } else if ((grantedMode == CHAIN) && (readersNo == 1)) {
+            } else if ((getGrantedMode(false) == CHAIN) && (readersNo == 1)) {
                 // can be the mode advanced from CHAIN? Examine first item of waiters!
                 for (int i = 0; i < waiters.size(); i++) {
                     QueueCell qc = waiters.get(i);
@@ -1116,7 +1121,7 @@ public final class Mutex extends Object {
 
     /** Scans through waiters and wakes up them */
     private void wakeUpOthers() {
-        if ((grantedMode == X) || (grantedMode == CHAIN)) {
+        if ((getGrantedMode(false) == X) || (getGrantedMode(false) == CHAIN)) {
             // defensive
             throw new IllegalStateException();
         }
@@ -1151,7 +1156,7 @@ public final class Mutex extends Object {
                             readersNo++;
                         }
 
-                        registeredThreads.put(qc.t, ti);
+                        getRegisteredThreads().put(qc.t, ti);
                     }
                 } else {
                     setGrantedMode(CHAIN);
@@ -1164,7 +1169,7 @@ public final class Mutex extends Object {
     }
 
     private void wakeUpReaders() {
-        assert (grantedMode == NONE) || (grantedMode == S);
+        assert (getGrantedMode(false) == NONE) || (getGrantedMode(false) == S);
 
         if (waiters.isEmpty()) {
             return;
@@ -1192,7 +1197,7 @@ public final class Mutex extends Object {
                         ThreadInfo ti = new ThreadInfo(qc.t, qc.mode);
                         ti.forced = true;
                         readersNo++;
-                        registeredThreads.put(qc.t, ti);
+                        getRegisteredThreads().put(qc.t, ti);
                     }
                 }
             }
@@ -1277,12 +1282,12 @@ public final class Mutex extends Object {
     */
     private boolean isCompatible(int requested) {
         // allow next reader in even in chained mode, if it was read access before
-        if (requested == S && grantedMode == CHAIN && origMode == S) return true;
-        return cmatrix[requested][grantedMode];
+        if (requested == S && getGrantedMode(false) == CHAIN && getOrigMode() == S) return true;
+        return cmatrix[requested][getGrantedMode(false)];
     }
 
     private ThreadInfo getThreadInfo(Thread t) {
-        return registeredThreads.get(t);
+        return getRegisteredThreads().get(t);
     }
 
     private boolean canUpgrade(int threadGranted, int requested) {
@@ -1689,9 +1694,26 @@ public final class Mutex extends Object {
     }
 
     private void setGrantedMode(int mode) {
+        assert Thread.holdsLock(LOCK);
         if (grantedMode != CHAIN && mode == CHAIN) {
-            origMode = grantedMode;
+            this.origMode = grantedMode;
         }
         grantedMode = mode;
     }
+    
+    private int getGrantedMode(boolean skipCheck) {
+        assert skipCheck || Thread.holdsLock(LOCK);
+        return grantedMode;
+    }
+
+    private int getOrigMode() {
+        assert Thread.holdsLock(LOCK);
+        return origMode;
+    }
+
+    private Map<Thread,ThreadInfo> getRegisteredThreads() {
+        assert Thread.holdsLock(LOCK);
+        return registeredThreads;
+    }
+    
 }

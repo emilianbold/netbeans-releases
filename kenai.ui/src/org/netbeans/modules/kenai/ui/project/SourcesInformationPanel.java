@@ -69,9 +69,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.Element;
 import javax.swing.text.html.HTMLDocument;
 import javax.swing.text.html.StyleSheet;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -86,7 +83,6 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 /**
  *
@@ -232,12 +228,11 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                 final KenaiFeature repo = repos[k];
                 if (repo == null) continue;
 
-                DocumentBuilder dbf = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-                String base = proj.getKenai().getUrl().toString().replaceFirst("https://", "http://"); //NOI18N
+                String base = proj.getKenai().getUrl().toString(); //.replaceFirst("https://", "http://"); //NOI18N
                 URL webLocation = repo.getWebLocation();
                 String urlStr = webLocation == null 
                         ? null 
-                        : base + webLocation.getPath().replaceAll("/show$", "/history.atom"); //NOI18N
+                        : webLocation.getPath().replaceAll("/show$", "/history.atom"); //NOI18N
                 int entriesCount = 0;
                 NodeList entries = null;
                 String htmlID = repo.getName().replaceAll("[^a-zA-Z0-9]", "_") + "_" + k + "__" + proj.getName().replace('-', '_'); //NOI18N
@@ -247,11 +242,10 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
                     if (urlStr == null) {
                         throw new FileNotFoundException();
                     }
-                    new URL(urlStr).openStream(); // just to fail quickly if URL is invalid...
-                    if (Thread.interrupted()) {
-                        return WAIT_STRING;
+                    Document doc = proj.getKenai().getFeed(urlStr);
+                    if(doc == null) {
+                        continue;
                     }
-                    Document doc = dbf.parse(urlStr);
                     entries = doc.getElementsByTagName("entry"); //NOI18N
                     entriesCount = entries.getLength();
                 } catch (FileNotFoundException e) {
@@ -333,13 +327,7 @@ public class SourcesInformationPanel extends javax.swing.JPanel implements Refre
         } catch (KenaiException ex) {
             Exceptions.printStackTrace(ex);
             return null;
-        } catch (SAXException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        } catch (ParserConfigurationException ex) {
-            Exceptions.printStackTrace(ex);
-            return null;
-        }
+        } 
 
     }
 

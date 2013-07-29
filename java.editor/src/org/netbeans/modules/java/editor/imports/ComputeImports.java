@@ -92,6 +92,7 @@ import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClassIndex.Symbols;
 import org.netbeans.api.java.source.CompilationInfo.CacheClearPolicy;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities.ElementAcceptor;
 import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.javadoc.JavadocImports;
@@ -317,7 +318,7 @@ public class ComputeImports {
     
     private static class TreeVisitorImpl extends CancellableTreePathScanner<Void, Map<String, Object>> {
         
-        private CompilationInfo info;
+        private final CompilationInfo info;
         private Set<String> unresolved;
         
         private List<Hint> hints;
@@ -412,7 +413,9 @@ public class ComputeImports {
         public Void visitIdentifier(IdentifierTree tree, Map<String, Object> p) {
             super.visitIdentifier(tree, p);
             
-            if (getCurrentPath().getParentPath() != null && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION) {
+            boolean methodInvocation = getCurrentPath().getParentPath() != null && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION;
+            
+            if (methodInvocation) {
                 MethodInvocationTree mit = (MethodInvocationTree) getCurrentPath().getParentPath().getLeaf();
                 
                 if (mit.getMethodSelect() == tree) {
@@ -425,22 +428,35 @@ public class ComputeImports {
             }
             
 //            System.err.println("tree=" + tree);
-            Element el = info.getTrees().getElement(getCurrentPath());
+            final Element el = info.getTrees().getElement(getCurrentPath());
             if (el != null && (el.getKind().isClass() || el.getKind().isInterface() || el.getKind() == ElementKind.PACKAGE)) {
                 TypeMirror type = el.asType();
                 String simpleName = null;
                 
                 if (type != null) {
                     if (type.getKind() == TypeKind.ERROR) {
-                        boolean isAssignmentVariable = false;
+                        boolean allowImport = true;
 
                         if (getCurrentPath().getParentPath() != null && getCurrentPath().getParentPath().getLeaf().getKind() == Kind.ASSIGNMENT) {
                             AssignmentTree at = (AssignmentTree) getCurrentPath().getParentPath().getLeaf();
 
-                            isAssignmentVariable = at.getVariable() == tree;
+                            allowImport = at.getVariable() != tree;
+                        }
+                        
+                        if (methodInvocation) {
+                            Scope s = info.getTrees().getScope(getCurrentPath());
+
+                            while (s != null) {
+                                allowImport &= !info.getElementUtilities().getLocalMembersAndVars(s, new ElementAcceptor() {
+                                    @Override public boolean accept(Element e, TypeMirror type) {
+                                        return e.getSimpleName().contentEquals(el.getSimpleName());
+                                    }
+                                }).iterator().hasNext();
+                                s = s.getEnclosingScope();
+                            }
                         }
 
-                        if (!isAssignmentVariable) {
+                        if (allowImport) {
                             simpleName = el.getSimpleName().toString();
                         }
                     }
@@ -534,20 +550,13 @@ public class ComputeImports {
             return super.visitAnnotation(node, p);
         }
         
-        private static final Set<Kind> SAFE_KIND_FOR_SCOPE = EnumSet.of(Kind.COMPILATION_UNIT, Kind.ANNOTATION_TYPE, Kind.CLASS, Kind.ENUM, Kind.INTERFACE);
+        private Scope topLevelScope;
         
-        //resolving scope for each unresolved identifier is very slow, and not really necessary for Trees.isAccessible -
-        //scope for the nearest class should be OK
         private Scope getScope() {
-            TreePath tp = getCurrentPath();
-            Kind kind = tp.getLeaf().getKind();
-            
-            while (!SAFE_KIND_FOR_SCOPE.contains(kind)) {
-                tp = tp.getParentPath();
-                kind = tp.getLeaf().getKind();
+            if (topLevelScope == null) {
+                topLevelScope = info.getTrees().getScope(new TreePath(getCurrentPath().getCompilationUnit()));
             }
-            
-            return info.getTrees().getScope(tp);
+            return topLevelScope;
         }
         
         private void filterByAcceptedKind(Tree toFilter, ElementKind acceptedKind, ElementKind... otherAcceptedKinds) {

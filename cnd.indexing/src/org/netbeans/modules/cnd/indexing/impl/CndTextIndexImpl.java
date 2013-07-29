@@ -113,7 +113,10 @@ public final class CndTextIndexImpl {
             }
         }
         unsavedQueue.add(new StoreQueueEntry(key, values));
-        storeTask.schedule(STORE_DELAY);
+        // Schedule only if task is not in the queue, see bug 227761
+        if (storeTask.getDelay() == 0) {
+            storeTask.schedule(STORE_DELAY);
+        }
     }
 
     // the syntax is as in RepositoryListener, although it isn't a listener,

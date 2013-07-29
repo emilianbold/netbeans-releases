@@ -765,13 +765,16 @@ public class J2SEProjectProperties {
         Vector data = tableModel.getDataVector();
         URL[] rootURLs = new URL[data.size()];
         String []rootLabels = new String[data.size()];
-        final LinkedList<URL> oldRootURLs = new LinkedList<URL>(Arrays.asList (roots.getRootURLs ()));
+        final LinkedList<URL> oldRootURLs = new LinkedList<URL>(Arrays.asList (roots.getRootURLs (false)));
         final LinkedList<String> oldRootLabels = new LinkedList<String>(Arrays.asList(roots.getRootNames()));
         final LinkedList<String> oldRootProps = new LinkedList<String>(Arrays.asList (roots.getRootProperties()));
         boolean rootsAreSame = true;
         for (int i=0; i<data.size();i++) {
             File f = (File) ((Vector)data.elementAt(i)).elementAt(0);
-            rootURLs[i] = J2SEProjectUtil.getRootURL(f,null);
+            rootURLs[i] = Utilities.toURI(f).toURL();
+            if (!rootURLs[i].toExternalForm().endsWith("/")) {  //NOI18N
+                rootURLs[i] = new URL(rootURLs[i]+"/");
+            }
             validateURL(rootURLs[i],f);
             rootLabels[i] = (String) ((Vector)data.elementAt(i)).elementAt(1);
             rootsAreSame &= !oldRootURLs.isEmpty() &&

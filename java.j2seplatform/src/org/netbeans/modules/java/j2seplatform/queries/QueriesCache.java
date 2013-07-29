@@ -42,6 +42,8 @@
 package org.netbeans.modules.java.j2seplatform.queries;
 
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -50,6 +52,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import java.util.prefs.Preferences;
 import javax.swing.event.ChangeListener;
@@ -57,6 +61,7 @@ import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.JavadocForBinaryQuery;
 import org.netbeans.spi.java.queries.SourceForBinaryQueryImplementation2;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -67,6 +72,8 @@ import org.openide.util.NbPreferences;
  * @author Tomas Zezula
  */
 final class QueriesCache<T extends QueriesCache.ResultBase> {
+
+    private static final Logger LOG = Logger.getLogger(QueriesCache.class.getName());
 
     private static QueriesCache<Javadoc> javadoc;
     private static QueriesCache<Sources> sources;
@@ -222,6 +229,8 @@ final class QueriesCache<T extends QueriesCache.ResultBase> {
         }
 
         protected abstract void updateImpl(final Collection<? extends URL> roots);
+
+        protected abstract List<? extends URI> getRootURIs();
     }
 
     static class Javadoc extends ResultBase implements JavadocForBinaryQuery.Result {
@@ -235,6 +244,23 @@ final class QueriesCache<T extends QueriesCache.ResultBase> {
         @Override
         protected void updateImpl(final Collection<? extends URL> roots) {
             this.roots = roots.toArray(new URL[roots.size()]);
+        }
+
+        @NonNull
+        @Override
+        protected List<? extends URI> getRootURIs() {
+            final List<URI> result = new ArrayList<>(roots.length);
+            for (URL root : roots) {
+                try {
+                    result.add(root.toURI());
+                } catch (URISyntaxException ex) {
+                    LOG.log(
+                        Level.WARNING,
+                        "Cannot convert: {0} to URI.",  //NOI18N
+                        root);
+                }
+            }
+            return Collections.unmodifiableList(result);
         }
     }
 
@@ -263,6 +289,24 @@ final class QueriesCache<T extends QueriesCache.ResultBase> {
                 }
             }
             this.roots = fos.toArray(new FileObject[fos.size()]);
+        }
+
+        @NonNull
+        @Override
+        protected List<? extends URI> getRootURIs() {
+            final List<URI> result = new ArrayList<>(roots.length);
+            for (FileObject root : roots) {
+                final URI uri = root.toURI();
+                if (uri != null) {
+                    result.add(uri);
+                } else {
+                    LOG.log(
+                        Level.WARNING,
+                        "Cannot convert: {0} to URI.",  //NOI18N
+                        FileUtil.getFileDisplayName(root));
+                }
+            }
+            return Collections.unmodifiableList(result);
         }
     }
 }

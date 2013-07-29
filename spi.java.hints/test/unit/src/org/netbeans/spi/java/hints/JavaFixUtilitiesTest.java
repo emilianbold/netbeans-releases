@@ -972,6 +972,22 @@ public class JavaFixUtilitiesTest extends TestBase {
 		           "}\n");
     }
     
+    public void testExpression2ExpressionStatement() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    private static String t(CharSequence seq) {\n" +
+                           "        return seq.toString();\n" +
+                           "    }\n" +
+                           "}\n",
+                           "return $var; => $var;",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    private static String t(CharSequence seq) {\n" +
+                           "        seq.toString();\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+    
     public void testOptimizeNegExpressionNeg() throws Exception {
         performOptimizeNegExpressionTest("!s.isEmpty()", "s.isEmpty()");
     }
@@ -1110,6 +1126,32 @@ public class JavaFixUtilitiesTest extends TestBase {
                            "        Collections.sort(list, (l, r) -> {\n" +
                            "            return l.compareTo(r);\n" +
                            "        });\n" +
+                           "    }\n" +
+		           "}\n");
+    }
+
+    public void testComments232298() throws Exception {
+        performRewriteTest("package test;\n" +
+                           "public class Test {\n" +
+                           "    public void z() {\n" +
+                           "        while (true) {\n" +
+                           "            int i = 0;\n" +
+                           "            \n" +
+                           "            //a\n" +
+                           "            System.err.println(1); //b\n" +
+                           "            //c\n" +
+                           "        }\n" +
+                           "    }\n" +
+                           "}\n",
+                           "while (true) { int i = 0; $statements$; } => for (; ;) { $statements$; }",
+                           "package test;\n" +
+                           "public class Test {\n" +
+                           "    public void z() {\n" +
+                           "        for (;;) {\n" +
+                           "            //a\n" +
+                           "            System.err.println(1); //b\n" +
+                           "            //c\n" +
+                           "        }\n" +
                            "    }\n" +
 		           "}\n");
     }

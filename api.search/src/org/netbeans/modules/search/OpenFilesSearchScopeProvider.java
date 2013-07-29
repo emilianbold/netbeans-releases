@@ -76,7 +76,7 @@ public class OpenFilesSearchScopeProvider extends SearchScopeDefinitionProvider 
     }
 
     @NbBundle.Messages({
-        "# {0} - number of files",
+        "# {0} - number of files. Please do not translate \"choice\", \"#\", \"number\" and \"integer\".",
         "LBL_OpenFileScope=Open {0,choice,0#Documents|1#Document|1<Documents} ({0,choice,0#0 files|1#1 file|1<{0,number,integer} files})"
     })
     private static class OpenFilesScope extends SearchScopeDefinition {

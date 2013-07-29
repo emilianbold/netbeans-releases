@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.model.impl;
 
 import java.util.*;
+import jdk.nashorn.internal.objects.PrototypeObject;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -154,7 +155,7 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     
     private boolean hasOnlyVirtualProperties() {
         for(JsObject property: getProperties().values()) {
-            if (property.isDeclared()) {
+            if (property.isDeclared() || ModelUtils.PROTOTYPE.equals(property.getName())) {
                 return false;
             }
         }
@@ -399,9 +400,12 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
                                 }
                             }
                             if (jsObject != null) {
-                                int index = rType.lastIndexOf('.');
-                                int typeLength = (index > -1) ? rType.length() - index - 1 : rType.length();
-                                ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(typeHere.getOffset(), typeHere.getOffset() + typeLength));
+                                if (typeHere.isResolved()) {
+                                    int index = rType.lastIndexOf('.');
+                                    int typeLength = (index > -1) ? rType.length() - index - 1 : rType.length();
+                                    int offset = typeHere.getOffset();
+                                    ((JsObjectImpl)jsObject).addOccurrence(new OffsetRange(offset, offset + typeLength));
+                                }
                                 moveOccurrenceOfProperties((JsObjectImpl)jsObject, this);
                             }
                         }

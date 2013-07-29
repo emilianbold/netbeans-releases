@@ -41,20 +41,21 @@
  */
 package org.netbeans.modules.html.angular;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
-import java.io.StringWriter;
+import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.EnumMap;
 import java.util.Enumeration;
-import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.html.angular.model.Directive;
+import org.openide.modules.Places;
 import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -64,8 +65,6 @@ import org.openide.util.RequestProcessor;
  * @author marekfukala
  */
 @NbBundle.Messages({
-    "doc.not.found=No documentation found",
-    "doc.loading=Loading documentation in progress",
     "doc.building=Loading AngularJS Documentation"
 })
 public class AngularDoc {
@@ -73,18 +72,15 @@ public class AngularDoc {
     private static final Logger LOG = Logger.getLogger(AngularDoc.class.getSimpleName()); //NOI18N
     private static RequestProcessor RP = new RequestProcessor(AngularDoc.class);
     private static AngularDoc INSTANCE;
+    private boolean loadingStarted;
+    
+    private static final String CACHE_FOLDER_NAME = "ajs-doc"; //NOI18N
 
     public static synchronized AngularDoc getDefault() {
         if (INSTANCE == null) {
             INSTANCE = new AngularDoc();
         }
         return INSTANCE;
-    }
-    private Map<Directive, String> directive2doc = new EnumMap<>(Directive.class);
-    private boolean loadingFinished;
-
-    public AngularDoc() {
-        startLoading();
     }
 
     /**
@@ -94,12 +90,7 @@ public class AngularDoc {
      * @return the help or null if the help is not yet loaded
      */
     public String getDirectiveDocumentation(Directive directive) {
-        String doc = directive2doc.get(directive);
-        if (doc != null) {
-            return doc;
-        } else {
-            return loadingFinished ? Bundle.doc_not_found() : Bundle.doc_loading();
-        }
+        return getDoc(directive);
     }
 
     private void startLoading() {
@@ -112,23 +103,48 @@ public class AngularDoc {
         buildDoc();
     }
 
+    private File getCacheFile(Directive directive) {
+        return Places.getCacheSubfile(new StringBuilder().append(CACHE_FOLDER_NAME).append('/').append(directive.name()).toString());
+    }
+
+    private String getDoc(Directive directive) {
+        try {
+            File cacheFile = getCacheFile(directive);
+            if (!cacheFile.exists()) {
+                //load from web and cache locally
+                loadDoc(directive, cacheFile);
+                
+                //if any of the files is not loaded yet, start the loading process
+                if(!loadingStarted) {
+                    loadingStarted = true;
+                    startLoading();
+                }
+            }
+            return Utils.getFileContent(cacheFile);
+        } catch (URISyntaxException | IOException ex) {
+            LOG.log(Level.INFO, "Can't load Angular JS documentation from {0}");
+            return null;
+        }
+
+    }
+
+    private void loadDoc(Directive directive, File cacheFile) throws URISyntaxException, MalformedURLException, IOException {
+        LOG.fine("start loading doc"); //NOI18N
+        String docURL = directive.getExternalDocumentationURL_partial();
+        URL url = new URI(docURL).toURL();
+        synchronized (cacheFile) {
+            try (Writer writer = new FileWriter(cacheFile)) {
+                writer.append("<!doctype html><html><head><title>AngularJS documentation</title></head><body>");
+                Utils.loadURL(url, writer, null);
+                writer.append("</body></html>");
+            }
+        }
+    }
+
     private void buildDoc() {
         if (directives.hasMoreElements()) {
             directive = directives.nextElement();
-            try {
-                String docURL = directive.getExternalDocumentationURL_partial();
-
-                URL url = new URI(docURL).toURL();
-                StringWriter writer = new StringWriter();
-                Utils.loadURL(url, writer, null);
-
-                LOG.log(Level.FINE, "Loaded content of URL ", docURL); //NOI18N
-
-                directive2doc.put(directive, writer.getBuffer().toString());
-            } catch (URISyntaxException | IOException ex) {
-                LOG.log(Level.INFO, String.format("Can't load doc from %s", directive.getExternalDocumentationURL_partial()), ex); //NOI18N
-            }
-
+            getDoc(directive);
             progress.progress(++loaded);
 
             //start next task
@@ -143,7 +159,6 @@ public class AngularDoc {
             progress.finish();
             progress = null;
 
-            loadingFinished = true;
             LOG.log(Level.FINE, "Loading doc finished."); //NOI18N
         }
     }

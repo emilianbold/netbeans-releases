@@ -48,10 +48,13 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.project.api.ear.EarDDGenerator;
 import org.netbeans.modules.maven.api.archetype.Archetype;
 import org.netbeans.modules.maven.api.archetype.ArchetypeWizards;
 import org.netbeans.modules.maven.api.archetype.ProjectInfo;
@@ -165,11 +168,12 @@ public class EAWizardIterator extends BaseWizardIterator {
             return; // This should not happen, just to be sure for HR 7.3.1
         }
 
-        String serverID = MavenProjectSupport.readServerID(earProject);
-        String javaeeVersion = (String) wiz.getProperty(MavenJavaEEConstants.HINT_J2EE_VERSION);
-        MavenProjectSupport.createApplicationXMLIfRequired(earProject, childProjects, serverID, javaeeVersion);
+        J2eeModuleProvider moduleProvider = earProject.getLookup().lookup(J2eeModuleProvider.class);
+        if (moduleProvider != null && moduleProvider.getConfigSupport().isDescriptorRequired()) {
+            EarDDGenerator.setupDD(earProject, true);
+        }
     }
-
+        
     @Override
     public void initialize(WizardDescriptor wiz) {
         super.initialize(wiz);

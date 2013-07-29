@@ -57,8 +57,11 @@ import org.w3c.dom.NodeList;
  */
 abstract class BaseClassContainerImpl extends WebBeansComponentImpl {
 
+    private final WebBeansModelImpl model;
+    
     BaseClassContainerImpl( WebBeansModelImpl model, Element e ) {
         super(model, e);
+        this.model = model;
     }
 
     public List<String> getClasses(){
@@ -66,7 +69,7 @@ abstract class BaseClassContainerImpl extends WebBeansComponentImpl {
         List<String> result = new ArrayList<String>( nl.getLength());
         if (nl != null) {
             for (int i=0; i<nl.getLength(); i++) {
-                if (WebBeansElements.CLASS.getQName().equals(
+                if (WebBeansElements.CLASS.getQName(model).equals(
                         getQName(nl.item(i)))) 
                 {
                     result.add(getText((Element) nl.item(i)));

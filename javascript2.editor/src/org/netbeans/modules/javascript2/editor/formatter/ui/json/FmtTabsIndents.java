@@ -51,6 +51,7 @@ import org.netbeans.modules.javascript2.editor.formatter.FmtOptions;
 import org.netbeans.modules.javascript2.editor.formatter.FmtOptions.CategorySupport;
 import static org.netbeans.modules.javascript2.editor.formatter.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.formatter.Utils;
 
 /**
  *

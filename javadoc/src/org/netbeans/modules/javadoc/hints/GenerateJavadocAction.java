@@ -102,41 +102,45 @@ public final class GenerateJavadocAction extends TextAction {
             // unsupported document
             return;
         }
+        
+        try {
+            final Descriptor desc = new Descriptor(doc.createPosition(jtc.getCaretPosition()));
 
-        RequestProcessor.getDefault().post(new Runnable() {
+            RequestProcessor.getDefault().post(new Runnable() {
 
-            @Override
-            public void run() {
-                try {
-                    final Descriptor desc = prepareGenerating(doc, jtc.getCaretPosition());
-                    if (desc != null) {
-                        // add javadoc content
-                        SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        if (prepareGenerating(doc, desc)) {
+                            // add javadoc content
+                            SwingUtilities.invokeLater(new Runnable() {
 
-                            @Override
-                            public void run() {
-                                try {
-                                    generate(doc, desc, jtc);
-                                } catch (BadLocationException ex) {
-                                    Exceptions.printStackTrace(ex);
+                                @Override
+                                public void run() {
+                                    try {
+                                        generate(doc, desc, jtc);
+                                    } catch (BadLocationException ex) {
+                                        Exceptions.printStackTrace(ex);
+                                    }
                                 }
-                            }
-                        });
+                            });
+                        }
+                    } catch (IOException ex) {
+                        Exceptions.printStackTrace(ex);
                     }
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
                 }
-            }
-        });
+            });
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
     
-    private Descriptor prepareGenerating(final Document doc, final int offset) throws IOException {
+    private boolean prepareGenerating(final Document doc, final Descriptor desc) throws IOException {
         JavaSource js = JavaSource.forDocument(doc);
         if (js == null) {
-            return null;
+            return false;
         }
 
-        final Descriptor desc = new Descriptor();
         FileObject file = js.getFileObjects().iterator().next();
         SourceVersion sv = JavadocUtilities.resolveSourceVersion(file);
         final JavadocGenerator gen = new JavadocGenerator(sv);
@@ -148,12 +152,12 @@ public final class GenerateJavadocAction extends TextAction {
                 javac.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED);
                 TokenHierarchy tokens = javac.getTokenHierarchy();
                 TokenSequence ts = tokens.tokenSequence();
-                ts.move(offset);
+                ts.move(desc.caret.getOffset());
                 if (!ts.moveNext() || ts.token().id() != JavaTokenId.JAVADOC_COMMENT) {
                     return;
                 }
                 
-                desc.caret = doc.createPosition(offset);
+                desc.caret = doc.createPosition(desc.caret.getOffset());
                 final int jdBeginOffset = ts.offset();
                 int offsetBehindJavadoc = ts.offset() + ts.token().length();
                 
@@ -198,7 +202,7 @@ public final class GenerateJavadocAction extends TextAction {
             
         }, true);
         
-        return desc.javadoc != null? desc: null;
+        return desc.javadoc != null;
     }
 
     private void generate(final Document doc, final Descriptor desc, final JTextComponent jtc) throws BadLocationException {
@@ -250,6 +254,10 @@ public final class GenerateJavadocAction extends TextAction {
         String javadoc;
         /** position inside javadoc where to write */
         Position caret;
+
+        public Descriptor(Position caret) {
+            this.caret = caret;
+        }
     }
 
 }

@@ -55,16 +55,16 @@ import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.ui.spi.KenaiIssueAccessor;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.QueryAccessor;
-import org.netbeans.modules.team.ui.spi.QueryHandle;
-import org.netbeans.modules.team.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryAccessor;
+import org.netbeans.modules.team.server.ui.spi.QueryHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
 
 /**
  *
  * @author Tomas Stupka
  */
-@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.ui.spi.QueryAccessor.class)
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.team.server.ui.spi.QueryAccessor.class)
 public class QueryAccessorImpl extends QueryAccessor<KenaiProject> {
 
     public QueryAccessorImpl() {
@@ -208,6 +208,11 @@ public class QueryAccessorImpl extends QueryAccessor<KenaiProject> {
         }
         // XXX log this inconvenience
         return Collections.emptyList();
+    }
+
+    @Override
+    public boolean hasTasks(ProjectHandle<KenaiProject> project) {
+        return true;
     }
 
     private static class ActionWrapper extends AbstractAction {

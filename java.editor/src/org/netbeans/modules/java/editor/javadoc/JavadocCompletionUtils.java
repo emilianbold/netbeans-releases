@@ -357,7 +357,9 @@ final class JavadocCompletionUtils {
             return false;
         }
         try {
-            CharSequence text = token.text().subSequence(0, pos);
+            CharSequence text = token.text();
+            if (pos < token.length())
+                text = text.subSequence(0, pos);
             boolean result = pos > 0
                     && JAVADOC_LINE_BREAK.matcher(text).find()
                     && (pos == token.length() || !isInsideIndent(token, pos));

@@ -227,7 +227,15 @@ public class ComputeImportsTest extends NbTestCase {
         doTest("StaticImportsArrays2");
     }
     
-    private void prepareTest(String capitalizedName) throws Exception {
+    public void test232647() throws Exception {
+        doTest("Test232647");
+    }
+    
+    public void testStaticImports233117() throws Exception {
+        doTest("StaticImports233117", "1.8");
+    }
+    
+    private void prepareTest(String capitalizedName, String sourceLevel) throws Exception {
         FileObject workFO = FileUtil.toFileObject(getWorkDir());
         
         assertNotNull(workFO);
@@ -266,6 +274,8 @@ public class ComputeImportsTest extends NbTestCase {
         testSource = packageRoot.getFileObject(capitalizedName + ".java");
         
         assertNotNull(testSource);
+        
+        SourceUtilsTestUtil.setSourceLevel(testSource, sourceLevel);
         
         js = JavaSource.forFileObject(testSource);
         
@@ -323,7 +333,11 @@ public class ComputeImportsTest extends NbTestCase {
     }
     
     private void doTest(String name) throws Exception {
-        prepareTest(name);
+        doTest(name, "1.5");
+    }
+    
+    private void doTest(String name, String sourceLevel) throws Exception {
+        prepareTest(name, sourceLevel);
         
         DataObject testDO = DataObject.find(testSource);
         EditorCookie ec = testDO.getCookie(EditorCookie.class);

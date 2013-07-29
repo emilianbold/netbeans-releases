@@ -270,7 +270,8 @@ public class DatabaseConnector {
             }
 
             DriverSpecification drvSpec = this.getDriverSpecification(catName);
-            if (! schema.isDefault() && schema.getName().length() > 0) {
+            if (!schema.isDefault() && schema.getName() != null
+                    && schema.getName().length() > 0) {
                 drvSpec.setSchema(schema.getName());
             }
             drvSpec.getColumns(table.getName(), column.getName());

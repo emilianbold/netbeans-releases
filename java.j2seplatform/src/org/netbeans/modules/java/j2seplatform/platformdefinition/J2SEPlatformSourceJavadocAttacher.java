@@ -46,7 +46,7 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -100,36 +100,34 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
             public void run() {
                 boolean success = false;
                 try {
+                    final J2SEPlatformCustomizer.PathModel model = new J2SEPlatformCustomizer.PathModel(platform, mode);
                     final List<? extends URI> selected;
                     if (mode == J2SEPlatformCustomizer.SOURCES) {
                         selected = SourceJavadocAttacherUtil.selectSources(
                             root,
+                            model.getRootURIs(),
                             SourceJavadocAttacherUtil.createDefaultBrowseCall(
                                 Bundle.TXT_Title(),
                                 Bundle.TXT_SourcesFilterName(),
                                 new File[1]),
-                            SourceJavadocAttacherUtil.createDefaultURIConvertor(true));
+                            SourceJavadocAttacherUtil.createDefaultURIConvertor(true),
+                            null);
                     } else if (mode == J2SEPlatformCustomizer.JAVADOC) {
                         selected = SourceJavadocAttacherUtil.selectJavadoc(
                             root,
+                            model.getRootURIs(),
                             SourceJavadocAttacherUtil.createDefaultBrowseCall(
                                 Bundle.TXT_Title(),
                                 Bundle.TXT_JavadocFilterName(),
                                 new File[1]),
-                            SourceJavadocAttacherUtil.createDefaultURIConvertor(false));
+                            SourceJavadocAttacherUtil.createDefaultURIConvertor(false),
+                            null);
                     } else {
                         throw new IllegalStateException(Integer.toString(mode));
                     }
                     if (selected != null) {
-                        final J2SEPlatformCustomizer.PathModel model = new J2SEPlatformCustomizer.PathModel(platform, mode);
-                        try {
-                            for (URI uri : selected) {
-                                model.addPath(Collections.singleton(uri.toURL()));
-                            }
-                            success = true;
-                        } catch (MalformedURLException e) {
-                            Exceptions.printStackTrace(e);
-                        }
+                        model.update(toURLList(selected));
+                        success = true;                        
                     }
                 } finally {
                     SourceJavadocAttacherUtil.callListener(listener, success);
@@ -138,6 +136,19 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
         };
         Mutex.EVENT.writeAccess(call);
         return true;
+    }
+
+    @NonNull
+    private static List<? extends URL> toURLList(@NonNull final List<? extends URI> uris) {
+        final List<URL> result = new ArrayList<>(uris.size());
+        for (URI uri : uris) {
+            try {
+                result.add(uri.toURL());
+            } catch (MalformedURLException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+        return result;
     }
 
     private J2SEPlatformImpl findOwner(final URL root) {

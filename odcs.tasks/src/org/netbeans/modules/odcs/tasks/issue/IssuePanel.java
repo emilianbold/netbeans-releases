@@ -122,6 +122,7 @@ import org.eclipse.mylyn.tasks.core.AbstractRepositoryConnector;
 import org.eclipse.mylyn.tasks.core.data.TaskData;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.issuetable.TableSorter;
 import org.netbeans.modules.bugtracking.team.spi.TeamProject;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
@@ -650,8 +651,13 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                             Point p = e.getPoint();
                             int row = subTaskTable.rowAtPoint(p);
                             TableModel model = subTaskTable.getModel();
-                            final String issueKey = (String)model.getValueAt(row,0);
-                            ODCSUtil.openIssue(issue);
+                            String id = (String)model.getValueAt(row,0);
+                            ODCSRepository repository = issue.getRepository();
+                            ODCSIssue subTask = repository.getIssueCache().getIssue(id);
+                            if (subTask == null) {
+                                subTask = repository.getIssue(id);
+                            }
+                            ODCSUtil.openIssue(subTask);
                         }
                     }
                 });

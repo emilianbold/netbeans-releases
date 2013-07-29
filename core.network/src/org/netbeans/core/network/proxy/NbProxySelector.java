@@ -55,6 +55,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.core.ProxySettings;
+import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -68,6 +69,8 @@ public final class NbProxySelector extends ProxySelector {
     private static final Logger LOG = Logger.getLogger (NbProxySelector.class.getName ());
     private static Object useSystemProxies;
     private static final String DEFAULT_PROXY_SELECTOR_CLASS_NAME = "sun.net.spi.DefaultProxySelector";
+    private static final RequestProcessor RP = new RequestProcessor(NbProxySelector.class.getName(), 5);
+    private static final int DNS_TIMEOUT = 10000;
         
     /** Creates a new instance of NbProxySelector */
     public NbProxySelector() {
@@ -366,13 +369,18 @@ public final class NbProxySelector extends ProxySelector {
         if (host == null) {
             return false;
         }
-        
-        String ip = null;
+                   
+        String ip;        
+        DnsTimeoutTask dns = new DnsTimeoutTask(host);
+        // fix #189195 - timeout when waiting for DNS response
+        RequestProcessor.Task create = RP.post(dns);
         try {
-            ip = InetAddress.getByName (host).getHostAddress ();
-        } catch (UnknownHostException ex) {
-            LOG.log (Level.FINE, ex.getLocalizedMessage (), ex);
+            create.waitFinished(DNS_TIMEOUT);
+        } catch (InterruptedException ex) {
+            LOG.log(Level.INFO, "Timeout when waiting for DNS response. ({0})", host);
         }
+        
+        ip = dns.getIp();
         
         if (ip == null) {
             return false;
@@ -424,5 +432,28 @@ public final class NbProxySelector extends ProxySelector {
     
     private static String getPacFile() {
         return ProxySettings.getSystemPac();
+    }
+    
+    private static class DnsTimeoutTask implements Runnable {
+
+        private final String host;      
+        private String ip = null;
+        
+        public DnsTimeoutTask(String host) {
+            this.host = host;
+        }
+        
+        @Override
+        public void run() {
+            try {
+                ip = InetAddress.getByName(host).getHostAddress();
+            } catch (UnknownHostException ex) {
+                LOG.log(Level.FINE, ex.getLocalizedMessage(), ex);
+            }
+        }
+        
+        public String getIp() {
+            return ip;
+        }
     }
 }

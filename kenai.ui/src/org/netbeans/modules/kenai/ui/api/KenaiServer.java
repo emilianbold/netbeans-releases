@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.kenai.ui.api;
 
-import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
@@ -55,11 +54,9 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.WeakHashMap;
-import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.Icon;
 import javax.swing.JComponent;
-import javax.swing.JMenuItem;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiManager;
@@ -74,13 +71,13 @@ import org.netbeans.modules.kenai.ui.ProjectHandleImpl;
 import org.netbeans.modules.kenai.ui.dashboard.DashboardProviderImpl;
 import org.netbeans.modules.kenai.ui.impl.LoginPanelSupportImpl;
 import org.netbeans.modules.kenai.ui.impl.TeamServerProviderImpl;
-import org.netbeans.modules.team.ui.common.DashboardSupport;
-import org.netbeans.modules.team.ui.common.UserNode;
-import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.spi.TeamServerProvider;
-import org.netbeans.modules.team.ui.util.treelist.SelectionList;
+import org.netbeans.modules.team.server.ui.common.DashboardSupport;
+import org.netbeans.modules.team.server.ui.common.UserNode;
+import org.netbeans.modules.team.server.ui.spi.LoginPanelSupport;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
+import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
+import org.netbeans.modules.team.commons.treelist.SelectionList;
 import org.openide.awt.Actions;
 import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
@@ -282,7 +279,7 @@ public final class KenaiServer implements TeamServer {
     @Override
     public Action getNewProjectAction() {
         NewKenaiProjectAction newProjectAction = new NewKenaiProjectAction(kenai);
-        newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true));
+        newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/new_team_project.png", true));
         newProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_NewProject") );
         return newProjectAction;
     }
@@ -290,7 +287,7 @@ public final class KenaiServer implements TeamServer {
     @Override
     public Action getOpenProjectAction() {
         OpenKenaiProjectAction openProjectAction = new OpenKenaiProjectAction(kenai);
-        openProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_team_project.png", true));
+        openProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/open_team_project.png", true));
         openProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_OpenProject") );
         return openProjectAction;
     }

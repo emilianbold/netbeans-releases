@@ -976,6 +976,15 @@ import org.openide.util.Utilities;
         synchronized (LogContext.class) {
             this.mySerial = serial++;
         }
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.log(
+                Level.FINER,
+                "Event type: {0} from: {1}",    //NOI18N
+                new Object[]{
+                    eventType,
+                    Arrays.toString(stackTrace)
+                });
+        }
     }
     
     private synchronized void createLogMessage(@NonNull final StringBuilder sb, Set<LogContext> reported, int depth) {

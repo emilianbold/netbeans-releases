@@ -43,6 +43,8 @@ package org.netbeans.spi.java.queries;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
+import java.util.concurrent.Callable;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.queries.SourceJavadocAttacher;
 import org.openide.util.Lookup;
@@ -77,4 +79,45 @@ public interface SourceJavadocAttacherImplementation {
     boolean attachJavadoc(
             @NonNull URL root,
             @NonNull SourceJavadocAttacher.AttachmentListener listener) throws IOException;
+
+    /**
+     * Extension into the default {@link SourceJavadocAttacherImplementation} allowing to download or find sources and javadoc for given binary.
+     * The extension implementation is registered in the global {@link org.openide.util.Lookup}.
+     * @since 1.49
+     */
+    interface Definer {
+        /**
+         * Returns the display name of the {@link Definer}.
+         * @return the display name, for example "Maven Repository"
+         */
+        @NonNull
+        String getDisplayName();
+
+        /**
+         * Returns the description of the {@link Definer}.
+         * @return the description, for example "Downloads artifacts from Maven repository"
+         */
+        @NonNull
+        String getDescription();
+
+        /**
+         * Returns the list of downloaded sources which should be attached to the root.
+         * @param root the root to download sources for
+         * @param cancel the {@link Callable} returning true if the download should be canceled
+         * @return the list of source roots
+         * Threading: Called in background thread.
+         */
+        @NonNull
+        List<? extends URL> getSources(@NonNull URL root, @NonNull Callable<Boolean> cancel);
+
+        /**
+         * Returns the list of downloaded javadocs which should be attached to the root.
+         * @param root the root to download javadoc for
+         * @param cancel the {@link Callable} returning true if the download should be canceled
+         * @return the list of javadoc roots
+         * Threading: Called in background thread.
+         */
+        @NonNull
+        List<? extends URL> getJavadoc(@NonNull URL root, @NonNull Callable<Boolean> cancel);
+    }
 }

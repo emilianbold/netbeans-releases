@@ -417,7 +417,7 @@ public final class SyncItem {
             if (syncItem.getOperation() != operation) {
                 return false;
             }
-            children.addAll(localChildren ? transferFile.getLocalChildren() : transferFile.getRemoteChildren());
+            children.addAll(localChildren ? child.getLocalChildren() : child.getRemoteChildren());
         }
         return true;
     }

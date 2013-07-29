@@ -1,0 +1,56 @@
+app:CLASS:[PUBLIC]:ESCAPED{app}:
+  graph:CLASS:[PUBLIC]:ESCAPED{graph}:
+    hint:FIELD:[PUBLIC]:ESCAPED{hint}<font color="#999999">ESCAPED{ : }String</font>:
+$:PARAMETER:[PUBLIC]:ESCAPED{$}:
+  fn:CLASS:[PUBLIC]:ESCAPED{fn}:
+    ovuGraph:METHOD:[PUBLIC]:ESCAPED{ovuGraph}ESCAPED{(}ESCAPED{options}ESCAPED{)}:
+      methods:CLASS:[PRIVATE]:ESCAPED{methods}:
+        alert:METHOD:[PUBLIC]:ESCAPED{alert}ESCAPED{(}ESCAPED{)}:
+        hide:METHOD:[PUBLIC]:ESCAPED{hide}ESCAPED{(}ESCAPED{)}:
+        init:METHOD:[PUBLIC]:ESCAPED{init}ESCAPED{(}ESCAPED{options}ESCAPED{)}:
+        show:METHOD:[PUBLIC]:ESCAPED{show}ESCAPED{(}ESCAPED{)}:
+        update:METHOD:[PUBLIC]:ESCAPED{update}ESCAPED{(}ESCAPED{content}ESCAPED{)}:
+      prv:CLASS:[PRIVATE]:ESCAPED{prv}:
+        _calculateScale:METHOD:[PUBLIC]:ESCAPED{_calculateScale}ESCAPED{(}ESCAPED{)}:
+        _checkColumn:METHOD:[PUBLIC]:ESCAPED{_checkColumn}ESCAPED{(}ESCAPED{pos}ESCAPED{)}:
+        _convertColor:METHOD:[PUBLIC]:ESCAPED{_convertColor}ESCAPED{(}ESCAPED{color}ESCAPED{)}<font color="#999999">ESCAPED{ : }String</font>:
+        _createEvents:METHOD:[PUBLIC]:ESCAPED{_createEvents}ESCAPED{(}ESCAPED{)}:
+        _createLayer:METHOD:[PUBLIC]:ESCAPED{_createLayer}ESCAPED{(}ESCAPED{)}:
+        _drawDashedLine:METHOD:[PUBLIC]:ESCAPED{_drawDashedLine}ESCAPED{(}ESCAPED{x1}ESCAPED{, }ESCAPED{y1}ESCAPED{, }ESCAPED{x2}ESCAPED{, }ESCAPED{y2}ESCAPED{, }ESCAPED{dashLength}ESCAPED{)}:
+        _drawGrid:METHOD:[PUBLIC]:ESCAPED{_drawGrid}ESCAPED{(}ESCAPED{)}:
+        _drawLines:METHOD:[PUBLIC]:ESCAPED{_drawLines}ESCAPED{(}ESCAPED{)}:
+        _drawPoints:METHOD:[PUBLIC]:ESCAPED{_drawPoints}ESCAPED{(}ESCAPED{)}:
+        _drawWires:METHOD:[PUBLIC]:ESCAPED{_drawWires}ESCAPED{(}ESCAPED{)}:
+        _enlargePoint:METHOD:[PUBLIC]:ESCAPED{_enlargePoint}ESCAPED{(}ESCAPED{c}ESCAPED{)}:
+        _getY:METHOD:[PUBLIC]:ESCAPED{_getY}ESCAPED{(}ESCAPED{value}ESCAPED{)}:
+        _highlightDays:METHOD:[PUBLIC]:ESCAPED{_highlightDays}ESCAPED{(}ESCAPED{)}:
+        _load:METHOD:[PUBLIC]:ESCAPED{_load}ESCAPED{(}ESCAPED{)}:
+        _printValues:METHOD:[PUBLIC]:ESCAPED{_printValues}ESCAPED{(}ESCAPED{)}:
+        _searchNextValue:METHOD:[PUBLIC]:ESCAPED{_searchNextValue}ESCAPED{(}ESCAPED{index}ESCAPED{)}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}$.fn.ovuGraph.prv._searchNextValue.index</font>:
+        canvas:CLASS:[PUBLIC]:ESCAPED{canvas}:
+          height:FIELD:[PUBLIC]:ESCAPED{height}<font color="#999999">ESCAPED{ : }Number</font>:
+          width:FIELD:[PUBLIC]:ESCAPED{width}<font color="#999999">ESCAPED{ : }prv.json.objectSize</font>:
+        columnW:FIELD:[PUBLIC]:ESCAPED{columnW}<font color="#999999">ESCAPED{ : }Number</font>:
+        context:CLASS:[PUBLIC]:ESCAPED{context}:
+          fillStyle:FIELD:[PUBLIC]:ESCAPED{fillStyle}<font color="#999999">ESCAPED{ : }@var;color</font>:
+          font:FIELD:[PUBLIC]:ESCAPED{font}<font color="#999999">ESCAPED{ : }String</font>:
+          lineHeight:FIELD:[PUBLIC]:ESCAPED{lineHeight}<font color="#999999">ESCAPED{ : }Number</font>:
+          lineWidth:FIELD:[PUBLIC]:ESCAPED{lineWidth}<font color="#999999">ESCAPED{ : }Number</font>:
+          strokeStyle:FIELD:[PUBLIC]:ESCAPED{strokeStyle}<font color="#999999">ESCAPED{ : }String</font>:
+          textAlign:FIELD:[PUBLIC]:ESCAPED{textAlign}<font color="#999999">ESCAPED{ : }String</font>:
+          textBaseline:FIELD:[PUBLIC]:ESCAPED{textBaseline}<font color="#999999">ESCAPED{ : }String</font>:
+        ctx:CLASS:[PUBLIC]:ESCAPED{ctx}:
+          fillStyle:FIELD:[PUBLIC]:ESCAPED{fillStyle}<font color="#999999">ESCAPED{ : }@var;color</font>:
+          lineHeight:FIELD:[PUBLIC]:ESCAPED{lineHeight}<font color="#999999">ESCAPED{ : }Number</font>:
+          lineWidth:FIELD:[PUBLIC]:ESCAPED{lineWidth}<font color="#999999">ESCAPED{ : }Number</font>:
+          strokeStyle:FIELD:[PUBLIC]:ESCAPED{strokeStyle}<font color="#999999">ESCAPED{ : }@var;color</font>:
+        getMousePos:METHOD:[PUBLIC]:ESCAPED{getMousePos}ESCAPED{(}ESCAPED{c}ESCAPED{, }ESCAPED{e}ESCAPED{)}:
+        id:CLASS:[PUBLIC]:ESCAPED{id}:
+        json:CLASS:[PUBLIC]:ESCAPED{json}:
+        layer:CLASS:[PUBLIC]:ESCAPED{layer}:
+          height:FIELD:[PUBLIC]:ESCAPED{height}<font color="#999999">ESCAPED{ : }Number</font>:
+          width:FIELD:[PUBLIC]:ESCAPED{width}<font color="#999999">ESCAPED{ : }prv.json.objectSize</font>:
+        layer_id:CLASS:[PUBLIC]:ESCAPED{layer_id}:
+        maxValue:FIELD:[PUBLIC]:ESCAPED{maxValue}:
+        minValue:FIELD:[PUBLIC]:ESCAPED{minValue}:
+        scale:FIELD:[PUBLIC]:ESCAPED{scale}:

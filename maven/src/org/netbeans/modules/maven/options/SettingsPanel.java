@@ -60,6 +60,8 @@ import javax.swing.JList;
 import javax.swing.JSeparator;
 import javax.swing.ListCellRenderer;
 import javax.swing.SwingUtilities;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import org.netbeans.modules.maven.TextValueCompleter;
 import org.netbeans.modules.maven.configurations.M2Configuration;
 import org.netbeans.modules.maven.customizer.ActionMappings;
@@ -105,6 +107,7 @@ public class SettingsPanel extends javax.swing.JPanel {
     private final DefaultComboBoxModel mavenHomeDataModel = new DefaultComboBoxModel();
     private String             mavenRuntimeHome = null;
     private int                lastSelected = -1;
+    private final static RequestProcessor RP = new RequestProcessor(SettingsPanel.class);
 
     private static class ComboBoxRenderer extends DefaultListCellRenderer {
 
@@ -195,6 +198,7 @@ public class SettingsPanel extends javax.swing.JPanel {
         completer = new TextValueCompleter(getGlobalOptions(), txtOptions, " "); //NOI18N
         cbProjectNodeNameMode.addActionListener(listener);
         txtProjectNodeNameCustomPattern.setVisible(false);
+        txtProjectNodeNameCustomPattern.getDocument().addDocumentListener(new DocumentListenerImpl());
         lstCategory.setSelectedIndex(0);
         lstCategory.setCellRenderer(new DefaultListCellRenderer() {
 
@@ -483,7 +487,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                         .addGroup(pnlAppearanceLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(txtProjectNodeNameCustomPattern)
-                            .addComponent(cbProjectNodeNameMode, 0, 290, Short.MAX_VALUE))))
+                            .addComponent(cbProjectNodeNameMode, 0, 302, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         pnlAppearanceLayout.setVerticalGroup(
@@ -497,7 +501,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(cbProjectNodeNameMode, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(txtProjectNodeNameCustomPattern, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(243, Short.MAX_VALUE))
+                .addContainerGap(246, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlAppearance, "appearance");
@@ -525,7 +529,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addGroup(pnlDependenciesLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(pnlDependenciesLayout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addGap(0, 236, Short.MAX_VALUE))
                     .addGroup(pnlDependenciesLayout.createSequentialGroup()
                         .addComponent(lblJavadoc)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -563,7 +567,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(comSource, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(161, Short.MAX_VALUE))
+                .addContainerGap(163, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlDependencies, "dependencies");
@@ -588,7 +592,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addComponent(lblIndex)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(comIndex, 0, 164, Short.MAX_VALUE)
+                .addComponent(comIndex, 0, 192, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(btnIndex)
                 .addContainerGap())
@@ -601,7 +605,7 @@ public class SettingsPanel extends javax.swing.JPanel {
                     .addComponent(lblIndex)
                     .addComponent(comIndex, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(btnIndex))
-                .addContainerGap(297, Short.MAX_VALUE))
+                .addContainerGap(300, Short.MAX_VALUE))
         );
 
         pnlCards.add(pnlIndex, "index");
@@ -697,6 +701,9 @@ public class SettingsPanel extends javax.swing.JPanel {
 
     private void cbProjectNodeNameModeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cbProjectNodeNameModeActionPerformed
         txtProjectNodeNameCustomPattern.setVisible(cbProjectNodeNameMode.getSelectedIndex()==cbProjectNodeNameMode.getItemCount()-1);
+        txtProjectNodeNameCustomPattern.getParent().invalidate();
+        txtProjectNodeNameCustomPattern.getParent().revalidate();
+        txtProjectNodeNameCustomPattern.getParent().repaint();
     }//GEN-LAST:event_cbProjectNodeNameModeActionPerformed
 
     private void cbProjectNodeNameModeItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_cbProjectNodeNameModeItemStateChanged
@@ -789,38 +796,57 @@ public class SettingsPanel extends javax.swing.JPanel {
     public void setValues() {
         txtOptions.setText(MavenSettings.getDefault().getDefaultOptions());
 
-        predefinedRuntimes.clear();
-        predefinedRuntimes.add("");
-        String defaultExternalMavenRuntime = MavenSettings.getDefaultExternalMavenRuntime();
-        if (defaultExternalMavenRuntime != null) {
-            predefinedRuntimes.add(defaultExternalMavenRuntime);
-        }
-        userDefinedMavenRuntimes.clear();
-        userDefinedMavenRuntimes.addAll(MavenSettings.getDefault().getUserDefinedMavenRuntimes());
-        comMavenHome.removeActionListener(listItemChangedListener);
-        mavenHomeDataModel.removeAllElements();
-        File command = EmbedderFactory.getMavenHome();
-        for (String runtime : predefinedRuntimes) {
-            boolean bundledRuntime = runtime.isEmpty();
-            String desc = bundledRuntime ? MAVEN_RUNTIME_Bundled() :
-                    MAVEN_RUNTIME_External(runtime);
-            mavenHomeDataModel.addElement(desc);
-        }
-        
-        if (!userDefinedMavenRuntimes.isEmpty()) {
-            mavenHomeDataModel.addElement(SEPARATOR);
-            for (String runtime : userDefinedMavenRuntimes) {
-                String desc = MAVEN_RUNTIME_External(runtime); // NOI18N
-                mavenHomeDataModel.addElement(desc);
+        final List<String> predefined = new ArrayList<String>();
+        final List<String> user = new ArrayList<String>();
+        RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                predefined.add("");
+                String defaultExternalMavenRuntime = MavenSettings.getDefaultExternalMavenRuntime();
+                if (defaultExternalMavenRuntime != null) {
+                    predefined.add(defaultExternalMavenRuntime);
+                }
+                user.addAll(MavenSettings.getDefault().getUserDefinedMavenRuntimes());
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        predefinedRuntimes.clear();
+                        userDefinedMavenRuntimes.clear();
+                        predefinedRuntimes.addAll(predefined);
+                        userDefinedMavenRuntimes.addAll(user);
+
+                        comMavenHome.removeActionListener(listItemChangedListener);
+                        mavenHomeDataModel.removeAllElements();
+                        File command = EmbedderFactory.getMavenHome();
+                        for (String runtime : predefinedRuntimes) {
+                            boolean bundledRuntime = runtime.isEmpty();
+                            String desc = bundledRuntime ? MAVEN_RUNTIME_Bundled()
+                                    : MAVEN_RUNTIME_External(runtime);
+                            mavenHomeDataModel.addElement(desc);
+                        }
+
+                        if (!userDefinedMavenRuntimes.isEmpty()) {
+                            mavenHomeDataModel.addElement(SEPARATOR);
+                            for (String runtime : userDefinedMavenRuntimes) {
+                                String desc = MAVEN_RUNTIME_External(runtime); // NOI18N
+                                mavenHomeDataModel.addElement(desc);
+                            }
+                        }
+
+                        mavenHomeDataModel.addElement(SEPARATOR);
+                        mavenHomeDataModel.addElement(MAVEN_RUNTIME_Browse());
+                        comMavenHome.setSelectedItem(command.getAbsolutePath()); //NOI18N
+                        listDataChanged();
+                        lastSelected = comMavenHome.getSelectedIndex();
+                        comMavenHome.addActionListener(listItemChangedListener);
+                        changed = false;  //#163955 - do not fire change events on load
+                        //listDataChanged() sets changed to true
+                    }
+                });
             }
-        }
-        
-        mavenHomeDataModel.addElement(SEPARATOR);
-        mavenHomeDataModel.addElement(MAVEN_RUNTIME_Browse());
-        comMavenHome.setSelectedItem(command.getAbsolutePath()); //NOI18N
-        listDataChanged();
-        lastSelected = comMavenHome.getSelectedIndex();
-        comMavenHome.addActionListener(listItemChangedListener);
+        });
         
         comIndex.setSelectedIndex(RepositoryPreferences.getIndexUpdateFrequency());
         comBinaries.setSelectedItem(MavenSettings.getDefault().getBinaryDownloadStrategy());
@@ -920,6 +946,24 @@ public class SettingsPanel extends javax.swing.JPanel {
         
         @Override
         public void actionPerformed(ActionEvent e) {
+            changed = true;
+        }
+        
+    }
+    private class DocumentListenerImpl implements DocumentListener {
+
+        @Override
+        public void insertUpdate(DocumentEvent e) {
+            changed = true;
+        }
+
+        @Override
+        public void removeUpdate(DocumentEvent e) {
+            changed = true;
+        }
+
+        @Override
+        public void changedUpdate(DocumentEvent e) {
             changed = true;
         }
         

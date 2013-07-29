@@ -409,7 +409,7 @@ public class TokenFormatter {
                     int countSpaces;
                     int column = 0;
                     int indentOfOpenTag = 0;
-                    final Deque<Integer> lastBracedBlockIndent = new ArrayDeque<Integer>();
+                    final Deque<Integer> lastBracedBlockIndent = new ArrayDeque<>();
 
                     FormatToken formatToken;
                     String newText = null;
@@ -1069,7 +1069,7 @@ public class TokenFormatter {
                                         switch (docOptions.wrapArrayInit) {
                                             case WRAP_ALWAYS:
                                                 indentRule = true;
-                                                newLines = 1;
+                                                newLines = isEmptyArray(formatTokens, index) ? 0 : 1;
                                                 countSpaces = docOptions.alignMultilineArrayInit ? lastAnchor.getAnchorColumn() : indent;
                                                 break;
                                             case WRAP_NEVER:
@@ -1085,7 +1085,7 @@ public class TokenFormatter {
                                                 if (isAfterLineComment(formatTokens, index)
                                                         || column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
                                                     indentRule = true;
-                                                    newLines = 1;
+                                                    newLines = isEmptyArray(formatTokens, index) ? 0 : 1;
                                                     countSpaces = docOptions.alignMultilineArrayInit ? lastAnchor.getAnchorColumn() : indent;
                                                 } else {
                                                     newLines = 0;
@@ -1146,7 +1146,17 @@ public class TokenFormatter {
                                         countSpaces = docOptions.spaceWithinCatchParens ? 1 : 0;
                                         break;
                                     case WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS:
-                                        countSpaces = docOptions.spaceWithinArrayBrackets ? 1 : 0;
+                                        helpIndex = index - 1;
+                                        while (helpIndex > 0
+                                                && formatTokens.get(helpIndex).getId() != FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS
+                                                && formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE) {
+                                            helpIndex--;
+                                        }
+                                        if (helpIndex > 0 && formatTokens.get(helpIndex).getId() == FormatToken.Kind.WHITESPACE_WITHIN_ARRAY_BRACKETS_PARENS) {
+                                            countSpaces = 0;
+                                        } else {
+                                            countSpaces = docOptions.spaceWithinArrayBrackets ? 1 : 0;
+                                        }
                                         break;
                                     case WHITESPACE_WITHIN_TYPE_CAST_PARENS:
                                         countSpaces = docOptions.spaceWithinTypeCastParens ? 1 : 0;
@@ -1749,6 +1759,18 @@ public class TokenFormatter {
                 }
             }
 
+            private boolean isEmptyArray(List<FormatToken>  formatTokens, int index) {
+                boolean result = false;
+                if (formatTokens.size() >= index + 2) {
+                    FormatToken possibleParenToken = formatTokens.get(index + 1);
+                    if (possibleParenToken.getId() == FormatToken.Kind.WHITESPACE) {
+                        possibleParenToken = formatTokens.get(index + 2);
+                    }
+                    result = possibleParenToken.getId() == FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN;
+                }
+                return result;
+            }
+
             private int countSpacesForArrayDeclParens(int index, int indent, List<FormatToken> formatTokens) {
                 int countSpaces;
                 int hIndex = index - 1;
@@ -1759,9 +1781,14 @@ public class TokenFormatter {
 
                 } while (token.getId() != FormatToken.Kind.WHITESPACE_INDENT
                         && token.getId() != FormatToken.Kind.TEXT
+                        && token.getId() != FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN
+                        && token.getId() != FormatToken.Kind.WHITESPACE_AFTER_ARRAY_DECL_LEFT_PAREN
                         && hIndex > 0);
                 if (token.getId() == FormatToken.Kind.WHITESPACE_INDENT) {
                     countSpaces = indent;
+                } else if (token.getId() == FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN
+                        || token.getId() == FormatToken.Kind.WHITESPACE_AFTER_ARRAY_DECL_LEFT_PAREN) {
+                    countSpaces = 0;
                 } else {
                     countSpaces = docOptions.spaceWithinArrayDeclParens ? 1 : 0;
                 }

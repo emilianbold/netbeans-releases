@@ -45,6 +45,8 @@
 package org.netbeans.modules.web.debug.breakpoints;
 
 import java.beans.PropertyChangeEvent;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import org.netbeans.api.debugger.Breakpoint;
 import org.netbeans.api.debugger.DebuggerEngine;
@@ -54,6 +56,9 @@ import org.netbeans.api.debugger.LazyDebuggerManagerListener;
 import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.Watch;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
+import org.openide.util.Exceptions;
 
 /**
  * Listens on DebuggerManager and:
@@ -75,7 +80,19 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
             new Breakpoint [0]
         );
         for (int i = 0; i < breakpoints.length; i++) {
-            if (breakpoints[i] == null) {
+            Breakpoint b = breakpoints[i];
+            if (b instanceof JspLineBreakpoint) {
+                try {
+                    FileObject fo = URLMapper.findFileObject(new URL(((JspLineBreakpoint) b).getURL()));
+                    if (fo == null) {
+                        // Remove breakpoints in deleted files
+                        b = null;
+                    }
+                } catch (MalformedURLException muex) {
+                    Exceptions.printStackTrace(muex);
+                }
+            }
+            if (b == null) {
                 Breakpoint[] b2 = new Breakpoint[breakpoints.length - 1];
                 System.arraycopy(breakpoints, 0, b2, 0, i);
                 if (i < breakpoints.length - 1) {
@@ -85,7 +102,7 @@ public class PersistenceManager implements LazyDebuggerManagerListener {
                 i--;
                 continue;
             }
-            breakpoints[i].addPropertyChangeListener(this);
+            b.addPropertyChangeListener(this);
         }
         return breakpoints;
     }

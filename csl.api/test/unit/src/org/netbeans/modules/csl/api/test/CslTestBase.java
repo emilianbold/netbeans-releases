@@ -226,7 +226,9 @@ public abstract class CslTestBase extends NbTestCase {
     protected void setUp() throws Exception {
         super.setUp();
 
-        clearWorkDir();
+        if (cleanCacheDir()) {
+            clearWorkDir();
+        }
         System.setProperty("netbeans.user", getWorkDirPath());
         // XXX are the following four lines actually necessary?
         final FileObject wd = FileUtil.toFileObject(getWorkDir());
@@ -4404,6 +4406,10 @@ public abstract class CslTestBase extends NbTestCase {
 
     protected Map<String, ClassPath> createClassPathsForTest() {
         return null;
+    }
+
+    protected boolean cleanCacheDir() {
+        return true;
     }
 
     private class TestClassPathProvider implements ClassPathProvider {

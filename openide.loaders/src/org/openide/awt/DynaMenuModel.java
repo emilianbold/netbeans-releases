@@ -80,7 +80,7 @@ class DynaMenuModel {
         actionToMenuMap = new HashMap<DynamicMenuContent, JComponent[]>();
     }
     
-    public void loadSubmenu(List<Object> cInstances, JMenu m, Map<Object,FileObject> cookiesToFiles) {
+    public void loadSubmenu(List<Object> cInstances, JMenu m, boolean remove, Map<Object,FileObject> cookiesToFiles) {
         // clear first - refresh the menu's content
         boolean addSeparator = false;
         Icon curIcon = null;
@@ -144,6 +144,10 @@ class DynaMenuModel {
         
         if (isWithIcons) {
             menuItems = alignVertically(menuItems);
+        }
+        
+        if (remove) {
+            m.removeAll();
         }
         
         // fill menu with built items

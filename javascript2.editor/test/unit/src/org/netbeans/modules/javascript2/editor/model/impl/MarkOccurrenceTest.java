@@ -831,6 +831,61 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue232595.js","      myl^oc1 += loc2;", true);
     }
 
+    public void testIssue232920_01() throws Exception {
+        checkOccurrences("testfiles/structure/issue232920.js","var aaa = new MyCtx.A^uto();", true);
+    }
+    
+    public void testIssue232920_02() throws Exception {
+        checkOccurrences("testfiles/structure/issue232920.js","console.log(aaa.descri^ption.name);", true);
+    }
+    
+    public void testIssue232920_03() throws Exception {
+        checkOccurrences("testfiles/structure/issue232920.js","console.log(aaa.description.na^me);", true);
+    }
+    
+    public void testIssue232993_01() throws Exception {
+        checkOccurrences("testfiles/coloring/issue215757.js","   this.document = win^dow.document;", true);
+    }
+    
+    public void testIssue232993_02() throws Exception {
+        checkOccurrences("testfiles/coloring/issue215757.js","   this.docume^nt = window.document;", true);
+    }
+    
+    public void testIssue232993_03() throws Exception {
+        checkOccurrences("testfiles/coloring/issue215757.js","this.browser = brow^ser.browser;", true);
+    }
+    
+    public void testIssue232993_04() throws Exception {
+        checkOccurrences("testfiles/coloring/issue215757.js","this.browser = browser.brow^ser;", true);
+    }
+    
+    public void testIssue217769_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue217769.js","a.i^n();", true);
+    }
+    
+    public void testIssue233236_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue233236.js","var firstName = firs^tName;", true);
+    }
+    
+    public void testIssue233236_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue233236.js","var firstN^ame = firstName;", true);
+    }
+    
+    public void testIssue233578_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue233578.js","this.name = n^ame;", true);
+    }
+    
+    public void testIssue233578_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue233578.js","this.nam^e = name;", true);
+    }
+    
+    public void testIssue233578_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue233578.js","this.age = ag^e;", true);
+    }
+    
+    public void testIssue233578_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue233578.js","this.ag^e = age;", true);
+    }
     
     private String getTestName() {
         String name = getName();

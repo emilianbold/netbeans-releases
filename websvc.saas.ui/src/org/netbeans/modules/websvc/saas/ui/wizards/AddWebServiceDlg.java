@@ -350,7 +350,6 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     private void disableAllControls() {
         allControlsDisabled = true;
         jBtnBrowse.setEnabled(false);
-        jBtnProxy.setEnabled(false);
         jRbnFilesystem.setEnabled(false);
         jRbnUrl.setEnabled(false);
         jTxServiceURL.setEnabled(false);
@@ -362,7 +361,6 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
     private void enableAllControls() {
         allControlsDisabled = false;
         jBtnBrowse.setEnabled(true);
-        jBtnProxy.setEnabled(true);
         jRbnFilesystem.setEnabled(true);
         jRbnUrl.setEnabled(true);
         jTxServiceURL.setEnabled(true);
@@ -456,19 +454,18 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
         jBtnBrowse = new javax.swing.JButton();
         jRbnUrl = new javax.swing.JRadioButton();
         jTxServiceURL = new javax.swing.JTextField();
-        jBtnProxy = new javax.swing.JButton();
         pkgNameLbl = new javax.swing.JLabel();
         jTxtpackageName = new javax.swing.JTextField();
         errorLabel = new javax.swing.JLabel();
         errorLabel.setVisible(false);
 
         addAncestorListener(new javax.swing.event.AncestorListener() {
-            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
-            }
             public void ancestorAdded(javax.swing.event.AncestorEvent evt) {
                 formAncestorAdded(evt);
             }
             public void ancestorRemoved(javax.swing.event.AncestorEvent evt) {
+            }
+            public void ancestorMoved(javax.swing.event.AncestorEvent evt) {
             }
         });
 
@@ -503,13 +500,6 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
 
         jTxServiceURL.setColumns(20);
 
-        org.openide.awt.Mnemonics.setLocalizedText(jBtnProxy, org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "LBL_ProxySettings")); // NOI18N
-        jBtnProxy.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jBtnProxyActionPerformed(evt);
-            }
-        });
-
         pkgNameLbl.setLabelFor(jTxtpackageName);
         org.openide.awt.Mnemonics.setLocalizedText(pkgNameLbl, org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "PACKAGE_LABEL")); // NOI18N
 
@@ -530,9 +520,6 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLblChooseSource)
-                        .addContainerGap())
-                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(pkgNameLbl)
                             .addComponent(jRbnFilesystem)
@@ -544,20 +531,17 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
                                     .addComponent(jTxServiceURL, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE)
                                     .addComponent(jTxtLocalFilename, javax.swing.GroupLayout.DEFAULT_SIZE, 549, Short.MAX_VALUE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(jBtnProxy, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(jBtnBrowse, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(jBtnBrowse, javax.swing.GroupLayout.PREFERRED_SIZE, 118, javax.swing.GroupLayout.PREFERRED_SIZE)
                                 .addGap(14, 14, 14))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(jTxtpackageName, javax.swing.GroupLayout.DEFAULT_SIZE, 551, Short.MAX_VALUE)
                                 .addGap(136, 136, 136))))
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 796, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLblChooseSource)
+                            .addComponent(errorLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 796, Short.MAX_VALUE))
                         .addContainerGap())))
         );
-
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {jBtnBrowse, jBtnProxy});
-
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
@@ -572,14 +556,13 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jRbnUrl)
-                    .addComponent(jBtnProxy)
                     .addComponent(jTxServiceURL, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(pkgNameLbl)
                     .addComponent(jTxtpackageName, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 59, Short.MAX_VALUE)
+                .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 61, Short.MAX_VALUE)
                 .addContainerGap())
         );
 
@@ -591,7 +574,6 @@ public class AddWebServiceDlg extends JPanel implements ActionListener {
         jRbnUrl.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlRadioButton.ACC_desc"));
         jTxServiceURL.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlComboBox.ACC_name"));
         jTxServiceURL.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.urlComboBox.ACC_desc"));
-        jBtnProxy.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.httpProxyButton.ACC_desc"));
         jTxtpackageName.getAccessibleContext().setAccessibleName(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.packageTextField.ACC_name"));
         jTxtpackageName.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.packageTextField.ACC_desc"));
         errorLabel.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(AddWebServiceDlg.class, "AddWebServiceDlg.errorLabel.ACC_name"));
@@ -605,10 +587,6 @@ private void jRbnUrlActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST
     enableControls();
 
 }//GEN-LAST:event_jRbnUrlActionPerformed
-
-private void jBtnProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnProxyActionPerformed
-    OptionsDisplayer.getDefault().open("General");//NOI18N
-}//GEN-LAST:event_jBtnProxyActionPerformed
 
 private void jBtnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBrowseActionPerformed
 
@@ -648,7 +626,6 @@ private void formAncestorAdded(javax.swing.event.AncestorEvent evt) {//GEN-FIRST
     private javax.swing.ButtonGroup buttonGroup1;
     private javax.swing.JLabel errorLabel;
     private javax.swing.JButton jBtnBrowse;
-    private javax.swing.JButton jBtnProxy;
     private javax.swing.JLabel jLblChooseSource;
     private javax.swing.JRadioButton jRbnFilesystem;
     private javax.swing.JRadioButton jRbnUrl;

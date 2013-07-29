@@ -68,8 +68,8 @@ public final class HintsOptionsPanelController extends OptionsPanelController {
                     
     public void update() {
         if (panel != null) {
-            panel.update();
-            panel.setOverlayPreferences(settings);
+            panel.update(false);
+            panel.setOverlayPreferences(settings, false);
         }
     }
     

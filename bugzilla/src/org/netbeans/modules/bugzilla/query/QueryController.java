@@ -1027,11 +1027,16 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        if(isChanged()) {
-            panel.saveChangesButton.setEnabled(true);
-        } else {
-            panel.saveChangesButton.setEnabled(false);
-        }        
+        BugzillaUtil.runInAWT(new Runnable() {
+            @Override
+            public void run() {
+                if (isChanged()) {
+                    panel.saveChangesButton.setEnabled(true);
+                } else {
+                    panel.saveChangesButton.setEnabled(false);
+                }                
+            }
+        });
     }
 
     public boolean isChanged() {
@@ -1050,8 +1055,11 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
     }
 
     private void saveQuery() {
+        String name = query.getDisplayName();
+        Bugzilla.LOG.log(Level.FINE, "saving query '{0}'", new Object[]{name}); // NOI18N
         repository.saveQuery(query);
         resetParameters();
+        Bugzilla.LOG.log(Level.FINE, "query '{0}' saved", new Object[]{name});  // NOI18N                 
     }
 
     private class QueryTask implements Runnable, Cancellable, QueryNotifyListener {

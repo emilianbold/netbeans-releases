@@ -51,6 +51,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
@@ -66,11 +67,15 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 /**
  * AngularJS extension to the html editor.
  *
- * XXX register also to text/xhtml?
- *
  * @author marekfukala
  */
-@MimeRegistration(mimeType = "text/html", service = HtmlExtension.class)
+@MimeRegistrations({
+    @MimeRegistration(mimeType = "text/html", service = HtmlExtension.class),
+    @MimeRegistration(mimeType = "text/xhtml", service = HtmlExtension.class),
+    @MimeRegistration(mimeType = "text/x-jsp", service = HtmlExtension.class),
+    @MimeRegistration(mimeType = "text/x-tag", service = HtmlExtension.class),
+    @MimeRegistration(mimeType = "text/x-php5", service = HtmlExtension.class)
+})
 public class AngularHtmlExtension extends HtmlExtension {
 
     @Override
@@ -83,8 +88,10 @@ public class AngularHtmlExtension extends HtmlExtension {
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<>();
         AngularModel model = AngularModel.getModel(result);
         for(Attribute ngAttr : model.getNgAttributes()) {
-            highlights.put(new OffsetRange(ngAttr.from(), ngAttr.from() + ngAttr.name().length()),
-                    ColoringAttributes.CONSTRUCTOR_SET);
+            OffsetRange dor = Utils.getValidDocumentOffsetRange(ngAttr.from(), ngAttr.from() + ngAttr.name().length(), result.getSnapshot());
+            if(dor != null) {
+                highlights.put(dor, ColoringAttributes.CONSTRUCTOR_SET);
+            }
         }
         return highlights;
     }

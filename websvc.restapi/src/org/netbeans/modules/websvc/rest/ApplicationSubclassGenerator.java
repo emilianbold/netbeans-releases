@@ -278,7 +278,7 @@ public class ApplicationSubclassGenerator {
                 maker.QualIdent(Set.class.getCanonicalName()),
                 Collections.singletonList(wildClass));
 
-        String methodBody = collectRestResources(classNames, controller, false);
+        String methodBody = MiscPrivateUtilities.collectRestResources(classNames, restSupport, false);
         
         return MiscUtilities.createAddResourceClasses(maker, modified, controller, methodBody, false);
     }
@@ -296,7 +296,7 @@ public class ApplicationSubclassGenerator {
                 maker.QualIdent(Set.class.getCanonicalName()),
                 Collections.singletonList(wildClass));
         //StringBuilder builder = new StringBuilder();
-        String methodBody = collectRestResources(classNames, controller, true);
+        String methodBody = MiscPrivateUtilities.collectRestResources(classNames, restSupport, true);
         ModifiersTree modifiersTree = maker.Modifiers(EnumSet
                 .of(Modifier.PRIVATE));
         MethodTree methodTree = maker.Method(modifiersTree,
@@ -307,37 +307,6 @@ public class ApplicationSubclassGenerator {
                 null);
         modified = maker.addClassMember(modified, methodTree);
         return modified;
-    }
-
-
-    private String collectRestResources( Collection<String> classes,
-            final CompilationController controller, final boolean oldVersion) throws IOException
-    {
-        StringBuilder builder = new StringBuilder();
-        builder.append('{');
-        if (oldVersion) {
-            builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
-        }
-        for (String clazz : classes) {
-            handleResource(controller, clazz, builder);
-        }
-        if (oldVersion) {
-            if (restSupport.hasJersey2(true)) {
-                builder.append(MiscUtilities.getJersey2JSONFeature());
-            } else {
-                builder.append(MiscUtilities.getJacksonProviderSnippet(restSupport));
-            }
-        }
-        if (oldVersion) {
-            builder.append("return resources;");                // NOI18N
-        }
-        builder.append('}');
-        return builder.toString();
-    }
-    private void handleResource(CompilationController controller, String className, StringBuilder builder) throws IllegalArgumentException {
-        builder.append("resources.add(");       // NOI18N
-        builder.append( className );
-        builder.append(".class);");             // NOI18N
     }
 
     public static String getApplicationPathFromAnnotations(RestSupport restSupport, final String applPathFromDD) {

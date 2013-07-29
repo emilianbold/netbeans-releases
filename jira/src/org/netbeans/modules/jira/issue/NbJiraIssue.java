@@ -562,9 +562,8 @@ public class NbJiraIssue {
             if(td == null) {
                 return false;
             }
-            IssueCache<NbJiraIssue> cache = getRepository().getIssueCache();
-            NbJiraIssue issue = cache.getIssue(key);
-            cache.setIssueData(td.getTaskId(), issue != null ? issue : new NbJiraIssue(td, repository)); // XXX
+            setTaskData(td);
+            getRepository().getIssueCache().setIssueData(td.getTaskId(), this); // XXX
             refreshViewData(afterSubmitRefresh);
         } catch (IOException ex) {
             Jira.LOG.log(Level.SEVERE, null, ex);

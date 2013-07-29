@@ -122,9 +122,9 @@ public class PullAction extends SingleRepositoryAction {
     
     @NbBundle.Messages({
         "# {0} - repository name", "LBL_PullAction.progressName=Pulling - {0}",
-        "MSG_PullAction.fetching=fetching remote changes",
-        "MSG_PullAction.merging=merging remote changes",
-        "MSG_PullAction.rebasing=rebasing onto fetched head"
+        "MSG_PullAction.fetching=Fetching remote changes",
+        "MSG_PullAction.merging=Merging remote changes",
+        "MSG_PullAction.rebasing=Rebasing onto fetched head"
     })
     public Task pull (File repository, final String target, final List<String> fetchRefSpecs, final String branchToMerge, final String remoteNameToUpdate) {
         GitProgressSupport supp = new GitProgressSupportImpl(fetchRefSpecs, branchToMerge, target, remoteNameToUpdate);
@@ -244,8 +244,7 @@ public class PullAction extends SingleRepositoryAction {
             "CTL_PullAction_mergeButton_text=&Merge",
             "CTL_PullAction_mergeButton_TTtext=Merge the two created heads",
             "CTL_PullAction_rebaseButton_text=&Rebase",
-            "CTL_PullAction_rebaseButton_TTtext=Rebase local changesets onto "
-            + "the tipmost branch head"
+            "CTL_PullAction_rebaseButton_TTtext=Rebase current branch on top of the fetched branch"
         })
         private Callable<Void> askForNextAction () {
             JButton btnMerge = new JButton();

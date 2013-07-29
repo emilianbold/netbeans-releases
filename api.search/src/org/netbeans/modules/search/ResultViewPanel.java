@@ -55,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JToolBar;
+import javax.swing.UIManager;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.modules.search.ui.UiUtils;
 import org.netbeans.spi.search.provider.SearchComposition;
@@ -128,7 +129,7 @@ class ResultViewPanel extends JPanel implements Lookup.Provider {
             infoPanel.setLayout(new BorderLayout());
             JScrollPane scrollPane = new JScrollPane();
             infoPanelContent = new JPanel(new FlowLayout(FlowLayout.LEADING));
-            infoPanelContent.setBackground(SystemColor.text);
+            infoPanelContent.setBackground(UIManager.getColor("TextField.background")); //NOI18N
             scrollPane.setViewportView(infoPanelContent);
             infoPanel.add(scrollPane, BorderLayout.CENTER);
             add(infoPanel, CARD_NAME_INFO);

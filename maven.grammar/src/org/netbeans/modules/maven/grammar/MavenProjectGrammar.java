@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Enumeration;
@@ -532,6 +533,12 @@ public class MavenProjectGrammar extends AbstractSchemaBasedGrammar {
         }
         
         if (path.endsWith("dependencies/dependency/scope")) { //NOI18N
+            if (path.contains("dependencyManagement")) {
+                ArrayList<String> lst = new ArrayList(Arrays.asList(SCOPES));
+                lst.add("import");
+                Collections.sort(lst);
+                return super.createTextValueList(lst.toArray(new String[0]), virtualTextCtx);
+            }
             return super.createTextValueList(SCOPES, virtualTextCtx);
         }
         if (path.endsWith("repositories/repository/releases/updatePolicy") || //NOI18N

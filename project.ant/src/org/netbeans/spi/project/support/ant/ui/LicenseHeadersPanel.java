@@ -261,6 +261,7 @@ class LicenseHeadersPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(lblLicense, org.openide.util.NbBundle.getMessage(LicenseHeadersPanel.class, "LicenseHeadersPanel.lblLicense.text")); // NOI18N
 
+        epLicense.setEditable(false); //default is Use global license value
         epLicense.setContentType("text/x-freemarker"); // NOI18N
         jScrollPane2.setViewportView(epLicense);
 
@@ -384,7 +385,7 @@ class LicenseHeadersPanel extends javax.swing.JPanel {
         category.setErrorMessage(null);
         String path = txtProject.getText();
         FileObject fo = handler.resolveProjectLocation(path);
-        if (fo != null) {
+        if (fo != null && fo.isData()) {
             try {
                 epLicense.setText(fo.asText());
             } catch (IOException ex) {

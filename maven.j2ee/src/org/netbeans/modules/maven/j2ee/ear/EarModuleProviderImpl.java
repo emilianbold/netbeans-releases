@@ -42,6 +42,7 @@
 package org.netbeans.modules.maven.j2ee.ear;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
@@ -52,6 +53,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.api.ejbjar.Ear;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
@@ -70,12 +72,23 @@ import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
  * provider for ear specific functionality
  * @author  Milos Kleint
  */
-@ProjectServiceProvider(service = {EarModuleProviderImpl.class, EarProvider.class, J2eeModuleProvider.class}, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR})
+@ProjectServiceProvider(
+    service = {
+        EarModuleProviderImpl.class,
+        EarProvider.class,
+        J2eeModuleProvider.class,
+        J2eeApplicationProvider.class
+    },
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR
+    }
+)
 public class EarModuleProviderImpl extends J2eeApplicationProvider implements EarProvider  {
     
     private EarImpl earimpl;
@@ -154,6 +167,10 @@ public class EarModuleProviderImpl extends J2eeApplicationProvider implements Ea
 
     @Override
     public ModuleChangeReporter getModuleChangeReporter() {
+        return earimpl;
+    }
+
+    public EarImpl getEarImpl() {
         return earimpl;
     }
 

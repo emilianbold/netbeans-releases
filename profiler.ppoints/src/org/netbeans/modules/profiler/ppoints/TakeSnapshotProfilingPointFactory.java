@@ -136,7 +136,7 @@ public class TakeSnapshotProfilingPointFactory extends CodeProfilingPointFactory
 
     protected String getServerHandlerClassName() {
         throw new UnsupportedOperationException();
-    } // NOI18N
+    }
 
     protected TakeSnapshotCustomizer createCustomizer() {
         return new TakeSnapshotCustomizer(getType(), getIcon());

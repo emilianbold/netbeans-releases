@@ -65,6 +65,7 @@ import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
@@ -98,9 +99,9 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
     public static final String ATTR_EXECUTION_URI = "execution.uri";    //NOI18N
     public static final String FILE_DD        =     "web.xml";          //NOI18N
     
-    private static final Set<WebModule> SERVLET_SEARCH_MODULES = new HashSet<WebModule>();
-    private static RequestProcessor SERVLETS_REQUEST_PROCESSOR = 
-        new RequestProcessor(WebReplaceTokenProvider.class);
+    private static final Set<WebModule> SERVLET_SEARCH_MODULES = new HashSet<>();
+    private static RequestProcessor SERVLETS_REQUEST_PROCESSOR = new RequestProcessor(WebReplaceTokenProvider.class);
+    private static RequestProcessor RP = new RequestProcessor(WebReplaceTokenProvider.class);
 
     private Project project;
     private AtomicBoolean   isScanStarted;
@@ -116,8 +117,8 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
      * Just gets the array of FOs from lookup.
      */
     protected static FileObject[] extractFileObjectsfromLookup(Lookup lookup) {
-        List<FileObject> files = new ArrayList<FileObject>();
-        Iterator<? extends DataObject> it = lookup.lookup(new Lookup.Template<DataObject>(DataObject.class)).allInstances().iterator();
+        List<FileObject> files = new ArrayList<>();
+        Iterator<? extends DataObject> it = lookup.lookupAll(DataObject.class).iterator();
         while (it.hasNext()) {
             DataObject d = it.next();
             FileObject f = d.getPrimaryFile();
@@ -131,10 +132,10 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         FileObject[] fos = extractFileObjectsfromLookup(lookup);
         String relPath = null;
         FileObject fo = null;
-        HashMap<String, String> replaceMap = new HashMap<String, String>();
+        HashMap<String, String> replaceMap = new HashMap<>();
         if (fos.length > 0 && action.endsWith(".deploy")) { //NOI18N
             fo = fos[0];
-            Sources srcs = project.getLookup().lookup(Sources.class);
+            Sources srcs = ProjectUtils.getSources(project);
             //for jsps
             String requestParams = RequestParametersQuery.getFileAndParameters(fo);
             if (requestParams != null && !"/null".equals(requestParams)) { //IMHO a bug in the RPQI in WebExSupport.java
@@ -180,6 +181,9 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                                     fo.setAttribute(ATTR_EXECUTION_URI, uriPanel.getServletUri());
                                 } catch (IOException ex) {
                                 }
+                            } else if (res.equals(NotifyDescriptor.CANCEL_OPTION)) {
+                                replaceMap.put(WEB_PATH, null);
+                                return replaceMap;
                             }
                         }
 
@@ -209,7 +213,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         final String className = classPath.getResourceName(javaClass,'.',false);
         try {
             final List<ServletInfo> servlets = WebAppMetadataHelper.getServlets(webModule.getMetadataModel());
-            final List<String> mappingList = new ArrayList<String>();
+            final List<String> mappingList = new ArrayList<>();
             for (ServletInfo si : servlets) {
                 if (className.equals(si.getServletClass())) {
                     mappingList.addAll(si.getUrlPatterns());
@@ -250,7 +254,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
         if ( fo.getAttribute(ATTR_EXECUTION_URI) == null && servletFilesScanning(fo)) {
             return null;
         }
-        Sources srcs = project.getLookup().lookup(Sources.class);
+        Sources srcs = ProjectUtils.getSources(project);
         SourceGroup[] sourceGroups = srcs.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         for (SourceGroup group : sourceGroups) {
             if (!"2TestSourceRoot".equals(group.getName())) { //NOI18N hack
@@ -298,7 +302,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
             boolean result = false;
             if ( initialScan || metadataModel.isReady()) {
                 List<ServletInfo> servlets = WebAppMetadataHelper.getServlets(metadataModel);
-                final List<String> servletClasses = new ArrayList<String>( servlets.size() );
+                final List<String> servletClasses = new ArrayList<>( servlets.size() );
 
                 for (ServletInfo si : servlets) {
                     if (className.equals(si.getServletClass())) {
@@ -362,7 +366,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                  * we will start several initial scanning.
                  */
                 isScanStarted.set(true);
-                RequestProcessor.getDefault().post(runnable);
+                RP.post(runnable);
             }
             return true;
         }
@@ -404,7 +408,7 @@ public class WebReplaceTokenProvider implements ReplaceTokenProvider, ActionConv
                                 !Boolean.TRUE.equals(fileObject.getAttribute(
                                         IS_SERVLET_FILE))) 
                         {
-                            Sources sources = project.getLookup().lookup(Sources.class);
+                            Sources sources = ProjectUtils.getSources(project);
                             if ( sources != null ){
                                 SourceGroup[] sourceGroups = sources.getSourceGroups(
                                         JavaProjectConstants.SOURCES_TYPE_JAVA );

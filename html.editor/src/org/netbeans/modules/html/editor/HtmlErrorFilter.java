@@ -52,7 +52,6 @@ import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.HintsProvider.HintsManager;
-import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.csl.spi.ErrorFilter;
@@ -62,10 +61,7 @@ import org.netbeans.modules.html.editor.api.gsf.ErrorBadgingRule;
 import org.netbeans.modules.html.editor.api.gsf.HtmlErrorFilterContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.hints.HtmlHintsProvider;
-import org.netbeans.modules.web.common.api.WebPageMetadata;
 import org.openide.filesystems.FileObject;
-import org.openide.util.lookup.AbstractLookup;
-import org.openide.util.lookup.InstanceContent;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -170,38 +166,7 @@ public class HtmlErrorFilter implements ErrorFilter {
     }
 
     public static boolean isErrorCheckingEnabledForMimetype(SyntaxAnalyzerResult result) {
-        return HtmlPreferences.isHtmlErrorCheckingEnabledForMimetype(getWebPageMimeType(result));
-    }
-    
-    //and now the magic...
-    //the method returns an artificial mimetype so the user can enable/disable the error checks
-    //for particular content. For example the text/facelets+xhtml mimetype is returned for
-    //.xhtml pages with facelets content. This allows to normally verify the plain xhtml file
-    //even if their mimetype is text/html
-    //sure the correct solution would be to let the mimeresolver to create different mimetype,
-    //but since the resolution can be pretty complex it is not done this way
-    public static String getWebPageMimeType(SyntaxAnalyzerResult result) {
-        InstanceContent ic = new InstanceContent();
-        ic.add(result);
-        WebPageMetadata wpmeta = WebPageMetadata.getMetadata(new AbstractLookup(ic));
-            
-        if (wpmeta != null) {
-            //get an artificial mimetype for the web page, this doesn't have to be equal
-            //to the fileObjects mimetype.
-            String mimeType = (String) wpmeta.value(WebPageMetadata.MIMETYPE);
-            if (mimeType != null) {
-                return mimeType;
-            }
-        }
-
-        FileObject fo = result.getSource().getSourceFileObject();
-        if(fo != null) {
-            return fo.getMIMEType();
-        } else {
-            //no fileobject?
-            return result.getSource().getSnapshot().getMimeType();
-        }
-
+        return HtmlPreferences.isHtmlErrorCheckingEnabledForMimetype(org.netbeans.modules.html.editor.api.Utils.getWebPageMimeType(result));
     }
     
     @ServiceProvider(service=ErrorFilter.Factory.class)

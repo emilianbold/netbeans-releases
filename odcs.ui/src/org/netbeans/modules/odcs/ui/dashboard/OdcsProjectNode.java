@@ -50,19 +50,19 @@ import java.util.List;
 import javax.swing.*;
 import org.netbeans.modules.odcs.api.ODCSProject;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
-import org.netbeans.modules.team.ui.common.DashboardSupport;
-import org.netbeans.modules.team.ui.common.LinkButton;
-import org.netbeans.modules.team.ui.common.MyProjectNode;
-import org.netbeans.modules.team.ui.spi.BuildHandle.Status;
-import org.netbeans.modules.team.ui.spi.BuilderAccessor;
-import org.netbeans.modules.team.ui.spi.JobHandle;
-import org.netbeans.modules.team.ui.spi.ProjectAccessor;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.QueryAccessor;
-import org.netbeans.modules.team.ui.spi.QueryHandle;
-import org.netbeans.modules.team.ui.spi.QueryResultHandle;
-import org.netbeans.modules.team.ui.util.treelist.ProgressLabel;
-import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.server.ui.common.DashboardSupport;
+import org.netbeans.modules.team.server.ui.common.LinkButton;
+import org.netbeans.modules.team.server.ui.common.MyProjectNode;
+import org.netbeans.modules.team.server.ui.spi.BuildHandle.Status;
+import org.netbeans.modules.team.server.ui.spi.BuilderAccessor;
+import org.netbeans.modules.team.server.ui.spi.JobHandle;
+import org.netbeans.modules.team.server.ui.spi.ProjectAccessor;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryAccessor;
+import org.netbeans.modules.team.server.ui.spi.QueryHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryResultHandle;
+import org.netbeans.modules.team.commons.treelist.ProgressLabel;
+import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.openide.awt.Notification;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
@@ -117,7 +117,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
     private final boolean canOpen;
     private final boolean canBookmark;
     private LinkButton btnBookmark;
-    private Action closeAction;
+    private final Action closeAction;
     private LinkButton btnClose;
     private JLabel myPrjLabel;
     private JLabel closePlaceholder;
@@ -229,7 +229,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
                             accessor.bookmark(project);
                         }
                     };
-                    ImageIcon bookmarkImage = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true);
+                    ImageIcon bookmarkImage = ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true);
                     btnBookmark = new LinkButton(bookmarkImage, ba); 
                     btnBookmark.putClientProperty(DashboardSupport.PROP_BTN_NOT_CLOSING_MEGA_MENU, true);
                     btnBookmark.setRolloverEnabled(true);
@@ -243,7 +243,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
                     lblBookmarkingProgress.setVisible(false);
                     component.add( lblBookmarkingProgress, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );                                        
                 }
-                final ImageIcon closeImage = ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close.png", true);
+                final ImageIcon closeImage = ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/close.png", true);
                 closePlaceholder = new JLabel();
                 Dimension d = new Dimension(closeImage.getIconWidth(), closeImage.getIconHeight());
                 closePlaceholder.setMinimumSize(d);
@@ -257,7 +257,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
                     btnClose.putClientProperty(DashboardSupport.PROP_BTN_NOT_CLOSING_MEGA_MENU, true);
                     btnClose.setToolTipText(NbBundle.getMessage(OdcsProjectNode.class, "LBL_Close"));
                     btnClose.setRolloverEnabled(true);
-                    btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/close_over.png", true)); // NOI18N
+                    btnClose.setRolloverIcon(ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/close_over.png", true)); // NOI18N
                     component.add( btnClose, new GridBagConstraints(idxX++,0,1,1,0.0,0.0, GridBagConstraints.EAST, GridBagConstraints.NONE, new Insets(0,3,0,0), 0,0) );
                 }
                 if(canOpen) {
@@ -298,9 +298,9 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
 
     private void setBookmarkIcon() {
         btnBookmark.setIcon(ImageUtilities.loadImageIcon(
-                    "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
+                    "org/netbeans/modules/team/server/resources/" + (isMemberProject?"bookmark.png":"unbookmark.png"), true)); // NOI18N
         btnBookmark.setRolloverIcon(ImageUtilities.loadImageIcon(
-                    "org/netbeans/modules/team/ui/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
+                    "org/netbeans/modules/team/server/resources/" + (isMemberProject?"bookmark_over.png":"unbookmark_over.png"), true)); // NOI18N
     }
     
     @Override
@@ -404,7 +404,7 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
             @Override
             public void run() {
                 if (buildAccessor != null) {
-                    if (buildAccessor.isEnabled(project)) {
+                    if (buildAccessor.hasBuilds(project)) {
                         if (buildHandleStatusListener == null) {
                             initBuildHandleStatusListener();
                         }
@@ -519,8 +519,12 @@ public class OdcsProjectNode extends MyProjectNode<ODCSProject> {
         boolean bugsVisible = btnBugs != null && !"0".equals(btnBugs.getText()); //NOI18N
         boolean buildsVisible = btnBuilds != null;
         boolean visible = bugsVisible || buildsVisible;
-        leftPar.setVisible(visible);
-        rightPar.setVisible(visible);
+        if(leftPar != null) {
+            leftPar.setVisible(visible);
+        }
+        if (rightPar != null) {
+            rightPar.setVisible(visible);
+        }
         if (btnBugs != null) {
             btnBugs.setVisible(bugsVisible);
         }

@@ -69,6 +69,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.Modifier;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.queries.SourceLevelQuery;
 import org.netbeans.api.java.source.Comment;
@@ -88,7 +89,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
-import org.netbeans.modules.javaee.specs.support.api.JaxRsStackSupport;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.MiscPrivateUtilities;
 import org.netbeans.modules.websvc.rest.WebXmlUpdater;
 import static org.netbeans.modules.websvc.rest.WebXmlUpdater.getRestServletAdaptorByName;
@@ -111,16 +112,6 @@ import org.openide.util.NbBundle;
  */
 public class MiscUtilities {
     
-
-    private static final String JACKSON_JSON_PROVIDER =
-            "org.codehaus.jackson.jaxrs.JacksonJsonProvider"; // NOI18N
-    private static final String JACKSON_FEATURE =
-            "org.glassfish.jersey.jackson.JacksonFeature"; // NOI18N
-    private static final String JETTISON_FEATURE =
-            "org.glassfish.jersey.jettison.JettisonFeature"; // NOI18N
-    private static final String MOXY_JSON_FEATURE =
-            "org.glassfish.jersey.moxy.json.MoxyJsonFeature"; // NOI18N
-
     public static FileObject findSourceRoot(Project project) {
         SourceGroup[] sourceGroups = ProjectUtils.getSources(project).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA);
         if (sourceGroups != null && sourceGroups.length > 0) {
@@ -427,68 +418,14 @@ public class MiscUtilities {
         } else {
             builder.append("Set<Class<?>> resources = new java.util.HashSet<Class<?>>();");// NOI18N
         }
-        if (restSupport.hasJersey2(true)) {
-            builder.append(getJersey2JSONFeature());
-        } else {
-            builder.append(getJacksonProviderSnippet(restSupport));
+        if (!restSupport.hasJersey2(true)) {
+            builder.append(MiscPrivateUtilities.getJacksonProviderSnippet(restSupport));
         }
         builder.append(RestConstants.GET_REST_RESOURCE_CLASSES2+"(resources);");
         builder.append("return resources;}");
         return builder.toString();
     }
-    
-    public static String getJacksonProviderSnippet(RestSupport restSupport){
-        boolean addJacksonProvider = MiscPrivateUtilities.hasResource(restSupport.getProject(),
-                "org/codehaus/jackson/jaxrs/JacksonJsonProvider.class");    // NOI18N
-        if( !addJacksonProvider) {
-            JaxRsStackSupport support = restSupport.getJaxRsStackSupport();
-            if (support != null){
-                addJacksonProvider = support.isBundled(JACKSON_JSON_PROVIDER);
-            }
-        }
-        StringBuilder builder = new StringBuilder();
-        if ( addJacksonProvider ){
-            builder.append("\n// following code can be used to customize Jersey 1.x JSON provider: \n");
-            builder.append("try {");
-            builder.append("Class jacksonProvider = Class.forName(");
-            builder.append('"');
-            builder.append(JACKSON_JSON_PROVIDER);
-            builder.append("\");");
-            builder.append("resources.add(jacksonProvider);");
-            builder.append("} catch (ClassNotFoundException ex) {");
-            builder.append("java.util.logging.Logger.getLogger(getClass().getName())");
-            builder.append(".log(java.util.logging.Level.SEVERE, null, ex);}\n");
-            return builder.toString();
-        }
-        else {
-            return builder.toString();
-        }
-    }
 
-    public static String getJersey2JSONFeature() {
-        StringBuilder builder = new StringBuilder();
-        builder.append("\n// Following code can be used to customize Jersey JSON provider: \n");
-        builder.append("// Note that MoxyJsonFeature is auto-discoverable in Jersey 2.0, so the feature doesn't need to be registered.\n");
-        builder.append("// try {\n");
-        builder.append("//     Class jsonProvider = Class.forName(");
-        builder.append('"');
-        builder.append(MOXY_JSON_FEATURE);
-        builder.append("\");\n");
-        builder.append("//     Class jsonProvider = Class.forName(");
-        builder.append('"');
-        builder.append(JACKSON_FEATURE);
-        builder.append("\");\n");
-        builder.append("//     Class jsonProvider = Class.forName(");
-        builder.append('"');
-        builder.append(JETTISON_FEATURE);
-        builder.append("\");\n");
-        builder.append("//     resources.add(jsonProvider);\n");
-        builder.append("// } catch (ClassNotFoundException ex) {\n");
-        builder.append("//     java.util.logging.Logger.getLogger(getClass().getName())");
-        builder.append(".log(java.util.logging.Level.SEVERE, null, ex);\n");
-        builder.append("// }\n");
-        return builder.toString();
-    }
     /** creates addResourceClasses method
      * 
      * @param maker tree maker
@@ -546,6 +483,26 @@ public class MiscUtilities {
             return (sourceLevel >= 1.7);
         } else
             return false;
+    }
+    
+    /** Check if project is of Java EE 6 project type or higher
+     * 
+     * @param project project instance
+     * @return true or false
+     */
+    public static boolean isJavaEE6AndHigher(Project project) {
+        WebModule webModule = WebModule.getWebModule(project.getProjectDirectory());
+        if (webModule != null) {
+            Profile profile = webModule.getJ2eeProfile();
+            if (Profile.JAVA_EE_6_WEB == profile || 
+                    Profile.JAVA_EE_6_FULL == profile ||
+                        Profile.JAVA_EE_7_WEB == profile ||
+                                Profile.JAVA_EE_7_FULL == profile )
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
 }

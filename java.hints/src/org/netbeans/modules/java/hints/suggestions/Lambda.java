@@ -51,6 +51,7 @@ import static com.sun.source.tree.LambdaExpressionTree.BodyKind.STATEMENT;
 import com.sun.source.tree.MemberReferenceTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewClassTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
 import com.sun.source.tree.TypeParameterTree;
@@ -121,7 +122,12 @@ public class Lambda {
     public static ErrorDescription expression2Return(HintContext ctx) {
         if (((LambdaExpressionTree) ctx.getPath().getLeaf()).getBodyKind() != BodyKind.EXPRESSION) return null;
         
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_expression2Return(), JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_expression2Return(), ctx.getPath(), "($args$) -> { return $lambdaExpression; }"));
+        TypeMirror lambdaExpressionType = ctx.getInfo().getTrees().getTypeMirror(ctx.getVariables().get("$lambdaExpression"));
+        String target =   lambdaExpressionType == null || lambdaExpressionType.getKind() != TypeKind.VOID
+                        ? "($args$) -> { return $lambdaExpression; }"
+                        : "($args$) -> { $lambdaExpression; }";
+        
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_expression2Return(), JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_expression2Return(), ctx.getPath(), target));
     }
     
     @Hint(displayName="#DN_memberReference2Lambda", description="#DESC_memberReference2Lambda", category="suggestions", hintKind=Hint.Kind.ACTION)
@@ -230,7 +236,13 @@ public class Lambda {
                     newMethodBody = (BlockTree) lambda.getBody();
                     break;
                 case EXPRESSION:
-                    newMethodBody = make.Block(Collections.singletonList(make.Return((ExpressionTree) lambda.getBody())), false);
+                    StatementTree mainStatement;
+                    if (descriptorType.getReturnType() == null || descriptorType.getReturnType().getKind() != TypeKind.VOID) {
+                        mainStatement = make.Return((ExpressionTree) lambda.getBody());
+                    } else {
+                        mainStatement = make.ExpressionStatement((ExpressionTree) lambda.getBody());
+                    }
+                    newMethodBody = make.Block(Collections.singletonList(mainStatement), false);
                     break;
                 default:
                     throw new IllegalStateException();

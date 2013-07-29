@@ -127,6 +127,7 @@ import javax.tools.JavaFileObject;
 
 import com.sun.source.tree.ErroneousTree;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.editor.GuardedDocument;
@@ -364,6 +365,7 @@ public final class GeneratorUtilities {
         Set<Modifier> flags = mods.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(mods);
         flags.remove(Modifier.ABSTRACT);
         flags.remove(Modifier.NATIVE);
+        flags.remove(Modifier.DEFAULT);
 
         ExecutableType et = (ExecutableType) method.asType();
         try {
@@ -467,7 +469,7 @@ public final class GeneratorUtilities {
             }
         }
         if (constructor != null) {
-            ExecutableType constructorType = clazz.getSuperclass().getKind() == TypeKind.DECLARED ? (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) clazz.getSuperclass(), constructor) : null;
+            ExecutableType constructorType = clazz.getSuperclass().getKind() == TypeKind.DECLARED && ((DeclaredType) clazz.getSuperclass()).asElement() == constructor.getEnclosingElement() ? (ExecutableType) copy.getTypes().asMemberOf((DeclaredType) clazz.getSuperclass(), constructor) : null;
             if (!constructor.getParameters().isEmpty()) {
                 List<ExpressionTree> arguments = new ArrayList<ExpressionTree>();
                 Iterator<? extends VariableElement> parameterElements = constructor.getParameters().iterator();
@@ -544,7 +546,9 @@ public final class GeneratorUtilities {
             mods.add(Modifier.STATIC);
         }
         TypeMirror type = copy.getTypes().asMemberOf((DeclaredType)clazz.asType(), field);
-        String getterName = CodeStyleUtils.computeGetterName(field.getSimpleName(), type.getKind() == TypeKind.BOOLEAN, isStatic, cs);
+        boolean isBoolean = type.getKind() == TypeKind.BOOLEAN
+                || type.getKind() == TypeKind.DECLARED && "java.lang.Boolean".contentEquals(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName()); //NOI18N
+        String getterName = CodeStyleUtils.computeGetterName(field.getSimpleName(), isBoolean, isStatic, cs);
         BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(field.getSimpleName()))), false);
         return make.Method(make.Modifiers(mods), getterName, make.Type(type), Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
     }
@@ -566,7 +570,9 @@ public final class GeneratorUtilities {
             mods.add(Modifier.STATIC);
         }
         Tree type = field.getType();
-        boolean isBoolean = type.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree) type).getPrimitiveTypeKind() == TypeKind.BOOLEAN;
+        boolean isBoolean = type.getKind() == Tree.Kind.PRIMITIVE_TYPE && ((PrimitiveTypeTree) type).getPrimitiveTypeKind() == TypeKind.BOOLEAN
+                || type.getKind() == Tree.Kind.IDENTIFIER && "Boolean".equals(name(type)) //NOI18N
+                || type.getKind() == Tree.Kind.MEMBER_SELECT && "java.lang.Boolean".equals(name(type)); //NOI18N
         String getterName = CodeStyleUtils.computeGetterName(field.getName(), isBoolean, isStatic, cs);
         BlockTree body = make.Block(Collections.singletonList(make.Return(make.Identifier(field.getName()))), false);
         return make.Method(make.Modifiers(mods), getterName, type, Collections.<TypeParameterTree>emptyList(), Collections.<VariableTree>emptyList(), Collections.<ExpressionTree>emptyList(), body, null);
@@ -921,7 +927,10 @@ public final class GeneratorUtilities {
             }
             
             JCTree.JCCompilationUnit unit = (JCCompilationUnit) cut;
-            TokenSequence<JavaTokenId> seq = ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy().tokenSequence(JavaTokenId.language());
+            TokenHierarchy<?> tokens =   unit.getSourceFile() instanceof SourceFileObject
+                                       ? ((SourceFileObject) unit.getSourceFile()).getTokenHierarchy()
+                                       : TokenHierarchy.create(unit.getSourceFile().getCharContent(true), JavaTokenId.language());
+            TokenSequence<JavaTokenId> seq = tokens.tokenSequence(JavaTokenId.language());
             TreePath tp = TreePath.getPath(cut, original);
             Tree toMap = (tp != null && original.getKind() != Kind.COMPILATION_UNIT) ? tp.getParentPath().getLeaf() : original;
             AssignComments translator = new AssignComments(info, original, seq, unit);
@@ -1176,6 +1185,10 @@ public final class GeneratorUtilities {
             }
         }
         
+        if (clazz.getKind() == ElementKind.INTERFACE) {
+            mt = make.addModifiersModifier(mt, Modifier.DEFAULT);
+        }
+        
         boolean isAbstract = element.getModifiers().contains(Modifier.ABSTRACT);
         String bodyTemplate = null;
         try {
@@ -1417,6 +1430,10 @@ public final class GeneratorUtilities {
                 return ((MethodTree)tree).getName().toString();
             case CLASS:
                 return ((ClassTree)tree).getSimpleName().toString();
+            case IDENTIFIER:
+                return ((IdentifierTree)tree).getName().toString();
+            case MEMBER_SELECT:
+                return name(((MemberSelectTree)tree).getExpression()) + '.' + ((MemberSelectTree)tree).getIdentifier();
         }
         return ""; //NOI18N
     }

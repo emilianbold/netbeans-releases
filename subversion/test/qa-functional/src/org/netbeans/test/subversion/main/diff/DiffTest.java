@@ -115,7 +115,7 @@ public class DiffTest extends JellyTestCase {
                 new NewProjectWizardOperator().invoke().close();
 
             stream = new PrintStream(new File(getWorkDir(), getName() + ".log"));
-            VersioningOperator vo = VersioningOperator.invoke();
+            //VersioningOperator vo = VersioningOperator.invoke();
             
             CheckoutWizardOperator.invoke();
             RepositoryStepOperator rso = new RepositoryStepOperator();
@@ -162,6 +162,7 @@ public class DiffTest extends JellyTestCase {
             TestKit.waitText(mh);
 
             Thread.sleep(1000);
+            VersioningOperator vo = VersioningOperator.invoke();
             vo = VersioningOperator.invoke();
             //Save action should change the file annotations
             org.openide.nodes.Node nodeIDE = (org.openide.nodes.Node) node.getOpenideNode();
@@ -174,7 +175,7 @@ public class DiffTest extends JellyTestCase {
             mh = new MessageHandler("Diffing");
             TestKit.removeHandlers(log);
             log.addHandler(mh);
-            node.performPopupAction("Subversion|Diff");
+            node.performPopupAction("Subversion|Diff|Diff");
 
 //            TestKit.waitText(mh);
 

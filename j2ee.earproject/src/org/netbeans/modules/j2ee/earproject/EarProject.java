@@ -71,6 +71,10 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.j2ee.dd.api.application.Application;
+import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.javaee.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.javaee.project.api.ant.DeployOnSaveUtils;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
@@ -89,6 +93,9 @@ import org.netbeans.modules.java.api.common.Roots;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
 import org.netbeans.modules.java.api.common.queries.QuerySupport;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettingConstants;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
+import org.netbeans.modules.javaee.project.spi.ear.EarDDGeneratorImplementation;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.spi.java.project.support.LookupMergerSupport;
 import org.netbeans.spi.java.project.support.ui.BrokenReferencesSupport;
@@ -254,6 +261,7 @@ public final class EarProject implements Project, AntProjectListener {
             buildExtender,
             new SourceForBinaryQueryImpl(this),
             new JavaEEProjectSettingsImpl(this),
+            new EarDDGeneratorImpl(this)
         });
         earLookup = new EarProjectLookup(this, base, new WebBrowserProvider(this));
         evaluator().addPropertyChangeListener(earLookup);
@@ -786,15 +794,7 @@ public final class EarProject implements Project, AntProjectListener {
 
         @Override
         public void setProfile(Profile profile) {
-            try {
-                UpdateHelper helper = project.getUpdateHelper();
-                EditableProperties projectProperties = helper.getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-                projectProperties.setProperty(EarProjectProperties.J2EE_PLATFORM, profile.toPropertiesString());
-                helper.putProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH, projectProperties);
-                ProjectManager.getDefault().saveProject(project);
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, "Project properties couldn't be saved.", ex);
-            }
+            setInSharedProperties(JavaEEProjectSettingConstants.J2EE_PLATFORM, profile.toPropertiesString());
         }
 
         @Override
@@ -804,12 +804,89 @@ public final class EarProject implements Project, AntProjectListener {
 
         @Override
         public void setBrowserID(String browserID) {
-            // No-one is using it yet, implementation should be almost identical as setProfile(..)
+            setInPrivateProperties(JavaEEProjectSettingConstants.SELECTED_BROWSER, browserID);
         }
 
         @Override
         public String getBrowserID() {
-            return evaluator().getProperty(EarProjectProperties.SELECTED_BROWSER);
+            return evaluator().getProperty(JavaEEProjectSettingConstants.SELECTED_BROWSER);
+        }
+
+        @Override
+        public void setServerInstanceID(String serverInstanceID) {
+            setInPrivateProperties(JavaEEProjectSettingConstants.J2EE_SERVER_INSTANCE, serverInstanceID);
+        }
+
+        @Override
+        public String getServerInstanceID() {
+            return evaluator().getProperty(JavaEEProjectSettingConstants.J2EE_SERVER_INSTANCE);
+        }
+
+        private void setInSharedProperties(String key, String value) {
+            setInProperties(key, value, AntProjectHelper.PROJECT_PROPERTIES_PATH);
+        }
+
+        private void setInPrivateProperties(String key, String value) {
+            setInProperties(key, value, AntProjectHelper.PRIVATE_PROPERTIES_PATH);
+        }
+
+        private void setInProperties(String key, String value, String propertiesPath) {
+            try {
+                UpdateHelper helper = project.getUpdateHelper();
+                EditableProperties projectProperties = helper.getProperties(propertiesPath);
+                projectProperties.setProperty(key, value);
+                helper.putProperties(propertiesPath, projectProperties);
+                ProjectManager.getDefault().saveProject(project);
+            } catch (IOException ex) {
+                LOGGER.log(Level.WARNING, "Project properties couldn't be saved.", ex);
+            }
+        }
+    }
+
+    private static final class EarDDGeneratorImpl implements EarDDGeneratorImplementation {
+
+        final Project project;
+
+        public EarDDGeneratorImpl(Project project) {
+            this.project = project;
+        }
+
+        @Override
+        public FileObject setupDD(boolean force) {
+            //#118047 avoid using the EarProject instance directly to allow for alternate implementations.
+            EarImplementation earImpl = project.getLookup().lookup(EarImplementation.class);
+            if (earImpl == null) {
+                return null;
+            }
+
+            FileObject metaInf = earImpl.getMetaInf();
+            FileObject dd = metaInf.getFileObject(ProjectEar.FILE_DD);
+            if (dd != null) {
+                return dd; // already created
+            }
+
+            Profile profile = JavaEEProjectSettings.getProfile(project);
+            boolean create = force || DDHelper.isApplicationXMLCompulsory(project);
+
+            try {
+                dd = DDHelper.createApplicationXml(profile, metaInf, create);
+                if (dd != null) {
+                    Application app = DDProvider.getDefault().getDDRoot(dd);
+                    app.setDisplayName(ProjectUtils.getInformation(project).getDisplayName());
+                    //#118047 avoiding the use of EarProject not possible here.
+                    // API for retrieval of getJarContentAdditional() not present.
+                    EarProject defInst = project.getLookup().lookup(EarProject.class);
+                    if (defInst != null) {
+                        for (ClassPathSupport.Item vcpi : EarProjectProperties.getJarContentAdditional(defInst)) {
+                            EarProjectProperties.addItemToAppDD(defInst, app, vcpi);
+                        }
+                    }
+                    app.write(dd);
+                }
+                return dd;
+            } catch (IOException ex) {
+                return null;
+            }
         }
     }
 }

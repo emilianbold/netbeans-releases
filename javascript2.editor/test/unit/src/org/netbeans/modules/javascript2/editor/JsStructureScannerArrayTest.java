@@ -80,7 +80,12 @@ public class JsStructureScannerArrayTest extends JsTestBase {
     public void testIssue231449() throws Exception {
         checkStructure("testfiles/completion/arrays/issue231449.js");
     }
-    
+
+    @Override
+    protected boolean cleanCacheDir() {
+        return false;
+    }
+
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

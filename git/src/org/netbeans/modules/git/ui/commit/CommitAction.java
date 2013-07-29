@@ -357,9 +357,11 @@ public class CommitAction extends SingleRepositoryAction {
 
     @NbBundle.Messages({
         "# {0} - repository folder name",
+        "# translation hint - HEAD is a git specific term for last revisition in repository, do not translate this word",
         "MSG_CommitAction.detachedHeadState.warning=HEAD is detached in the repository {0}.\n"
             + "It is recommended to switch to a branch before committing your changes.\n\n"
             + "Do you still want to commit?",
+        "# translation hint - HEAD is a git specific term for last revisition in repository, do not translate this word",
         "LBL_CommitAction.detachedHeadState.title=Detached HEAD State"
     })
     private boolean canCommit (File repository, RepositoryInfo info) {

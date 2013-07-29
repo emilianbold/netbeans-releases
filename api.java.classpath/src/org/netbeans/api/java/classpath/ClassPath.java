@@ -801,9 +801,18 @@ public final class ClassPath {
                                 String fileState = null;
                                 try {
                                     final File file = Utilities.toFile(this.url.toURI());
-                                    fileState = "(exists: " + file.exists() +           //NOI18N
+                                    final boolean exists = file.exists();
+                                    final boolean isDirectory = file.isDirectory();
+                                    if (exists && !isDirectory) {
+                                        LOG.log(
+                                            Level.WARNING,
+                                            "Ignoring non folder root : {0} on classpath ", //NOI18N
+                                            file);
+                                        return null;
+                                    }
+                                    fileState = "(exists: " +  exists +           //NOI18N
                                                 " file: " + file.isFile() +             //NOI18N
-                                                " directory: "+ file.isDirectory() +    //NOI18N
+                                                " directory: "+ isDirectory +    //NOI18N
                                                 " read: "+ file.canRead() +             //NOI18N
                                                 " write: "+ file.canWrite()+        //NOI18N
                                                 " root: "+ root +        //NOI18N
@@ -921,7 +930,9 @@ public final class ClassPath {
                 if (file.getPath().startsWith(r.getPath())) {
                     while (file.getPath().length() > r.getPath().length()) {
                         file = file.getParent();
-                        sb.append("\nChildren of ").append(file).append(" are:\n  ").append(Arrays.toString(file.getChildren()));
+                        sb.append("\nChildren of ").append(file).
+                            append(" (valid: ").append(file.isValid()).append(")").
+                            append(" are:\n  ").append(Arrays.toString(file.getChildren()));
                     }
                 } else {
                     sb.append("\nRoot path is not prefix"); // NOI18N

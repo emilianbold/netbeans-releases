@@ -49,6 +49,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.GlassFishStatus;
 import org.glassfish.tools.ide.admin.CommandSetProperty;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.netbeans.api.server.ServerInstance;
@@ -63,9 +64,13 @@ import org.openide.util.*;
 import org.openide.util.lookup.Lookups;
 
 /**
- *
- * @author Peter Williams
- * @author vince kraemer
+ * GlassFish server instances provider.
+ * <p/>
+ * Handles all registered GlassFish server instances. Implemented as singleton
+ * because NetBeans GUI components require singleton implementing                                                         
+ * {@link ServerInstanceProvider} interface.
+ * <p/>
+ * @author Peter Williams, Vince Kraemer, Tomas Kraus
  */
 public final class GlassfishInstanceProvider implements ServerInstanceProvider, LookupListener {
 
@@ -78,7 +83,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     private static final String AUTOINSTANCECOPIED = "autoinstance-copied"; // NOI18N
 
     private volatile static GlassfishInstanceProvider ee6Provider;
-//    private volatile static GlassfishInstanceProvider preludeProvider;
 
     public static final String EE6_DEPLOYER_FRAGMENT = "deployer:gfv3ee6"; // NOI18N
     public static final String EE6WC_DEPLOYER_FRAGMENT = "deployer:gfv3ee6wc"; // NOI18N
@@ -92,12 +96,8 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
         List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
         if(initialize) {
-//            getPrelude();
             getProvider();
         }
-//        if(preludeProvider != null) {
-//            providerList.add(preludeProvider);
-//        }
         if(ee6Provider != null) {
             providerList.add(ee6Provider);
         }
@@ -214,6 +214,20 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         return null;
     }
 
+    /**
+     * Retrieve {@link GlassfishInstance} matching provided internal server URI.
+     * <p/>
+     * @param uri Internal server URI used as key to find
+     *            {@link GlassfishInstance}.
+     * @return {@link GlassfishInstance} matching provided internal server URI
+     *         or <code>null</code> when no matching object was found.
+     */
+    public GlassfishInstance getGlassfishInstance(String uri) {
+        synchronized(instanceMap) {
+            return instanceMap.get(uri);
+        }
+    }
+
     public void addServerInstance(GlassfishInstance si) {
         synchronized(instanceMap) {
             try {
@@ -252,7 +266,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
                 }
             }
         }
-
+        GlassFishStatus.remove(si);
         if(result) {
             ConfigBuilderProvider.destroyBuilder(si);
             support.fireChange();
@@ -273,7 +287,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     }
     
     public ServerInstanceImplementation getInternalInstance(String uri) {
-        //init();
         return instanceMap.get(uri);
     }
 

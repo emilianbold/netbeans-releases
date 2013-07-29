@@ -70,9 +70,9 @@ import org.netbeans.modules.odcs.client.api.ODCSClient;
 import org.netbeans.modules.odcs.client.api.ODCSException;
 import org.netbeans.modules.odcs.ui.api.ODCSUiServer;
 import org.netbeans.modules.odcs.ui.utils.Utils;
-import org.netbeans.modules.team.ui.spi.BuilderAccessor;
-import org.netbeans.modules.team.ui.spi.JobHandle;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.BuilderAccessor;
+import org.netbeans.modules.team.server.ui.spi.JobHandle;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 import org.openide.windows.WindowManager;
@@ -238,7 +238,7 @@ public class RecentActivitiesPanel extends javax.swing.JPanel {
                         }
                     });
                 } catch (ODCSException ex) {
-                    Utils.getLogger().log(Level.SEVERE, ex.getMessage());
+                    Utils.logException(ex, true);
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
                         public void run() {

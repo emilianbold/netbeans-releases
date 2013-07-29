@@ -67,6 +67,7 @@ import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.modules.editor.java.JavaCompletionItem;
+import org.netbeans.modules.editor.java.Utilities;
 import org.netbeans.modules.java.editor.javadoc.TagRegistery.TagEntry;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
@@ -321,7 +322,6 @@ final class JavadocCompletionItem implements CompletionItem {
             if (component != null) {
                 Completion.get().hideDocumentation();
                 Completion.get().hideCompletion();
-                int caretOffset = component.getSelectionEnd();
                 
                 StringBuilder sb = new StringBuilder();
                 sb.append(this.name);
@@ -394,8 +394,7 @@ final class JavadocCompletionItem implements CompletionItem {
         @Override
         public String toString() {
             return delegate.toString();
-        }
-        
+        }        
     }
     
     /**
@@ -405,11 +404,9 @@ final class JavadocCompletionItem implements CompletionItem {
     private static class JavadocTypeItem implements CompletionItem {
         
         private final CompletionItem delegate;
-        private final int substitutionOffset;
 
         public JavadocTypeItem(CompletionItem item, int substitutionOffset) {
             this.delegate = item;
-            this.substitutionOffset = substitutionOffset;
         }
         
         public void defaultAction(JTextComponent component) {
@@ -418,12 +415,13 @@ final class JavadocCompletionItem implements CompletionItem {
 
         public void processKeyEvent(KeyEvent evt) {
             if (evt.getID() == KeyEvent.KEY_TYPED) {
-                switch (evt.getKeyChar()) {
-                    case '#':
-                    case '.':
-                        JTextComponent comp = (JTextComponent) evt.getSource();
-                        delegate.defaultAction(comp);
-                        break;
+                if (Utilities.getJavadocCompletionSelectors().indexOf(evt.getKeyChar()) >= 0) {
+                    JTextComponent comp = (JTextComponent) evt.getSource();
+                    delegate.defaultAction(comp);
+                    if (Utilities.getJavadocCompletionAutoPopupTriggers().indexOf(evt.getKeyChar()) >= 0) {
+                        Completion.get().showCompletion();
+                    }
+                    evt.consume();
                 }
             }
         }
@@ -467,7 +465,5 @@ final class JavadocCompletionItem implements CompletionItem {
         public String toString() {
             return delegate.toString();
         }
-        
     }
-    
 }

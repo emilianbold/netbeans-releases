@@ -45,6 +45,7 @@
 package org.netbeans.modules.editor.hints;
 
 import java.awt.AWTEvent;
+import java.awt.AWTException;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Container;
@@ -184,7 +185,10 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
     private ScrollCompletionPane subhintListComponent;
     private JTextArea errorTooltip;
     private AtomicBoolean cancel;
-    
+
+    private boolean altEnterPressed = false;
+    private boolean altReleased = false;
+
     @SuppressWarnings("LeakingThisInConstructor")
     private HintsUI() {
         EditorRegistry.addPropertyChangeListener(this);
@@ -738,6 +742,12 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
         if ( e.getKeyCode() == KeyEvent.VK_ENTER ) {
             if (e.getModifiersEx() == KeyEvent.ALT_DOWN_MASK) {
                 if ( !popupShowing) {
+                    if (org.openide.util.Utilities.isWindows()
+                            && !Boolean.getBoolean("HintsUI.disable.AltEnter.hack")) { // NOI18N
+                        // Fix (workaround) for issue #186557
+                        altEnterPressed = true;
+                        altReleased = false;
+                    }
                     invokeDefaultAction(false);
                     e.consume();
                 }
@@ -781,6 +791,27 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
     }    
 
     public void keyReleased(KeyEvent e) {
+        // Fix (workaround) for issue #186557
+        if (org.openide.util.Utilities.isWindows()) {
+            if (Boolean.getBoolean("HintsUI.disable.AltEnter.hack")) { // NOI18N
+                return;
+            }
+
+            if (altEnterPressed && e.getKeyCode() == KeyEvent.VK_ALT) {
+                e.consume();
+                altReleased = true;
+            } else if (altEnterPressed && e.getKeyCode() == KeyEvent.VK_ENTER) {
+                altEnterPressed = false;
+                if (altReleased) {
+                    try {
+                        java.awt.Robot r = new java.awt.Robot();
+                        r.keyRelease(KeyEvent.VK_ALT);
+                    } catch (AWTException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+            }
+        }
     }
 
     public void keyTyped(KeyEvent e) {

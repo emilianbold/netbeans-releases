@@ -61,6 +61,7 @@ import org.netbeans.modules.spring.beans.BeansElements;
 import org.netbeans.modules.spring.beans.completion.completors.BeanDependsOnCompletor;
 import org.netbeans.modules.spring.beans.completion.completors.BeanIdCompletor;
 import org.netbeans.modules.spring.beans.completion.completors.BeansRefCompletor;
+import org.netbeans.modules.spring.beans.completion.completors.JavaPackageCompletor;
 import org.netbeans.modules.spring.beans.completion.completors.PNamespaceCompletor;
 import org.netbeans.modules.spring.beans.editor.ContextUtilities;
 import org.netbeans.modules.spring.beans.utils.StringUtils;
@@ -116,6 +117,9 @@ public final class CompletorRegistry {
         registerCompletorFactory(BeansElements.SET, BeansAttributes.VALUE_TYPE, javaClassCompletorFactory);
         registerCompletorFactory(BeansElements.VALUE, BeansAttributes.TYPE, javaClassCompletorFactory);
         registerCompletorFactory(BeansElements.CONSTRUCTOR_ARG, BeansAttributes.TYPE, javaClassCompletorFactory);
+
+        GenericCompletorFactory javaPackageCompletorFactory = new GenericCompletorFactory(JavaPackageCompletor.class);
+        registerCompletorFactory(BeansElements.COMPONENT_SCAN, BeansAttributes.BASE_PACKAGE, javaPackageCompletorFactory);
         
         BeansRefCompletorFactory beansRefCompletorFactory = new BeansRefCompletorFactory(true, BeansRefCompletor.class);
         registerCompletorFactory(BeansElements.ALIAS, BeansAttributes.NAME, beansRefCompletorFactory);

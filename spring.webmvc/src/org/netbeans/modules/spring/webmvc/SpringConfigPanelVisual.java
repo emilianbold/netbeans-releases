@@ -47,15 +47,22 @@
 package org.netbeans.modules.spring.webmvc;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
-import java.util.Vector;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
+import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.spring.api.SpringUtilities;
 import org.openide.util.ChangeSupport;
+import org.openide.util.NbBundle.Messages;
+import org.openide.util.RequestProcessor;
 
 /**
  * Provides the user interface for configuring a Spring Web MVC web application
@@ -64,6 +71,8 @@ import org.openide.util.ChangeSupport;
  */
 public class SpringConfigPanelVisual extends javax.swing.JPanel {
 
+    private static final Logger LOG = Logger.getLogger(SpringConfigPanelVisual.class.getName());
+    private static final long serialVersionUID = 1L;
     private boolean libsInitialized = false;
     private List<SpringLibrary> springLibs = new ArrayList<SpringLibrary>();
     private SpringLibrary springLibrary;
@@ -159,7 +168,7 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         springVersionLabel.setLabelFor(cbSpringVersion);
         org.openide.awt.Mnemonics.setLocalizedText(springVersionLabel, org.openide.util.NbBundle.getMessage(SpringConfigPanelVisual.class, "SpringConfigPanelVisual.springVersionLabel.text")); // NOI18N
 
-        cbSpringVersion.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "No Library found" }));
+        cbSpringVersion.setModel(getLibrariesComboBoxModel());
         cbSpringVersion.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 cbSpringVersionActionPerformed(evt);
@@ -176,9 +185,11 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
                     .addGroup(libPanelLayout.createSequentialGroup()
                         .addComponent(springVersionLabel)
                         .addGap(18, 18, 18)
-                        .addComponent(cbSpringVersion, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(includeJstlCheckBox))
-                .addContainerGap(310, Short.MAX_VALUE))
+                        .addComponent(cbSpringVersion, 0, 450, Short.MAX_VALUE))
+                    .addGroup(libPanelLayout.createSequentialGroup()
+                        .addComponent(includeJstlCheckBox)
+                        .addGap(0, 0, Short.MAX_VALUE)))
+                .addContainerGap())
         );
         libPanelLayout.setVerticalGroup(
             libPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -211,7 +222,7 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
                     .addComponent(dispatcherMappingLabel))
                 .addGap(8, 8, 8)
                 .addGroup(standardPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(dispatcherNameText, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE)
+                    .addComponent(dispatcherNameText, javax.swing.GroupLayout.DEFAULT_SIZE, 418, Short.MAX_VALUE)
                     .addComponent(dispatcherMappingText, javax.swing.GroupLayout.DEFAULT_SIZE, 416, Short.MAX_VALUE))
                 .addContainerGap())
         );
@@ -275,28 +286,44 @@ public class SpringConfigPanelVisual extends javax.swing.JPanel {
         return springLibrary.getVersion();
     }
 
-    /**
-     *
-     */
-    private void initLibraries() {
-        if (libsInitialized)
+    @Messages("JSFConfigurationPanelVisual.lbl.searching.libraries=Searching Libraries...")
+    private static ComboBoxModel getLibrariesComboBoxModel() {
+        return new DefaultComboBoxModel(new String[] {Bundle.JSFConfigurationPanelVisual_lbl_searching_libraries()});
+    }
+
+    private synchronized void initLibraries() {
+        if (libsInitialized) {
             return;
-        Vector<String> items = new Vector<String>();
+        }
         springLibs.clear();
 
-        for (Library library : LibraryManager.getDefault().getLibraries()) {
-            if (SpringUtilities.isSpringLibrary(library)) {
-                items.add(library.getDisplayName());
-                springLibs.add(new SpringLibrary(library));
+        RequestProcessor.getDefault().submit(new Runnable() {
+            @Override
+            public void run() {
+                long startTime = System.currentTimeMillis();
+                final Set<String> items = new HashSet<>();
+                for (Library library : LibraryManager.getDefault().getLibraries()) {
+                    if (SpringUtilities.isSpringLibrary(library)) {
+                        items.add(library.getDisplayName());
+                        springLibs.add(new SpringLibrary(library));
+                    }
+                }
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        cbSpringVersion.setModel(new DefaultComboBoxModel(items.toArray(new String[items.size()])));
+                        int selectedIndex = cbSpringVersion.getSelectedIndex();
+                        if (selectedIndex < springLibs.size()) {
+                            springLibrary = springLibs.get(selectedIndex);
+                            libsInitialized = true;
+                            repaint();
+                        }
+                    }
+                });
+                LOG.log(Level.FINEST, "Time spent in {0} initLibraries = {1} ms",
+                        new Object[]{this.getClass().getName(), System.currentTimeMillis() - startTime});
             }
-        }
-        cbSpringVersion.setModel(new DefaultComboBoxModel(items));
-        int selectedIndex = cbSpringVersion.getSelectedIndex();
-        if (selectedIndex < springLibs.size()) {
-            springLibrary = springLibs.get(selectedIndex);
-            libsInitialized = true;
-            repaint();
-        }
+        });
     }
 
     private class SpringLibrary {

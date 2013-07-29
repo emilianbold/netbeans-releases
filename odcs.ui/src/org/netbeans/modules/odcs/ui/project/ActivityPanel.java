@@ -57,7 +57,7 @@ import org.netbeans.modules.odcs.ui.project.activity.BuildActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.ScmActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.TaskActivityDisplayer;
 import org.netbeans.modules.odcs.ui.project.activity.WikiActivityDisplayer;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 
 /**
  *

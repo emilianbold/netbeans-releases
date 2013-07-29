@@ -642,6 +642,7 @@ public class ParametersPanel extends JPanel implements ProgressListener, ChangeL
                         }
                     });
                     if (!rui.hasParameters()) {
+                        currentState = POST_CHECK;
                         RefactoringSession session = putResult(RefactoringSession.create(rui.getName()));
                         Problem problem = null;
                         try {

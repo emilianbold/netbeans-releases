@@ -44,15 +44,10 @@ package org.netbeans.modules.php.editor.js;
 
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.csl.api.test.CslTestBase.IndentPrefs;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-//import org.netbeans.modules.php.editor.lexer.PHPTokenId;
-//import org.netbeans.modules.php.smarty.editor.TplKit;
-//import org.netbeans.modules.php.smarty.editor.indent.TplIndentTaskFactory;
-//import org.netbeans.modules.php.smarty.editor.lexer.TplTokenId;
 
 public class JsFormatterEmbeddedTest extends PHPCodeCompletionTestBase {
 

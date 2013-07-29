@@ -8,6 +8,9 @@ Event:CLASS:[PUBLIC]:ESCAPED{Event}:
 App:CLASS:[PUBLIC]:ESCAPED{App}:
   SchedulerDemo:CLASS:[PUBLIC]:ESCAPED{SchedulerDemo}:
     init:METHOD:[PUBLIC]:ESCAPED{init}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+      task:CLASS:[PRIVATE]:ESCAPED{task}:
+        interval:FIELD:[PUBLIC]:ESCAPED{interval}<font color="#999999">ESCAPED{ : }Number</font>:
+        run:METHOD:[PUBLIC]:ESCAPED{run}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
     onEventContextMenu:METHOD:[PUBLIC]:ESCAPED{onEventContextMenu}ESCAPED{(}ESCAPED{s}ESCAPED{, }ESCAPED{rec}ESCAPED{, }ESCAPED{e}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
     onEventDblClick:METHOD:[PUBLIC]:ESCAPED{onEventDblClick}ESCAPED{(}ESCAPED{s}ESCAPED{, }ESCAPED{rec}ESCAPED{, }ESCAPED{e}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
     onScheduleContextMenu:METHOD:[PUBLIC]:ESCAPED{onScheduleContextMenu}ESCAPED{(}ESCAPED{scheduler}ESCAPED{, }ESCAPED{date}ESCAPED{, }ESCAPED{index}ESCAPED{, }ESCAPED{resource}ESCAPED{, }ESCAPED{e}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:

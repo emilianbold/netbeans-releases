@@ -264,6 +264,7 @@ public class JarFileSystem extends AbstractFileSystem {
     * Set name of the ZIP/JAR file.
     * @param aRoot path to new ZIP or JAR file
     * @throws IOException if the file is not valid
+    * @throws IllegalArgumentException if the file is {@link FileUtil#normalizeFile(java.io.File) not normalized}
     */
     public void setJarFile(final File aRoot) throws IOException, PropertyVetoException {
         setJarFile(aRoot, true, true);

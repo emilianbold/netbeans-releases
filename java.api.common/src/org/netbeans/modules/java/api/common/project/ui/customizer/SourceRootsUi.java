@@ -108,7 +108,7 @@ public final class SourceRootsUi {
         
         String[] rootLabels = roots.getRootNames();
         String[] rootProps = roots.getRootProperties();
-        URL[] rootURLs = roots.getRootURLs();
+        URL[] rootURLs = roots.getRootURLs(false);
         Object[][] data = new Object[rootURLs.length] [2];
         for (int i=0; i< rootURLs.length; i++) {
             data[i][0] = Utilities.toFile(URI.create (rootURLs[i].toExternalForm()));

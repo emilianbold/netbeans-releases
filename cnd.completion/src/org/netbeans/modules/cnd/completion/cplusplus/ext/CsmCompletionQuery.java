@@ -1057,6 +1057,16 @@ abstract public class CsmCompletionQuery {
                                     resolveType = resolveType(exp);
                                     if(resolveType != null) {
                                         if(resolveType.getArrayDepth() == 0) {
+                                            // In fact this is a workaround, because according to standard we
+                                            // must look for standalone functions begin(<expression>). But for now
+                                            // NetBeans doesn't support functions like
+                                            //
+                                            // template<typename C> auto begin(C& c) -> decltype(c.begin());
+                                            //
+                                            // So, just try to find member function "begin"
+                                            // 
+                                            // @see http://www.open-std.org/JTC1/SC22/WG21/docs/papers/2009/n2930.html
+                                            
                                             CsmClassifier cls = CsmBaseUtilities.getOriginalClassifier((CsmClassifier)resolveType.getClassifier(), contextFile);
                                             List<CsmObject> decls = findFieldsAndMethods(finder, contextElement, cls, "begin", true, false, false, true, false, false, false); // NOI18N
                                             for (CsmObject csmObject : decls) {
@@ -1065,6 +1075,12 @@ abstract public class CsmCompletionQuery {
                                                     break;
                                                 }
                                             }
+                                            
+                                            cls = CsmBaseUtilities.getOriginalClassifier((CsmClassifier)resolveType.getClassifier(), contextFile);
+                                            CsmFunction dereferenceOperator = getOperator(cls, contextFile, endOffset, CsmFunction.OperatorKind.POINTER);
+                                            if (dereferenceOperator != null) {
+                                                resolveType = dereferenceOperator.getReturnType();
+                                            }                                            
                                         }
                                         resolveType = CsmCompletion.createType(resolveType.getClassifier(), oldType.getPointerDepth(), getReferenceValue(oldType), oldType.getArrayDepth(), oldType.isConst());
                                     }
@@ -1130,15 +1146,22 @@ abstract public class CsmCompletionQuery {
 
         private CsmClassifier extractLastTypeClassifier(ExprKind expKind) {
             // Found type
-            CsmClassifier cls;
-            if (lastType.getArrayDepth() == 0 || (expKind == ExprKind.ARROW)) {
-                // Not array or deref array with arrow
-                cls = getClassifier(lastType, contextFile, endOffset);
-            } else {
-                // Array of some depth
-                cls = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
-            }
-            return cls;
+            return extractTypeClassifier(lastType, expKind);
+        }
+        
+        private CsmClassifier extractTypeClassifier(CsmType type, ExprKind expKind) {
+            if (type != null) {
+                CsmClassifier cls;
+                if (type.getArrayDepth() == 0 || (expKind == ExprKind.ARROW)) {
+                    // Not array or deref array with arrow
+                    cls = getClassifier(type, contextFile, endOffset);
+                } else {
+                    // Array of some depth
+                    cls = CsmCompletion.OBJECT_CLASS_ARRAY; // Use Object in this case
+                }
+                return cls;            
+            } 
+            return null;
         }
 
         private Collection<CsmFunction> getConstructors(CsmClass cls) {
@@ -1946,13 +1969,14 @@ abstract public class CsmCompletionQuery {
                                                         }
                                                     }
                                                 } else {
-                                                    CsmClassifier classifier = typ1.getClassifier();
+                                                    CsmClassifier classifier = extractTypeClassifier(typ1, ExprKind.NONE);
                                                     if (CsmKindUtilities.isClass(classifier)) {
-                                                        CsmClass cls = (CsmClass) classifier;
-                                                        for (CsmMember member : cls.getMembers()) {
-                                                            if(CsmKindUtilities.isFunction(member) && member.getName().toString().equals(operatorPrefix)) {
+                                                        CsmClass cls = (CsmClass) classifier;                                                                                                    
+                                                        CsmFunction.OperatorKind opKind = CsmFunction.OperatorKind.getKindByImage(item.getTokenText(0), true);
+                                                        if (opKind != CsmFunction.OperatorKind.NONE) {
+                                                            CsmFunction member = getOperator(cls, contextFile, endOffset, opKind);
+                                                            if (member != null) {
                                                                 lastType = ((CsmFunction)member).getReturnType();
-                                                                break;
                                                             }
                                                         }
                                                     }

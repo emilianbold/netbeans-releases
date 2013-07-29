@@ -137,10 +137,20 @@ public class ArchiveURLMapperTest extends NbTestCase {
     }
     
     public void testFunnyZipEntryNames() throws Exception { // #181671
+        doFunnyZipEntryNames("[My Content;hi*();.xml]");
+    }
+
+    public void testFunnyZipEntryNames20() throws Exception { // #181671
+        doFunnyZipEntryNames("[My%20Content;hi*();.xml]");
+    }
+
+    public void testFunnyZipEntryNamesQuestion() throws Exception { // #181671
+        doFunnyZipEntryNames("[My?Content;hi*();.xml]");
+    }
+    
+    private void doFunnyZipEntryNames(String file) throws Exception {
         File docx = new File(getWorkDir(), "ms-docx.jar");
         JarOutputStream jos = new JarOutputStream(new FileOutputStream(docx));
-        String file = "[My Content;hi*();.xml]";
-        // still fails with "%20" or "?" present in name (skipping check for ':' since writeZipFile treats it specially)
         ZipEntry entry = new ZipEntry(file);
         jos.putNextEntry(entry);
         jos.write("content".getBytes());

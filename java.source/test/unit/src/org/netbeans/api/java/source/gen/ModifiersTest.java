@@ -1495,6 +1495,51 @@ public class ModifiersTest extends GeneratorTestMDRCompat {
         assertEquals(golden, res);
     }
     
+    public void testAddRemoveDefaultKeyword() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package flaska;\n" +
+                "\n" +
+                "public interface Test {\n" +
+                "    public default void remove() { }\n" +
+                "    public void add();\n" +
+                "}\n"
+                );
+        String golden =
+                "package flaska;\n" +
+                "\n" +
+                "public interface Test {\n" +
+                "    public void remove();\n" +
+                "    public default void add() {\n" +
+                "    }\n" +
+                "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+
+            public void run(final WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                final TreeMaker make = workingCopy.getTreeMaker();
+                ClassTree clazz = (ClassTree) workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                new TreeScanner() {
+                    @Override public Object visitMethod(MethodTree node, Object p) {
+                        if (node.getName().contentEquals("add")) {
+                            workingCopy.rewrite(node.getModifiers(), make.addModifiersModifier(node.getModifiers(), Modifier.DEFAULT));
+                            workingCopy.rewrite(node, make.Method(node.getModifiers(), node.getName(), node.getReturnType(), node.getTypeParameters(), node.getParameters(), node.getThrows(), "{}", null));
+                        } else {
+                            workingCopy.rewrite(node.getModifiers(), make.removeModifiersModifier(node.getModifiers(), Modifier.DEFAULT));
+                            workingCopy.rewrite(node, make.Method(node.getModifiers(), node.getName(), node.getReturnType(), node.getTypeParameters(), node.getParameters(), node.getThrows(), (BlockTree) null, null));
+                        }
+                        return super.visitMethod(node, p);
+                    }
+                }.scan(clazz, null);
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
     String getGoldenPckg() {
         return "";
     }

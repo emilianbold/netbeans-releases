@@ -61,6 +61,7 @@ import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.accessibility.AccessibleContext;
 import javax.accessibility.AccessibleRole;
+import javax.swing.plaf.UIResource;
 import javax.swing.table.TableModel;
 import javax.swing.tree.TreePath;
 import org.netbeans.modules.openide.explorer.PropertyPanelBridge;
@@ -211,6 +212,7 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
 
     /** Default header renderer */
     private TableCellRenderer headerRenderer = (new JTableHeader()).getDefaultRenderer();
+    private TableCellRenderer defaultTableRenderer = new DefaultTableCellRenderer();
 
     /** Null panel is used if cell value is null */
     private NullPanel nullPanel;
@@ -264,6 +266,16 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
 
         Property property = (Property)value;
         Node n = nodeForRow(row);
+        Component focusOwner = KeyboardFocusManager.
+                getCurrentKeyboardFocusManager().getFocusOwner();
+        boolean tableHasFocus = hasFocus || table == focusOwner ||
+            table.isAncestorOf(focusOwner) ||
+            (focusOwner instanceof Container &&
+             ((Container) focusOwner).isAncestorOf(table));
+        Component defaultRendererComponent = defaultTableRenderer.getTableCellRendererComponent(
+                table, value, isSelected, tableHasFocus, row, column);
+        Color bg = getRealColor(defaultRendererComponent.getBackground());
+        Color fg = defaultRendererComponent.getForeground();
 
         if (property != null) {
             FocusedPropertyPanel propPanel = getRenderer (property, n);
@@ -302,32 +314,12 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
                 }
             }
             propPanel.setOpaque(true);
-            if (isSelected){
-                
-                Component focusOwner = KeyboardFocusManager.
-                    getCurrentKeyboardFocusManager().getFocusOwner();
-
-                boolean tableHasFocus = table == focusOwner ||
-                    table.isAncestorOf(focusOwner) || 
-                    (focusOwner instanceof Container && 
-                    ((Container) focusOwner).isAncestorOf(table));
-                
-                if (table == focusOwner && table.isEditing()) {
-                    //XXX really need to check if the editor has focus
-                    tableHasFocus = true;
-                }
-                
-                propPanel.setBackground(tableHasFocus ? 
-                    table.getSelectionBackground() : 
-                    getNoFocusSelectionBackground());
-                
-                propPanel.setForeground(tableHasFocus ?
-                    table.getSelectionForeground() :
-                    getNoFocusSelectionForeground());
-                
+            if (isSelected && !tableHasFocus) {
+                propPanel.setBackground(getNoFocusSelectionBackground());
+                propPanel.setForeground(getNoFocusSelectionForeground());
             } else {
-                propPanel.setBackground(table.getBackground());
-                propPanel.setForeground(table.getForeground());
+                propPanel.setBackground(bg);
+                propPanel.setForeground(fg);
             }
             if (table instanceof ETable) {
                 ETable et = (ETable)table;
@@ -343,27 +335,12 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
             nullPanel.setNode(n);
         }
 
-        if (isSelected) {
-            Component focusOwner = KeyboardFocusManager.
-                getCurrentKeyboardFocusManager().getFocusOwner();
-
-            boolean tableHasFocus = hasFocus || table == focusOwner || 
-                table.isAncestorOf(focusOwner) || 
-                (focusOwner instanceof Container && 
-                ((Container) focusOwner).isAncestorOf(table));
-            
-            nullPanel.setBackground(tableHasFocus ? 
-                table.getSelectionBackground() :
-                getNoFocusSelectionBackground()
-            );
-            
-            //XXX may want to handle inverse theme here and use brighter if
-            //below a threshold.  Deferred to centralized color management
-            //being implemented.
-            nullPanel.setForeground(table.getSelectionForeground().darker());
+        if (isSelected && !tableHasFocus) {
+            nullPanel.setBackground(getNoFocusSelectionBackground());
+            nullPanel.setForeground(getNoFocusSelectionForeground());
         } else {
-            nullPanel.setBackground(table.getBackground());
-            nullPanel.setForeground(table.getForeground());
+            nullPanel.setBackground(bg);
+            nullPanel.setForeground(fg);
         }
 
         if (table instanceof ETable) {
@@ -372,6 +349,21 @@ abstract class SheetCell extends AbstractCellEditor implements TableModelListene
         }
         nullPanel.setFocused (hasFocus);
         return nullPanel;
+    }
+    
+    private Color getRealColor(Color c) {
+        if (c instanceof UIResource) {
+            // There's a condition on color instanceof UIResource in SynthStyle.
+            // This is why if we know which color we want to set, we must assure,
+            // that the color is not an instance of UIResource:
+            float[] components = c.getComponents(null);
+            int cn = components.length - 1;
+            float[] colorComponents = new float[cn];
+            System.arraycopy(components, 0, colorComponents, 0, cn);
+            c = new Color(c.getColorSpace(), colorComponents, components[cn]);
+            //bg = new Color(bg.getRGB());
+        }
+        return c;
     }
 
     protected PropertyPanel editor=null;

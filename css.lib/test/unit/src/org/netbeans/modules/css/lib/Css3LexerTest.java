@@ -271,6 +271,18 @@ public class Css3LexerTest extends NbTestCase {
         assertANTLRToken("//comment" ,Css3Lexer.LINE_COMMENT, lexer.nextToken());
     }
      
+    public void testLexingOfPercentageWithoutNumberPrefix() throws Exception {
+        String source = "font: %/20 ";
+        Lexer lexer = createLexer(source);
+        assertANTLRToken("font" ,Css3Lexer.IDENT, lexer.nextToken());
+        assertANTLRToken(":" ,Css3Lexer.COLON, lexer.nextToken());
+        assertANTLRToken(" " ,Css3Lexer.WS, lexer.nextToken());
+        assertANTLRToken("%" , Css3Lexer.PERCENTAGE_SYMBOL, lexer.nextToken());
+        assertANTLRToken("/" ,Css3Lexer.SOLIDUS, lexer.nextToken());
+        assertANTLRToken("20" , Css3Lexer.NUMBER, lexer.nextToken());
+        assertANTLRToken(" " , Css3Lexer.WS, lexer.nextToken());
+    }
+     
      /**
     * @param expectedImage - use null if you do not want to check the image
     */

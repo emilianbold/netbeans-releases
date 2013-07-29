@@ -41,25 +41,37 @@
  */
 package org.netbeans.modules.javascript2.editor.hints;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.RuleContext;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.Lines;
+import org.openide.filesystems.FileObject;
+import org.openide.util.NbBundle;
 
 /**
  *
  * @author Petr Pisl
  */
 public class JsHintsProvider implements HintsProvider {
-    
+
+    private static final Logger LOGGER = Logger.getLogger(JsHintsProvider.class.getName());
+
     private volatile boolean cancel = false;
 
     @org.netbeans.api.annotations.common.SuppressWarnings("BC_UNCONFIRMED_CAST")
@@ -111,7 +123,7 @@ public class JsHintsProvider implements HintsProvider {
     @Override
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
         Map<?, List<? extends Rule.AstRule>> allSuggestions = manager.getHints(true, context);
-        
+
         List<? extends Rule.AstRule> otherHints = allSuggestions.get(WeirdAssignment.JS_OTHER_HINTS);
         if (otherHints != null && !cancel) {
             for (Rule.AstRule astRule : otherHints) {
@@ -127,33 +139,90 @@ public class JsHintsProvider implements HintsProvider {
         try {
             rule.computeHints((JsRuleContext)context, suggestions, caretOffset, manager);
         } catch (BadLocationException ble) {
-            
+
         }
     }
-    
+
     @Override
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
 
     }
 
+    @NbBundle.Messages({
+        "MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR=JavaScript error checking for this file is disabled, you can enable it with this hint"
+    })
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
-        ParserResult parserResult = context.parserResult;
-        if (parserResult != null) {
-            List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
-            // if in embedded
-            String mimepath = parserResult.getSnapshot().getMimePath().getPath();
-            //XXX this condition is a duplicated from JsParserError
-            if (!JsTokenId.JAVASCRIPT_MIME_TYPE.equals(mimepath)
-                && !JsTokenId.JSON_MIME_TYPE.equals(mimepath)) {
+        JsParserResult parserResult = (JsParserResult) context.parserResult;
+        List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
+        // if in embedded
+        if (parserResult.isEmbedded()) {
+            String mimeType = ErrorCheckingSupport.getMimeType(parserResult);
+            List<HintFix> defaultFixes = new ArrayList<HintFix>(2);
+            if (!ErrorCheckingSupport.isErrorCheckingEnabledForFile(parserResult)) {
+                defaultFixes.add(ErrorCheckingSupport.createErrorFixForFile(parserResult.getSnapshot(), true));
+            }
+            if (!ErrorCheckingSupport.isErrorCheckingEnabledForMimetype(mimeType)) {
+                defaultFixes.add(ErrorCheckingSupport.createErrorFixForMimeType(
+                        parserResult.getSnapshot(), mimeType, true));
+            }
+
+            if (!errors.isEmpty()) {
+                if (ErrorCheckingSupport.isErrorCheckingEnabled(parserResult, mimeType)) {
+                    List<HintFix> errorFixes = new ArrayList<HintFix>(2);
+                    if (ErrorCheckingSupport.isErrorCheckingEnabledForFile(parserResult)) {
+                        errorFixes.add(ErrorCheckingSupport.createErrorFixForFile(parserResult.getSnapshot(), false));
+                    }
+                    if (ErrorCheckingSupport.isErrorCheckingEnabledForMimetype(mimeType)) {
+                        errorFixes.add(ErrorCheckingSupport.createErrorFixForMimeType(
+                                parserResult.getSnapshot(), mimeType, false));
+                    }
+
+                    Snapshot snapshot = parserResult.getSnapshot();
+                    Lines lines = new Lines(snapshot.getText());
+                    Set<Integer> linesWithHints = new HashSet<Integer>();
+
                     for (Error error : errors) {
-                        if (!(error instanceof Error.Badging) || ((Error.Badging) error).showExplorerBadge()) {
-                            unhandled.add(error);
+                        FileObject fo = error.getFile();
+                        if (fo == null) {
+                            continue;
+                        }
+                        boolean contains = false;
+                        try {
+                            int line = lines.getLineIndex(error.getStartPosition());
+                            contains = !linesWithHints.add(line);
+                        } catch (BadLocationException ex) {
+                            LOGGER.log(Level.INFO, null, ex);
+                        }
+
+                        int start = snapshot.getOriginalOffset(error.getStartPosition());
+                        int end = snapshot.getOriginalOffset(error.getEndPosition());
+                        
+                        if (start > -1 && end > -1 && start <= end) {
+                            Hint h = new Hint(new JsErrorRule(),
+                                    error.getDisplayName(),
+                                    fo,
+                                    new OffsetRange(start, end),
+                                    contains ? Collections.<HintFix>emptyList() : errorFixes,
+                                    100);
+                            hints.add(h);
                         }
                     }
-            } else {
-                unhandled.addAll(errors);
+                }
             }
+
+            FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
+            if (fo != null && !defaultFixes.isEmpty()) {
+                Hint h = new Hint(new JsSwitchRule(),
+                        Bundle.MSG_HINT_ENABLE_ERROR_CHECKS_FILE_DESCR(),
+                        fo,
+                        new OffsetRange(0, 0),
+                        defaultFixes,
+                        50);
+                hints.add(h);
+            }
+        } else {
+            unhandled.addAll(errors);
         }
     }
 
@@ -182,6 +251,64 @@ public class JsHintsProvider implements HintsProvider {
             }
             return jsParserResult;
         }
-        
+
+    }
+
+    private static class JsSwitchRule implements Rule.ErrorRule {
+
+        @Override
+        public Set<?> getCodes() {
+            return Collections.emptySet();
+        }
+
+        @Override
+        public boolean appliesTo(RuleContext context) {
+            return true;
+        }
+
+        @NbBundle.Messages({
+            "JsSwitchRule.displayName=Error checking"
+        })
+        @Override
+        public String getDisplayName() {
+            return Bundle.JsSwitchRule_displayName();
+        }
+
+        @Override
+        public boolean showInTasklist() {
+            return false;
+        }
+
+        @Override
+        public HintSeverity getDefaultSeverity() {
+            return HintSeverity.INFO;
+        }
+    }
+
+    // XXX Rule or subclass ?
+    private static class JsErrorRule implements Rule {
+
+        @Override
+        public boolean appliesTo(RuleContext context) {
+            return true;
+        }
+
+        @NbBundle.Messages({
+            "JsErrorRule.displayName=JavaScript Error"
+        })
+        @Override
+        public String getDisplayName() {
+            return Bundle.JsErrorRule_displayName();
+        }
+
+        @Override
+        public boolean showInTasklist() {
+            return true;
+        }
+
+        @Override
+        public HintSeverity getDefaultSeverity() {
+            return HintSeverity.ERROR;
+        }
     }
 }

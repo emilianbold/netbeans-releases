@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-OpenIDE-Module: org.netbeans.modules.team.ui
-OpenIDE-Module-Localizing-Bundle: org/netbeans/modules/team/ui/Bundle.properties
-OpenIDE-Module-Layer: org/netbeans/modules/team/ui/resources/layer.xml
-OpenIDE-Module-Install: org/netbeans/modules/team/ui/ModuleLifecycleManager.class
-OpenIDE-Module-Specification-Version: 1.16

@@ -88,14 +88,14 @@ public class SubtaskTableModel extends DefaultTableModel {
         String[] subtasks = issue.getSubtasks();
         Object[][] data = new Object[subtasks.length][];
         int count = 0;
-        for (String key : subtasks) {
-            ODCSIssue subTask = (ODCSIssue)cache.getIssue(key);
+        for (String id : subtasks) {
+            ODCSIssue subTask = (ODCSIssue)cache.getIssue(id);
             if (subTask == null) {
-                subTask = (ODCSIssue)repository.getIssue(key);
+                subTask = (ODCSIssue)repository.getIssue(id);
             }
             if(subTask != null) {
                 data[count] = new Object[] {
-                    key,
+                    id,
                     subTask.getSummary(),
                     subTask.getType(),
                     subTask.getStatus(),
@@ -103,7 +103,7 @@ public class SubtaskTableModel extends DefaultTableModel {
                 };
                 count++;
             } else {
-                ODCS.LOG.log(Level.WARNING, "no subtask returned for key {0}", key); // NOI18N
+                ODCS.LOG.log(Level.WARNING, "no subtask returned for key {0}", id); // NOI18N
             }
         }
         if(count < subtasks.length) {

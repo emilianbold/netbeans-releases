@@ -230,7 +230,8 @@ final class SimpleTargetChooserPanel implements WizardDescriptor.Panel<WizardDes
         if (WizardDescriptor.PREVIOUS_OPTION.equals(settings.getValue())) {
             return;
         }
-        if(!WizardDescriptor.CANCEL_OPTION.equals(settings.getValue()) && isValid()) {
+        if(!WizardDescriptor.CANCEL_OPTION.equals(settings.getValue())
+                && !WizardDescriptor.CLOSED_OPTION.equals(settings.getValue()) && isValid()) {
             if ( bottomPanel != null ) {
                 bottomPanel.storeSettings( settings );
             }

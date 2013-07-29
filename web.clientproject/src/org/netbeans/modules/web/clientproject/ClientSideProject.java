@@ -560,7 +560,7 @@ public class ClientSideProject implements Project {
             // browser
             ClientProjectEnhancedBrowserImplementation enhancedBrowserImpl = project.getEnhancedBrowserImpl();
             if (enhancedBrowserImpl != null) {
-                enhancedBrowserImpl.deactivate();
+                enhancedBrowserImpl.close();
             }
         }
 

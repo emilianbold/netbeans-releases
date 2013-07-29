@@ -60,13 +60,19 @@ import org.openide.util.NbBundle;
  * Implementation of Sources interface for Java EE Maven projects
  * @author  Milos Kleint
  */
-@ProjectServiceProvider(service = Sources.class, projectType={
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
-})
+@ProjectServiceProvider(
+    service = {
+        Sources.class
+    },
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR // #233476
+    }
+)
 public class J2eeMavenSourcesImpl implements Sources {
     
     public static final String TYPE_DOC_ROOT="doc_root"; //NOI18N

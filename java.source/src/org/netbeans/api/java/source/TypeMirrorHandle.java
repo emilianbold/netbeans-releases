@@ -426,8 +426,13 @@ public final class TypeMirrorHandle<T extends TypeMirror> {
         private Type delegate = null;
         
         public PlaceholderType() {
-            super(TypeTag.UNKNOWN, null);
+            super(null);
         }       
+
+        @Override
+        public TypeTag getTag() {
+            return TypeTag.UNKNOWN;
+        }
     }
     
     private static class Visitor extends DefaultTypeVisitor<Void, Void> {

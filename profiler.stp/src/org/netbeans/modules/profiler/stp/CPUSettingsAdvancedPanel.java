@@ -506,7 +506,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // sampledTimingLabel
         samplingFrequencyUnitsLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(samplingFrequencyUnitsLabel, "&ms"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(samplingFrequencyUnitsLabel, Bundle.StpSamplingFrequencyMs());
         samplingFrequencyUnitsLabel.setLabelFor(samplingFrequencySpinner);
         samplingFrequencyUnitsLabel.setToolTipText(Bundle.StpSamplingFrequencyTooltip());
         samplingFrequencyUnitsLabel.setOpaque(false);
@@ -626,7 +626,7 @@ public class CPUSettingsAdvancedPanel extends DefaultSettingsPanel implements He
 
         // sampledTimingLabel
         sampledTimingLabel = new JLabel();
-        org.openide.awt.Mnemonics.setLocalizedText(sampledTimingLabel, "&ms"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(sampledTimingLabel, Bundle.StpSamplingFrequencyMs());
         sampledTimingLabel.setLabelFor(sampledTimingSpinner);
         sampledTimingLabel.setToolTipText(Bundle.StpSampledTimingTooltip());
         sampledTimingLabel.setOpaque(false);

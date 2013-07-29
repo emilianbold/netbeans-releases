@@ -241,8 +241,8 @@ public final class RefactoringElementsBag {
         try {
             doc = ec.openDocument();
         } catch (UserQuestionException ex) {
-            // issue #156068 - open even big file
-            if (ex.getMessage().startsWith("The file is too big.")) { // NOI18N
+            // issue #156068 - open even big file, issue #232257 - encoding should not be a problem for guarded test
+            if (ex.getMessage().startsWith("The file is too big.") || ex.getMessage().contains("cannot be safely opened with encoding")) { // NOI18N
                 ex.confirmed();
                 doc = ec.openDocument();
             } else {

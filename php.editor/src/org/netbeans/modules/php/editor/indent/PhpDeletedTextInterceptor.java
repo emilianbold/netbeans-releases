@@ -50,6 +50,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.php.editor.options.OptionsUtils;
 import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
 
 /**
@@ -84,21 +85,25 @@ public class PhpDeletedTextInterceptor implements DeletedTextInterceptor {
             case '{':
             case '(':
             case '[':
-                char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
-                if (((tokenAtDot == ']')
-                        && (LexUtilities.getTokenBalance(doc, '[', ']', dotPos) != 0))
-                        || ((tokenAtDot == ')')
-                        && (LexUtilities.getTokenBalance(doc, '(', ')', dotPos) != 0))
-                        || ((tokenAtDot == '}')
-                        && (LexUtilities.getTokenBalance(doc, '{', '}', dotPos) != 0))) {
-                    doc.remove(dotPos, 1);
+                if (TypingHooksUtils.isInsertMatchingEnabled()) {
+                    char tokenAtDot = LexUtilities.getTokenChar(doc, dotPos);
+                    if (((tokenAtDot == ']')
+                            && (LexUtilities.getTokenBalance(doc, '[', ']', dotPos) != 0))
+                            || ((tokenAtDot == ')')
+                            && (LexUtilities.getTokenBalance(doc, '(', ')', dotPos) != 0))
+                            || ((tokenAtDot == '}')
+                            && (LexUtilities.getTokenBalance(doc, '{', '}', dotPos) != 0))) {
+                        doc.remove(dotPos, 1);
+                    }
                 }
                 break;
             case '\"':
             case '\'':
-                char[] match = doc.getChars(dotPos, 1);
-                if ((match != null) && (match[0] == ch)) {
-                    doc.remove(dotPos, 1);
+                if (OptionsUtils.autoCompletionSmartQuotes()) {
+                    char[] match = doc.getChars(dotPos, 1);
+                    if ((match != null) && (match[0] == ch)) {
+                        doc.remove(dotPos, 1);
+                    }
                 }
                 break;
             default:

@@ -104,6 +104,9 @@
       </Layout>
     </Container>
     <Container class="javax.swing.JPanel" name="pProgress">
+      <Properties>
+        <Property name="opaque" type="boolean" value="false"/>
+      </Properties>
 
       <Layout class="org.netbeans.modules.form.compat2.layouts.DesignBorderLayout"/>
       <SubComponents>

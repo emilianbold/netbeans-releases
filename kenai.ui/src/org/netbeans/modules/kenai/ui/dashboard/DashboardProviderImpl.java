@@ -53,22 +53,22 @@ import org.netbeans.modules.kenai.ui.OpenNetBeansIDEProjects;
 import org.netbeans.modules.kenai.ui.ProjectAccessorImpl;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.team.ui.common.MyProjectNode;
-import org.netbeans.modules.team.ui.common.SourceListNode;
-import org.netbeans.modules.team.ui.spi.BuildHandle;
-import org.netbeans.modules.team.ui.spi.BuilderAccessor;
-import org.netbeans.modules.team.ui.spi.DashboardProvider;
-import org.netbeans.modules.team.ui.spi.JobHandle;
-import org.netbeans.modules.team.ui.spi.MemberAccessor;
-import org.netbeans.modules.team.ui.spi.MemberHandle;
-import org.netbeans.modules.team.ui.spi.MessagingAccessor;
-import org.netbeans.modules.team.ui.spi.ProjectAccessor;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.QueryAccessor;
-import org.netbeans.modules.team.ui.spi.SourceAccessor;
-import org.netbeans.modules.team.ui.spi.SourceHandle;
-import org.netbeans.modules.team.ui.util.treelist.LeafNode;
-import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.netbeans.modules.team.server.ui.common.MyProjectNode;
+import org.netbeans.modules.team.server.ui.common.SourceListNode;
+import org.netbeans.modules.team.server.ui.spi.BuildHandle;
+import org.netbeans.modules.team.server.ui.spi.BuilderAccessor;
+import org.netbeans.modules.team.server.ui.spi.DashboardProvider;
+import org.netbeans.modules.team.server.ui.spi.JobHandle;
+import org.netbeans.modules.team.server.ui.spi.MemberAccessor;
+import org.netbeans.modules.team.server.ui.spi.MemberHandle;
+import org.netbeans.modules.team.server.ui.spi.MessagingAccessor;
+import org.netbeans.modules.team.server.ui.spi.ProjectAccessor;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryAccessor;
+import org.netbeans.modules.team.server.ui.spi.SourceAccessor;
+import org.netbeans.modules.team.server.ui.spi.SourceHandle;
+import org.netbeans.modules.team.commons.treelist.LeafNode;
+import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.RequestProcessor;
 
 /**
@@ -144,34 +144,7 @@ public class DashboardProviderImpl extends DashboardProvider<KenaiProject> {
 
     @Override
     public BuilderAccessor<KenaiProject> getBuilderAccessor() {
-        return new BuilderAccessor() {
-            @Override
-            public boolean isEnabled(ProjectHandle project) {
-                return false;
-            }
-            public List<BuildHandle> getBuilds(ProjectHandle project) {
-                return Collections.emptyList();
-            }
-            @Override
-            public Action getNewBuildAction(ProjectHandle project) {
-                return null;
-            };
-
-            @Override
-            public Class type() {
-                return Object.class;
-            }
-
-            @Override
-            public JobHandle getJob(ProjectHandle project, String jobName) {
-                return null;
-            }
-
-            @Override
-            public List getJobs(ProjectHandle project) {
-                return Collections.emptyList();
-            }
-        };
+        return null;
     }
 
     @Override

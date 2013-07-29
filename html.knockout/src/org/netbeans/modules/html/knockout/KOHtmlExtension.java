@@ -52,6 +52,7 @@ import java.util.Map;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -73,11 +74,15 @@ import org.netbeans.spi.editor.completion.CompletionItem;
 /**
  * Knockout extension to the html editor.
  *
- * XXX register also to text/xhtml?
- *
  * @author marekfukala
  */
-@MimeRegistration(mimeType = "text/html", service = HtmlExtension.class)
+@MimeRegistrations({
+    @MimeRegistration(mimeType = "text/html", service = HtmlExtension.class),
+    @MimeRegistration(mimeType = "text/xhtml", service = HtmlExtension.class),
+    @MimeRegistration(mimeType = "text/x-jsp", service = HtmlExtension.class),
+    @MimeRegistration(mimeType = "text/x-tag", service = HtmlExtension.class),
+    @MimeRegistration(mimeType = "text/x-php5", service = HtmlExtension.class)
+})
 public class KOHtmlExtension extends HtmlExtension {
 
     @Override
@@ -90,10 +95,10 @@ public class KOHtmlExtension extends HtmlExtension {
         final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<>();
         KOModel model = KOModel.getModel(result);
         for (Attribute ngAttr : model.getBindings()) {
-//            highlights.put(new OffsetRange(ngAttr.from(), ngAttr.to()),
-//                    ColoringAttributes.METHOD_SET);
-            highlights.put(new OffsetRange(ngAttr.from(), ngAttr.from() + ngAttr.name().length()),
-                    ColoringAttributes.CONSTRUCTOR_SET);
+            OffsetRange dor = KOUtils.getValidDocumentOffsetRange(ngAttr.from(), ngAttr.from() + ngAttr.name().length(), result.getSnapshot());
+            if (dor != null) {
+                highlights.put(dor, ColoringAttributes.CONSTRUCTOR_SET);
+            }
         }
         return highlights;
     }
@@ -140,7 +145,7 @@ public class KOHtmlExtension extends HtmlExtension {
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
         Document document = context.getResult().getSnapshot().getSource().getDocument(true);
         TokenHierarchy tokenHierarchy = TokenHierarchy.get(document);
-        TokenSequence<HTMLTokenId> ts = tokenHierarchy.tokenSequence(HTMLTokenId.language());
+        TokenSequence<HTMLTokenId> ts = LexerUtils.getTokenSequence(tokenHierarchy, context.getOriginalOffset(), HTMLTokenId.language(), false);
         if (ts != null) {
             int diff = ts.move(context.getOriginalOffset());
             if (diff == 0 && ts.movePrevious() || ts.moveNext()) {
@@ -166,8 +171,8 @@ public class KOHtmlExtension extends HtmlExtension {
                                     return getBindingItems("", context.getOriginalOffset());
                                 case WS:
                                     //key: value, |
-                                    if(embedded.movePrevious()) {
-                                        switch(embedded.token().id()) {
+                                    if (embedded.movePrevious()) {
+                                        switch (embedded.token().id()) {
                                             case COMMA:
                                                 return getBindingItems("", context.getOriginalOffset());
                                         }
@@ -175,7 +180,7 @@ public class KOHtmlExtension extends HtmlExtension {
                                         //just WS is before the caret, no token before
                                         //   |
                                         return getBindingItems("", context.getOriginalOffset());
-                                        
+
                                     }
                                     break;
                             }
@@ -208,6 +213,18 @@ public class KOHtmlExtension extends HtmlExtension {
     public Collection<CustomAttribute> getCustomAttributes(String elementName) {
         return Collections.singleton(KO_DATA_BIND_CUSTOM_ATTRIBUTE);
     }
+    private static final String DOC_URL = "http://knockoutjs.com/documentation/binding-syntax.html"; //NOI18N
+    static final KOHelpItem KO_DATA_BIND_HELP_ITEM = new KOHelpItem() {
+        @Override
+        public String getName() {
+            return KOUtils.KO_DATA_BIND_ATTR_NAME;
+        }
+
+        @Override
+        public String getExternalDocumentationURL() {
+            return DOC_URL;
+        }
+    };
     private static final CustomAttribute KO_DATA_BIND_CUSTOM_ATTRIBUTE = new CustomAttribute() {
         @Override
         public String getName() {
@@ -226,7 +243,7 @@ public class KOHtmlExtension extends HtmlExtension {
 
         @Override
         public HelpItem getHelp() {
-            return null;
+            return new HelpItemImpl(KO_DATA_BIND_HELP_ITEM);
         }
     };
 }

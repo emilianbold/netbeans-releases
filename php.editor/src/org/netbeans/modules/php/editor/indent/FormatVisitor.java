@@ -82,6 +82,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.FunctionInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.InfixExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.LambdaFunctionDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodInvocation;
 import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
@@ -956,6 +957,19 @@ public class FormatVisitor extends DefaultVisitor {
             addListOfNodes(parameters, FormatToken.Kind.WHITESPACE_IN_PARAMETER_LIST);
         }
         scan(node.getBody());
+    }
+
+    @Override
+    public void visit(LambdaFunctionDeclaration node) {
+        scan(node.getFormalParameters());
+        scan(node.getLexicalVariables());
+        Block body = node.getBody();
+        if (body != null) {
+            addAllUntilOffset(body.getStartOffset());
+            formatTokens.add(new FormatToken.IndentToken(body.getStartOffset(), -1 * options.continualIndentSize));
+            scan(body);
+            formatTokens.add(new FormatToken.IndentToken(body.getEndOffset(), options.continualIndentSize));
+        }
     }
 
     @Override

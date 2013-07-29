@@ -67,9 +67,9 @@ import org.netbeans.modules.odcs.versioning.spi.ApiProvider.LocalRepositoryIniti
 import org.netbeans.modules.team.ide.spi.IDEProject;
 import org.netbeans.modules.team.ide.spi.IDEServices;
 import org.netbeans.modules.team.ide.spi.ProjectServices;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.SourceAccessor;
-import org.netbeans.modules.team.ui.spi.SourceHandle;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.SourceAccessor;
+import org.netbeans.modules.team.server.ui.spi.SourceHandle;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
@@ -216,6 +216,11 @@ public class SourceAccessorImpl extends VCSAccessor {
     @Override
     public Action getOpenSourcesAction(ODCSUiServer server) {
         return new GetSourcesFromODCSAction(server);
+    }
+
+    @Override
+    public boolean hasSources(ProjectHandle<ODCSProject> project) {
+        return project.getTeamProject().hasScm();
     }
 
     public static class ProjectAndRepository {

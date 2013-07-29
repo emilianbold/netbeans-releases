@@ -113,7 +113,7 @@ public class ChangeMethodReturnType implements ErrorRule<Void> {
             targetType = purify(info, info.getTreeUtilities().attributeTree(expr, s));
         }
 
-        if (targetType == null) return null;
+        if (targetType == null || targetType.getKind() == TypeKind.EXECUTABLE) return null;
 
         return Collections.singletonList(new FixImpl(info, method, TypeMirrorHandle.create(targetType), info.getTypeUtilities().getTypeName(targetType).toString()).toEditorFix());
     }

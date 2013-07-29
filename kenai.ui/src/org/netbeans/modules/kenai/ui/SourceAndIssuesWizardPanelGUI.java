@@ -81,7 +81,7 @@ import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.ui.NewKenaiProjectWizardIterator.SharedItem;
-import org.netbeans.modules.team.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.netbeans.modules.versioning.spi.VersioningSupport;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.WizardDescriptor;
@@ -117,21 +117,21 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private static final String DEFAULT_REPO_FOLDER = "{0}~{1}"; // NOI18N
 
     // XXX maybe move to bundle
-    private final String getSvnRepoItem() {
+    private String getSvnRepoItem() {
         return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.SubversionOnKenai", panel.getKenai().getName());
     }
 
-    private final String getHgRepoItem() {
+    private String getHgRepoItem() {
         return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.MercurialOnKenai", panel.getKenai().getName());
     }
     private static final String EXT_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External"); // NOI18N
     private static final String NO_REPO_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.None");; // NOI18N
 
     // XXX maybe move to bundle
-    private final String getBgzIssuesItem() {
+    private String getBgzIssuesItem() {
         return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.BugzillaOnKenai", panel.getKenai().getName());
     }
-    private final String getJiraIssuesItem() {
+    private String getJiraIssuesItem() {
         return NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.JIRAOnKenai", panel.getKenai().getName());
     }
     private static final String EXT_ISSUES_ITEM = NbBundle.getMessage(SourceAndIssuesWizardPanel.class, "SourceAndIssuesWizardPanelGUI.External"); // NOI18N
@@ -143,9 +143,6 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private static final int PANEL_HEIGHT = 110;
 
     private boolean localFolderPathEdited = false;
-
-    // will be used for KenaiException messages
-    private String criticalMessage = null;
 
     private final SharedItemsListModel itemsToShareModel;
 
@@ -161,26 +158,32 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
         spacerPanel.setPreferredSize(localFolderBrowseButton.getPreferredSize());
 
         DocumentListener firingDocListener = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 panel.fireChangeEvent();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 panel.fireChangeEvent();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 panel.fireChangeEvent();
             }
         };
 
         DocumentListener updatingDocListener = new DocumentListener() {
+            @Override
             public void insertUpdate(DocumentEvent e) {
                 updateRepoNamePreview();
                 updateRepoPath();
             }
+            @Override
             public void removeUpdate(DocumentEvent e) {
                 updateRepoNamePreview();
                 updateRepoPath();
             }
+            @Override
             public void changedUpdate(DocumentEvent e) {
                 updateRepoNamePreview();
                 updateRepoPath();
@@ -195,7 +198,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
         List<SharedItem> initalItems = panel.getInitialItems();
 
-        setupServicesListModels(initalItems.size() == 0);
+        setupServicesListModels(initalItems.isEmpty());
 
         // XXX set the defaults
         // XXX here will be some condition ???
@@ -222,6 +225,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
     private void setupServicesListModels(final boolean isEmptyKenaiProject) {
 
         Utilities.getRequestProcessor().post(new Runnable() {
+            @Override
             public void run() {
                 Collection<KenaiService> services = null;
                 try {
@@ -262,8 +266,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                 }
 
                 if (!repoList.isEmpty()) {
-                    for (Iterator<KenaiService> iter = repoList.iterator(); iter.hasNext();) {
-                        KenaiService service = iter.next();
+                    for (KenaiService service : repoList) {
                         String serviceName = service.getName();
                         if (KenaiService.Names.SUBVERSION.equals(serviceName)) {
                             repoModel.addElement(new KenaiServiceItem(service, getSvnRepoItem()));
@@ -280,8 +283,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                 }
                 
                 if (!issuesList.isEmpty()) {
-                    for (Iterator<KenaiService> iter = issuesList.iterator(); iter.hasNext();) {
-                        KenaiService service = iter.next();
+                    for (KenaiService service : issuesList) {
                         String serviceName = service.getName();
                         if (KenaiService.Names.BUGZILLA.equals(serviceName)) {
                             issuesModel.addElement(new KenaiServiceItem(service, getBgzIssuesItem()));
@@ -296,6 +298,7 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
                 }
 
                 EventQueue.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         repoComboBox.setModel(repoModel);
                         repoComboBox.setEnabled(true);
@@ -1096,8 +1099,8 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
     private static class KenaiServiceItem {
 
-        private KenaiService kenaiService;
-        private String displayName;
+        private final KenaiService kenaiService;
+        private final String displayName;
 
         public KenaiServiceItem(KenaiService service, String dName) {
             kenaiService = service;
@@ -1247,10 +1250,12 @@ public class SourceAndIssuesWizardPanelGUI extends javax.swing.JPanel {
 
     private class SharedItemsListModel extends AbstractListModel {
 
+        @Override
         public Object getElementAt(int arg0) {
             return itemsToShare.get(arg0);
         }
 
+        @Override
         public int getSize() {
             return itemsToShare.size();
         }

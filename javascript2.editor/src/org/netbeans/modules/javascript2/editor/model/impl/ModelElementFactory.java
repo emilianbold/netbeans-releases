@@ -49,11 +49,14 @@ import jdk.nashorn.internal.ir.PropertyNode;
 import jdk.nashorn.internal.parser.Token;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
+import static org.netbeans.modules.javascript2.editor.doc.spi.JsModifier.PRIVATE;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
@@ -176,6 +179,12 @@ class ModelElementFactory {
         if (!belongsToParent) {
             List<Identifier> objectName = fqName.size() > 1 ? fqName.subList(0, fqName.size() - 1) : fqName;
             parent = ModelUtils.getJsObject(modelBuilder, objectName, false);
+            if (parent != null) {
+                parent = parent.getParent();
+            }
+            if (parent == null) {
+                parent = modelBuilder.getGlobal();
+            }
         }
         result = parent.getProperty(name.getName());
         newObject = new JsObjectImpl(parent, name, new OffsetRange(objectNode.getStart(), objectNode.getFinish()),
