@@ -396,6 +396,80 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         //</editor-fold>
     }
     
+    public void testGenericClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/Generics.java", "package t;\n"
+                + "\n"
+                + "public class Generics<T> {\n"
+                + "    public T get(T in) {\n"
+                + "        return in;\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        Generics<String> g = new Generics<>();\n"
+                + "        String get = g.get(\"\");\n"
+                + "    }\n"
+                + "}"));
+        performIntroduceLocalExtension("Generics1", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+                verifyContent(src,
+                new File("t/Generics.java", "package t;\n"
+                + "\n"
+                + "public class Generics<T> {\n"
+                + "    public T get(T in) {\n"
+                + "        return in;\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        Generics1<String> g = new Generics1<>();\n"
+                + "        String get = g.get(\"\");\n"
+                + "    }\n"
+                + "}"),
+                new File("t/Generics1.java", "/*\n"
+                + " * Refactoring License\n"
+                + " */\n"
+                + "\n"
+                + "package t;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class Generics1<T> {\n"
+                + "    private Generics<T> delegate;\n"
+                + "\n"
+                + "    public Generics1(Generics<T> delegate) {\n"
+                + "        this.delegate = delegate;\n"
+                + "    }\n"
+                + "\n"
+                + "    public Generics1() {\n"
+                + "        this.delegate = new Generics<T>();\n"
+                + "    }\n"
+                + "\n"
+                + "    public T get(T in) {\n"
+                + "        return delegate.get(in);\n"
+                + "    }\n"
+                + "\n"
+                + "    public boolean equals(Object o) {\n"
+                + "        Object target = o;\n"
+                + "        if (o instanceof Generics1) {\n"
+                + "            target = ((Generics1) o).delegate;\n"
+                + "        }\n"
+                + "        return this.delegate.equals(target);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int hashCode() {\n"
+                + "        return this.delegate.hashCode();\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"));
+    }
+    
     public void testInnerClass() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

@@ -563,9 +563,9 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             members.add(newConstr);
         }
         for (ExecutableElement constr : ElementFilter.constructorsIn(origClass.getEnclosedElements())) {
-            if (workingCopy.getElementUtilities().isSynthetic(constr)) {
-                continue;
-            }
+//            if (workingCopy.getElementUtilities().isSynthetic(constr)) {
+//                continue;
+//            }
 
             final List<? extends TypeParameterElement> typeParameters = constr.getTypeParameters();
             List<TypeParameterTree> newTypeParams = new ArrayList<TypeParameterTree>(typeParameters.size());
@@ -598,7 +598,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
 
             ExpressionTree expression;
             if (refactoring.getWrap()) {
-                ExpressionTree newClassTree = make.NewClass(null, newTypeArguments, make.QualIdent(origClass), newArguments, null);
+                ExpressionTree newClassTree = make.NewClass(null, newTypeArguments, (ExpressionTree)type, newArguments, null);
                 expression = make.Assignment(make.MemberSelect(make.Identifier("this"), "delegate"), newClassTree); //NOI18N
             } else {
                 expression = make.MethodInvocation(newTypeArguments, make.Identifier("super"), newArguments); //NOI18N
