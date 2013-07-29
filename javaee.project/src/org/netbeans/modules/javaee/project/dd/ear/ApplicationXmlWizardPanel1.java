@@ -42,7 +42,7 @@
  * made subject to such option by the copyright holder.
  */
 
-package org.netbeans.modules.j2ee.earproject.ui.wizards.dd;
+package org.netbeans.modules.javaee.project.dd.ear;
 
 import java.awt.Component;
 import java.beans.PropertyChangeEvent;
