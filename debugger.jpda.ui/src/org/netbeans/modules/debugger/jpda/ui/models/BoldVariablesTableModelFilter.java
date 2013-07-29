@@ -47,6 +47,8 @@ package org.netbeans.modules.debugger.jpda.ui.models;
 import java.awt.Color;
 import java.util.Map;
 import java.util.WeakHashMap;
+import javax.swing.JTable;
+import javax.swing.UIManager;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
@@ -216,18 +218,20 @@ Constants {
         sb.append ("<html>");
         if (bold) sb.append ("<b>");
         if (italics) sb.append ("<i>");
-        if (color != null) {
-            sb.append ("<font color=");
-            sb.append (Integer.toHexString ((color.getRGB () & 0xffffff)));
-            sb.append (">");
-        } else {
-            sb.append ("<font color=000000>");
+        if (color == null) {
+            color = UIManager.getColor("Table.foreground");
+            if (color == null) {
+                color = new JTable().getForeground();
+            }
         }
+        sb.append ("<font color=");
+        sb.append (Integer.toHexString ((color.getRGB () & 0xffffff)));
+        sb.append (">");
         text = text.replaceAll ("&", "&amp;");
         text = text.replaceAll ("<", "&lt;");
         text = text.replaceAll (">", "&gt;");
         sb.append (text);
-        /*if (color != null)*/ sb.append ("</font>");
+        sb.append ("</font>");
         if (italics) sb.append ("</i>");
         if (bold) sb.append ("</b>");
         sb.append ("</html>");
