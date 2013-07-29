@@ -149,6 +149,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     private JButton editScript;
     private HintsSettings originalSettings;
             WritableSettings writableSettings;
+    private boolean direct;
     
     HintsPanelLogic() {
         defModel.addElement(NbBundle.getMessage(HintsPanel.class, "CTL_AsError")); //NOI18N
@@ -174,7 +175,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         this.descriptionTextArea = descriptionTextArea;        
         this.configCombo = configCombo;
         this.editScript = editScript;
-        
+        this.direct = direct;
         
         if (configCombo.getSelectedItem() !=null) {
             originalSettings = ((Configuration) configCombo.getSelectedItem()).getSettings();
@@ -556,10 +557,7 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     public void itemStateChanged(ItemEvent ie) {
         Object o = configCombo.getSelectedItem();
         if (o instanceof Configuration) {
-            applyChanges();
-//            currentProfileId = ((Configuration) o).id();
-            valueChanged(null);
-            errorTree.repaint();
+            setOverlayPreferences(((Configuration) o).getSettings(), direct);
         }
     }
 

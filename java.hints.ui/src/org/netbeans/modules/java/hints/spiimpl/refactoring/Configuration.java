@@ -65,10 +65,9 @@ public class Configuration {
         prefs.put("display.name", displayName);
     }
     
-    private static final String DEFAULT_PROFILE = "default"; // NOI18N
     private static final String PREFERENCES_LOCATION = "org/netbeans/modules/java/hints";
     public HintsSettings getSettings() {
-        return createPreferencesBasedHintsSettings(NbPreferences.root().node(PREFERENCES_LOCATION).node(DEFAULT_PROFILE), false, Severity.VERIFIER);
+        return createPreferencesBasedHintsSettings(NbPreferences.root().node(PREFERENCES_LOCATION).node(id), false, Severity.VERIFIER);
     }
     
     public String getDisplayName() {
