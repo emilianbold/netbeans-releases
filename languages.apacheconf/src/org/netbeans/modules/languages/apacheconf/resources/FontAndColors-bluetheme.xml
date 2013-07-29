@@ -47,4 +47,7 @@ made subject to such option by the copyright holder.
 <fontscolors>
     <fontcolor name="tag" default="keyword" foreColor="F8BB00" />
     <fontcolor name="directiveparam" default="keyword" foreColor="FFFFFF" />
+    <fontcolor name="directive" default="keyword" foreColor="92CDF9">
+        <font style="bold"/>
+    </fontcolor>
 </fontscolors>
