@@ -863,6 +863,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue217769.js","a.i^n();", true);
     }
     
+    public void testIssue233236_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue233236.js","var firstName = firs^tName;", true);
+    }
+    
+    public void testIssue233236_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue233236.js","var firstN^ame = firstName;", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

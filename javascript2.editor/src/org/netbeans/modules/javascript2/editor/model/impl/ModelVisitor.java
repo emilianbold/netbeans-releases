@@ -1133,21 +1133,7 @@ public class ModelVisitor extends PathNodeVisitor {
                             property.addAssignment(types, name.getOffsetRange().getStart());
                         }
                         if (value instanceof IdentNode) {
-                            IdentNode iNode = (IdentNode)value;
-                            JsFunction function = (JsFunction)ModelUtils.getDeclarationScope(property);
-                            String iName = iNode.getName();
-                            JsObjectImpl param = (JsObjectImpl)function.getParameter(iName);
-                            if(param != null) {
-                                param.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
-                            } else {
-                                Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)function);
-                                for (JsObject variable : variables) {
-                                    if (iName.equals(variable.getName())) {
-                                        ((JsObjectImpl)variable).addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
-                                        break;
-                                    }
-                                }
-                            }
+                            addOccurence((IdentNode)value, false);
                         }
                     }
                 }
@@ -1264,7 +1250,28 @@ public class ModelVisitor extends PathNodeVisitor {
                 variable.setDocumentation(docHolder.getDocumentation(varNode));
                 modelBuilder.setCurrentObject(variable);
                 if (varNode.getInit() instanceof IdentNode) {
-                    addOccurence((IdentNode)varNode.getInit(), false);
+                    IdentNode iNode = (IdentNode)varNode.getInit();
+                    String valueName = iNode.getName();
+                    if (!variable.getName().equals(valueName)) {
+                        addOccurence(iNode, false);
+                    } else {
+                        DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
+                        JsObject parameter = null;
+                        JsFunction function = (JsFunction)scope;
+                        parameter = function.getParameter(iNode.getName());
+                        if (parameter != null) {
+                            parameter.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                        } else {
+                            Collection<? extends JsObject> variables = ModelUtils.getVariables(scope.getParentScope());
+                            for (JsObject jsObject : variables) {
+                                if (valueName.equals(jsObject.getName())) {
+                                    jsObject.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                                    break;
+                                }
+                            }
+                        }
+                        
+                    }
                 }
                 Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, varNode.getInit());
                 for (TypeUsage type : types) {

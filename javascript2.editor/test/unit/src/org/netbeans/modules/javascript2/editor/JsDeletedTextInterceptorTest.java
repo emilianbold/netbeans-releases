@@ -44,10 +44,17 @@
 
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.prefs.Preferences;
 import javax.swing.JTextArea;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.Caret;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
+import org.openide.util.Exceptions;
 
 /**
  * @todo Try typing in whole source files and other than tracking missing end and } closure
@@ -66,6 +73,13 @@ public class JsDeletedTextInterceptorTest extends JsTestBase {
         super(testName);
     }
 
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class).clear();
+    }
+    
     @Override
     protected org.netbeans.modules.csl.api.Formatter getFormatter(IndentPrefs preferences) {
         return null;
@@ -168,21 +182,60 @@ public class JsDeletedTextInterceptorTest extends JsTestBase {
 
     public void testBackwardsDeletion() throws Exception {
         String s = "alert('hello')  \n  nextline";
+        final Exception[] ex = new Exception[1];
         for (int i = s.length(); i >= 1; i--) {
             String shortened = s.substring(0, i);
-            BaseDocument doc = getDocument(shortened);
+            final BaseDocument doc = getDocument(shortened);
+            final int index = i;
+            ex[0] = null;
+            doc.render(new Runnable() {
 
-            JTextArea ta = new JTextArea(doc);
-            Caret caret = ta.getCaret();
-            int dot = i;
-            caret.setDot(dot);
-            int begin = JsCamelCaseInterceptor.getWordOffset(doc, dot, true);
-            if (begin == -1) {
-                begin = Utilities.getPreviousWord(ta, dot);
+                @Override
+                public void run() {
+                    JTextArea ta = new JTextArea(doc);
+                    Caret caret = ta.getCaret();
+                    int dot = index;
+                    caret.setDot(dot);
+                    int begin = JsCamelCaseInterceptor.getWordOffset(doc, dot, true);
+                    if (begin == -1) {
+                        try {
+                            begin = Utilities.getPreviousWord(ta, dot);
+                        } catch (BadLocationException ex1) {
+                            ex[0] = ex1;
+                        }
+                    }
+
+                    assert begin != -1 && begin < index;
+                }
+            });
+            if (ex[0] != null) {
+                throw ex[0];
             }
-
-            assert begin != -1 && begin < i;
         }
+    }
+
+    public void testDisabledSmartQuotes() throws Exception {
+        MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class)
+                .putBoolean(OptionsUtils.AUTO_COMPLETION_SMART_QUOTES, false);
+        deleteChar("x = \"^\"", "x = ^\"");
+    }
+
+    public void testDisabledBrackets1() throws Exception {
+        MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class)
+                .putBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
+        deleteChar("x = (^)", "x = ^)");
+    }
+
+    public void testDisabledBrackets2() throws Exception {
+        MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class)
+                .putBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
+        deleteChar("x = [^]", "x = ^]");
+    }
+
+    public void testDisabledBrackets3() throws Exception {
+        MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class)
+                .putBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
+        deleteChar("x = {^}", "x = ^}");
     }
 
 }
