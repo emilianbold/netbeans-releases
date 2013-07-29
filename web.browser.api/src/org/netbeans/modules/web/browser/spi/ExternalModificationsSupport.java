@@ -49,6 +49,8 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
+import org.netbeans.modules.web.browser.Helper;
+import org.netbeans.modules.web.common.api.DependentFileQuery;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.DialogDescriptor;
@@ -72,7 +74,18 @@ import org.openide.windows.TopComponent;
 public final class ExternalModificationsSupport {
 
 
-    public static void handle(String url, String type, String content) {
+    /**
+     * There was a change in browser which needs to be persisted in the IDE.
+     * @param url resource being changed
+     * @param type type of resource being changed (??)
+     * @param content new content of the file
+     * @param currentBrowserURL URL which is currently opened in the browser;
+     *   difference from url param is that currentBrowserURL can be index.html
+     *   while url might be some.js file on which index.html depends
+     */
+    public synchronized static void handle(String url, String type, String content, URL currentBrowserURL) {
+        Helper.urlBeingRefreshedFromBrowser.set(currentBrowserURL != null ? currentBrowserURL.toExternalForm() : null);
+        try {
         URL u = WebUtils.stringToUrl(url);
         for (Project p : OpenProjects.getDefault().getOpenProjects()) {
             FileObject fo = ServerURLMapping.fromServer(p, u);
@@ -80,6 +93,9 @@ public final class ExternalModificationsSupport {
                 updateFileObject(fo, content);
                 break;
             }
+        }
+        } finally {
+            Helper.urlBeingRefreshedFromBrowser.set(null);
         }
     }
 
