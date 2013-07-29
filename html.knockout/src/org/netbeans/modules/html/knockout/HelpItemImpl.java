@@ -41,37 +41,46 @@
  */
 package org.netbeans.modules.html.knockout;
 
-import java.awt.Color;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
-import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
+import java.net.MalformedURLException;
+import java.net.URL;
+import org.netbeans.modules.html.editor.lib.api.HelpItem;
+import org.netbeans.modules.html.editor.lib.api.HelpResolver;
+import org.openide.util.Exceptions;
 
 /**
  *
  * @author marekfukala
  */
-public class KOAttributeCompletionItem extends HtmlCompletionItem.Attribute {
+public class HelpItemImpl implements HelpItem {
 
-    private final boolean isInKnockoutFile;
+    private KOHelpItem item;
 
-    public KOAttributeCompletionItem(CustomAttribute ca, int offset, boolean isInKnockoutFile) {
-        super(ca.getName(), offset, isInKnockoutFile /* not required, but makes them bold */, ca.getHelp());
-        this.isInKnockoutFile = isInKnockoutFile;
+    public HelpItemImpl(KOHelpItem binding) {
+        this.item = binding;
     }
 
     @Override
-    protected ImageIcon getIcon() {
-        return KOUtils.KO_ICON;
+    public String getHelpHeader() {
+        return new StringBuilder().append("<h2>").append(item.getName()).append("</h2>").toString(); //NOI18N
     }
 
     @Override
-    protected Color getAttributeColor() {
-        return isInKnockoutFile ? KOUtils.KO_COLOR : super.getAttributeColor();
+    public String getHelpContent() {
+        return KODoc.getDefault().getDirectiveDocumentation(item);
     }
 
     @Override
-    public boolean hasHelp() {
-        return isInKnockoutFile; //do not show KO's help  for generic data-bind attribute outside KO app
+    public URL getHelpURL() {
+        try {
+            return new URL(item.getExternalDocumentationURL());
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            return null;
+        }
     }
 
+    @Override
+    public HelpResolver getHelpResolver() {
+        return KOHelpResolver.getDefault();
+    }
 }

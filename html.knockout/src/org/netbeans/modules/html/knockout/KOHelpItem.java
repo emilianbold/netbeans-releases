@@ -41,37 +41,13 @@
  */
 package org.netbeans.modules.html.knockout;
 
-import java.awt.Color;
-import javax.swing.ImageIcon;
-import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
-import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
-
 /**
  *
  * @author marekfukala
  */
-public class KOAttributeCompletionItem extends HtmlCompletionItem.Attribute {
+public interface KOHelpItem {
 
-    private final boolean isInKnockoutFile;
+    public String getName();
 
-    public KOAttributeCompletionItem(CustomAttribute ca, int offset, boolean isInKnockoutFile) {
-        super(ca.getName(), offset, isInKnockoutFile /* not required, but makes them bold */, ca.getHelp());
-        this.isInKnockoutFile = isInKnockoutFile;
-    }
-
-    @Override
-    protected ImageIcon getIcon() {
-        return KOUtils.KO_ICON;
-    }
-
-    @Override
-    protected Color getAttributeColor() {
-        return isInKnockoutFile ? KOUtils.KO_COLOR : super.getAttributeColor();
-    }
-
-    @Override
-    public boolean hasHelp() {
-        return isInKnockoutFile; //do not show KO's help  for generic data-bind attribute outside KO app
-    }
-
+    public String getExternalDocumentationURL();
 }
