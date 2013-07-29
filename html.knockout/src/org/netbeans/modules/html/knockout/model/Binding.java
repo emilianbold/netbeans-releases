@@ -44,6 +44,7 @@ package org.netbeans.modules.html.knockout.model;
 import java.util.HashMap;
 import java.util.Map;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.html.knockout.KOHelpItem;
 
 /**
  * KO binding types.
@@ -54,7 +55,7 @@ import org.netbeans.api.annotations.common.NonNull;
  *
  * @author marekfukala
  */
-public enum Binding {
+public enum Binding implements KOHelpItem {
 
     //text and appearance
     visible,
@@ -107,10 +108,12 @@ public enum Binding {
      * @return name of the KO binding.
      */
     @NonNull
+    @Override
     public String getName() {
         return name().charAt(0) == '_' ? name().substring(1) : name();
     }
 
+    @Override
     public String getExternalDocumentationURL() {
         return new StringBuilder()
                 .append(DOC_URL_BASE)

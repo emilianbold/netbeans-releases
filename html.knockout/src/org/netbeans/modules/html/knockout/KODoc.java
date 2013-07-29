@@ -39,24 +39,27 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.html.angular;
+package org.netbeans.modules.html.knockout;
 
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.StringWriter;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
-import java.util.Enumeration;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.html.angular.model.Directive;
+import org.netbeans.modules.html.knockout.model.Binding;
 import org.openide.modules.Places;
-import org.openide.util.Enumerations;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -65,54 +68,60 @@ import org.openide.util.RequestProcessor;
  * @author marekfukala
  */
 @NbBundle.Messages({
-    "doc.building=Loading AngularJS Documentation"
+    "doc.building=Loading Knockout Documentation",
+    "doc.cannot_load=Can't load Knockout documentation from {0}"
 })
-public class AngularDoc {
+public class KODoc {
 
-    private static final Logger LOG = Logger.getLogger(AngularDoc.class.getSimpleName()); //NOI18N
-    private static RequestProcessor RP = new RequestProcessor(AngularDoc.class);
-    private static AngularDoc INSTANCE;
+    private static final Logger LOG = Logger.getLogger(KODoc.class.getSimpleName()); //NOI18N
+    private static RequestProcessor RP = new RequestProcessor(KODoc.class);
+    private static KODoc INSTANCE;
     private boolean loadingStarted;
     
-    private static final String CACHE_FOLDER_NAME = "ajs-doc"; //NOI18N
+    private static final String CACHE_FOLDER_NAME = "knockout-doc"; //NOI18N
 
-    public static synchronized AngularDoc getDefault() {
+    public static synchronized KODoc getDefault() {
         if (INSTANCE == null) {
-            INSTANCE = new AngularDoc();
+            INSTANCE = new KODoc();
         }
         return INSTANCE;
     }
 
     /**
-     * Gets an html documentation for the given {@link Directive}.
+     * Gets an html documentation for the given {@link KOHelpItem}.
      *
-     * @param directive
+     * @param binding
      * @return the help or null if the help is not yet loaded
      */
-    public String getDirectiveDocumentation(Directive directive) {
-        return getDoc(directive);
+    public String getDirectiveDocumentation(KOHelpItem binding) {
+        return getDoc(binding);
     }
 
     private void startLoading() {
         LOG.fine("start loading doc"); //NOI18N
-        Directive[] dirs = Directive.values();
-        directives = Enumerations.array(dirs);
+        Collection<KOHelpItem> items = new ArrayList<>();
+        //add the data-attribute help item
+        items.add(KOHtmlExtension.KO_DATA_BIND_HELP_ITEM);
+        //add bindings
+        items.addAll(Arrays.asList(Binding.values()));
+        
+        bindings = items.iterator();        
         progress = ProgressHandleFactory.createHandle(Bundle.doc_building());
-        progress.start(dirs.length);
+        progress.start(items.size());
 
         buildDoc();
     }
 
-    private File getCacheFile(Directive directive) {
-        return Places.getCacheSubfile(new StringBuilder().append(CACHE_FOLDER_NAME).append('/').append(directive.name()).toString());
+    private File getCacheFile(KOHelpItem binding) {
+        return Places.getCacheSubfile(new StringBuilder().append(CACHE_FOLDER_NAME).append('/').append(binding.getName()).toString());
     }
 
-    private String getDoc(Directive directive) {
+    private String getDoc(KOHelpItem binding) {
         try {
-            File cacheFile = getCacheFile(directive);
+            File cacheFile = getCacheFile(binding);
             if (!cacheFile.exists()) {
                 //load from web and cache locally
-                loadDoc(directive, cacheFile);
+                loadDoc(binding, cacheFile);
                 
                 //if any of the files is not loaded yet, start the loading process
                 if(!loadingStarted) {
@@ -120,31 +129,37 @@ public class AngularDoc {
                     startLoading();
                 }
             }
-            return Utils.getFileContent(cacheFile);
+            return KOUtils.getFileContent(cacheFile);
         } catch (URISyntaxException | IOException ex) {
-            LOG.log(Level.INFO, "Can't load Angular JS documentation from {0}");
-            return null;
+            LOG.log(Level.INFO, "Can't load doc: {0}", ex.getMessage()); //NOI18N
+            return Bundle.doc_cannot_load(binding.getExternalDocumentationURL());
         }
 
     }
 
-    private void loadDoc(Directive directive, File cacheFile) throws URISyntaxException, MalformedURLException, IOException {
+    private void loadDoc(KOHelpItem binding, File cacheFile) throws URISyntaxException, MalformedURLException, IOException {
         LOG.fine("start loading doc"); //NOI18N
-        String docURL = directive.getExternalDocumentationURL_partial();
+        String docURL = binding.getExternalDocumentationURL();
         URL url = new URI(docURL).toURL();
         synchronized (cacheFile) {
+            StringWriter sw = new StringWriter();
+            //load from the URL
+            KOUtils.loadURL(url, sw, null);
+            //strip off the proper content
+            String knockoutDocumentationContent = KOUtils.getKnockoutDocumentationContent(sw.getBuffer().toString());
+            //save to cache file
             try (Writer writer = new FileWriter(cacheFile)) {
-                writer.append("<!doctype html><html><head><title>AngularJS documentation</title></head><body>");
-                Utils.loadURL(url, writer, null);
-                writer.append("</body></html>");
+                writer.append("<!doctype html><html><head><title>Knockout documentation</title></head><body>"); //NOI18N
+                writer.append(knockoutDocumentationContent);
+                writer.append("</body></html>"); //NOI18N
             }
         }
     }
 
     private void buildDoc() {
-        if (directives.hasMoreElements()) {
-            directive = directives.nextElement();
-            getDoc(directive);
+        if (bindings.hasNext()) {
+            binding = bindings.next();
+            getDoc(binding);
             progress.progress(++loaded);
 
             //start next task
@@ -162,8 +177,8 @@ public class AngularDoc {
             LOG.log(Level.FINE, "Loading doc finished."); //NOI18N
         }
     }
-    private Directive directive;
-    private Enumeration<Directive> directives;
+    private KOHelpItem binding;
+    private Iterator<KOHelpItem> bindings;
     private ProgressHandle progress;
     private int loaded = 0;
 }
