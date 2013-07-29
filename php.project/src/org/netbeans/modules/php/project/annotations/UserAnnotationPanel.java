@@ -44,6 +44,7 @@ package org.netbeans.modules.php.project.annotations;
 import java.awt.Dialog;
 import java.awt.Dimension;
 import java.awt.EventQueue;
+import java.awt.Font;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.EnumMap;
@@ -104,6 +105,12 @@ public class UserAnnotationPanel extends JPanel {
 
     private void initSourceEditor() {
         sourceEditorPane.setEditorKit(MimeLookup.getLookup(HTML_CONTENT_TYPE).lookup(EditorKit.class));
+        // ui
+        Font font = new JLabel().getFont();
+        sourceEditorPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
+        sourceEditorPane.setFont(font);
+        previewTextPane.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
+        previewTextPane.setFont(font);
     }
 
     private void init(UserAnnotationTag annotation) {

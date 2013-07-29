@@ -197,14 +197,16 @@ public class JsHintsProvider implements HintsProvider {
 
                         int start = snapshot.getOriginalOffset(error.getStartPosition());
                         int end = snapshot.getOriginalOffset(error.getEndPosition());
-
-                        Hint h = new Hint(new JsErrorRule(),
-                                error.getDisplayName(),
-                                fo,
-                                new OffsetRange(start, end),
-                                contains ? Collections.<HintFix>emptyList() : errorFixes,
-                                100);
-                        hints.add(h);
+                        
+                        if (start > -1 && end > -1 && start <= end) {
+                            Hint h = new Hint(new JsErrorRule(),
+                                    error.getDisplayName(),
+                                    fo,
+                                    new OffsetRange(start, end),
+                                    contains ? Collections.<HintFix>emptyList() : errorFixes,
+                                    100);
+                            hints.add(h);
+                        }
                     }
                 }
             }
