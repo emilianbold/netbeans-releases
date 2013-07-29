@@ -240,7 +240,7 @@ public class VerifierSupport extends TopComponent {
             ProcessBuilder pb = new ProcessBuilder(args);
             Process process;
             setJavaEnvironment(pb.environment(), javaHome);
-            LOGGER.log(Level.INFO, "Running {0} {1}",
+            LOGGER.log(Level.INFO, "Running GlassFish Verifier Tool: {0} {1}",
                     new Object[] {javaVmExe, sb.toString()});
             process = pb.start();            
 
