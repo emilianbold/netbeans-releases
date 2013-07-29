@@ -276,7 +276,7 @@ public class CSSStylesPanel extends JPanel implements PageModel.CSSStylesView {
                                 project = pageModel.getProject();
                             }
                             FileObject fob = new Resource(project, resourceName).toFileObject();
-                            if (fob == null) {
+                            if (fob == null || fob.isFolder() /* issue 233463 */) {
                                 StyleSheetBody body = rule.getParentStyleSheet();
                                 fob = RemoteStyleSheetCache.getDefault().getFileObject(body);
                             }
