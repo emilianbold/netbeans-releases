@@ -1250,7 +1250,28 @@ public class ModelVisitor extends PathNodeVisitor {
                 variable.setDocumentation(docHolder.getDocumentation(varNode));
                 modelBuilder.setCurrentObject(variable);
                 if (varNode.getInit() instanceof IdentNode) {
-                    addOccurence((IdentNode)varNode.getInit(), false);
+                    IdentNode iNode = (IdentNode)varNode.getInit();
+                    String valueName = iNode.getName();
+                    if (!variable.getName().equals(valueName)) {
+                        addOccurence(iNode, false);
+                    } else {
+                        DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
+                        JsObject parameter = null;
+                        JsFunction function = (JsFunction)scope;
+                        parameter = function.getParameter(iNode.getName());
+                        if (parameter != null) {
+                            parameter.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                        } else {
+                            Collection<? extends JsObject> variables = ModelUtils.getVariables(scope.getParentScope());
+                            for (JsObject jsObject : variables) {
+                                if (valueName.equals(jsObject.getName())) {
+                                    jsObject.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+                                    break;
+                                }
+                            }
+                        }
+                        
+                    }
                 }
                 Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, varNode.getInit());
                 for (TypeUsage type : types) {
