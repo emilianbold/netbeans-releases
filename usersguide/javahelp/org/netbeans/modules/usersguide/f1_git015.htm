@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Git: Commit Dialog Box</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.git.ui.commit.CommitAction" name="org.netbeans.modules.git.ui.commit.CommitAction"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref87" name="sthref87"></a>
+<h1>Git: Commit Dialog Box</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Commit dialog box enables you to commit files to the Git repository.</p>
+<p>In the Commit dialog box, you have to set the following properties:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t15">Property</th>
+<th align="left" valign="bottom" id="r1c2-t15">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t15" headers="r1c1-t15">
+<p>Commit Message</p>
+</td>
+<td align="left" headers="r2c1-t15 r1c2-t15">
+<p>Enter description of the change being committed. Click the Recent Messages button to view and select from a list of messages that you have previously entered. Click the Load Template button to select a message template.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t15" headers="r1c1-t15">
+<p>Author</p>
+</td>
+<td align="left" headers="r3c1-t15 r1c2-t15">
+<p>Specify who made the change.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t15" headers="r1c1-t15">
+<p>Comitter</p>
+</td>
+<td align="left" headers="r4c1-t15 r1c2-t15">
+<p>Specify who physically committed the file(s).</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t15" headers="r1c1-t15">
+<p>Files to commit</p>
+</td>
+<td align="left" headers="r5c1-t15 r1c2-t15">
+<p>Clicking the Changes between HEAD and Index button displays a list of files that are staged. Clicking the Changes between HEAD and Working Tree button displays a list of files that are either already staged or only modified/created and not staged yet.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t15" headers="r1c1-t15">
+<p>Commit</p>
+</td>
+<td align="left" headers="r6c1-t15 r1c2-t15">
+<p>Deselect to exclude individual files from the commit.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t15" headers="r1c1-t15">
+<p>File</p>
+</td>
+<td align="left" headers="r7c1-t15 r1c2-t15">
+<p>Lists all files that are either:</p>
+<ul>
+<li>new</li>
+<li>renamed</li>
+<li>modified</li>
+<li>deleted in the Working Tree (locally)</li>
+</ul>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t15" headers="r1c1-t15">
+<p>Status</p>
+</td>
+<td align="left" headers="r8c1-t15 r1c2-t15">
+<p>Displays two status values for a file:</p>
+<ul>
+<li>a status describing differences between the file's Working Tree and Index state (to the left of the slash)</li>
+<li>a status describing differences between the file's Index state and current HEAD commit (to the right of the slash)</li>
+</ul>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t15" headers="r1c1-t15">
+<p>Commit Action</p>
+</td>
+<td align="left" headers="r9c1-t15 r1c2-t15">
+<p>Displays <code>Commit</code> if the file is selected or <code>Exclude from Commit</code> if the file is deselected in the Commit column.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t15" headers="r1c1-t15">
+<p>Repository Path</p>
+</td>
+<td align="left" headers="r10c1-t15 r1c2-t15">
+<p>Displays path to the file in your local repository.</p>
+<p>Right-click a file row to display the following popup menu items:</p>
+<ul>
+<li><b>Exclude From Commit/Include In Commit</b>. Select to either exclude the file from the commit or include it into the commit.</li>
+<li><b>Diff</b>. Select to display the Diff Viewer.</li>
+</ul>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t15" headers="r1c1-t15">
+<p>Update Issue</p>
+</td>
+<td align="left" headers="r11c1-t15 r1c2-t15">
+<p>Track issues related to the change being committed using the following fields:</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t15" headers="r1c1-t15">
+<p>Issue Tracker</p>
+</td>
+<td align="left" headers="r12c1-t15 r1c2-t15">
+<p>Choose an issue tracker from the list or press New to create an issue tracker.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r13c1-t15" headers="r1c1-t15">
+<p>Issue</p>
+</td>
+<td align="left" headers="r13c1-t15 r1c2-t15">
+<p>Specify the issue using its summary or ID.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r14c1-t15" headers="r1c1-t15">
+<p>Resolved as Fixed</p>
+</td>
+<td align="left" headers="r14c1-t15 r1c2-t15">
+<p>Select to change an issue status to Resolved Fixed.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r15c1-t15" headers="r1c1-t15">
+<p>Add details to commit message and issue</p>
+</td>
+<td align="left" headers="r15c1-t15 r1c2-t15">
+<p>Select to provide an enhanced commit description.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r16c1-t15" headers="r1c1-t15">
+<p>After Commit</p>
+</td>
+<td align="left" headers="r16c1-t15 r1c2-t15">
+<p>Choose to update an issue after the commit.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r17c1-t15" headers="r1c1-t15">
+<p>After Push</p>
+</td>
+<td align="left" headers="r17c1-t15 r1c2-t15">
+<p>Choose to update an issue after the push.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE,</i> 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG237">
+<param name="text" value="<html><u>&quot;Versioning Applications with Git&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

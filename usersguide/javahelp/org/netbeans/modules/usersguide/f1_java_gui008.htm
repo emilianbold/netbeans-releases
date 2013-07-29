@@ -1,0 +1,48 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Event Handler Dialog</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="gui.csh.handlers" name="gui.csh.handlers"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref225" name="sthref225"></a>
+<h1>Event Handler Dialog</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Event Handler Dialog enables you to set source objects to trigger events to which one or more objects with event listeners react. You can also remove events using the Event Handler Dialog. Whenever you define an event handler, the code for the listener and the empty body of the handler method is generated. In addition, the default name is assigned to the event handler.</p>
+<p>To open the Event Handler dialog, select the component in the Navigator window and choose the event you want the component to trigger from the Events submenu. Alternately, you can access the dialog using the Events area of the Properties window.</p>
+<p>Bold menu items indicate that event handlers have already been defined.</p>
+<p><b>Notes</b>:</p>
+<ul>
+<li>Note that you still must add the desired code for the new event handler in the Source Editor.</li>
+<li>If multiple events are of the same type, you can use the same handler for all of them. For example, you could set both <code>focusGained</code> and <code>focusLost</code> to use the <code>button1FocusChange</code> handler since they are both of the type <code>java.awt.event.FocusEvent</code>. You can also use the same handler for the same event on multiple components.</li>
+<li>When you remove an event handler, the corresponding code block is also deleted. If more than one handler uses the same name and same block of code, deleting a single reference to the code does not delete the code itself. Only deleting all references will delete the corresponding code block, and a confirmation dialog box is displayed first.</li>
+<li>If you remove an event but do not delete the event handler when prompted by the confirmation dialog box, an orphaned handler remains in the guarded text block. To delete the orphaned handler, you need to add another event handler of the same name, delete that event, and then agree to delete the handler in the confirmation dialog box.</li>
+</ul>
+<p>For more information about how to handle events in your application, including information about the Java event model, see the <i>Creating a GUI with JFC/Swing</i> tutorial at:</p>
+<p><code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://docs.oracle.com/javase/tutorial/uiswing/">
+<param name="text" value="<html><u>http://docs.oracle.com/javase/tutorial/uiswing/</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

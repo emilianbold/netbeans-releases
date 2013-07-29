@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Add Action Dialog Box</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.web.struts.dialogs.AddActionPanel" name="org.netbeans.modules.web.struts.dialogs.AddActionPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref519" name="sthref519"></a>
+<h1>Add Action Dialog Box</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>A Struts action responds to a request. Writing an action means subclassing one of the Action classes and then overriding the class's execute method. Use the New Struts Action wizard for this purpose.</p>
+<p>You use the Add Action dialog box to register an action in the struts-config.xml file. You open the Add Action dialog box by right-clicking in a struts-config.xml file and choosing Struts &gt; Add Action.</p>
+<p>In the Add Action dialog box, you set the following properties:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t12">Element</th>
+<th align="left" valign="bottom" id="r1c2-t12">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t12" headers="r1c1-t12">
+<p>Action Class</p>
+</td>
+<td align="left" headers="r2c1-t12 r1c2-t12">
+<p>Specifies the fully qualified Java class name of the action.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t12" headers="r1c1-t12">
+<p>Action Path</p>
+</td>
+<td align="left" headers="r3c1-t12 r1c2-t12">
+<p>Specifies the application context-relative path to the action.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t12" headers="r1c1-t12">
+<p>Use ActionForm Bean</p>
+</td>
+<td align="left" headers="r4c1-t12 r1c2-t12">
+<p>Specifies whether an actionform bean should be used or not. If you select this checkbox, the following fields are enabled.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t12" headers="r1c1-t12">
+<p>ActionForm Bean Name</p>
+</td>
+<td align="left" headers="r5c1-t12 r1c2-t12">
+<p>Specifies the name of the actionform bean.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t12" headers="r1c1-t12">
+<p>Input Resource</p>
+</td>
+<td align="left" headers="r6c1-t12 r1c2-t12">
+<p>Specifies the path to the JSP page that handles the actionform bean.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t12" headers="r1c1-t12">
+<p>Input Action</p>
+</td>
+<td align="left" headers="r7c1-t12 r1c2-t12">
+<p>Specifies the action that handles the actionform bean.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t12" headers="r1c1-t12">
+<p>Scope</p>
+</td>
+<td align="left" headers="r8c1-t12 r1c2-t12">
+<p>Specifies the scope of the action. By default, the action is set to Session scope.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t12" headers="r1c1-t12">
+<p>Attribute</p>
+</td>
+<td align="left" headers="r9c1-t12 r1c2-t12">
+<p>Specifies an attribute that causes the actionform bean to be mapped into scope. When an actionform bean is mapped into scope, the action can access the actionform bean's values and display them in a JSP page.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t12" headers="r1c1-t12">
+<p>Validate Form Bean</p>
+</td>
+<td align="left" headers="r10c1-t12 r1c2-t12">
+<p>Specifies that the validate method of the action associated with this actionform bean should be called.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t12" headers="r1c1-t12">
+<p>Parameter</p>
+</td>
+<td align="left" headers="r11c1-t12 r1c2-t12">
+<p>Specifies general-purpose attribute often used by "standard" actions to pass a required property.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p><b>Note:</b> If you want to change a registered action, you can do so by manually editing the XML tags in the <code>struts-config.xml</code> file.</p>
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, "
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1188">
+<param name="text" value="<html><u>Working with the Struts Framework</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+"</p>
+<p><i>Developing Applications with NetBeans IDE</i>, "
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1189">
+<param name="text" value="<html><u>How to Create a New Project with Struts Framework Support</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+"</p>
+<p><i>Developing Applications with NetBeans IDE</i>, "
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1191">
+<param name="text" value="<html><u>How to Add Struts Framework Support to an Existing Application</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+"</p>
+<p><i>Developing Applications with NetBeans IDE</i>, "
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1140">
+<param name="text" value="<html><u>About Using Web Application Frameworks</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+"</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

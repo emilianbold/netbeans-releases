@@ -1,0 +1,94 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Comparing File Revisions in Subversion</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.subversion.ui.diff.DiffTopComponent" name="org.netbeans.modules.subversion.ui.diff.DiffTopComponent"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref127" name="sthref127"></a>
+<h1>Comparing File Revisions in Subversion</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Diff command compares different revisions of a file and displays the differences found graphically.</p>
+<p>The IDE's graphical Diff Viewer enables you to compare different versions of a file side by side using color coding to emphasize the differences between the files being compared.</p>
+<p>The previous (last difference button) and next (next difference button) difference buttons in the toolbar enable you to navigate among the differences in the file. You can also refresh the status and update files from within the Diff Viewer using the Refresh Diff (Last difference button) and Update (Last difference button) buttons. When you are finished comparing the files, you can commit your changes using the Diff Viewer's Commit button (Last difference button).</p>
+<a id="sthref128" name="sthref128"></a>
+<p><b>To generate a graphical diff comparing a repository revision to your working copy:</b></p>
+<ol>
+<li>Right-click a versioned file node in the Projects, Files, or Versioning window and choose Diff (or Subversion &gt; Diff). The IDE displays the results in the Diff Viewer in a new tab of the main window.</li>
+<li>If you want to perform a diff on all files contained in a folder, select a folder and choose Subversion &gt; Diff from the right-click menu. All files that contain differences between your local version and the repository version will be listed in the upper pane of the Diff Viewer. You can then view individual diffs on files by clicking a file from the list.</li>
+</ol>
+<a id="sthref129" name="sthref129"></a>
+<p><b>To make changes to a file while comparing it in the Diff Viewer:</b></p>
+<ol>
+<li>Navigate through differences between the two versions using the previous difference (previous difference button) and next difference (next difference button) arrow icons.</li>
+<li>Click any of the displayed icons to perform immediate changes to your local copy.</li>
+</ol>
+<p>Your local copy appears in the right pane of the Diff Viewer. You can also make changes to your local copy by typing directly into it in the Diff Viewer.</p>
+<p>Any changes made in the Diff Viewer are automatically saved as they occur.</p>
+<p>The following icons enable you to make changes directly within the Diff Viewer</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t8">Element</th>
+<th align="left" valign="bottom" id="r1c2-t8">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t8" headers="r1c1-t8">
+<p>Replace</p>
+</td>
+<td align="left" headers="r2c1-t8 r1c2-t8">
+<p>Inserts the highlighted text from the previous revision into the current revision</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t8" headers="r1c1-t8">
+<p>Move All</p>
+</td>
+<td align="left" headers="r3c1-t8 r1c2-t8">
+<p>Reverts the file's current version to the state of the selected previous version.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t8" headers="r1c1-t8">
+<p>Remove</p>
+</td>
+<td align="left" headers="r4c1-t8 r1c2-t8">
+<p>Removes the highlighted text from the current version so that it mirrors the previous version.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG274">
+<param name="text" value="<html><u>&quot;Versioning Applications with Subversion&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

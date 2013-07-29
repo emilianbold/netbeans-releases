@@ -1,0 +1,144 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Debugging: Call Stack Window</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="NetbeansDebuggerCallStackNode" name="NetbeansDebuggerCallStackNode"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref264" name="sthref264"></a>
+<h1>Debugging: Call Stack Window</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Call Stack window lists the sequence of calls made during execution. When the debugger is suspended, the Call Stack window shows the sequence of function calls (i.e., the call stack). On initial suspension, the top-most stack frame is selected automatically. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG907">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Double-click on a function call in the window to go to that line in the editor. You can double-click on a call stack frame to select it, then explore any variable or expression values for that frame in the Variables and Watches windows.</p>
+<a id="sthref265" name="sthref265"></a>
+<p><b>Icons</b></p>
+<p>The following table describes the icons displayed to the left of the call name:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t10">Element</th>
+<th align="left" valign="bottom" id="r1c2-t10">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t10" headers="r1c1-t10">
+<p><img width="16" height="16" src="images/call_stack_16.png" alt="Call Stack icon." title="Call Stack icon." /></p></td>
+<td align="left" headers="r2c1-t10 r1c2-t10">
+<p>The current call on the call stack</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t10" headers="r1c1-t10">
+<p><img width="17" height="12" src="images/currentframe.gif" alt="Non-current call icon." title="Non-current call icon." /></p></td>
+<td align="left" headers="r3c1-t10 r1c2-t10">
+<p>A call other than the current call</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<a id="sthref266" name="sthref266"></a>
+<p><b>Actions</b></p>
+<p>The context menu in the Call Stack window includes the following commands:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t11">Element</th>
+<th align="left" valign="bottom" id="r1c2-t11">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t11" headers="r1c1-t11">
+<p>Make Current</p>
+</td>
+<td align="left" headers="r2c1-t11 r1c2-t11">
+<p>Makes the call the current call. This command is equivalent to double-clicking the call.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t11" headers="r1c1-t11">
+<p>Pop to Here</p>
+</td>
+<td align="left" headers="r3c1-t11 r1c2-t11">
+<p>Removes the calls that are listed above the selected call from the call stack.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t11" headers="r1c1-t11">
+<p>Copy Stack</p>
+</td>
+<td align="left" headers="r4c1-t11 r1c2-t11">
+<p>Copies a textual representation of the call stack to the clipboard.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t11" headers="r1c1-t11">
+<p>List Options</p>
+</td>
+<td align="left" headers="r5c1-t11 r1c2-t11">
+<p>Enables you to customize the display of the Call Stack window, including adding and removing columns of information, reordering the columns, and sorting the columns. See Customizing a Debugger Window for more information.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG885">
+<param name="text" value="<html><u>&quot;Viewing Program Information When Debugging&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG822">
+<param name="text" value="<html><u>&quot;Using the Debugger Windows&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1534">
+<param name="text" value="<html><u>&quot;About Developing PHP Applications&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

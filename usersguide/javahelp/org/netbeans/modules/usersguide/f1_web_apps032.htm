@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>HTTP Authentication dialog box</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="nohelpid" name="nohelpid"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref491" name="sthref491"></a>
+<h1>HTTP Authentication dialog box</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>It would not be safe to ship web servers with default settings that allowed anyone on the Internet to execute them on your server. Therefore, the web servers are shipped with the requirement that anyone who attempts to use them must authenticate themselves, using a username and password with the appropriate role associated with them.</p>
+<p>For example, to authenticate yourself when you want to use the Tomcat Manager to deploy your web application, you need a username and password for a user with the "manager" role. This username and password are stored in the <code>tomcat-users.xml</code> file that is in your user directory.</p>
+<p><b>Note:</b> You can only use the usernames and passwords that are defined in the IDE's user directory's <code>tomcat-users.xml</code> file, and not those that are in the IDE's <b>installation</b> directory.</p>
+<p>During installation, the IDE generates a user called "ide" that is assigned the "manager" role. This user is created in your user directory's <code>tomcat-users.xml</code> file.</p>
+<a id="sthref492" name="sthref492"></a>
+<p><b>To set the username and password forTomcat server:</b></p>
+<ol>
+<li>
+<p>In the Services window, right-click the Servers node and choose Add Server.</p>
+<p>The Add Server Instance dialog box opens.</p>
+</li>
+<li>Select the applicable server and click Next.</li>
+<li>Browse for the Catalina Home directory. You can also choose to use a private configuration folder.</li>
+<li>Enter the username and password you want to use for the server instance. If the user does not exist, click the checkbox to create the user.</li>
+<li>Click Finish to add the server instance. The new username and password is added to the <code>tomcat-users.xml</code> file.</li>
+</ol>
+<a id="sthref493" name="sthref493"></a>
+<p><b>To get the username and password from your user directory:</b></p>
+<ol>
+<li>Select Help &gt; About from the main menu.</li>
+<li>Make a note of the path to the Userdir folder.</li>
+<li>In your file system, go to your Userdir and then to the <code>apache-tomcat-6.0.x_base\conf</code> folder.</li>
+<li>Open the <code>tomcat-users.xml</code> file and make a note of the password that is defined for the "ide" username.</li>
+</ol>
+<p><b>Note:</b> The username and password are not saved when you enter them in this dialog box. The username and password are only saved if you define them in the Tomcat Web Server's Properties dialog box. To open the Properties dialog box, right-click the Tomcat Web Server's instance node in the Services window and select Properties.</p>
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, "
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1037">
+<param name="text" value="<html><u>About Developing Web Applications</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+"</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

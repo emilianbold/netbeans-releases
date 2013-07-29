@@ -1,0 +1,291 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Navigator Window (Java Projects)</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<!-- infolevel="all" infotype="General" --><a id="sthref260" name="sthref260"></a>
+<h1>Navigator Window (Java Projects)</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use to get a compact view of the currently selected file, which simplifies navigation between different parts of the file. For Java files, you can see a list of constructors, methods, and fields.</p>
+<p>For some kinds of XML files, you can use the Navigator to view the structure of the file. The Navigator window works with standard XML documents, XML schema files, and Ant scripts.</p>
+<p>Choose <b>Window</b> &gt; <b>Navigating</b> &gt; <b>Navigator</b> (Ctrl+7) to open this window. By default, the Navigator window opens in the lower left corner of the IDE.</p>
+<p>To display a source file in the Navigator window, select the file in the Source Editor, the Projects window, the Files window, or the Favorites window. Once a file is displayed, you can use the Navigator window to focus on a specific nodes contained in the document. To do so, click on a given node in the Navigator window, and your cursor automatically relocates to the node's position in the document.</p>
+<p>When a Java file is selected, a drop-down list appears at the top of the Navigator window to enable you to choose between the following two views:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="38%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t5">Element</th>
+<th align="left" valign="bottom" id="r1c2-t5">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t5" headers="r1c1-t5">
+<p>Members view</p>
+</td>
+<td align="left" headers="r2c1-t5 r1c2-t5">
+<p>Lists, alphabetically, the selected source file's members (constructors, methods, and fields).</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t5" headers="r1c1-t5">
+<p>Bean Patterns</p>
+</td>
+<td align="left" headers="r3c1-t5 r1c2-t5">
+<p>Lists of a class's bean properties and event listeners.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>You can display the Javadoc documentation for a member by hovering the mouse over the member's node.</p>
+<p>Right-click a node in the Members view to choose the following commands:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t6">Element</th>
+<th align="left" valign="bottom" id="r1c2-t6">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t6" headers="r1c1-t6">
+<p>Go to Source</p>
+</td>
+<td align="left" headers="r2c1-t6 r1c2-t6">
+<p>Opens the class in the Source Editor and places the insertion point at the beginning of the constructor, method, or field that the node represents.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t6" headers="r1c1-t6">
+<p>Sort by Name</p>
+</td>
+<td align="left" headers="r3c1-t6 r1c2-t6">
+<p>Displays the members in alphabetical order.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t6" headers="r1c1-t6">
+<p>Sort by Source</p>
+</td>
+<td align="left" headers="r4c1-t6 r1c2-t6">
+<p>Displays the members in the order in which they appear in the code.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t6" headers="r1c1-t6">
+<p>Filters</p>
+</td>
+<td align="left" headers="r5c1-t6 r1c2-t6">
+<p>Opens a submenu that enables you to select some common filters for the types of members to display: <b>Show Inherited Members</b>, <b>Show Field</b>, <b>Show Static Members</b>, and <b>Show Non Public Members</b>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t6" headers="r1c1-t6">
+<p>Show Inherited Members</p>
+</td>
+<td align="left" headers="r6c1-t6 r1c2-t6">
+<p>Displays members that come from classes that the current class extends.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t6" headers="r1c1-t6">
+<p>Show Fields</p>
+</td>
+<td align="left" headers="r7c1-t6 r1c2-t6">
+<p>Displays the class's fields.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t6" headers="r1c1-t6">
+<p>Show Static Members</p>
+</td>
+<td align="left" headers="r8c1-t6 r1c2-t6">
+<p>Displays static fields and methods.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t6" headers="r1c1-t6">
+<p>Show Non Public Members</p>
+</td>
+<td align="left" headers="r9c1-t6 r1c2-t6">
+<p>Displays members that do not provide public access.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>You can also activate and disable filters using the buttons at the bottom of the Navigator window.</p>
+<p>For XML files, the Navigator view displays a tree of elements. Right-click an element node to choose the following options for the level of detail to have displayed:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t7">Element</th>
+<th align="left" valign="bottom" id="r1c2-t7">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t7" headers="r1c1-t7">
+<p>Show Attributes</p>
+</td>
+<td align="left" headers="r2c1-t7 r1c2-t7">
+<p>Displays the attributes of each element.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t7" headers="r1c1-t7">
+<p>Show Content</p>
+</td>
+<td align="left" headers="r3c1-t7 r1c2-t7">
+<p>Displays the text content of each element.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>When an Ant build script is selected, a drop-down list appears at the top of the Navigator window to enable you to choose between the following two views:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t8">Element</th>
+<th align="left" valign="bottom" id="r1c2-t8">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t8" headers="r1c1-t8">
+<p>Ant Targets</p>
+</td>
+<td align="left" headers="r2c1-t8 r1c2-t8">
+<p>Displays an alphabetical list of build targets.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t8" headers="r1c1-t8">
+<p>XML View</p>
+</td>
+<td align="left" headers="r3c1-t8 r1c2-t8">
+<p>Displays a hierarchical tree view XML elements in the build script.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>Select the Ant Targets view and right-click a node and to choose one of the following commands:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t9">Element</th>
+<th align="left" valign="bottom" id="r1c2-t9">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t9" headers="r1c1-t9">
+<p>Open</p>
+</td>
+<td align="left" headers="r2c1-t9 r1c2-t9">
+<p>Opens the file in the Source Editor and places the insertion point at the beginning of the selected target's line.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t9" headers="r1c1-t9">
+<p>Run Target</p>
+</td>
+<td align="left" headers="r3c1-t9 r1c2-t9">
+<p>Runs the selected target.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t9" headers="r1c1-t9">
+<p>Create Shortcut</p>
+</td>
+<td align="left" headers="r4c1-t9 r1c2-t9">
+<p>Opens a wizard that enables you to create a menu item, a toolbar item, a keyboard shortcut, and custom code for running the target.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t9" headers="r1c1-t9">
+<p>Properties</p>
+</td>
+<td align="left" headers="r5c1-t9 r1c2-t9">
+<p>Displays properties for the target in a property sheet. These properties are not editable.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>Select the XML View and right-click a node to choose one of the following options for the level of detail to have displayed:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t10">Element</th>
+<th align="left" valign="bottom" id="r1c2-t10">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t10" headers="r1c1-t10">
+<p>Show Attributes</p>
+</td>
+<td align="left" headers="r2c1-t10 r1c2-t10">
+<p>Displays the attributes of each element.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t10" headers="r1c1-t10">
+<p>Show Content</p>
+</td>
+<td align="left" headers="r3c1-t10 r1c2-t10">
+<p>Displays the text content of each element.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p>Code Navigation: Quick Reference</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

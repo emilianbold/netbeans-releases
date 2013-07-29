@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>web.xml Visual Editor: Context Parameters</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="dd_multiview_overview_contextParamsNode" name="dd_multiview_overview_contextParamsNode"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref596" name="sthref596"></a>
+<h1>web.xml Visual Editor: Context Parameters</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Context Parameters section in the web.xml Visual Editor to add, remove, and view the web application's context parameters. Context parameters are initialization paramaters that are available throughout a web application. You can use them, for example, to provide configuration information to all servlets and JSP pages in a web application.</p>
+<p>You can access context parameters in your code using the <code>javax.servlet.ServletContext.getInitParameter()</code> and <code>javax.servlet.ServletContext.getInitParameterNames()</code> methods, as illustrated below:</p>
+<p><code>ServletContext context = this.getServletContext();</code></p>
+<p><code>String mainPage = context.getInitParameter("mainPage");</code></p>
+<p>If a company name changes frequently, you can define its value as a context parameter in the web.xml file instead of hard-coding it in all your JSP files and servlets. Then define and declare a listener that reads the value and stores it in the servlet context. Next, define and declare another listener that monitors changes to the name.</p>
+<p>To declare a context parameter, you must register it in the web.xml file. When you do this, you provide information needed by the server to use the parameter. You tell the server which value should be returned when a context parameter is referred to in the web application.</p>
+<p>You open the web.xml Visual Editor from the Projects window by expanding the Web Pages node, then the WEB-INF node, and then double-clicking the web.xml file. Click General at the top of the editor to open the General section, then click the Context Parameters header to open the Context Parameters section.</p>
+<p>Click Add to define the context parameter element with the following properties:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t20">Element</th>
+<th align="left" valign="bottom" id="r1c2-t20">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t20" headers="r1c1-t20">
+<p>Param Name</p>
+</td>
+<td align="left" headers="r2c1-t20 r1c2-t20">
+<p>Specifies the parameter's name, such as <code>MyCompanyName</code>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t20" headers="r1c1-t20">
+<p>Param Value</p>
+</td>
+<td align="left" headers="r3c1-t20 r1c2-t20">
+<p>Specifies the parameter's value, such as <code>Sand For Africa Inc</code>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t20" headers="r1c1-t20">
+<p>Description</p>
+</td>
+<td align="left" headers="r4c1-t20 r1c2-t20">
+<p>Specifies a description, such as <code>Current name of my company</code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

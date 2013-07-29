@@ -1,0 +1,142 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Encapsulate Fields Dialog Box</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.refactoring.java.ui.EncapsulateFieldUI" name="org.netbeans.modules.refactoring.java.ui.EncapsulateFieldUI"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref310" name="sthref310"></a>
+<h1>Encapsulate Fields Dialog Box</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use to specify options for the <b>Encapsulate Fields</b> refactoring command. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG584">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<table summary="Descriptions of Encapsulate Fields command options." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="37%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t4">Element</th>
+<th align="left" valign="bottom" id="r1c2-t4">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t4" headers="r1c1-t4">
+<p>List of Fields to Encapsulate</p>
+</td>
+<td align="left" headers="r2c1-t4 r1c2-t4">
+<p>Displays a list of fields in the class.</p>
+<p>Select the checkbox for each field that you want to encapsulate.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t4" headers="r1c1-t4">
+<p>Insert Point</p>
+</td>
+<td align="left" headers="r3c1-t4 r1c2-t4">
+<p>Displays a list containing the six possible points (<code>Default</code>, <code>First Method</code>, <code>Last Method</code>, <code>After About(JFrame Parent)</code>, <code>After initComponents() : void</code>, and <code>After closeButtonActionPerformed(java.awt.event.ActionEvent evt)</code>) for inserting a new accessor method.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t4" headers="r1c1-t4">
+<p>Sort by</p>
+</td>
+<td align="left" headers="r4c1-t4 r1c2-t4">
+<p>Displays a list containing the three possible options (<code>Getter/Setter pairs</code>, <code>Getters then Setters</code>, and <code>Method names</code>).</p>
+<p>Select the option that you want to be used for sorting the fields in the class.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t4" headers="r1c1-t4">
+<p>Javadoc</p>
+</td>
+<td align="left" headers="r5c1-t4 r1c2-t4">
+<p>Displays a list containing the three possible options (<code>Copy from field</code>, <code>Create default comments</code>, and <code>None</code>).</p>
+<p>Select the option that you want to be used for creating Javadoc</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t4" headers="r1c1-t4">
+<p>Fields' Visibility</p>
+</td>
+<td align="left" headers="r6c1-t4 r1c2-t4">
+<p>Displays a list containing the four possible accessibility modifiers (<i>default</i>, <code>private</code>, <code>protected</code>, and <code>public</code>).</p>
+<p>Select the accessibility modifier that you want the field or fields to have.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t4" headers="r1c1-t4">
+<p>Accessor's Visibility.</p>
+</td>
+<td align="left" headers="r7c1-t4 r1c2-t4">
+<p>Drop-down list containing the four possible accessibility modifiers (<i>default</i>, <code>private</code>, <code>protected</code>, and <code>public</code>).</p>
+<p>Select the accessibility modifier that you want the accessor (<code>getter</code> and <code>setter</code>) methods to have.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t4" headers="r1c1-t4">
+<p>Use Accessors Even When Field Is Accessible</p>
+</td>
+<td align="left" headers="r8c1-t4 r1c2-t4">
+<p>Updates any direct references in your code to the field to use the accessor methods instead. If not selected, any direct references to the fields that you already have in your code are not replaced.</p>
+<p>This option only has an impact if both of the following are true:</p>
+<ul>
+<li>You have direct references to the field in your code.</li>
+<li>You have set the field's accessor modifier so that the field is visible to the classes with these references.</li>
+</ul>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t4" headers="r1c1-t4">
+<p>Generate Property Change Support</p>
+</td>
+<td align="left" headers="r9c1-t4 r1c2-t4">
+<p>Generates the property change support code in addition to the field and methods for the property.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t4" headers="r1c1-t4">
+<p>Generate Vetoable change support</p>
+</td>
+<td align="left" headers="r10c1-t4 r1c2-t4">
+<p>Generates the vetoable change listeners for specific properties.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG547">
+<param name="text" value="<html><u>&quot;Refactoring Java Projects&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

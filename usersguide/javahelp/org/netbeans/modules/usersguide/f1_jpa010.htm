@@ -1,0 +1,42 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Hibernate Reverse Engineering Wizard: Database Tables</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor" name="org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref560" name="sthref560"></a>
+<h1>Hibernate Reverse Engineering Wizard: Database Tables</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Hibernate Reverse Engineering wizard enables you to generate a reverse engineering file from tables in a database.</p>
+<p>The reverse engineering file is an XML file that can be used to modify the default settings used when generating Hibernate files from the metadata of the database specified in hibernate.cfg.xml. The file can be used to explicitly specify the database schema that is used, to filter out tables that should not be used and how JDBC types are mapped to Hibernate types.</p>
+<p>The Database Tables page of the wizard enables you to specify the tables that are added to the hibernate.reveng.xml file. A &lt;table-filter&gt; element is added to the file for each selected table.</p>
+<p>In this page you select tables from the database schema that is specified in hibernate.cfg.xml. Select one or more tables from the list of Available Tables and click Add.</p>
+<p>When you click Finish, the IDE generates the hibernate.reveng reverse engineering file in the location that you specified in the first page of the wizard. If you do not select any tables in this page of the wizard the IDE will generate the hibernate.reveng.xml file without any references to tables. You can edit the hibernate.reveng.xml in the XML editor. The hibernate.reveng is not necessary for compiling your project and can be deleted if desired.</p>
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1351">
+<param name="text" value="<html><u>&quot;About Developing with Java Persistence&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

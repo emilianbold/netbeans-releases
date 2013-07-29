@@ -1,0 +1,197 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Standard Web Project Properties Dialog Box: Sources</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.web.project.ui.customizer.CustomizerSources" name="org.netbeans.modules.web.project.ui.customizer.CustomizerSources"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref587" name="sthref587"></a>
+<h1>Standard Web Project Properties Dialog Box: Sources</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>You open the Standard Web Project Properties dialog box by right-clicking any project and choosing Properties.</p>
+<p>The Sources page lets you set the locations for commonly-used directories within the project folder of a Java web project, such as the WEB-INF and Web Pages folders. It also allows you to specify the project's source package and test package folders, set the JDK version that corresponds to the project's source/binary format, include or exclude classes to be compiled with the project, and set the default project character encoding.</p>
+<!-- infolevel="all" infotype="General" --><a id="sthref588" name="sthref588"></a>
+<h2>Project Folders</h2>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t11">Element</th>
+<th align="left" valign="bottom" id="r1c2-t11">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t11" headers="r1c1-t11">
+<p>Project Folder</p>
+</td>
+<td align="left" headers="r2c1-t11 r1c2-t11">
+<p>(read-only) Lists the directory on your computer where the project sources are located.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t11" headers="r1c1-t11">
+<p>Web Pages Folder</p>
+</td>
+<td align="left" headers="r3c1-t11 r1c2-t11">
+<p>Lists the webroot of the application. This is typically the web folder contained within the project folder.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t11" headers="r1c1-t11">
+<p>WEB-INF Folder</p>
+</td>
+<td align="left" headers="r4c1-t11 r1c2-t11">
+<p>Lists the location of the WEB-INF directory contained in the Java web application project. The WEB-INF directory is typically contained within the application's webroot.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<!-- -->
+<!-- infolevel="all" infotype="General" --><a id="sthref589" name="sthref589"></a>
+<h2>Source and Test Package Folders</h2>
+<p>A pane is provided for both source and test package folders, listing the location of package folders, and the label used for them in the Project Properties window. You can use the Test Package Folders pane to specify the folder that the IDE uses when creating JUnit tests. By default, when you create a project the IDE creates a test packages folder called test with the label Test Packages. Use the buttons to the right of the panes to add, remove, and change the order of the package folders.</p>
+<p>To create JUnit tests with the IDE, a project must include a test package folder. If the test packages folder for your project is missing or unavailable, you can create a new folder in your project and then use this pane to designate the new folder as the Test Package folder.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t12">Element</th>
+<th align="left" valign="bottom" id="r1c2-t12">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t12" headers="r1c1-t12">
+<p>Add Folder</p>
+</td>
+<td align="left" headers="r2c1-t12 r1c2-t12">
+<p>Click to add a new package folder to the adjacent pane. In the Add Source/Test Folder dialog that displays, navigate to and select the folder containing the resources you want to add, then click Open. The resources are then added to the corresponding Package Folders pane.</p>
+<p>To edit the name of a package folder listed in either of the Package Folder panes, double-click the listed entry and type directly into the field.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t12" headers="r1c1-t12">
+<p>Remove</p>
+</td>
+<td align="left" headers="r3c1-t12 r1c2-t12">
+<p>Select an entry in a Package Folders pane, then click the Remove button to delete it.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t12" headers="r1c1-t12">
+<p>Move Up</p>
+</td>
+<td align="left" headers="r4c1-t12 r1c2-t12">
+<p>Select an entry in a Package Folders pane, then click Move Up to have it listed higher in the pane. The order in which packages are listed corresponds to the order in which they display in the Projects window.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t12" headers="r1c1-t12">
+<p>Move Down</p>
+</td>
+<td align="left" headers="r5c1-t12 r1c2-t12">
+<p>Select an entry in a Package Folders pane, then click Move Down to have it listed lower in the pane. The order in which packages are listed corresponds to the order in which they display in the Projects window.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>You can have multiple source roots in a standard project, with the following exceptions:</p>
+<ul>
+<li>The source root cannot already exist in another IDE project.</li>
+<li>The source root cannot already be added to another compilation unit of the same project. For example, a source root that is registered under Test Packages cannot be added to the list of Source Packages.</li>
+<li>All of the source roots are packaged into the same WAR file and share the same classpath.</li>
+<li>If you have a source root that needs to be used by several projects, you should create a separate project for the source root and set up compilation dependencies between the projects.</li>
+</ul>
+
+<!-- -->
+<!-- infolevel="all" infotype="General" --><a id="sthref590" name="sthref590"></a>
+<h2>Source/Binary Format</h2>
+<p>You can use the Source/Binary Format combo box to set the lowest Java platform version with which the generated Java code should be compatible. This setting corresponds to the javac -source option. Setting the source/binary format helps prevent you from using Java language constructs that are not available in the platform version to which you want to deploy. However, setting the source/binary format does not ensure that the platform APIs are used compatibly with that platform version. To make sure that your application is fully compatible with an earlier Java platform version, you need to switch to the Libraries tab and set the Java Platform setting to the minimum version on which you plan to deploy.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t13">Element</th>
+<th align="left" valign="bottom" id="r1c2-t13">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t13" headers="r1c1-t13">
+<p>Source/Binary Format</p>
+</td>
+<td align="left" headers="r2c1-t13 r1c2-t13">
+<p>Choose the JDK version that applies to the lowest Java platform version with which the Java code in your project is compatible. Default options range from JDK 1.2 to 6.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t13" headers="r1c1-t13">
+<p>Includes/Excludes</p>
+</td>
+<td align="left" headers="r3c1-t13 r1c2-t13">
+<p>Click the Includes/Excludes button if you want to include or exclude specific classes in or from compilation. In the Configure Includes and Excludes dialog, use regex patterns in the Includes and Excludes fields to specify which classes on the project classpath you want to have compiled. The Included Files and Excluded Files panes list the resources that will be compiled based on the supplied patterns.</p>
+<p>Specifying the source/binary format does not change the Java platform whose libraries and executables are used to compile and run your project. To set the Java platform that is used for compiling and running your project, click Libraries and set the Java Platform setting accordingly. You cannot set the source/binary format of a project to a higher release than the project's Java platform.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<!-- -->
+<!-- infolevel="all" infotype="General" --><a id="sthref591" name="sthref591"></a>
+<h2>Project Character Encoding</h2>
+<p>The project character encoding determines how the IDE interprets characters in your source files. The IDE displays and saves any new files you create using the encoding set by the project in which they reside. The default character encoding used with projects is UTF-8. Use the Encoding drop-down to change the character encoding used with the project.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t14">Element</th>
+<th align="left" valign="bottom" id="r1c2-t14">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t14" headers="r1c1-t14">
+<p>Encoding</p>
+</td>
+<td align="left" headers="r2c1-t14 r1c2-t14">
+<p>Choose the character encoding that you want the IDE to apply when it saves and displays project source files.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

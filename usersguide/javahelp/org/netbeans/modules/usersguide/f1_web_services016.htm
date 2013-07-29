@@ -1,0 +1,65 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>web.xml Visual Editor: Web Application Listeners</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="dd_multiview_overview_listenersNode" name="dd_multiview_overview_listenersNode"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref597" name="sthref597"></a>
+<h1>web.xml Visual Editor: Web Application Listeners</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Web Application Listeners section of the web.xml Visual Editor to add, remove, and view the deployment information of your web application's listeners. Web application listeners give you more control over interactions with the ServletContext and HttpSession objects and let you efficiently manage the resources used by a web application. Web application listeners are classes that implement one or more of the servlet event listener interfaces. Application events notify web application listeners when servlet contexts and sessions are initialized and destroyed, as well as when attributes are added or removed from a context or session.</p>
+<p>To deploy a web application listener, you must register it in the web.xml file. When you do this, you provide information needed by the server to deploy the web application listener. You tell the server which class should be loaded when a web application listener is called.</p>
+<p>Before you can register a web application listener in the web.xml file, you must create it in the New File wizard or import it from your existing sources. You can use the Name and Location panel of the New File wizard to register a web application listener. If you have not done so, or if you want to modify a registered web application listener's deployment information, use the Web Application Listeners section of the web.xml Visual Editor.</p>
+<p>You open the web.xml Visual Editor from the Projects window by expanding the Web Pages node, then the WEB-INF node, and then double-clicking the web.xml file. Click General at the top of the editor to open the General section, then click the Web Application Listeners header to open the Web Application Listeners section.</p>
+<p>Click Add to define the listener element with the following properties:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t21">Element</th>
+<th align="left" valign="bottom" id="r1c2-t21">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t21" headers="r1c1-t21">
+<p>Listener Class</p>
+</td>
+<td align="left" headers="r2c1-t21 r1c2-t21">
+<p>Specifies the listener's class, such as <code>MonitorMyCompanyName</code>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t21" headers="r1c1-t21">
+<p>Description</p>
+</td>
+<td align="left" headers="r3c1-t21 r1c2-t21">
+<p>Specifies a description, such as <code>Monitor the servlet context for changes to the context parameter that defines the company name</code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

@@ -1,0 +1,2284 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE map PUBLIC "-//Sun Microsystems Inc.//DTD JavaHelp Map Version 2.0//EN" "http://java.sun.com/products/javahelp/map_2_0.dtd">
+<map version="2.0">
+  <mapID target="titlehelp.htm" url="titlehelp.htm" />
+  <!-- "NetBeans IDE Online Help"-->
+  <mapID target="f1_working_netbeans.htm" url="f1_working_netbeans.htm" />
+  <!-- "Working with NetBeans "-->
+  <mapID target="netbeans.optionsDialog.general" url="f1_working_netbeans001.htm#netbeans.optionsDialog.general" />
+  <!-- "Options Window: General"-->
+  <mapID target="f1_working_netbeans001.htm-sthref3" url="f1_working_netbeans001.htm#sthref3" />
+  <!-- "Options Window: General"-->
+  <mapID target="netbeans.optionsDialog.editor.general" url="f1_working_netbeans002.htm#netbeans.optionsDialog.editor.general" />
+  <!-- "Editor Options: General"-->
+  <mapID target="f1_working_netbeans002.htm-sthref4" url="f1_working_netbeans002.htm#sthref4" />
+  <!-- "Editor Options: General"-->
+  <mapID target="netbeans.optionsDialog.editor.formatting" url="f1_working_netbeans003.htm#netbeans.optionsDialog.editor.formatting" />
+  <!-- "Editor Options: Formatting"-->
+  <mapID target="f1_working_netbeans003.htm-sthref5" url="f1_working_netbeans003.htm#sthref5" />
+  <!-- "Editor Options: Formatting"-->
+  <mapID target="netbeans.optionsDialog.editor.codeCompletion" url="f1_working_netbeans004.htm#netbeans.optionsDialog.editor.codeCompletion" />
+  <!-- "Editor Options: Code Completion"-->
+  <mapID target="f1_working_netbeans004.htm-sthref6" url="f1_working_netbeans004.htm#sthref6" />
+  <!-- "Editor Options: Code Completion"-->
+  <mapID target="netbeans.optionsDialog.editor.codeTemplates" url="f1_working_netbeans005.htm#netbeans.optionsDialog.editor.codeTemplates" />
+  <!-- "Editor Options: Code Templates"-->
+  <mapID target="f1_working_netbeans005.htm-sthref7" url="f1_working_netbeans005.htm#sthref7" />
+  <!-- "Editor Options: Code Templates"-->
+  <mapID target="netbeans.optionsDialog.editor.hints" url="f1_working_netbeans006.htm#netbeans.optionsDialog.editor.hints" />
+  <!-- "Editor Options: Hints"-->
+  <mapID target="f1_working_netbeans006.htm-sthref8" url="f1_working_netbeans006.htm#sthref8" />
+  <!-- "Editor Options: Hints"-->
+  <mapID target="netbeans.optionsDialog.editor.markOccurences" url="f1_working_netbeans007.htm#netbeans.optionsDialog.editor.markOccurences" />
+  <!-- "Editor Options: Highlighting"-->
+  <mapID target="f1_working_netbeans007.htm-sthref9" url="f1_working_netbeans007.htm#sthref9" />
+  <!-- "Editor Options: Highlighting"-->
+  <mapID target="netbeans.optionsDialog.editor.macros" url="f1_working_netbeans008.htm#netbeans.optionsDialog.editor.macros" />
+  <!-- "Editor Options: Macros"-->
+  <mapID target="f1_working_netbeans008.htm-sthref10" url="f1_working_netbeans008.htm#sthref10" />
+  <!-- "Editor Options: Macros"-->
+  <mapID target="netbeans.optionsDialog.editor.spellchecker" url="f1_working_netbeans009.htm#netbeans.optionsDialog.editor.spellchecker" />
+  <!-- "Editor Options: Spellchecker"-->
+  <mapID target="f1_working_netbeans009.htm-sthref11" url="f1_working_netbeans009.htm#sthref11" />
+  <!-- "Editor Options: Spellchecker"-->
+  <mapID target="netbeans.optionsDialog.fontAndColorsPanel" url="f1_working_netbeans010.htm#netbeans.optionsDialog.fontAndColorsPanel" />
+  <!-- "Options Window: Fonts and Colors"-->
+  <mapID target="f1_working_netbeans010.htm-sthref12" url="f1_working_netbeans010.htm#sthref12" />
+  <!-- "Options Window: Fonts and Colors"-->
+  <mapID target="netbeans.optionsDialog.keymaps" url="f1_working_netbeans011.htm#netbeans.optionsDialog.keymaps" />
+  <!-- "Options Window: Keymap"-->
+  <mapID target="f1_working_netbeans011.htm-sthref13" url="f1_working_netbeans011.htm#sthref13" />
+  <!-- "Options Window: Keymap"-->
+  <mapID target="netbeans.optionsDialog.advanced.todo" url="f1_working_netbeans012.htm#netbeans.optionsDialog.advanced.todo" />
+  <!-- "Options Window: Miscellaneous: Action Items"-->
+  <mapID target="f1_working_netbeans012.htm-sthref14" url="f1_working_netbeans012.htm#sthref14" />
+  <!-- "Options Window: Miscellaneous: Action Items"-->
+  <mapID target="org.netbeans.modules.web.common.cssprep.CssPrepOptionsPanelController" url="f1_working_netbeans013.htm#org.netbeans.modules.web.common.cssprep.CssPrepOptionsPanelController" />
+  <!-- "Options Window: Miscellaneous: CSS Preprocessors"-->
+  <mapID target="f1_working_netbeans013.htm-sthref15" url="f1_working_netbeans013.htm#sthref15" />
+  <!-- "Options Window: Miscellaneous: CSS Preprocessors"-->
+  <mapID target="org.netbeans.modules.diff.options.DiffOptionsController" url="f1_working_netbeans014.htm#org.netbeans.modules.diff.options.DiffOptionsController" />
+  <!-- "Options Window: Miscellaneous: Diff"-->
+  <mapID target="f1_working_netbeans014.htm-sthref16" url="f1_working_netbeans014.htm#sthref16" />
+  <!-- "Options Window: Miscellaneous: Diff"-->
+  <mapID target="netbeans.optionsDialog.advanced.files" url="f1_working_netbeans015.htm#netbeans.optionsDialog.advanced.files" />
+  <!-- "Options Window: Miscellaneous: Files"-->
+  <mapID target="f1_working_netbeans015.htm-sthref17" url="f1_working_netbeans015.htm#sthref17" />
+  <!-- "Options Window: Miscellaneous: Files"-->
+  <mapID target="org.netbeans.modules.bugtracking.util.BugtrackingOptions" url="f1_working_netbeans016.htm#org.netbeans.modules.bugtracking.util.BugtrackingOptions" />
+  <!-- "Options Window: Miscellaneous: Issue Tracking"-->
+  <mapID target="f1_working_netbeans016.htm-sthref18" url="f1_working_netbeans016.htm#sthref18" />
+  <!-- "Options Window: Miscellaneous: Issue Tracking"-->
+  <mapID target="netbeans.optionsDialog.advanced.output" url="f1_working_netbeans017.htm#netbeans.optionsDialog.advanced.output" />
+  <!-- "Options Window: Miscellaneous: Output"-->
+  <mapID target="f1_working_netbeans017.htm-sthref19" url="f1_working_netbeans017.htm#sthref19" />
+  <!-- "Options Window: Miscellaneous: Output"-->
+  <mapID target="netbeans.optionsDialog.advanced.terminal" url="f1_working_netbeans018.htm#netbeans.optionsDialog.advanced.terminal" />
+  <!-- "Options Window: Miscellaneous: Terminal"-->
+  <mapID target="f1_working_netbeans018.htm-sthref20" url="f1_working_netbeans018.htm#sthref20" />
+  <!-- "Options Window: Miscellaneous: Terminal"-->
+  <mapID target="org.netbeans.modules.versioning.util.VcsAdvancedOptions" url="f1_working_netbeans019.htm#org.netbeans.modules.versioning.util.VcsAdvancedOptions" />
+  <!-- "Options Window: Miscellaneous: Versioning"-->
+  <mapID target="f1_working_netbeans019.htm-sthref21" url="f1_working_netbeans019.htm#sthref21" />
+  <!-- "Options Window: Miscellaneous: Versioning"-->
+  <mapID target="org.netbeans.core.windows.options.WinSysOptionsPanelController" url="f1_working_netbeans020.htm#org.netbeans.core.windows.options.WinSysOptionsPanelController" />
+  <!-- "Options Window: Miscellaneous: Windows"-->
+  <mapID target="f1_working_netbeans020.htm-sthref22" url="f1_working_netbeans020.htm#sthref22" />
+  <!-- "Options Window: Miscellaneous: Windows"-->
+  <mapID target="org.netbeans.modules.bugzilla.blocksChooser" url="f1_working_netbeans021.htm#org.netbeans.modules.bugzilla.blocksChooser" />
+  <!-- "Issue Tracking: Blocks Issue Dialog Box"-->
+  <mapID target="f1_working_netbeans021.htm-sthref23" url="f1_working_netbeans021.htm#sthref23" />
+  <!-- "Issue Tracking: Blocks Issue Dialog Box"-->
+  <mapID target="org.netbeans.modules.bugzilla.repository.BugzillaRepositoryController" url="f1_working_netbeans022.htm#org.netbeans.modules.bugzilla.repository.BugzillaRepositoryController" />
+  <!-- "Issue Tracking: Create Issue Tracker Dialog Box: Bugzilla"-->
+  <mapID target="f1_working_netbeans022.htm-sthref24" url="f1_working_netbeans022.htm#sthref24" />
+  <!-- "Issue Tracking: Create Issue Tracker Dialog Box: Bugzilla"-->
+  <mapID target="org.netbeans.modules.bugzilla.duplicateChooser" url="f1_working_netbeans023.htm#org.netbeans.modules.bugzilla.duplicateChooser" />
+  <!-- "Issue Tracking: Duplicate Issue Dialog Box"-->
+  <mapID target="f1_working_netbeans023.htm-sthref25" url="f1_working_netbeans023.htm#sthref25" />
+  <!-- "Issue Tracking: Duplicate Issue Dialog Box"-->
+  <mapID target="org.netbeans.modules.bugzilla.commands.HtmlPanel" url="f1_working_netbeans024.htm#org.netbeans.modules.bugzilla.commands.HtmlPanel" />
+  <!-- "Issue Tracking: Issue Tracker Server Response Dialog Box"-->
+  <mapID target="f1_working_netbeans024.htm-sthref26" url="f1_working_netbeans024.htm#sthref26" />
+  <!-- "Issue Tracking: Issue Tracker Server Response Dialog Box"-->
+  <mapID target="org.netbeans.modules.bugzilla.dependsOnChooser" url="f1_working_netbeans025.htm#org.netbeans.modules.bugzilla.dependsOnChooser" />
+  <!-- "Issue Tracking: Issue Depends On Dialog Box"-->
+  <mapID target="f1_working_netbeans025.htm-sthref27" url="f1_working_netbeans025.htm#sthref27" />
+  <!-- "Issue Tracking: Issue Depends On Dialog Box"-->
+  <mapID target="org.netbeans.modules.bugtracking.jira.JiraUpdater" url="f1_working_netbeans026.htm#org.netbeans.modules.bugtracking.jira.JiraUpdater" />
+  <!-- "Issue Tracking: Create Issue Tracker Dialog Box: JIRA"-->
+  <mapID target="f1_working_netbeans026.htm-sthref28" url="f1_working_netbeans026.htm#sthref28" />
+  <!-- "Issue Tracking: Create Issue Tracker Dialog Box: JIRA"-->
+  <mapID target="org.netbeans.modules.bugtracking.patchContextChooser" url="f1_working_netbeans027.htm#org.netbeans.modules.bugtracking.patchContextChooser" />
+  <!-- "Issue Tracking: Apply Patch Dialog Box"-->
+  <mapID target="f1_working_netbeans027.htm-sthref29" url="f1_working_netbeans027.htm#sthref29" />
+  <!-- "Issue Tracking: Apply Patch Dialog Box"-->
+  <mapID target="org.netbeans.modules.bugzilla.issue.ResolveIssuePanel" url="f1_working_netbeans028.htm#org.netbeans.modules.bugzilla.issue.ResolveIssuePanel" />
+  <!-- "Issue Tracking: Resolve Issue Dialog Box"-->
+  <mapID target="f1_working_netbeans028.htm-sthref30" url="f1_working_netbeans028.htm#sthref30" />
+  <!-- "Issue Tracking: Resolve Issue Dialog Box"-->
+  <mapID target="org.netbeans.modules.bugzilla.query.savePanel" url="f1_working_netbeans029.htm#org.netbeans.modules.bugzilla.query.savePanel" />
+  <!-- "Issue Tracking: Save Issue Query Dialog Box"-->
+  <mapID target="f1_working_netbeans029.htm-sthref31" url="f1_working_netbeans029.htm#sthref31" />
+  <!-- "Issue Tracking: Save Issue Query Dialog Box"-->
+  <mapID target="org.netbeans.modules.bugzilla.util.KeywordsPanel" url="f1_working_netbeans030.htm#org.netbeans.modules.bugzilla.util.KeywordsPanel" />
+  <!-- "Issue Tracking: Select Issue Keyword Dialog Box"-->
+  <mapID target="f1_working_netbeans030.htm-sthref32" url="f1_working_netbeans030.htm#sthref32" />
+  <!-- "Issue Tracking: Select Issue Keyword Dialog Box"-->
+  <mapID target="org.netbeans.modules.bugtracking.vcs.FormatPanel" url="f1_working_netbeans031.htm#org.netbeans.modules.bugtracking.vcs.FormatPanel" />
+  <!-- "Issue Tracking: Modify Templates Dialog Box"-->
+  <mapID target="f1_working_netbeans031.htm-sthref33" url="f1_working_netbeans031.htm#sthref33" />
+  <!-- "Issue Tracking: Modify Templates Dialog Box"-->
+  <mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.LOCAL" url="f1_working_netbeans032.htm#org.netbeans.modules.autoupdate.ui.UnitTab.LOCAL" />
+  <!-- "Plugins Manager: Downloaded"-->
+  <mapID target="f1_working_netbeans032.htm-sthref34" url="f1_working_netbeans032.htm#sthref34" />
+  <!-- "Plugins Manager: Downloaded"-->
+  <mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.INSTALLED" url="f1_working_netbeans033.htm#org.netbeans.modules.autoupdate.ui.UnitTab.INSTALLED" />
+  <!-- "Plugins Manager: Installed"-->
+  <mapID target="f1_working_netbeans033.htm-sthref35" url="f1_working_netbeans033.htm#sthref35" />
+  <!-- "Plugins Manager: Installed"-->
+  <mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.AVAILABLE" url="f1_working_netbeans034.htm#org.netbeans.modules.autoupdate.ui.UnitTab.AVAILABLE" />
+  <!-- "Plugins Manager: Available Plugins"-->
+  <mapID target="f1_working_netbeans034.htm-sthref36" url="f1_working_netbeans034.htm#sthref36" />
+  <!-- "Plugins Manager: Available Plugins"-->
+  <mapID target="org.netbeans.modules.autoupdate.ui.SettingsTab" url="f1_working_netbeans035.htm#org.netbeans.modules.autoupdate.ui.SettingsTab" />
+  <!-- "Plugins Manager: Settings"-->
+  <mapID target="f1_working_netbeans035.htm-sthref37" url="f1_working_netbeans035.htm#sthref37" />
+  <!-- "Plugins Manager: Settings"-->
+  <mapID target="org.netbeans.modules.autoupdate.ui.UnitTab.UPDATE" url="f1_working_netbeans036.htm#org.netbeans.modules.autoupdate.ui.UnitTab.UPDATE" />
+  <!-- "Plugins Manager: Updates"-->
+  <mapID target="f1_working_netbeans036.htm-sthref38" url="f1_working_netbeans036.htm#sthref38" />
+  <!-- "Plugins Manager: Updates"-->
+  <mapID target="org.netbeans.core.windows.view.ui.toolbars.ConfigureToolbarPanel" url="f1_working_netbeans037.htm#org.netbeans.core.windows.view.ui.toolbars.ConfigureToolbarPanel" />
+  <!-- "Customize Toolbars Window"-->
+  <mapID target="f1_working_netbeans037.htm-sthref39" url="f1_working_netbeans037.htm#sthref39" />
+  <!-- "Customize Toolbars Window"-->
+  <mapID target="bookmarks_window_csh" url="f1_working_netbeans038.htm#bookmarks_window_csh" />
+  <!-- "Bookmarks Window"-->
+  <mapID target="f1_working_netbeans038.htm-sthref40" url="f1_working_netbeans038.htm#sthref40" />
+  <!-- "Bookmarks Window"-->
+  <mapID target="navigator.java" url="f1_working_netbeans039.htm#navigator.java" />
+  <!-- "Navigator Window"-->
+  <mapID target="f1_working_netbeans039.htm-sthref41" url="f1_working_netbeans039.htm#sthref41" />
+  <!-- "Navigator Window"-->
+  <mapID target="text.plain" url="f1_working_netbeans040.htm#text.plain" />
+  <!-- "General Editor Window"-->
+  <mapID target="f1_working_netbeans040.htm-sthref42" url="f1_working_netbeans040.htm#sthref42" />
+  <!-- "General Editor Window"-->
+  <mapID target="org.netbeans.modules.editor.indent.project.FormattingCustomizerPanel" url="f1_working_netbeans041.htm#org.netbeans.modules.editor.indent.project.FormattingCustomizerPanel" />
+  <!-- "Project Properties: Formatting"-->
+  <mapID target="f1_working_netbeans041.htm-sthref43" url="f1_working_netbeans041.htm#sthref43" />
+  <!-- "Project Properties: Formatting"-->
+  <mapID target="projrave_ui_elements_server_nav_add_websvcdb" url="f1_working_netbeans042.htm#projrave_ui_elements_server_nav_add_websvcdb" />
+  <!-- "Add Web Service Dialog Box"-->
+  <mapID target="f1_working_netbeans042.htm-sthref44" url="f1_working_netbeans042.htm#sthref44" />
+  <!-- "Add Web Service Dialog Box"-->
+  <mapID target="org.netbeans.core.windows.view.ui.DocumentsDlg" url="f1_working_netbeans043.htm#org.netbeans.core.windows.view.ui.DocumentsDlg" />
+  <!-- "Documents Dialog Box"-->
+  <mapID target="f1_working_netbeans043.htm-sthref45" url="f1_working_netbeans043.htm#sthref45" />
+  <!-- "Documents Dialog Box"-->
+  <mapID target="org.netbeans.core.windows.view.ui.NbSheet" url="f1_working_netbeans044.htm#org.netbeans.core.windows.view.ui.NbSheet" />
+  <!-- "Properties Window"-->
+  <mapID target="f1_working_netbeans044.htm-sthref46" url="f1_working_netbeans044.htm#sthref46" />
+  <!-- "Properties Window"-->
+  <mapID target="org.netbeans.core.actions.ViewRuntimeTabAction" url="f1_working_netbeans045.htm#org.netbeans.core.actions.ViewRuntimeTabAction" />
+  <!-- "Services Window"-->
+  <mapID target="f1_working_netbeans045.htm-sthref47" url="f1_working_netbeans045.htm#sthref47" />
+  <!-- "Services Window"-->
+  <mapID target="help_on_exit_dialog" url="f1_working_netbeans046.htm#help_on_exit_dialog" />
+  <!-- "Save Dialog Box"-->
+  <mapID target="f1_working_netbeans046.htm-sthref48" url="f1_working_netbeans046.htm#sthref48" />
+  <!-- "Save Dialog Box"-->
+  <mapID target="org.netbeans.modules.search.SearchPanel.true" url="f1_working_netbeans047.htm#org.netbeans.modules.search.SearchPanel.true" />
+  <!-- "Replace in Projects Dialog"-->
+  <mapID target="f1_working_netbeans047.htm-sthref49" url="f1_working_netbeans047.htm#sthref49" />
+  <!-- "Replace in Projects Dialog"-->
+  <mapID target="org.netbeans.modules.search.SearchPanel.false" url="f1_working_netbeans048.htm#org.netbeans.modules.search.SearchPanel.false" />
+  <!-- "Find in Projects Dialog"-->
+  <mapID target="f1_working_netbeans048.htm-sthref50" url="f1_working_netbeans048.htm#sthref50" />
+  <!-- "Find in Projects Dialog"-->
+  <mapID target="org.netbeans.modules.diff.PatchAction" url="f1_working_netbeans049.htm#org.netbeans.modules.diff.PatchAction" />
+  <!-- "Select The Diff Patch Dialog Box"-->
+  <mapID target="f1_working_netbeans049.htm-sthref51" url="f1_working_netbeans049.htm#sthref51" />
+  <!-- "Select The Diff Patch Dialog Box"-->
+  <mapID target="org.netbeans.modules.tasklist.ui.TaskListTopComponent" url="f1_working_netbeans050.htm#org.netbeans.modules.tasklist.ui.TaskListTopComponent" />
+  <!-- "Action Items Window"-->
+  <mapID target="f1_working_netbeans050.htm-sthref52" url="f1_working_netbeans050.htm#sthref52" />
+  <!-- "Action Items Window"-->
+  <mapID target="org.netbeans.modules.html.editor.api.HtmlKit" url="f1_working_netbeans051.htm#org.netbeans.modules.html.editor.api.HtmlKit" />
+  <!-- "HTML and JSP Source Editor"-->
+  <mapID target="f1_working_netbeans051.htm-sthref53" url="f1_working_netbeans051.htm#sthref53" />
+  <!-- "HTML and JSP Source Editor"-->
+  <mapID target="org.netbeans.modules.localhistory.ui.view.LHHistoryTab" url="f1_working_netbeans052.htm#org.netbeans.modules.localhistory.ui.view.LHHistoryTab" />
+  <!-- "History View"-->
+  <mapID target="f1_working_netbeans052.htm-sthref54" url="f1_working_netbeans052.htm#sthref54" />
+  <!-- "History View"-->
+  <mapID target="org.netbeans.modules.localhistory.ui.revert.RevertFileChanges" url="f1_working_netbeans053.htm#org.netbeans.modules.localhistory.ui.revert.RevertFileChanges" />
+  <!-- "Local History: Revert To Dialog Box"-->
+  <mapID target="f1_working_netbeans053.htm-sthref55" url="f1_working_netbeans053.htm#sthref55" />
+  <!-- "Local History: Revert To Dialog Box"-->
+  <mapID target="org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" url="f1_working_netbeans054.htm#org.netbeans.modules.project.libraries.ui.LibrariesCustomizer" />
+  <!-- "Ant Library Manager"-->
+  <mapID target="f1_working_netbeans054.htm-sthref56" url="f1_working_netbeans054.htm#sthref56" />
+  <!-- "Ant Library Manager"-->
+  <mapID target="org.netbeans.modules.favorites.Tab" url="f1_working_netbeans055.htm#org.netbeans.modules.favorites.Tab" />
+  <!-- "Favorites Window"-->
+  <mapID target="f1_working_netbeans055.htm-sthref57" url="f1_working_netbeans055.htm#sthref57" />
+  <!-- "Favorites Window"-->
+  <mapID target="ProjectTab_Files" url="f1_working_netbeans056.htm#ProjectTab_Files" />
+  <!-- "Files Window"-->
+  <mapID target="f1_working_netbeans056.htm-sthref58" url="f1_working_netbeans056.htm#sthref58" />
+  <!-- "Files Window"-->
+  <mapID target="org.netbeans.modules.project.ui.groups.GroupsMenu" url="f1_working_netbeans057.htm#org.netbeans.modules.project.ui.groups.GroupsMenu" />
+  <!-- "Project Group: Create New Group Dialog Box"-->
+  <mapID target="f1_working_netbeans057.htm-sthref59" url="f1_working_netbeans057.htm#sthref59" />
+  <!-- "Project Group: Create New Group Dialog Box"-->
+  <mapID target="ProjectTab_Projects" url="f1_working_netbeans058.htm#ProjectTab_Projects" />
+  <!-- "Projects Window"-->
+  <mapID target="f1_working_netbeans058.htm-sthref60" url="f1_working_netbeans058.htm#sthref60" />
+  <!-- "Projects Window"-->
+  <mapID target="org.netbeans.modules.project.ui.ProjectTemplatePanel" url="f1_working_netbeans059.htm#org.netbeans.modules.project.ui.ProjectTemplatePanel" />
+  <!-- "New Project Wizard: Choose Project"-->
+  <mapID target="f1_working_netbeans059.htm-sthref61" url="f1_working_netbeans059.htm#sthref61" />
+  <!-- "New Project Wizard: Choose Project"-->
+  <mapID target="org.netbeans.core.HtmlBrowserComponent" url="f1_working_netbeans060.htm#org.netbeans.core.HtmlBrowserComponent" />
+  <!-- "Web Browser Window"-->
+  <mapID target="f1_working_netbeans060.htm-sthref62" url="f1_working_netbeans060.htm#sthref62" />
+  <!-- "Web Browser Window"-->
+  <mapID target="WebBrowsersManager" url="f1_working_netbeans061.htm#WebBrowsersManager" />
+  <!-- "Options Window: General: Web Browsers Manager"-->
+  <mapID target="f1_working_netbeans061.htm-sthref63" url="f1_working_netbeans061.htm#sthref63" />
+  <!-- "Options Window: General: Web Browsers Manager"-->
+  <mapID target="org.netbeans.modules.versioning.shelve.impl.UnshelveChangesAction" url="f1_working_netbeans062.htm#org.netbeans.modules.versioning.shelve.impl.UnshelveChangesAction" />
+  <!-- "Shelved Changes Dialog Box"-->
+  <mapID target="f1_working_netbeans062.htm-sthref64" url="f1_working_netbeans062.htm#sthref64" />
+  <!-- "Shelved Changes Dialog Box"-->
+  <mapID target="org.netbeans.core.execution.Install.pending" url="f1_working_netbeans063.htm#org.netbeans.core.execution.Install.pending" />
+  <!-- "Waiting for Tasks to Finish Dialog Box"-->
+  <mapID target="f1_working_netbeans063.htm-sthref65" url="f1_working_netbeans063.htm#sthref65" />
+  <!-- "Waiting for Tasks to Finish Dialog Box"-->
+  <mapID target="org.netbeans.modules.bugzilla.NBLoginPanel" url="f1_working_netbeans064.htm#org.netbeans.modules.bugzilla.NBLoginPanel" />
+  <!-- "Login to netbeans.org Dialog Box"-->
+  <mapID target="f1_working_netbeans064.htm-sthref66" url="f1_working_netbeans064.htm#sthref66" />
+  <!-- "Login to netbeans.org Dialog Box"-->
+  <mapID target="f1_css_editor.htm" url="f1_css_editor.htm" />
+  <!-- "Using CSS Source Editor"-->
+  <mapID target="text.css" url="f1_css_editor001.htm#text.css" />
+  <!-- "CSS Source Editor"-->
+  <mapID target="f1_css_editor001.htm-sthref68" url="f1_css_editor001.htm#sthref68" />
+  <!-- "CSS Source Editor"-->
+  <mapID target="css_visual_AddPropertyPanel" url="f1_css_editor002.htm#css_visual_AddPropertyPanel" />
+  <!-- "Add CSS Property Dialog Box"-->
+  <mapID target="f1_css_editor002.htm-sthref69" url="f1_css_editor002.htm#sthref69" />
+  <!-- "Add CSS Property Dialog Box"-->
+  <mapID target="css_visual_CreateRulePanel" url="f1_css_editor003.htm#css_visual_CreateRulePanel" />
+  <!-- "Edit CSS Rules Dialog Box"-->
+  <mapID target="f1_css_editor003.htm-sthref70" url="f1_css_editor003.htm#sthref70" />
+  <!-- "Edit CSS Rules Dialog Box"-->
+  <mapID target="css_visual_CssStylesTC" url="f1_css_editor004.htm#css_visual_CssStylesTC" />
+  <!-- "CSS Styles Window"-->
+  <mapID target="f1_css_editor004.htm-sthref71" url="f1_css_editor004.htm#sthref71" />
+  <!-- "CSS Styles Window"-->
+  <mapID target="f1_git.htm" url="f1_git.htm" />
+  <!-- "Using Git"-->
+  <mapID target="org.netbeans.modules.git.ui.clone.RepositoryStep" url="f1_git001.htm#org.netbeans.modules.git.ui.clone.RepositoryStep" />
+  <!-- "Git Clone Repository Wizard: Remote Repository"-->
+  <mapID target="f1_git001.htm-sthref73" url="f1_git001.htm#sthref73" />
+  <!-- "Git Clone Repository Wizard: Remote Repository"-->
+  <mapID target="org.netbeans.modules.git.ui.repository.GitRepositoryTopComponen" url="f1_git002.htm#org.netbeans.modules.git.ui.repository.GitRepositoryTopComponen" />
+  <!-- "Git: Repository Browser"-->
+  <mapID target="f1_git002.htm-sthref74" url="f1_git002.htm#sthref74" />
+  <!-- "Git: Repository Browser"-->
+  <mapID target="org.netbeans.modules.git.ui.init.InitPanel" url="f1_git003.htm#org.netbeans.modules.git.ui.init.InitPanel" />
+  <!-- "Git: Initialize a Git Repository Dialog Box"-->
+  <mapID target="f1_git003.htm-sthref75" url="f1_git003.htm#sthref75" />
+  <!-- "Git: Initialize a Git Repository Dialog Box"-->
+  <mapID target="org.netbeans.modules.git.ui.clone.FetchBranchesStep" url="f1_git004.htm#org.netbeans.modules.git.ui.clone.FetchBranchesStep" />
+  <!-- "Git Clone Repository Wizard: Remote Branches"-->
+  <mapID target="f1_git004.htm-sthref76" url="f1_git004.htm#sthref76" />
+  <!-- "Git Clone Repository Wizard: Remote Branches"-->
+  <mapID target="org.netbeans.modules.git.ui.clone.CloneDestinationStep" url="f1_git005.htm#org.netbeans.modules.git.ui.clone.CloneDestinationStep" />
+  <!-- "Git Clone Repository Wizard: Destination Directory"-->
+  <mapID target="f1_git005.htm-sthref77" url="f1_git005.htm#sthref77" />
+  <!-- "Git Clone Repository Wizard: Destination Directory"-->
+  <mapID target="org.netbeans.modules.git.ui.repository.remote.SelectUriStep.fetch" url="f1_git006.htm#org.netbeans.modules.git.ui.repository.remote.SelectUriStep.fetch" />
+  <!-- "Git Fetch from Remote Repository Wizard: Remote Repository"-->
+  <mapID target="f1_git006.htm-sthref78" url="f1_git006.htm#sthref78" />
+  <!-- "Git Fetch from Remote Repository Wizard: Remote Repository"-->
+  <mapID target="org.netbeans.modules.git.ui.fetch.FetchBranchesStep" url="f1_git007.htm#org.netbeans.modules.git.ui.fetch.FetchBranchesStep" />
+  <!-- "Git Fetch from Remote Repository Wizard: Remote Branches"-->
+  <mapID target="f1_git007.htm-sthref79" url="f1_git007.htm#sthref79" />
+  <!-- "Git Fetch from Remote Repository Wizard: Remote Branches"-->
+  <mapID target="org.netbeans.modules.git.ui.repository.remote.SelectUriStep.pull" url="f1_git008.htm#org.netbeans.modules.git.ui.repository.remote.SelectUriStep.pull" />
+  <!-- "Git Pull from Remote Repository Wizard: Remote Repository"-->
+  <mapID target="f1_git008.htm-sthref80" url="f1_git008.htm#sthref80" />
+  <!-- "Git Pull from Remote Repository Wizard: Remote Repository"-->
+  <mapID target="org.netbeans.modules.git.ui.fetch.PullBranchesStep" url="f1_git009.htm#org.netbeans.modules.git.ui.fetch.PullBranchesStep" />
+  <!-- "Git Pull from Remote Repository Wizard: Remote Branches"-->
+  <mapID target="f1_git009.htm-sthref81" url="f1_git009.htm#sthref81" />
+  <!-- "Git Pull from Remote Repository Wizard: Remote Branches"-->
+  <mapID target="org.netbeans.modules.git.ui.repository.remote.SelectUriStep.push" url="f1_git010.htm#org.netbeans.modules.git.ui.repository.remote.SelectUriStep.push" />
+  <!-- "Git Push to Remote Repository Wizard: Remote Repository"-->
+  <mapID target="f1_git010.htm-sthref82" url="f1_git010.htm#sthref82" />
+  <!-- "Git Push to Remote Repository Wizard: Remote Repository"-->
+  <mapID target="org.netbeans.modules.git.ui.push.PushBranchesStep" url="f1_git011.htm#org.netbeans.modules.git.ui.push.PushBranchesStep" />
+  <!-- "Git Push to Remote Repository Wizard: Select Local Branches"-->
+  <mapID target="f1_git011.htm-sthref83" url="f1_git011.htm#sthref83" />
+  <!-- "Git Push to Remote Repository Wizard: Select Local Branches"-->
+  <mapID target="org.netbeans.modules.git.ui.push.UpdateBranchReferencesStep" url="f1_git012.htm#org.netbeans.modules.git.ui.push.UpdateBranchReferencesStep" />
+  <!-- "Git Push to Remote Repository Wizard: Update Local References"-->
+  <mapID target="f1_git012.htm-sthref84" url="f1_git012.htm#sthref84" />
+  <!-- "Git Push to Remote Repository Wizard: Update Local References"-->
+  <mapID target="org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction" url="f1_git013.htm#org.netbeans.modules.git.ui.checkout.CheckoutRevisionAction" />
+  <!-- "Git: Checkout Selected Revision Dialog Box"-->
+  <mapID target="f1_git013.htm-sthref85" url="f1_git013.htm#sthref85" />
+  <!-- "Git: Checkout Selected Revision Dialog Box"-->
+  <mapID target="org.netbeans.modules.git.ui.branch.CreateBranch" url="f1_git014.htm#org.netbeans.modules.git.ui.branch.CreateBranch" />
+  <!-- "Git: Create Branch Dialog Box"-->
+  <mapID target="f1_git014.htm-sthref86" url="f1_git014.htm#sthref86" />
+  <!-- "Git: Create Branch Dialog Box"-->
+  <mapID target="org.netbeans.modules.git.ui.commit.CommitAction" url="f1_git015.htm#org.netbeans.modules.git.ui.commit.CommitAction" />
+  <!-- "Git: Commit Dialog Box"-->
+  <mapID target="f1_git015.htm-sthref87" url="f1_git015.htm#sthref87" />
+  <!-- "Git: Commit Dialog Box"-->
+  <mapID target="org.netbeans.modules.git.ui.repository.RevisionPickerDialog" url="f1_git016.htm#org.netbeans.modules.git.ui.repository.RevisionPickerDialog" />
+  <!-- "Git: Select Revision Dialog Box"-->
+  <mapID target="f1_git016.htm-sthref88" url="f1_git016.htm#sthref88" />
+  <!-- "Git: Select Revision Dialog Box"-->
+  <mapID target="org.netbeans.modules.git.ui.checkout.CheckoutPaths" url="f1_git017.htm#org.netbeans.modules.git.ui.checkout.CheckoutPaths" />
+  <!-- "Git: Checkout Selected Paths Dialog Box"-->
+  <mapID target="f1_git017.htm-sthref89" url="f1_git017.htm#sthref89" />
+  <!-- "Git: Checkout Selected Paths Dialog Box"-->
+  <mapID target="org.netbeans.modules.git.ui.checkout.SwitchBranchAction" url="f1_git018.htm#org.netbeans.modules.git.ui.checkout.SwitchBranchAction" />
+  <!-- "Git: Switch To Selected Branch Dialog Box"-->
+  <mapID target="f1_git018.htm-sthref90" url="f1_git018.htm#sthref90" />
+  <!-- "Git: Switch To Selected Branch Dialog Box"-->
+  <mapID target="org.netbeans.modules.git.ui.checkout.RevertChanges" url="f1_git019.htm#org.netbeans.modules.git.ui.checkout.RevertChanges" />
+  <!-- "Git: Revert Modifications Dialog Box"-->
+  <mapID target="f1_git019.htm-sthref91" url="f1_git019.htm#sthref91" />
+  <!-- "Git: Revert Modifications Dialog Box"-->
+  <mapID target="org.netbeans.modules.git.ui.revert.RevertCommit" url="f1_git020.htm#org.netbeans.modules.git.ui.revert.RevertCommit" />
+  <!-- "Git: Revert Commit Dialog Box"-->
+  <mapID target="f1_git020.htm-sthref92" url="f1_git020.htm#sthref92" />
+  <!-- "Git: Revert Commit Dialog Box"-->
+  <mapID target="org.netbeans.modules.git.ui.tag.CreateTag" url="f1_git021.htm#org.netbeans.modules.git.ui.tag.CreateTag" />
+  <!-- "Git: Create Tag Dialog Box"-->
+  <mapID target="f1_git021.htm-sthref93" url="f1_git021.htm#sthref93" />
+  <!-- "Git: Create Tag Dialog Box"-->
+  <mapID target="org.netbeans.modules.git.ui.tag.ManageTags" url="f1_git022.htm#org.netbeans.modules.git.ui.tag.ManageTags" />
+  <!-- "Git: Manage Tags Dialog Box"-->
+  <mapID target="f1_git022.htm-sthref94" url="f1_git022.htm#sthref94" />
+  <!-- "Git: Manage Tags Dialog Box"-->
+  <mapID target="org.netbeans.modules.git.ui.merge.MergeRevision" url="f1_git023.htm#org.netbeans.modules.git.ui.merge.MergeRevision" />
+  <!-- "Git: Merge Revision Dialog Box"-->
+  <mapID target="f1_git023.htm-sthref95" url="f1_git023.htm#sthref95" />
+  <!-- "Git: Merge Revision Dialog Box"-->
+  <mapID target="org.netbeans.modules.git.ui.status.GitVersioningTopComponent" url="f1_git024.htm#org.netbeans.modules.git.ui.status.GitVersioningTopComponent" />
+  <!-- "Git: Versioning View"-->
+  <mapID target="f1_git024.htm-sthref96" url="f1_git024.htm#sthref96" />
+  <!-- "Git: Versioning View"-->
+  <mapID target="org.netbeans.modules.git.ui.reset.Reset" url="f1_git025.htm#org.netbeans.modules.git.ui.reset.Reset" />
+  <!-- "Git: Reset Dialog Box"-->
+  <mapID target="f1_git025.htm-sthref97" url="f1_git025.htm#sthref97" />
+  <!-- "Git: Reset Dialog Box"-->
+  <mapID target="org.netbeans.modules.git.ui.repository.GitRepositoryTopComponent" url="f1_git026.htm#org.netbeans.modules.git.ui.repository.GitRepositoryTopComponent" />
+  <!-- "Git: Repository Browser"-->
+  <mapID target="f1_git026.htm-sthref98" url="f1_git026.htm#sthref98" />
+  <!-- "Git: Repository Browser"-->
+  <mapID target="org.netbeans.modules.git.ui.commit.TemplatePanel" url="f1_git027.htm#org.netbeans.modules.git.ui.commit.TemplatePanel" />
+  <!-- "Git: Select Template Dialog Box"-->
+  <mapID target="f1_git027.htm-sthref99" url="f1_git027.htm#sthref99" />
+  <!-- "Git: Select Template Dialog Box"-->
+  <mapID target="f1_mercurial.htm" url="f1_mercurial.htm" />
+  <!-- "Using Mercurial "-->
+  <mapID target="org.netbeans.modules.mercurial.ui.clone.Clone" url="f1_mercurial001.htm#org.netbeans.modules.mercurial.ui.clone.Clone" />
+  <!-- "Mercurial: Clone Repository Dialog Box"-->
+  <mapID target="f1_mercurial001.htm-sthref101" url="f1_mercurial001.htm#sthref101" />
+  <!-- "Mercurial: Clone Repository Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.create.CreatePanel" url="f1_mercurial002.htm#org.netbeans.modules.mercurial.ui.create.CreatePanel" />
+  <!-- "Mercurial: Initialize a Mercurial Repository Dialog Box"-->
+  <mapID target="f1_mercurial002.htm-sthref102" url="f1_mercurial002.htm#sthref102" />
+  <!-- "Mercurial: Initialize a Mercurial Repository Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.diff.ExportDiff" url="f1_mercurial003.htm#org.netbeans.modules.mercurial.ui.diff.ExportDiff" />
+  <!-- "Mercurial: Export Diff Dialog Box"-->
+  <mapID target="f1_mercurial003.htm-sthref103" url="f1_mercurial003.htm#sthref103" />
+  <!-- "Mercurial: Export Diff Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.pull.PullOtherAction" url="f1_mercurial004.htm#org.netbeans.modules.mercurial.ui.pull.PullOtherAction" />
+  <!-- "Mercurial: Pull Other Dialog Box"-->
+  <mapID target="f1_mercurial004.htm-sthref104" url="f1_mercurial004.htm#sthref104" />
+  <!-- "Mercurial: Pull Other Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.push.PushOtherAction" url="f1_mercurial005.htm#org.netbeans.modules.mercurial.ui.push.PushOtherAction" />
+  <!-- "Mercurial: Push Other Dialog Box"-->
+  <mapID target="f1_mercurial005.htm-sthref105" url="f1_mercurial005.htm#sthref105" />
+  <!-- "Mercurial: Push Other Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.merge.MergeRevisions" url="f1_mercurial006.htm#org.netbeans.modules.mercurial.ui.merge.MergeRevisions" />
+  <!-- "Mercurial: Merge Revisions Dialog Box"-->
+  <mapID target="f1_mercurial006.htm-sthref106" url="f1_mercurial006.htm#sthref106" />
+  <!-- "Mercurial: Merge Revisions Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.update.RevertModifications" url="f1_mercurial007.htm#org.netbeans.modules.mercurial.ui.update.RevertModifications" />
+  <!-- "Mercurial: Revert Modifications Dialog Box"-->
+  <mapID target="f1_mercurial007.htm-sthref107" url="f1_mercurial007.htm#sthref107" />
+  <!-- "Mercurial: Revert Modifications Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.update.Update" url="f1_mercurial008.htm#org.netbeans.modules.mercurial.ui.update.Update" />
+  <!-- "Mercurial: Update Dialog Box"-->
+  <mapID target="f1_mercurial008.htm-sthref108" url="f1_mercurial008.htm#sthref108" />
+  <!-- "Mercurial: Update Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.FileSelector" url="f1_mercurial009.htm#org.netbeans.modules.mercurial.FileSelector" />
+  <!-- "Mercurial: Select Dialog Box"-->
+  <mapID target="f1_mercurial009.htm-sthref109" url="f1_mercurial009.htm#sthref109" />
+  <!-- "Mercurial: Select Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.queues.QCreatePatchAction" url="f1_mercurial010.htm#org.netbeans.modules.mercurial.ui.queues.QCreatePatchAction" />
+  <!-- "Mercurial: Create Patch Dialog Box"-->
+  <mapID target="f1_mercurial010.htm-sthref110" url="f1_mercurial010.htm#sthref110" />
+  <!-- "Mercurial: Create Patch Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.queues.QRefreshPatchAction" url="f1_mercurial011.htm#org.netbeans.modules.mercurial.ui.queues.QRefreshPatchAction" />
+  <!-- "Mercurial: Refresh Patch Dialog Box"-->
+  <mapID target="f1_mercurial011.htm-sthref111" url="f1_mercurial011.htm#sthref111" />
+  <!-- "Mercurial: Refresh Patch Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.queues.GoToPatch" url="f1_mercurial012.htm#org.netbeans.modules.mercurial.ui.queues.GoToPatch" />
+  <!-- "Mercurial: Go To Patch Dialog Box"-->
+  <mapID target="f1_mercurial012.htm-sthref112" url="f1_mercurial012.htm#sthref112" />
+  <!-- "Mercurial: Go To Patch Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.queues.FinishPatch" url="f1_mercurial013.htm#org.netbeans.modules.mercurial.ui.queues.FinishPatch" />
+  <!-- "Mercurial: Finish Patches Dialog Box"-->
+  <mapID target="f1_mercurial013.htm-sthref113" url="f1_mercurial013.htm#sthref113" />
+  <!-- "Mercurial: Finish Patches Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.commit.TemplatePanel" url="f1_mercurial014.htm#org.netbeans.modules.mercurial.ui.commit.TemplatePanel" />
+  <!-- "Mercurial: Select Template Dialog Box"-->
+  <mapID target="f1_mercurial014.htm-sthref114" url="f1_mercurial014.htm#sthref114" />
+  <!-- "Mercurial: Select Template Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.branch.BranchSelector" url="f1_mercurial015.htm#org.netbeans.modules.mercurial.ui.branch.BranchSelector" />
+  <!-- "Mercurial: Switch Branch In Repository Dialog Box"-->
+  <mapID target="f1_mercurial015.htm-sthref115" url="f1_mercurial015.htm#sthref115" />
+  <!-- "Mercurial: Switch Branch In Repository Dialog Box"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.log.SearchHistoryTopComponent" url="f1_mercurial016.htm#org.netbeans.modules.mercurial.ui.log.SearchHistoryTopComponent" />
+  <!-- "Mercurial: Search History"-->
+  <mapID target="f1_mercurial016.htm-sthref116" url="f1_mercurial016.htm#sthref116" />
+  <!-- "Mercurial: Search History"-->
+  <mapID target="f1_mercurial016.htm-sthref117" url="f1_mercurial016.htm#sthref117" />
+  <!-- "Mercurial: Search History"-->
+  <mapID target="f1_mercurial016.htm-sthref118" url="f1_mercurial016.htm#sthref118" />
+  <!-- "Toolbar"-->
+  <mapID target="f1_mercurial016.htm-sthref119" url="f1_mercurial016.htm#sthref119" />
+  <!-- "Summary View"-->
+  <mapID target="f1_mercurial016.htm-sthref120" url="f1_mercurial016.htm#sthref120" />
+  <!-- "Diff View"-->
+  <mapID target="org.netbeans.modules.mercurial.ui.shelve.ShelveChangesPanel" url="f1_mercurial017.htm#org.netbeans.modules.mercurial.ui.shelve.ShelveChangesPanel" />
+  <!-- "Mercurial: Shelve Changes Dialog Box"-->
+  <mapID target="f1_mercurial017.htm-sthref121" url="f1_mercurial017.htm#sthref121" />
+  <!-- "Mercurial: Shelve Changes Dialog Box"-->
+  <mapID target="f1_subversion.htm" url="f1_subversion.htm" />
+  <!-- "Using Subversion "-->
+  <mapID target="org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.checkout" url="f1_subversion001.htm#org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.checkout" />
+  <!-- "Subversion Checkout Wizard: Subversion Repository"-->
+  <mapID target="f1_subversion001.htm-sthref123" url="f1_subversion001.htm#sthref123" />
+  <!-- "Subversion Checkout Wizard: Subversion Repository"-->
+  <mapID target="org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep" url="f1_subversion002.htm#org.netbeans.modules.subversion.ui.wizards.checkoutstep.CheckoutStep" />
+  <!-- "Subversion Checkout Wizard: Folders to Checkout"-->
+  <mapID target="f1_subversion002.htm-sthref124" url="f1_subversion002.htm#sthref124" />
+  <!-- "Subversion Checkout Wizard: Folders to Checkout"-->
+  <mapID target="org.netbeans.modules.subversion.ui.commit.CommitAction" url="f1_subversion003.htm#org.netbeans.modules.subversion.ui.commit.CommitAction" />
+  <!-- "Subversion: Commit Dialog Box"-->
+  <mapID target="f1_subversion003.htm-sthref125" url="f1_subversion003.htm#sthref125" />
+  <!-- "Subversion: Commit Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.copy.CreateCopy" url="f1_subversion004.htm#org.netbeans.modules.subversion.ui.copy.CreateCopy" />
+  <!-- "Subversion: Copy Dialog Box"-->
+  <mapID target="f1_subversion004.htm-sthref126" url="f1_subversion004.htm#sthref126" />
+  <!-- "Subversion: Copy Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.diff.DiffTopComponent" url="f1_subversion005.htm#org.netbeans.modules.subversion.ui.diff.DiffTopComponent" />
+  <!-- "Comparing File Revisions in Subversion"-->
+  <mapID target="f1_subversion005.htm-sthref127" url="f1_subversion005.htm#sthref127" />
+  <!-- "Comparing File Revisions in Subversion"-->
+  <mapID target="org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.import" url="f1_subversion006.htm#org.netbeans.modules.subversion.ui.wizards.repositorystep.RepositoryStep.import" />
+  <!-- "Subversion Import Wizard: Subversion Repository"-->
+  <mapID target="f1_subversion006.htm-sthref130" url="f1_subversion006.htm#sthref130" />
+  <!-- "Subversion Import Wizard: Subversion Repository"-->
+  <mapID target="org.netbeans.modules.subversion.ui.wizards.importstep.ImportStep" url="f1_subversion007.htm#org.netbeans.modules.subversion.ui.wizards.importstep.ImportStep" />
+  <!-- "Subversion Import Wizard: Repository Folder"-->
+  <mapID target="f1_subversion007.htm-sthref131" url="f1_subversion007.htm#sthref131" />
+  <!-- "Subversion Import Wizard: Repository Folder"-->
+  <mapID target="org.netbeans.modules.subversion.ui.wizards.importstep.ImportPreviewStep" url="f1_subversion008.htm#org.netbeans.modules.subversion.ui.wizards.importstep.ImportPreviewStep" />
+  <!-- "Subversion Import Wizard: Files to Import"-->
+  <mapID target="f1_subversion008.htm-sthref132" url="f1_subversion008.htm#sthref132" />
+  <!-- "Subversion Import Wizard: Files to Import"-->
+  <mapID target="org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction" url="f1_subversion009.htm#org.netbeans.modules.subversion.ui.properties.SvnPropertiesAction" />
+  <!-- "Subversion: Property Editor"-->
+  <mapID target="f1_subversion009.htm-sthref133" url="f1_subversion009.htm#sthref133" />
+  <!-- "Subversion: Property Editor"-->
+  <mapID target="org.netbeans.modules.subversion.ui.copy.Merge" url="f1_subversion010.htm#org.netbeans.modules.subversion.ui.copy.Merge" />
+  <!-- "Subversion: Merge Dialog Box"-->
+  <mapID target="f1_subversion010.htm-sthref134" url="f1_subversion010.htm#sthref134" />
+  <!-- "Subversion: Merge Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.relocate.RelocateAction" url="f1_subversion011.htm#org.netbeans.modules.subversion.ui.relocate.RelocateAction" />
+  <!-- "Subversion: Relocate Dialog Box"-->
+  <mapID target="f1_subversion011.htm-sthref135" url="f1_subversion011.htm#sthref135" />
+  <!-- "Subversion: Relocate Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.update.RevertModifications" url="f1_subversion012.htm#org.netbeans.modules.subversion.ui.update.RevertModifications" />
+  <!-- "Subversion: Revert Modifications Dialog Box"-->
+  <mapID target="f1_subversion012.htm-sthref136" url="f1_subversion012.htm#sthref136" />
+  <!-- "Subversion: Revert Modifications Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.history.SearchHistoryTopComponent" url="f1_subversion013.htm#org.netbeans.modules.subversion.ui.history.SearchHistoryTopComponent" />
+  <!-- "Subversion: History Viewer"-->
+  <mapID target="f1_subversion013.htm-sthref137" url="f1_subversion013.htm#sthref137" />
+  <!-- "Subversion: History Viewer"-->
+  <mapID target="org.netbeans.modules.subversion.ui.copy.SwitchTo" url="f1_subversion014.htm#org.netbeans.modules.subversion.ui.copy.SwitchTo" />
+  <!-- "Subversion: Switch Dialog Box"-->
+  <mapID target="f1_subversion014.htm-sthref138" url="f1_subversion014.htm#sthref138" />
+  <!-- "Subversion: Switch Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.status.SvnVersioningTopComponent" url="f1_subversion015.htm#org.netbeans.modules.subversion.ui.status.SvnVersioningTopComponent" />
+  <!-- "Subversion: Versioning Window"-->
+  <mapID target="f1_subversion015.htm-sthref139" url="f1_subversion015.htm#sthref139" />
+  <!-- "Subversion: Versioning Window"-->
+  <mapID target="org.netbeans.modules.subversion.options.SvnOptionsController" url="f1_subversion016.htm#org.netbeans.modules.subversion.options.SvnOptionsController" />
+  <!-- "Subversion: Property Editor"-->
+  <mapID target="f1_subversion016.htm-sthref140" url="f1_subversion016.htm#sthref140" />
+  <!-- "Subversion: Property Editor"-->
+  <mapID target="org.netbeans.modules.subversion.serverCertificateVerification" url="f1_subversion017.htm#org.netbeans.modules.subversion.serverCertificateVerification" />
+  <!-- "Subversion: Certificate Verification Dialog Box"-->
+  <mapID target="f1_subversion017.htm-sthref141" url="f1_subversion017.htm#sthref141" />
+  <!-- "Subversion: Certificate Verification Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.options.AnnotationSettings" url="f1_subversion018.htm#org.netbeans.modules.subversion.options.AnnotationSettings" />
+  <!-- "Subversion: Manage Labels Dialog"-->
+  <mapID target="f1_subversion018.htm-sthref142" url="f1_subversion018.htm#sthref142" />
+  <!-- "Subversion: Manage Labels Dialog"-->
+  <mapID target="org.netbeans.modules.subversion.FileSelector" url="f1_subversion019.htm#org.netbeans.modules.subversion.FileSelector" />
+  <!-- "Subversion: Select Dialog Box"-->
+  <mapID target="f1_subversion019.htm-sthref143" url="f1_subversion019.htm#sthref143" />
+  <!-- "Subversion: Select Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.search.checkout" url="f1_subversion020.htm#org.netbeans.modules.subversion.ui.search.checkout" />
+  <!-- "Subversion: Search Revisions Dialog Box"-->
+  <mapID target="f1_subversion020.htm-sthref144" url="f1_subversion020.htm#sthref144" />
+  <!-- "Subversion: Search Revisions Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.search.switch" url="f1_subversion021.htm#org.netbeans.modules.subversion.ui.search.switch" />
+  <!-- "Subversion: Search Revisions Dialog Box"-->
+  <mapID target="f1_subversion021.htm-sthref145" url="f1_subversion021.htm#sthref145" />
+  <!-- "Subversion: Search Revisions Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.search.merge" url="f1_subversion022.htm#org.netbeans.modules.subversion.ui.search.merge" />
+  <!-- "Subversion: Search Revisions Dialog Box"-->
+  <mapID target="f1_subversion022.htm-sthref146" url="f1_subversion022.htm#sthref146" />
+  <!-- "Subversion: Search Revisions Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.search.revert" url="f1_subversion023.htm#org.netbeans.modules.subversion.ui.search.revert" />
+  <!-- "Subversion: Search Revisions Dialog Box"-->
+  <mapID target="f1_subversion023.htm-sthref147" url="f1_subversion023.htm#sthref147" />
+  <!-- "Subversion: Search Revisions Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.search.urlpattern" url="f1_subversion024.htm#org.netbeans.modules.subversion.ui.search.urlpattern" />
+  <!-- "Subversion: Search Revisions Dialog Box"-->
+  <mapID target="f1_subversion024.htm-sthref148" url="f1_subversion024.htm#sthref148" />
+  <!-- "Subversion: Search Revisions Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.search.copy" url="f1_subversion025.htm#org.netbeans.modules.subversion.ui.search.copy" />
+  <!-- "Subversion: Search Revisions Dialog Box"-->
+  <mapID target="f1_subversion025.htm-sthref149" url="f1_subversion025.htm#sthref149" />
+  <!-- "Subversion: Search Revisions Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.browser.checkout" url="f1_subversion026.htm#org.netbeans.modules.subversion.ui.browser.checkout" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="f1_subversion026.htm-sthref150" url="f1_subversion026.htm#sthref150" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.browser.copy" url="f1_subversion027.htm#org.netbeans.modules.subversion.ui.browser.copy" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="f1_subversion027.htm-sthref151" url="f1_subversion027.htm#sthref151" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.browser.switchto" url="f1_subversion028.htm#org.netbeans.modules.subversion.ui.browser.switchto" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="f1_subversion028.htm-sthref152" url="f1_subversion028.htm#sthref152" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.browser.merge" url="f1_subversion029.htm#org.netbeans.modules.subversion.ui.browser.merge" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="f1_subversion029.htm-sthref153" url="f1_subversion029.htm#sthref153" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.browser.import" url="f1_subversion030.htm#org.netbeans.modules.subversion.ui.browser.import" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="f1_subversion030.htm-sthref154" url="f1_subversion030.htm#sthref154" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.browser.searchhistory" url="f1_subversion031.htm#org.netbeans.modules.subversion.ui.browser.searchhistory" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="f1_subversion031.htm-sthref155" url="f1_subversion031.htm#sthref155" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.browser.urlpattern" url="f1_subversion032.htm#org.netbeans.modules.subversion.ui.browser.urlpattern" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="f1_subversion032.htm-sthref156" url="f1_subversion032.htm#sthref156" />
+  <!-- "Subversion: Browse Repository Folders Dialog Box"-->
+  <mapID target="org.netbeans.modules.versioning.util.projects.ProjectOpene" url="f1_subversion033.htm#org.netbeans.modules.versioning.util.projects.ProjectOpene" />
+  <!-- "Versioning: Open Projects Dialog Box"-->
+  <mapID target="f1_subversion033.htm-sthref157" url="f1_subversion033.htm#sthref157" />
+  <!-- "Versioning: Open Projects Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.commit.TemplatePanel" url="f1_subversion034.htm#org.netbeans.modules.subversion.ui.commit.TemplatePanel" />
+  <!-- "Subversion: Select Template Dialog Box"-->
+  <mapID target="f1_subversion034.htm-sthref158" url="f1_subversion034.htm#sthref158" />
+  <!-- "Subversion: Select Template Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.shelve.ShelveChangesPanel" url="f1_subversion035.htm#org.netbeans.modules.subversion.ui.shelve.ShelveChangesPanel" />
+  <!-- "Subversion: Shelve Changes Dialog Box"-->
+  <mapID target="f1_subversion035.htm-sthref159" url="f1_subversion035.htm#sthref159" />
+  <!-- "Subversion: Shelve Changes Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.repository.Repository" url="f1_subversion036.htm#org.netbeans.modules.subversion.ui.repository.Repository" />
+  <!-- "Subversion: Manage Connection Settings Dialog Box"-->
+  <mapID target="f1_subversion036.htm-sthref160" url="f1_subversion036.htm#sthref160" />
+  <!-- "Subversion: Manage Connection Settings Dialog Box"-->
+  <mapID target="org.netbeans.modules.subversion.ui.diff.SelectDiffTree" url="f1_subversion037.htm#org.netbeans.modules.subversion.ui.diff.SelectDiffTree" />
+  <!-- "Subversion: Select Tree To Diff Dialog Box"-->
+  <mapID target="f1_subversion037.htm-sthref161" url="f1_subversion037.htm#sthref161" />
+  <!-- "Subversion: Select Tree To Diff Dialog Box"-->
+  <mapID target="f1_cvs.htm" url="f1_cvs.htm" />
+  <!-- "Using CVS "-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep.checkout" url="f1_cvs001.htm#org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep.checkout" />
+  <!-- "CVS Checkout Wizard: CVS Root"-->
+  <mapID target="f1_cvs001.htm-sthref163" url="f1_cvs001.htm#sthref163" />
+  <!-- "CVS Checkout Wizard: CVS Root"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.CheckoutWizard$ModuleStep" url="f1_cvs002.htm#org.netbeans.modules.versioning.system.cvss.ui.wizards.CheckoutWizard$ModuleStep" />
+  <!-- "CVS Checkout Wizard: Module to Checkout"-->
+  <mapID target="f1_cvs002.htm-sthref164" url="f1_cvs002.htm#sthref164" />
+  <!-- "CVS Checkout Wizard: Module to Checkout"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep.import" url="f1_cvs003.htm#org.netbeans.modules.versioning.system.cvss.ui.wizards.RepositoryStep.import" />
+  <!-- "CVS Import Wizard: CVS Root"-->
+  <mapID target="f1_cvs003.htm-sthref165" url="f1_cvs003.htm#sthref165" />
+  <!-- "CVS Import Wizard: CVS Root"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction$ImportStep" url="f1_cvs004.htm#org.netbeans.modules.versioning.system.cvss.ui.actions.project.AddToRepositoryAction$ImportStep" />
+  <!-- "CVS Import Wizard: Folder to Import"-->
+  <mapID target="f1_cvs004.htm-sthref166" url="f1_cvs004.htm#sthref166" />
+  <!-- "CVS Import Wizard: Folder to Import"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.wizards.CvsRootPanel" url="f1_cvs005.htm#org.netbeans.modules.versioning.system.cvss.ui.wizards.CvsRootPanel" />
+  <!-- "CVS: Edit CVS Root Dialog Box"-->
+  <mapID target="f1_cvs005.htm-sthref167" url="f1_cvs005.htm#sthref167" />
+  <!-- "CVS: Edit CVS Root Dialog Box"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.selectors.ModuleSelector" url="f1_cvs006.htm#org.netbeans.modules.versioning.system.cvss.ui.selectors.ModuleSelector" />
+  <!-- "CVS: Browse Modules Dialog Box"-->
+  <mapID target="f1_cvs006.htm-sthref168" url="f1_cvs006.htm#sthref168" />
+  <!-- "CVS: Browse Modules Dialog Box"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector" url="f1_cvs007.htm#org.netbeans.modules.versioning.system.cvss.ui.selectors.BranchSelector" />
+  <!-- "CVS: Browse Tags Dialog Box"-->
+  <mapID target="f1_cvs007.htm-sthref169" url="f1_cvs007.htm#sthref169" />
+  <!-- "CVS: Browse Tags Dialog Box"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutCompletedPanel" url="f1_cvs008.htm#org.netbeans.modules.versioning.system.cvss.ui.actions.checkout.CheckoutCompletedPanel" />
+  <!-- "CVS: Checkout Complete Dialog Box"-->
+  <mapID target="f1_cvs008.htm-sthref170" url="f1_cvs008.htm#sthref170" />
+  <!-- "CVS: Checkout Complete Dialog Box"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent" url="f1_cvs009.htm#org.netbeans.modules.versioning.system.cvss.ui.syncview.CvsSynchronizeTopComponent" />
+  <!-- "CVS: Versioning Window"-->
+  <mapID target="f1_cvs009.htm-sthref171" url="f1_cvs009.htm#sthref171" />
+  <!-- "CVS: Versioning Window"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffExecutor$DiffTopComponent" url="f1_cvs010.htm#org.netbeans.modules.versioning.system.cvss.ui.actions.diff.DiffExecutor$DiffTopComponent" />
+  <!-- "CVS: Diff Viewer"-->
+  <mapID target="f1_cvs010.htm-sthref172" url="f1_cvs010.htm#sthref172" />
+  <!-- "CVS: Diff Viewer"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.history.SearchHistoryTopComponent" url="f1_cvs011.htm#org.netbeans.modules.versioning.system.cvss.ui.history.SearchHistoryTopComponent" />
+  <!-- "CVS: History Viewer"-->
+  <mapID target="f1_cvs011.htm-sthref173" url="f1_cvs011.htm#sthref173" />
+  <!-- "CVS: History Viewer"-->
+  <mapID target="org.netbeans.modules.merge.builtin.visualizer.MergeDialogComponent" url="f1_cvs012.htm#org.netbeans.modules.merge.builtin.visualizer.MergeDialogComponent" />
+  <!-- "CVS: Merge Conflicts Resolver"-->
+  <mapID target="f1_cvs012.htm-sthref174" url="f1_cvs012.htm#sthref174" />
+  <!-- "CVS: Merge Conflicts Resolver"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.options.CvsOptionsController" url="f1_cvs013.htm#org.netbeans.modules.versioning.system.cvss.options.CvsOptionsController" />
+  <!-- "CVS: Versioning Options Window"-->
+  <mapID target="f1_cvs013.htm-sthref175" url="f1_cvs013.htm#sthref175" />
+  <!-- "CVS: Versioning Options Window"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitSettings" url="f1_cvs014.htm#org.netbeans.modules.versioning.system.cvss.ui.actions.commit.CommitSettings" />
+  <!-- "CVS: Commit Dialog Box"-->
+  <mapID target="f1_cvs014.htm-sthref176" url="f1_cvs014.htm#sthref176" />
+  <!-- "CVS: Commit Dialog Box"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.BranchAction" url="f1_cvs015.htm#org.netbeans.modules.versioning.system.cvss.ui.actions.tag.BranchAction" />
+  <!-- "CVS: Branch Dialog Box"-->
+  <mapID target="f1_cvs015.htm-sthref177" url="f1_cvs015.htm#sthref177" />
+  <!-- "CVS: Branch Dialog Box"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.SwitchBranchAction" url="f1_cvs016.htm#org.netbeans.modules.versioning.system.cvss.ui.actions.tag.SwitchBranchAction" />
+  <!-- "CVS: Switch to Branch Dialog Box"-->
+  <mapID target="f1_cvs016.htm-sthref178" url="f1_cvs016.htm#sthref178" />
+  <!-- "CVS: Switch to Branch Dialog Box"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.MergeBranchAction" url="f1_cvs017.htm#org.netbeans.modules.versioning.system.cvss.ui.actions.tag.MergeBranchAction" />
+  <!-- "CVS: Merge Changes from Branch Dialog Box"-->
+  <mapID target="f1_cvs017.htm-sthref179" url="f1_cvs017.htm#sthref179" />
+  <!-- "CVS: Merge Changes from Branch Dialog Box"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction" url="f1_cvs018.htm#org.netbeans.modules.versioning.system.cvss.ui.actions.tag.TagAction" />
+  <!-- "CVS: Tag Dialog Box"-->
+  <mapID target="f1_cvs018.htm-sthref180" url="f1_cvs018.htm#sthref180" />
+  <!-- "CVS: Tag Dialog Box"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.actions.ChangeCVSRootAction" url="f1_cvs019.htm#org.netbeans.modules.versioning.system.cvss.ui.actions.ChangeCVSRootAction" />
+  <!-- "CVS: Change CVS Root Dialog Box"-->
+  <mapID target="f1_cvs019.htm-sthref181" url="f1_cvs019.htm#sthref181" />
+  <!-- "CVS: Change CVS Root Dialog Box"-->
+  <mapID target="org.netbeans.modules.versioning.system.cvss.ui.history.ViewRevisionAction" url="f1_cvs020.htm#org.netbeans.modules.versioning.system.cvss.ui.history.ViewRevisionAction" />
+  <!-- "CVS: View Revision Dialog Box"-->
+  <mapID target="f1_cvs020.htm-sthref182" url="f1_cvs020.htm#sthref182" />
+  <!-- "CVS: View Revision Dialog Box"-->
+  <mapID target="netbeans.optionsDialog.advanced.ant" url="f1_cvs021.htm#netbeans.optionsDialog.advanced.ant" />
+  <!-- "CVS: Add Variable Dialog Box"-->
+  <mapID target="f1_cvs021.htm-sthref183" url="f1_cvs021.htm#sthref183" />
+  <!-- "CVS: Add Variable Dialog Box"-->
+  <mapID target="f1_team.htm" url="f1_team.htm" />
+  <!-- "Team Server (Kenai) "-->
+  <mapID target="org.netbeans.modules.kenai.ui.NameAndLicenseWizardPanel" url="f1_team001.htm#org.netbeans.modules.kenai.ui.NameAndLicenseWizardPanel" />
+  <!-- "New Team Project Wizard: Name and Licenses"-->
+  <mapID target="f1_team001.htm-sthref185" url="f1_team001.htm#sthref185" />
+  <!-- "New Team Project Wizard: Name and Licenses"-->
+  <mapID target="org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanel" url="f1_team002.htm#org.netbeans.modules.kenai.ui.SourceAndIssuesWizardPanel" />
+  <!-- "New Team Project Wizard: Source Code and Issues"-->
+  <mapID target="f1_team002.htm-sthref186" url="f1_team002.htm#sthref186" />
+  <!-- "New Team Project Wizard: Source Code and Issues"-->
+  <mapID target="org.netbeans.modules.kenai.ui.SummaryWizardPanel" url="f1_team003.htm#org.netbeans.modules.kenai.ui.SummaryWizardPanel" />
+  <!-- "New Team Project Wizard: Summary"-->
+  <mapID target="f1_team003.htm-sthref187" url="f1_team003.htm#sthref187" />
+  <!-- "New Team Project Wizard: Summary"-->
+  <mapID target="f1_java_project.htm" url="f1_java_project.htm" />
+  <!-- "Java Projects "-->
+  <mapID target="org.netbeans.modules.java.platform.wizard.LocationChooser" url="f1_java_project001.htm#org.netbeans.modules.java.platform.wizard.LocationChooser" />
+  <!-- "Add Java Platform Wizard: Choose Platform Folder"-->
+  <mapID target="f1_java_project001.htm-sthref189" url="f1_java_project001.htm#sthref189" />
+  <!-- "Add Java Platform Wizard: Choose Platform Folder"-->
+  <mapID target="org.netbeans.modules.java.j2seplatform.wizard.DetectPanel" url="f1_java_project002.htm#org.netbeans.modules.java.j2seplatform.wizard.DetectPanel" />
+  <!-- "Add Java Platform Wizard: Platform Name"-->
+  <mapID target="f1_java_project002.htm-sthref190" url="f1_java_project002.htm#sthref190" />
+  <!-- "Add Java Platform Wizard: Platform Name"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_EXT" url="f1_java_project003.htm#org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_EXT" />
+  <!-- "New Java Project with Existing Sources Wizard: Name and Location"-->
+  <mapID target="f1_java_project003.htm-sthref191" url="f1_java_project003.htm#sthref191" />
+  <!-- "New Java Project with Existing Sources Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelSourceFolders" url="f1_java_project004.htm#org.netbeans.modules.java.j2seproject.ui.wizards.PanelSourceFolders" />
+  <!-- "New Java Project with Existing Sources Wizard: Existing Sources"-->
+  <mapID target="f1_java_project004.htm-sthref192" url="f1_java_project004.htm#sthref192" />
+  <!-- "New Java Project with Existing Sources Wizard: Existing Sources"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelIncludesExcludes" url="f1_java_project005.htm#org.netbeans.modules.java.j2seproject.ui.wizards.PanelIncludesExcludes" />
+  <!-- "New Java Project with Existing Sources Wizard: Includes &amp; Excludes"-->
+  <mapID target="f1_java_project005.htm-sthref193" url="f1_java_project005.htm#sthref193" />
+  <!-- "New Java Project with Existing Sources Wizard: Includes &amp; Excludes"-->
+  <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingPanel" url="f1_java_project006.htm#org.netbeans.modules.ant.freeform.ui.TargetMappingPanel" />
+  <!-- "Free-Form Project Properties Dialog Box: Build and Run"-->
+  <mapID target="f1_java_project006.htm-sthref194" url="f1_java_project006.htm#sthref194" />
+  <!-- "Free-Form Project Properties Dialog Box: Build and Run"-->
+  <mapID target="org.netbeans.modules.java.freeform.ui.ClasspathPanel" url="f1_java_project007.htm#org.netbeans.modules.java.freeform.ui.ClasspathPanel" />
+  <!-- "Free-Form Project Properties Dialog Box: Java Sources Classpath"-->
+  <mapID target="f1_java_project007.htm-sthref195" url="f1_java_project007.htm#sthref195" />
+  <!-- "Free-Form Project Properties Dialog Box: Java Sources Classpath"-->
+  <mapID target="org.netbeans.modules.java.freeform.ui.OutputPanel" url="f1_java_project008.htm#org.netbeans.modules.java.freeform.ui.OutputPanel" />
+  <!-- "Free-Form Project Properties Dialog Box: Output"-->
+  <mapID target="f1_java_project008.htm-sthref196" url="f1_java_project008.htm#sthref196" />
+  <!-- "Free-Form Project Properties Dialog Box: Output"-->
+  <mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersPanel" url="f1_java_project009.htm#org.netbeans.modules.java.freeform.ui.SourceFoldersPanel" />
+  <!-- "Free-Form Project Properties Dialog Box: Java Sources"-->
+  <mapID target="f1_java_project009.htm-sthref197" url="f1_java_project009.htm#sthref197" />
+  <!-- "Free-Form Project Properties Dialog Box: Java Sources"-->
+  <mapID target="org.netbeans.modules.ant.freeform.ui.BasicProjectInfoWizardPanel" url="f1_java_project010.htm#org.netbeans.modules.ant.freeform.ui.BasicProjectInfoWizardPanel" />
+  <!-- "New Free-form Project Wizard: Name and Location"-->
+  <mapID target="f1_java_project010.htm-sthref198" url="f1_java_project010.htm#sthref198" />
+  <!-- "New Free-form Project Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.ant.freeform.ui.TargetMappingWizardPanel" url="f1_java_project011.htm#org.netbeans.modules.ant.freeform.ui.TargetMappingWizardPanel" />
+  <!-- "New Free-Form Project Wizard: Build and Run Actions"-->
+  <mapID target="f1_java_project011.htm-sthref199" url="f1_java_project011.htm#sthref199" />
+  <!-- "New Free-Form Project Wizard: Build and Run Actions"-->
+  <mapID target="org.netbeans.modules.java.freeform.ui.SourceFoldersWizardPanel" url="f1_java_project012.htm#org.netbeans.modules.java.freeform.ui.SourceFoldersWizardPanel" />
+  <!-- "New Free-Form Project Wizard: Source Package Folders"-->
+  <mapID target="f1_java_project012.htm-sthref200" url="f1_java_project012.htm#sthref200" />
+  <!-- "New Free-Form Project Wizard: Source Package Folders"-->
+  <mapID target="org.netbeans.modules.java.freeform.ui.ClasspathWizardPanel" url="f1_java_project013.htm#org.netbeans.modules.java.freeform.ui.ClasspathWizardPanel" />
+  <!-- "New Free-Form Project Wizard: Java Sources Classpath"-->
+  <mapID target="f1_java_project013.htm-sthref201" url="f1_java_project013.htm#sthref201" />
+  <!-- "New Free-Form Project Wizard: Java Sources Classpath"-->
+  <mapID target="org.netbeans.modules.java.freeform.ui.OutputWizardPanel" url="f1_java_project014.htm#org.netbeans.modules.java.freeform.ui.OutputWizardPanel" />
+  <!-- "New Free-Form Project Wizard: Project Output"-->
+  <mapID target="f1_java_project014.htm-sthref202" url="f1_java_project014.htm#sthref202" />
+  <!-- "New Free-Form Project Wizard: Project Output"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerApplication" url="f1_java_project015.htm#org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerApplication" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Application"-->
+  <mapID target="f1_java_project015.htm-sthref203" url="f1_java_project015.htm#sthref203" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Application"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerCompile" url="f1_java_project016.htm#org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerCompile" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Compiling"-->
+  <mapID target="f1_java_project016.htm-sthref204" url="f1_java_project016.htm#sthref204" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Compiling"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJavadoc" url="f1_java_project017.htm#org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJavadoc" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Documenting"-->
+  <mapID target="f1_java_project017.htm-sthref205" url="f1_java_project017.htm#sthref205" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Documenting"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries" url="f1_java_project018.htm#org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerLibraries" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Libraries"-->
+  <mapID target="f1_java_project018.htm-sthref206" url="f1_java_project018.htm#sthref206" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Libraries"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJar" url="f1_java_project019.htm#org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerJar" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Packaging"-->
+  <mapID target="f1_java_project019.htm-sthref207" url="f1_java_project019.htm#sthref207" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Packaging"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRun" url="f1_java_project020.htm#org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerRun" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Run"-->
+  <mapID target="f1_java_project020.htm-sthref208" url="f1_java_project020.htm#sthref208" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Run"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerSources" url="f1_java_project021.htm#org.netbeans.modules.java.j2seproject.ui.customizer.CustomizerSources" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Sources"-->
+  <mapID target="f1_java_project021.htm-sthref209" url="f1_java_project021.htm#sthref209" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Sources"-->
+  <mapID target="org.netbeans.modules.javawebstart.ui.customizer.JWSCustomizerPanel" url="f1_java_project022.htm#org.netbeans.modules.javawebstart.ui.customizer.JWSCustomizerPanel" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Web Start"-->
+  <mapID target="f1_java_project022.htm-sthref210" url="f1_java_project022.htm#sthref210" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Web Start"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHost" url="f1_java_project023.htm#org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHost" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Web Service Clients"-->
+  <mapID target="f1_java_project023.htm-sthref211" url="f1_java_project023.htm#sthref211" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Web Service Clients"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHostDisabled" url="f1_java_project024.htm#org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHostDisabled" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Disabled Web Service Clients"-->
+  <mapID target="f1_java_project024.htm-sthref212" url="f1_java_project024.htm#sthref212" />
+  <!-- "Standard Java SE Project Properties Dialog Box: Disabled Web Service Clients"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_APP" url="f1_java_project025.htm#org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_APP" />
+  <!-- "New Java Application Wizard: Name and Location"-->
+  <mapID target="f1_java_project025.htm-sthref213" url="f1_java_project025.htm#sthref213" />
+  <!-- "New Java Application Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_LIB" url="f1_java_project026.htm#org.netbeans.modules.java.j2seproject.ui.wizards.PanelConfigureProject_LIB" />
+  <!-- "New Java Class Library Wizard: Name and Location"-->
+  <mapID target="f1_java_project026.htm-sthref214" url="f1_java_project026.htm#sthref214" />
+  <!-- "New Java Class Library Wizard: Name and Location"-->
+  <mapID target="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel1" url="f1_java_project027.htm#org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel1" />
+  <!-- "New Libraries Wizard: Library Folder"-->
+  <mapID target="f1_java_project027.htm-sthref215" url="f1_java_project027.htm#sthref215" />
+  <!-- "New Libraries Wizard: Library Folder"-->
+  <mapID target="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel2" url="f1_java_project028.htm#org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel2" />
+  <!-- "New Libraries Wizard: Actions"-->
+  <mapID target="f1_java_project028.htm-sthref216" url="f1_java_project028.htm#sthref216" />
+  <!-- "New Libraries Wizard: Actions"-->
+  <mapID target="org.netbeans.api.java.platform.PlatformsCustomizer" url="f1_java_project029.htm#org.netbeans.api.java.platform.PlatformsCustomizer" />
+  <!-- "Java Platform Manager Dialog Box"-->
+  <mapID target="f1_java_project029.htm-sthref217" url="f1_java_project029.htm#sthref217" />
+  <!-- "Java Platform Manager Dialog Box"-->
+  <mapID target="java.project.includeexclude" url="f1_java_project030.htm#java.project.includeexclude" />
+  <!-- "Configure Include and Excludes Dialog Box"-->
+  <mapID target="f1_java_project030.htm-sthref218" url="f1_java_project030.htm#sthref218" />
+  <!-- "Configure Include and Excludes Dialog Box"-->
+  <mapID target="f1_java_gui.htm" url="f1_java_gui.htm" />
+  <!-- "Java GUI "-->
+  <mapID target="gui.source.modifying.property" url="f1_java_gui001.htm#gui.source.modifying.property" />
+  <!-- "Advanced Modify Source Dialog"-->
+  <mapID target="f1_java_gui001.htm-sthref220" url="f1_java_gui001.htm#sthref220" />
+  <!-- "Advanced Modify Source Dialog"-->
+  <mapID target="gui.binding-customizer.advanced" url="f1_java_gui002.htm#gui.binding-customizer.advanced" />
+  <!-- "Bind Dialog Box: Advanced Tab"-->
+  <mapID target="f1_java_gui002.htm-CHDGGFGD" url="f1_java_gui002.htm#CHDGGFGD" />
+  <!-- "Bind Dialog Box: Advanced Tab"-->
+  <mapID target="gui.binding-customizer.basic" url="f1_java_gui003.htm#gui.binding-customizer.basic" />
+  <!-- "Bind Dialog Box: Binding Tab"-->
+  <mapID target="f1_java_gui003.htm-CHDHEDCB" url="f1_java_gui003.htm#CHDHEDCB" />
+  <!-- "Bind Dialog Box: Binding Tab"-->
+  <mapID target="gui.connecting.source" url="f1_java_gui004.htm#gui.connecting.source" />
+  <!-- "GUI Builder Connection Wizard: Select Source Event"-->
+  <mapID target="f1_java_gui004.htm-sthref221" url="f1_java_gui004.htm#sthref221" />
+  <!-- "GUI Builder Connection Wizard: Select Source Event"-->
+  <mapID target="gui.connecting.param" url="f1_java_gui005.htm#gui.connecting.param" />
+  <!-- "GUI Builder Connection Wizard: Enter Parameters"-->
+  <mapID target="f1_java_gui005.htm-sthref222" url="f1_java_gui005.htm#sthref222" />
+  <!-- "GUI Builder Connection Wizard: Enter Parameters"-->
+  <mapID target="gui.connecting.target" url="f1_java_gui006.htm#gui.connecting.target" />
+  <!-- "GUI Builder Connection Wizard: Specify Target Operation"-->
+  <mapID target="f1_java_gui006.htm-sthref223" url="f1_java_gui006.htm#sthref223" />
+  <!-- "GUI Builder Connection Wizard: Specify Target Operation"-->
+  <mapID target="gui.codecustomizer" url="f1_java_gui007.htm#gui.codecustomizer" />
+  <!-- "Customize Code Dialog Box (Swing GUI Builder)"-->
+  <mapID target="f1_java_gui007.htm-sthref224" url="f1_java_gui007.htm#sthref224" />
+  <!-- "Customize Code Dialog Box (Swing GUI Builder)"-->
+  <mapID target="gui.csh.handlers" url="f1_java_gui008.htm#gui.csh.handlers" />
+  <!-- "Event Handler Dialog"-->
+  <mapID target="f1_java_gui008.htm-sthref225" url="f1_java_gui008.htm#sthref225" />
+  <!-- "Event Handler Dialog"-->
+  <mapID target="gui.layouts.griddesigner" url="f1_java_gui009.htm#gui.layouts.griddesigner" />
+  <!-- "GUI Builder: GridBag Customizer"-->
+  <mapID target="f1_java_gui009.htm-sthref226" url="f1_java_gui009.htm#sthref226" />
+  <!-- "GUI Builder: GridBag Customizer"-->
+  <mapID target="gui.formeditor" url="f1_java_gui010.htm#gui.formeditor" />
+  <!-- "GUI Builder"-->
+  <mapID target="f1_java_gui010.htm-sthref227" url="f1_java_gui010.htm#sthref227" />
+  <!-- "GUI Builder"-->
+  <mapID target="org.openide.explorer.propertysheet.editors.ModifierEditor" url="f1_java_gui011.htm#org.openide.explorer.propertysheet.editors.ModifierEditor" />
+  <!-- "Variables Modifier Property Editor"-->
+  <mapID target="f1_java_gui011.htm-sthref228" url="f1_java_gui011.htm#sthref228" />
+  <!-- "Variables Modifier Property Editor"-->
+  <mapID target="CommonPalette" url="f1_java_gui012.htm#CommonPalette" />
+  <!-- "Palette Window"-->
+  <mapID target="f1_java_gui012.htm-sthref231" url="f1_java_gui012.htm#sthref231" />
+  <!-- "Palette Window"-->
+  <mapID target="gui_preview_window" url="f1_java_gui013.htm#gui_preview_window" />
+  <!-- "GUI Builder: Preview Window"-->
+  <mapID target="f1_java_gui013.htm-sthref232" url="f1_java_gui013.htm#sthref232" />
+  <!-- "GUI Builder: Preview Window"-->
+  <mapID target="f1_mat_prop_html" url="f1_java_gui014.htm#f1_mat_prop_html" />
+  <!-- "GUI Builder: Property Editors"-->
+  <mapID target="f1_java_gui014.htm-sthref233" url="f1_java_gui014.htm#sthref233" />
+  <!-- "GUI Builder: Property Editors"-->
+  <mapID target="gui.masterdetail-wizard.detail" url="f1_java_gui015.htm#gui.masterdetail-wizard.detail" />
+  <!-- "New Master/Detail Form Wizard: Detail Option"-->
+  <mapID target="f1_java_gui015.htm-sthref234" url="f1_java_gui015.htm#sthref234" />
+  <!-- "New Master/Detail Form Wizard: Detail Option"-->
+  <mapID target="gui.masterdetail-wizard.master" url="f1_java_gui016.htm#gui.masterdetail-wizard.master" />
+  <!-- "New Master/Detail Form Wizard: Master Table"-->
+  <mapID target="f1_java_gui016.htm-sthref235" url="f1_java_gui016.htm#sthref235" />
+  <!-- "New Master/Detail Form Wizard: Master Table"-->
+  <mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_APPLICATION" url="f1_java_gui017.htm#org.netbeans.modules.javafx2.project.PanelConfigureProject_APPLICATION" />
+  <!-- "New JavaFX Application"-->
+  <mapID target="f1_java_gui017.htm-sthref236" url="f1_java_gui017.htm#sthref236" />
+  <!-- "New JavaFX Application"-->
+  <mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_FXML" url="f1_java_gui018.htm#org.netbeans.modules.javafx2.project.PanelConfigureProject_FXML" />
+  <!-- "New JavaFX Application (FXML)"-->
+  <mapID target="f1_java_gui018.htm-sthref237" url="f1_java_gui018.htm#sthref237" />
+  <!-- "New JavaFX Application (FXML)"-->
+  <mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_PRELOADER" url="f1_java_gui019.htm#org.netbeans.modules.javafx2.project.PanelConfigureProject_PRELOADER" />
+  <!-- "New JavaFX Preloader"-->
+  <mapID target="f1_java_gui019.htm-sthref238" url="f1_java_gui019.htm#sthref238" />
+  <!-- "New JavaFX Preloader"-->
+  <mapID target="org.netbeans.modules.javafx2.project.PanelConfigureProject_SWING" url="f1_java_gui020.htm#org.netbeans.modules.javafx2.project.PanelConfigureProject_SWING" />
+  <!-- "New JavaFX in Swing Application"-->
+  <mapID target="f1_java_gui020.htm-sthref239" url="f1_java_gui020.htm#sthref239" />
+  <!-- "New JavaFX in Swing Application"-->
+  <mapID target="org.netbeans.modules.javafx2.project.ui.JFXDeploymentPanel" url="f1_java_gui021.htm#org.netbeans.modules.javafx2.project.ui.JFXDeploymentPanel" />
+  <!-- "Java FX Project Properties: Deployment"-->
+  <mapID target="f1_java_gui021.htm-sthref240" url="f1_java_gui021.htm#sthref240" />
+  <!-- "Java FX Project Properties: Deployment"-->
+  <mapID target="org.netbeans.modules.javafx2.project.ui.JFXRunPanel" url="f1_java_gui022.htm#org.netbeans.modules.javafx2.project.ui.JFXRunPanel" />
+  <!-- "Java FX Project Properties: Run"-->
+  <mapID target="f1_java_gui022.htm-sthref241" url="f1_java_gui022.htm#sthref241" />
+  <!-- "Java FX Project Properties: Run"-->
+  <mapID target="f1_maven.htm" url="f1_maven.htm" />
+  <!-- "Using Maven "-->
+  <mapID target="org.netbeans.modules.maven.newproject.ChooseWizardPanel" url="f1_maven001.htm#org.netbeans.modules.maven.newproject.ChooseWizardPanel" />
+  <!-- "New Maven Project Wizard: Maven Archetype"-->
+  <mapID target="f1_maven001.htm-sthref245" url="f1_maven001.htm#sthref245" />
+  <!-- "New Maven Project Wizard: Maven Archetype"-->
+  <mapID target="org.netbeans.modules.maven.newproject.BasicWizardPanel" url="f1_maven002.htm#org.netbeans.modules.maven.newproject.BasicWizardPanel" />
+  <!-- "New Maven Project Wizard: Name and Location"-->
+  <mapID target="f1_maven002.htm-sthref246" url="f1_maven002.htm#sthref246" />
+  <!-- "New Maven Project Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.maven.newproject.UseOpenWizardPanel" url="f1_maven003.htm#org.netbeans.modules.maven.newproject.UseOpenWizardPanel" />
+  <!-- "New Maven Project Wizard: Project with Existing POM"-->
+  <mapID target="f1_maven003.htm-sthref247" url="f1_maven003.htm#sthref247" />
+  <!-- "New Maven Project Wizard: Project with Existing POM"-->
+  <mapID target="org.netbeans.modules.maven.newproject.NbmWizardPanel" url="f1_maven004.htm#org.netbeans.modules.maven.newproject.NbmWizardPanel" />
+  <!-- "New Maven Project Wizard: Module Options"-->
+  <mapID target="org.netbeans.modules.maven.apisupport.NbmWizardPanel" url="f1_maven004.htm#org.netbeans.modules.maven.apisupport.NbmWizardPanel" />
+  <!-- "New Maven Project Wizard: Module Options"-->
+  <mapID target="f1_maven004.htm-sthref248" url="f1_maven004.htm#sthref248" />
+  <!-- "New Maven Project Wizard: Module Options"-->
+  <mapID target="org.netbeans.modules.maven.options.MavenAdvancedOption" url="f1_maven005.htm#org.netbeans.modules.maven.options.MavenAdvancedOption" />
+  <!-- "Options Window: Java: Maven"-->
+  <mapID target="f1_maven005.htm-sthref249" url="f1_maven005.htm#sthref249" />
+  <!-- "Options Window: Java: Maven"-->
+  <mapID target="f1_java_edit.htm" url="f1_java_edit.htm" />
+  <!-- "Using Java Editor "-->
+  <mapID target="text.x-java" url="f1_java_edit001.htm#text.x-java" />
+  <!-- "About the Java Source Editor"-->
+  <mapID target="f1_java_edit001.htm-sthref251" url="f1_java_edit001.htm#sthref251" />
+  <!-- "About the Java Source Editor"-->
+  <mapID target="org.netbeans.modules.analysis.RunAnalysis" url="f1_java_edit002.htm#org.netbeans.modules.analysis.RunAnalysis" />
+  <!-- "Inspect Dialog Box"-->
+  <mapID target="f1_java_edit002.htm-sthref252" url="f1_java_edit002.htm#sthref252" />
+  <!-- "Inspect Dialog Box"-->
+  <mapID target="f1_java_debug.htm" url="f1_java_debug.htm" />
+  <!-- "Java Debugging "-->
+  <mapID target="org.netbeans.modules.java.stackanalyzer.AnalyzeStackTopComponent" url="f1_java_debug001.htm#org.netbeans.modules.java.stackanalyzer.AnalyzeStackTopComponent" />
+  <!-- "Debugging: Analyze Stack Window"-->
+  <mapID target="f1_java_debug001.htm-sthref254" url="f1_java_debug001.htm#sthref254" />
+  <!-- "Debugging: Analyze Stack Window"-->
+  <mapID target="debug.add.breakpoint.java.class" url="f1_java_debug002.htm#debug.add.breakpoint.java.class" />
+  <!-- "Breakpoint Properties: Class"-->
+  <mapID target="f1_java_debug002.htm-sthref255" url="f1_java_debug002.htm#sthref255" />
+  <!-- "Breakpoint Properties: Class"-->
+  <mapID target="NetbeansDebuggerBreakpointExceptionJPDA" url="f1_java_debug003.htm#NetbeansDebuggerBreakpointExceptionJPDA" />
+  <!-- "Breakpoint Properties: Exception"-->
+  <mapID target="f1_java_debug003.htm-sthref256" url="f1_java_debug003.htm#sthref256" />
+  <!-- "Breakpoint Properties: Exception"-->
+  <mapID target="NetbeansDebuggerBreakpointLineJPDA" url="f1_java_debug004.htm#NetbeansDebuggerBreakpointLineJPDA" />
+  <!-- "Breakpoint Properties: Line"-->
+  <mapID target="f1_java_debug004.htm-sthref257" url="f1_java_debug004.htm#sthref257" />
+  <!-- "Breakpoint Properties: Line"-->
+  <mapID target="NetbeansDebuggerBreakpointMethodJPDA" url="f1_java_debug005.htm#NetbeansDebuggerBreakpointMethodJPDA" />
+  <!-- "Breakpoint Properties: Method"-->
+  <mapID target="f1_java_debug005.htm-sthref258" url="f1_java_debug005.htm#sthref258" />
+  <!-- "Breakpoint Properties: Method"-->
+  <mapID target="NetbeansDebuggerBreakpointThreadJPDA" url="f1_java_debug006.htm#NetbeansDebuggerBreakpointThreadJPDA" />
+  <!-- "Breakpoint Properties: Thread"-->
+  <mapID target="f1_java_debug006.htm-sthref259" url="f1_java_debug006.htm#sthref259" />
+  <!-- "Breakpoint Properties: Thread"-->
+  <mapID target="NetbeansDebuggerBreakpointFieldJPDA" url="f1_java_debug007.htm#NetbeansDebuggerBreakpointFieldJPDA" />
+  <!-- "Breakpoint Properties: Field"-->
+  <mapID target="f1_java_debug007.htm-sthref260" url="f1_java_debug007.htm#sthref260" />
+  <!-- "Breakpoint Properties: Field"-->
+  <mapID target="NetbeansDebuggerBreakpointNode" url="f1_java_debug008.htm#NetbeansDebuggerBreakpointNode" />
+  <!-- "Breakpoints Window"-->
+  <mapID target="f1_java_debug008.htm-sthref261" url="f1_java_debug008.htm#sthref261" />
+  <!-- "Breakpoints Window"-->
+  <mapID target="NetbeansDebuggerCallStackNode" url="f1_java_debug009.htm#NetbeansDebuggerCallStackNode" />
+  <!-- "Debugging: Call Stack Window"-->
+  <mapID target="f1_java_debug009.htm-sthref264" url="f1_java_debug009.htm#sthref264" />
+  <!-- "Debugging: Call Stack Window"-->
+  <mapID target="NetbeansDebuggerClassNode" url="f1_java_debug010.htm#NetbeansDebuggerClassNode" />
+  <!-- "Debugging: Loaded Classes Window"-->
+  <mapID target="f1_java_debug010.htm-sthref267" url="f1_java_debug010.htm#sthref267" />
+  <!-- "Debugging: Loaded Classes Window"-->
+  <mapID target="JavaDebuggerOptions" url="f1_java_debug011.htm#JavaDebuggerOptions" />
+  <!-- "Options Window: Java: Java Debugger"-->
+  <mapID target="f1_java_debug011.htm-sthref268" url="f1_java_debug011.htm#sthref268" />
+  <!-- "Options Window: Java: Java Debugger"-->
+  <mapID target="NetbeansDebuggerOutputWindow" url="f1_java_debug012.htm#NetbeansDebuggerOutputWindow" />
+  <!-- "Debugger Console and Process Output Tabs in the Output Window"-->
+  <mapID target="f1_java_debug012.htm-sthref273" url="f1_java_debug012.htm#sthref273" />
+  <!-- "Debugger Console and Process Output Tabs in the Output Window"-->
+  <mapID target="debug.window" url="f1_java_debug013.htm#debug.window" />
+  <!-- "Debugger Windows"-->
+  <mapID target="f1_java_debug013.htm-sthref274" url="f1_java_debug013.htm#sthref274" />
+  <!-- "Debugger Windows"-->
+  <mapID target="EvaluateCode" url="f1_java_debug014.htm#EvaluateCode" />
+  <!-- "Debugging: Evaluate Code Window"-->
+  <mapID target="f1_java_debug014.htm-sthref275" url="f1_java_debug014.htm#sthref275" />
+  <!-- "Debugging: Evaluate Code Window"-->
+  <mapID target="NetbeansDebuggerEventNode" url="f1_java_debug015.htm#NetbeansDebuggerEventNode" />
+  <!-- "Debugging: Events Window"-->
+  <mapID target="f1_java_debug015.htm-sthref276" url="f1_java_debug015.htm#sthref276" />
+  <!-- "Debugging: Events Window"-->
+  <mapID target="NetbeansDebuggerInstancesNode" url="f1_java_debug016.htm#NetbeansDebuggerInstancesNode" />
+  <!-- "Debugging: Instances Window"-->
+  <mapID target="f1_java_debug016.htm-sthref277" url="f1_java_debug016.htm#sthref277" />
+  <!-- "Debugging: Instances Window"-->
+  <mapID target="NetbeansDebuggerJPDAPopOldFrame" url="f1_java_debug017.htm#NetbeansDebuggerJPDAPopOldFrame" />
+  <!-- "Old Method on Stack Alert Box"-->
+  <mapID target="f1_java_debug017.htm-sthref278" url="f1_java_debug017.htm#sthref278" />
+  <!-- "Old Method on Stack Alert Box"-->
+  <mapID target="NetbeansDebuggerSessionNode" url="f1_java_debug018.htm#NetbeansDebuggerSessionNode" />
+  <!-- "Debugging: Sessions Window"-->
+  <mapID target="f1_java_debug018.htm-sthref279" url="f1_java_debug018.htm#sthref279" />
+  <!-- "Debugging: Sessions Window"-->
+  <mapID target="NetbeansDebuggerSourcesNode" url="f1_java_debug019.htm#NetbeansDebuggerSourcesNode" />
+  <!-- "Debugging: Sources Window"-->
+  <mapID target="f1_java_debug019.htm-sthref284" url="f1_java_debug019.htm#sthref284" />
+  <!-- "Debugging: Sources Window"-->
+  <mapID target="NetbeansDebuggerThreadNode" url="f1_java_debug020.htm#NetbeansDebuggerThreadNode" />
+  <!-- "Debugging: Threads Window"-->
+  <mapID target="f1_java_debug020.htm-sthref285" url="f1_java_debug020.htm#sthref285" />
+  <!-- "Debugging: Threads Window"-->
+  <mapID target="NetbeansDebuggerVariableNode" url="f1_java_debug021.htm#NetbeansDebuggerVariableNode" />
+  <!-- "Debugging: Variables Window"-->
+  <mapID target="f1_java_debug021.htm-sthref290" url="f1_java_debug021.htm#sthref290" />
+  <!-- "Debugging: Variables Window"-->
+  <mapID target="NetbeansDebuggerWatchNode" url="f1_java_debug022.htm#NetbeansDebuggerWatchNode" />
+  <!-- "Debugging: Watches Window"-->
+  <mapID target="f1_java_debug022.htm-sthref294" url="f1_java_debug022.htm#sthref294" />
+  <!-- "Debugging: Watches Window"-->
+  <mapID target="debug.add.watch" url="f1_java_debug023.htm#debug.add.watch" />
+  <!-- "New Watch Dialog Box"-->
+  <mapID target="f1_java_debug023.htm-sthref298" url="f1_java_debug023.htm#sthref298" />
+  <!-- "New Watch Dialog Box"-->
+  <mapID target="f1_unit.htm" url="f1_unit.htm" />
+  <!-- "Using Unit Test"-->
+  <mapID target="org.netbeans.modules.junit.select_junit_version" url="f1_unit001.htm#org.netbeans.modules.junit.select_junit_version" />
+  <!-- "Select JUnit Version Dialog Box"-->
+  <mapID target="f1_unit001.htm-sthref300" url="f1_unit001.htm#sthref300" />
+  <!-- "Select JUnit Version Dialog Box"-->
+  <mapID target="org.netbeans.modules.gsf.testrunner.CommonTestsCfgOfCreate" url="f1_unit002.htm#org.netbeans.modules.gsf.testrunner.CommonTestsCfgOfCreate" />
+  <!-- "Create Tests Dialog Box"-->
+  <mapID target="f1_unit002.htm-sthref301" url="f1_unit002.htm#sthref301" />
+  <!-- "Create Tests Dialog Box"-->
+  <mapID target="org.netbeans.modules.junit.wizards.EmptyTest" url="f1_unit003.htm#org.netbeans.modules.junit.wizards.EmptyTest" />
+  <!-- "New JUnit Test Wizard: Name and Location"-->
+  <mapID target="f1_unit003.htm-sthref302" url="f1_unit003.htm#sthref302" />
+  <!-- "New JUnit Test Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.junit.wizards.TestSuite" url="f1_unit004.htm#org.netbeans.modules.junit.wizards.TestSuite" />
+  <!-- "New JUnit Test Suite Wizard: Name and Location"-->
+  <mapID target="f1_unit004.htm-sthref303" url="f1_unit004.htm#sthref303" />
+  <!-- "New JUnit Test Suite Wizard: Name and Location"-->
+  <mapID target="new_ngtestcase_wizard" url="f1_unit005.htm#new_ngtestcase_wizard" />
+  <!-- "New TestNG Test Case Wizard: Name and Location"-->
+  <mapID target="f1_unit005.htm-sthref304" url="f1_unit005.htm#sthref304" />
+  <!-- "New TestNG Test Case Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.junit.wizards.SimpleTest" url="f1_unit006.htm#org.netbeans.modules.junit.wizards.SimpleTest" />
+  <!-- "New Test For Existing Class Wizard: Existing Class To Test"-->
+  <mapID target="f1_unit006.htm-sthref305" url="f1_unit006.htm#sthref305" />
+  <!-- "New Test For Existing Class Wizard: Existing Class To Test"-->
+  <mapID target="org.netbeans.modules.junit.output.ResultWindow" url="f1_unit007.htm#org.netbeans.modules.junit.output.ResultWindow" />
+  <!-- "Unit Test Results Window"-->
+  <mapID target="f1_unit007.htm-sthref306" url="f1_unit007.htm#sthref306" />
+  <!-- "Unit Test Results Window"-->
+  <mapID target="f1_refactor.htm" url="f1_refactor.htm" />
+  <!-- "Refactoring "-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.ChangeParametersUI" url="f1_refactor001.htm#org.netbeans.modules.refactoring.java.ui.ChangeParametersUI" />
+  <!-- "Change Method Parameters Dialog Box"-->
+  <mapID target="f1_refactor001.htm-sthref308" url="f1_refactor001.htm#sthref308" />
+  <!-- "Change Method Parameters Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.CopyClassRefactoringUI" url="f1_refactor002.htm#org.netbeans.modules.refactoring.java.ui.CopyClassRefactoringUI" />
+  <!-- "Copy Class Dialog Box"-->
+  <mapID target="f1_refactor002.htm-sthref309" url="f1_refactor002.htm#sthref309" />
+  <!-- "Copy Class Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.EncapsulateFieldUI" url="f1_refactor003.htm#org.netbeans.modules.refactoring.java.ui.EncapsulateFieldUI" />
+  <!-- "Encapsulate Fields Dialog Box"-->
+  <mapID target="f1_refactor003.htm-sthref310" url="f1_refactor003.htm#sthref310" />
+  <!-- "Encapsulate Fields Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.ExtractInterfaceRefactoringUI" url="f1_refactor004.htm#org.netbeans.modules.refactoring.java.ui.ExtractInterfaceRefactoringUI" />
+  <!-- "Extract Interface Dialog Box"-->
+  <mapID target="f1_refactor004.htm-sthref311" url="f1_refactor004.htm#sthref311" />
+  <!-- "Extract Interface Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.ExtractMethodRefactoringUI" url="f1_refactor005.htm#org.netbeans.modules.refactoring.java.ui.ExtractMethodRefactoringUI" />
+  <!-- "Introduce Method Dialog Box"-->
+  <mapID target="f1_refactor005.htm-sthref312" url="f1_refactor005.htm#sthref312" />
+  <!-- "Introduce Method Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.ExtractSuperclassRefactoringUI" url="f1_refactor006.htm#org.netbeans.modules.refactoring.java.ui.ExtractSuperclassRefactoringUI" />
+  <!-- "Extract Superclass Dialog Box"-->
+  <mapID target="f1_refactor006.htm-sthref313" url="f1_refactor006.htm#sthref313" />
+  <!-- "Extract Superclass Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI" url="f1_refactor007.htm#org.netbeans.modules.refactoring.java.ui.WhereUsedQueryUI" />
+  <!-- "Find Usages Dialog Box"-->
+  <mapID target="f1_refactor007.htm-sthref314" url="f1_refactor007.htm#sthref314" />
+  <!-- "Find Usages Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.InlineRefactoringUI" url="f1_refactor008.htm#org.netbeans.modules.refactoring.java.ui.InlineRefactoringUI" />
+  <!-- "Inline Refactoring"-->
+  <mapID target="f1_refactor008.htm-sthref315" url="f1_refactor008.htm#sthref315" />
+  <!-- "Inline Refactoring"-->
+  <mapID target="org.netbeans.modules.java.hints.jackpot.impl.refactoring.InspectAndRefactorUI" url="f1_refactor009.htm#org.netbeans.modules.java.hints.jackpot.impl.refactoring.InspectAndRefactorUI" />
+  <!-- "Inspect and Transform Dialog Box"-->
+  <mapID target="f1_refactor009.htm-sthref316" url="f1_refactor009.htm#sthref316" />
+  <!-- "Inspect and Transform Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.IntroduceLocalExtensionUI" url="f1_refactor010.htm#org.netbeans.modules.refactoring.java.ui.IntroduceLocalExtensionUI" />
+  <!-- "Introduce Local Extension Dialog Box"-->
+  <mapID target="f1_refactor010.htm-sthref317" url="f1_refactor010.htm#sthref317" />
+  <!-- "Introduce Local Extension Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.IntroduceParameterUI" url="f1_refactor011.htm#org.netbeans.modules.refactoring.java.ui.IntroduceParameterUI" />
+  <!-- "Introduce Parameter Dialog Box"-->
+  <mapID target="f1_refactor011.htm-sthref318" url="f1_refactor011.htm#sthref318" />
+  <!-- "Introduce Parameter Dialog Box"-->
+  <mapID target="org.netbeans.modules.java.hints.jackpot.refactoring.InvertBooleanRefactoringUI" url="f1_refactor012.htm#org.netbeans.modules.java.hints.jackpot.refactoring.InvertBooleanRefactoringUI" />
+  <!-- "Invert Boolean Dialog Box"-->
+  <mapID target="f1_refactor012.htm-sthref319" url="f1_refactor012.htm#sthref319" />
+  <!-- "Invert Boolean Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.MoveClassUI" url="f1_refactor013.htm#org.netbeans.modules.refactoring.java.ui.MoveClassUI" />
+  <!-- "Move Class Dialog Box"-->
+  <mapID target="f1_refactor013.htm-sthref320" url="f1_refactor013.htm#sthref320" />
+  <!-- "Move Class Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.InnerToOuterRefactoringUI" url="f1_refactor014.htm#org.netbeans.modules.refactoring.java.ui.InnerToOuterRefactoringUI" />
+  <!-- "Move Inner to Outer Level Dialog Box"-->
+  <mapID target="f1_refactor014.htm-sthref321" url="f1_refactor014.htm#sthref321" />
+  <!-- "Move Inner to Outer Level Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.MoveMembersUI" url="f1_refactor015.htm#org.netbeans.modules.refactoring.java.ui.MoveMembersUI" />
+  <!-- "Move Members Dialog Box"-->
+  <mapID target="f1_refactor015.htm-sthref322" url="f1_refactor015.htm#sthref322" />
+  <!-- "Move Members Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.RefactoringPanelContainer.refactoring-preview" url="f1_refactor016.htm#org.netbeans.modules.refactoring.java.ui.RefactoringPanelContainer.refactoring-preview" />
+  <!-- "Refactoring Window"-->
+  <mapID target="f1_refactor016.htm-sthref323" url="f1_refactor016.htm#sthref323" />
+  <!-- "Refactoring Window"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.PullUpRefactoringUI" url="f1_refactor017.htm#org.netbeans.modules.refactoring.java.ui.PullUpRefactoringUI" />
+  <!-- "Pull Up Dialog Box"-->
+  <mapID target="f1_refactor017.htm-sthref324" url="f1_refactor017.htm#sthref324" />
+  <!-- "Pull Up Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.PushDownRefactoringUI" url="f1_refactor018.htm#org.netbeans.modules.refactoring.java.ui.PushDownRefactoringUI" />
+  <!-- "Push Down Dialog Box"-->
+  <mapID target="f1_refactor018.htm-sthref325" url="f1_refactor018.htm#sthref325" />
+  <!-- "Push Down Dialog Box"-->
+  <mapID target="text.x-javahints" url="f1_refactor019.htm#text.x-javahints" />
+  <!-- "Syntax Rules for Declarative Hints"-->
+  <mapID target="f1_refactor019.htm-sthref326" url="f1_refactor019.htm#sthref326" />
+  <!-- "Syntax Rules for Declarative Hints"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.RenameRefactoringUI" url="f1_refactor020.htm#org.netbeans.modules.refactoring.java.ui.RenameRefactoringUI" />
+  <!-- "Rename Dialog Box"-->
+  <mapID target="f1_refactor020.htm-sthref327" url="f1_refactor020.htm#sthref327" />
+  <!-- "Rename Dialog Box"-->
+  <mapID target="org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorWithBuilderUI" url="f1_refactor021.htm#org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorWithBuilderUI" />
+  <!-- "Replace Constructor With Builder Dialog Box"-->
+  <mapID target="f1_refactor021.htm-sthref328" url="f1_refactor021.htm#sthref328" />
+  <!-- "Replace Constructor With Builder Dialog Box"-->
+  <mapID target="org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorWithFactoryUI" url="f1_refactor022.htm#org.netbeans.modules.java.hints.jackpot.refactoring.ReplaceConstructorWithFactoryUI" />
+  <!-- "Replace Constructor Dialog Box"-->
+  <mapID target="f1_refactor022.htm-sthref329" url="f1_refactor022.htm#sthref329" />
+  <!-- "Replace Constructor Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.SafeDeleteUI" url="f1_refactor023.htm#org.netbeans.modules.refactoring.java.ui.SafeDeleteUI" />
+  <!-- "Safe Delete Dialog Box"-->
+  <mapID target="f1_refactor023.htm-sthref330" url="f1_refactor023.htm#sthref330" />
+  <!-- "Safe Delete Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.RefactoringPanelContainer.find-usages" url="f1_refactor024.htm#org.netbeans.modules.refactoring.java.ui.RefactoringPanelContainer.find-usages" />
+  <!-- "Usages Window"-->
+  <mapID target="f1_refactor024.htm-sthref331" url="f1_refactor024.htm#sthref331" />
+  <!-- "Usages Window"-->
+  <mapID target="org.netbeans.modules.refactoring.java.ui.UseSuperTypeRefactoringUI" url="f1_refactor025.htm#org.netbeans.modules.refactoring.java.ui.UseSuperTypeRefactoringUI" />
+  <!-- "Use Supertype Where Possible Dialog Box"-->
+  <mapID target="f1_refactor025.htm-sthref332" url="f1_refactor025.htm#sthref332" />
+  <!-- "Use Supertype Where Possible Dialog Box"-->
+  <mapID target="f1_profiler.htm" url="f1_profiler.htm" />
+  <!-- "Profiling "-->
+  <mapID target="PIDSelectPanel.HelpCtx" url="f1_profiler001.htm#PIDSelectPanel.HelpCtx" />
+  <!-- "Attach Profiler: Select Process to Attach"-->
+  <mapID target="f1_profiler001.htm-sthref334" url="f1_profiler001.htm#sthref334" />
+  <!-- "Attach Profiler: Select Process to Attach"-->
+  <mapID target="AttachDialog.HelpCtx" url="f1_profiler002.htm#AttachDialog.HelpCtx" />
+  <!-- "Attach Profiler: Attach Settings Dialog Box"-->
+  <mapID target="f1_profiler002.htm-sthref335" url="f1_profiler002.htm#sthref335" />
+  <!-- "Attach Profiler: Attach Settings Dialog Box"-->
+  <mapID target="CPUSettings.Basic.HelpCtx" url="f1_profiler003.htm#CPUSettings.Basic.HelpCtx" />
+  <!-- "Analyze Performance: Basic Options"-->
+  <mapID target="f1_profiler003.htm-sthref336" url="f1_profiler003.htm#sthref336" />
+  <!-- "Analyze Performance: Basic Options"-->
+  <mapID target="CPUSettings.Advanced.HelpCtx" url="f1_profiler004.htm#CPUSettings.Advanced.HelpCtx" />
+  <!-- "Analyze Performance: Advanced Options"-->
+  <mapID target="f1_profiler004.htm-sthref337" url="f1_profiler004.htm#sthref337" />
+  <!-- "Analyze Performance: Advanced Options"-->
+  <mapID target="NewCustomConfiguration.HelpCtx" url="f1_profiler005.htm#NewCustomConfiguration.HelpCtx" />
+  <!-- "Select Profiling Task: New Custom Configuration Dialog Box"-->
+  <mapID target="f1_profiler005.htm-sthref338" url="f1_profiler005.htm#sthref338" />
+  <!-- "Select Profiling Task: New Custom Configuration Dialog Box"-->
+  <mapID target="DuplicateConfiguration.HelpCtx" url="f1_profiler006.htm#DuplicateConfiguration.HelpCtx" />
+  <!-- "Select Profiling Task: Duplicate Configuration Dialog Box"-->
+  <mapID target="f1_profiler006.htm-sthref339" url="f1_profiler006.htm#sthref339" />
+  <!-- "Select Profiling Task: Duplicate Configuration Dialog Box"-->
+  <mapID target="RenameConfiguration.HelpCtx" url="f1_profiler007.htm#RenameConfiguration.HelpCtx" />
+  <!-- "Select Profiling Task: Rename Configuration Dialog Box"-->
+  <mapID target="f1_profiler007.htm-sthref340" url="f1_profiler007.htm#sthref340" />
+  <!-- "Select Profiling Task: Rename Configuration Dialog Box"-->
+  <mapID target="FilterSetsPanel.HelpCtx" url="f1_profiler008.htm#FilterSetsPanel.HelpCtx" />
+  <!-- "Select Profiling Task: Customize Filter Sets Dialog Box"-->
+  <mapID target="f1_profiler008.htm-sthref341" url="f1_profiler008.htm#sthref341" />
+  <!-- "Select Profiling Task: Customize Filter Sets Dialog Box"-->
+  <mapID target="GlobalFiltersPanel.HelpCtx" url="f1_profiler009.htm#GlobalFiltersPanel.HelpCtx" />
+  <!-- "Edit Global Filters Dialog Box"-->
+  <mapID target="f1_profiler009.htm-sthref342" url="f1_profiler009.htm#sthref342" />
+  <!-- "Edit Global Filters Dialog Box"-->
+  <mapID target="QuickFilterPanel.HelpCtx" url="f1_profiler010.htm#QuickFilterPanel.HelpCtx" />
+  <!-- "Set Quick Filter Dialog Box"-->
+  <mapID target="f1_profiler010.htm-sthref343" url="f1_profiler010.htm#sthref343" />
+  <!-- "Set Quick Filter Dialog Box"-->
+  <mapID target="PreferredInstrFilterPanel.HelpCtx" url="f1_profiler011.htm#PreferredInstrFilterPanel.HelpCtx" />
+  <!-- "Select Profiling Task: Filter Value Dialog Box"-->
+  <mapID target="f1_profiler011.htm-sthref344" url="f1_profiler011.htm#sthref344" />
+  <!-- "Select Profiling Task: Filter Value Dialog Box"-->
+  <mapID target="ChooseHeapdumpTargetPanel.HelpCtx" url="f1_profiler012.htm#ChooseHeapdumpTargetPanel.HelpCtx" />
+  <!-- "Choose Heap Dump Destination Dialog Box"-->
+  <mapID target="f1_profiler012.htm-sthref345" url="f1_profiler012.htm#sthref345" />
+  <!-- "Choose Heap Dump Destination Dialog Box"-->
+  <mapID target="MemorySettings.Basic.HelpCtx" url="f1_profiler013.htm#MemorySettings.Basic.HelpCtx" />
+  <!-- "Analyze Memory: Basic Options"-->
+  <mapID target="f1_profiler013.htm-sthref346" url="f1_profiler013.htm#sthref346" />
+  <!-- "Analyze Memory: Basic Options"-->
+  <mapID target="MemorySettings.Advanced.HelpCtx" url="f1_profiler014.htm#MemorySettings.Advanced.HelpCtx" />
+  <!-- "Analyze Memory: Advanced Options"-->
+  <mapID target="f1_profiler014.htm-sthref347" url="f1_profiler014.htm#sthref347" />
+  <!-- "Analyze Memory: Advanced Options"-->
+  <mapID target="MonitorSettings.Basic.HelpCtx" url="f1_profiler015.htm#MonitorSettings.Basic.HelpCtx" />
+  <!-- "Monitor Application: Basic Options"-->
+  <mapID target="f1_profiler015.htm-sthref348" url="f1_profiler015.htm#sthref348" />
+  <!-- "Monitor Application: Basic Options"-->
+  <mapID target="MonitorSettings.Advanced.HelpCtx" url="f1_profiler016.htm#MonitorSettings.Advanced.HelpCtx" />
+  <!-- "Monitor Application: Advanced Options"-->
+  <mapID target="f1_profiler016.htm-sthref349" url="f1_profiler016.htm#sthref349" />
+  <!-- "Monitor Application: Advanced Options"-->
+  <mapID target="OQLQueryCustomizer.QueryProps.HelpCtx" url="f1_profiler017.htm#OQLQueryCustomizer.QueryProps.HelpCtx" />
+  <!-- "OQL Console: Query Properties Dialog Box"-->
+  <mapID target="f1_profiler017.htm-sthref350" url="f1_profiler017.htm#sthref350" />
+  <!-- "OQL Console: Query Properties Dialog Box"-->
+  <mapID target="OQLQueryCustomizer.SaveQuery.HelpCtx" url="f1_profiler018.htm#OQLQueryCustomizer.SaveQuery.HelpCtx" />
+  <!-- "OQL Console: Save Query Dialog Box"-->
+  <mapID target="f1_profiler018.htm-sthref351" url="f1_profiler018.htm#sthref351" />
+  <!-- "OQL Console: Save Query Dialog Box"-->
+  <mapID target="LoadGeneratorCustomizer.HelpCtx" url="f1_profiler019.htm#LoadGeneratorCustomizer.HelpCtx" />
+  <!-- "New Profiling Point Wizard"-->
+  <mapID target="f1_profiler019.htm-sthref352" url="f1_profiler019.htm#sthref352" />
+  <!-- "New Profiling Point Wizard"-->
+  <mapID target="PPointsWizardPanel1UI.HelpCtx" url="f1_profiler020.htm#PPointsWizardPanel1UI.HelpCtx" />
+  <!-- "New Profiling Point Wizard: Choose Type and Project"-->
+  <mapID target="f1_profiler020.htm-sthref353" url="f1_profiler020.htm#sthref353" />
+  <!-- "New Profiling Point Wizard: Choose Type and Project"-->
+  <mapID target="ResetResultsCustomizer.HelpCtx" url="f1_profiler021.htm#ResetResultsCustomizer.HelpCtx" />
+  <!-- "New Profiling Point Wizard: Reset Results"-->
+  <mapID target="f1_profiler021.htm-sthref354" url="f1_profiler021.htm#sthref354" />
+  <!-- "New Profiling Point Wizard: Reset Results"-->
+  <mapID target="StopwatchCustomizer.HelpCtx" url="f1_profiler022.htm#StopwatchCustomizer.HelpCtx" />
+  <!-- "New Profiling Point Wizard: Stopwatch"-->
+  <mapID target="f1_profiler022.htm-sthref355" url="f1_profiler022.htm#sthref355" />
+  <!-- "New Profiling Point Wizard: Stopwatch"-->
+  <mapID target="TakeSnapshotCustomizer.HelpCtx" url="f1_profiler023.htm#TakeSnapshotCustomizer.HelpCtx" />
+  <!-- "New Profiling Point Wizard: Take Snapshot"-->
+  <mapID target="f1_profiler023.htm-sthref356" url="f1_profiler023.htm#sthref356" />
+  <!-- "New Profiling Point Wizard: Take Snapshot"-->
+  <mapID target="TimedTakeSnapshotCustomizer.HelpCtx" url="f1_profiler024.htm#TimedTakeSnapshotCustomizer.HelpCtx" />
+  <!-- "New Profiling Point Wizard: Timed Take Snapshot"-->
+  <mapID target="f1_profiler024.htm-sthref357" url="f1_profiler024.htm#sthref357" />
+  <!-- "New Profiling Point Wizard: Timed Take Snapshot"-->
+  <mapID target="TriggeredTakeSnapshotCustomizer.HelpCtx" url="f1_profiler025.htm#TriggeredTakeSnapshotCustomizer.HelpCtx" />
+  <!-- "New Profiling Point Wizard: Triggered Take Snapshot"-->
+  <mapID target="f1_profiler025.htm-sthref358" url="f1_profiler025.htm#sthref358" />
+  <!-- "New Profiling Point Wizard: Triggered Take Snapshot"-->
+  <mapID target="ProfilingPointsDisplayer.HelpCtx" url="f1_profiler026.htm#ProfilingPointsDisplayer.HelpCtx" />
+  <!-- "Active Profiling Points Window"-->
+  <mapID target="f1_profiler026.htm-sthref359" url="f1_profiler026.htm#sthref359" />
+  <!-- "Active Profiling Points Window"-->
+  <mapID target="ManualMethodSelect.HelpCtx" url="f1_profiler027.htm#ManualMethodSelect.HelpCtx" />
+  <!-- "Analyze Performance: Define New Profiling Root"-->
+  <mapID target="f1_profiler027.htm-sthref360" url="f1_profiler027.htm#sthref360" />
+  <!-- "Analyze Performance: Define New Profiling Root"-->
+  <mapID target="ProjectSelectRootMethodsPanel.HelpCtx" url="f1_profiler028.htm#ProjectSelectRootMethodsPanel.HelpCtx" />
+  <!-- "Analyze Performance: Edit Profiling Roots Dialog Box"-->
+  <mapID target="f1_profiler028.htm-sthref361" url="f1_profiler028.htm#sthref361" />
+  <!-- "Analyze Performance: Edit Profiling Roots Dialog Box"-->
+  <mapID target="RootMethodsPanel.HelpCtx" url="f1_profiler029.htm#RootMethodsPanel.HelpCtx" />
+  <!-- "Analyze Performance: Edit Profiling Roots (Advanced)"-->
+  <mapID target="f1_profiler029.htm-sthref362" url="f1_profiler029.htm#sthref362" />
+  <!-- "Analyze Performance: Edit Profiling Roots (Advanced)"-->
+  <mapID target="SelectSecondSnapshot.HelpCtx" url="f1_profiler030.htm#SelectSecondSnapshot.HelpCtx" />
+  <!-- "Select Heap Dump to Compare Dialog Box"-->
+  <mapID target="f1_profiler030.htm-sthref363" url="f1_profiler030.htm#sthref363" />
+  <!-- "Select Heap Dump to Compare Dialog Box"-->
+  <mapID target="SelectExternalSnapshotsPanel.HelpCtx" url="f1_profiler031.htm#SelectExternalSnapshotsPanel.HelpCtx" />
+  <!-- "Select Snapshots to Compare Dialog Box"-->
+  <mapID target="f1_profiler031.htm-sthref364" url="f1_profiler031.htm#sthref364" />
+  <!-- "Select Snapshots to Compare Dialog Box"-->
+  <mapID target="JavaPlatformSelector.HelpCtx" url="f1_profiler032.htm#JavaPlatformSelector.HelpCtx" />
+  <!-- "Select Java Platform to Calibrate Dialog Box"-->
+  <mapID target="f1_profiler032.htm-sthref365" url="f1_profiler032.htm#sthref365" />
+  <!-- "Select Java Platform to Calibrate Dialog Box"-->
+  <mapID target="ProfilerUiFindDialog.HelpCtx" url="f1_profiler033.htm#ProfilerUiFindDialog.HelpCtx" />
+  <!-- "CPU Snapshot: Find in Results Dialog Box"-->
+  <mapID target="f1_profiler033.htm-sthref366" url="f1_profiler033.htm#sthref366" />
+  <!-- "CPU Snapshot: Find in Results Dialog Box"-->
+  <mapID target="EditUserComments.HelpCtx" url="f1_profiler034.htm#EditUserComments.HelpCtx" />
+  <!-- "Results Snapshot: Edit User Comments Dialog Box"-->
+  <mapID target="f1_profiler034.htm-sthref367" url="f1_profiler034.htm#sthref367" />
+  <!-- "Results Snapshot: Edit User Comments Dialog Box"-->
+  <mapID target="SelectSettingsConfiguration.HelpCtx" url="f1_profiler035.htm#SelectSettingsConfiguration.HelpCtx" />
+  <!-- "CPU Snapshot: Select Settings Configuration Dialog Box"-->
+  <mapID target="f1_profiler035.htm-sthref368" url="f1_profiler035.htm#sthref368" />
+  <!-- "CPU Snapshot: Select Settings Configuration Dialog Box"-->
+  <mapID target="ProfilerControlPanel.RenameSnapshot.HelpCtx" url="f1_profiler036.htm#ProfilerControlPanel.RenameSnapshot.HelpCtx" />
+  <!-- "Profiler Window: Rename Snapshot Dialog Box"-->
+  <mapID target="f1_profiler036.htm-sthref369" url="f1_profiler036.htm#sthref369" />
+  <!-- "Profiler Window: Rename Snapshot Dialog Box"-->
+  <mapID target="OQLControllerUI.HelpCtx" url="f1_profiler037.htm#OQLControllerUI.HelpCtx" />
+  <!-- "OQL Console"-->
+  <mapID target="f1_profiler037.htm-sthref370" url="f1_profiler037.htm#sthref370" />
+  <!-- "OQL Console"-->
+  <mapID target="ProfilerOptions.Help" url="f1_profiler038.htm#ProfilerOptions.Help" />
+  <!-- "Options Window: Java: Profiler"-->
+  <mapID target="f1_profiler038.htm-sthref371" url="f1_profiler038.htm#sthref371" />
+  <!-- "Options Window: Java: Profiler"-->
+  <mapID target="DrillDownWindow.HelpCtx" url="f1_profiler039.htm#DrillDownWindow.HelpCtx" />
+  <!-- "DrillDown Window"-->
+  <mapID target="f1_profiler039.htm-sthref372" url="f1_profiler039.htm#sthref372" />
+  <!-- "DrillDown Window"-->
+  <mapID target="HeapWalker.HelpCtx" url="f1_profiler040.htm#HeapWalker.HelpCtx" />
+  <!-- "Heap Window"-->
+  <mapID target="f1_profiler040.htm-sthref373" url="f1_profiler040.htm#sthref373" />
+  <!-- "Heap Window"-->
+  <mapID target="ProfilerControlPanel.HelpCtx" url="f1_profiler041.htm#ProfilerControlPanel.HelpCtx" />
+  <!-- "Profiler Window"-->
+  <mapID target="f1_profiler041.htm-sthref374" url="f1_profiler041.htm#sthref374" />
+  <!-- "Profiler Window"-->
+  <mapID target="LiveResultsWindow.HelpCtx" url="f1_profiler042.htm#LiveResultsWindow.HelpCtx" />
+  <!-- "Live Results Window"-->
+  <mapID target="f1_profiler042.htm-sthref375" url="f1_profiler042.htm#sthref375" />
+  <!-- "Live Results Window"-->
+  <mapID target="CpuLiveResultsWindow.HelpCtx" url="f1_profiler043.htm#CpuLiveResultsWindow.HelpCtx" />
+  <!-- "Live Results Window - Profiling Application Performance"-->
+  <mapID target="f1_profiler043.htm-sthref376" url="f1_profiler043.htm#sthref376" />
+  <!-- "Live Results Window - Profiling Application Performance"-->
+  <mapID target="MemoryLiveResultsWindow.HelpCtx" url="f1_profiler044.htm#MemoryLiveResultsWindow.HelpCtx" />
+  <!-- "Live Results Window - Memory Usage"-->
+  <mapID target="f1_profiler044.htm-sthref377" url="f1_profiler044.htm#sthref377" />
+  <!-- "Live Results Window - Memory Usage"-->
+  <mapID target="ProfilingPointsWindow.HelpCtx" url="f1_profiler045.htm#ProfilingPointsWindow.HelpCtx" />
+  <!-- "Profiling Points Window"-->
+  <mapID target="f1_profiler045.htm-sthref378" url="f1_profiler045.htm#sthref378" />
+  <!-- "Profiling Points Window"-->
+  <mapID target="ProfilingPointReport.HelpCtx" url="f1_profiler046.htm#ProfilingPointReport.HelpCtx" />
+  <!-- "Profiling Points Report Window"-->
+  <mapID target="f1_profiler046.htm-sthref379" url="f1_profiler046.htm#sthref379" />
+  <!-- "Profiling Points Report Window"-->
+  <mapID target="CpuSnapshot.HelpCtx" url="f1_profiler047.htm#CpuSnapshot.HelpCtx" />
+  <!-- "CPU Snapshot"-->
+  <mapID target="f1_profiler047.htm-sthref380" url="f1_profiler047.htm#sthref380" />
+  <!-- "CPU Snapshot"-->
+  <mapID target="CpuDiff.HelpCtx" url="f1_profiler048.htm#CpuDiff.HelpCtx" />
+  <!-- "CPU Snapshot Comparison"-->
+  <mapID target="f1_profiler048.htm-sthref381" url="f1_profiler048.htm#sthref381" />
+  <!-- "CPU Snapshot Comparison"-->
+  <mapID target="MemorySnapshot.HelpCtx" url="f1_profiler049.htm#MemorySnapshot.HelpCtx" />
+  <!-- "Memory Snapshot"-->
+  <mapID target="f1_profiler049.htm-sthref382" url="f1_profiler049.htm#sthref382" />
+  <!-- "Memory Snapshot"-->
+  <mapID target="MemoryDiff.HelpCtx" url="f1_profiler050.htm#MemoryDiff.HelpCtx" />
+  <!-- "Memory Snapshot Comparison"-->
+  <mapID target="f1_profiler050.htm-sthref383" url="f1_profiler050.htm#sthref383" />
+  <!-- "Memory Snapshot Comparison"-->
+  <mapID target="TelemetryWindow.HelpCtx" url="f1_profiler051.htm#TelemetryWindow.HelpCtx" />
+  <!-- "VM Telemetry Window"-->
+  <mapID target="f1_profiler051.htm-sthref384" url="f1_profiler051.htm#sthref384" />
+  <!-- "VM Telemetry Window"-->
+  <mapID target="TelemetryOverviewPanel.HelpCtx" url="f1_profiler052.htm#TelemetryOverviewPanel.HelpCtx" />
+  <!-- "VM Telemetry Overview Window"-->
+  <mapID target="f1_profiler052.htm-sthref385" url="f1_profiler052.htm#sthref385" />
+  <!-- "VM Telemetry Overview Window"-->
+  <mapID target="ThreadsWindow.HelpCtx" url="f1_profiler053.htm#ThreadsWindow.HelpCtx" />
+  <!-- "Profiling Threads Window"-->
+  <mapID target="f1_profiler053.htm-sthref386" url="f1_profiler053.htm#sthref386" />
+  <!-- "Profiling Threads Window"-->
+  <mapID target="f1_php.htm" url="f1_php.htm" />
+  <!-- "Using PHP "-->
+  <mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.NEW" url="f1_php001.htm#org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.NEW" />
+  <!-- "New PHP Project: Name and Location"-->
+  <mapID target="f1_php001.htm-sthref388" url="f1_php001.htm#sthref388" />
+  <!-- "New PHP Project: Name and Location"-->
+  <mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.REMOTE" url="f1_php002.htm#org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.REMOTE" />
+  <!-- "New PHP Project: Name and Location"-->
+  <mapID target="f1_php002.htm-sthref389" url="f1_php002.htm#sthref389" />
+  <!-- "New PHP Project: Name and Location"-->
+  <mapID target="org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.EXISTING" url="f1_php003.htm#org.netbeans.modules.php.project.ui.wizards.ConfigureProjectPanel.EXISTING" />
+  <!-- "New PHP Project with Existing Sources: Name and Location"-->
+  <mapID target="f1_php003.htm-sthref390" url="f1_php003.htm#sthref390" />
+  <!-- "New PHP Project with Existing Sources: Name and Location"-->
+  <mapID target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel.NEW" url="f1_php004.htm#org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel.NEW" />
+  <!-- "New PHP Project: Run Configuration"-->
+  <mapID target="f1_php004.htm-sthref391" url="f1_php004.htm#sthref391" />
+  <!-- "New PHP Project: Run Configuration"-->
+  <mapID target="f1_php004.htm-sthref392" url="f1_php004.htm#sthref392" />
+  <!-- "New PHP Project: Run Configuration "-->
+  <mapID target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel.EXISTING" url="f1_php005.htm#org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel.EXISTING" />
+  <!-- "New PHP Project: Run Configuration"-->
+  <mapID target="f1_php005.htm-sthref393" url="f1_php005.htm#sthref393" />
+  <!-- "New PHP Project: Run Configuration"-->
+  <mapID target="f1_php005.htm-sthref394" url="f1_php005.htm#sthref394" />
+  <!-- "New PHP Project: Run Configuration"-->
+  <mapID target="org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel.REMOTE" url="f1_php006.htm#org.netbeans.modules.php.project.ui.wizards.RunConfigurationPanel.REMOTE" />
+  <!-- "New PHP Project: Run Configuration"-->
+  <mapID target="f1_php006.htm-sthref395" url="f1_php006.htm#sthref395" />
+  <!-- "New PHP Project: Run Configuration"-->
+  <mapID target="f1_php006.htm-sthref396" url="f1_php006.htm#sthref396" />
+  <!-- "New PHP Project: Run Configuration"-->
+  <mapID target="org.netbeans.modules.php.project.ui.wizards.PhpFrameworksPanel" url="f1_php007.htm#org.netbeans.modules.php.project.ui.wizards.PhpFrameworksPanel" />
+  <!-- "New PHP Project: PHP Frameworks"-->
+  <mapID target="f1_php007.htm-sthref397" url="f1_php007.htm#sthref397" />
+  <!-- "New PHP Project: PHP Frameworks"-->
+  <mapID target="f1_php007.htm-sthref398" url="f1_php007.htm#sthref398" />
+  <!-- "New PHP Project: PHP Frameworks"-->
+  <mapID target="f1_php007.htm-sthref399" url="f1_php007.htm#sthref399" />
+  <!-- "Symfony Framework"-->
+  <mapID target="org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel" url="f1_php008.htm#org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel" />
+  <!-- "Manage Remote Connections"-->
+  <mapID target="f1_php008.htm-sthref400" url="f1_php008.htm#sthref400" />
+  <!-- "Manage Remote Connections"-->
+  <mapID target="f1_php008.htm-sthref401" url="f1_php008.htm#sthref401" />
+  <!-- "Manage Remote Connections"-->
+  <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerSources" url="f1_php009.htm#org.netbeans.modules.php.project.ui.customizer.CustomizerSources" />
+  <!-- "Project Properties: Sources"-->
+  <mapID target="f1_php009.htm-sthref402" url="f1_php009.htm#sthref402" />
+  <!-- "Project Properties: Sources"-->
+  <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerRun" url="f1_php010.htm#org.netbeans.modules.php.project.ui.customizer.CustomizerRun" />
+  <!-- "Project Properties: Run Configuration"-->
+  <mapID target="f1_php010.htm-sthref403" url="f1_php010.htm#sthref403" />
+  <!-- "Project Properties: Run Configuration"-->
+  <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpIncludePath" url="f1_php011.htm#org.netbeans.modules.php.project.ui.customizer.CustomizerPhpIncludePath" />
+  <!-- "Project Properties: Include Path and Ignored Folders"-->
+  <mapID target="f1_php011.htm-sthref404" url="f1_php011.htm#sthref404" />
+  <!-- "Project Properties: Include Path and Ignored Folders"-->
+  <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerIgnorePath" url="f1_php012.htm#org.netbeans.modules.php.project.ui.customizer.CustomizerIgnorePath" />
+  <!-- "Project Properties: Include Path and Ignored Folders"-->
+  <mapID target="f1_php012.htm-sthref405" url="f1_php012.htm#sthref405" />
+  <!-- "Project Properties: Include Path and Ignored Folders"-->
+  <mapID target="org.netbeans.modules.php.project.ui.customizer.CustomizerPhpUnit" url="f1_php013.htm#org.netbeans.modules.php.project.ui.customizer.CustomizerPhpUnit" />
+  <!-- "Project Properties: PHPUnit"-->
+  <mapID target="f1_php013.htm-sthref406" url="f1_php013.htm#sthref406" />
+  <!-- "Project Properties: PHPUnit"-->
+  <mapID target="org.netbeans.modules.php.phpdoc.ui.customizer.PhpDocPanel" url="f1_php014.htm#org.netbeans.modules.php.phpdoc.ui.customizer.PhpDocPanel" />
+  <!-- "Project Properties: PHPDoc"-->
+  <mapID target="f1_php014.htm-sthref407" url="f1_php014.htm#sthref407" />
+  <!-- "Project Properties: PHPDoc"-->
+  <mapID target="org.netbeans.modules.php.apigen.ui.customizer.ApiGen" url="f1_php015.htm#org.netbeans.modules.php.apigen.ui.customizer.ApiGen" />
+  <!-- "Project Properties: ApiGen"-->
+  <mapID target="f1_php015.htm-sthref408" url="f1_php015.htm#sthref408" />
+  <!-- "Project Properties: ApiGen"-->
+  <mapID target="f1_php015.htm-sthref409" url="f1_php015.htm#sthref409" />
+  <!-- "Project Properties: ApiGen"-->
+  <mapID target="f1_php015.htm-sthref410" url="f1_php015.htm#sthref410" />
+  <!-- "Manual Configuration or Configuration File"-->
+  <mapID target="org.netbeans.modules.php.project.connections.sync.SyncPanel" url="f1_php016.htm#org.netbeans.modules.php.project.connections.sync.SyncPanel" />
+  <!-- "Remote Synchronization Dialog"-->
+  <mapID target="f1_php016.htm-sthref411" url="f1_php016.htm#sthref411" />
+  <!-- "Remote Synchronization Dialog"-->
+  <mapID target="f1_php016.htm-sthref412" url="f1_php016.htm#sthref412" />
+  <!-- "Remote Synchronization Dialog"-->
+  <mapID target="f1_php016.htm-sthref413" url="f1_php016.htm#sthref413" />
+  <!-- "Show Planned Operations"-->
+  <mapID target="f1_php016.htm-sthref414" url="f1_php016.htm#sthref414" />
+  <!-- "Show Problems"-->
+  <mapID target="f1_php016.htm-sthref415" url="f1_php016.htm#sthref415" />
+  <!-- "Review Planned Operations on Files Table"-->
+  <mapID target="f1_php016.htm-sthref416" url="f1_php016.htm#sthref416" />
+  <!-- "Diffing File Versions and Changing Operations"-->
+  <mapID target="f1_php016.htm-sthref417" url="f1_php016.htm#sthref417" />
+  <!-- "Show Summary Before Start"-->
+  <mapID target="org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI" url="f1_php017.htm#org.netbeans.modules.refactoring.php.findusages.WhereUsedQueryUI" />
+  <!-- "Find Usages Dialog Box"-->
+  <mapID target="f1_php017.htm-sthref418" url="f1_php017.htm#sthref418" />
+  <!-- "Find Usages Dialog Box"-->
+  <mapID target="org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI" url="f1_php018.htm#org.netbeans.modules.refactoring.php.rename.PhpRenameRefactoringUI" />
+  <!-- "Rename Refactoring"-->
+  <mapID target="f1_php018.htm-sthref419" url="f1_php018.htm#sthref419" />
+  <!-- "Rename Refactoring"-->
+  <mapID target="f1_php018.htm-sthref420" url="f1_php018.htm#sthref420" />
+  <!-- "Rename Refactoring"-->
+  <mapID target="f1_php018.htm-sthref421" url="f1_php018.htm#sthref421" />
+  <!-- "Rename Dialog"-->
+  <mapID target="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI" url="f1_php019.htm#org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI" />
+  <!-- "Delete"-->
+  <mapID target="f1_php019.htm-sthref422" url="f1_php019.htm#sthref422" />
+  <!-- "Delete"-->
+  <mapID target="f1_php019.htm-sthref423" url="f1_php019.htm#sthref423" />
+  <!-- "Delete"-->
+  <mapID target="f1_php019.htm-sthref424" url="f1_php019.htm#sthref424" />
+  <!-- "Warnings and Errors"-->
+  <mapID target="text.x-php5" url="f1_php020.htm#text.x-php5" />
+  <!-- "About the PHP Source Editor"-->
+  <mapID target="f1_php020.htm-sthref425" url="f1_php020.htm#sthref425" />
+  <!-- "About the PHP Source Editor"-->
+  <mapID target="f1_php020.htm-sthref426" url="f1_php020.htm#sthref426" />
+  <!-- "About the PHP Source Editor"-->
+  <mapID target="f1_php020.htm-sthref427" url="f1_php020.htm#sthref427" />
+  <!-- "Source Editor Tabs"-->
+  <mapID target="f1_php020.htm-sthref428" url="f1_php020.htm#sthref428" />
+  <!-- "Toolbar"-->
+  <mapID target="f1_php020.htm-sthref429" url="f1_php020.htm#sthref429" />
+  <!-- "HTML Palette"-->
+  <mapID target="f1_php020.htm-sthref430" url="f1_php020.htm#sthref430" />
+  <!-- "Left Margin"-->
+  <mapID target="f1_php020.htm-sthref431" url="f1_php020.htm#sthref431" />
+  <!-- "Error Stripe"-->
+  <mapID target="f1_php020.htm-sthref432" url="f1_php020.htm#sthref432" />
+  <!-- "Status Line"-->
+  <mapID target="f1_php020.htm-sthref433" url="f1_php020.htm#sthref433" />
+  <!-- "Syntax Coloring"-->
+  <mapID target="f1_php020.htm-sthref434" url="f1_php020.htm#sthref434" />
+  <!-- "Code Completion and HTML Text Hints"-->
+  <mapID target="f1_php020.htm-sthref435" url="f1_php020.htm#sthref435" />
+  <!-- "Pair Completion"-->
+  <mapID target="f1_php020.htm-sthref436" url="f1_php020.htm#sthref436" />
+  <!-- "Surround With HTML Tags"-->
+  <mapID target="org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController" url="f1_php021.htm#org.netbeans.modules.php.project.ui.options.PhpOptionsPanelController" />
+  <!-- "General PHP Options"-->
+  <mapID target="f1_php021.htm-sthref437" url="f1_php021.htm#sthref437" />
+  <!-- "General PHP Options"-->
+  <mapID target="f1_php021.htm-sthref438" url="f1_php021.htm#sthref438" />
+  <!-- "General PHP Options"-->
+  <mapID target="f1_php021.htm-sthref439" url="f1_php021.htm#sthref439" />
+  <!-- "Command Line"-->
+  <mapID target="org.netbeans.modules.php.project.ui.options.PhpDebuggerPanelController" url="f1_php022.htm#org.netbeans.modules.php.project.ui.options.PhpDebuggerPanelController" />
+  <!-- "PHP Debugging Options"-->
+  <mapID target="f1_php022.htm-sthref440" url="f1_php022.htm#sthref440" />
+  <!-- "PHP Debugging Options"-->
+  <mapID target="org.netbeans.modules.php.project.phpunit.PhpUnit" url="f1_php023.htm#org.netbeans.modules.php.project.phpunit.PhpUnit" />
+  <!-- "PHP Unit Testing Options"-->
+  <mapID target="f1_php023.htm-sthref441" url="f1_php023.htm#sthref441" />
+  <!-- "PHP Unit Testing Options"-->
+  <mapID target="org.netbeans.modules.php.phpdoc.ui.options.PhpDocOptions" url="f1_php024.htm#org.netbeans.modules.php.phpdoc.ui.options.PhpDocOptions" />
+  <!-- "PHP Options: PhpDoc"-->
+  <mapID target="f1_php024.htm-sthref442" url="f1_php024.htm#sthref442" />
+  <!-- "PHP Options: PhpDoc"-->
+  <mapID target="org.netbeans.modules.php.symfony.ui.options.SymfonyOptions" url="f1_php025.htm#org.netbeans.modules.php.symfony.ui.options.SymfonyOptions" />
+  <!-- "Symfony Options"-->
+  <mapID target="f1_php025.htm-sthref443" url="f1_php025.htm#sthref443" />
+  <!-- "Symfony Options"-->
+  <mapID target="org.netbeans.modules.php.symfony2.options.Symfony2Options" url="f1_php026.htm#org.netbeans.modules.php.symfony2.options.Symfony2Options" />
+  <!-- "Symfony2 Options"-->
+  <mapID target="f1_php026.htm-sthref444" url="f1_php026.htm#sthref444" />
+  <!-- "Symfony2 Options"-->
+  <mapID target="org.netbeans.modules.php.zend.ui.options.ZendOptions" url="f1_php027.htm#org.netbeans.modules.php.zend.ui.options.ZendOptions" />
+  <!-- "Zend Framework Options"-->
+  <mapID target="f1_php027.htm-sthref445" url="f1_php027.htm#sthref445" />
+  <!-- "Zend Framework Options"-->
+  <mapID target="org.netbeans.modules.php.smarty.ui.options.SmartyOptions" url="f1_php028.htm#org.netbeans.modules.php.smarty.ui.options.SmartyOptions" />
+  <!-- "Smarty Options"-->
+  <mapID target="f1_php028.htm-sthref446" url="f1_php028.htm#sthref446" />
+  <!-- "Smarty Options"-->
+  <mapID target="org.netbeans.modules.php.project.ui.options.PhpAnnotationsPanelController" url="f1_php029.htm#org.netbeans.modules.php.project.ui.options.PhpAnnotationsPanelController" />
+  <!-- "PHP Options: Annotations"-->
+  <mapID target="f1_php029.htm-sthref447" url="f1_php029.htm#sthref447" />
+  <!-- "PHP Options: Annotations"-->
+  <mapID target="f1_php029.htm-sthref448" url="f1_php029.htm#sthref448" />
+  <!-- "PHP Options: Annotations"-->
+  <mapID target="org.netbeans.modules.php.apigen.ui.options.Options" url="f1_php030.htm#org.netbeans.modules.php.apigen.ui.options.Options" />
+  <!-- "PHP ApiGen Options"-->
+  <mapID target="f1_php030.htm-sthref449" url="f1_php030.htm#sthref449" />
+  <!-- "PHP ApiGen Options"-->
+  <mapID target="org.netbeans.modules.php.doctrine2.Options" url="f1_php031.htm#org.netbeans.modules.php.doctrine2.Options" />
+  <!-- "PHP Options: Doctrine2"-->
+  <mapID target="f1_php031.htm-sthref450" url="f1_php031.htm#sthref450" />
+  <!-- "PHP Options: Doctrine2"-->
+  <mapID target="org.netbeans.modules.hudson.php.ui.options.Options" url="f1_php032.htm#org.netbeans.modules.hudson.php.ui.options.Options" />
+  <!-- "PHP Options: Hudson"-->
+  <mapID target="f1_php032.htm-sthref451" url="f1_php032.htm#sthref451" />
+  <!-- "PHP Options: Hudson"-->
+  <mapID target="f1_php032.htm-sthref452" url="f1_php032.htm#sthref452" />
+  <!-- "PHP Options: Hudson"-->
+  <mapID target="f1_php032.htm-sthref453" url="f1_php032.htm#sthref453" />
+  <!-- "PPW (Php Project Wizard) Script"-->
+  <mapID target="f1_web_apps.htm" url="f1_web_apps.htm" />
+  <!-- "Web Applications"-->
+  <mapID target="dd_multiview_overview_overviewNode" url="f1_web_apps001.htm#dd_multiview_overview_overviewNode" />
+  <!-- "web.xml Visual Editor: General"-->
+  <mapID target="f1_web_apps001.htm-sthref455" url="f1_web_apps001.htm#sthref455" />
+  <!-- "web.xml Visual Editor: General"-->
+  <mapID target="dd_multiview_overview_contextParamsNode" url="f1_web_apps002.htm#dd_multiview_overview_contextParamsNode" />
+  <!-- "web.xml Visual Editor: Context Parameters"-->
+  <mapID target="f1_web_apps002.htm-sthref457" url="f1_web_apps002.htm#sthref457" />
+  <!-- "web.xml Visual Editor: Context Parameters"-->
+  <mapID target="Example 1:Methods to access context parameters in code" url="f1_web_apps002.htm#CHDDHBHI" />
+  <!-- "Methods to access context parameters in code"-->
+  <mapID target="dd_multiview_overview_listenersNode" url="f1_web_apps003.htm#dd_multiview_overview_listenersNode" />
+  <!-- "web.xml Visual Editor: Web Application Listeners"-->
+  <mapID target="f1_web_apps003.htm-sthref458" url="f1_web_apps003.htm#sthref458" />
+  <!-- "web.xml Visual Editor: Web Application Listeners"-->
+  <mapID target="dd_multiview_servlets_servletNode" url="f1_web_apps004.htm#dd_multiview_servlets_servletNode" />
+  <!-- "web.xml Visual Editor: Servlets"-->
+  <mapID target="f1_web_apps004.htm-sthref459" url="f1_web_apps004.htm#sthref459" />
+  <!-- "web.xml Visual Editor: Servlets"-->
+  <mapID target="dd_multiview_filters_filterMappingsNode" url="f1_web_apps005.htm#dd_multiview_filters_filterMappingsNode" />
+  <!-- "web.xml Visual Editor: Servlet Filters"-->
+  <mapID target="f1_web_apps005.htm-sthref464" url="f1_web_apps005.htm#sthref464" />
+  <!-- "web.xml Visual Editor: Servlet Filters"-->
+  <mapID target="dd_multiview_pages_welcomeFilesNode" url="f1_web_apps006.htm#dd_multiview_pages_welcomeFilesNode" />
+  <!-- "web.xml Visual Editor: Welcome Files"-->
+  <mapID target="f1_web_apps006.htm-sthref465" url="f1_web_apps006.htm#sthref465" />
+  <!-- "web.xml Visual Editor: Welcome Files"-->
+  <mapID target="dd_multiview_pages_errorPagesNode" url="f1_web_apps007.htm#dd_multiview_pages_errorPagesNode" />
+  <!-- "web.xml Visual Editor: Error Pages"-->
+  <mapID target="f1_web_apps007.htm-sthref466" url="f1_web_apps007.htm#sthref466" />
+  <!-- "web.xml Visual Editor: Error Pages"-->
+  <mapID target="dd_multiview_pages_jspPropertyGroupNode" url="f1_web_apps008.htm#dd_multiview_pages_jspPropertyGroupNode" />
+  <!-- "web.xml Visual Editor: JSP Property Groups"-->
+  <mapID target="f1_web_apps008.htm-sthref467" url="f1_web_apps008.htm#sthref467" />
+  <!-- "web.xml Visual Editor: JSP Property Groups"-->
+  <mapID target="dd_multiview_references_ejbRefsNode" url="f1_web_apps009.htm#dd_multiview_references_ejbRefsNode" />
+  <!-- "web.xml Visual Editor: EJB References"-->
+  <mapID target="f1_web_apps009.htm-sthref468" url="f1_web_apps009.htm#sthref468" />
+  <!-- "web.xml Visual Editor: EJB References"-->
+  <mapID target="dd_multiview_references_envEntriesNode" url="f1_web_apps010.htm#dd_multiview_references_envEntriesNode" />
+  <!-- "web.xml Visual Editor: Environment Entries"-->
+  <mapID target="f1_web_apps010.htm-sthref469" url="f1_web_apps010.htm#sthref469" />
+  <!-- "web.xml Visual Editor: Environment Entries"-->
+  <mapID target="Example 2:Extracting the value of an application environment variable" url="f1_web_apps010.htm#CHDFAHIH" />
+  <!-- "Extracting the value of an application environment variable"-->
+  <mapID target="dd_multiview_references_messageDestRefsNode" url="f1_web_apps011.htm#dd_multiview_references_messageDestRefsNode" />
+  <!-- "web.xml Visual Editor: Message Destination References"-->
+  <mapID target="f1_web_apps011.htm-sthref470" url="f1_web_apps011.htm#sthref470" />
+  <!-- "web.xml Visual Editor: Message Destination References"-->
+  <mapID target="dd_multiview_references_resEnvRefsNode" url="f1_web_apps012.htm#dd_multiview_references_resEnvRefsNode" />
+  <!-- "web.xml Visual Editor: Resource Environment References"-->
+  <mapID target="f1_web_apps012.htm-sthref471" url="f1_web_apps012.htm#sthref471" />
+  <!-- "web.xml Visual Editor: Resource Environment References"-->
+  <mapID target="dd_multiview_references_resRefsNode" url="f1_web_apps013.htm#dd_multiview_references_resRefsNode" />
+  <!-- "web.xml Visual Editor: Resource References"-->
+  <mapID target="f1_web_apps013.htm-sthref472" url="f1_web_apps013.htm#sthref472" />
+  <!-- "web.xml Visual Editor: Resource References"-->
+  <mapID target="Example 3:Resource Reference" url="f1_web_apps013.htm#CHDHFBIA" />
+  <!-- "Resource Reference"-->
+  <mapID target="dd_multiview_security_loginconfigNode" url="f1_web_apps014.htm#dd_multiview_security_loginconfigNode" />
+  <!-- "web.xml Visual Editor: Login Configuration"-->
+  <mapID target="f1_web_apps014.htm-sthref473" url="f1_web_apps014.htm#sthref473" />
+  <!-- "web.xml Visual Editor: Login Configuration"-->
+  <mapID target="dd_multiview_security_securityconstraintsNode" url="f1_web_apps015.htm#dd_multiview_security_securityconstraintsNode" />
+  <!-- "web.xml Visual Editor: Security Constraints"-->
+  <mapID target="f1_web_apps015.htm-sthref474" url="f1_web_apps015.htm#sthref474" />
+  <!-- "web.xml Visual Editor: Security Constraints"-->
+  <mapID target="dd_multiview_security_securityrolesNode" url="f1_web_apps016.htm#dd_multiview_security_securityrolesNode" />
+  <!-- "web.xml Visual Editor: Security Roles"-->
+  <mapID target="f1_web_apps016.htm-sthref475" url="f1_web_apps016.htm#sthref475" />
+  <!-- "web.xml Visual Editor: Security Roles"-->
+  <mapID target="org.netbeans.api.server.CommonCloudUIs" url="f1_web_apps017.htm#org.netbeans.api.server.CommonCloudUIs" />
+  <!-- "Cloud Providers Manager"-->
+  <mapID target="f1_web_apps017.htm-sthref476" url="f1_web_apps017.htm#sthref476" />
+  <!-- "Cloud Providers Manager"-->
+  <mapID target="org.netbeans.modules.web.monitor.client.MonitorAction" url="f1_web_apps018.htm#org.netbeans.modules.web.monitor.client.MonitorAction" />
+  <!-- "About the HTTP Server-Side Monitor"-->
+  <mapID target="f1_web_apps018.htm-sthref480" url="f1_web_apps018.htm#sthref480" />
+  <!-- "About the HTTP Server-Side Monitor"-->
+  <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerFrameworks" url="f1_web_apps019.htm#org.netbeans.modules.web.project.ui.customizer.CustomizerFrameworks" />
+  <!-- "Standard Web Project Properties Dialog Box: Frameworks"-->
+  <mapID target="f1_web_apps019.htm-CHDCHBHA" url="f1_web_apps019.htm#CHDCHBHA" />
+  <!-- "Standard Web Project Properties Dialog Box: Frameworks"-->
+  <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSClientHost" url="f1_web_apps020.htm#org.netbeans.modules.web.project.ui.customizer.CustomizerWSClientHost" />
+  <!-- "Standard Web Project Properties Dialog Box: JAX-RPC Web Service Clients"-->
+  <mapID target="f1_web_apps020.htm-CHDBAHDG" url="f1_web_apps020.htm#CHDBAHDG" />
+  <!-- "Standard Web Project Properties Dialog Box: JAX-RPC Web Service Clients"-->
+  <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSClientHostDisabled" url="f1_web_apps021.htm#org.netbeans.modules.web.project.ui.customizer.CustomizerWSClientHostDisabled" />
+  <!-- "Standard Web Project Properties Dialog Box: Disabled JAX-RPC Web Service Clients"-->
+  <mapID target="f1_web_apps021.htm-sthref481" url="f1_web_apps021.htm#sthref481" />
+  <!-- "Standard Web Project Properties Dialog Box: Disabled JAX-RPC Web Service Clients"-->
+  <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSServiceHost" url="f1_web_apps022.htm#org.netbeans.modules.web.project.ui.customizer.CustomizerWSServiceHost" />
+  <!-- "Standard Web Project Properties Dialog Box: JAX-RPC Web Services"-->
+  <mapID target="f1_web_apps022.htm-CHDGJHGF" url="f1_web_apps022.htm#CHDGJHGF" />
+  <!-- "Standard Web Project Properties Dialog Box: JAX-RPC Web Services"-->
+  <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWSServiceHostDisabled" url="f1_web_apps023.htm#org.netbeans.modules.web.project.ui.customizer.CustomizerWSServiceHostDisabled" />
+  <!-- "Standard Web Project Properties Dialog Box: Disabled JAX-RPC Web Services"-->
+  <mapID target="f1_web_apps023.htm-sthref483" url="f1_web_apps023.htm#sthref483" />
+  <!-- "Standard Web Project Properties Dialog Box: Disabled JAX-RPC Web Services"-->
+  <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" url="f1_web_apps024.htm#org.netbeans.modules.web.project.ui.customizer.CustomizerCompile" />
+  <!-- "Standard Web Project Properties Dialog Box: Compiling"-->
+  <mapID target="f1_web_apps024.htm-sthref484" url="f1_web_apps024.htm#sthref484" />
+  <!-- "Standard Web Project Properties Dialog Box: Compiling"-->
+  <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" url="f1_web_apps025.htm#org.netbeans.modules.web.project.ui.customizer.CustomizerJavadoc" />
+  <!-- "Standard Web Project Properties Dialog Box: Documenting"-->
+  <mapID target="f1_web_apps025.htm-CHDCFHBI" url="f1_web_apps025.htm#CHDCFHBI" />
+  <!-- "Standard Web Project Properties Dialog Box: Documenting"-->
+  <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerLibraries" url="f1_web_apps026.htm#org.netbeans.modules.web.project.ui.customizer.CustomizerLibraries" />
+  <!-- "Standard Web Project Properties Dialog Box: Libraries"-->
+  <mapID target="f1_web_apps026.htm-CHDDJHFE" url="f1_web_apps026.htm#CHDDJHFE" />
+  <!-- "Standard Web Project Properties Dialog Box: Libraries"-->
+  <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerRun" url="f1_web_apps027.htm#org.netbeans.modules.web.project.ui.customizer.CustomizerRun" />
+  <!-- "Standard Web Project Properties Dialog Box: Run"-->
+  <mapID target="f1_web_apps027.htm-CHDBGCAH" url="f1_web_apps027.htm#CHDBGCAH" />
+  <!-- "Standard Web Project Properties Dialog Box: Run"-->
+  <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerSources" url="f1_web_apps028.htm#org.netbeans.modules.web.project.ui.customizer.CustomizerSources" />
+  <!-- "Standard Web Project Properties Dialog Box: Sources"-->
+  <mapID target="f1_web_apps028.htm-CHDIHDGH" url="f1_web_apps028.htm#CHDIHDGH" />
+  <!-- "Standard Web Project Properties Dialog Box: Sources"-->
+  <mapID target="org.netbeans.modules.web.project.ui.customizer.CustomizerWar" url="f1_web_apps029.htm#org.netbeans.modules.web.project.ui.customizer.CustomizerWar" />
+  <!-- "Standard Web Project Properties Dialog Box: Packaging"-->
+  <mapID target="f1_web_apps029.htm-CHDJHHHF" url="f1_web_apps029.htm#CHDJHHHF" />
+  <!-- "Standard Web Project Properties Dialog Box: Packaging"-->
+  <mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathPanel" url="f1_web_apps030.htm#org.netbeans.modules.web.freeform.ui.WebClasspathPanel" />
+  <!-- "Free-Form Project Properties Dialog Box: Web Sources Classpath"-->
+  <mapID target="f1_web_apps030.htm-sthref489" url="f1_web_apps030.htm#sthref489" />
+  <!-- "Free-Form Project Properties Dialog Box: Web Sources Classpath"-->
+  <mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsPanel" url="f1_web_apps031.htm#org.netbeans.modules.web.freeform.ui.WebLocationsPanel" />
+  <!-- "Free-Form Project Properties Dialog Box: Web Sources"-->
+  <mapID target="f1_web_apps031.htm-sthref490" url="f1_web_apps031.htm#sthref490" />
+  <!-- "Free-Form Project Properties Dialog Box: Web Sources"-->
+  <mapID target="nohelpid" url="f1_web_apps032.htm#nohelpid" />
+  <!-- "HTTP Authentication dialog box"-->
+  <mapID target="f1_web_apps032.htm-sthref491" url="f1_web_apps032.htm#sthref491" />
+  <!-- "HTTP Authentication dialog box"-->
+  <mapID target="org.netbeans.modules.web.freeform.ui.WebClasspathWizardPanel" url="f1_web_apps033.htm#org.netbeans.modules.web.freeform.ui.WebClasspathWizardPanel" />
+  <!-- "New Free-Form Project Wizard: Web Sources Classpath"-->
+  <mapID target="f1_web_apps033.htm-sthref494" url="f1_web_apps033.htm#sthref494" />
+  <!-- "New Free-Form Project Wizard: Web Sources Classpath"-->
+  <mapID target="org.netbeans.modules.web.freeform.ui.WebLocationsWizardPanel" url="f1_web_apps034.htm#org.netbeans.modules.web.freeform.ui.WebLocationsWizardPanel" />
+  <!-- "New Free-Form Project Wizard: Web Sources"-->
+  <mapID target="f1_web_apps034.htm-sthref495" url="f1_web_apps034.htm#sthref495" />
+  <!-- "New Free-Form Project Wizard: Web Sources"-->
+  <mapID target="org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" url="f1_web_apps035.htm#org.netbeans.modules.web.jsf.wizards.JSFConfigurationPanelVisual" />
+  <!-- "New JSF Pages From Entity Classes Wizard: JSF Configuration"-->
+  <mapID target="f1_web_apps035.htm-sthref496" url="f1_web_apps035.htm#sthref496" />
+  <!-- "New JSF Pages From Entity Classes Wizard: JSF Configuration"-->
+  <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_WAR" url="f1_web_apps036.htm#org.netbeans.modules.j2ee.common.project.ui.ProjectLocationWizardPanel_WAR" />
+  <!-- "New Web Application Wizard: Name and Location"-->
+  <mapID target="f1_web_apps036.htm-sthref497" url="f1_web_apps036.htm#sthref497" />
+  <!-- "New Web Application Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_WAR" url="f1_web_apps037.htm#org.netbeans.modules.j2ee.common.project.ui.ProjectServerWizardPanel_WAR" />
+  <!-- "New Web Application Wizard: Server and Settings"-->
+  <mapID target="f1_web_apps037.htm-sthref498" url="f1_web_apps037.htm#sthref498" />
+  <!-- "New Web Application Wizard: Server and Settings"-->
+  <mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSupportedFrameworks" url="f1_web_apps038.htm#org.netbeans.modules.web.project.ui.wizards.PanelSupportedFrameworks" />
+  <!-- "New Web Application Wizard: Frameworks"-->
+  <mapID target="f1_web_apps038.htm-sthref499" url="f1_web_apps038.htm#sthref499" />
+  <!-- "New Web Application Wizard: Frameworks"-->
+  <mapID target="org.netbeans.modules.web.project.ui.wizards.PanelSourceFolders" url="f1_web_apps039.htm#org.netbeans.modules.web.project.ui.wizards.PanelSourceFolders" />
+  <!-- "New Web Project with Existing Sources Wizard: Existing Sources and Libraries"-->
+  <mapID target="f1_web_apps039.htm-sthref500" url="f1_web_apps039.htm#sthref500" />
+  <!-- "New Web Project with Existing Sources Wizard: Existing Sources and Libraries"-->
+  <mapID target="f1_web_apps040.htm-sthref501" url="f1_web_apps040.htm#sthref501" />
+  <!-- "HTTP Authentication dialog box"-->
+  <mapID target="f1_web_apps041.htm-sthref502" url="f1_web_apps041.htm#sthref502" />
+  <!-- "HTTP Authentication dialog box"-->
+  <mapID target="org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_WAR" url="f1_web_apps042.htm#org.netbeans.modules.j2ee.common.project.ui.ProjectImportLocationWizardPanel_WAR" />
+  <!-- "New Web Project with Existing Sources Wizard: Name and Location"-->
+  <mapID target="f1_web_apps042.htm-sthref503" url="f1_web_apps042.htm#sthref503" />
+  <!-- "New Web Project with Existing Sources Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.web.wizards.ServletIterator.servlet" url="f1_web_apps043.htm#org.netbeans.modules.web.wizards.ServletIterator.servlet" />
+  <!-- "New Servlet Wizard: Name and Location"-->
+  <mapID target="f1_web_apps043.htm-sthref504" url="f1_web_apps043.htm#sthref504" />
+  <!-- "New Servlet Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.web.wizards.DeployDataPanel.servlet" url="f1_web_apps044.htm#org.netbeans.modules.web.wizards.DeployDataPanel.servlet" />
+  <!-- "New Servlet Wizard: Configure Servlet Deployment"-->
+  <mapID target="f1_web_apps044.htm-sthref505" url="f1_web_apps044.htm#sthref505" />
+  <!-- "New Servlet Wizard: Configure Servlet Deployment"-->
+  <mapID target="f1_web_fmwk.htm" url="f1_web_fmwk.htm" />
+  <!-- "Web Frameworks "-->
+  <mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-controller" url="f1_web_fmwk001.htm#org.netbeans.modules.groovy.grailsproject.ui.wizards.GetArtifactNameStep.create-controller" />
+  <!-- "New Grails Artifact Wizard"-->
+  <mapID target="f1_web_fmwk001.htm-sthref507" url="f1_web_fmwk001.htm#sthref507" />
+  <!-- "New Grails Artifact Wizard"-->
+  <mapID target="org.netbeans.modules.groovy.grailsproject.ui.wizards.GetProjectLocationStep" url="f1_web_fmwk002.htm#org.netbeans.modules.groovy.grailsproject.ui.wizards.GetProjectLocationStep" />
+  <!-- "New Grails Application Wizard"-->
+  <mapID target="f1_web_fmwk002.htm-sthref508" url="f1_web_fmwk002.htm#sthref508" />
+  <!-- "New Grails Application Wizard"-->
+  <mapID target="org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog" url="f1_web_fmwk003.htm#org.netbeans.modules.web.jsf.dialogs.AddManagedBeanDialog" />
+  <!-- "Add Managed Bean Dialog Box"-->
+  <mapID target="f1_web_fmwk003.htm-sthref509" url="f1_web_fmwk003.htm#sthref509" />
+  <!-- "Add Managed Bean Dialog Box"-->
+  <mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog" url="f1_web_fmwk004.htm#org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog" />
+  <!-- "Add Navigation Case Dialog Box"-->
+  <mapID target="f1_web_fmwk004.htm-sthref510" url="f1_web_fmwk004.htm#sthref510" />
+  <!-- "Add Navigation Case Dialog Box"-->
+  <mapID target="org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" url="f1_web_fmwk005.htm#org.netbeans.modules.web.jsf.dialogs.AddNavigationRuleDialog" />
+  <!-- "Add Navigation Rule Dialog Box"-->
+  <mapID target="f1_web_fmwk005.htm-sthref511" url="f1_web_fmwk005.htm#sthref511" />
+  <!-- "Add Navigation Rule Dialog Box"-->
+  <mapID target="org.netbeans.modules.javaee.beanvalidation.ConstraintPanel" url="f1_web_fmwk006.htm#org.netbeans.modules.javaee.beanvalidation.ConstraintPanel" />
+  <!-- "New Validation Constraint Wizard: Name and Location"-->
+  <mapID target="f1_web_fmwk006.htm-sthref512" url="f1_web_fmwk006.htm#sthref512" />
+  <!-- "New Validation Constraint Wizard: Name and Location"-->
+  <mapID target="persistence_entity_selection_javaee6" url="f1_web_fmwk007.htm#persistence_entity_selection_javaee6" />
+  <!-- "New JSF Pages from Entity Class Wizard: Entity Classes"-->
+  <mapID target="f1_web_fmwk007.htm-sthref513" url="f1_web_fmwk007.htm#sthref513" />
+  <!-- "New JSF Pages from Entity Class Wizard: Entity Classes"-->
+  <mapID target="framework_jsf_fromentity_setup" url="f1_web_fmwk008.htm#framework_jsf_fromentity_setup" />
+  <!-- "New JSF Pages from Entity Class Wizard: Generate JSF Pages and Classes"-->
+  <mapID target="f1_web_fmwk008.htm-sthref514" url="f1_web_fmwk008.htm#sthref514" />
+  <!-- "New JSF Pages from Entity Class Wizard: Generate JSF Pages and Classes"-->
+  <mapID target="org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" url="f1_web_fmwk009.htm#org.netbeans.modules.web.jsf.wizards.ManagedBeanPanel" />
+  <!-- "New JSF Managed Bean Wizard: Name and Location"-->
+  <mapID target="f1_web_fmwk009.htm-sthref515" url="f1_web_fmwk009.htm#sthref515" />
+  <!-- "New JSF Managed Bean Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.web.jsf.wizards.TemplatePanel" url="f1_web_fmwk010.htm#org.netbeans.modules.web.jsf.wizards.TemplatePanel" />
+  <!-- "New Facelets Template Wizard: Name and Location"-->
+  <mapID target="f1_web_fmwk010.htm-sthref516" url="f1_web_fmwk010.htm#sthref516" />
+  <!-- "New Facelets Template Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.web.jsf.wizards.TemplateClientPanel" url="f1_web_fmwk011.htm#org.netbeans.modules.web.jsf.wizards.TemplateClientPanel" />
+  <!-- "New Facelets Template Client Wizard: Name and Location"-->
+  <mapID target="f1_web_fmwk011.htm-sthref517" url="f1_web_fmwk011.htm#sthref517" />
+  <!-- "New Facelets Template Client Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.web.jsf.richfaces.ui.Richfaces4CustomizerPanelVisual" url="f1_web_fmwk012.htm#org.netbeans.modules.web.jsf.richfaces.ui.Richfaces4CustomizerPanelVisual" />
+  <!-- "Select RichFaces Library Dialog Box"-->
+  <mapID target="f1_web_fmwk012.htm-sthref518" url="f1_web_fmwk012.htm#sthref518" />
+  <!-- "Select RichFaces Library Dialog Box"-->
+  <mapID target="org.netbeans.modules.web.struts.dialogs.AddActionPanel" url="f1_web_fmwk013.htm#org.netbeans.modules.web.struts.dialogs.AddActionPanel" />
+  <!-- "Add Action Dialog Box"-->
+  <mapID target="f1_web_fmwk013.htm-sthref519" url="f1_web_fmwk013.htm#sthref519" />
+  <!-- "Add Action Dialog Box"-->
+  <mapID target="org.netbeans.modules.web.struts.dialogs.AddExceptionDialogPanel" url="f1_web_fmwk014.htm#org.netbeans.modules.web.struts.dialogs.AddExceptionDialogPanel" />
+  <!-- "Add Exception Dialog Box"-->
+  <mapID target="f1_web_fmwk014.htm-sthref520" url="f1_web_fmwk014.htm#sthref520" />
+  <!-- "Add Exception Dialog Box"-->
+  <mapID target="org.netbeans.modules.web.struts.dialogs.AddFormBeanPanel" url="f1_web_fmwk015.htm#org.netbeans.modules.web.struts.dialogs.AddFormBeanPanel" />
+  <!-- "Add ActionForm Bean Dialog Box"-->
+  <mapID target="f1_web_fmwk015.htm-sthref521" url="f1_web_fmwk015.htm#sthref521" />
+  <!-- "Add ActionForm Bean Dialog Box"-->
+  <mapID target="org.netbeans.modules.web.struts.dialogs.AddFormPropertyPanel" url="f1_web_fmwk016.htm#org.netbeans.modules.web.struts.dialogs.AddFormPropertyPanel" />
+  <!-- "Add ActionForm Bean Property Dialog Box"-->
+  <mapID target="f1_web_fmwk016.htm-sthref522" url="f1_web_fmwk016.htm#sthref522" />
+  <!-- "Add ActionForm Bean Property Dialog Box"-->
+  <mapID target="org.netbeans.modules.web.struts.dialogs.AddForwardDialogPanel" url="f1_web_fmwk017.htm#org.netbeans.modules.web.struts.dialogs.AddForwardDialogPanel" />
+  <!-- "Add Forward Dialog Box"-->
+  <mapID target="f1_web_fmwk017.htm-sthref523" url="f1_web_fmwk017.htm#sthref523" />
+  <!-- "Add Forward Dialog Box"-->
+  <mapID target="org.netbeans.modules.web.struts.dialogs.AddFIActionPanel" url="f1_web_fmwk018.htm#org.netbeans.modules.web.struts.dialogs.AddFIActionPanel" />
+  <!-- "Add Forward/Include Action Dialog Box"-->
+  <mapID target="f1_web_fmwk018.htm-sthref524" url="f1_web_fmwk018.htm#sthref524" />
+  <!-- "Add Forward/Include Action Dialog Box"-->
+  <mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel" url="f1_web_fmwk019.htm#org.netbeans.modules.web.struts.wizards.ActionPanel" />
+  <!-- "New Struts Action Wizard: Name and Location"-->
+  <mapID target="f1_web_fmwk019.htm-sthref525" url="f1_web_fmwk019.htm#sthref525" />
+  <!-- "New Struts Action Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.web.struts.wizards.ActionPanel1" url="f1_web_fmwk020.htm#org.netbeans.modules.web.struts.wizards.ActionPanel1" />
+  <!-- "New Struts Action Wizard: ActionForm Bean, Parameter"-->
+  <mapID target="f1_web_fmwk020.htm-sthref526" url="f1_web_fmwk020.htm#sthref526" />
+  <!-- "New Struts Action Wizard: ActionForm Bean, Parameter"-->
+  <mapID target="org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" url="f1_web_fmwk021.htm#org.netbeans.modules.web.struts.wizards.FormBeanNewPanel" />
+  <!-- "New Struts ActionForm Bean Wizard: Name and Location"-->
+  <mapID target="f1_web_fmwk021.htm-sthref527" url="f1_web_fmwk021.htm#sthref527" />
+  <!-- "New Struts ActionForm Bean Wizard: Name and Location"-->
+  <mapID target="f1_html.htm" url="f1_html.htm" />
+  <!-- "HTML5 "-->
+  <mapID target="org.netbeans.modules.javascript.jstestdriver.JSTestDriverCustomizerPanel" url="f1_html001.htm#org.netbeans.modules.javascript.jstestdriver.JSTestDriverCustomizerPanel" />
+  <!-- "Configure JS Test Driver Dialog Box"-->
+  <mapID target="f1_html001.htm-sthref529" url="f1_html001.htm#sthref529" />
+  <!-- "Configure JS Test Driver Dialog Box"-->
+  <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.NewClientSideProjectPanel" url="f1_html002.htm#org.netbeans.modules.web.clientproject.ui.wizard.NewClientSideProjectPanel" />
+  <!-- "New HTML5 Application Wizard: Name and Location"-->
+  <mapID target="f1_html002.htm-sthref530" url="f1_html002.htm#sthref530" />
+  <!-- "New HTML5 Application Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.SiteTemplateWizard" url="f1_html003.htm#org.netbeans.modules.web.clientproject.ui.wizard.SiteTemplateWizard" />
+  <!-- "New HTML5 Application Wizard: Site Template"-->
+  <mapID target="f1_html003.htm-sthref531" url="f1_html003.htm#sthref531" />
+  <!-- "New HTML5 Application Wizard: Site Template"-->
+  <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.JavaScriptLibrarySelectionPanel" url="f1_html004.htm#org.netbeans.modules.web.clientproject.ui.wizard.JavaScriptLibrarySelectionPanel" />
+  <!-- "New HTML5 Application Wizard: JavaScript Files"-->
+  <mapID target="f1_html004.htm-sthref532" url="f1_html004.htm#sthref532" />
+  <!-- "New HTML5 Application Wizard: JavaScript Files"-->
+  <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.ExistingClientSideProjectPanel" url="f1_html005.htm#org.netbeans.modules.web.clientproject.ui.wizard.ExistingClientSideProjectPanel" />
+  <!-- "New HTML5 Application With Existing Sources Wizard: Name and Location"-->
+  <mapID target="f1_html005.htm-sthref533" url="f1_html005.htm#sthref533" />
+  <!-- "New HTML5 Application With Existing Sources Wizard: Name and Location"-->
+  <mapID target="org.netbeans.modules.web.clientproject.ui.wizard.CreateSiteTemplate" url="f1_html006.htm#org.netbeans.modules.web.clientproject.ui.wizard.CreateSiteTemplate" />
+  <!-- "Create Site Template from Current Project Dialog Box"-->
+  <mapID target="f1_html006.htm-sthref534" url="f1_html006.htm#sthref534" />
+  <!-- "Create Site Template from Current Project Dialog Box"-->
+  <mapID target="org.netbeans.modules.web.clientproject.ui.customizer.SourcesPanel" url="f1_html007.htm#org.netbeans.modules.web.clientproject.ui.customizer.SourcesPanel" />
+  <!-- "HTML5 Project Properties Dialog Box: Sources"-->
+  <mapID target="f1_html007.htm-sthref535" url="f1_html007.htm#sthref535" />
+  <!-- "HTML5 Project Properties Dialog Box: Sources"-->
+  <mapID target="org.netbeans.modules.web.clientproject.ui.customizer.JavaScriptFilesPanel" url="f1_html008.htm#org.netbeans.modules.web.clientproject.ui.customizer.JavaScriptFilesPanel" />
+  <!-- "HTML5 Project Properties Dialog Box: JavaScript Files"-->
+  <mapID target="f1_html008.htm-sthref536" url="f1_html008.htm#sthref536" />
+  <!-- "HTML5 Project Properties Dialog Box: JavaScript Files"-->
+  <mapID target="org.netbeans.modules.web.clientproject.ui.customizer.RunPanel" url="f1_html009.htm#org.netbeans.modules.web.clientproject.ui.customizer.RunPanel" />
+  <!-- "HTML5 Project Properties Dialog Box: Run"-->
+  <mapID target="f1_html009.htm-sthref537" url="f1_html009.htm#sthref537" />
+  <!-- "HTML5 Project Properties Dialog Box: Run"-->
+  <mapID target="org.netbeans.modules.web.browser.ui.ResizeOptionsCustomizer" url="f1_html010.htm#org.netbeans.modules.web.browser.ui.ResizeOptionsCustomizer" />
+  <!-- "HTML5: Customize Window Settings Dialog Box"-->
+  <mapID target="f1_html010.htm-sthref538" url="f1_html010.htm#sthref538" />
+  <!-- "HTML5: Customize Window Settings Dialog Box"-->
+  <mapID target="NetbeansDebuggerLineBreakpointJavaScript" url="f1_html011.htm#NetbeansDebuggerLineBreakpointJavaScript" />
+  <!-- "JavaScript Breakpoint Properties: Line"-->
+  <mapID target="f1_html011.htm-sthref539" url="f1_html011.htm#sthref539" />
+  <!-- "JavaScript Breakpoint Properties: Line"-->
+  <mapID target="NetbeansDebuggerDOMBreakpointJavaScript" url="f1_html012.htm#NetbeansDebuggerDOMBreakpointJavaScript" />
+  <!-- "JavaScript Breakpoint Properties: DOM"-->
+  <mapID target="f1_html012.htm-sthref540" url="f1_html012.htm#sthref540" />
+  <!-- "JavaScript Breakpoint Properties: DOM"-->
+  <mapID target="NetbeansDebuggerEventsBreakpointJavaScript" url="f1_html013.htm#NetbeansDebuggerEventsBreakpointJavaScript" />
+  <!-- "JavaScript Breakpoint Properties: Event"-->
+  <mapID target="f1_html013.htm-sthref541" url="f1_html013.htm#sthref541" />
+  <!-- "JavaScript Breakpoint Properties: Event"-->
+  <mapID target="NetbeansDebuggerXHRBreakpointJavaScript" url="f1_html014.htm#NetbeansDebuggerXHRBreakpointJavaScript" />
+  <!-- "JavaScript Breakpoint Properties: XMLHttpRequest"-->
+  <mapID target="f1_html014.htm-sthref542" url="f1_html014.htm#sthref542" />
+  <!-- "JavaScript Breakpoint Properties: XMLHttpRequest"-->
+  <mapID target="about_source_editor" url="f1_xml.htm#about_source_editor" />
+  <!-- "Using XML "-->
+  <mapID target="f1_xml.htm" url="f1_xml.htm" />
+  <!-- "Using XML "-->
+  <mapID target="org.netbeans.modules.xml.text.syntax.XMLKit" url="f1_xml001.htm#org.netbeans.modules.xml.text.syntax.XMLKit" />
+  <!-- "About the XML Source Editor"-->
+  <mapID target="f1_xml001.htm-sthref544" url="f1_xml001.htm#sthref544" />
+  <!-- "About the XML Source Editor"-->
+  <mapID target="org.netbeans.modules.xml.catalog.CatalogMounterPanel" url="f1_xml002.htm#org.netbeans.modules.xml.catalog.CatalogMounterPanel" />
+  <!-- "Add Catalog Dialog"-->
+  <mapID target="f1_xml002.htm-sthref545" url="f1_xml002.htm#sthref545" />
+  <!-- "Add Catalog Dialog"-->
+  <mapID target="xml_editor_toolbar" url="f1_xml003.htm#xml_editor_toolbar" />
+  <!-- "XML Editor Toolbar"-->
+  <mapID target="f1_xml003.htm-sthref546" url="f1_xml003.htm#sthref546" />
+  <!-- "XML Editor Toolbar"-->
+  <mapID target="f1_java_ee.htm" url="f1_java_ee.htm" />
+  <!-- "Using Java EE "-->
+  <mapID target="f1_java_ee001.htm-sthref548" url="f1_java_ee001.htm#sthref548" />
+  <!-- "Using Java EE "-->
+  <mapID target="f1_java_ee002.htm-sthref549" url="f1_java_ee002.htm#sthref549" />
+  <!-- "Help Topic Title"-->
+  <mapID target="f1_jpa.htm" url="f1_jpa.htm" />
+  <!-- "Using JPA "-->
+  <mapID target="text.x-jpql" url="f1_jpa001.htm#text.x-jpql" />
+  <!-- "JPQL Query Editor"-->
+  <mapID target="f1_jpa001.htm-sthref551" url="f1_jpa001.htm#sthref551" />
+  <!-- "JPQL Query Editor"-->
+  <mapID target="org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescripto" url="f1_jpa002.htm#org.netbeans.modules.j2ee.persistence.wizard.entity.EntityWizardDescripto" />
+  <!-- "New Entity Class Wizard"-->
+  <mapID target="f1_jpa002.htm-sthref552" url="f1_jpa002.htm#sthref552" />
+  <!-- "New Entity Class Wizard"-->
+  <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" url="f1_jpa003.htm#org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" />
+  <!-- "New Entity Classes from Database Wizard: Database Tables"-->
+  <mapID target="f1_jpa003.htm-sthref553" url="f1_jpa003.htm#sthref553" />
+  <!-- "New Entity Classes from Database Wizard: Database Tables"-->
+  <mapID target="org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" url="f1_jpa004.htm#org.netbeans.modules.j2ee.persistence.wizard.fromdb.EntityClassesPanel" />
+  <!-- "New Entity Classes from Database Wizard: Entity Classes"-->
+  <mapID target="f1_jpa004.htm-sthref554" url="f1_jpa004.htm#sthref554" />
+  <!-- "New Entity Classes from Database Wizard: Entity Classes"-->
+  <mapID target="org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" url="f1_jpa005.htm#org.netbeans.modules.j2ee.persistence.unit.AddEntityPanel" />
+  <!-- "Add Entity Dialog Box"-->
+  <mapID target="f1_jpa005.htm-sthref555" url="f1_jpa005.htm#sthref555" />
+  <!-- "Add Entity Dialog Box"-->
+  <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller$PersistenceClientEntitySelection" url="f1_jpa006.htm#org.netbeans.modules.j2ee.persistence.wizard.jpacontroller$PersistenceClientEntitySelection" />
+  <!-- "New JPA Controller Classes from Entity Class Wizard: Entity Classes"-->
+  <mapID target="f1_jpa006.htm-sthref556" url="f1_jpa006.htm#sthref556" />
+  <!-- "New JPA Controller Classes from Entity Class Wizard: Entity Classes"-->
+  <mapID target="org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerSetupPanel" url="f1_jpa007.htm#org.netbeans.modules.j2ee.persistence.wizard.jpacontroller.JpaControllerSetupPanel" />
+  <!-- "New JPA Controller Classes from Entity Class Wizard: Generate JPA Controller Classes"-->
+  <mapID target="f1_jpa007.htm-sthref557" url="f1_jpa007.htm#sthref557" />
+  <!-- "New JPA Controller Classes from Entity Class Wizard: Generate JPA Controller Classes"-->
+  <mapID target="persistence_multiview_design_persistenceUnitNode" url="f1_jpa008.htm#persistence_multiview_design_persistenceUnitNode" />
+  <!-- "persistence.xml Visual Editor"-->
+  <mapID target="f1_jpa008.htm-sthref558" url="f1_jpa008.htm#sthref558" />
+  <!-- "persistence.xml Visual Editor"-->
+  <mapID target="org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor" url="f1_jpa009.htm#org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor" />
+  <!-- "New Persistence Unit Wizard: Provider and Database"-->
+  <mapID target="f1_jpa009.htm-sthref559" url="f1_jpa009.htm#sthref559" />
+  <!-- "New Persistence Unit Wizard: Provider and Database"-->
+  <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor" url="f1_jpa010.htm#org.netbeans.modules.hibernate.wizards.HibernateRevengDbTablesWizardDescriptor" />
+  <!-- "Hibernate Reverse Engineering Wizard: Database Tables"-->
+  <mapID target="f1_jpa010.htm-sthref560" url="f1_jpa010.htm#sthref560" />
+  <!-- "Hibernate Reverse Engineering Wizard: Database Tables"-->
+  <mapID target="org.netbeans.modules.hibernate.wizards.HibernateRevengCodeGenWizardDescriptor" url="f1_jpa011.htm#org.netbeans.modules.hibernate.wizards.HibernateRevengCodeGenWizardDescriptor" />
+  <!-- "Hibernate Mapping Files and POJOs Wizard: Generation of Code"-->
+  <mapID target="f1_jpa011.htm-sthref561" url="f1_jpa011.htm#sthref561" />
+  <!-- "Hibernate Mapping Files and POJOs Wizard: Generation of Code"-->
+  <mapID target="org.netbeans.modules.hibernate.wizards.HibernateCodeGenWizardDescriptor" url="f1_jpa012.htm#org.netbeans.modules.hibernate.wizards.HibernateCodeGenWizardDescriptor" />
+  <!-- "Hibernate Mapping Files and POJOs Wizard: Generation of Code"-->
+  <mapID target="f1_jpa012.htm-sthref562" url="f1_jpa012.htm#sthref562" />
+  <!-- "Hibernate Mapping Files and POJOs Wizard: Generation of Code"-->
+  <mapID target="org.netbeans.modules.hibernate.wizards.HibernateMappingWizardDescriptor" url="f1_jpa013.htm#org.netbeans.modules.hibernate.wizards.HibernateMappingWizardDescriptor" />
+  <!-- "Hibernate Mapping Wizard: Select Mapping Class"-->
+  <mapID target="f1_jpa013.htm-sthref563" url="f1_jpa013.htm#sthref563" />
+  <!-- "Hibernate Mapping Wizard: Select Mapping Class"-->
+  <mapID target="org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardDescriptor" url="f1_jpa014.htm#org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardDescriptor" />
+  <!-- "Hibernate Configuration Wizard: Select Data Source"-->
+  <mapID target="f1_jpa014.htm-sthref564" url="f1_jpa014.htm#sthref564" />
+  <!-- "Hibernate Configuration Wizard: Select Data Source"-->
+  <mapID target="f1_java_me.htm" url="f1_java_me.htm" />
+  <!-- "Using Java ME "-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.AddAbilityPanel" url="f1_java_me001.htm#org.netbeans.modules.mobility.project.ui.customizer.AddAbilityPanel" />
+  <!-- "Add Ability"-->
+  <mapID target="f1_java_me001.htm-sthref566" url="f1_java_me001.htm#sthref566" />
+  <!-- "Add Ability"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.AddAPIPanel" url="f1_java_me002.htm#org.netbeans.modules.mobility.project.ui.customizer.AddAPIPanel" />
+  <!-- "Add API Permissions"-->
+  <mapID target="f1_java_me002.htm-sthref567" url="f1_java_me002.htm#sthref567" />
+  <!-- "Add API Permissions"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.AddAttributePanel" url="f1_java_me003.htm#org.netbeans.modules.mobility.project.ui.customizer.AddAttributePanel" />
+  <!-- "Add/Edit Attribute"-->
+  <mapID target="f1_java_me003.htm-sthref568" url="f1_java_me003.htm#sthref568" />
+  <!-- "Add/Edit Attribute"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.NewConfigurationPanel" url="f1_java_me004.htm#org.netbeans.modules.mobility.project.ui.customizer.NewConfigurationPanel" />
+  <!-- "Add or Duplicate Project Configuration Dialog"-->
+  <mapID target="f1_java_me004.htm-sthref569" url="f1_java_me004.htm#sthref569" />
+  <!-- "Add or Duplicate Project Configuration Dialog"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.security.AddKeystorePanel" url="f1_java_me005.htm#org.netbeans.modules.mobility.project.ui.security.AddKeystorePanel" />
+  <!-- "Add Keystore"-->
+  <mapID target="f1_java_me005.htm-sthref570" url="f1_java_me005.htm#sthref570" />
+  <!-- "Add Keystore"-->
+  <mapID target="org.netbeans.modules.project.support.customizer.LibrariesChooser" url="f1_java_me006.htm#org.netbeans.modules.project.support.customizer.LibrariesChooser" />
+  <!-- "Add Libraries"-->
+  <mapID target="f1_java_me006.htm-sthref571" url="f1_java_me006.htm#sthref571" />
+  <!-- "Add Libraries"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.AddMIDletPanel" url="f1_java_me007.htm#org.netbeans.modules.mobility.project.ui.customizer.AddMIDletPanel" />
+  <!-- "Add/Edit MIDlet"-->
+  <mapID target="f1_java_me007.htm-sthref572" url="f1_java_me007.htm#sthref572" />
+  <!-- "Add/Edit MIDlet"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.AddPushRegistryPanel" url="f1_java_me008.htm#org.netbeans.modules.mobility.project.ui.customizer.AddPushRegistryPanel" />
+  <!-- "Add/Edit Push Registry Entry"-->
+  <mapID target="f1_java_me008.htm-sthref573" url="f1_java_me008.htm#sthref573" />
+  <!-- "Add/Edit Push Registry Entry"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.SaveConfigurationPanel" url="f1_java_me009.htm#org.netbeans.modules.mobility.project.ui.customizer.SaveConfigurationPanel" />
+  <!-- "Save Mobility Project Configuration as Template"-->
+  <mapID target="f1_java_me009.htm-sthref574" url="f1_java_me009.htm#sthref574" />
+  <!-- "Save Mobility Project Configuration as Template"-->
+  <mapID target="me.dialog_createkeypair" url="f1_java_me010.htm#me.dialog_createkeypair" />
+  <!-- "Create Key Pair"-->
+  <mapID target="f1_java_me010.htm-sthref575" url="f1_java_me010.htm#sthref575" />
+  <!-- "Create Key Pair"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.security.EnterPasswordPanel" url="f1_java_me011.htm#org.netbeans.modules.mobility.project.ui.security.EnterPasswordPanel" />
+  <!-- "Enter Password"-->
+  <mapID target="f1_java_me011.htm-sthref576" url="f1_java_me011.htm#sthref576" />
+  <!-- "Enter Password"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.security.ExportPanel" url="f1_java_me012.htm#org.netbeans.modules.mobility.project.ui.security.ExportPanel" />
+  <!-- "Export Key"-->
+  <mapID target="f1_java_me012.htm-sthref577" url="f1_java_me012.htm#sthref577" />
+  <!-- "Export Key"-->
+  <mapID target="org.netbeans.optionsDialog.advanced.svg" url="f1_java_me013.htm#org.netbeans.optionsDialog.advanced.svg" />
+  <!-- "Options Window: Miscellaneous: SVG"-->
+  <mapID target="f1_java_me013.htm-sthref578" url="f1_java_me013.htm#sthref578" />
+  <!-- "Options Window: Miscellaneous: SVG"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.J2MECustomizerProvider" url="f1_java_me014.htm#org.netbeans.modules.mobility.project.ui.J2MECustomizerProvider" />
+  <!-- "Project Properties"-->
+  <mapID target="f1_java_me014.htm-sthref579" url="f1_java_me014.htm#sthref579" />
+  <!-- "Project Properties"-->
+  <mapID target="org.netbeans.modules.mobility.project.CfgSelectionPanel" url="f1_java_me015.htm#org.netbeans.modules.mobility.project.CfgSelectionPanel" />
+  <!-- "Build Selected Project Configurations"-->
+  <mapID target="f1_java_me015.htm-sthref580" url="f1_java_me015.htm#sthref580" />
+  <!-- "Build Selected Project Configurations"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerConfigManager" url="f1_java_me016.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerConfigManager" />
+  <!-- "Project Configuration Manager"-->
+  <mapID target="f1_java_me016.htm-sthref581" url="f1_java_me016.htm#sthref581" />
+  <!-- "Project Configuration Manager"-->
+  <mapID target="org.netbeans.modules.mobility.project.J2MEActionProvider" url="f1_java_me017.htm#org.netbeans.modules.mobility.project.J2MEActionProvider" />
+  <!-- "Quick Project Run"-->
+  <mapID target="f1_java_me017.htm-sthref582" url="f1_java_me017.htm#sthref582" />
+  <!-- "Quick Project Run"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.security.SecurityManagerPanel" url="f1_java_me018.htm#org.netbeans.modules.mobility.project.ui.security.SecurityManagerPanel" />
+  <!-- "Keystores Manager"-->
+  <mapID target="f1_java_me018.htm-sthref583" url="f1_java_me018.htm#sthref583" />
+  <!-- "Keystores Manager"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.J2MEPhysicalViewProvider$J2MEProjectRootNode" url="f1_java_me019.htm#org.netbeans.modules.mobility.project.ui.J2MEPhysicalViewProvider$J2MEProjectRootNode" />
+  <!-- "Java ME Project Node"-->
+  <mapID target="f1_java_me019.htm-sthref584" url="f1_java_me019.htm#sthref584" />
+  <!-- "Java ME Project Node"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerAbilities" url="f1_java_me020.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerAbilities" />
+  <!-- "MIDP Project Properties: Abilities Page"-->
+  <mapID target="f1_java_me020.htm-sthref585" url="f1_java_me020.htm#sthref585" />
+  <!-- "MIDP Project Properties: Abilities Page"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerPermissions" url="f1_java_me021.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerPermissions" />
+  <!-- "MIDP Project Properties: API Permissions"-->
+  <mapID target="f1_java_me021.htm-sthref586" url="f1_java_me021.htm#sthref586" />
+  <!-- "MIDP Project Properties: API Permissions"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerJad" url="f1_java_me022.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerJad" />
+  <!-- "MIDP Project Properties: Application Descriptor Attributes"-->
+  <mapID target="f1_java_me022.htm-sthref587" url="f1_java_me022.htm#sthref587" />
+  <!-- "MIDP Project Properties: Application Descriptor Attributes"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.J2MECustomizer$BuildPanel" url="f1_java_me023.htm#org.netbeans.modules.mobility.project.ui.customizer.J2MECustomizer$BuildPanel" />
+  <!-- "MIDP Project Properties: Build"-->
+  <mapID target="f1_java_me023.htm-sthref588" url="f1_java_me023.htm#sthref588" />
+  <!-- "MIDP Project Properties: Build"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerCompile" url="f1_java_me024.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerCompile" />
+  <!-- "MIDP Project Properties: Compiling"-->
+  <mapID target="f1_java_me024.htm-sthref589" url="f1_java_me024.htm#sthref589" />
+  <!-- "MIDP Project Properties: Compiling"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerJar" url="f1_java_me025.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerJar" />
+  <!-- "MIDP Project Properties: Creating JAR"-->
+  <mapID target="f1_java_me025.htm-sthref590" url="f1_java_me025.htm#sthref590" />
+  <!-- "MIDP Project Properties: Creating JAR"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerDeploy" url="f1_java_me026.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerDeploy" />
+  <!-- "MIDP Project Properties: Deploying Page"-->
+  <mapID target="f1_java_me026.htm-sthref591" url="f1_java_me026.htm#sthref591" />
+  <!-- "MIDP Project Properties: Deploying Page"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerFiltering" url="f1_java_me027.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerFiltering" />
+  <!-- "MIDP Project Properties: Sources Filtering"-->
+  <mapID target="f1_java_me027.htm-sthref592" url="f1_java_me027.htm#sthref592" />
+  <!-- "MIDP Project Properties: Sources Filtering"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerGeneral" url="f1_java_me028.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerGeneral" />
+  <!-- "Mobility Project Properties: General"-->
+  <mapID target="f1_java_me028.htm-sthref593" url="f1_java_me028.htm#sthref593" />
+  <!-- "Mobility Project Properties: General"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.J2MECustomizer$JadPanel" url="f1_java_me029.htm#org.netbeans.modules.mobility.project.ui.customizer.J2MECustomizer$JadPanel" />
+  <!-- "MIDP Project Properties: Application Descriptor"-->
+  <mapID target="f1_java_me029.htm-sthref594" url="f1_java_me029.htm#sthref594" />
+  <!-- "MIDP Project Properties: Application Descriptor"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerJavadoc" url="f1_java_me030.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerJavadoc" />
+  <!-- "MIDP Project Properties: Generating Javadoc"-->
+  <mapID target="f1_java_me030.htm-sthref595" url="f1_java_me030.htm#sthref595" />
+  <!-- "MIDP Project Properties: Generating Javadoc"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerLibraries" url="f1_java_me031.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerLibraries" />
+  <!-- "MIDP Project Properties: Libraries and Resources"-->
+  <mapID target="f1_java_me031.htm-sthref596" url="f1_java_me031.htm#sthref596" />
+  <!-- "MIDP Project Properties: Libraries and Resources"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerMIDlets" url="f1_java_me032.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerMIDlets" />
+  <!-- "MIDP Project Properties: MIDlets"-->
+  <mapID target="f1_java_me032.htm-sthref597" url="f1_java_me032.htm#sthref597" />
+  <!-- "MIDP Project Properties: MIDlets"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerObfuscate" url="f1_java_me033.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerObfuscate" />
+  <!-- "MIDP Project Properties: Obfuscating"-->
+  <mapID target="f1_java_me033.htm-sthref598" url="f1_java_me033.htm#sthref598" />
+  <!-- "MIDP Project Properties: Obfuscating"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerMIDP" url="f1_java_me034.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerMIDP" />
+  <!-- "MIDP Project Properties: Platform"-->
+  <mapID target="f1_java_me034.htm-sthref599" url="f1_java_me034.htm#sthref599" />
+  <!-- "MIDP Project Properties: Platform"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerPushReg" url="f1_java_me035.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerPushReg" />
+  <!-- "MIDP Project Properties: Push Registry"-->
+  <mapID target="f1_java_me035.htm-sthref600" url="f1_java_me035.htm#sthref600" />
+  <!-- "MIDP Project Properties: Push Registry"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerRun" url="f1_java_me036.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerRun" />
+  <!-- "MIDP Project Properties: Running"-->
+  <mapID target="f1_java_me036.htm-sthref601" url="f1_java_me036.htm#sthref601" />
+  <!-- "MIDP Project Properties: Running"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.customizer.CustomizerSign" url="f1_java_me037.htm#org.netbeans.modules.mobility.project.ui.customizer.CustomizerSign" />
+  <!-- "MIDP Project Properties: Signing"-->
+  <mapID target="f1_java_me037.htm-sthref602" url="f1_java_me037.htm#sthref602" />
+  <!-- "MIDP Project Properties: Signing"-->
+  <mapID target="org.netbeans.modules.java.platform.wizard.SelectorPanel" url="f1_java_me038.htm#org.netbeans.modules.java.platform.wizard.SelectorPanel" />
+  <!-- "Add Java Platform Wizard: Select Platform Type"-->
+  <mapID target="f1_java_me038.htm-sthref603" url="f1_java_me038.htm#sthref603" />
+  <!-- "Add Java Platform Wizard: Select Platform Type"-->
+  <mapID target="org.netbeans.modules.mobility.cldcplatform.wizard.DetectWizardPanel" url="f1_java_me039.htm#org.netbeans.modules.mobility.cldcplatform.wizard.DetectWizardPanel" />
+  <!-- "Add Java Platform Wizard: Platform Folders Page"-->
+  <mapID target="f1_java_me039.htm-sthref604" url="f1_java_me039.htm#sthref604" />
+  <!-- "Add Java Platform Wizard: Platform Folders Page"-->
+  <mapID target="org.netbeans.modules.mobility.cldcplatform.customwizard.CommandLinesPanel" url="f1_java_me040.htm#org.netbeans.modules.mobility.cldcplatform.customwizard.CommandLinesPanel" />
+  <!-- "Add Java Platform Wizard: General Information Page"-->
+  <mapID target="f1_java_me040.htm-sthref605" url="f1_java_me040.htm#sthref605" />
+  <!-- "Add Java Platform Wizard: General Information Page"-->
+  <mapID target="org.netbeans.modules.mobility.cldcplatform.customwizard.ClasspathPanel" url="f1_java_me041.htm#org.netbeans.modules.mobility.cldcplatform.customwizard.ClasspathPanel" />
+  <!-- "Add Java Platform Wizard: Bootstrap Libraries Page"-->
+  <mapID target="f1_java_me041.htm-sthref606" url="f1_java_me041.htm#sthref606" />
+  <!-- "Add Java Platform Wizard: Bootstrap Libraries Page"-->
+  <mapID target="org.netbeans.modules.mobility.cldcplatform.SrcDocPathsPanel" url="f1_java_me042.htm#org.netbeans.modules.mobility.cldcplatform.SrcDocPathsPanel" />
+  <!-- "Add Java Platform wizard: Sources and Javadoc Page"-->
+  <mapID target="f1_java_me042.htm-sthref607" url="f1_java_me042.htm#sthref607" />
+  <!-- "Add Java Platform wizard: Sources and Javadoc Page"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.SourcesPanel" url="f1_java_me043.htm#org.netbeans.modules.mobility.project.ui.wizard.imports.SourcesPanel" />
+  <!-- "Import Mobile Project from Existing MIDP Sources Wizard: Specify MIDP Sources page"-->
+  <mapID target="f1_java_me043.htm-sthref608" url="f1_java_me043.htm#sthref608" />
+  <!-- "Import Mobile Project from Existing MIDP Sources Wizard: Specify MIDP Sources page"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.wizard.imports.WtkPanel" url="f1_java_me044.htm#org.netbeans.modules.mobility.project.ui.wizard.imports.WtkPanel" />
+  <!-- "Import Wireless Toolkit Project Wizard: Specify Wireless Toolkit Project Page"-->
+  <mapID target="f1_java_me044.htm-sthref609" url="f1_java_me044.htm#sthref609" />
+  <!-- "Import Wireless Toolkit Project Wizard: Specify Wireless Toolkit Project Page"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.wizard.PlatformInstallPanel" url="f1_java_me045.htm#org.netbeans.modules.mobility.project.ui.wizard.PlatformInstallPanel" />
+  <!-- "New Mobile Application Wizard: Install Platform Page"-->
+  <mapID target="f1_java_me045.htm-sthref610" url="f1_java_me045.htm#sthref610" />
+  <!-- "New Mobile Application Wizard: Install Platform Page"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.wizard.ProjectPanel" url="f1_java_me046.htm#org.netbeans.modules.mobility.project.ui.wizard.ProjectPanel" />
+  <!-- "New Mobile Application Wizard: Project Name and Location Page"-->
+  <mapID target="f1_java_me046.htm-sthref611" url="f1_java_me046.htm#sthref611" />
+  <!-- "New Mobile Application Wizard: Project Name and Location Page"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.wizard.PlatformSelectionPanel" url="f1_java_me047.htm#org.netbeans.modules.mobility.project.ui.wizard.PlatformSelectionPanel" />
+  <!-- "New Mobile Application Wizard: Default Platform Selection Page"-->
+  <mapID target="f1_java_me047.htm-sthref612" url="f1_java_me047.htm#sthref612" />
+  <!-- "New Mobile Application Wizard: Default Platform Selection Page"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.wizard.ConfigurationsSelectionPanel" url="f1_java_me048.htm#org.netbeans.modules.mobility.project.ui.wizard.ConfigurationsSelectionPanel" />
+  <!-- "New Mobile Application Wizard: More Configurations Selection Page"-->
+  <mapID target="f1_java_me048.htm-sthref613" url="f1_java_me048.htm#sthref613" />
+  <!-- "New Mobile Application Wizard: More Configurations Selection Page"-->
+  <mapID target="cdc.panelConfigurePlatform" url="f1_java_me049.htm#cdc.panelConfigurePlatform" />
+  <!-- "New CDC Application Wizard: Select Platform Page"-->
+  <mapID target="f1_java_me049.htm-sthref614" url="f1_java_me049.htm#sthref614" />
+  <!-- "New CDC Application Wizard: Select Platform Page"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.wizard.ProjectPanelEmbedded" url="f1_java_me050.htm#org.netbeans.modules.mobility.project.ui.wizard.ProjectPanelEmbedded" />
+  <!-- "New Embedded Application Wizard: Project Name and Location Page"-->
+  <mapID target="f1_java_me050.htm-sthref615" url="f1_java_me050.htm#sthref615" />
+  <!-- "New Embedded Application Wizard: Project Name and Location Page"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.wizard.PlatformSelectionPanelEmbedded" url="f1_java_me051.htm#org.netbeans.modules.mobility.project.ui.wizard.PlatformSelectionPanelEmbedded" />
+  <!-- "New Embedded Application Wizard: Default Platform Selection Page"-->
+  <mapID target="f1_java_me051.htm-sthref616" url="f1_java_me051.htm#sthref616" />
+  <!-- "New Embedded Application Wizard: Default Platform Selection Page"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.wizard.ConfigurationsSelectionPanelEmbedded" url="f1_java_me052.htm#org.netbeans.modules.mobility.project.ui.wizard.ConfigurationsSelectionPanelEmbedded" />
+  <!-- "New Embedded Application Wizard: More Configurations Selection Page"-->
+  <mapID target="f1_java_me052.htm-sthref617" url="f1_java_me052.htm#sthref617" />
+  <!-- "New Embedded Application Wizard: More Configurations Selection Page"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.wizard.MIDPTargetChooserPanel" url="f1_java_me053.htm#org.netbeans.modules.mobility.project.ui.wizard.MIDPTargetChooserPanel" />
+  <!-- "New MIDP File Wizard: Name and Location Page"-->
+  <mapID target="f1_java_me053.htm-sthref618" url="f1_java_me053.htm#sthref618" />
+  <!-- "New MIDP File Wizard: Name and Location Page"-->
+  <mapID target="org.netbeans.modules.mobility.project.ui.wizard.i18n.LocalizationSupportPanel" url="f1_java_me054.htm#org.netbeans.modules.mobility.project.ui.wizard.i18n.LocalizationSupportPanel" />
+  <!-- "New Localization Support Class Wizard: Name and Location Page"-->
+  <mapID target="f1_java_me054.htm-sthref619" url="f1_java_me054.htm#sthref619" />
+  <!-- "New Localization Support Class Wizard: Name and Location Page"-->
+  <mapID target="me.wcb_clientinformation" url="f1_java_me055.htm#me.wcb_clientinformation" />
+  <!-- "Java ME Web Service Client Wizard: Client Information Page"-->
+  <mapID target="f1_java_me055.htm-sthref620" url="f1_java_me055.htm#sthref620" />
+  <!-- "Java ME Web Service Client Wizard: Client Information Page"-->
+  <mapID target="me.wcb_webappselection" url="f1_java_me056.htm#me.wcb_webappselection" />
+  <!-- "New Java ME Client to Web Application: Generator Servlet and Client Type Page"-->
+  <mapID target="f1_java_me056.htm-sthref621" url="f1_java_me056.htm#sthref621" />
+  <!-- "New Java ME Client to Web Application: Generator Servlet and Client Type Page"-->
+  <mapID target="me.wcb_serviceselection" url="f1_java_me057.htm#me.wcb_serviceselection" />
+  <!-- "New Java ME Client to Web Application: Generator Web Service Operations/Methods in Web Project Page"-->
+  <mapID target="f1_java_me057.htm-sthref622" url="f1_java_me057.htm#sthref622" />
+  <!-- "New Java ME Client to Web Application: Generator Web Service Operations/Methods in Web Project Page"-->
+  <mapID target="me.wcb_clientoptions" url="f1_java_me058.htm#me.wcb_clientoptions" />
+  <!-- "New Java ME Client to Web Application: Generator Client Options Page"-->
+  <mapID target="f1_java_me058.htm-sthref623" url="f1_java_me058.htm#sthref623" />
+  <!-- "New Java ME Client to Web Application: Generator Client Options Page"-->
+  <mapID target="f1_database.htm" url="f1_database.htm" />
+  <!-- "Using Databases "-->
+  <mapID target="org.netbeans.modules.db.explorer.dlg.AddDriverDialog" url="f1_database001.htm#org.netbeans.modules.db.explorer.dlg.AddDriverDialog" />
+  <!-- "Adding a JDBC Driver: New Connection Wizard and Add Driver"-->
+  <mapID target="f1_database001.htm-sthref625" url="f1_database001.htm#sthref625" />
+  <!-- "Adding a JDBC Driver: New Connection Wizard and Add Driver"-->
+  <mapID target="db_save_password" url="f1_database002.htm#db_save_password" />
+  <!-- "Connect to Database Dialog"-->
+  <mapID target="f1_database002.htm-BABFAIHD" url="f1_database002.htm#BABFAIHD" />
+  <!-- "Connect to Database Dialog"-->
+  <mapID target="org.netbeans.modules.db.explorer.dlg.ConnectionPanel" url="f1_database003.htm#org.netbeans.modules.db.explorer.dlg.ConnectionPanel" />
+  <!-- "New Connection Wizard: Customize Connection Dialog"-->
+  <mapID target="f1_database003.htm-sthref626" url="f1_database003.htm#sthref626" />
+  <!-- "New Connection Wizard: Customize Connection Dialog"-->
+  <mapID target="org.netbeans.modules.db.explorer.action.ConnectAction" url="f1_database004.htm#org.netbeans.modules.db.explorer.action.ConnectAction" />
+  <!-- "Connect to Database Dialog"-->
+  <mapID target="f1_database004.htm-BABIBGJH" url="f1_database004.htm#BABIBGJH" />
+  <!-- "Connect to Database Dialog"-->
+  <mapID target="org.netbeans.modules.db.explorer.dlg.ChoosingSchemaPanel" url="f1_database005.htm#org.netbeans.modules.db.explorer.dlg.ChoosingSchemaPanel" />
+  <!-- "New Connection Wizard: Choose Database Schemas"-->
+  <mapID target="f1_database005.htm-sthref627" url="f1_database005.htm#sthref627" />
+  <!-- "New Connection Wizard: Choose Database Schemas"-->
+  <mapID target="org.netbeans.modules.db.explorer.actions.CreateTableAction" url="f1_database006.htm#org.netbeans.modules.db.explorer.actions.CreateTableAction" />
+  <!-- "Create Table Dialog"-->
+  <mapID target="f1_database006.htm-sthref628" url="f1_database006.htm#sthref628" />
+  <!-- "Create Table Dialog"-->
+  <mapID target="org.netbeans.modules.db.sql.editor.ui.actions.SQLHistoryAction" url="f1_database007.htm#org.netbeans.modules.db.sql.editor.ui.actions.SQLHistoryAction" />
+  <!-- "SQL History"-->
+  <mapID target="f1_database007.htm-sthref630" url="f1_database007.htm#sthref630" />
+  <!-- "SQL History"-->
+  <mapID target="org.netbeans.modules.db.mysql.ui.PropertiesDialog" url="f1_database008.htm#org.netbeans.modules.db.mysql.ui.PropertiesDialog" />
+  <!-- "MySQL Server Properties Dialog"-->
+  <mapID target="f1_database008.htm-sthref631" url="f1_database008.htm#sthref631" />
+  <!-- "MySQL Server Properties Dialog"-->
+  <mapID target="dbschema_ctxhelp_wizard" url="f1_database009.htm#dbschema_ctxhelp_wizard" />
+  <!-- "New Database Schema Wizard - Database Connection Page"-->
+  <mapID target="f1_database009.htm-sthref632" url="f1_database009.htm#sthref632" />
+  <!-- "New Database Schema Wizard - Database Connection Page"-->
+  <mapID target="dbschema_ctxhelp_capture_tables" url="f1_database010.htm#dbschema_ctxhelp_capture_tables" />
+  <!-- "New Database Schema Wizard - Tables and Views Page"-->
+  <mapID target="f1_database010.htm-sthref633" url="f1_database010.htm#sthref633" />
+  <!-- "New Database Schema Wizard - Tables and Views Page"-->
+</map>

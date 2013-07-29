@@ -1,0 +1,196 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Java FX Project Properties: Run</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.javafx2.project.ui.JFXRunPanel" name="org.netbeans.modules.javafx2.project.ui.JFXRunPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref241" name="sthref241"></a>
+<h1>Java FX Project Properties: Run</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Run panel lets you configure options for running your project. You can create several configurations and set the application class, application parameters, working directory for program execution, and VM options for each configuration. When running the application, you can easily switch the configuration in the drop-down list on the editor toolbar.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t17">Element</th>
+<th align="left" valign="bottom" id="r1c2-t17">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t17" headers="r1c1-t17">
+<p>Configuration</p>
+</td>
+<td align="left" headers="r2c1-t17 r1c2-t17">
+<p>Click New to create a new runtime configuration. A dialog opens. Type or paste the new configuration's name in the Configuration Name field and click OK. You return to Project Properties: Run and the new configuration's name is in the Configuration field.</p>
+<p>After a new configuration is created, it becomes available in the configuration drop-down list on the editor toolbar and you can switch configurations while running your project. Configurations are saved in the <code>&lt;configuration_name&gt;.properties</code> file in the <code>nbproject/configs</code> directory of your project.</p>
+<p>You can set the following options for a configuration:</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t17" headers="r1c1-t17">
+<p>Application Class</p>
+</td>
+<td align="left" headers="r3c1-t17 r1c2-t17">
+<p>Specify the application class for the application. The Browse button only shows classes in the project's source folders. If you want to specify a class in one of the JAR files on the project's classpath, type the fully qualified class name in this field.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t17" headers="r1c1-t17">
+<p>Parameters</p>
+</td>
+<td align="left" headers="r4c1-t17 r1c2-t17">
+<p>Specify arguments passed on the command line, unnamed parameters specified in a JNLP file, and &lt;name,value&gt; pairs specified in a JNLP file for a browser-embedded or Web Start application.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t17" headers="r1c1-t17">
+<p>VM Options</p>
+</td>
+<td align="left" headers="r5c1-t17 r1c2-t17">
+<p>Type Java virtual machine options separated with a space. The IDE uses these options for running the application class. For more information about VM options, see: <code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/technetwork/java/javase/tech/vmoptions-jsp-140102.html">
+<param name="text" value="<html><u>Java Hotspot VM Options</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code>
+</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t17" headers="r1c1-t17">
+<p>Use Preloader: (Requires existing Preloader project.)</p>
+</td>
+<td align="left" headers="r6c1-t17 r1c2-t17">
+<p>Click Browse to search your local file system for a Java FX Preloader project. When you select a preloader project, the Use Preloader box is activated and the path to the project appears in the field. If the project has more than one preloader class, you can choose between preloader classes in the Preloader Class drop-down box.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t17" headers="r1c1-t17">
+<p>Run: Standalone/As Web Start/In Browser</p>
+</td>
+<td align="left" headers="r7c1-t17 r1c2-t17">
+<p>Select how to run the application.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t17" headers="r1c1-t17">
+<p>Changing existing configurations</p>
+</td>
+<td align="left" headers="r8c1-t17 r1c2-t17">
+<p>You can make changes to the configuration currently selected in the Configuration field. All changes you make to the default configuration, other than to the Run options, propagate to all other configurations automatically. Any changes you make to a configuration other than the default configuration apply only to that non-default configuration.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<a id="sthref242" name="sthref242"></a>
+<p><b>Standalone Application Settings</b></p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t18">Element</th>
+<th align="left" valign="bottom" id="r1c2-t18">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t18" headers="r1c1-t18">
+<p>Working Directory</p>
+</td>
+<td align="left" headers="r2c1-t18 r1c2-t18">
+<p>In some cases, you might need to specify a separate working directory that will be used during application execution. If no value is specified, the project directory is used by default as a working directory.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<a id="sthref243" name="sthref243"></a>
+<p><b>Web Start and Browser Application Settings</b></p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t19">Element</th>
+<th align="left" valign="bottom" id="r1c2-t19">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t19" headers="r1c1-t19">
+<p>Width/Height</p>
+</td>
+<td align="left" headers="r2c1-t19 r1c2-t19">
+<p>Enter preferred dimensions of the application scene.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t19" headers="r1c1-t19">
+<p>Web page</p>
+</td>
+<td align="left" headers="r3c1-t19 r1c2-t19">
+<p>Enter a path to your own prepared HTML page, which may contain predefined special replacement tags. See: <a href="download.oracle.com/javafx/2/deployment/packaging.htm#BABCDFAJ"><code>Packaging JavaFX Applications</code></a></p>
+<p>This HTML page is processed at the time of deployment and is copied to the <code>/dist</code> sub-directory. If you leave this field blank, the IDE generates a default web page.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t19" headers="r1c1-t19">
+<p>Web Browser</p>
+</td>
+<td align="left" headers="r4c1-t19 r1c2-t19">
+<p>Select the web browser in which the IDE opens the application. Click Manage to open the IDE Options, where you can define additional browsers.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://docs.oracle.com/javafx/2/deployment/jfxpub-deployment.htm">
+<param name="text" value="<html><u>Deploying JavaFX Applications</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code>
+</p>
+<p><code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://docs.oracle.com/javafx/2/deployment/deploy_overview.htm">
+<param name="text" value="<html><u>Application Execution Modes (Standalone vs. Web Start vs. Browser)</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

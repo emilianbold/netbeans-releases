@@ -1,0 +1,84 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>web.xml Visual Editor: Environment Entries</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="dd_multiview_references_envEntriesNode" name="dd_multiview_references_envEntriesNode"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref603" name="sthref603"></a>
+<h1>web.xml Visual Editor: Environment Entries</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Environment Entries section to add, remove, and view the web application's environment variables. Application environment entries are initialization variables that are available throughout a web application. You can use them, for example, to validate the object's type.</p>
+<p>You access application environment variables in the java:comp/env context through a JNDI lookup, unlike context parameters, which you access via a ServletContext object. So, you would extract the value of an application environment variable as follows:</p>
+<p><code>InitialContext context = new InitialContext();</code></p>
+<p><code>String header = (String) context.lookup("java:comp/env/headerPage");</code></p>
+<p>The JNDI lookup method expects the type specified by the env-entry-type element and throws an exception if the returned value is not of that type.</p>
+<p>To declare an application environment variable, you must register it in the web.xml file. When you do this, you provide information needed by the server to use the parameter. You tell the server which value should be returned when an environment entry is referred to in the web application.</p>
+<p>You open the web.xml Visual Editor from the Projects window by expanding the Web Pages node, then the WEB-INF node, and then double-clicking the web.xml file. Click References at the top of the editor to open the References section, then click the Environment Entries header to open the Environment Entries section.</p>
+<p>Click Add to define an environment entry element with the following properties:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t28">Element</th>
+<th align="left" valign="bottom" id="r1c2-t28">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t28" headers="r1c1-t28">
+<p>Entry Name</p>
+</td>
+<td align="left" headers="r2c1-t28 r1c2-t28">
+<p>Specifies the variable's name, such as <code>headerPage</code>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t28" headers="r1c1-t28">
+<p>Entry Type</p>
+</td>
+<td align="left" headers="r3c1-t28 r1c2-t28">
+<p>Specifies the variable's name for validation, such as <code>java.lang.String</code>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t28" headers="r1c1-t28">
+<p>Entry Value</p>
+</td>
+<td align="left" headers="r4c1-t28 r1c2-t28">
+<p>Specifies the parameter's value, such as <code>mypages/header-0034.html</code>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t28" headers="r1c1-t28">
+<p>Description</p>
+</td>
+<td align="left" headers="r5c1-t28 r1c2-t28">
+<p>Specifies a description, such as <code>Header Page for Travel Agency Application</code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>
