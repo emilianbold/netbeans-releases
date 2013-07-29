@@ -396,6 +396,52 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         //</editor-fold>
     }
     
+    public void testInnerClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "        LocalExtension le = new LocalExtension();\n"
+                + "        LocalExtension.InnerStatic innerStatic = null;\n"
+                + "        LocalExtension.Inner inner = le.new Inner();\n"
+                + "    }\n"
+                + "\n"
+                + "    private enum En { A, B, C, D, E };\n"
+                + "}"),
+                new File("t/LocalExtension.java", "package t;\n"
+                + "public class LocalExtension {\n"
+                + "\n"
+                + "    static class InnerStatic {\n"
+                + "    }\n"
+                + "\n"
+                + "    class Inner {\n"
+                + "    }\n"
+                + "}"));
+        performIntroduceLocalExtension("EnM", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE, new Problem(true, "ERR_IntroduceLEInnerType"));
+                verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "        LocalExtension le = new LocalExtension();\n"
+                + "        LocalExtension.InnerStatic innerStatic = null;\n"
+                + "        LocalExtension.Inner inner = le.new Inner();\n"
+                + "    }\n"
+                + "\n"
+                + "    private enum En { A, B, C, D, E };\n"
+                + "}"),
+                new File("t/LocalExtension.java", "package t;\n"
+                + "public class LocalExtension {\n"
+                + "\n"
+                + "    static class InnerStatic {\n"
+                + "    }\n"
+                + "\n"
+                + "    class Inner {\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void testEnum() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"

@@ -47,6 +47,7 @@ import java.util.LinkedHashSet;
 import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Modifier;
 import org.netbeans.api.java.source.*;
 import org.netbeans.modules.refactoring.api.AbstractRefactoring;
 import org.netbeans.modules.refactoring.api.Problem;
@@ -96,6 +97,12 @@ public final class IntroduceLocalExtensionPlugin extends JavaRefactoringPlugin {
         if (!(el.getKind() == ElementKind.CLASS)) {
             preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceLocalExtensionPlugin.class, "ERR_IntroduceLEWrongType")); // NOI18N
             return preCheckProblem;
+        }
+        for (Element element : el.getEnclosedElements()) {
+            if((element.getKind().isClass() || element.getKind().isInterface()) && !element.getModifiers().contains(Modifier.PRIVATE)) {
+                preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceLocalExtensionPlugin.class, "ERR_IntroduceLEInnerType")); // NOI18N
+                return preCheckProblem;
+            }
         }
         return preCheckProblem;
     }
