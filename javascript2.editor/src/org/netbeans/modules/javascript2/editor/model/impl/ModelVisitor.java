@@ -1133,21 +1133,7 @@ public class ModelVisitor extends PathNodeVisitor {
                             property.addAssignment(types, name.getOffsetRange().getStart());
                         }
                         if (value instanceof IdentNode) {
-                            IdentNode iNode = (IdentNode)value;
-                            JsFunction function = (JsFunction)ModelUtils.getDeclarationScope(property);
-                            String iName = iNode.getName();
-                            JsObjectImpl param = (JsObjectImpl)function.getParameter(iName);
-                            if(param != null) {
-                                param.addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
-                            } else {
-                                Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)function);
-                                for (JsObject variable : variables) {
-                                    if (iName.equals(variable.getName())) {
-                                        ((JsObjectImpl)variable).addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
-                                        break;
-                                    }
-                                }
-                            }
+                            addOccurence((IdentNode)value, false);
                         }
                     }
                 }
