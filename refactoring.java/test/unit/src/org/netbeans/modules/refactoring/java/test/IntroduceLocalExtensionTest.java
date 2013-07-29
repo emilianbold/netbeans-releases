@@ -396,6 +396,81 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         //</editor-fold>
     }
     
+    public void testGenericSuperClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void usage() {\n"
+                + "        ExtendsGeneric e = new ExtendsGeneric();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/ExtendsGeneric.java", "package t;\n"
+                + "public class ExtendsGeneric extends MyGeneric<String>{\n"
+                + "\n"
+                + "}"),
+                new File("t/MyGeneric.java", "package t;\n"
+                + "public class MyGeneric<T> {\n"
+                + "    public T get(T in) {\n"
+                + "        return in;\n"
+                + "    }\n"
+                + "}"));
+        performIntroduceLocalExtension("LocalExt", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void usage() {\n"
+                + "        LocalExt e = new LocalExt();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/ExtendsGeneric.java", "package t;\n"
+                + "public class ExtendsGeneric extends MyGeneric<String>{\n"
+                + "\n"
+                + "}"),
+                new File("t/MyGeneric.java", "package t;\n"
+                + "public class MyGeneric<T> {\n"
+                + "    public T get(T in) {\n"
+                + "        return in;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/LocalExt.java", "/*\n"
+                + " * Refactoring License\n"
+                + " */\n"
+                + "\n"
+                + "package t;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class LocalExt {\n"
+                + "    private ExtendsGeneric delegate;\n"
+                + "\n"
+                + "    public LocalExt(ExtendsGeneric delegate) {\n"
+                + "        this.delegate = delegate;\n"
+                + "    }\n"
+                + "\n"
+                + "    public LocalExt() {\n"
+                + "        this.delegate = new ExtendsGeneric();\n"
+                + "    }\n"
+                + "\n"
+                + "    public String get(String in) {\n"
+                + "        return delegate.get(in);\n"
+                + "    }\n"
+                + "\n"
+                + "    public boolean equals(Object o) {\n"
+                + "        Object target = o;\n"
+                + "        if (o instanceof LocalExt) {\n"
+                + "            target = ((LocalExt) o).delegate;\n"
+                + "        }\n"
+                + "        return this.delegate.equals(target);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int hashCode() {\n"
+                + "        return this.delegate.hashCode();\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
     public void testStaticInnerClass() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -836,7 +911,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     * Create a new SingleList. This list will hold only one element.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList() {")
-                .append("\n").append("        this.delegate = new SingleList();")
+                .append("\n").append("        this.delegate = new SingleList<E>();")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
@@ -844,7 +919,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     * @param element the element for this list.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList(E element) {")
-                .append("\n").append("        this.delegate = new SingleList(element);")
+                .append("\n").append("        this.delegate = new SingleList<E>(element);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
@@ -1235,7 +1310,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     * Create a new SingleList. This list will hold only one element.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList() {")
-                .append("\n").append("        this.delegate = new SingleList();")
+                .append("\n").append("        this.delegate = new SingleList<E>();")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
@@ -1243,7 +1318,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     * @param element the element for this list.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList(E element) {")
-                .append("\n").append("        this.delegate = new SingleList(element);")
+                .append("\n").append("        this.delegate = new SingleList<E>(element);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("    /**")
                 .append("\n").append("     * @return the someMagicNumber")

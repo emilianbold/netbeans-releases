@@ -94,7 +94,7 @@ public final class IntroduceLocalExtensionPlugin extends JavaRefactoringPlugin {
             return preCheckProblem;
         }
         Element el = treePathHandle.resolveElement(info);
-        if (!(el.getKind() == ElementKind.CLASS)) {
+        if (!(el.getKind() == ElementKind.CLASS || el.getKind() == ElementKind.INTERFACE)) {
             preCheckProblem = createProblem(preCheckProblem, true, NbBundle.getMessage(IntroduceLocalExtensionPlugin.class, "ERR_IntroduceLEWrongType")); // NOI18N
             return preCheckProblem;
         }
