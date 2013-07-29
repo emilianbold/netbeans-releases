@@ -193,9 +193,9 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
         Future<Integer> result = ExecutionService.newService(processBuilder, silentDescriptor, "Detecting default web browser") // NOI18N
                 .run();
         try {
-            result.get(5, TimeUnit.SECONDS);
+            result.get(10, TimeUnit.SECONDS);
         } catch (InterruptedException | ExecutionException | TimeoutException ex) {
-            Exceptions.printStackTrace(ex);
+            LOGGER.log(Level.INFO, null, ex);
         }
         String output = outputProcessorFactory.getOutput();
         if (output == null) {
