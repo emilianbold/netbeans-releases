@@ -88,6 +88,7 @@
             </test-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.php.atoum</friend>
+                <friend>org.netbeans.modules.php.nette.tester</friend>
                 <friend>org.netbeans.modules.php.phpunit</friend>
                 <friend>org.netbeans.modules.php.project</friend>
                 <package>org.netbeans.modules.php.api.testing</package>
