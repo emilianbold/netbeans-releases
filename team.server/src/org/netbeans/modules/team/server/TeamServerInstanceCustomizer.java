@@ -135,13 +135,13 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
     }
     
     public void setDisplayName(String name) {
-        txtDisplayName.setText(name);
         originalName = name;
+        txtDisplayName.setText(name);
     }
 
     public void setUrl(String url) {
-        txtUrl.setText(url);
         originalUrl = url;
+        txtUrl.setText(url);
     }
 
     public TeamServerProvider getProvider () {
