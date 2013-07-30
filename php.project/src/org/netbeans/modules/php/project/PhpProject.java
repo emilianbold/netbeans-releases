@@ -993,6 +993,10 @@ public final class PhpProject implements Project {
             // noop
         }
 
+        private boolean isVisible(FileObject file) {
+            return PhpProjectUtils.isVisible(PhpVisibilityQuery.forProject(PhpProject.this), file);
+        }
+
         // if any direct child of source folder changes, reset frameworks (new framework can be found in project)
         private void frameworksReset(FileObject file) {
             FileObject sourcesDirectory = getSourcesDirectory();
