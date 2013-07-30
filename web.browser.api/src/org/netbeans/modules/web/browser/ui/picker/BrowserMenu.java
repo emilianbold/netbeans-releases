@@ -87,6 +87,7 @@ public class BrowserMenu implements ChangeListener {
     private WebBrowser selectedBrowser;
     private final ChangeSupport changeSupport = new ChangeSupport( this );
     private static final boolean windowsLaF = "Windows".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
+    static final boolean GTK = "GTK".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
     private final Color windowsSeparatorColor = UIManager.getColor( "controlHighlight" ); //NOI18N
 
     public BrowserMenu( ProjectBrowserProvider provider ) {
@@ -145,7 +146,7 @@ public class BrowserMenu implements ChangeListener {
         addSection( contentPanel, phoneGapItems, NbBundle.getMessage(BrowserMenu.class, "Header_PHONEGAP"), 4, createConfigureButton(), true );
 
         JPanel panel = createBrighterPanel();
-        JLabel label = new JLabel( NbBundle.getMessage(BrowserMenu.class, "Hint_NB_Connector"));
+        JLabel label = createLabel( NbBundle.getMessage(BrowserMenu.class, "Hint_NB_Connector"));
         Color lightForeground = UIManager.getColor( "Nb.browser.picker.foreground.light" ); //NOI18N
         if( null != lightForeground )
             label.setForeground( lightForeground );
@@ -169,7 +170,7 @@ public class BrowserMenu implements ChangeListener {
         }
 
         if( !phoneGapItems.isEmpty() ) {
-            contentPanel.add( new JLabel( NbBundle.getMessage(BrowserMenu.class, "Hint_PhoneGap")),
+            contentPanel.add( createLabel( NbBundle.getMessage(BrowserMenu.class, "Hint_PhoneGap")),
                     new GridBagConstraints( 0, 4, GridBagConstraints.REMAINDER, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10,17,10,10), 0, 0 ));
         }
 
@@ -253,7 +254,7 @@ public class BrowserMenu implements ChangeListener {
     }
 
     private JComponent createHeader( String title ) {
-        JLabel label = new JLabel( title );
+        JLabel label = createLabel( title );
         Font defaultFont = label.getFont();
         label.setFont( defaultFont.deriveFont( Font.BOLD ).deriveFont( defaultFont.getSize2D()+2.0f ));
         return label;
@@ -323,6 +324,17 @@ public class BrowserMenu implements ChangeListener {
             res.setBackground( background );
         } else {
             res.setOpaque( false );
+        }
+        return res;
+    }
+
+    private JLabel createLabel( String text ) {
+        JLabel res = new JLabel(text);
+        if( GTK ) {
+            Color foreground = UIManager.getColor( "MenuItem.foreground"); //NOI18N
+            if( null != foreground ) {
+                res.setForeground( new Color(foreground.getRGB()) );
+            }
         }
         return res;
     }
