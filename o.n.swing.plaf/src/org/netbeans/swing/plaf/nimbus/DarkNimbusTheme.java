@@ -205,5 +205,8 @@ public class DarkNimbusTheme {
         //browser picker
         UIManager.put( "Nb.browser.picker.background.light", new Color(116,116,116));
         UIManager.put( "Nb.browser.picker.foreground.light", new Color(192,192,192));
+        //#233622
+        UIManager.put( "List[Selected].textForeground", UIManager.getColor( "nimbusSelectedText" ) );
+
    }
 }

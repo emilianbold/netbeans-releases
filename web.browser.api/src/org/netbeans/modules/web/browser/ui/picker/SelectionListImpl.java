@@ -50,6 +50,7 @@ import java.awt.event.MouseEvent;
 import javax.swing.BorderFactory;
 import javax.swing.JList;
 import javax.swing.ListSelectionModel;
+import javax.swing.UIManager;
 
 /**
  *
@@ -64,6 +65,12 @@ class SelectionListImpl extends JList<ListItem> {
         setBorder( BorderFactory.createEmptyBorder() );
         setOpaque( false );
         setBackground( new Color(0,0,0,0) );
+        if( BrowserMenu.GTK ) {
+            Color foreground = UIManager.getColor( "MenuItem.foreground"); //NOI18N
+            if( null != foreground ) {
+                setForeground( new Color(foreground.getRGB()) );
+            }
+        }
         setCellRenderer( new RendererImpl() );
 
         addFocusListener( new FocusAdapter() {
