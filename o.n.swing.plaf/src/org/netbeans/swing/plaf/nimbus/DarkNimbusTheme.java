@@ -201,5 +201,9 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.bigclose.tab.icon.enabled.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
         UIManager.put( "nb.bigclose.tab.icon.pressed.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
         UIManager.put( "nb.bigclose.tab.icon.rollover.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
+
+        //browser picker
+        UIManager.put( "Nb.browser.picker.background.light", new Color(116,116,116));
+        UIManager.put( "Nb.browser.picker.foreground.light", new Color(192,192,192));
    }
 }
