@@ -266,7 +266,6 @@ public class BrowserMenu implements ChangeListener {
         });
         button.setBorder( new EmptyBorder(1, 1, 1, 1) );
         button.setMargin( new Insets(0, 0, 0, 0) );
-        button.setForeground( Color.blue );
 
         button.setCursor( Cursor.getPredefinedCursor(Cursor.HAND_CURSOR) );
         button.setHorizontalAlignment( JLabel.LEFT );

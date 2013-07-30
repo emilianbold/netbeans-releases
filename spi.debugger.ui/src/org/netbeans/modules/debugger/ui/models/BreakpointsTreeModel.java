@@ -46,6 +46,8 @@ package org.netbeans.modules.debugger.ui.models;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.lang.ref.Reference;
+import java.lang.ref.SoftReference;
 import java.lang.ref.WeakReference;
 import java.util.Vector;
 
@@ -73,6 +75,8 @@ public class BreakpointsTreeModel implements TreeModel {
     private Vector listeners = new Vector ();
     private Properties bpProperties = Properties.getDefault().getProperties("Breakpoints");
     private PropertyChangeListener pchl, oppchl;
+    private Reference<Object[]> lastGroupsAndBreakpoints = new SoftReference<Object[]>(null);
+    private final Object lastGroupsAndBreakpointsLock = new Object();
     
     /** 
      *
@@ -110,7 +114,16 @@ public class BreakpointsTreeModel implements TreeModel {
                 }
                 oppchl = null;
             }
-            Object[] groupsAndBreakpoints = BreakpointGroup.createGroups(bpProperties);
+            Object[] groupsAndBreakpoints;
+            synchronized (lastGroupsAndBreakpointsLock) {
+                groupsAndBreakpoints = lastGroupsAndBreakpoints.get();
+            }
+            if (groupsAndBreakpoints == null) {
+                groupsAndBreakpoints = BreakpointGroup.createGroups(bpProperties);
+                synchronized (lastGroupsAndBreakpointsLock) {
+                    lastGroupsAndBreakpoints = new SoftReference<Object[]>(groupsAndBreakpoints);
+                }
+            }
             if (to == 0 || to >= groupsAndBreakpoints.length && from == 0) {
                 return groupsAndBreakpoints;
             } else {
@@ -166,6 +179,9 @@ public class BreakpointsTreeModel implements TreeModel {
     }
     
     private void fireTreeChanged () {
+        synchronized (lastGroupsAndBreakpointsLock) {
+            lastGroupsAndBreakpoints = new SoftReference<Object[]>(null);
+        }
         Vector v = (Vector) listeners.clone ();
         int i, k = v.size ();
         for (i = 0; i < k; i++)

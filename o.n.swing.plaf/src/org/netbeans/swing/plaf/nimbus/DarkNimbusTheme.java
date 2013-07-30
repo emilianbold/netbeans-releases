@@ -201,10 +201,5 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.bigclose.tab.icon.enabled.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
         UIManager.put( "nb.bigclose.tab.icon.pressed.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
         UIManager.put( "nb.bigclose.tab.icon.rollover.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
-
-        //#232854 - menu item accelerators are too dark
-        UIManager.put( "MenuItem.acceleratorForeground", new Color(198,198,198) );
-        UIManager.put( "CheckBoxMenuItem.acceleratorForeground", new Color(198,198,198) );
-        UIManager.put( "RadioButtonMenuItem.acceleratorForeground", new Color(198,198,198) );
    }
 }

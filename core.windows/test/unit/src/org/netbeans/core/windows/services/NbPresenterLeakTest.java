@@ -47,6 +47,8 @@ package org.netbeans.core.windows.services;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Dialog;
+import java.awt.Dimension;
+import java.awt.Frame;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.JButton;
@@ -119,6 +121,16 @@ public class NbPresenterLeakTest extends NbTestCase {
         dialog = null;
         wizardDescriptor = null;
         
+        SwingUtilities.invokeAndWait (new Runnable() {
+
+            @Override
+            public void run() {
+                Frame f = new Frame();
+                f.setPreferredSize( new Dimension(100,100));
+                f.setVisible( true );
+            }
+        });
+
         assertGC ("Dialog disappears.", w);
     }
 
