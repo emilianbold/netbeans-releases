@@ -85,6 +85,8 @@ public class KOUtils {
     
     public static final Color KO_COLOR = Color.green.darker();
     
+    private static final int URL_CONNECTION_TIMEOUT = 1000; //ms
+    private static final int URL_READ_TIMEOUT = URL_CONNECTION_TIMEOUT * 3; //ms
      /**
      * Gets document range for the given from and to embedded offsets. 
      * 
@@ -118,6 +120,8 @@ public class KOUtils {
             charset = Charset.defaultCharset();
         }
         URLConnection con = url.openConnection();
+        con.setConnectTimeout(URL_CONNECTION_TIMEOUT);
+        con.setReadTimeout(URL_READ_TIMEOUT);
         con.connect();
         Reader r = new InputStreamReader(new BufferedInputStream(con.getInputStream()), charset);
         char[] buf = new char[2048];
