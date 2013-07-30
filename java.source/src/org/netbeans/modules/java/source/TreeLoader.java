@@ -106,6 +106,7 @@ import javax.swing.text.html.parser.ParserDelegator;
 import javax.tools.JavaFileManager;
 import javax.tools.JavaFileObject;
 import javax.tools.StandardLocation;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
@@ -325,43 +326,52 @@ public class TreeLoader extends LazyTreeLoader {
         }.scan(tree);
         return ret.get();
     }
+
+    private static void dumpSymFile(
+        JavaFileManager jfm,
+        JavacTaskImpl jti,
+        ClassSymbol clazz) throws IOException {
+        String binaryName = null;
+        String surl = null;
+        if (clazz.classfile != null) {
+            binaryName = jfm.inferBinaryName(StandardLocation.PLATFORM_CLASS_PATH, clazz.classfile);
+            if (binaryName == null)
+                binaryName = jfm.inferBinaryName(StandardLocation.CLASS_PATH, clazz.classfile);
+            surl = clazz.classfile.toUri().toURL().toExternalForm();
+        } else if (clazz.sourcefile != null) {
+            binaryName = jfm.inferBinaryName(StandardLocation.SOURCE_PATH, clazz.sourcefile);
+            surl = clazz.sourcefile.toUri().toURL().toExternalForm();
+        }
+        if (binaryName == null || surl == null) {
+            return;
+        }
+        int index = surl.lastIndexOf(FileObjects.convertPackage2Folder(binaryName));
+        if (index > 0) {
+            final File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
+            dumpSymFile(jfm, jti, clazz, classes);
+        } else {
+            LOGGER.log(
+               Level.INFO,
+               "Invalid binary name when writing sym file for class: {0}, source: {1}, binary name {2}",    // NOI18N
+               new Object[] {
+                   clazz.flatname,
+                   surl,
+                   binaryName
+               });
+        }
+    }
     
-    public static void dumpSymFile(JavaFileManager jfm, JavacTaskImpl jti, ClassSymbol clazz) throws IOException {
+    public static void dumpSymFile(
+            @NonNull final JavaFileManager jfm,
+            @NonNull final JavacTaskImpl jti,
+            @NonNull final ClassSymbol clazz,
+            @NonNull final File classFolder) throws IOException {
         Log log = Log.instance(jti.getContext());
         JavaFileObject prevLogTo = log.useSource(null);
         DiscardDiagnosticHandler discardDiagnosticHandler = new Log.DiscardDiagnosticHandler(log);
-        try {
-            String binaryName = null;
-            String surl = null;
-            if (clazz.classfile != null) {
-                binaryName = jfm.inferBinaryName(StandardLocation.PLATFORM_CLASS_PATH, clazz.classfile);
-                if (binaryName == null)
-                    binaryName = jfm.inferBinaryName(StandardLocation.CLASS_PATH, clazz.classfile);
-                surl = clazz.classfile.toUri().toURL().toExternalForm();
-            }
-            else if (clazz.sourcefile != null) {
-                binaryName = jfm.inferBinaryName(StandardLocation.SOURCE_PATH, clazz.sourcefile);
-                surl = clazz.sourcefile.toUri().toURL().toExternalForm();
-            }
-            if (binaryName == null || surl == null) {
-                return;
-            }
-            int index = surl.lastIndexOf(FileObjects.convertPackage2Folder(binaryName));
-            assert index > 0 : String.format("source: %s binary name: %s", surl, binaryName);   //NOI18N
-            if (index > 0) {
-                File classes = JavaIndex.getClassFolder(new URL(surl.substring(0, index)));
-                jfm.handleOption("output-root", Collections.singletonList(classes.getPath()).iterator()); //NOI18N
-                jti.generate(Collections.singletonList(clazz));
-            } else {
-                LOGGER.log(
-                   Level.INFO,
-                   "Invalid binary name when writing sym file for class: {0}, source: {1}, binary name {2}",    // NOI18N
-                   new Object[] {
-                       clazz.flatname,
-                       surl,
-                       binaryName
-                   });
-            }
+        try {            
+            jfm.handleOption("output-root", Collections.singletonList(classFolder.getPath()).iterator()); //NOI18N
+            jti.generate(Collections.singletonList(clazz));
         } catch (InvalidSourcePath isp) {
             LOGGER.log(Level.INFO, "InvalidSourcePath reported when writing sym file for class: {0}", clazz.flatname); // NOI18N
         } finally {
