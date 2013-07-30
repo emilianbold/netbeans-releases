@@ -965,13 +965,9 @@ public class ClientJavaSourceHelper {
                     Servlet servlet = (Servlet) webApp.createBean("Servlet"); //NOI18N
                     servlet.setServletName(servletName);
                     servlet.setServletClass(className);
-                    ServletMapping servletMapping = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
+                    ServletMapping25 servletMapping = (ServletMapping25) webApp.createBean("ServletMapping"); //NOI18N
                     servletMapping.setServletName(servletName);
-                    if (servletMapping instanceof ServletMapping25) {
-                        ((ServletMapping25)servletMapping).addUrlPattern(urlPattern);
-                    } else {
-                        servletMapping.setUrlPattern(urlPattern);
-                    }
+                    servletMapping.addUrlPattern(urlPattern);
                     webApp.addServlet(servlet);
                     webApp.addServletMapping(servletMapping);
 
@@ -994,13 +990,9 @@ public class ClientJavaSourceHelper {
                     Servlet servlet = (Servlet) webApp.createBean("Servlet"); //NOI18N
                     servlet.setServletName(servletName);
                     servlet.setServletClass(className);
-                    ServletMapping servletMapping = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
+                    ServletMapping25 servletMapping = (ServletMapping25) webApp.createBean("ServletMapping"); //NOI18N
                     servletMapping.setServletName(servletName);
-                    if (servletMapping instanceof ServletMapping25) {
-                        ((ServletMapping25)servletMapping).addUrlPattern(urlPatterns[i]);
-                    } else {
-                        servletMapping.setUrlPattern(urlPatterns[i]);
-                    }
+                    servletMapping.addUrlPattern(urlPatterns[i]);
                     webApp.addServlet(servlet);
                     webApp.addServletMapping(servletMapping);
 

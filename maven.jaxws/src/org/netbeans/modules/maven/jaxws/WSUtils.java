@@ -75,6 +75,7 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -841,7 +842,7 @@ public class WSUtils {
                 for (ServletMapping servletMapping : webApp.getServletMapping()) {
                     if (servletName != null && servletName.equals(servletMapping.getServletName())) {
                         String endpoindPattern = cutEndingWildcard(endpoint.getUrlPattern());
-                        String servletMappingPattern = cutEndingWildcard(servletMapping.getUrlPattern());
+                        String servletMappingPattern = cutEndingWildcard(((ServletMapping25)servletMapping).getUrlPatterns()[0]);
                         if (endpoindPattern.startsWith(servletMappingPattern)) {
                             return true;
                         }
@@ -991,10 +992,10 @@ public class WSUtils {
         //remove the servlet mapping
         ServletMapping[] mappings = webApp.getServletMapping();
         for(int i = 0; i < mappings.length; i++){
-            ServletMapping mapping = mappings[i];
+            ServletMapping25 mapping = (ServletMapping25)mappings[i];
             if(mapping.getServletName().equals(oldServiceName)){
                 mapping.setServletName(newServiceName);
-                mapping.setUrlPattern("/"+newServiceName);
+                mapping.setUrlPatterns(new String[]{"/"+newServiceName});
                 break;
             }
         }
