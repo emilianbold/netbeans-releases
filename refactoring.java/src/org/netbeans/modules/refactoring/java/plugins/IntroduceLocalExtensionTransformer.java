@@ -90,7 +90,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
     }
 
     @Override
-    public Tree scan(Tree tree, Element p) {
+    public Tree visitCompilationUnit(CompilationUnitTree node, Element p) {
         if (!initialized) {
             String packageName = refactoring.getPackageName();
             FileObject sourceRoot = refactoring.getSourceRoot();
@@ -160,8 +160,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             workingCopy.rewrite(null, newCompilation);
             initialized = true;
         }
-
-        return super.scan(tree, p);
+        return super.visitCompilationUnit(node, p);
     }
 
     private void addFields(TypeElement source, CodeStyle cs, List<Tree> members) throws IllegalStateException {
@@ -379,13 +378,15 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
     private void addMember(TypeElement source, ExecutableElement member, GeneratorUtilities genUtils, List<Tree> members) throws IllegalStateException {
         List<ExpressionTree> paramList = new ArrayList<>();
         ExecutableType method = (ExecutableType) workingCopy.getTypes().asMemberOf((DeclaredType) source.asType(), member);
-        for (int i = 0;i < method.getParameterTypes().size(); i++) {
-            TypeMirror variableElement = method.getParameterTypes().get(i);
+        final List<? extends VariableElement> parameters = member.getParameters();
+        final List<? extends TypeMirror> parameterTypes = method.getParameterTypes();
+        for (int i = 0;i < parameterTypes.size(); i++) {
+            TypeMirror variableElement = parameterTypes.get(i);
             final ExpressionTree identifier;
             if (workingCopy.getTypes().isSameType(variableElement, source.asType())) {
-                identifier = make.MemberSelect(make.Identifier(member.getParameters().get(i)), "delegate"); //NOI18N
+                identifier = make.MemberSelect(make.Identifier(parameters.get(i).getSimpleName()), "delegate"); //NOI18N
             } else {
-                identifier = make.Identifier(member.getParameters().get(i));
+                identifier = make.Identifier(parameters.get(i).getSimpleName());
             }
             paramList.add(identifier);
         }
@@ -445,12 +446,10 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
         List<TypeParameterTree> newTypeParams = new ArrayList<>(member.getTypeParameters().size());
         transformTypeParameters(member, member.getTypeParameters(), make, genUtils, newTypeParams);
 
-        final List<? extends TypeMirror> parameterTypes = method.getParameterTypes();
-        List<? extends VariableElement> parameterElements = member.getParameters();
         List<VariableTree> newParameters = new ArrayList<>(parameterTypes.size());
         for (int i = 0; i < parameterTypes.size(); i++) {
             TypeMirror variableType = parameterTypes.get(i);
-            VariableElement variableElement = parameterElements.get(i);
+            VariableElement variableElement = parameters.get(i);
             if (workingCopy.getTypes().isSameType(variableType, source.asType())) {
                 Tree ident = make.QualIdent(fqn);
                 if (variableType.getKind() == TypeKind.DECLARED) {
@@ -573,11 +572,8 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
             members.add(newConstr);
         }
         final boolean isAbstract = origClass.getModifiers().contains(Modifier.ABSTRACT);
+        if (!isAbstract) {
         for (ExecutableElement constr : ElementFilter.constructorsIn(origClass.getEnclosedElements())) {
-            if (isAbstract && workingCopy.getElementUtilities().isSynthetic(constr)) {
-                continue;
-            }
-
             final List<? extends TypeParameterElement> typeParameters = constr.getTypeParameters();
             List<TypeParameterTree> newTypeParams = new ArrayList<>(typeParameters.size());
             transformTypeParameters(constr, typeParameters, make, genUtils, newTypeParams);
@@ -633,6 +629,7 @@ public class IntroduceLocalExtensionTransformer extends RefactoringVisitor {
                 make.addComment(newConstr, comment, true);
             }
             members.add(newConstr);
+        }
         }
     }
 

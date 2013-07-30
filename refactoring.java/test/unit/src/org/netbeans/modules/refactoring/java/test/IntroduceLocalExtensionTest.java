@@ -742,60 +742,60 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 + "        this.delegate = new Date();\n"
                 + "    }\n"
                 + "\n"
-                + "    public DateExt(long date) {\n"
-                + "        this.delegate = new Date(date);\n"
+                + "    public DateExt(long arg0) {\n"
+                + "        this.delegate = new Date(arg0);\n"
                 + "    }\n"
                 + "\n"
-                + "    public DateExt(int year, int month, int date) {\n"
-                + "        this.delegate = new Date(year, month, date);\n"
+                + "    public DateExt(int arg0, int arg1, int arg2) {\n"
+                + "        this.delegate = new Date(arg0, arg1, arg2);\n"
                 + "    }\n"
                 + "\n"
-                + "    public DateExt(int year, int month, int date, int hrs, int min) {\n"
-                + "        this.delegate = new Date(year, month, date, hrs, min);\n"
+                + "    public DateExt(int arg0, int arg1, int arg2, int arg3, int arg4) {\n"
+                + "        this.delegate = new Date(arg0, arg1, arg2, arg3, arg4);\n"
                 + "    }\n"
                 + "\n"
-                + "    public DateExt(int year, int month, int date, int hrs, int min, int sec) {\n"
-                + "        this.delegate = new Date(year, month, date, hrs, min, sec);\n"
+                + "    public DateExt(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {\n"
+                + "        this.delegate = new Date(arg0, arg1, arg2, arg3, arg4, arg5);\n"
                 + "    }\n"
                 + "\n"
-                + "    public DateExt(String s) {\n"
-                + "        this.delegate = new Date(s);\n"
+                + "    public DateExt(String arg0) {\n"
+                + "        this.delegate = new Date(arg0);\n"
                 + "    }\n"
                 + "\n"
                 + "    public Object clone() {\n"
                 + "        return delegate.clone();\n"
                 + "    }\n"
                 + "\n"
-                + "    public static long UTC(int year, int month, int date, int hrs, int min, int sec) {\n"
-                + "        return Date.UTC(year, month, date, hrs, min, sec);\n"
+                + "    public static long UTC(int i, int i1, int i2, int i3, int i4, int i5) {\n"
+                + "        return Date.UTC(i, i1, i2, i3, i4, i5);\n"
                 + "    }\n"
                 + "\n"
-                + "    public static long parse(String s) {\n"
-                + "        return Date.parse(s);\n"
+                + "    public static long parse(String string) {\n"
+                + "        return Date.parse(string);\n"
                 + "    }\n"
                 + "\n"
                 + "    public int getYear() {\n"
                 + "        return delegate.getYear();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setYear(int year) {\n"
-                + "        delegate.setYear(year);\n"
+                + "    public void setYear(int i) {\n"
+                + "        delegate.setYear(i);\n"
                 + "    }\n"
                 + "\n"
                 + "    public int getMonth() {\n"
                 + "        return delegate.getMonth();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setMonth(int month) {\n"
-                + "        delegate.setMonth(month);\n"
+                + "    public void setMonth(int i) {\n"
+                + "        delegate.setMonth(i);\n"
                 + "    }\n"
                 + "\n"
                 + "    public int getDate() {\n"
                 + "        return delegate.getDate();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setDate(int date) {\n"
-                + "        delegate.setDate(date);\n"
+                + "    public void setDate(int i) {\n"
+                + "        delegate.setDate(i);\n"
                 + "    }\n"
                 + "\n"
                 + "    public int getDay() {\n"
@@ -806,44 +806,44 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 + "        return delegate.getHours();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setHours(int hours) {\n"
-                + "        delegate.setHours(hours);\n"
+                + "    public void setHours(int i) {\n"
+                + "        delegate.setHours(i);\n"
                 + "    }\n"
                 + "\n"
                 + "    public int getMinutes() {\n"
                 + "        return delegate.getMinutes();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setMinutes(int minutes) {\n"
-                + "        delegate.setMinutes(minutes);\n"
+                + "    public void setMinutes(int i) {\n"
+                + "        delegate.setMinutes(i);\n"
                 + "    }\n"
                 + "\n"
                 + "    public int getSeconds() {\n"
                 + "        return delegate.getSeconds();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setSeconds(int seconds) {\n"
-                + "        delegate.setSeconds(seconds);\n"
+                + "    public void setSeconds(int i) {\n"
+                + "        delegate.setSeconds(i);\n"
                 + "    }\n"
                 + "\n"
                 + "    public long getTime() {\n"
                 + "        return delegate.getTime();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setTime(long time) {\n"
-                + "        delegate.setTime(time);\n"
+                + "    public void setTime(long l) {\n"
+                + "        delegate.setTime(l);\n"
                 + "    }\n"
                 + "\n"
-                + "    public boolean before(DateExt when) {\n"
-                + "        return delegate.before(when.delegate);\n"
+                + "    public boolean before(DateExt date) {\n"
+                + "        return delegate.before(date.delegate);\n"
                 + "    }\n"
                 + "\n"
-                + "    public boolean after(DateExt when) {\n"
-                + "        return delegate.after(when.delegate);\n"
+                + "    public boolean after(DateExt date) {\n"
+                + "        return delegate.after(date.delegate);\n"
                 + "    }\n"
                 + "\n"
-                + "    public int compareTo(DateExt anotherDate) {\n"
-                + "        return delegate.compareTo(anotherDate.delegate);\n"
+                + "    public int compareTo(DateExt date) {\n"
+                + "        return delegate.compareTo(date.delegate);\n"
                 + "    }\n"
                 + "\n"
                 + "    public String toString() {\n"
@@ -936,16 +936,16 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        this.delegate.someMagicNumber = someMagicNumber;")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public boolean containsAll(Collection<?> c) {")
-                .append("\n").append("        return delegate.containsAll(c);")
+                .append("\n").append("    public boolean containsAll(Collection<?> clctn) {")
+                .append("\n").append("        return delegate.containsAll(clctn);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public boolean removeAll(Collection<?> c) {")
-                .append("\n").append("        return delegate.removeAll(c);")
+                .append("\n").append("    public boolean removeAll(Collection<?> clctn) {")
+                .append("\n").append("        return delegate.removeAll(clctn);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public boolean retainAll(Collection<?> c) {")
-                .append("\n").append("        return delegate.retainAll(c);")
+                .append("\n").append("    public boolean retainAll(Collection<?> clctn) {")
+                .append("\n").append("        return delegate.retainAll(clctn);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    public String toString() {")
@@ -960,12 +960,12 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        return delegate.listIterator();")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public ListIterator<E> listIterator(int index) {")
-                .append("\n").append("        return delegate.listIterator(index);")
+                .append("\n").append("    public ListIterator<E> listIterator(int i) {")
+                .append("\n").append("        return delegate.listIterator(i);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public List<E> subList(int fromIndex, int toIndex) {")
-                .append("\n").append("        return delegate.subList(fromIndex, toIndex);")
+                .append("\n").append("    public List<E> subList(int i, int i1) {")
+                .append("\n").append("        return delegate.subList(i, i1);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
@@ -1334,16 +1334,16 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        this.delegate.someMagicNumber = someMagicNumber;")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public boolean containsAll(Collection<?> c) {")
-                .append("\n").append("        return delegate.containsAll(c);")
+                .append("\n").append("    public boolean containsAll(Collection<?> clctn) {")
+                .append("\n").append("        return delegate.containsAll(clctn);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public boolean removeAll(Collection<?> c) {")
-                .append("\n").append("        return delegate.removeAll(c);")
+                .append("\n").append("    public boolean removeAll(Collection<?> clctn) {")
+                .append("\n").append("        return delegate.removeAll(clctn);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public boolean retainAll(Collection<?> c) {")
-                .append("\n").append("        return delegate.retainAll(c);")
+                .append("\n").append("    public boolean retainAll(Collection<?> clctn) {")
+                .append("\n").append("        return delegate.retainAll(clctn);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    public String toString() {")
@@ -1358,12 +1358,12 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        return delegate.listIterator();")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public ListIterator<E> listIterator(int index) {")
-                .append("\n").append("        return delegate.listIterator(index);")
+                .append("\n").append("    public ListIterator<E> listIterator(int i) {")
+                .append("\n").append("        return delegate.listIterator(i);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public List<E> subList(int fromIndex, int toIndex) {")
-                .append("\n").append("        return delegate.subList(fromIndex, toIndex);")
+                .append("\n").append("    public List<E> subList(int i, int i1) {")
+                .append("\n").append("        return delegate.subList(i, i1);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
@@ -1694,16 +1694,16 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         .append("\n").append(" */")
         .append("\n").append("public class ArrayList<E> extends java.util.ArrayList<E> {")
         .append("\n").append("")
-        .append("\n").append("    public ArrayList(int initialCapacity) {")
-        .append("\n").append("        super(initialCapacity);")
+        .append("\n").append("    public ArrayList(int arg0) {")
+        .append("\n").append("        super(arg0);")
         .append("\n").append("    }")
         .append("\n").append("")
         .append("\n").append("    public ArrayList() {")
         .append("\n").append("        super();")
         .append("\n").append("    }")
         .append("\n").append("")
-        .append("\n").append("    public ArrayList(Collection<? extends E> c) {")
-        .append("\n").append("        super(c);")
+        .append("\n").append("    public ArrayList(Collection<? extends E> arg0) {")
+        .append("\n").append("        super(arg0);")
         .append("\n").append("    }")
         .append("\n").append("")
         .append("\n").append("}")
