@@ -896,29 +896,38 @@ public class JavacParser extends Parser {
                             // empty bootClassPath also check classpath
                             classPath = cpInfo.getClassPath(PathKind.COMPILE);
                         }
-                        if (srcClassPath != null && srcClassPath.findResource("java/lang/AssertionError.java") == null) { // NOI18N
-                            if (classPath == null || classPath.findResource("java/lang/AssertionError.class") == null) { // NOI18N
-                                LOGGER.log(warnLevel,
-                                           "Even though the source level of {0} is set to: {1}, java.lang.AssertionError cannot be found on the bootclasspath: {2}\n" +
-                                           "Changing source level to 1.3",
-                                           new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
-                                return com.sun.tools.javac.code.Source.JDK1_3;
-                            }
+                        if (!hasResource("java/lang/AssertionError", ClassPath.EMPTY, classPath, srcClassPath)) { // NOI18N
+                            LOGGER.log(warnLevel,
+                                       "Even though the source level of {0} is set to: {1}, java.lang.AssertionError cannot be found on the bootclasspath: {2}\n" +
+                                       "Changing source level to 1.3",
+                                       new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                            return com.sun.tools.javac.code.Source.JDK1_3;
                         }
                     }
                 }
-                if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_5) >= 0) {
-                    if (bootClassPath != null && bootClassPath.findResource("java/lang/StringBuilder.class") == null) { //NOI18N
-                        if (srcClassPath != null && srcClassPath.findResource("java/lang/StringBuilder.java")==null) {
-                            if (classPath == null || classPath.findResource("java/lang/StringBuilder.class") == null) { // NOI18N
-                                LOGGER.log(warnLevel,
-                                           "Even though the source level of {0} is set to: {1}, java.lang.StringBuilder cannot be found on the bootclasspath: {2}\n" +
-                                           "Changing source level to 1.4",
-                                           new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
-                                return com.sun.tools.javac.code.Source.JDK1_4;
-                            }
-                        }
-                    }
+                if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_5) >= 0 &&
+                    !hasResource("java/lang/StringBuilder", bootClassPath, classPath, srcClassPath)) { //NOI18N
+                    LOGGER.log(warnLevel,
+                               "Even though the source level of {0} is set to: {1}, java.lang.StringBuilder cannot be found on the bootclasspath: {2}\n" +
+                               "Changing source level to 1.4",
+                               new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                    return com.sun.tools.javac.code.Source.JDK1_4;
+                }
+                if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_7) >= 0 &&
+                    !hasResource("java/lang/AutoCloseable", bootClassPath, classPath, srcClassPath)) { //NOI18N
+                    LOGGER.log(warnLevel,
+                               "Even though the source level of {0} is set to: {1}, java.lang.AutoCloseable cannot be found on the bootclasspath: {2}\n" +   //NOI18N
+                               "Changing source level to 1.6",  //NOI18N
+                               new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                    return com.sun.tools.javac.code.Source.JDK1_6;
+                }
+                if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_8) >= 0 &&
+                    !hasResource("java/util/stream/Streams", bootClassPath, classPath, srcClassPath)) { //NOI18N
+                    LOGGER.log(warnLevel,
+                               "Even though the source level of {0} is set to: {1}, java.util.stream.Streams cannot be found on the bootclasspath: {2}\n" +   //NOI18N
+                               "Changing source level to 1.7",  //NOI18N
+                               new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                    return com.sun.tools.javac.code.Source.JDK1_7;                                                                        
                 }
                 return source;
             }
@@ -932,6 +941,23 @@ public class JavacParser extends Parser {
         else {
             return sources[sources.length-1];
         }
+    }
+
+    private static boolean hasResource(
+        @NonNull String resourceBase,
+        @NullAllowed ClassPath boot,
+        @NullAllowed ClassPath compile,
+        @NullAllowed ClassPath source) {
+        final String resourceClass = String.format("%s.class", resourceBase);
+        final String resourceJava = String.format("%s.java", resourceBase);
+        if (boot != null && boot.findResource(resourceClass) == null) { //NOI18N
+            if (source != null && source.findResource(resourceJava) == null) {   //NOI18N
+                if (compile == null || compile.findResource(resourceClass) == null) { // NOI18N
+                    return false;
+                }
+            }
+        }
+        return true;
     }
     
     private static void logTime (FileObject source, Phase phase, long time) {
