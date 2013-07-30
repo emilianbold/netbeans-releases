@@ -74,10 +74,11 @@ class GlobalOptionsSubPanel extends javax.swing.JPanel
 		    DebuggerOption.BALLOON_EVAL.createUI(),
 		};
 
-	    if (NativeDebuggerManager.isStandalone())
+	    if (NativeDebuggerManager.isStandalone() || NativeDebuggerManager.isPL()) {
 		setup(dbxtool_panels);
-	    else
+            } else {
 		setup(panels);
+            }
 	}
     }
 
