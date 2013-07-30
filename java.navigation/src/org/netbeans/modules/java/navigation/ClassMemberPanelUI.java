@@ -887,7 +887,7 @@ public class ClassMemberPanelUI extends javax.swing.JPanel
             c.gridheight = 1;
             c.insets = new Insets(0, 0, 0, 0);
             c.anchor = GridBagConstraints.WEST;
-            c.fill = GridBagConstraints.HORIZONTAL;
+            c.fill = GridBagConstraints.BOTH;
             c.weightx = 1;
             c.weighty = 0;
             toolbar.add(historyCombo, c);
