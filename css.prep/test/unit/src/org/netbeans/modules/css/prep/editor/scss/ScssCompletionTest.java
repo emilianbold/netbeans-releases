@@ -216,4 +216,10 @@ public class ScssCompletionTest extends CssModuleTestBase {
                 + "}", arr("red"), Match.CONTAINS);
 
     }
+    
+    public void testPropertyValueCompletion() throws ParseException {
+        checkCC(".clz { color: | }", arr("red"), Match.CONTAINS);
+        checkCC(".clz { color: f| }", arr("fuchsia"), Match.CONTAINS);
+        checkCC(".clz { color: fuch| }", arr("fuchsia", "$color_chooser"), Match.EXACT);
+    }
 }
