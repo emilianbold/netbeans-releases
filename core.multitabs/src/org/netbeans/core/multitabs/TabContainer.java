@@ -110,8 +110,10 @@ public final class TabContainer extends JPanel implements Tabbed.Accessor, Chang
     public void stateChanged( ChangeEvent e ) {
         TopComponent tc = tabbedImpl.getSelectedTopComponent();
         if( tc != null ) {
+            boolean wasVisible = tc.isVisible();
             layout.showComponent( tc, tcPanel );
-            tc.requestFocusInWindow();
+            if( !wasVisible )
+                tc.requestFocusInWindow();
         }
     }
 

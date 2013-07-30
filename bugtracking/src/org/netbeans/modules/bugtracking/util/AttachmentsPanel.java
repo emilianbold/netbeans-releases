@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.bugtracking.util;
 
-import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
@@ -86,7 +85,6 @@ import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.modules.Places;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Utilities;
 
@@ -646,6 +644,8 @@ public class AttachmentsPanel extends JPanel {
                             getAttachmentData(file);
                         } catch (IOException ioex) {
                             LOG.log(Level.INFO, ioex.getMessage(), ioex);
+                        } finally {
+                            handle.finish();
                         }
                     }
                 });
