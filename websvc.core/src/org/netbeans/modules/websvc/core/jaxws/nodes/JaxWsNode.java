@@ -65,7 +65,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.AnnotationValue;
-import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Action;
@@ -82,6 +81,7 @@ import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
@@ -618,7 +618,7 @@ public class JaxWsNode extends AbstractNode implements
                 if (servletName != null) {
                     for (ServletMapping servletMapping : webApp.getServletMapping()) {
                         if (servletName.equals(servletMapping.getServletName())) {
-                            String urlPattern = servletMapping.getUrlPattern();
+                            String urlPattern = ((ServletMapping25)servletMapping).getUrlPatterns()[0];
                             return urlPattern.startsWith("/") ? urlPattern.substring(1) : urlPattern; //NOI18N
                         }
                     }

@@ -167,10 +167,40 @@ public java.lang.String[] getServletNames() throws org.netbeans.modules.j2ee.dd.
             <namespace>http://java.sun.com/xml/ns/j2ee</namespace>
             <bean-name>ServletMapping</bean-name>
             <implements> 
-                org.netbeans.modules.j2ee.dd.api.web.ServletMapping, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
+                org.netbeans.modules.j2ee.dd.api.web.ServletMapping25, org.netbeans.modules.j2ee.dd.impl.common.KeyBean
             </implements>
             <user-code>
                 public String getKeyProperty() { return "UrlPattern"; }
+
+                public void setUrlPattern(int index, String value) {
+                    setUrlPattern(value);
+                }
+
+                public String getUrlPattern(int index) {
+                    return getUrlPattern();
+                }
+
+                public void setUrlPatterns(String[] value) {
+                    setUrlPattern(value[0]);
+                }
+
+                public String[] getUrlPatterns() {
+                    return new String[]{getUrlPattern()};
+                }
+
+                public int sizeUrlPattern() {
+                    return 1;
+                }
+
+                public int addUrlPattern(String value) {
+                    setUrlPattern(value);
+                    return 0;
+                }
+
+                public int removeUrlPattern(String value) {
+                  return -1;
+                }
+
             </user-code>
 	</meta-element>
 	<meta-element>
