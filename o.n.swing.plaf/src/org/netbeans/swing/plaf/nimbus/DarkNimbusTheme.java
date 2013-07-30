@@ -201,5 +201,9 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.bigclose.tab.icon.enabled.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
         UIManager.put( "nb.bigclose.tab.icon.pressed.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
         UIManager.put( "nb.bigclose.tab.icon.rollover.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
+
+        //#233622
+        UIManager.put( "List[Selected].textForeground", UIManager.getColor( "nimbusSelectedText" ) );
+
    }
 }
