@@ -204,7 +204,7 @@ public class NodeTest extends JellyTestCase {
         String aboutItem = Bundle.getStringTrimmed("org.netbeans.core.actions.Bundle", "About");
         sourcePackagesNode.performMenuActionNoBlock(helpItem + "|" + aboutItem);    // NOI18N
         String aboutTitle = Bundle.getString("org.netbeans.core.startup.Bundle", "CTL_About_Title");
-        new JDialogOperator(aboutTitle).close();
+        new JDialogOperator(aboutTitle).requestClose();
     }
 
     /** Test performPopupAction  */

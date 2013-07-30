@@ -113,7 +113,7 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
         private final String path;
         
         public OverObjects(String path) {
-            super(delegates(path));
+            super(delegates(null, path));
             this.path = path;
             try {
                 ModuleSystem ms = Main.getModuleSystem(false);
@@ -135,7 +135,7 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
         }
         
         @SuppressWarnings("deprecation")
-        private static Lookup[] delegates(String path) {
+        private static Lookup[] delegates(Lookup prevFolderLkp, String path) {
             ClassLoader loader = Lookup.getDefault().lookup(ClassLoader.class);
             LOG.log(Level.FINEST, "lkp loader: {0}", loader);
             if (loader == null) {
@@ -157,12 +157,20 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
             } else {
                 s = path;
             }
-            return new Lookup[] {new org.openide.loaders.FolderLookup(DataFolder.findFolder(fo), s).getLookup(), base};
+            if (prevFolderLkp == null) {
+                prevFolderLkp = new org.openide.loaders.FolderLookup(DataFolder.findFolder(fo), s).getLookup();
+            }
+            return new Lookup[] {prevFolderLkp, base};
+        }
+        
+        Lookup extractFolderLkp() {
+            Lookup[] arr = getLookups();
+            return arr.length == 2 ? arr[0] : null;
         }
     
         @Override
         public void propertyChange(PropertyChangeEvent ev) {
-            setLookups(delegates(path));
+            setLookups(delegates(extractFolderLkp(), path));
         }
 
         @Override
@@ -191,7 +199,7 @@ public final class RecognizeInstanceObjects extends NamedServicesProvider {
         }
         private void ch(FileEvent e) {
             if ((e.getFile().getPath() + "/").startsWith(path)) { // NOI18N
-                setLookups(delegates(path));
+                setLookups(delegates(extractFolderLkp(), path));
             }
         }
 
