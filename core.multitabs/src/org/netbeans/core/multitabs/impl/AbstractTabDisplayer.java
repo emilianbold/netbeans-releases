@@ -45,6 +45,7 @@
 package org.netbeans.core.multitabs.impl;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Font;
 import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
@@ -100,6 +101,13 @@ abstract class AbstractTabDisplayer extends TabDisplayer implements MouseWheelLi
         lblFullPath.setFont( defaultFont.deriveFont( defaultFont.getSize2D()-2 ) );
         JPanel controlsPanel = new JPanel( new BorderLayout() );
         controlsPanel.setOpaque( false );
+        if( TabTableUI.IS_AQUA ) {
+            Color backColor = UIManager.getColor( "NbSplitPane.background" ); //NOI18N
+            if( null != backColor ) {
+                setBackground( backColor );
+                setOpaque( true );
+            }
+        }
         switch( tabsLocation ) {
             case JTabbedPane.TOP:
             case JTabbedPane.BOTTOM:
