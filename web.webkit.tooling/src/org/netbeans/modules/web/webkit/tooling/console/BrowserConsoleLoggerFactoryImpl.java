@@ -70,6 +70,7 @@ public class BrowserConsoleLoggerFactoryImpl implements BrowserConsoleLoggerFact
             return;
         }
         webkit.getConsole().removeListener(logger);
+        logger.sessionWasClosed();
         logger.close();
     }
 
