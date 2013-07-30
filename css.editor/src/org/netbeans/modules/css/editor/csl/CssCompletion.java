@@ -1161,6 +1161,7 @@ public class CssCompletion implements CodeCompletionHandler {
                                 result[0] = node;
                                 break;
                             case propertyValue:
+                            case cp_propertyValue:
                                 result[1] = node;
                                 break;
                             case error:

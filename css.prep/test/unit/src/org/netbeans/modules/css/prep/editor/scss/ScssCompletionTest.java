@@ -222,4 +222,12 @@ public class ScssCompletionTest extends CssModuleTestBase {
         checkCC(".clz { color: f| }", arr("fuchsia"), Match.CONTAINS);
         checkCC(".clz { color: fuch| }", arr("fuchsia", "$color_chooser"), Match.EXACT);
     }
+    
+     //Bug 233597 - Completion for color based properties offers colors twice
+    public void testPropertyValueCompletionDoesntOfferValuesMoreTimes() throws ParseException {
+        checkCC("div{\n"
+                + "       color: red | \n"
+                + "   }",
+                arr("red"), Match.DOES_NOT_CONTAIN);
+    }
 }
