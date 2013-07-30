@@ -59,9 +59,10 @@ import javax.swing.plaf.basic.BasicTableUI;
  */
 final class TabTableUI extends BasicTableUI {
 
+    static final boolean IS_AQUA = "Aqua".equals( UIManager.getLookAndFeel().getID() );
+    
     static Border createTabBorder( JTable table, int tabsLocation ) {
-        String lafId = UIManager.getLookAndFeel().getID();
-        if( "Aqua".equals( lafId ) ) { //NOI18N
+        if( IS_AQUA ) {
             return BorderFactory.createMatteBorder( 1, 0, 0, 0, table.getGridColor());
         } else {
             if( tabsLocation != JTabbedPane.TOP )
