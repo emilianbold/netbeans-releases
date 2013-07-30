@@ -41,10 +41,12 @@
  */
 package org.netbeans.core.multitabs.impl;
 
+import java.awt.Color;
 import java.awt.Component;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JToolBar;
+import javax.swing.UIManager;
 
 /**
  *
@@ -81,5 +83,12 @@ final class ControlsToolbar extends JToolBar {
         setFocusable( false );
         setBorder( BorderFactory.createEmptyBorder() );
         setBorderPainted( false );
+        if( TabTableUI.IS_AQUA ) {
+            Color backColor = UIManager.getColor( "NbSplitPane.background" ); //NOI18N
+            if( null != backColor ) {
+                setBackground( backColor );
+                setOpaque( true );
+            }
+        }
     }
 }
