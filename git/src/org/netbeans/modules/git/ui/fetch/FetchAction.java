@@ -78,6 +78,17 @@ import org.openide.util.RequestProcessor.Task;
 @NbBundle.Messages("LBL_FetchAction_Name=F&etch...")
 public class FetchAction extends SingleRepositoryAction {
 
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/fetch-setting.png"; //NOI18N
+    
+    public FetchAction () {
+        super(ICON_RESOURCE);
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
+    
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
         fetch(repository);
