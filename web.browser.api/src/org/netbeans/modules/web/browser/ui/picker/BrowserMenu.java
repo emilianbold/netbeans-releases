@@ -88,7 +88,6 @@ public class BrowserMenu implements ChangeListener {
     private final ChangeSupport changeSupport = new ChangeSupport( this );
     private static final boolean windowsLaF = "Windows".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
     private final Color windowsSeparatorColor = UIManager.getColor( "controlHighlight" ); //NOI18N
-    private final Color windowsLightBackgroundColor = Color.white;
 
     public BrowserMenu( ProjectBrowserProvider provider ) {
         this( provider.getBrowsers(), provider.getActiveBrowser(), provider );
@@ -147,11 +146,14 @@ public class BrowserMenu implements ChangeListener {
 
         JPanel panel = createBrighterPanel();
         JLabel label = new JLabel( NbBundle.getMessage(BrowserMenu.class, "Hint_NB_Connector"));
+        Color lightForeground = UIManager.getColor( "Nb.browser.picker.foreground.light" ); //NOI18N
+        if( null != lightForeground )
+            label.setForeground( lightForeground );
         if( windowsLaF ) {
             label.setEnabled( false );
             panel.setBorder( BorderFactory.createMatteBorder( 1, 0, 0, 0, windowsSeparatorColor));
         }
-        label.setBorder( BorderFactory.createEmptyBorder( 10, 10, 5, 5));
+        label.setBorder( BorderFactory.createEmptyBorder( 16, 17, 5, 5));
         panel.add( label, BorderLayout.WEST );
 
         contentPanel.add( panel, new GridBagConstraints( 0, 1, GridBagConstraints.REMAINDER, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0,0,0,0), 0, 0 ));
@@ -168,7 +170,7 @@ public class BrowserMenu implements ChangeListener {
 
         if( !phoneGapItems.isEmpty() ) {
             contentPanel.add( new JLabel( NbBundle.getMessage(BrowserMenu.class, "Hint_PhoneGap")),
-                    new GridBagConstraints( 0, 4, GridBagConstraints.REMAINDER, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10,10,10,10), 0, 0 ));
+                    new GridBagConstraints( 0, 4, GridBagConstraints.REMAINDER, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(10,17,10,10), 0, 0 ));
         }
 
         if( null != selItem )
@@ -210,11 +212,15 @@ public class BrowserMenu implements ChangeListener {
             return;
 
         contentPanel.add( createHeader( header ),
-                new GridBagConstraints( column, 0, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets( 10,10,10,10), 0, 0 ));
+                new GridBagConstraints( column, 0, 2, 1, 0.0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets( 10,17,15,10), 0, 0 ));
 
         JPanel panel = createBrighterPanel();
-        panel.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createMatteBorder( 0, 0, 1, 1, windowsSeparatorColor),
-                BorderFactory.createEmptyBorder( 10, 10, 10, 10)));
+        if( windowsLaF ) {
+            panel.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createMatteBorder( 0, 0, 1, 1, windowsSeparatorColor),
+                    BorderFactory.createEmptyBorder( 10, 10, 10, 10)));
+        } else {
+            panel.setBorder( BorderFactory.createEmptyBorder( 10, 10, 10, 10) );
+        }
         if( windowsLaF && !isLast ) {
             panel.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createMatteBorder( 0, 0, 1, 1, windowsSeparatorColor),
                     BorderFactory.createEmptyBorder( 10, 10, 10, 10)));
@@ -228,7 +234,7 @@ public class BrowserMenu implements ChangeListener {
 
         panel = new JPanel( new BorderLayout( 0, 5 ) );
         panel.setOpaque( false );
-        panel.setBorder( BorderFactory.createEmptyBorder(15,10,10,10));
+        panel.setBorder( BorderFactory.createEmptyBorder(12,10,10,10));
         list = createList( items, false );
         if( null != list ) {
             panel.add( list, BorderLayout.CENTER );
@@ -238,7 +244,7 @@ public class BrowserMenu implements ChangeListener {
 
         if( windowsLaF && !isLast ) {
             panel.setBorder( BorderFactory.createCompoundBorder( BorderFactory.createMatteBorder( 0, 0, 0, 1, windowsSeparatorColor),
-                    BorderFactory.createEmptyBorder(15,10,10,10)) );
+                    BorderFactory.createEmptyBorder(18,10,10,10)) );
         }
         if( null != bottomPart || null != list ) {
             contentPanel.add( panel,
@@ -311,9 +317,10 @@ public class BrowserMenu implements ChangeListener {
 
     private JPanel createBrighterPanel() {
         JPanel res = new JPanel( new BorderLayout() );
-        if( windowsLaF ) {
+        Color background = UIManager.getColor( "Nb.browser.picker.background.light" );
+        if( null != background ) {
             res.setOpaque( true );
-            res.setBackground( windowsLightBackgroundColor );
+            res.setBackground( background );
         } else {
             res.setOpaque( false );
         }

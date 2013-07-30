@@ -205,6 +205,10 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         UIManager.put( "MenuItem.acceleratorForeground", new Color(198,198,198) );
         UIManager.put( "CheckBoxMenuItem.acceleratorForeground", new Color(198,198,198) );
         UIManager.put( "RadioButtonMenuItem.acceleratorForeground", new Color(198,198,198) );
+
+        //browser picker
+        UIManager.put( "Nb.browser.picker.background.light", new Color(41, 41, 45));
+        UIManager.put( "Nb.browser.picker.foreground.light", new Color(172,172,172));
     }
 
     @Override
