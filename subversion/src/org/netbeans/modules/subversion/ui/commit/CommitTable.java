@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.subversion.ui.commit;
 
+import java.awt.Color;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.TableSorter;
 import org.netbeans.modules.subversion.util.SvnUtils;
@@ -543,15 +544,19 @@ public class CommitTable implements AncestorListener, TableModelListener, MouseL
     }
     
     private class CheckboxCellRenderer extends JCheckBox implements TableCellRenderer {
+        private final DefaultTableCellRenderer renderer;
 
         public CheckboxCellRenderer() {
+            renderer = new DefaultTableCellRenderer();
             setToolTipText(NbBundle.getMessage(CommitTable.class, "CTL_CommitTable_Column_Description")); //NOI18N
         }
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             setSelected(value == null ? false : (Boolean) value);
-            setBackground(hasFocus || isSelected ? table.getSelectionBackground() : table.getBackground());
+            Color c = renderer.getTableCellRendererComponent(table, "value", isSelected, hasFocus, row, column).getBackground();
+            setBackground(new Color(c.getRGB()));
+            setOpaque(true);
             setHorizontalAlignment(SwingConstants.LEFT);
             return this;
         }
