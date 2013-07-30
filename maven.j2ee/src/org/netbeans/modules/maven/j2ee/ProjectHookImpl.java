@@ -54,7 +54,6 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javaee.project.api.ClientSideDevelopmentSupport;
-import org.netbeans.modules.javaee.project.api.JavaEEProjectSettingConstants;
 import org.netbeans.modules.javaee.project.api.WhiteListUpdater;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
@@ -206,21 +205,25 @@ public class ProjectHookImpl extends ProjectOpenedHook {
         Profile profile = null;
         String projectType = getProjectType();
         if (projectType != null) {
-            if ("ear".equals(projectType)) { //NOI18N
-                Ear earProj = Ear.getEar(project.getProjectDirectory());
-                if (earProj != null) {
-                    profile = earProj.getJ2eeProfile();
-                }
-            } else if ("war".equals(projectType)) { //NOI18N
-                WebModule webM = WebModule.getWebModule(project.getProjectDirectory());
-                if (webM != null) {
-                    profile = webM.getJ2eeProfile();
-                }
-            } else if ("ejb".equals(projectType)) { //NOI18N
-                EjbJar ejbProj = EjbJar.getEjbJar(project.getProjectDirectory());
-                if (ejbProj != null) {
-                    profile = ejbProj.getJ2eeProfile();
-                }
+            switch (projectType) {
+                case "ear": //NOI18N
+                    Ear earProj = Ear.getEar(project.getProjectDirectory());
+                    if (earProj != null) {
+                        profile = earProj.getJ2eeProfile();
+                    }
+                    break;
+                case "war": //NOI18N
+                    WebModule webM = WebModule.getWebModule(project.getProjectDirectory());
+                    if (webM != null) {
+                        profile = webM.getJ2eeProfile();
+                    }
+                    break;
+                case "ejb": //NOI18N
+                    EjbJar ejbProj = EjbJar.getEjbJar(project.getProjectDirectory());
+                    if (ejbProj != null) {
+                        profile = ejbProj.getJ2eeProfile();
+                    }
+                    break;
             }
         }
         if (profile != null) {
