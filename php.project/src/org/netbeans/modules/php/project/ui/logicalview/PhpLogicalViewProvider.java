@@ -388,10 +388,16 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         private void addCodeCoverageAction(List<Action> actions) {
             boolean coverageSupported = false;
             PhpModule phpModule = project.getPhpModule();
-            for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
-                if (testingProvider.isCoverageSupported(phpModule)) {
-                    coverageSupported = true;
-                    break;
+            List<PhpTestingProvider> testingProviders = project.getTestingProviders();
+            if (testingProviders.isEmpty()) {
+                // no testing provider set yet => show action
+                coverageSupported = true;
+            } else {
+                for (PhpTestingProvider testingProvider : testingProviders) {
+                    if (testingProvider.isCoverageSupported(phpModule)) {
+                        coverageSupported = true;
+                        break;
+                    }
                 }
             }
             if (coverageSupported) {

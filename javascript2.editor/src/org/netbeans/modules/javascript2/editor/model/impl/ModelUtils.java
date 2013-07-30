@@ -41,32 +41,17 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import jdk.nashorn.internal.ir.AccessNode;
-import jdk.nashorn.internal.ir.BinaryNode;
-import jdk.nashorn.internal.ir.CallNode;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.IdentNode;
-import jdk.nashorn.internal.ir.IndexNode;
-import jdk.nashorn.internal.ir.LiteralNode;
 import jdk.nashorn.internal.ir.Node;
-import jdk.nashorn.internal.ir.ObjectNode;
-import jdk.nashorn.internal.ir.ReferenceNode;
-import jdk.nashorn.internal.ir.UnaryNode;
-import jdk.nashorn.internal.parser.Lexer;
-import jdk.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import jdk.nashorn.internal.ir.TernaryNode;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
@@ -904,6 +889,7 @@ public class ModelUtils {
     }
     
     public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult) {
+        //assert !SwingUtilities.isEventDispatchThread() : "Type resolution may block AWT due to index search";
         Collection<TypeUsage> types = new ArrayList<TypeUsage>(unresolved);
         Set<String> original = null;
         Model model = parserResult.getModel();
