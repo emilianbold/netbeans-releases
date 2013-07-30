@@ -41,20 +41,18 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.dialogs;
 
+import junit.framework.Test;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
 import org.netbeans.performance.languages.Projects;
-
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.PropertiesAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -64,31 +62,27 @@ public class ScriptingProjectsPropertiesDialogTest extends PerformanceTestCase {
 
     private Node testNode;
     private String TITLE, projectName;
-    
+
     public ScriptingProjectsPropertiesDialogTest(String testName) {
         super(testName);
-        expectedTime = WINDOW_OPEN;          
-    }
-    
-    public ScriptingProjectsPropertiesDialogTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        expectedTime = WINDOW_OPEN;      
+        expectedTime = WINDOW_OPEN;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(ScriptingProjectsPropertiesDialogTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public ScriptingProjectsPropertiesDialogTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = WINDOW_OPEN;
+    }
+
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(ScriptingProjectsPropertiesDialogTest.class).suite();
     }
 
     @Override
     public void initialize() {
-        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.php.project.ui.customizer.Bundle", "LBL_Customizer_Title", new String[]{projectName});       
-        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);        
+        TITLE = org.netbeans.jellytools.Bundle.getStringTrimmed("org.netbeans.modules.php.project.ui.customizer.Bundle", "LBL_Customizer_Title", new String[]{projectName});
+        testNode = (Node) new ProjectsTabOperator().getProjectRootNode(projectName);
     }
-    
+
     @Override
     public void prepare() {
     }
@@ -98,15 +92,14 @@ public class ScriptingProjectsPropertiesDialogTest extends PerformanceTestCase {
         new PropertiesAction().performPopup(testNode);
         return new NbDialogOperator(TITLE);
     }
-    
+
     public void testPhpProjectProperties() {
         projectName = Projects.PHP_PROJECT;
         doMeasurement();
     }
-    
+
     public void testScriptingProjectProperties() {
         projectName = Projects.SCRIPTING_PROJECT;
         doMeasurement();
     }
-
 }
