@@ -1510,20 +1510,21 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         int i = 0;
         int insertLocation = -1;
+        boolean newFieldStatic = fieldToAdd.getModifiers().getFlags().contains(Modifier.STATIC);
 
         for (Tree member : nueClass.getMembers()) {
             i++;
             if (member.getKind() == Kind.VARIABLE) {
                 VariableTree field = (VariableTree) member;
 
-                if (   !field.getModifiers().getFlags().contains(Modifier.STATIC)
+                if (   (field.getModifiers().getFlags().contains(Modifier.STATIC) ^ newFieldStatic)
                     || new Contains().scan(field.getInitializer(), allNewUses) != Boolean.TRUE) {
                     continue;
                 }
             } else if (member.getKind() == Kind.BLOCK) {
                 BlockTree block = (BlockTree) member;
 
-                if (   !block.isStatic()
+                if (   (block.isStatic() ^ newFieldStatic)
                     || new Contains().scan(block, allNewUses) != Boolean.TRUE) {
                     continue;
                 }
