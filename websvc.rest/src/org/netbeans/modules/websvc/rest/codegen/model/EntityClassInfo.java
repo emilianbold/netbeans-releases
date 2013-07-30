@@ -44,7 +44,6 @@
 package org.netbeans.modules.websvc.rest.codegen.model;
 
 import org.netbeans.api.java.source.ClasspathInfo;
-import org.netbeans.modules.websvc.rest.spi.RestSupport;
 import org.netbeans.modules.websvc.rest.support.*;
 
 import java.io.IOException;
@@ -74,7 +73,6 @@ import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.j2ee.persistence.api.metadata.orm.Entity;
 import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.openide.filesystems.FileObject;
@@ -143,29 +141,31 @@ public class EntityClassInfo {
     protected void extractFields(Project project) {
         try {
             final JavaSource source = getJavaSource(project);
-            source.runUserActionTask(new AbstractTask<CompilationController>() {
+            if (source != null) {
+                source.runUserActionTask(new AbstractTask<CompilationController>() {
 
-                @Override
-                public void run(CompilationController controller) throws IOException {
-                    controller.toPhase(Phase.RESOLVED);
-                    TypeElement classElement = handle.resolve(controller);
-                    if ( classElement == null ){
-                        return;
-                    }
-                    packageName = controller.getElements().getPackageOf(classElement).
-                        getQualifiedName().toString();
-                    name = classElement.getSimpleName().toString();
-                    type = classElement.getQualifiedName().toString();
+                    @Override
+                    public void run(CompilationController controller) throws IOException {
+                        controller.toPhase(Phase.RESOLVED);
+                        TypeElement classElement = handle.resolve(controller);
+                        if ( classElement == null ){
+                            return;
+                        }
+                        packageName = controller.getElements().getPackageOf(classElement).
+                            getQualifiedName().toString();
+                        name = classElement.getSimpleName().toString();
+                        type = classElement.getQualifiedName().toString();
 
-                    if (useFieldAccess(classElement, controller )) {
-                        extractFields((DeclaredType)classElement.asType() , 
-                                classElement, controller);
-                    } else {
-                        extractFieldsFromMethods((DeclaredType)classElement.asType(), 
-                                classElement, controller );
+                        if (useFieldAccess(classElement, controller )) {
+                            extractFields((DeclaredType)classElement.asType() , 
+                                    classElement, controller);
+                        } else {
+                            extractFieldsFromMethods((DeclaredType)classElement.asType(), 
+                                    classElement, controller );
+                        }
                     }
-                }
-            }, true);
+                }, true);
+            }
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
