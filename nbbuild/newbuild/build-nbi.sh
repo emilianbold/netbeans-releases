@@ -54,10 +54,6 @@ fi
 OUTPUT_DIR="$DIST/installers"
 export OUTPUT_DIR
 
-#disable Mac build until we find a new system with Java6
-#NATIVE_MAC_MACHINE=
-#MAC_PATH=
-
 if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer
    ERROR_CODE=$?
@@ -199,5 +195,4 @@ bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk bundles/weblogic zip zip/m
 ERROR_CODE=$?
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
-#    exit $ERROR_CODE;
 fi
