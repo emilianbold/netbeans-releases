@@ -65,10 +65,10 @@ public abstract class BasicTask<V> implements Callable<V> {
     public static final int DELAY = 250;
     
     /** Maximum amount of time (in ms) to wait for server to start. */
-    public static final int START_TIMEOUT = 300000;
+    public static final int START_TIMEOUT = 1200000;
     
     /** Maximum amount of time (in ms) to wait for server to stop. */
-    public static final int STOP_TIMEOUT = 180000;
+    public static final int STOP_TIMEOUT = 600000;
 
     /** Unit (ms) for the DELAY and START_TIMEOUT constants. */
     public static final TimeUnit TIMEUNIT = TimeUnit.MILLISECONDS;
