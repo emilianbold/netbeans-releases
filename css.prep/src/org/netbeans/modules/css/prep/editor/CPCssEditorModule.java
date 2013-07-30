@@ -227,15 +227,33 @@ public class CPCssEditorModule extends CssEditorModule {
                 }
                 break;
             case declaration:
-                if(tid == CssTokenId.DOT) {
+            switch(tid) {
+                case DOT:
                     //div { .| } -- less mixin call
                     proposals.addAll(getMixinsCompletionProposals(context, model));
-                }
+                    break;
+                case WS:
+                    //go back and find first non white token
+                    while(ts.movePrevious() 
+                            && (ts.token().id() == CssTokenId.WS 
+                            || ts.token().id() == CssTokenId.NL)) {
+                        //skip ws backward
+                    }
+                    switch(ts.token().id()) {
+                        case SASS_INCLUDE:
+                            //completion at: @include | 
+                            proposals.addAll(getMixinsCompletionProposals(context, model));
+                            break;
+                            
+                    }
+                    
+            }
+                
 
         }
         return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);
     }
-
+    
     private static Collection<CompletionProposal> getVariableCompletionProposals(final CompletionContext context, CPModel model) {
         //filter the variable at the current location (being typed)
         Collection<CompletionProposal> proposals = new LinkedHashSet<>();
