@@ -138,6 +138,22 @@ public final class CreateElement implements ErrorRule<Void> {
     }
     
     static List<Fix> analyze(CompilationInfo info, String diagnosticKey, int offset) throws IOException {
+        List<Fix> result = analyzeImpl(info, diagnosticKey, offset);
+        
+        if (CAST_KEY.equals(diagnosticKey)) {
+            for (Iterator<Fix> it = result.iterator(); it.hasNext();) {
+                Fix f = it.next();
+                
+                if (!(f instanceof CreateMethodFix)) {
+                    it.remove();
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    private static List<Fix> analyzeImpl(CompilationInfo info, String diagnosticKey, int offset) throws IOException {
         TreePath errorPath = ErrorHintsProvider.findUnresolvedElement(info, offset);
 
         if (errorPath == null) {
