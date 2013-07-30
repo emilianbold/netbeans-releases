@@ -155,6 +155,10 @@ public final class Windows8LFCustoms extends LFCustoms {
             
             //#204646 - Vista l&f shows action icons and check boxes in the same menu column
             "Nb.MenuBar.VerticalAlign", Boolean.FALSE,
+
+            //browser picker
+            "Nb.browser.picker.background.light", new Color(255,255,255),
+            "Nb.browser.picker.foreground.light", new Color(130,130,130),
         }; //NOI18N
         
         //Workaround for JDK 1.5.0 bug 5080144 - Disabled JTextFields stay white

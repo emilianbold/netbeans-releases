@@ -59,7 +59,9 @@ import org.openide.windows.TopComponent;
     @ActionReference(path = "Projects/org-netbeans-modules-j2ee-clientproject/Actions", position = 2350),
     @ActionReference(path = "Projects/org-netbeans-modules-j2ee-ejbjarproject/Actions", position = 2350),
     @ActionReference(path = "Projects/org-netbeans-modules-web-project/Actions", position = 2350),
-    @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 2850)
+    @ActionReference(path = "Projects/org-netbeans-modules-maven/Actions", position = 2850),
+    @ActionReference(path = "Projects/org-netbeans-modules-apisupport-project/Actions", position = 3050),
+    @ActionReference(path = "Projects/org-netbeans-modules-apisupport-project-suite/Actions", position = 2450)
 })
 @Messages("CTL_ApplyPatternAction=Inspect and Transform...")
 public final class ApplyPatternAction implements ActionListener {

@@ -75,6 +75,12 @@ import org.openide.util.HelpCtx;
 })
 public class PullOtherAction extends ContextAction {
     
+    public static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/pull-setting.png"; //NOI18N
+    
+    public PullOtherAction () {
+        super(ICON_RESOURCE);
+    }
+    
     @Override
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
@@ -84,6 +90,11 @@ public class PullOtherAction extends ContextAction {
     @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_PullOther";                                //NOI18N
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
     }
 
     @Override

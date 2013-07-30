@@ -73,6 +73,17 @@ import org.openide.util.RequestProcessor.Task;
 @Messages("LBL_PushToUpstreamAction_Name=Pu&sh to Upstream")
 public class PushToUpstreamAction extends MultipleRepositoryAction {
     
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/push.png"; //NOI18N
+    
+    public PushToUpstreamAction () {
+        super(ICON_RESOURCE);
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
+    
     @Override
     protected RequestProcessor.Task performAction (File repository, File[] roots, VCSContext context) {
         return push(repository);

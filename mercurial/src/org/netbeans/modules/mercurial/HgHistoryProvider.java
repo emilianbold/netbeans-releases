@@ -47,6 +47,7 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
@@ -70,6 +71,8 @@ public class HgHistoryProvider implements VCSHistoryProvider {
     private final List<VCSHistoryProvider.HistoryChangeListener> listeners = new LinkedList<VCSHistoryProvider.HistoryChangeListener>();
     private Action[] actions;
 
+    private static final Logger LOG = Logger.getLogger(HgHistoryProvider.class.getName());
+    
     @Override
     public void addHistoryChangeListener(VCSHistoryProvider.HistoryChangeListener l) {
         synchronized(listeners) {
@@ -86,58 +89,65 @@ public class HgHistoryProvider implements VCSHistoryProvider {
     
     @Override
     public synchronized HistoryEntry[] getHistory(File[] files, Date fromDate) {
-        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
+        assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!"; 
         
-        if(!isClientAvailable()) {
-            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
-            return null;
-        }
+        logFiles("retrieving history for files: ", files); // NOi18N
+        long t = System.currentTimeMillis();
         
-        Set<File> repositories = getRepositoryRoots(files);
-        if(repositories == null) {
-            return null;
-        }
-        
-        List<HistoryEntry> ret = new LinkedList<HistoryEntry>();
-        Map<String, Set<File>> rev2FileMap = new HashMap<String, Set<File>>();
-        Map<String, HgLogMessage> rev2LMMap = new HashMap<String, HgLogMessage>();
-            
-        String fromRevision;
-        String toRevision;
-        if(fromDate == null) {
-            fromRevision = "0";
-            toRevision = "BASE";
-        } else {
-            fromRevision = dateFormat.format(fromDate);
-            toRevision = dateFormat.format(new Date(System.currentTimeMillis()));
-        }
-
-        File repositoryRoot = repositories.iterator().next();
-        for (File file : files) {
-            FileInformation info = Mercurial.getInstance().getFileStatusCache().refresh(file);
-            int status = info.getStatus();
-            if ((status & FileInformation.STATUS_VERSIONED) == 0) {
-                continue;
+        try {
+            if(!isClientAvailable()) {
+                LOG.log(Level.WARNING, "Mercurial client is unavailable");
+                return null;
             }
-            HgLogMessage[] history = HistoryRegistry.getInstance().getLogs(repositoryRoot, files, fromRevision, toRevision);
-            for (HgLogMessage h : history) {
-                String r = h.getHgRevision().getRevisionNumber();
-                rev2LMMap.put(r, h);
-                Set<File> s = rev2FileMap.get(r);
-                if(s == null) {
-                    s = new HashSet<File>();
-                    rev2FileMap.put(r, s);
+
+            Set<File> repositories = getRepositoryRoots(files);
+            if(repositories == null) {
+                return null;
+            }
+
+            List<HistoryEntry> ret = new LinkedList<HistoryEntry>();
+            Map<String, Set<File>> rev2FileMap = new HashMap<String, Set<File>>();
+            Map<String, HgLogMessage> rev2LMMap = new HashMap<String, HgLogMessage>();
+
+            String fromRevision;
+            String toRevision;
+            if(fromDate == null) {
+                fromRevision = "0";
+                toRevision = "BASE";
+            } else {
+                fromRevision = dateFormat.format(fromDate);
+                toRevision = dateFormat.format(new Date(System.currentTimeMillis()));
+            }
+
+            File repositoryRoot = repositories.iterator().next();
+            for (File file : files) {
+                FileInformation info = Mercurial.getInstance().getFileStatusCache().refresh(file);
+                int status = info.getStatus();
+                if ((status & FileInformation.STATUS_VERSIONED) == 0) {
+                    continue;
                 }
-                s.add(file);
-            }
-        }    
+                HgLogMessage[] history = HistoryRegistry.getInstance().getLogs(repositoryRoot, files, fromRevision, toRevision);
+                for (HgLogMessage h : history) {
+                    String r = h.getHgRevision().getRevisionNumber();
+                    rev2LMMap.put(r, h);
+                    Set<File> s = rev2FileMap.get(r);
+                    if(s == null) {
+                        s = new HashSet<File>();
+                        rev2FileMap.put(r, s);
+                    }
+                    s.add(file);
+                }
+            }    
 
-        for(HgLogMessage h : rev2LMMap.values()) {
-            Set<File> s = rev2FileMap.get(h.getHgRevision().getRevisionNumber());
-            File[] involvedFiles = s.toArray(new File[s.size()]);
-            ret.add(createHistoryEntry(h, repositoryRoot, involvedFiles));
+            for(HgLogMessage h : rev2LMMap.values()) {
+                Set<File> s = rev2FileMap.get(h.getHgRevision().getRevisionNumber());
+                File[] involvedFiles = s.toArray(new File[s.size()]);
+                ret.add(createHistoryEntry(h, repositoryRoot, involvedFiles));
+            }
+            return ret.toArray(new HistoryEntry[ret.size()]);
+        } finally {
+            LOG.log(Level.FINE, "retrieving history took {0}", (System.currentTimeMillis() - t));
         }
-        return ret.toArray(new HistoryEntry[ret.size()]);
     }
 
     @Override
@@ -160,6 +170,25 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         });
     }
 
+    private void logFiles(String msg, File[] files) {
+        if(!LOG.isLoggable(Level.FINE)) {
+            return;
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(msg);
+        for (int i = 0; i < files.length; i++) {
+            File f = files[i];
+            if(f == null) {
+                continue;
+            }
+            sb.append(f.getAbsolutePath());
+            if(i < files.length - 1) {
+                sb.append(","); // NOI18N
+            }
+        }
+        LOG.fine(sb.toString());
+    }
+
     private class RevisionProviderImpl implements RevisionProvider {
         private HgRevision hgRevision;
 
@@ -172,7 +201,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
             assert !SwingUtilities.isEventDispatchThread() : "Accessing remote repository. Do not call in awt!";
             
             if(!isClientAvailable()) {
-                Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable");
+                LOG.log(Level.WARNING, "Mercurial client is unavailable");
                 return;
             }
 
@@ -186,7 +215,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                 
                 Set<File> repositories = getRepositoryRoots(originalFile);
                 if(repositories == null || repositories.isEmpty()) {
-                    Mercurial.LOG.log(Level.WARNING, "Repository root not found for file {0}", originalFile);
+                    LOG.log(Level.WARNING, "Repository root not found for file {0}", originalFile);
                     return;
                 }
                 File repository = repositories.iterator().next();
@@ -201,7 +230,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                     FileUtils.copyFile(file, revisionFile); // XXX lets be faster - LH should cache that somehow ...
                 } else if(historyFile == null) {
                     // well then, lets try to find out if the file was move at some point in the history
-                    Mercurial.LOG.log(Level.WARNING, "File {0} not found in revision {1}. Will make a guess ...", new Object[]{originalFile, hgRevision});
+                    LOG.log(Level.WARNING, "File {0} not found in revision {1}. Will make a guess ...", new Object[]{originalFile, hgRevision});
                     historyFile = HistoryRegistry.getInstance().getHistoryFile(repository, originalFile, hgRevision.getChangesetId(), false);
                     if(historyFile != null) {
                         file = VersionsCache.getInstance().getFileRevision(historyFile, hgRevision, false);
@@ -212,9 +241,9 @@ public class HgHistoryProvider implements VCSHistoryProvider {
                 }
             } catch (IOException e) {
                 if(e.getCause() instanceof HgException.HgCommandCanceledException)  {
-                    Mercurial.LOG.log(Level.FINE, null, e);
+                    LOG.log(Level.FINE, null, e);
                 } else {
-                    Mercurial.LOG.log(Level.WARNING, null, e);
+                    LOG.log(Level.WARNING, null, e);
                 }
             }        
         }
@@ -285,7 +314,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
         }
         private void openHistory(File[] files) {
             if(!isClientAvailable()) {
-                org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "Mercurial client is unavailable"); // NOI18N
+                LOG.log(Level.WARNING, "Mercurial client is unavailable"); // NOI18N
                 return;
             }
 
@@ -392,7 +421,7 @@ public class HgHistoryProvider implements VCSHistoryProvider {
     private static Set<File> getRepositoryRoots(File... files) {
         Set<File> repositories = HgUtils.getRepositoryRoots(new HashSet<File>(Arrays.asList(files)));
         if (repositories.size() != 1) {
-            org.netbeans.modules.mercurial.Mercurial.LOG.log(Level.WARNING, "History requested for {0} repositories", repositories.size()); // NOI18N
+            LOG.log(Level.WARNING, "History requested for {0} repositories", repositories.size()); // NOI18N
             return null;
         }
         return repositories;

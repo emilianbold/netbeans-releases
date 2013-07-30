@@ -2,7 +2,7 @@
 
  # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  #
- # Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ # Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
  #
  # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  # Other names may be trademarks of their respective owners.
@@ -54,10 +54,6 @@ fi
 OUTPUT_DIR="$DIST/installers"
 export OUTPUT_DIR
 
-#disable Mac build until we find a new system with Java6
-#NATIVE_MAC_MACHINE=
-#MAC_PATH=
-
 if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    ssh $NATIVE_MAC_MACHINE rm -rf $MAC_PATH/installer
    ERROR_CODE=$?
@@ -101,6 +97,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
    BASE_COMMAND="$MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $BUILD_NBJDK7 '"$SIGNING_IDENTITY"' $LOCALES"
    
    ssh $NATIVE_MAC_MACHINE "$UNLOCK_COMMAND $BASE_COMMAND" > $MAC_LOG_NEW 2>&1 &
+   REMOTE_MAC_PID=$!
 
 fi
 
@@ -119,15 +116,17 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
     TAIL_PID=$!
 
     set +x
-    RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
+    RUNNING_JOBS_COUNT=`ps --pid $REMOTE_MAC_PID | wc -l | tr " " "\n" | grep -v '^$'`
+    echo "Entering loop with count of running jobs: " $RUNNING_JOBS_COUNT
     #Wait for the end of native mac build
     while [ $RUNNING_JOBS_COUNT -ge 2 ]; do
         #1 or more jobs
         sleep 10
-        jobs > /dev/null
-        RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
+        RUNNING_JOBS_COUNT=`ps --pid $REMOTE_MAC_PID | wc -l | tr " " "\n" | grep -v '^$'`
+        echo "----> count of running jobs: " $RUNNING_JOBS_COUNT
     done
     set -x
+    echo "Will kill "  $TAIL_PID
     kill -s 9 $TAIL_PID
 fi
 
@@ -196,5 +195,4 @@ bash ${SCRIPTS_DIR}/files-info.sh bundles bundles/jdk bundles/weblogic zip zip/m
 ERROR_CODE=$?
 if [ $ERROR_CODE != 0 ]; then
     echo "ERROR: $ERROR_CODE - Counting of MD5 sums and size failed"
-#    exit $ERROR_CODE;
 fi

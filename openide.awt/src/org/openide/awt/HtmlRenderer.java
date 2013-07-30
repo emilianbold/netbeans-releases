@@ -124,6 +124,10 @@ import org.openide.util.Utilities;
  *  <td>Italic text</td>
  * </tr>
  * <tr>
+ *  <td><code>&lt;a&gt;</code></td>
+ *  <td>Link text</td>
+ * </tr>
+ * <tr>
  *  <td><code>&lt;em&gt;</code></td>
  *  <td>Emphasized text (same as italic)</td>
  * </tr>
@@ -567,6 +571,7 @@ public final class HtmlRenderer {
         boolean inClosingTag = false; //flag if the current position is inside a closing tag
         boolean strikethrough = false; //flag if a strikethrough line should be painted
         boolean underline = false; //flag if an underline should be painted
+        boolean link = false; //flag if a link should be painted
         boolean bold = false; //flag if text is currently bold
         boolean italic = false; //flag if text is currently italic
         boolean truncated = false; //flag if the last possible character has been painted, and the next loop should paint "..." and return
@@ -678,6 +683,17 @@ public final class HtmlRenderer {
                     pos++;
 
                     switch (chars[pos]) {
+                    case 'a': //NOI18N
+                    case 'A': //NOI18N
+                        
+                        if (_colorStack.isEmpty()) {
+                            g.setColor(defaultColor);
+                        } else {
+                            g.setColor(_colorStack.pop());
+                        }
+                        link = false;
+
+                        break;
                     case 'P': //NOI18N
                     case 'p': //NOI18N
                     case 'H': //NOI18N
@@ -778,6 +794,22 @@ public final class HtmlRenderer {
                 } else {
                     //Okay, we're in an opening tag.  See which one and configure the Graphics object
                     switch (chars[pos]) {
+                    case 'a': //NOI18N
+                    case 'A': //NOI18N
+                        
+                        Color linkc = UIManager.getColor("nb.html.link.foreground");    // NOI18N
+                        if (linkc == null) {
+                            linkc = Color.BLUE;
+                        }
+                        _colorStack.push(g.getColor());
+
+                        linkc = HtmlLabelUI.ensureContrastingColor(linkc, background);
+                        g.setColor(linkc);
+                        
+                        link = true;
+
+                        break;
+                        
                     case 'B': //NOI18N
                     case 'b': //NOI18N
 
@@ -1111,7 +1143,7 @@ public final class HtmlRenderer {
                         g.drawChars(chars, pos, length, x, y);
                     }
 
-                    if (strikethrough || underline) {
+                    if (strikethrough || underline || link) {
                         LineMetrics lm = fm.getLineMetrics(chars, pos, length - 1, g);
                         int lineWidth = new Double(x + r.getWidth()).intValue();
 
@@ -1126,7 +1158,7 @@ public final class HtmlRenderer {
                                 g.drawLine(x, y + stPos, lineWidth, y + stPos);
                             }
 
-                            if (underline) {
+                            if (underline || link) {
                                 int stPos = Math.round(lm.getUnderlineOffset()) +
                                     g.getFont().getBaselineFor(chars[pos]) + 1;
 
@@ -1137,7 +1169,7 @@ public final class HtmlRenderer {
                             }
                         }
                     }
-
+                    
                     if (goToNextRow) {
                         //if we're in word wrap mode and need to go to the next
                         //line, reconfigure the x and y coordinates
