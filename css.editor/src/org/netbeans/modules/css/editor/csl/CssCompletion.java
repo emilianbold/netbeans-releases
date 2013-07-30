@@ -1372,17 +1372,16 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
 
                 //text from the node start to the embedded anchor offset (=embedded caret offset - prefix length)
-
-                Node expressionNode = NodeUtil.query(declarationNode, "propertyValue/expression"); //NOI18N
-                if(expressionNode == null) {
-                    //no expression node, broken source => try just propertyValue node
-                    expressionNode = NodeUtil.query(declarationNode, "propertyValue"); //NOI18N
-                    if(expressionNode == null) {
+                Node value = NodeUtil.query(declarationNode, NodeType.propertyValue.name()); //NOI18N
+                if(value == null) {
+                    //no propertyValue node, may be CP expression
+                    value = NodeUtil.query(declarationNode, NodeType.cp_propertyValue.name()); //NOI18N
+                    if(value == null) {
                         return ;
                     }
                 }
                 String expressionText = context.getSnapshot().getText().subSequence(
-                        expressionNode.from(),
+                        value.from(),
                         context.getEmbeddedAnchorOffset()).toString();
 
                 //use just the current line, if the expression spans to multiple
@@ -1452,7 +1451,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 if (includePrefixInTheExpression) {
                     //re-run the property value evaluation with expression including the prefix token
                     expressionText = context.getSnapshot().getText().subSequence(
-                            expressionNode.from(),
+                            value.from(),
                             context.getEmbeddedCaretOffset()).toString();
 
                     //use just the current line, if the expression spans to multiple
