@@ -1188,7 +1188,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     //}
                     //
                     //the "font-size" becomes a propertyValue node and the following COLON causes error outside of the propertyValue node (correctly)
-                    if(LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.COLON, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
+                    if(LexerUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.COLON), true, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
                         //we are just after the colon
                         expressionText = "";
                     } else {

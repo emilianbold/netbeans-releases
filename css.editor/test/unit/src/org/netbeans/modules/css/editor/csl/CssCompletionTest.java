@@ -402,4 +402,12 @@ public class CssCompletionTest extends CssModuleTestBase {
                 + "   }",
                 arr("red"), Match.CONTAINS);
     }
+    
+    //Bug 233597 - Completion for color based properties offers colors twice
+    public void testPropertyValueCompletionDoesntOfferValuesMoreTimes() throws ParseException {
+        checkCC("div{\n"
+                + "       color: red | \n"
+                + "   }",
+                arr("red"), Match.DOES_NOT_CONTAIN);
+    }
 }
