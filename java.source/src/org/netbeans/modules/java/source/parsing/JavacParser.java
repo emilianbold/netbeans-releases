@@ -920,6 +920,19 @@ public class JavacParser extends Parser {
                         }
                     }
                 }
+                if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_8) >= 0) {
+                    if (bootClassPath != null && bootClassPath.findResource("java/util/stream/Streams.class") == null) { //NOI18N
+                        if (srcClassPath != null && srcClassPath.findResource("java/util/stream/Streams.java") == null) {   //NOI18N
+                            if (classPath == null || classPath.findResource("java/util/stream/Streams.class") == null) { // NOI18N
+                                LOGGER.log(warnLevel,
+                                           "Even though the source level of {0} is set to: {1}, java.lang.invoke.LambdaMetafactory cannot be found on the bootclasspath: {2}\n" +   //NOI18N
+                                           "Changing source level to 1.7",  //NOI18N
+                                           new Object[]{cpInfo.getClassPath(PathKind.SOURCE), sourceLevel, bootClassPath}); //NOI18N
+                                return com.sun.tools.javac.code.Source.JDK1_7;
+                            }
+                        }
+                    }
+                }
                 return source;
             }
         }
