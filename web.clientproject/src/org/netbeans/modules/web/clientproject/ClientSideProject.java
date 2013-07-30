@@ -110,8 +110,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -164,6 +168,32 @@ public class ClientSideProject implements Project {
         }
     };
 
+    // #233052
+    private final WindowSystemListener windowSystemListener = new WindowSystemListener() {
+
+        @Override
+        public void beforeLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void afterLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void beforeSave(WindowSystemEvent event) {
+            // browser
+            ClientProjectEnhancedBrowserImplementation enhancedBrowserImpl = getEnhancedBrowserImpl();
+            if (enhancedBrowserImpl != null) {
+                enhancedBrowserImpl.close();
+            }
+        }
+
+        @Override
+        public void afterSave(WindowSystemEvent event) {
+        }
+
+    };
+
 
     public ClientSideProject(AntProjectHelper helper) {
         this.projectHelper = helper;
@@ -202,6 +232,8 @@ public class ClientSideProject implements Project {
                 }
             }
         });
+        WindowManager windowManager = WindowManager.getDefault();
+        windowManager.addWindowSystemListener(WeakListeners.create(WindowSystemListener.class, windowSystemListener, windowManager));
     }
 
     public synchronized ClientProjectEnhancedBrowserImplementation getEnhancedBrowserImpl() {
