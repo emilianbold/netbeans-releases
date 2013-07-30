@@ -120,12 +120,6 @@ public class InvokeEJBActionTest extends PerformanceTestCase {
         doMeasurement();
     }
 
-    public void testAddCMPFieldDialogInEJB() {
-        popupMenu = "Add|Add CMP Field";
-        dialogTitle = "Add CMP Field";
-        doMeasurement();
-    }
-
     @Override
     public void initialize() {
         openFile = new Node(new ProjectsTabOperator().getProjectRootNode("TestApplication-ejb"), "Enterprise Beans|TestEntityEB");

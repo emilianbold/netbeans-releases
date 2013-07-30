@@ -41,20 +41,19 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.actions;
 
+import java.awt.Rectangle;
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-
-import java.awt.Rectangle;
-
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.NavigatorOperator;
@@ -62,8 +61,6 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -81,20 +78,16 @@ public class GoToSourceTest extends PerformanceTestCase {
 
     public GoToSourceTest(String testName) {
         super(testName);
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 2000;
     }
 
     public GoToSourceTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 2000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(GoToSourceTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(GoToSourceTest.class).suite();
     }
 
     @Override
@@ -133,8 +126,8 @@ public class GoToSourceTest extends PerformanceTestCase {
             }
         });
         Rectangle r = tree.getRowBounds(row);
-        int x = (int)r.getCenterX();
-        int y = (int)r.getCenterY();
+        int x = (int) r.getCenterX();
+        int y = (int) r.getCenterY();
         tree.clickForPopup(x, y);
         // Go to source
         new JPopupMenuOperator().pushMenu(
@@ -164,5 +157,4 @@ public class GoToSourceTest extends PerformanceTestCase {
         expectedTime = 1000;
         doMeasurement();
     }
-
 }

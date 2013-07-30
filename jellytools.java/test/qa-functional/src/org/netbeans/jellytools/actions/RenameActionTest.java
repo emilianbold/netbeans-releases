@@ -81,13 +81,13 @@ public class RenameActionTest extends JellyTestCase {
     public void testPerformPopup() {
         Node node = new Node(new FilesTabOperator().getProjectNode("SampleProject"), "build.xml"); // NOI18N
         new RenameAction().performPopup(node);
-        new JDialogOperator(RENAME_TITLE).close();
+        new JDialogOperator(RENAME_TITLE).requestClose();
     }
 
     /** Test performAPI */
     public void testPerformAPI() {
         Node node = new Node(new FilesTabOperator().getProjectNode("SampleProject"), "src|sample1|SampleClass1.java"); // NOI18N
         new RenameAction().performAPI(node);
-        new JDialogOperator(RENAME_TITLE).close();
+        new JDialogOperator(RENAME_TITLE).requestClose();
     }
 }
