@@ -1322,6 +1322,22 @@ public class Css3ParserTest extends CssTestBase {
         assertParses("@keyframes glow\n"
                 + "{}");
     }
+    
+    public void testTemplatingMarksInDeclarations() throws ParseException, BadLocationException {
+        assertParses(".clz { @@@ }");
+        assertParses(".clz { @@@ @@@; @@@ @@@ @@@; @@@}");
+        assertParses(".clz { @@@; @@@; @@@; }");
+        assertParses(".clz { @@@; color: red; @@@ }");
+        assertParses(".clz { color: red; @@@ @@@ }");
+    }
+    
+//    public void testTemplatingMarksInBody() throws ParseException, BadLocationException {
+//        assertParses(" @@@ ");
+//        assertParses(" @@@ .clz {  } @@@ ");
+//        assertParses(" @@@ @@@ @@@ ");
+//        assertParses(" @@@ @@@ .clz {  } ");
+//    }
+    
     //https://netbeans.org/bugzilla/show_bug.cgi?id=230042#c1
 //    public void testIEExpressionHack_fails() throws ParseException, BadLocationException {
 //        assertParses("div {\n"

@@ -636,6 +636,7 @@ declaration
     | {isScssSource()}? sass_content 
     | {isScssSource()}? sass_function_return 
     | {isScssSource()}? importItem 
+    | GEN
     ;
     catch[ RecognitionException rce] {
         reportError(rce);

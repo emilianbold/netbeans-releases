@@ -1044,6 +1044,15 @@ public class CssCompletion implements CodeCompletionHandler {
                     || parent.type() == NodeType.propertyDeclaration //related to the declarations rule error recovery issue
                     || parent.type() == NodeType.cp_mixin_block
                     || parent.type() == NodeType.moz_document)) {
+                //Bug 233584 - Sass: completion for mixin after @include 
+                //do not show properties after @include in sass
+                CssTokenId nonWhiteTokenIdBackward = cc.getNonWhiteTokenIdBackward();
+                if(nonWhiteTokenIdBackward != null) {
+                    switch (nonWhiteTokenIdBackward) {
+                        case SASS_INCLUDE:
+                            return ;
+                    }
+                }
                 
                 //>>> Bug 204821 - Incorrect completion for vendor specific properties
                 boolean bug204821 = false;

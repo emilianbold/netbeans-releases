@@ -65,7 +65,9 @@ import org.openide.util.RequestProcessor;
  * @author marekfukala
  */
 @NbBundle.Messages({
-    "doc.building=Loading AngularJS Documentation"
+    "doc.building=Loading AngularJS Documentation",
+    "# {0} - the documentation URL",
+    "doc.cannotGet=Can't get the resource {0}."
 })
 public class AngularDoc {
 
@@ -123,7 +125,7 @@ public class AngularDoc {
             return Utils.getFileContent(cacheFile);
         } catch (URISyntaxException | IOException ex) {
             LOG.log(Level.INFO, "Can't load Angular JS documentation from {0}");
-            return null;
+            return Bundle.doc_cannotGet(directive.getExternalDocumentationURL_partial());
         }
 
     }
