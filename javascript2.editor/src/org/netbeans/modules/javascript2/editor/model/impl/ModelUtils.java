@@ -429,12 +429,17 @@ public class ModelUtils {
                         String newVarType;
                         if (!variable.getAssignments().isEmpty()) {
                              newVarType= SemiTypeResolverVisitor.ST_EXP + variable.getFullyQualifiedName().replace(".", SemiTypeResolverVisitor.ST_PRO);
+                             result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
+                             resolved = true;
+                             break;
                         } else {
-                            newVarType = variable.getFullyQualifiedName();
+                            if (variable.getJSKind() != JsElement.Kind.PARAMETER) {
+                                newVarType = variable.getFullyQualifiedName();
+                                result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
+                                resolved = true;
+                                break;
+                            }
                         }
-                        result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
-                        resolved = true;
-                        break;
                     }
                 }
                 if (!resolved) {
