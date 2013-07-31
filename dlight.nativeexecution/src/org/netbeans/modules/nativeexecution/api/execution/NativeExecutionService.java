@@ -77,6 +77,7 @@ import org.openide.util.Cancellable;
 import org.openide.util.Mutex;
 import org.openide.util.Mutex.Action;
 import org.openide.util.WeakListeners;
+import org.openide.windows.IOColorLines;
 import org.openide.windows.IOSelect;
 import org.openide.windows.IOSelect.AdditionalOperation;
 import org.openide.windows.OutputWriter;
@@ -384,11 +385,18 @@ public final class NativeExecutionService {
             } catch (InterruptedException ex) {
 //                Exceptions.printStackTrace(ex);
             } finally {
-                if (descriptor.postMessageDisplayer != null) {
-                    final long time = System.currentTimeMillis() - startTimeMillis;
-                    String postMsg = descriptor.postMessageDisplayer.getPostMessage(process, time);
-                    out(rc != 0, "\n\r", postMsg, "\n\r"); // NOI18N
-                    StatusDisplayer.getDefault().setStatusText(descriptor.postMessageDisplayer.getPostStatusString(process));
+                final long time = System.currentTimeMillis() - startTimeMillis;
+                if (IOColorLines.isSupported(descriptor.inputOutput)
+                        && descriptor.postMessageDisplayer instanceof PostMessageDisplayer2) {
+                    PostMessageDisplayer2 pmd = (PostMessageDisplayer2) descriptor.postMessageDisplayer;
+                    pmd.outPostMessage(descriptor.inputOutput, process, time);
+                    StatusDisplayer.getDefault().setStatusText(pmd.getPostStatusString(process));
+                } else {
+                    if (descriptor.postMessageDisplayer != null) {
+                        String postMsg = descriptor.postMessageDisplayer.getPostMessage(process, time);
+                        out(rc != 0, "\n\r", postMsg, "\n\r"); // NOI18N
+                        StatusDisplayer.getDefault().setStatusText(descriptor.postMessageDisplayer.getPostStatusString(process));
+                    }
                 }
 
                 try {

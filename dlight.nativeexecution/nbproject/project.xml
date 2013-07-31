@@ -6,6 +6,14 @@
             <code-name-base>org.netbeans.modules.dlight.nativeexecution</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>com.jcraft.jsch</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>0.1.43</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.annotations.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -41,14 +49,6 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
-                    <code-name-base>com.jcraft.jsch</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <specification-version>0.1.43</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
                     <code-name-base>org.netbeans.modules.extexecution</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -71,6 +71,14 @@
                     <compile-dependency/>
                     <run-dependency>
                         <specification-version>1.0</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
+                    <code-name-base>org.netbeans.swing.plaf</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.34</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
