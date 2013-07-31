@@ -96,7 +96,13 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
     }
 
     public static Test suite() {
-        return emptyConfiguration().addTest(J2EEBaseSetup.class).addTest(CreateJ2EEProjectTest.class, "testCreateWebProject").suite();
+        return emptyConfiguration().addTest(J2EEBaseSetup.class).addTest(CreateJ2EEProjectTest.class,
+                "testCreateWebProject",
+                "testCreateEJBModuleProject",
+                "testCreateEnterpriseApplicationProject",
+                "testCreateStandaloneEnterpriseApplicationProject",
+                "testCreateEnterpriseApplicationClient"
+                ).suite();
     }
 
     class PhaseHandler extends Handler {
@@ -191,6 +197,7 @@ public class CreateJ2EEProjectTest extends PerformanceTestCase {
 
     @Override
     public void close() {
+        waitScanFinished();
     }
 
     @Override
