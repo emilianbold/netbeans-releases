@@ -61,6 +61,17 @@ import org.openide.util.NbBundle;
 @ActionRegistration(displayName = "#LBL_CheckoutRevisionAction_Name")
 public class CheckoutRevisionAction extends AbstractCheckoutAction {
 
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/checkout.png"; //NOI18N
+    
+    public CheckoutRevisionAction () {
+        super(ICON_RESOURCE);
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
+    
     @Override
     protected void performAction (File repository, File[] roots, VCSContext context) {
         RepositoryInfo info = RepositoryInfo.getInstance(repository);

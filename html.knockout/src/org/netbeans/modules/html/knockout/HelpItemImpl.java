@@ -61,7 +61,7 @@ public class HelpItemImpl implements HelpItem {
 
     @Override
     public String getHelpHeader() {
-        return new StringBuilder().append("<h2>").append(item.getName()).append("</h2>").toString(); //NOI18N
+        return null; //no header
     }
 
     @Override

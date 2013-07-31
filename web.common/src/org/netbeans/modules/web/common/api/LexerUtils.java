@@ -136,9 +136,31 @@ public class LexerUtils {
     }
 
     public static Token followsToken(TokenSequence ts, Collection<? extends TokenId> searchedIds, boolean backwards, boolean repositionBack, TokenId... skipIds) {
+        return followsToken(ts, searchedIds, backwards, repositionBack, false, skipIds);
+    }
+    
+    /**
+     * Checks if the {@link TokenSequence} contains a specific token in a choosen
+     * direction from the current token sequence index.
+     * 
+     * @since 1.56
+     * 
+     * @param ts the token sequence to operate on
+     * @param searchedIds list of the searched token ids
+     * @param backwards should the tokens be searched backwards (true) or forward (false).
+     * @param repositionBack repositions the token sequence to the original index if set to true
+     * @param includeCurrentToken if true the current token is also taken into account when searching for the tokens
+     * @param skipIds list of token ids which should be skipped when searching. Any other token ids will break the search.
+     * @return token of the type from the searchedIds list or null if either no token is found or there's an unexpected token type in the search direction.
+     */
+    public static Token followsToken(TokenSequence ts, Collection<? extends TokenId> searchedIds, 
+            boolean backwards, boolean repositionBack, boolean includeCurrentToken, 
+            TokenId... skipIds) {
         Collection<TokenId> skip = Arrays.asList(skipIds);
         int index = ts.index();
-        while(backwards ? ts.movePrevious() : ts.moveNext()) {
+        //if the current token is to be included, then do not move to next/previous token in the first loop
+        while(includeCurrentToken || (backwards ? ts.movePrevious() : ts.moveNext())) {
+            includeCurrentToken = false; //disable the flag after first loop
             Token token = ts.token();
             TokenId id = token.id();
             if(searchedIds.contains(id)) {

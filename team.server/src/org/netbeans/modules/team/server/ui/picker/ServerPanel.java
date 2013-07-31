@@ -217,7 +217,7 @@ class ServerPanel extends JPanel {
         JPanel panelTitle = new JPanel( new BorderLayout( 5, 5) );
         panelTitle.setOpaque( false );
         title = new JLabel( server.getDisplayName() );
-        title.setToolTipText( server.getUrl().toString() );
+        title.setToolTipText( getTooltipText(server) );
         title.setIcon( server.getIcon() );
         Font f = new JLabel().getFont();
         f = f.deriveFont( Font.BOLD, f.getSize2D()+3 );
@@ -428,6 +428,24 @@ class ServerPanel extends JPanel {
 
     private boolean isOnline() {
         return server.getStatus() == TeamServer.Status.ONLINE;
+    }
+
+    @NbBundle.Messages({"# {0} - the name of a team server", 
+                        "CTL_ServerName=Team Server Name : {0}",
+                        "# {0} - the url of a team server", 
+                        "CTL_Url=Url : {0}",
+                        "CTL_OnlineStatusLI=Online Status : logged in",
+                        "CTL_OnlineStatusLO=Online Status : not logged in"})
+    private String getTooltipText(TeamServer server) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("<html>") // NOI18N
+          .append(Bundle.CTL_ServerName(server.getDisplayName()))
+          .append("<br/>")  // NOI18N    
+          .append(Bundle.CTL_Url(server.getUrl().toString()))
+          .append("<br/>")  // NOI18N    
+          .append(isOnline() ? Bundle.CTL_OnlineStatusLI() : Bundle.CTL_OnlineStatusLO())
+          .append("</html>");
+        return sb.toString();
     }
 
     private final class ProjectLoader implements Runnable {

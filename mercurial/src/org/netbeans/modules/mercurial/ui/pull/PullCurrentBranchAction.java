@@ -64,6 +64,13 @@ import org.openide.util.RequestProcessor;
     "CTL_MenuItem_PullBranchRoot=&Pull Current Branch - {0}"
 })
 public class PullCurrentBranchAction extends ContextAction {
+    
+    public static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/pull.png"; //NOI18N
+    
+    public PullCurrentBranchAction () {
+        super(ICON_RESOURCE);
+    }
+    
     @Override
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
@@ -73,6 +80,11 @@ public class PullCurrentBranchAction extends ContextAction {
     @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_PullBranchLocal"; //NOI18N
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
     }
 
     @Override
