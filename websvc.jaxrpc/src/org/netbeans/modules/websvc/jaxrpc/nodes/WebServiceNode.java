@@ -107,6 +107,7 @@ import javax.swing.table.TableModel;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.websvc.core.WebServiceReference;
 import org.netbeans.modules.websvc.core.WebServiceTransferable;
 import org.netbeans.modules.websvc.core.WsWsdlCookie;
@@ -405,7 +406,7 @@ public class WebServiceNode extends AbstractNode implements WSRegisterCookie, Ws
                 String servletName = WebServicesConstants.WebServiceServlet_PREFIX+wsName;
                 for (int i=0;i<maps.length;i++) {
                     if (servletName.equals(maps[i].getServletName())) {
-                        return maps[i].getUrlPattern();
+                        return ((ServletMapping25)maps[i]).getUrlPatterns()[0];
                     }
                 }
             }

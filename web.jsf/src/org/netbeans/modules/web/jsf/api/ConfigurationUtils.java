@@ -46,25 +46,20 @@ package org.netbeans.modules.web.jsf.api;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.List;
 import java.util.WeakHashMap;
 import java.util.Map;
 import java.lang.ref.WeakReference;
-import org.netbeans.api.project.FileOwnerQuery;
-import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.JSFConfigUtilities;
-import org.netbeans.modules.web.jsf.JSFUtils;
-import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
 import org.netbeans.modules.web.jsf.api.facesmodel.FacesConfig;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFConfigModelFactory;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
-import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
@@ -154,7 +149,7 @@ public class ConfigurationUtils {
                 ServletMapping[] mappings = webApp.getServletMapping();
                 for (int i = 0; i < mappings.length; i++){
                     if (mappings[i].getServletName().equals(servlet.getServletName()))
-                        return mappings[i].getUrlPattern();
+                        return ((ServletMapping25)mappings[i]).getUrlPatterns()[0];
                 }
             } catch (java.io.IOException e) {
                 Exceptions.printStackTrace(e);

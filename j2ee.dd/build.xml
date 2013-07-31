@@ -148,6 +148,11 @@ made subject to such option by the copyright holder.
           java5="true"/>
         <echo file="${s2b_root_web_3_1_frag}/package-info.java">@org.netbeans.api.annotations.common.SuppressWarnings("NM_SAME_SIMPLE_NAME_AS_INTERFACE") // justification="Generated implementation classes"${line.separator}package org.netbeans.modules.j2ee.dd.impl.web.model_3_1_frag;</echo>
 
+    <replace file="${s2b_root_web_2_4}/WebApp.java" summary="true">
+        <replacetoken>org.netbeans.modules.j2ee.dd.api.web.ServletMapping25</replacetoken>
+        <replacevalue>org.netbeans.modules.j2ee.dd.api.web.ServletMapping</replacevalue>
+    </replace>
+
     <replace file="${s2b_root_web_2_5}/ServletMapping.java" summary="true">
         <replacetoken>public java.lang.String[] getUrlPattern() {</replacetoken>
         <replacevalue>public java.lang.String[] getUrlPatterns() {</replacevalue>
