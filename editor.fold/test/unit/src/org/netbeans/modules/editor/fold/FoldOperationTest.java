@@ -41,11 +41,18 @@
  */
 package org.netbeans.modules.editor.fold;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
@@ -462,6 +469,97 @@ public class FoldOperationTest extends NbTestCase {
             assertEquals(rng[1], f.getEndOffset());
         }
         assertFalse(folds.hasNext());
+    }
+    
+    //                                                 index          type       status prio         from    to
+    private Pattern foldPattern = Pattern.compile("^\\s*(?:\\[\\d+\\]:)?\\s+\\[(\\S+)\\]\\s+([CE])(\\d)\\s+\\<(\\d+),(\\d+)\\>");
+    
+    private static final Map<String, FoldType> FOLD_TYPES = new HashMap<String, FoldType>();
+    
+    private static final FoldType FOLD_FUNCTION = FoldType.MEMBER.derive("function", "Function", FoldTemplate.DEFAULT);
+    
+    static {
+        FOLD_TYPES.put(FoldType.CODE_BLOCK.code(), FoldType.CODE_BLOCK);
+        FOLD_TYPES.put(FoldType.COMMENT.code(), FoldType.COMMENT);
+        FOLD_TYPES.put(FoldType.DOCUMENTATION.code(), FoldType.DOCUMENTATION);
+        FOLD_TYPES.put(FoldType.IMPORT.code(), FoldType.IMPORT);
+        FOLD_TYPES.put(FoldType.INITIAL_COMMENT.code(), FoldType.INITIAL_COMMENT);
+        FOLD_TYPES.put(FoldType.MEMBER.code(), FoldType.MEMBER);
+        FOLD_TYPES.put(FoldType.NESTED.code(), FoldType.NESTED);
+        FOLD_TYPES.put(FoldType.TAG.code(), FoldType.TAG);
+        FOLD_TYPES.put(FOLD_FUNCTION.code(), FOLD_FUNCTION);
+    }
+    
+    private int highestOffset = -1;
+    
+    private List<FoldInfo> readFoldData(String pathName) throws Exception {
+        List<FoldInfo> result = new ArrayList<FoldInfo>();
+        File f = new File(getDataDir(), pathName.replaceAll("/", Matcher.quoteReplacement(File.separator)));
+        if (!f.exists()) {
+            throw new IllegalArgumentException("Data file not found: " + pathName);
+        }
+        BufferedReader reader = new BufferedReader(new FileReader(f));
+        String line;
+        
+        while ((line = reader.readLine()) != null) {
+            Matcher m = foldPattern.matcher(line);
+            if (!m.find()) {
+                continue;
+            }
+            
+            String type = m.group(1);
+            int from = Integer.parseInt(m.group(4));
+            int to = Integer.parseInt(m.group(5));
+            
+            highestOffset = Math.max(highestOffset, to);
+            if (FOLD_TYPES.get(type) == null) {
+                System.err.println("invalid type: type");
+            }
+            FoldInfo fi = FoldInfo.range(from, to, FOLD_TYPES.get(type));
+            result.add(fi);
+        }
+        reader.close();
+        
+        return result;
+    }
+    
+    // this is only partly written, waiting for more info from issue #233455
+    public void testNestedFolds() throws Exception {
+        List<FoldInfo> infos = readFoldData("hierarchy/update-hierarchy.folds");
+//        Collections.reverse(infos);
+        class FMF implements FoldManagerFactory {
+            private FoldManager fm;
+
+            public FMF(FoldManager fm) {
+                this.fm = fm;
+            }
+
+            @Override
+            public FoldManager createFoldManager() {
+                return fm;
+            }
+        }
+        
+        TestFoldManager baseFoldManager = new TestFoldManager(new int[][]{}, FoldType.MEMBER);
+        final FoldHierarchyTestEnv env = new FoldHierarchyTestEnv(
+                new FMF(baseFoldManager) 
+        );
+        AbstractDocument doc = env.getDocument();
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; sb.length() <= highestOffset; i++) {
+            sb.append("12345678901234567890");
+        }
+        doc.insertString(0, sb.toString(), null);
+        
+        FoldHierarchy hierarchy = env.getHierarchy();
+        hierarchy.lock();
+        // now update the uber-range, so that the new fold blocks the blocking fold:
+        FoldOperation fo = baseFoldManager.operation;
+        fo.update(infos, null, null);
+        hierarchy.unlock();
+        
+        String dump = hierarchy.toString();
+        dump = dump.replaceAll("=\\d\\S+", "").replaceAll("@\\S+", "");
     }
     
     private static int[][] BASE_RANGE = {
