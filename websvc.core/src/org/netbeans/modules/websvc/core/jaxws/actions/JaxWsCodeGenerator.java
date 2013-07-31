@@ -727,6 +727,9 @@ public class JaxWsCodeGenerator  {
                 // generate static method when @WebServiceRef injection is missing, or for J2ee Client application
                 boolean isStatic = !task.isWsRefInjection() || 
                     (Car.getCar(targetFo) != null);
+                
+                String webServiceRefWarning = task.isWsRefInjection() ? 
+                        NbBundle.getMessage(JaxWsCodeGenerator.class, "WRN_WebServiceRef") : ""; //NOI18N
                 JaxWsClientMethodGenerator clientMethodGenerator =
                     new JaxWsClientMethodGenerator (
                             isStatic,
@@ -735,7 +738,7 @@ public class JaxWsCodeGenerator  {
                             paramTypes,
                             paramNames,
                             exceptionTypes,
-                            "{"+body+"}"); //NOI18N
+                            "{ "+webServiceRefWarning+body+"}"); //NOI18N
 
                 targetSource.runModificationTask(clientMethodGenerator).commit();
             } else {
