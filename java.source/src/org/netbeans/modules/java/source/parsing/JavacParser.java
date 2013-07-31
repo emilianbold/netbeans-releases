@@ -873,6 +873,7 @@ public class JavacParser extends Parser {
         return task;
     }
 
+    public static boolean DISABLE_SOURCE_LEVEL_DOWNGRADE = false;
     static @NonNull com.sun.tools.javac.code.Source validateSourceLevel(
             @NullAllowed String sourceLevel,
             @NonNull final ClasspathInfo cpInfo) {
@@ -890,6 +891,7 @@ public class JavacParser extends Parser {
         }
         for (com.sun.tools.javac.code.Source source : sources) {
             if (source.name.equals(sourceLevel)) {
+                if (DISABLE_SOURCE_LEVEL_DOWNGRADE) return source;
                 if (source.compareTo(com.sun.tools.javac.code.Source.JDK1_4) >= 0) {
                     if (bootClassPath != null && bootClassPath.findResource("java/lang/AssertionError.class") == null) { //NOI18N
                         if (bootClassPath.findResource("java/lang/Object.class") == null) { // NOI18N
