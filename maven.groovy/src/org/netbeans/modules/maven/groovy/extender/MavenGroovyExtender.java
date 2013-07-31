@@ -47,7 +47,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.support.spi.GroovyExtender;
+import org.netbeans.modules.groovy.support.spi.GroovyExtenderImplementation;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
@@ -60,8 +60,15 @@ import org.openide.filesystems.FileSystem;
  *
  * @author Martin Janicek
  */
-@ProjectServiceProvider(service = GroovyExtender.class, projectType = {"org-netbeans-modules-maven"})
-public class MavenGroovyExtender implements GroovyExtender {
+@ProjectServiceProvider(
+    service = {
+        GroovyExtenderImplementation.class
+    },
+    projectType = {
+        "org-netbeans-modules-maven"
+    }
+)
+public class MavenGroovyExtender implements GroovyExtenderImplementation {
 
     private static final String GROOVY_GROUP_ID = "org.codehaus.groovy"; // NOI18N
     private static final String GROOVY_ARTIFACT_ID = "groovy-all";       // NOI18N
