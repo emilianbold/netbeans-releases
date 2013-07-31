@@ -365,7 +365,7 @@ public class DocumentFinder
     }
     
     private static FindReplaceResult preserveCaseImpl(FindReplaceResult findReplaceResult, String replaceString, Document doc, Map<String, Object> searchProps) throws BadLocationException {
-        if (replaceString == null || findReplaceResult == null || findReplaceResult.getFoundPositions()[0] == -1) {
+        if (replaceString == null || findReplaceResult == null || findReplaceResult.getFoundPositions()[0] == -1 || "".equals(replaceString)) {
             return findReplaceResult;
         }
         boolean regExpSearch = getBoolFromEditorFindSupport(searchProps, EditorFindSupport.FIND_REG_EXP);
