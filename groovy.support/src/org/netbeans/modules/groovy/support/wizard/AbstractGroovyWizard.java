@@ -47,10 +47,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.api.progress.ProgressHandle;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.modules.groovy.support.api.GroovyExtender;
 import org.netbeans.modules.groovy.support.api.GroovySources;
-import org.netbeans.modules.groovy.support.spi.GroovyExtender;
 import org.netbeans.modules.groovy.support.wizard.impl.AntProjectTypeStrategy;
 import org.netbeans.modules.groovy.support.wizard.impl.MavenProjectTypeStrategy;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -115,10 +116,10 @@ public abstract class AbstractGroovyWizard extends AbstractFileWizard {
         }
 
         FileObject createdFile = dobj.getPrimaryFile();
-
-        GroovyExtender extender = Templates.getProject(wiz).getLookup().lookup(GroovyExtender.class);
-        if (extender != null && !extender.isActive()) {
-            extender.activate();
+        
+        Project proj = Templates.getProject(wiz);
+        if (!GroovyExtender.isActive(proj)) {
+            GroovyExtender.activate(proj);
         }
 
         handle.finish();
