@@ -268,7 +268,6 @@ public final class ClientSideDevelopmentSupport implements
                 @Override
                 public Void run(WebAppMetadata metadata) throws Exception {
                     List<String> l = new ArrayList<String>();
-                    l.add("faces/");
                     for (ServletInfo si : metadata.getServlets()) {
                         for (String pattern : si.getUrlPatterns()) {
                             // only some patterns are currently handled;
