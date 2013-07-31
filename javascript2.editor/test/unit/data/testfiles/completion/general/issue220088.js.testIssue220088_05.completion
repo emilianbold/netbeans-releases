@@ -5,6 +5,7 @@ var issue220088 = new S|ynergy();
 CONSTRUCTO String(): String                [PUBLIC]   JS Platform
 CONSTRUCTO Synergy(): Synergy              [PUBLIC]   issue220088.js
 CLASS      Screen                          [PUBLIC]   JS Platform
+CLASS      StopIteration                   [PUBLIC]   JS Platform
 CLASS      Storage                         [PUBLIC]   JS Platform
 CLASS      StyleSheet                      [PUBLIC]   JS Platform
 CLASS      StyleSheetList                  [PUBLIC]   JS Platform

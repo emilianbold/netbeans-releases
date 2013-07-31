@@ -77,8 +77,9 @@ public class JsHintsProvider implements HintsProvider {
     @org.netbeans.api.annotations.common.SuppressWarnings("BC_UNCONFIRMED_CAST")
     @Override
     public void computeHints(HintsManager manager, RuleContext context, List<Hint> hints) {
-        Map<?, List<? extends Rule.AstRule>> allHints = manager.getHints(false, context);
+        resume();
 
+        Map<?, List<? extends Rule.AstRule>> allHints = manager.getHints(false, context);
         // find out whether there is a convention hint enabled
         List<? extends Rule.AstRule> conventionHints = allHints.get(JsConventionHint.JSCONVENTION_OPTION_HINTS);
         boolean countConventionHints = false;
@@ -122,8 +123,9 @@ public class JsHintsProvider implements HintsProvider {
 
     @Override
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
-        Map<?, List<? extends Rule.AstRule>> allSuggestions = manager.getHints(true, context);
+        resume();
 
+        Map<?, List<? extends Rule.AstRule>> allSuggestions = manager.getHints(true, context);
         List<? extends Rule.AstRule> otherHints = allSuggestions.get(WeirdAssignment.JS_OTHER_HINTS);
         if (otherHints != null && !cancel) {
             for (Rule.AstRule astRule : otherHints) {
@@ -132,14 +134,6 @@ public class JsHintsProvider implements HintsProvider {
                     invokeHint(rule, manager, context, suggestions, caretOffset);
                 }
             }
-        }
-    }
-
-    private void invokeHint(JsAstRule rule, HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
-        try {
-            rule.computeHints((JsRuleContext)context, suggestions, caretOffset, manager);
-        } catch (BadLocationException ble) {
-
         }
     }
 
@@ -153,6 +147,8 @@ public class JsHintsProvider implements HintsProvider {
     })
     @Override
     public void computeErrors(HintsManager manager, RuleContext context, List<Hint> hints, List<Error> unhandled) {
+        resume();
+
         JsParserResult parserResult = (JsParserResult) context.parserResult;
         List<? extends org.netbeans.modules.csl.api.Error> errors = parserResult.getDiagnostics();
         // if in embedded
@@ -231,6 +227,10 @@ public class JsHintsProvider implements HintsProvider {
         cancel = true;
     }
 
+    private void resume() {
+        cancel = false;
+    }
+
     @Override
     public List<Rule> getBuiltinRules() {
         return Collections.<Rule>emptyList();
@@ -239,6 +239,14 @@ public class JsHintsProvider implements HintsProvider {
     @Override
     public RuleContext createRuleContext() {
         return new JsRuleContext();
+    }
+
+    private void invokeHint(JsAstRule rule, HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
+        try {
+            rule.computeHints((JsRuleContext)context, suggestions, caretOffset, manager);
+        } catch (BadLocationException ble) {
+
+        }
     }
 
     public static class JsRuleContext extends RuleContext {
