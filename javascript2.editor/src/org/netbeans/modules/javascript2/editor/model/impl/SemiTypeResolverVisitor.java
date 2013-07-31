@@ -277,7 +277,18 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         if (exp.isEmpty()) {
             exp.add(ST_ARR);
         } else {
-            exp.add(exp.size() - 1, ST_ARR);
+            boolean propertyAccess = false;
+            if (indexNode.getIndex() instanceof LiteralNode) {
+                LiteralNode lNode = (LiteralNode)indexNode.getIndex();
+                if (lNode.isString()) {
+                    exp.add(ST_PRO);
+                    exp.add(lNode.getPropertyName());
+                    propertyAccess = true;
+                }
+            }
+            if (!propertyAccess) {
+                exp.add(exp.size() - 1, ST_ARR);
+            }
         }
         //add(exp, indexNode.getStart(), false);
         //reset();
