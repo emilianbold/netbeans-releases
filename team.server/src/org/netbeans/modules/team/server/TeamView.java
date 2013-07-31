@@ -44,23 +44,17 @@ package org.netbeans.modules.team.server;
 
 import org.netbeans.modules.team.server.ui.common.OneProjectDashboardPicker;
 import org.netbeans.modules.team.server.ui.common.ColorManager;
-import org.netbeans.modules.team.server.ui.common.LinkButton;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import javax.accessibility.AccessibleContext;
-import java.net.MalformedURLException;
-import java.net.URL;
 import javax.swing.*;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.windows.TopComponent;
 import static org.netbeans.modules.team.server.Bundle.*;
 import org.netbeans.modules.team.server.ui.common.AddInstanceAction;
-import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.openide.awt.Mnemonics;
 import org.openide.util.NbBundle.Messages;
 
@@ -70,7 +64,7 @@ public final class TeamView {
     private JScrollPane dashboardScrollPane;
     private JComponent emptyComponent;
     private JComboBox combo;    
-    private DummyUIComponent dummyUIComponent;
+    private JComponent noProjectComponent;
     private TeamServer teamServer;
     private OneProjectDashboardPicker projectPicker;
 
@@ -206,7 +200,6 @@ public final class TeamView {
 
     public synchronized JComponent getComponent() {
         if(dashboardPanel == null) {
-            dummyUIComponent = new DummyUIComponent();
             dashboardPanel = new JPanel();
             dashboardPanel.setBackground(ColorManager.getDefault().getDefaultBackground());
             dashboardPanel.setLayout(new java.awt.BorderLayout());
@@ -253,12 +246,12 @@ public final class TeamView {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                JComponent comp = teamServer == null ? emptyComponent = dummyUIComponent.getJComponent() : teamServer.getDashboardComponent();
+                JComponent comp = teamServer == null ? emptyComponent = getNoProjectComponent() : teamServer.getDashboardComponent();
                 boolean isEmpty = teamServer == null || comp == null;
                 if( isEmpty ) {
                     if( dashboardScrollPane.getViewport().getView() == null 
                             || dashboardScrollPane.getViewport().getView() != emptyComponent ) {
-                        dashboardScrollPane.setViewportView(emptyComponent = dummyUIComponent.getJComponent());
+                        dashboardScrollPane.setViewportView(emptyComponent = getNoProjectComponent());
                         if(projectPicker != null) {
                             projectPicker.setVisible(false);
                         }                        
@@ -291,50 +284,12 @@ public final class TeamView {
             SwingUtilities.invokeLater(r);
         }
     }
-    
-    private static class DummyUIComponent {
-        private JPanel res;
 
-        @Messages({"LBL_No_Team_Project_Open=No Team Project Open", "LBL_WhatIsTeam=What is Team Server?", "LBL_Connect=Connect"})
-        public JComponent getJComponent () {
-            if (res == null) {
-                res = new JPanel( new GridBagLayout() );
-                res.setOpaque(false);
-
-                JLabel lbl = new TreeLabel(LBL_No_Team_Project_Open()); //NOI18N
-                lbl.setForeground(ColorManager.getDefault().getDisabledColor());
-                lbl.setHorizontalAlignment(JLabel.CENTER);
-                LinkButton btnWhatIs = new LinkButton(LBL_WhatIsTeam(), createWhatIsTeamServerAction() ); //NOI18N
-                
-                if(!Utilities.isMoreProjectsDashboard()) {
-                    JButton connect = new JButton(new AddInstanceAction());
-                    connect.setText(Bundle.LBL_Connect());
-                    res.add( connect, new GridBagConstraints(0, 0, 3, 4, 1.0, 1.0, GridBagConstraints.NORTH, GridBagConstraints.BOTH, new Insets(10, 10, 10, 10), 0, 0) );
-                }
-                
-                res.add( new JLabel(), new GridBagConstraints(0, 5, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
-                res.add( lbl, new GridBagConstraints(0, 6, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 4, 0), 0, 0) );
-                res.add( btnWhatIs, new GridBagConstraints(0, 7, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 0, 0, 0), 0, 0) );
-                res.add( new JLabel(), new GridBagConstraints(0, 8, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
-                return res;
-            }
-            return res;
+    private JComponent getNoProjectComponent() {
+        if(noProjectComponent == null) {
+            noProjectComponent = new NoProjectComponent(new AddInstanceAction());
         }
-
-        private Action createWhatIsTeamServerAction() {
-            return new AbstractAction() {
-                @Override
-                public void actionPerformed(ActionEvent e) {
-                    try {
-                        URLDisplayer.getDefault().showURL(
-                                new URL("http://netbeans.org/kb/docs/ide/team-servers.html")); //NOI18N
-                    } catch( MalformedURLException ex ) {
-                        //shouldn't happen
-                        Exceptions.printStackTrace(ex);
-                    }
-                }
-            };
-        }
-
+        return noProjectComponent;
     }
+    
 }
