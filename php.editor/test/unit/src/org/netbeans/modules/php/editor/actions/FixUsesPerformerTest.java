@@ -234,14 +234,14 @@ public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
     }
 
     private String getTestFolderPath() {
-        return "testfiles/actions/" + testMethodNameToDirectory();//NOI18N
+        return "testfiles/actions/" + transformTestMethodNameToDirectory();//NOI18N
     }
 
     private String getTestPath() {
         return getTestFolderPath() + "/" + getName() + ".php";//NOI18N
     }
 
-    private String testMethodNameToDirectory() {
+    private String transformTestMethodNameToDirectory() {
         return getName().replace('_', '/');
     }
 
