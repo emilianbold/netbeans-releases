@@ -279,7 +279,7 @@ public abstract class TeamRepositories implements PropertyChangeListener {
                     if (repo != null) {
                         result.add(repo);
                     } else {
-                        if(isSupported(kp)) {
+                        if(isSupported(kp) && kp.getFeatureLocation() != null) {
                             BugtrackingManager.LOG.log(
                                     Level.WARNING,
                                     "could not get repository for project {0} with {1} bugtracking type ",
