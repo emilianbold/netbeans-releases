@@ -62,7 +62,7 @@ import org.openide.util.Parameters;
  */
 public final class QualifiedName {
     private final QualifiedNameKind kind;
-    private final LinkedList<String> segments;
+    private final List<String> segments;
 
     public String getName() {
         return toName().toString();
@@ -123,7 +123,7 @@ public final class QualifiedName {
         if (isOverlapingRequired) {
             test = test.toNamespaceName();
         }
-        LinkedList<String> qnSegments = (prefixRequired) ? fragmentName.getSegments() : retval.getSegments();
+        List<String> qnSegments = (prefixRequired) ? fragmentName.getSegments() : retval.getSegments();
         for (String qnseg : qnSegments) {
             test = test.append(qnseg);
         }
@@ -230,22 +230,22 @@ public final class QualifiedName {
     }
     private QualifiedName(NamespaceName namespaceName) {
         this.kind = QualifiedNameKind.resolveKind(namespaceName);
-        segments = new LinkedList<>();
+        segments = new ArrayList<>();
         for (Identifier identifier : namespaceName.getSegments()) {
             segments.add(identifier.getName());
         }
     }
     private QualifiedName(Identifier identifier) {
         this.kind = QualifiedNameKind.resolveKind(identifier);
-        segments = new LinkedList<>(Collections.singleton(identifier.getName()));
+        segments = new ArrayList<>(Collections.singleton(identifier.getName()));
         assert kind.isUnqualified();
     }
     private QualifiedName(boolean isFullyQualified, List<String> segments) {
-        this.segments = new LinkedList<>(segments.isEmpty() ? Collections.singleton(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME) : segments);
+        this.segments = new ArrayList<>(segments.isEmpty() ? Collections.singleton(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME) : segments);
         this.kind = isFullyQualified ? QualifiedNameKind.FULLYQUALIFIED : QualifiedNameKind.resolveKind(this.segments);
     }
     public LinkedList<String> getSegments() {
-        return this.segments;
+        return new LinkedList<>(this.segments);
     }
     /**
      * @return the kind
@@ -285,7 +285,7 @@ public final class QualifiedName {
         return append(qualifiedName, getKind().isFullyQualified());
     }
     private  QualifiedName append(QualifiedName qualifiedName, boolean isFullyQualified) {
-        LinkedList<String> list = isDefaultNamespace() ? new LinkedList<String>() : new LinkedList<>(getSegments());
+        List<String> list = isDefaultNamespace() ? new ArrayList<String>() : new ArrayList<>(getSegments());
         list.addAll(qualifiedName.getSegments());
         return new QualifiedName(isFullyQualified, list);
     }
