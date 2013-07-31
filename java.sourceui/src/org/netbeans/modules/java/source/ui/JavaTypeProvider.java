@@ -398,15 +398,12 @@ public class JavaTypeProvider implements TypeProvider {
                                     return null;
                                 }
                                 try {
-                                    final Set<JavaTypeDescription> ct = new HashSet<JavaTypeDescription>();
+                                    final Collection<JavaTypeDescription> ct = new ArrayList<JavaTypeDescription>();
                                     boolean exists = false;
                                     //WB(dataCache[ci], ACTIVE)
                                     dataCache.put(ci, ACTIVE);
                                     try {
-                                        exists = ci.collectDeclaredTypes(packageName, textForQuery,nameKind, ct);
-                                        if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
-                                            exists &= ci.collectDeclaredTypes(packageName, textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, ct);
-                                        }
+                                        exists = ci.collectDeclaredTypes(packageName, textForQuery,nameKind, ct);                                        
                                         if (exists) {
                                             types.addAll(ct);
                                         }
