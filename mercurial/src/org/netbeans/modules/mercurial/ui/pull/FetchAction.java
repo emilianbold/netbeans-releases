@@ -93,6 +93,12 @@ import org.openide.util.actions.SystemAction;
 })
 public class FetchAction extends ContextAction {
     
+    public static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/fetch.png"; //NOI18N
+    
+    public FetchAction () {
+        super(ICON_RESOURCE);
+    }
+    
     @Override
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
@@ -102,6 +108,11 @@ public class FetchAction extends ContextAction {
     @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_FetchLocal";                               //NOI18N
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
     }
 
     @Override

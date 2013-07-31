@@ -76,6 +76,12 @@ import org.openide.util.HelpCtx;
 })
 public class PushOtherAction extends ContextAction {
     
+    public static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/push-setting.png"; //NOI18N
+    
+    public PushOtherAction () {
+        super(ICON_RESOURCE);
+    }
+    
     @Override
     protected boolean enable(Node[] nodes) {
         VCSContext context = HgUtils.getCurrentContext(nodes);
@@ -87,6 +93,11 @@ public class PushOtherAction extends ContextAction {
 
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_PushOther";                                //NOI18N
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
     }
 
     @Override

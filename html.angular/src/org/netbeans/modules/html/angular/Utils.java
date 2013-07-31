@@ -61,7 +61,10 @@ import org.netbeans.modules.parsing.api.Snapshot;
  * @author marekfukala
  */
 public class Utils {
-
+    
+    private static final int URL_CONNECTION_TIMEOUT = 1000; //ms
+    private static final int URL_READ_TIMEOUT = URL_CONNECTION_TIMEOUT * 3; //ms
+     
     /**
      * Gets document range for the given from and to embedded offsets. 
      * 
@@ -99,6 +102,8 @@ public class Utils {
             charset = Charset.defaultCharset();
         }
         URLConnection con = url.openConnection();
+        con.setConnectTimeout(URL_CONNECTION_TIMEOUT); 
+        con.setReadTimeout(URL_READ_TIMEOUT); 
         con.connect();
         Reader r = new InputStreamReader(new BufferedInputStream(con.getInputStream()), charset);
         char[] buf = new char[2048];

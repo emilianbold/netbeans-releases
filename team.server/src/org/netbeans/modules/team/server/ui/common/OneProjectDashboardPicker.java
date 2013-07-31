@@ -80,7 +80,7 @@ import org.openide.util.NbBundle;
  * @param <P> project type
  */
 @NbBundle.Messages({"LBL_Switch=Select project", 
-                    "LBL_NewServer=New Connection"})
+                    "CTL_NewServer=Add Team Server"})
 public final class OneProjectDashboardPicker<P> extends JPanel {
 
     private ProjectHandle<P> currentProject;
@@ -184,7 +184,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         toolbar.add(separator);
 
         btnNewServer = new LinkButton(ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/new_team_project.png", true), new AddInstanceAction()); 
-        btnNewServer.setToolTipText(Bundle.LBL_NewServer());
+        btnNewServer.setToolTipText(Bundle.CTL_NewServer());
         btnNewServer.setRolloverEnabled(true);
         btnNewServer.setVisible(false);
         toolbar.add(btnNewServer);

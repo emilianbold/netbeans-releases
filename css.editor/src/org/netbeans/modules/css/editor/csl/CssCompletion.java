@@ -1044,6 +1044,15 @@ public class CssCompletion implements CodeCompletionHandler {
                     || parent.type() == NodeType.propertyDeclaration //related to the declarations rule error recovery issue
                     || parent.type() == NodeType.cp_mixin_block
                     || parent.type() == NodeType.moz_document)) {
+                //Bug 233584 - Sass: completion for mixin after @include 
+                //do not show properties after @include in sass
+                CssTokenId nonWhiteTokenIdBackward = cc.getNonWhiteTokenIdBackward();
+                if(nonWhiteTokenIdBackward != null) {
+                    switch (nonWhiteTokenIdBackward) {
+                        case SASS_INCLUDE:
+                            return ;
+                    }
+                }
                 
                 //>>> Bug 204821 - Incorrect completion for vendor specific properties
                 boolean bug204821 = false;
@@ -1152,6 +1161,7 @@ public class CssCompletion implements CodeCompletionHandler {
                                 result[0] = node;
                                 break;
                             case propertyValue:
+                            case cp_propertyValue:
                                 result[1] = node;
                                 break;
                             case error:
@@ -1179,7 +1189,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     //}
                     //
                     //the "font-size" becomes a propertyValue node and the following COLON causes error outside of the propertyValue node (correctly)
-                    if(LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.COLON, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
+                    if(LexerUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.COLON), true, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
                         //we are just after the colon
                         expressionText = "";
                     } else {
@@ -1363,17 +1373,16 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
 
                 //text from the node start to the embedded anchor offset (=embedded caret offset - prefix length)
-
-                Node expressionNode = NodeUtil.query(declarationNode, "propertyValue/expression"); //NOI18N
-                if(expressionNode == null) {
-                    //no expression node, broken source => try just propertyValue node
-                    expressionNode = NodeUtil.query(declarationNode, "propertyValue"); //NOI18N
-                    if(expressionNode == null) {
+                Node value = NodeUtil.query(declarationNode, NodeType.propertyValue.name()); //NOI18N
+                if(value == null) {
+                    //no propertyValue node, may be CP expression
+                    value = NodeUtil.query(declarationNode, NodeType.cp_propertyValue.name()); //NOI18N
+                    if(value == null) {
                         return ;
                     }
                 }
                 String expressionText = context.getSnapshot().getText().subSequence(
-                        expressionNode.from(),
+                        value.from(),
                         context.getEmbeddedAnchorOffset()).toString();
 
                 //use just the current line, if the expression spans to multiple
@@ -1443,7 +1452,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 if (includePrefixInTheExpression) {
                     //re-run the property value evaluation with expression including the prefix token
                     expressionText = context.getSnapshot().getText().subSequence(
-                            expressionNode.from(),
+                            value.from(),
                             context.getEmbeddedCaretOffset()).toString();
 
                     //use just the current line, if the expression spans to multiple

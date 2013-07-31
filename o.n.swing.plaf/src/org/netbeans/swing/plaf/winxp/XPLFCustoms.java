@@ -151,6 +151,9 @@ public final class XPLFCustoms extends LFCustoms {
             "NbSlideBar.GroupSeparator.Gap.After", 2,
             "NbSlideBar.RestoreButton.Gap", 1,
 
+            //browser picker
+            "Nb.browser.picker.background.light", new Color(255,255,255),
+            "Nb.browser.picker.foreground.light", new Color(130,130,130),
         }; //NOI18N
         
         //Workaround for JDK 1.5.0 bug 5080144 - Disabled JTextFields stay white

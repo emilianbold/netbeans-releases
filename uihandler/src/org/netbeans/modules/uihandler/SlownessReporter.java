@@ -221,7 +221,6 @@ class SlownessReporter {
             btn.setContentAreaFilled(false);
             btn.addActionListener(this);
             btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-            btn.setForeground(Color.blue);
             return btn;
         }
 
@@ -238,7 +237,7 @@ class SlownessReporter {
             
             @Override
             protected void paintComponent(Graphics g) {
-                HtmlRenderer.renderString("<html><u>" + getText() + "</u></html>",  // NOI18N
+                HtmlRenderer.renderString("<html><a>" + getText() + "</a></html>",  // NOI18N
                         g, 0, getBaseline(Integer.MAX_VALUE, getFont().getSize()),
                         Integer.MAX_VALUE, getFont().getSize(),
                         getFont(), getForeground(), HtmlRenderer.STYLE_CLIP, true);
