@@ -191,8 +191,9 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                                 if(isCanceled()) {
                                     return null;
                                 }
-
-                                client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refSpecs).toGitRemote(), getProgressMonitor());
+                                
+                                List<String> refs = Arrays.asList(GitUtils.getGlobalRefSpec(remoteName));
+                                client.setRemote(new CloneRemoteConfig(remoteName, remoteUri, refs).toGitRemote(), getProgressMonitor());
                                 org.netbeans.modules.versioning.util.Utils.logVCSExternalRepository("GIT", remoteUri.toString()); //NOI18N
                                 if (branch == null) {
                                     client.createBranch(GitUtils.MASTER, GitUtils.PREFIX_R_REMOTES + remoteName + "/" + GitUtils.MASTER, getProgressMonitor());

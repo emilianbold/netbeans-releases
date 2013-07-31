@@ -43,6 +43,7 @@ package org.netbeans.modules.java.hints.jdk.mapreduce;
 
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.test.api.HintTest;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 
 /**
  *
@@ -1899,5 +1900,6 @@ public class ForLoopToFunctionalHintTest extends NbTestCase {
     {
         //to ensure the tests can run against JDK7:
         ForLoopToFunctionalHint.DISABLE_CHECK_FOR_STREAM = true;
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
 }

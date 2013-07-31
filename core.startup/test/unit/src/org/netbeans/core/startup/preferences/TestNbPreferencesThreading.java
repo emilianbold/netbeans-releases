@@ -99,6 +99,7 @@ public class TestNbPreferencesThreading extends NbTestCase {
         { // Let process the file event
             synchronized (fileEventBlock1) {
                 fileEventBlock1[0] = true;
+                fileEventBlock1.notifyAll();
             }
             synchronized (fileEventBlock2) {
                 fileEventBlock2[0] = false;

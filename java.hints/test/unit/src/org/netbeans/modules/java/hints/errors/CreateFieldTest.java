@@ -141,8 +141,15 @@ public class CreateFieldTest extends ErrorHintsTestBase {
                 "package test; public class Test { private final int field; public Test() { this(true); } public Test(boolean b) { field = 0; } }");
     }
     
-    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
-        List<Fix> fixes = CreateElement.analyze(info, pos);
+    public void test233502() throws Exception {
+        performAnalysisTest("test/Test.java",
+                "package test; public class Test { public Test() { long l = 0; int j = l; }",
+                -1);
+    }
+
+    @Override
+    protected List<Fix> computeFixes(CompilationInfo info, String diagnosticCode, int pos, TreePath path) throws Exception {
+        List<Fix> fixes = CreateElement.analyze(info, diagnosticCode, pos);
         List<Fix> result=  new LinkedList<Fix>();
         
         for (Fix f : fixes) {

@@ -54,6 +54,7 @@ import org.netbeans.api.java.source.SourceUtilsTestUtil;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.TestUtilities;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -120,5 +121,9 @@ public class PostFlowAnalysisTest extends NbTestCase {
         FileObject cache = workFO.createFolder("cache");
 
         SourceUtilsTestUtil.prepareTest(sourceRoot, buildRoot, cache);
+    }
+    
+    static {
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
 }

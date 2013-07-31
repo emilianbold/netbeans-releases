@@ -874,10 +874,14 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
             PropertySetter ps = (PropertySetter)parentNode;
             if (ps.isImplicit() && ps.getContent() == null) {
                 i(ps).endsAt(contentLocator.getEndOffset()).endContent(contentLocator.getEndOffset());
+                // there should be a parent to the property setter, take the setter's parent as potential parent instance
+                if (nodeStack.size() > 1) {
+                    parentNode = ((LinkedList<? extends FxNode>)nodeStack).get(1);
+                }
             }
         }
-        if (!nodeStack.isEmpty() && nodeStack.peek().getKind() == Kind.Instance) {
-            current = (FxInstance)nodeStack.peek();
+        if (parentNode != null && parentNode.getKind() == Kind.Instance) {
+            current = (FxInstance)parentNode;
         } else {
             current = null;
         }
@@ -1220,6 +1224,15 @@ public class FxModelBuilder implements SequenceContentHandler, ContentLocator.Re
     
     private void attachChildNode(FxNode node) {
         FxNode top = nodeStack.peek();
+        // special handling for opened implicit property setter, and a nested property tag:
+        if (top instanceof PropertySetter) {
+            PropertySetter topSetter = (PropertySetter)top;
+            if (topSetter.isImplicit() && current != null) {
+                if (!(node instanceof FxObjectBase)) {
+                    top = current;
+                }
+            }
+        }
         i(top).addChild(node);
 //        if (!node.isBroken() && (node.getKind() != FxNode.Kind.Element)) {
         accessor.attach(node, fxModel);

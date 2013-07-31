@@ -847,7 +847,6 @@ public final class OptionsExportModel {
             OutputStream out = null;
             File targetFile = new File(targetUserdir, relativePath);
             LOGGER.log(Level.FINE, "Path: {0}", relativePath);  //NOI18N
-            ensureParent(targetFile);
             if (includeKeys.isEmpty() && excludeKeys.isEmpty()) {
                 // copy entire file
                 try {
@@ -1095,6 +1094,7 @@ public final class OptionsExportModel {
 		}
             }
         }
+        ensureParent(file);
         return new FileOutputStream(file);
     }
     private static boolean containsConfig(File file) {
