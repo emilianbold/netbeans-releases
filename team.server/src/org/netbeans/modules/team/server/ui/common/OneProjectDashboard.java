@@ -70,11 +70,11 @@ import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.netbeans.modules.team.commons.treelist.ListNode;
 import org.netbeans.modules.team.commons.treelist.SelectionList;
+import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeList;
 import org.netbeans.modules.team.commons.treelist.TreeListListener;
 import org.netbeans.modules.team.commons.treelist.TreeListModel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
-import org.netbeans.modules.team.server.NoProjectComponent;
 import org.openide.util.Cancellable;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
@@ -472,7 +472,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
     }
 
     private JComponent createEmptyContent() {
-        return new NoProjectComponent(null);
+        return TeamView.getInstance().getNoProjectComponent(null);
     }
 
     private void setOtherProjects(ArrayList<ProjectHandle<P>> projects) {
@@ -1254,6 +1254,11 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
             panel.add( p, gridBagConstraints );
             
             return panel;
+        }
+
+        @Override
+        public JComponent createNoProjectComponent(Action newServerAction) {
+            throw new UnsupportedOperationException();
         }
     }    
     

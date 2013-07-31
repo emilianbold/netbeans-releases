@@ -64,7 +64,7 @@ import org.netbeans.modules.team.commons.treelist.SelectionList;
 import org.netbeans.modules.team.commons.treelist.TreeList;
 import org.netbeans.modules.team.commons.treelist.TreeListModel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
-import org.netbeans.modules.team.server.NoProjectComponent;
+import org.netbeans.modules.team.server.TeamView;
 import org.openide.util.Cancellable;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
@@ -601,7 +601,7 @@ final class DefaultDashboard<P> implements DashboardImpl<P> {
     }
 
     private JComponent createEmptyContent() {
-        return new NoProjectComponent(null);
+        return TeamView.getInstance().getNoProjectComponent(null);
     }
 
     private void startLoadingAllProjects(boolean forceRefresh) {
