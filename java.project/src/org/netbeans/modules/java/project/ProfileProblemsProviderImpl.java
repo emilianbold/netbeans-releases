@@ -654,7 +654,7 @@ final class ProfileProblemsProviderImpl implements ProjectProblemsProvider, Prop
             "LBL_ResolveProfile=Resolve Invalid Project Profile",
             "LBL_ResolveButton=OK",
             "AN_ResolveButton=Resolve",
-            "AD_ResolveButton=Resovle the profile problems"
+            "AD_ResolveButton=Resolve the profile problems"
         })
         public Future<Result> resolve() {
             final JButton ok = new JButton(LBL_ResolveButton());

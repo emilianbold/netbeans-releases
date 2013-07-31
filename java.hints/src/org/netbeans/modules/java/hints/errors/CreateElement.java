@@ -117,12 +117,13 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     public Set<String> getCodes() {
-        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.resolve.location.args", "compiler.err.cant.apply.symbol", "compiler.err.cant.apply.symbol.1", "compiler.err.cant.resolve", "compiler.err.cant.resolve.args")); // NOI18N
+        return new HashSet<String>(Arrays.asList("compiler.err.cant.resolve.location", "compiler.err.cant.resolve.location.args", "compiler.err.cant.apply.symbol", "compiler.err.cant.apply.symbol.1", "compiler.err.cant.resolve", "compiler.err.cant.resolve.args", CAST_KEY)); // NOI18N
     }
+    public static final String CAST_KEY = "compiler.err.prob.found.req";
 
     public List<Fix> run(CompilationInfo info, String diagnosticKey, int offset, TreePath treePath, Data<Void> data) {
         try {
-            return analyze(info, offset);
+            return analyze(info, diagnosticKey, offset);
         } catch (IOException e) {
             Exceptions.printStackTrace(e);
             return null;
@@ -133,10 +134,36 @@ public final class CreateElement implements ErrorRule<Void> {
     }
 
     static List<Fix> analyze(CompilationInfo info, int offset) throws IOException {
+        return analyze(info, null, offset);
+    }
+    
+    static List<Fix> analyze(CompilationInfo info, String diagnosticKey, int offset) throws IOException {
+        List<Fix> result = analyzeImpl(info, diagnosticKey, offset);
+        
+        if (CAST_KEY.equals(diagnosticKey)) {
+            for (Iterator<Fix> it = result.iterator(); it.hasNext();) {
+                Fix f = it.next();
+                
+                if (!(f instanceof CreateMethodFix)) {
+                    it.remove();
+                }
+            }
+        }
+        
+        return result;
+    }
+    
+    private static List<Fix> analyzeImpl(CompilationInfo info, String diagnosticKey, int offset) throws IOException {
         TreePath errorPath = ErrorHintsProvider.findUnresolvedElement(info, offset);
 
         if (errorPath == null) {
             return Collections.<Fix>emptyList();
+        }
+        
+        if (CAST_KEY.equals(diagnosticKey) && errorPath.getParentPath() != null && errorPath.getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION) {
+            MethodInvocationTree mit = (MethodInvocationTree) errorPath.getParentPath().getLeaf();
+            errorPath = new TreePath(errorPath.getParentPath(), mit.getMethodSelect());
+            offset = (int) info.getTrees().getSourcePositions().getStartPosition(errorPath.getCompilationUnit(), errorPath.getLeaf());
         }
 
         if (info.getElements().getTypeElement("java.lang.Object") == null) { // NOI18N

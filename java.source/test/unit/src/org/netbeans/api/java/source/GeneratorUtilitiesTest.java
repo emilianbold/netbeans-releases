@@ -1480,7 +1480,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         performTest("test/Test.java",
                     "package test; public class Test implements I { } interface I { public default void t() { } } \n",
                     "1.8",
-                    new T2Test(true),
+                    new T2(),
                     new ContentValidator("package test; public class Test implements I { \n\n    @Override\n    public void t() {\n        I.super.t(); //To change body of generated methods, choose Tools | Templates.\n    }\n } interface I { public default void t() { } } \n"),
                     false);
     }
@@ -1489,7 +1489,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         performTest("test/Test.java",
                     "package test; public interface Test extends I { } interface I { public void t(); } \n",
                     "1.8",
-                    new T2Test(false),
+                    new T2(),
                     new ContentValidator("package test; public interface Test extends I { \n\n    @Override\n    public default void t() {\n        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n    }\n } interface I { public void t(); } \n"),
                     false);
     }
@@ -1498,7 +1498,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         performTest("test/Test.java",
                     "package test; public interface Test extends I { } interface I { public default void t() { } } \n",
                     "1.8",
-                    new T2Test(true),
+                    new T2(),
                     new ContentValidator("package test; public interface Test extends I { \n\n    @Override\n    public default void t() {\n        I.super.t(); //To change body of generated methods, choose Tools | Templates.\n    }\n } interface I { public default void t() { } } \n"),
                     false);
     }
@@ -1507,16 +1507,12 @@ public class GeneratorUtilitiesTest extends NbTestCase {
         performTest("test/Test.java",
                     "package test; public class Test implements I { } interface I { public void t(); } \n",
                     "1.8",
-                    new T2Test(false),
+                    new T2(),
                     new ContentValidator("package test; public class Test implements I { \n\n    @Override\n    public void t() {\n        throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates.\n    }\n } interface I { public void t(); } \n"),
                     false);
     }
     
-    private static final class T2Test implements Task<WorkingCopy> {
-        private final boolean override;
-        public T2Test(boolean override) {
-            this.override = override;
-        }
+    private static final class T2 implements Task<WorkingCopy> {
         @Override
         public void run(WorkingCopy parameter) throws Exception {
             parameter.toPhase(Phase.RESOLVED);
@@ -1530,13 +1526,7 @@ public class GeneratorUtilitiesTest extends NbTestCase {
             ExecutableElement t = (ExecutableElement) i.getEnclosedElements().get(0);
             
             ClassTree testTree = parameter.getTrees().getTree(test);
-            MethodTree newMethod;
-            
-            if (override) {
-                newMethod = GeneratorUtilities.get(parameter).createAbstractMethodImplementation(test, t);
-            } else {
-                newMethod = GeneratorUtilities.get(parameter).createAbstractMethodImplementation(test, t);
-            }
+            MethodTree newMethod = GeneratorUtilities.get(parameter).createAbstractMethodImplementation(test, t);
             
             ClassTree nueTestTree = parameter.getTreeMaker().addClassMember(testTree, newMethod);
             

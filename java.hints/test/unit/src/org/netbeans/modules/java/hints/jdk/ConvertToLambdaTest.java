@@ -45,6 +45,7 @@ package org.netbeans.modules.java.hints.jdk;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.spiimpl.TestCompilerSettings;
 import org.netbeans.modules.java.hints.test.api.HintTest;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 
 /**
  *
@@ -937,5 +938,6 @@ public class ConvertToLambdaTest extends NbTestCase {
     
     static {
         TestCompilerSettings.commandLine = "-XDidentifyLambdaCandidate=true -XDfindDiamond";
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
 }

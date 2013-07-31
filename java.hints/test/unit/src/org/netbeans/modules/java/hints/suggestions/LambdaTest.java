@@ -43,6 +43,7 @@ package org.netbeans.modules.java.hints.suggestions;
 
 import org.junit.Test;
 import org.netbeans.modules.java.hints.test.api.HintTest;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 
 /**
  *
@@ -330,5 +331,9 @@ public class LambdaTest {
                                       "        Collections.sort(list, (String l, String r) -> l.compareTo(r));\n" +
                                       "    }\n" +
                                       "}\n");
+    }
+
+    static {
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
 }
