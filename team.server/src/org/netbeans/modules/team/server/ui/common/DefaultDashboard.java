@@ -44,13 +44,11 @@ package org.netbeans.modules.team.server.ui.common;
 
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.net.MalformedURLException;
 import javax.accessibility.AccessibleContext;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
 import java.net.PasswordAuthentication;
-import java.net.URL;
 import java.util.*;
 import java.util.List;
 import java.util.prefs.Preferences;
@@ -63,13 +61,11 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.netbeans.modules.team.commons.treelist.SelectionList;
-import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.netbeans.modules.team.commons.treelist.TreeList;
 import org.netbeans.modules.team.commons.treelist.TreeListModel;
 import org.netbeans.modules.team.commons.treelist.TreeListNode;
-import org.openide.awt.HtmlBrowser.URLDisplayer;
+import org.netbeans.modules.team.server.TeamView;
 import org.openide.util.Cancellable;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
@@ -467,21 +463,6 @@ final class DefaultDashboard<P> implements DashboardImpl<P> {
         changeSupport.firePropertyChange(DashboardSupport.PROP_OPENED_PROJECTS, null, null);
     }
 
-    private Action createWhatIsTeamAction() {
-        return new AbstractAction() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                try {
-                    URLDisplayer.getDefault().showURL(
-                            new URL(NbBundle.getMessage(DefaultDashboard.class, "URL_TeamOverview"))); //NOI18N
-                } catch( MalformedURLException ex ) {
-                    //shouldn't happen
-                    Exceptions.printStackTrace(ex);
-                }
-            }
-        };
-    }
-
     private boolean isOpened() {
         return opened;
     }
@@ -620,24 +601,7 @@ final class DefaultDashboard<P> implements DashboardImpl<P> {
     }
 
     private JComponent createEmptyContent() {
-        JPanel res = new JPanel( new GridBagLayout() );
-        res.setOpaque(false);
-
-        JLabel lbl = new TreeLabel(NbBundle.getMessage(DefaultDashboard.class, "LBL_No_Team_Project_Open")); //NOI18N
-        lbl.setForeground(ColorManager.getDefault().getDisabledColor());
-        lbl.setHorizontalAlignment(JLabel.CENTER);
-        LinkButton btnWhatIs = new LinkButton(NbBundle.getMessage(DefaultDashboard.class, "LBL_WhatIsTeam"), createWhatIsTeamAction() ); //NOI18N
-
-        model.removeRoot(userNode);
-        model.removeRoot(myProjectsNode);
-        model.removeRoot(openProjectsNode);
-        userNode.set(null, false);
-        res.add( userNode.getComponent(UIManager.getColor("List.foreground"), ColorManager.getDefault().getDefaultBackground(), false, false, 200), new GridBagConstraints(0, 0, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(3, 4, 3, 4), 0, 0) ); //NOI18N
-        res.add( new JLabel(), new GridBagConstraints(0, 1, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
-        res.add( lbl, new GridBagConstraints(0, 2, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 4, 0), 0, 0) );
-        res.add( btnWhatIs, new GridBagConstraints(0, 3, 3, 1, 1.0, 0.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(4, 0, 0, 0), 0, 0) );
-        res.add( new JLabel(), new GridBagConstraints(0, 4, 3, 1, 0.0, 1.0, GridBagConstraints.CENTER, GridBagConstraints.HORIZONTAL, new Insets(0, 0, 0, 0), 0, 0) );
-        return res;
+        return TeamView.getInstance().getNoProjectComponent(null);
     }
 
     private void startLoadingAllProjects(boolean forceRefresh) {

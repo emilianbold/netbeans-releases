@@ -482,10 +482,10 @@ public class JSFFrameworkProvider extends WebFrameworkProvider {
                             servlet.setLoadOnStartup(new BigInteger("1"));//NOI18N
                             ddRoot.addServlet(servlet);
 
-                            ServletMapping mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); //NOI18N
+                            ServletMapping25 mapping = (ServletMapping25)ddRoot.createBean("ServletMapping"); //NOI18N
                             mapping.setServletName(servletName);//NOI18N
 //                            facesMapping = panel == null ? "faces/*" : panel.getURLPattern();
-                            mapping.setUrlPattern(facesMapping); //NOI18N
+                            mapping.setUrlPatterns(new String[]{facesMapping});
                             ddRoot.addServletMapping(mapping);
                         }
                     }

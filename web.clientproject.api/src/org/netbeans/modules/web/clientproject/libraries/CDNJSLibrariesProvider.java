@@ -170,7 +170,7 @@ public class CDNJSLibrariesProvider implements EnhancedLibraryProvider<LibraryIm
                         File cachedZip = getCachedZip(false);
                         assert cachedZip != null;
                         assert cachedZip.isFile();
-                        libraryRootUrl = "jar:" + Utilities.toURI(cachedZip).toString() + "!/" // NOI18N
+                        libraryRootUrl = "jar:" + Utilities.toURI(cachedZip).toURL() + "!/" // NOI18N
                                 + original.substring(0, ajaxLibsIndex) + ajaxLibs; // NOI18N
                     }
                 }

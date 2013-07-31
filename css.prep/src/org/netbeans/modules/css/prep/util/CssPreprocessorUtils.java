@@ -154,6 +154,10 @@ public final class CssPreprocessorUtils {
         return resolveTarget(root, mappings, source, name);
     }
 
+    public static File resolveInput(FileObject webRoot, Pair<String, String> mapping) {
+        return resolveFile(FileUtil.toFile(webRoot), mapping.first().trim());
+    }
+
     @CheckForNull
     static File resolveTarget(File root, List<Pair<String, String>> mappings, File file, String name) {
         for (Pair<String, String> mapping : mappings) {

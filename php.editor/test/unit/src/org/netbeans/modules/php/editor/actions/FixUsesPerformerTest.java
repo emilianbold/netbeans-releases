@@ -130,6 +130,36 @@ public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
         performTest("$a = new ClassName();^//HERE", selections, false, options);
     }
 
+    public void testIssue233527() throws Exception {
+        String[] selections = new String[] {"\\NS1\\NS2\\SomeClass", "\\NS1\\NS2\\SomeClass"};
+        Options options = new Options(false, false, true, true);
+        performTest("public function test(SomeClass $a) {^", selections, false, options);
+    }
+
+    public void testIssue222595_01() throws Exception {
+        String[] selections = new String[] {"\\pl\\dagguh\\people\\Person"};
+        Options options = new Options(false, false, false, true);
+        performTest("function assignRoom(Room $room, Person $roomOwner);^", selections, false, options);
+    }
+
+    public void testIssue222595_02() throws Exception {
+        String[] selections = new String[] {"\\pl\\dagguh\\people\\Person"};
+        Options options = new Options(true, false, true, true);
+        performTest("function assignRoom(Room $room, Person $roomOwner);^", selections, false, options);
+    }
+
+    public void testIssue222595_03() throws Exception {
+        String[] selections = new String[] {};
+        Options options = new Options(false, false, true, true);
+        performTest("function addRoom(\\pl\\dagguh\\buildings\\Room $room);^", selections, false, options);
+    }
+
+    public void testIssue222595_04() throws Exception {
+        String[] selections = new String[] {};
+        Options options = new Options(true, false, true, true);
+        performTest("function addRoom(\\pl\\dagguh\\buildings\\Room $room);^", selections, false, options);
+    }
+
     private String getTestResult(final String fileName, final String caretLine, final String[] selections, final boolean removeUnusedUses, final Options options) throws Exception {
         FileObject testFile = getTestFile(fileName);
 
@@ -204,20 +234,15 @@ public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
     }
 
     private String getTestFolderPath() {
-        return "testfiles/actions/" + getTestName();//NOI18N
+        return "testfiles/actions/" + transformTestMethodNameToDirectory();//NOI18N
     }
 
     private String getTestPath() {
         return getTestFolderPath() + "/" + getName() + ".php";//NOI18N
     }
 
-    private String getTestName() {
-        String name = getName();
-        int indexOf = name.indexOf("_");
-        if (indexOf != -1) {
-            name = name.substring(0, indexOf);
-        }
-        return name;
+    private String transformTestMethodNameToDirectory() {
+        return getName().replace('_', '/');
     }
 
 }

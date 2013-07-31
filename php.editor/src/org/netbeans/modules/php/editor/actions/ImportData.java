@@ -44,6 +44,7 @@ package org.netbeans.modules.php.editor.actions;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import javax.swing.Icon;
 
 /**
@@ -54,13 +55,22 @@ public class ImportData {
     public volatile boolean shouldShowUsesPanel;
     public volatile int caretPosition;
     private final List<DataItem> dataItems = new ArrayList<>();
+    private final List<DataItem> dataItemsToReplace = new ArrayList<>();
 
     public void add(DataItem item) {
         dataItems.add(item);
     }
 
+    public void addJustToReplace(DataItem item) {
+        dataItemsToReplace.add(item);
+    }
+
     public List<DataItem> getItems() {
         return new ArrayList<>(dataItems);
+    }
+
+    public List<DataItem> getItemsToReplace() {
+        return new ArrayList<>(dataItemsToReplace);
     }
 
     public List<ItemVariant> getDefaultVariants() {
@@ -111,6 +121,10 @@ public class ImportData {
 
         public List<UsedNamespaceName> getUsedNamespaceNames() {
             return new ArrayList<>(usedNamespaceNames);
+        }
+
+        public void addUsedNamespaceNames(List<UsedNamespaceName> usedNsNames) {
+            usedNamespaceNames.addAll(usedNsNames);
         }
 
         @Override
@@ -204,8 +218,7 @@ public class ImportData {
         @Override
         public int hashCode() {
             int hash = 7;
-            hash = 59 * hash + (this.name != null ? this.name.hashCode() : 0);
-            hash = 59 * hash + (this.icon != null ? this.icon.hashCode() : 0);
+            hash = 97 * hash + Objects.hashCode(this.name);
             return hash;
         }
 
@@ -218,10 +231,7 @@ public class ImportData {
                 return false;
             }
             final ItemVariant other = (ItemVariant) obj;
-            if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-                return false;
-            }
-            if (this.icon != other.icon && (this.icon == null || !this.icon.equals(other.icon))) {
+            if (!Objects.equals(this.name, other.name)) {
                 return false;
             }
             return true;

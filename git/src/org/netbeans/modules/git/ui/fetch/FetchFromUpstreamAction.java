@@ -49,7 +49,6 @@ import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
-import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.MultipleRepositoryAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
@@ -72,6 +71,17 @@ import org.openide.util.RequestProcessor.Task;
 @Messages("LBL_FetchFromUpstreamAction_Name=&Fetch from Upstream")
 public class FetchFromUpstreamAction extends MultipleRepositoryAction {
 
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/fetch.png"; //NOI18N
+    
+    public FetchFromUpstreamAction () {
+        super(ICON_RESOURCE);
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
+    
     @Override
     protected RequestProcessor.Task performAction (File repository, File[] roots, VCSContext context) {
         return fetch(repository);

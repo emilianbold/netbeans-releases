@@ -85,7 +85,7 @@ public class Strip implements PropertyChangeListener {
         dialogDescriptor.setOptions(new Object[] {okButton, cancelButton});
         
         dialogDescriptor.setModal(true);
-        dialogDescriptor.setHelpCtx(new HelpCtx(this.getClass()));
+        dialogDescriptor.setHelpCtx(new HelpCtx("org.netbeans.modules.mercurial.ui.rollback.StripPanel")); //NOI18N
         dialogDescriptor.setValid(false);
         
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dialogDescriptor);     

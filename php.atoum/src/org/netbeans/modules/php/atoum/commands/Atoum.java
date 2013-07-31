@@ -183,6 +183,7 @@ public final class Atoum {
             if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
                 return atoum.runAndWait(getDescriptor(), new ParsingFactory(testSession), "Running atoum tests..."); // NOI18N
             }
+            LOGGER.info("Debugging atoum tests is not possible");
             return atoum.debug(runInfo.getStartFile(), getDescriptor(), new ParsingFactory(testSession));
         } catch (CancellationException ex) {
             // canceled

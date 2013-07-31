@@ -70,7 +70,8 @@ class CreateBranch {
         final JButton okButton = new JButton();
         Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(CreateBranch.class, "CTL_CreateBranch.ok.text")); //NOI18N
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(CreateBranch.class, "LBL_CreateBranchPanel.title"), //NOI18N
-                true, new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CreateBranchPanel.class), null);
+                true, new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx("org.netbeans.modules.mercurial.ui.branch.CreateBranchPanel"), null); //NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         okButton.setEnabled(false);
         panel.txtBranchName.getDocument().addDocumentListener(new DocumentListener() {

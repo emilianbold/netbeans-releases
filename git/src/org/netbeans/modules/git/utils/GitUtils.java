@@ -803,10 +803,15 @@ public final class GitUtils {
     }
     
     private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
+    private static final String REF_SPEC_GLOBAL_PATTERN = "+refs/heads/*:refs/remotes/{0}/*"; //NOI18N
     public static final String REF_SPEC_DEL_PREFIX = ":refs/remotes/"; //NOI18N
     private static final String REF_PUSHSPEC_PATTERN = "refs/heads/{0}:refs/heads/{1}"; //NOI18N
     public static final String REF_PUSHSPEC_DEL_PREFIX = ":refs/heads/"; //NOI18N
     private static final String REF_TAG_PUSHSPEC_PATTERN = "refs/tags/{0}:refs/tags/{0}"; //NOI18N
+
+    public static String getGlobalRefSpec (String remoteName) {
+        return MessageFormat.format(REF_SPEC_GLOBAL_PATTERN, remoteName);
+    }
 
     public static String getRefSpec(GitBranch branch, String remoteName) {
         return MessageFormat.format(REF_SPEC_PATTERN, branch.getName(), remoteName);

@@ -26,7 +26,7 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
         _highlightDays:METHOD:[PUBLIC]:ESCAPED{_highlightDays}ESCAPED{(}ESCAPED{)}:
         _load:METHOD:[PUBLIC]:ESCAPED{_load}ESCAPED{(}ESCAPED{)}:
         _printValues:METHOD:[PUBLIC]:ESCAPED{_printValues}ESCAPED{(}ESCAPED{)}:
-        _searchNextValue:METHOD:[PUBLIC]:ESCAPED{_searchNextValue}ESCAPED{(}ESCAPED{index}ESCAPED{)}<font color="#999999">ESCAPED{ : }NumberESCAPED{|}$.fn.ovuGraph.prv._searchNextValue.index</font>:
+        _searchNextValue:METHOD:[PUBLIC]:ESCAPED{_searchNextValue}ESCAPED{(}ESCAPED{index}ESCAPED{)}<font color="#999999">ESCAPED{ : }Number</font>:
         canvas:CLASS:[PUBLIC]:ESCAPED{canvas}:
           height:FIELD:[PUBLIC]:ESCAPED{height}<font color="#999999">ESCAPED{ : }Number</font>:
           width:FIELD:[PUBLIC]:ESCAPED{width}<font color="#999999">ESCAPED{ : }prv.json.objectSize</font>:

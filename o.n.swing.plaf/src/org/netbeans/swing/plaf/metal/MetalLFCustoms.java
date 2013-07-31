@@ -126,6 +126,10 @@ public final class MetalLFCustoms extends LFCustoms {
             EDITOR_TAB_OUTER_BORDER, outerBorder,
             VIEW_TAB_OUTER_BORDER, outerBorder,
 
+            //browser picker
+            "Nb.browser.picker.background.light", new Color(249,249,249),
+            "Nb.browser.picker.foreground.light", new Color(130,130,130),
+
             EXPLORER_MINISTATUSBAR_BORDER, BorderFactory.createMatteBorder(1, 0, 0, 0, UIManager.getColor("controlShadow")),
             
             //#48951 invisible unfocused selection background in Metal L&F
@@ -143,6 +147,9 @@ public final class MetalLFCustoms extends LFCustoms {
             "nbProgressBar.popupText.selectBackground", UIManager.getColor("List.selectionBackground"),
             "nbProgressBar.popupText.selectForeground", UIManager.getColor("List.selectionForeground"),                    
 
+            //browser picker
+            "Nb.browser.picker.background.light", new Color(249,249,249),
+            "Nb.browser.picker.foreground.light", new Color(130,130,130),
         }; //NOI18N
 
         //#108517 - turn off ctrl+page_up and ctrl+page_down mapping

@@ -77,6 +77,14 @@ import org.openide.util.NbBundle;
  */
 public abstract class AbstractCheckoutAction extends SingleRepositoryAction {
     
+    protected AbstractCheckoutAction () {
+        this(null);
+    }
+
+    protected AbstractCheckoutAction (String iconResource) {
+        super(iconResource);
+    }
+    
     private static final Logger LOG = Logger.getLogger(CheckoutRevisionAction.class.getName());
     
     protected final void checkoutRevision (final File repository, AbstractCheckoutRevision checkout, String progressLabelKey, HelpCtx helpCtx) {

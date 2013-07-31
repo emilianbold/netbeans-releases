@@ -255,7 +255,7 @@ class InnerTabsPanel extends javax.swing.JPanel {
         if( checkMultiRow.isSelected() && radioRowCount.isSelected() )
             rowCount = ((Number)spinRowCount.getValue()).intValue();
         changed |= settings.setRowCount( rowCount );
-        changed |= settings.setTabRowPerProject( radioRowPerProject.isSelected() );
+        changed |= settings.setTabRowPerProject( radioRowPerProject.isSelected() && checkMultiRow.isSelected() );
 
         changed |= settings.setShowFolderName( checkShowFolderName.isSelected() );
         changed |= settings.setSortDocumentListByProject( checkSortDocumentList.isSelected() );
