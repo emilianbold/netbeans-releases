@@ -87,7 +87,7 @@ public class BreakpointsViewButtons {
 
     public static JButton createNewBreakpointActionButton() {
         JButton button = VariablesViewButtons.createButton(
-                "org/netbeans/modules/debugger/resources/breakpointsView/NewBreakpoint.gif",
+                "org/netbeans/modules/debugger/resources/breakpointsView/NewBreakpoint.png",
                 NbBundle.getMessage (BreakpointsViewButtons.class, "Hint_New_Breakpoint")
             );
         button.addActionListener(new ActionListener() {

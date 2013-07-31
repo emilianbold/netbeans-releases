@@ -219,6 +219,7 @@ public class ActionsPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(enableGroupCheckBox, gridBagConstraints);
 
+        enableGroupLabel.setLabelFor(enableGroupComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(enableGroupLabel, org.openide.util.NbBundle.getMessage(ActionsPanel.class, "MSG_EnableGroup")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -243,6 +244,7 @@ public class ActionsPanel extends javax.swing.JPanel {
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
         add(disableGroupCheckBox, gridBagConstraints);
 
+        disableGroupLabel.setLabelFor(disableGroupComboBox);
         org.openide.awt.Mnemonics.setLocalizedText(disableGroupLabel, org.openide.util.NbBundle.getMessage(ActionsPanel.class, "MSG_DisableGroup")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
