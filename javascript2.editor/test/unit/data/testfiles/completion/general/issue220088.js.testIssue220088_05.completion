@@ -8,4 +8,5 @@ CLASS      Screen                          [PUBLIC]   JS Platform
 CLASS      Storage                         [PUBLIC]   JS Platform
 CLASS      StyleSheet                      [PUBLIC]   JS Platform
 CLASS      StyleSheetList                  [PUBLIC]   JS Platform
+METHOD     SpecPoolCtrl($scope, $rootScop  [PUBLIC]   issue223681.js
 METHOD     SyntaxError(): Error            [PUBLIC]   JS Platform

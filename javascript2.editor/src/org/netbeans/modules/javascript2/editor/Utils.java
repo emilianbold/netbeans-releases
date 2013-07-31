@@ -43,6 +43,7 @@ package org.netbeans.modules.javascript2.editor;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
@@ -67,6 +68,7 @@ public class Utils {
                 displayNames.add(displayName);
             }
         }
+        Collections.sort(displayNames);
         return displayNames;
     }
     

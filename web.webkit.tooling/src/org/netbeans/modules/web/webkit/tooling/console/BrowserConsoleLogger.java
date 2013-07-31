@@ -311,7 +311,12 @@ public class BrowserConsoleLogger implements Console.Listener {
             }
         }
     }
-    
+
+    @NbBundle.Messages({"BrowserConsoleLoggerSessionClosed=Debugging session with browser was closed."})
+    void sessionWasClosed() {
+        io.getOut().println(Bundle.BrowserConsoleLoggerSessionClosed());
+    }
+
     // XXX: exact this algorithm is also in 
     // javascript.jstestdriver/src/org/netbeans/modules/javascript/jstestdriver/JSTestDriverSupport.java
     // keep them in sync

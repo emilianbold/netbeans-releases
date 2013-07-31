@@ -13,7 +13,7 @@ Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
   create:METHOD:[PUBLIC]:ESCAPED{create}ESCAPED{(}ESCAPED{className}ESCAPED{, }ESCAPED{data}ESCAPED{, }ESCAPED{createdFn}ESCAPED{)}<font color="#999999">ESCAPED{ : }Class</font>:
     data:PARAMETER:[PUBLIC]:ESCAPED{data}:
       $className:FIELD:[PUBLIC]:ESCAPED{$className}:
-      createdFn:FIELD:[PUBLIC]:ESCAPED{createdFn}<font color="#999999">ESCAPED{ : }Manager.create.createdFn</font>:
+      createdFn:FIELD:[PUBLIC]:ESCAPED{createdFn}:
       postprocessors:FIELD:[PUBLIC]:ESCAPED{postprocessors}:
   createNamespaces:METHOD:[PRIVATE]:ESCAPED{createNamespaces}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.createNamespaces.rootESCAPED{|}@arr;rootESCAPED{|}Ext.ClassManager.createNamespaces.root</font>:
   createOverride:METHOD:[PUBLIC]:ESCAPED{createOverride}ESCAPED{(}ESCAPED{className}ESCAPED{, }ESCAPED{data}ESCAPED{, }ESCAPED{createdFn}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.createOverride.meESCAPED{|}Manager.createOverride.meESCAPED{|}Manager</font>:
@@ -50,8 +50,8 @@ Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
   namespaceRewrites:FIELD:[PUBLIC]:ESCAPED{namespaceRewrites}<font color="#999999">ESCAPED{ : }Array</font>:
   onCreated:METHOD:[PRIVATE]:ESCAPED{onCreated}ESCAPED{(}ESCAPED{fn}ESCAPED{, }ESCAPED{scope}ESCAPED{, }ESCAPED{className}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
     listener:CLASS:[PRIVATE]:ESCAPED{listener}:
-      fn:FIELD:[PUBLIC]:ESCAPED{fn}<font color="#999999">ESCAPED{ : }Manager.onCreated.fn</font>:
-      scope:FIELD:[PUBLIC]:ESCAPED{scope}<font color="#999999">ESCAPED{ : }Manager.onCreated.scope</font>:
+      fn:FIELD:[PUBLIC]:ESCAPED{fn}:
+      scope:FIELD:[PUBLIC]:ESCAPED{scope}:
   parseNamespace:METHOD:[PRIVATE]:ESCAPED{parseNamespace}ESCAPED{(}ESCAPED{namespace}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.parseNamespace.cacheESCAPED{|}Manager.namespaceParseCacheESCAPED{|}Ext.ClassManager.parseNamespace.parts</font>:
   postprocessors:CLASS:[PUBLIC]:ESCAPED{postprocessors}:
   processCreate:METHOD:[PUBLIC]:ESCAPED{processCreate}ESCAPED{(}ESCAPED{className}ESCAPED{, }ESCAPED{cls}ESCAPED{, }ESCAPED{clsData}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
