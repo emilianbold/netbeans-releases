@@ -4,3 +4,4 @@ element.ch|arAt(10);
 ------------------------------------
 METHOD     charAt(param)                   [PUBLIC]   issue217029.js
 FIELD      childElementCount: Number       [PUBLIC]   JS Platform
+FIELD      childNodes: NodeList            [PUBLIC]   JS Platform
