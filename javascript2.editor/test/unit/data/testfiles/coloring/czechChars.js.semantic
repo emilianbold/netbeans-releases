@@ -23,8 +23,8 @@ jQuery(function($){
     $.timepicker.setDefaults($.timepicker.regional['cs']);
     
     var |>CLASS:test<| = {}
-    test["myProperty"] = 20;
-    test.|>FIELD:anotherProperty<| = test.myProperty;
+    test["|>FIELD:myProperty<|"] = 20;
+    test.|>FIELD:anotherProperty<| = test.|>FIELD:myProperty<|;
 });
 
 
