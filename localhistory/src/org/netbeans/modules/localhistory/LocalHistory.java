@@ -464,13 +464,13 @@ public class LocalHistory {
                         Object obj = evt.getNewValue();
                         if (obj instanceof TopComponent) {
                             TopComponent tc = (TopComponent) obj;
-                            addOpenedFiles(getFiles(tc));
+                            handleTCFiles(tc, true);
                         }
                     } else if (Registry.PROP_TC_CLOSED.equals(evt.getPropertyName())) {
                         Object obj = evt.getNewValue();
                         if (obj instanceof TopComponent) {
                             TopComponent tc = (TopComponent) obj;
-                            removeOpenedFiles(getFiles(tc));
+                            handleTCFiles(tc, false);
                             removeLookupListeners(tc);
                         }
                     }
@@ -535,7 +535,7 @@ public class LocalHistory {
             }
         }
         
-        private List<VCSFileProxy> getFiles(TopComponent tc) {
+        private void handleTCFiles(TopComponent tc, boolean toAdd) {
             LOG.log(Level.FINER, " looking up files in tc {0} ", new Object[]{tc});
             DataObject tcDataObject = tc.getLookup().lookup(DataObject.class);
             if(tcDataObject == null) {
@@ -557,17 +557,15 @@ public class LocalHistory {
                 if(!alreadyListening) {
                     addLookupListener(tc);
                 }
-                return Collections.EMPTY_LIST;
             } else {
                 try {
-                    return hasOpenedEditorPanes(tcDataObject) ? getFiles(tcDataObject) : Collections.EMPTY_LIST;
+                    handleOpenedEditorFiles(tcDataObject, toAdd);
                 } catch (InterruptedException ex) {
                     LOG.log(Level.WARNING, null, ex);
                 } catch (InvocationTargetException ex) {
                     LOG.log(Level.WARNING, null, ex);
                 }
             }
-            return Collections.EMPTY_LIST;
         }
 
         private List<VCSFileProxy> getFiles(DataObject tcDataObject) {
@@ -632,9 +630,7 @@ public class LocalHistory {
                 DataObject tcDataObject = tc.getLookup().lookup(DataObject.class);
                 if(tcDataObject != null) {
                     try {
-                        if(hasOpenedEditorPanes(tcDataObject)) {
-                            addOpenedFiles(getFiles(tcDataObject));
-                        }
+                        handleOpenedEditorFiles(tcDataObject, true);
                     } catch (InterruptedException ex) {
                         LOG.log(Level.WARNING, null, ex);
                     } catch (InvocationTargetException ex) {
@@ -655,16 +651,16 @@ public class LocalHistory {
          * @throws InterruptedException
          * @throws InvocationTargetException 
          */
-        private boolean hasOpenedEditorPanes(final DataObject dataObject) throws InterruptedException, InvocationTargetException {
-            final boolean[] hasEditorPanes = new boolean[] {false};
-            Runnable r = new Runnable() {
+        private void handleOpenedEditorFiles(final DataObject dataObject, final boolean addFiles) throws InterruptedException, InvocationTargetException {
+            SwingUtilities.invokeLater(new Runnable() {
                 @Override
                 public void run() {
-                    final EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
+                    EditorCookie cookie = dataObject.getLookup().lookup(EditorCookie.class);
                     if(cookie != null) {
                         // hack - care only about dataObjects with opened editors.
                         // otherwise we won't assume it's file were opened to be edited
                         JEditorPane pane = NbDocument.findRecentEditorPane(cookie);
+                        boolean hasEditorPanes = false;
                         if(pane == null) {
                             if(cookie instanceof EditorCookie.Observable) {
                                 final EditorCookie.Observable o = (EditorCookie.Observable) cookie;
@@ -680,27 +676,27 @@ public class LocalHistory {
                                 o.addPropertyChangeListener(l);
                                 pane = NbDocument.findRecentEditorPane(cookie);
                                 if(pane != null) {
-                                    hasEditorPanes[0] = true;
+                                    hasEditorPanes = true;
                                     o.removePropertyChangeListener(l);
                                 }
                             } else {
                                 JEditorPane[] panes = cookie.getOpenedPanes();
-                                hasEditorPanes[0] = panes != null && panes.length > 0;
+                                hasEditorPanes = panes != null && panes.length > 0;
                             }
                         } else {
-                            hasEditorPanes[0] = true;
+                            hasEditorPanes = true;
+                        }
+                        if(hasEditorPanes) {
+                            if(addFiles) {
+                                addOpenedFiles(getFiles(dataObject));
+                            } else {
+                                removeOpenedFiles(getFiles(dataObject));
+                            }
                         }
                     }
                 }
-            };
-            if(SwingUtilities.isEventDispatchThread()) { 
-                r.run();
-            } else {
-                SwingUtilities.invokeAndWait(r);
-            }
-            return hasEditorPanes[0];
-        }          
-
+            });
+        }
     }
     
 }

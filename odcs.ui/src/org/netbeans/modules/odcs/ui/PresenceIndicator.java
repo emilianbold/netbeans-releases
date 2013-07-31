@@ -157,27 +157,6 @@ public class PresenceIndicator {
         public void mouseClicked(MouseEvent event) {
             if (isLoggedIn()) {
                 JPopupMenu menu = new JPopupMenu();
-                for (final ODCSServer k: ODCSManager.getDefault().getServers()) {
-                    if (!k.isLoggedIn()) {
-                        continue;
-                    }
-                    JMenu m = new JMenu(k.getDisplayName());
-                    final JMenuItem logoutItem = new JMenuItem(Bundle.CTL_LogoutMenuItem());
-                    m.add(logoutItem);
-                    menu.add(m);
-
-                    logoutItem.addActionListener(new ActionListener() {
-                        @Override
-                        public void actionPerformed(ActionEvent e) {
-                            Utils.getRequestProcessor().post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    k.logout();
-                                }
-                            });
-                        }
-                    });
-                }
                 final JMenuItem logoutItem = new JMenuItem(Bundle.CTL_LogoutMenuItem());
                 menu.add(logoutItem);
                 logoutItem.addActionListener(new ActionListener() {

@@ -151,7 +151,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         unregisterHistoryListener(lh, this);
     }    
     
-    private synchronized void refreshTablePanel(VCSHistoryProvider providerToRefresh) {                  
+    private synchronized void refreshTablePanel(VCSHistoryProvider providerToRefresh) {    
         if(refreshTask != null) {
             refreshTask.cancel();
             if(vcsTask != null) {
@@ -471,6 +471,22 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
         outline.scrollRectToVisible(new Rectangle(new Point(0, rect.y + direction * rect.height)));
     }
 
+    private void logFiles(String prefix, FileObject[] fos) {
+        if(fos != null) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(prefix);
+            for (int i = 0; i < fos.length; i++) {
+                FileObject fo = fos[i];
+                sb.append(fo.getPath());
+                if(i < fos.length - 1) {
+                    sb.append(","); // NOI18N
+                }
+            }
+            History.LOG.fine(sb.toString());
+            System.out.println(sb.toString());
+        }
+    }
+
     /**
      * Selects a node with the timestamp = toSelect, otherwise the selection stays.
      * If there wasn't a selection set yet then the first node will be selected.
@@ -493,13 +509,15 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 tablePanel.getExplorerManager().setRootContext(root);
             }
             
-            VCSFileProxy[] proxies = History.toProxies(tc.getFiles());
+            FileObject[] fos = tc.getFiles();
+            VCSFileProxy[] proxies = History.toProxies(fos);
                     
             // refresh local history
             try {
                 root.addWaitNode();
                 VCSHistoryProvider lhProvider = History.getHistoryProvider(lh);
                 if(lhProvider != null && (providerToRefresh == null || lhProvider == providerToRefresh)) {
+                    logFiles("Refreshing LH entries for: ", fos); // NOI18N
                     root.addLHEntries(loadLHEntries(proxies));
                 }
             } finally {
@@ -508,6 +526,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
             // refresh vcs
             VCSHistoryProvider vcsProvider = History.getHistoryProvider(versioningSystem);
             if(tc != null && vcsProvider != null && (providerToRefresh == null || providerToRefresh == vcsProvider)) {
+                logFiles("Refreshing VCS entries for: ", fos); // NOI18N
                 loadVCSEntries(proxies, false);
             }
             tablePanel.revalidate();

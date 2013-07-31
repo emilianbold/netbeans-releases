@@ -46,6 +46,14 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collection;
 import org.eclipse.jgit.dircache.DirCache;
 import org.eclipse.jgit.dircache.DirCacheBuildIterator;
@@ -131,10 +139,20 @@ public class AddCommand extends GitCommand {
                             entry.setLastModified(f.getEntryLastModified());
                             int fm = f.getEntryFileMode().getBits();
                             long sz = f.getEntryLength();
+                            final Path p = Paths.get(file.getAbsolutePath());
                             if (Utils.isFromNested(fm)) {
                                 entry.setFileMode(FileMode.fromBits(fm));
                                 entry.setLength(sz);
                                 entry.setObjectId(f.getEntryObjectId());
+                            } else if (Files.isSymbolicLink(p)) {
+                                Path link = getLinkPath(p);                                
+                                entry.setFileMode(FileMode.SYMLINK);
+                                entry.setLength(0);
+                                BasicFileAttributes attrs = Files.readAttributes(p, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+                                if (attrs != null) {
+                                    entry.setLastModified(attrs.lastModifiedTime().toMillis());
+                                }
+                                entry.setObjectId(inserter.insert(Constants.OBJ_BLOB, Constants.encode(link.toString())));
                             } else {
                                 if (!checkExecutable) {
                                     fm = fm & ~0111;
@@ -180,6 +198,19 @@ public class AddCommand extends GitCommand {
             throw new GitException(ex);
         } catch (IOException ex) {
             throw new GitException(ex);
+        }
+    }
+
+    private Path getLinkPath (final Path p) throws IOException {
+        try {
+            return AccessController.doPrivileged(new PrivilegedExceptionAction<Path>() {
+                @Override
+                public Path run () throws IOException {
+                    return Files.readSymbolicLink(p);
+                }
+            });
+        } catch (PrivilegedActionException e) {
+            throw (IOException) e.getException();
         }
     }
 

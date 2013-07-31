@@ -68,7 +68,7 @@ import org.openide.util.RequestProcessor;
  * 
  * @author Tomas Stupka
  */
-@ActionID(id = "org.netbeans.modules.bugtracking.ui.issue.IssueAction", category = "Versioning")
+@ActionID(id = "org.netbeans.modules.bugtracking.ui.issue.IssueAction", category = "Bugtracking")
 @ActionRegistration(lazy = false, displayName = "#CTL_IssueAction")
 @ActionReference(path = "Menu/Versioning", name = "org-netbeans-modules-bugtracking-ui-query-IssueAction", position = 300, separatorAfter = 301)
 public class IssueAction extends SystemAction {
