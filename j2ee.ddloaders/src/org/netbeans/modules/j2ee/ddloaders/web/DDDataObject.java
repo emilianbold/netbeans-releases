@@ -351,9 +351,9 @@ public class DDDataObject extends  DDMultiViewDataObject
             newSrvlt.setDisplayName ("Servlet "+clazz); // NOI18N
             wappTo.addServlet (newSrvlt);
 
-            ServletMapping newSM = (ServletMapping)webApp.createBean("ServletMapping");
+            ServletMapping25 newSM = (ServletMapping25)webApp.createBean("ServletMapping");
             newSM.setServletName (name);
-            newSM.setUrlPattern (urlPattern);
+            newSM.setUrlPatterns(new String[]{urlPattern});
             wappTo.addServletMapping (newSM);
         } catch (ClassNotFoundException ex) {
             Logger.getLogger("DDDataObject").log(Level.FINE, "ignored exception", ex);

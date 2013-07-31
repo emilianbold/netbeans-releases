@@ -45,7 +45,7 @@ package org.netbeans.modules.web.wizards;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
@@ -61,6 +61,7 @@ import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 
 // PENDING - it would be better to have a FilterData which extends
@@ -151,7 +152,7 @@ class ServletData extends DeployData {
         ServletMapping[] maps = webApp.getServletMapping();
         List<String> l = new ArrayList<String>();
         for (int i = 0; i < maps.length; i++) {
-            l.add(maps[i].getUrlPattern());
+            l.addAll(Arrays.asList(((ServletMapping25)maps[i]).getUrlPatterns()));
         }
         return l;
     }
@@ -557,19 +558,16 @@ class ServletData extends DeployData {
         if (webApp == null) {
             return;
         }
-        int numMappings = getUrlMappings().length;
-        for (int i = 0; i < numMappings; ++i) {
-            ServletMapping m;
-            try {
-                m = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
-            } catch (ClassNotFoundException cnfe) {
-                LOG.log(Level.FINE, "error", cnfe);
-                return;
-            }
-            m.setServletName(name);
-            m.setUrlPattern(urlMappings[i]);
-            webApp.addServletMapping(m);
+        ServletMapping25 m;
+        try {
+            m = (ServletMapping25) webApp.createBean("ServletMapping"); //NOI18N
+        } catch (ClassNotFoundException cnfe) {
+            LOG.log(Level.FINE, "error", cnfe);
+            return;
         }
+        m.setServletName(name);
+        m.setUrlPatterns(urlMappings);
+        webApp.addServletMapping(m);
     }
 
     private void addFilterMappings() {

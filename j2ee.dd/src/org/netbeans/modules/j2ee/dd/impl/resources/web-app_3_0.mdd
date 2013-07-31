@@ -166,12 +166,10 @@ public void setUrlPattern(String value) {
                 public String getKeyProperty() { return "UrlPattern"; }
 
                 public void setUrlPattern(String value) {
-                    java.util.logging.Logger.getLogger(getClass().getName()).warning("ServletMapping25.setUrlPattern() is only fallback, use ServletMapping25.setUrlPatterns() instead!");
                     setUrlPatterns(new String[] {value});
                 }
 
                 public String getUrlPattern() {
-                    java.util.logging.Logger.getLogger(getClass().getName()).warning("ServletMapping25.getUrlPattern() is only fallback, use ServletMapping25.getUrlPatterns() instead!");
                     String[] urlPatterns = getUrlPatterns();
                     if (urlPatterns != null &amp;&amp; urlPatterns.length > 0) {
                         return urlPatterns[0];

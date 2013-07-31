@@ -62,6 +62,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -121,7 +122,7 @@ public class MavenProjectRestSupport extends RestSupport {
                 servletNames.append(i>0 ? ",":"");
                 servletNames.append(mapping.getServletName());
                 urlPatterns.append(i>0 ? ",":"");
-                urlPatterns.append(mapping.getUrlPattern());
+                urlPatterns.append(((ServletMapping25)mapping).getUrlPatterns()[0]);
                 i++;
             }
             // http://localhost:8084/mavenprojectWeb3/||ServletAdaptor||resources/*

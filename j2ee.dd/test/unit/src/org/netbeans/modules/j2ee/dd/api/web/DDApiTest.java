@@ -61,7 +61,7 @@ public class DDApiTest extends NbTestCase {
     private static final String SERVLET_NAME = "FordServlet";
     private static final String SERVLET_CLASS = "org.package.mypackage.CarServlet";
     private static final String SERVLET_NAME1 = "VolvoServlet";
-    private static final String URL_PATTERN = "/ford";
+    private static final String[] URL_PATTERN = new String[]{"/ford"};
     private static final String URL_PATTERN1 = "/volvo";
     private static final java.math.BigInteger LOAD_ON_STARTUP = java.math.BigInteger.valueOf(10);
     private static final java.math.BigInteger LOAD_ON_STARTUP1 = java.math.BigInteger.valueOf(25);
@@ -117,9 +117,9 @@ public class DDApiTest extends NbTestCase {
             servlet.setServletClass(SERVLET_CLASS);
             servlet.setLoadOnStartup(LOAD_ON_STARTUP);
             webApp.addServlet(servlet);
-            ServletMapping mapping = (ServletMapping) webApp.createBean("ServletMapping");
+            ServletMapping25 mapping = (ServletMapping25) webApp.createBean("ServletMapping");
             mapping.setServletName(SERVLET_NAME);
-            mapping.setUrlPattern(URL_PATTERN);
+            mapping.setUrlPatterns(URL_PATTERN);
             webApp.addServletMapping(mapping);
             webApp.write(fo);
         } catch (ClassNotFoundException ex) {
