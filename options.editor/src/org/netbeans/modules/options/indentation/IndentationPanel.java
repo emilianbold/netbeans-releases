@@ -111,7 +111,11 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     private final boolean showOverrideGlobalOptions;
     
     private static final int REFRESH_DELAY = 100; /* [ms] */
-    private final RequestProcessor.Task refreshTask = RequestProcessor.getDefault().create(new Runnable() {
+    
+    // create our own
+    private static final RequestProcessor REFRESH_PROCESSOR = new RequestProcessor("Indent Preview Formatter"); // NOI18N
+    
+    private final RequestProcessor.Task refreshTask = REFRESH_PROCESSOR.create(new Runnable() {
         public void run() {
             if (!SwingUtilities.isEventDispatchThread()) {
                 SwingUtilities.invokeLater(this);
