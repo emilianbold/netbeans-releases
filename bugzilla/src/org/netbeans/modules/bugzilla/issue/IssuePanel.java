@@ -185,7 +185,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             incomingChangesColor = new Color(217, 255, 217);
         }
     }
-    private boolean initializingProduct;
+    private boolean initializingNewTask;
     
     public IssuePanel() {
         initComponents();
@@ -408,7 +408,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     }
 
     private void selectProduct() {
-        initializingProduct = true;
         if (ownerInfo != null) {
             String owner = findInModel(productCombo, ownerInfo.getOwner());
             productCombo.setSelectedItem(owner);
@@ -433,7 +432,6 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             }
         }
         storeFieldValueForNewIssue(IssueField.COMPONENT, componentCombo);
-        initializingProduct = false;
     }
 
     private String findInModel(JComboBox combo, String value) {
@@ -523,11 +521,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         org.openide.awt.Mnemonics.setLocalizedText(submitButton, NbBundle.getMessage(IssuePanel.class, isNew ? "IssuePanel.submitButton.text.new" : "IssuePanel.submitButton.text")); // NOI18N
         if (isNew && force && issue.isMarkedNewUnread()) {
             // this should not be called when reopening task to submit
-            if(BugzillaUtil.isNbRepository(issue.getRepository())) {
-                addNetbeansInfo();
-            }
-            // Preselect the first product
-            selectProduct();
+            initializeNewTask();
             initStatusCombo("NEW"); // NOI18N
         } else {
             String format = NbBundle.getMessage(IssuePanel.class, "IssuePanel.headerLabel.format"); // NOI18N
@@ -3340,6 +3334,8 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         };
         String infoTxt = MessageFormat.format(format, info);
         addCommentArea.setText(infoTxt);
+        assert issue.isNew();
+        storeFieldValueForNewIssue(IssueField.DESCRIPTION, addCommentArea);
     }
 
     public static String getProductVersionValue () {
@@ -3512,10 +3508,14 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         }
     }
 
-    private void storeFieldValueForNewIssue (IssueField f, JComboBox combo) {
-        if (reloading && initializingProduct) {
-            Object value = combo.getSelectedItem();
-            issue.setFieldValue(f, value == null ? "" : value.toString());
+    private void storeFieldValueForNewIssue (IssueField f, JComponent component) {
+        if (reloading && initializingNewTask) {
+            if (component instanceof JTextComponent) {
+                issue.setFieldValue(f, ((JTextComponent) component).getText());
+            } else if (component instanceof JComboBox) {
+                Object value = ((JComboBox) component).getSelectedItem();
+                issue.setFieldValue(f, value == null ? "" : value.toString());
+            }
         }
     }
 
@@ -3560,6 +3560,16 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         tooltipsConflict.removeTooltip(label, field);
         tooltipsIncoming.removeTooltip(label, field);
         tooltipsLocal.removeTooltip(label, field);
+    }
+
+    private void initializeNewTask () {
+        initializingNewTask = true;
+        if(BugzillaUtil.isNbRepository(issue.getRepository())) {
+            addNetbeansInfo();
+        }
+        // Preselect the first product
+        selectProduct();
+        initializingNewTask = false;
     }
 
     private static class TooltipsMap extends HashMap<JLabel, Map<IssueField, String>> {
