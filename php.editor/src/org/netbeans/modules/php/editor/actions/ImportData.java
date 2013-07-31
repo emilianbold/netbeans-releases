@@ -55,13 +55,22 @@ public class ImportData {
     public volatile boolean shouldShowUsesPanel;
     public volatile int caretPosition;
     private final List<DataItem> dataItems = new ArrayList<>();
+    private final List<DataItem> dataItemsToReplace = new ArrayList<>();
 
     public void add(DataItem item) {
         dataItems.add(item);
     }
 
+    public void addJustToReplace(DataItem item) {
+        dataItemsToReplace.add(item);
+    }
+
     public List<DataItem> getItems() {
         return new ArrayList<>(dataItems);
+    }
+
+    public List<DataItem> getItemsToReplace() {
+        return new ArrayList<>(dataItemsToReplace);
     }
 
     public List<ItemVariant> getDefaultVariants() {

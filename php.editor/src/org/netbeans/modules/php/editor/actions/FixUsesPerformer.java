@@ -144,7 +144,17 @@ public class FixUsesPerformer {
                 }
             }
         }
+        replaceUnimportedItems();
         editList.replace(startOffset, 0, createInsertString(useParts), false, 0);
+    }
+
+    private void replaceUnimportedItems() {
+        for (ImportData.DataItem dataItem : importData.getItemsToReplace()) {
+            ItemVariant defaultVariant = dataItem.getDefaultVariant();
+            for (UsedNamespaceName usedNamespaceName : dataItem.getUsedNamespaceNames()) {
+                editList.replace(usedNamespaceName.getOffset(), usedNamespaceName.getReplaceLength(), defaultVariant.getName(), false, 0);
+            }
+        }
     }
 
     private void resolveDuplicateSelections() {
