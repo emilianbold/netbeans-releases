@@ -42,6 +42,7 @@
 package org.netbeans.modules.css.model.impl;
 
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.css.lib.api.Node;
@@ -55,7 +56,7 @@ import org.openide.util.Parameters;
  */
 public final class ElementFactoryImpl implements ElementFactory {
 
-    private Model model;
+    private final Model model;
     
     public ElementFactoryImpl(Model model) {
         this.model = model;
@@ -64,105 +65,104 @@ public final class ElementFactoryImpl implements ElementFactory {
     public Element createElement(Model model, Node node) { //NOI18N for whole method
         NodeType type = node.type();
         String className = Utils.getInterfaceForNodeType(type.name());
-        
-        //TODO generate this ugly switch!!! 
-        
-        if (className.equals("AtRuleId")) {
-            return new AtRuleIdI(model, node);
-        } else if (className.equals("AtRule")) {
-            return new AtRuleI(model, node);
-        } else if (className.equals("GenericAtRule")) {
-            return new GenericAtRuleI(model, node);
-        } else if (className.equals("MozDocument")) {
-            return new MozDocumentI(model, node);
-        } else if (className.equals("MozDocumentFunction")) {
-            return new MozDocumentFunctionI(model, node);
-        } else if (className.equals("VendorAtRule")) {
-            return new VendorAtRuleI(model, node);
-        } else if (className.equals("WebkitKeyframes")) {
-            return new WebkitKeyframesI(model, node);
-        } else if (className.equals("WebkitKeyframeSelectors")) {
-            return new WebkitKeyframeSelectorsI(model, node);
-        } else if (className.equals("WebkitKeyframesBlock")) {
-            return new WebkitKeyframesBlockI(model, node);
-        } else if (className.equals("StyleSheet")) {
-            return new StyleSheetI(model, node);
-        } else if (className.equals("CharSet")) {
-            return new CharSetI(model, node);
-        } else if (className.equals("CharSetValue")) {
-            return new CharSetValueI(model, node);
-        } else if (className.equals("FontFace")) {
-            return new FontFaceI(model, node);
-        } else if (className.equals("Imports")) {
-            return new ImportsI(model, node);
-        } else if (className.equals("ImportItem")) {
-            return new ImportItemI(model, node);
-        } else if (className.equals("ResourceIdentifier")) {
-            return new ResourceIdentifierI(model, node);
-        } else if (className.equals("Media")) {
-            return new MediaI(model, node);
-        } else if (className.equals("MediaBody")) {
-            return new MediaBodyI(model, node);
-        } else if (className.equals("MediaBodyItem")) {
-            return new MediaBodyItemI(model, node);
-        } else if (className.equals("MediaQueryList")) {
-            return new MediaQueryListI(model, node);
-        } else if (className.equals("MediaQuery")) {
-            return new MediaQueryI(model, node);
-        } else if (className.equals("MediaQueryOperator")) {
-            return new MediaQueryOperatorI(model, node);
-        } else if (className.equals("MediaExpression")) {
-            return new MediaExpressionI(model, node);
-        } else if (className.equals("MediaFeature")) {
-            return new MediaFeatureI(model, node);
-        } else if (className.equals("MediaFeatureValue")) {
-            return new MediaFeatureValueI(model, node);
-        } else if (className.equals("MediaType")) {
-            return new MediaTypeI(model, node);
-        } else if (className.equals("Namespaces")) {
-            return new NamespacesI(model, node);
-        } else if (className.equals("Namespace")) {
-            return new NamespaceI(model, node);
-        } else if (className.equals("NamespacePrefixName")) {
-            return new NamespacePrefixNameI(model, node);
-        } else if (className.equals("Body")) {
-            return new BodyI(model, node);
-        } else if (className.equals("BodyItem")) {
-            return new BodyItemI(model, node);
-        } else if (className.equals("Rule")) {
-            return new RuleI(model, node);
-        } else if (className.equals("SelectorsGroup")) {
-            return new SelectorsGroupI(model, node);
-        } else if (className.equals("Selector")) {
-            return new SelectorI(model, node);
-        } else if (className.equals("Declarations")) {
-            return new DeclarationsI(model, node);
-        } else if (className.equals("PropertyDeclaration")) {
-            return new PropertyDeclarationI(model, node);
-        } else if (className.equals("Declaration")) {
-            return new DeclarationI(model, node);
-        } else if (className.equals("Property")) {
-            return new PropertyI(model, node);
-        } else if (className.equals("PropertyValue")) {
-            return new PropertyValueI(model, node);
-        } else if (className.equals("Expression")) {
-            return new ExpressionI(model, node);
-        } else if (className.equals("Prio")) {
-            return new PrioI(model, node);
-        } else if (className.equals("PlainElement")) {
-            return new PlainElementI(model, node);
-        } else if (className.equals("Page")) {
-            return new PageI(model, node);
-        } else if(className.equals("Ws")) {
-            return new WsI(model, node);
-        } else if(className.equals("Token")) {
-            return new PlainElementI(model, node);
-        } else if(className.equals("Error")) {
-            return new PlainElementI(model, node);
-        } else {
-            //fallback for unknown types???
-            Logger.getLogger(ElementFactoryImpl.class.getName()).log( Level.WARNING, "created element by reflection for {0}, update the ElementFactoryImpl.createElement() methods ugly switch!", className);
-            return createElementByReflection(model, node);
+        //TODO generate this ugly switch!!!
+        switch (className) {
+            case "AtRuleId":
+                return new AtRuleIdI(model, node);
+            case "AtRule":
+                return new AtRuleI(model, node);
+            case "GenericAtRule":
+                return new GenericAtRuleI(model, node);
+            case "MozDocument":
+                return new MozDocumentI(model, node);
+            case "MozDocumentFunction":
+                return new MozDocumentFunctionI(model, node);
+            case "VendorAtRule":
+                return new VendorAtRuleI(model, node);
+            case "WebkitKeyframes":
+                return new WebkitKeyframesI(model, node);
+            case "WebkitKeyframeSelectors":
+                return new WebkitKeyframeSelectorsI(model, node);
+            case "WebkitKeyframesBlock":
+                return new WebkitKeyframesBlockI(model, node);
+            case "StyleSheet":
+                return new StyleSheetI(model, node);
+            case "CharSet":
+                return new CharSetI(model, node);
+            case "CharSetValue":
+                return new CharSetValueI(model, node);
+            case "FontFace":
+                return new FontFaceI(model, node);
+            case "Imports":
+                return new ImportsI(model, node);
+            case "ImportItem":
+                return new ImportItemI(model, node);
+            case "ResourceIdentifier":
+                return new ResourceIdentifierI(model, node);
+            case "Media":
+                return new MediaI(model, node);
+            case "MediaBody":
+                return new MediaBodyI(model, node);
+            case "MediaBodyItem":
+                return new MediaBodyItemI(model, node);
+            case "MediaQueryList":
+                return new MediaQueryListI(model, node);
+            case "MediaQuery":
+                return new MediaQueryI(model, node);
+            case "MediaQueryOperator":
+                return new MediaQueryOperatorI(model, node);
+            case "MediaExpression":
+                return new MediaExpressionI(model, node);
+            case "MediaFeature":
+                return new MediaFeatureI(model, node);
+            case "MediaFeatureValue":
+                return new MediaFeatureValueI(model, node);
+            case "MediaType":
+                return new MediaTypeI(model, node);
+            case "Namespaces":
+                return new NamespacesI(model, node);
+            case "Namespace":
+                return new NamespaceI(model, node);
+            case "NamespacePrefixName":
+                return new NamespacePrefixNameI(model, node);
+            case "Body":
+                return new BodyI(model, node);
+            case "BodyItem":
+                return new BodyItemI(model, node);
+            case "Rule":
+                return new RuleI(model, node);
+            case "SelectorsGroup":
+                return new SelectorsGroupI(model, node);
+            case "Selector":
+                return new SelectorI(model, node);
+            case "Declarations":
+                return new DeclarationsI(model, node);
+            case "PropertyDeclaration":
+                return new PropertyDeclarationI(model, node);
+            case "Declaration":
+                return new DeclarationI(model, node);
+            case "Property":
+                return new PropertyI(model, node);
+            case "PropertyValue":
+                return new PropertyValueI(model, node);
+            case "Expression":
+                return new ExpressionI(model, node);
+            case "Prio":
+                return new PrioI(model, node);
+            case "PlainElement":
+                return new PlainElementI(model, node);
+            case "Page":
+                return new PageI(model, node);
+            case "Ws":
+                return new WsI(model, node);
+            case "Token":
+                return new PlainElementI(model, node);
+            case "Error":
+                return new PlainElementI(model, node);
+            default:
+                //fallback for unknown types
+                Logger.getLogger(ElementFactoryImpl.class.getName()).log( Level.WARNING, "created element by reflection for {0}, update the ElementFactoryImpl.createElement() methods ugly switch!", className);
+                return createElementByReflection(model, node);
         }
     }
 
@@ -176,9 +176,8 @@ public final class ElementFactoryImpl implements ElementFactory {
         } catch (ClassNotFoundException cnfe ) {
             //no implementation found - use default
             return new PlainElementI(model, node);
-        } catch (/* NoSuchMethodException, SecurityException,
-                 InstantiationException, IllegalAccessException, IllegalArgumentException, 
-                 InvocationTargetException */ Exception ex) {
+        } catch (IllegalAccessException | IllegalArgumentException | InstantiationException 
+                | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
             throw new RuntimeException(ex);
         }
     }
