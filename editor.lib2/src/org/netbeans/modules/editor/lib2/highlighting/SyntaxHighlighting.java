@@ -777,12 +777,16 @@ implements TokenHierarchyListener, ChangeListener {
                 Token<T> token = ts.token();
                 int nextTokenOffset = ts.offset();
                 if (nextTokenOffset < 0) {
-                    LOG.info("Invalid token offset=" + nextTokenOffset + " < 0. TokenSequence:\n" + ts); // NOI18N
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Invalid token offset=" + nextTokenOffset + " < 0. TokenSequence:\n" + ts); // NOI18N
+                    }
                     return false;
                 }
                 int nextTokenLength = token.length();
                 if (nextTokenOffset < 0) {
-                    LOG.info("Invalid token length=" + nextTokenLength + " < 0. TokenSequence:\n" + ts); // NOI18N
+                    if (LOG.isLoggable(Level.FINE)) {
+                        LOG.fine("Invalid token length=" + nextTokenLength + " < 0. TokenSequence:\n" + ts); // NOI18N
+                    }
                     return false;
                 }
                 if (nextTokenOffset >= tokenEndOffset || nextTokenLength >= 0) {

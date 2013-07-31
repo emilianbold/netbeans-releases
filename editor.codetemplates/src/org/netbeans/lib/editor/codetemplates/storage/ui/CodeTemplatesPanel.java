@@ -748,6 +748,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
             renderer.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
             renderer.setText(value);
             renderer.setSelected(selectedContexts != null && selectedContexts.contains(value));
+            renderer.setOpaque(true);
             return renderer;
         }
     }

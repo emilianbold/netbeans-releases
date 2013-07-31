@@ -44,6 +44,8 @@
 
 package org.netbeans.modules.xml.axi;
 
+import java.lang.reflect.Field;
+import java.util.Map;
 import javax.swing.text.Document;
 import junit.framework.*;
 import org.netbeans.modules.xml.axi.datatype.BooleanType;
@@ -59,6 +61,7 @@ import org.netbeans.modules.xml.schema.model.LocalElement;
 import org.netbeans.modules.xml.schema.model.SchemaModel;
 import org.netbeans.modules.xml.schema.model.SimpleContent;
 import org.netbeans.modules.xml.schema.model.SimpleExtension;
+import org.netbeans.modules.xml.xam.AbstractModelFactory;
 import org.netbeans.modules.xml.xam.dom.AbstractDocumentModel;
 
 
@@ -85,6 +88,11 @@ public class SchemaGeneratorTest extends AbstractTestCase {
     
     protected void tearDown() throws Exception {
         axiModel.endTransaction();
+        AXIModelFactory f = AXIModelFactory.getDefault();
+        Field fld = AbstractModelFactory.class.getDeclaredField("cachedModels");
+        fld.setAccessible(true);
+        Map cacheMap = (Map)fld.get(f);
+        cacheMap.clear();
         super.tearDown();
     }
     
@@ -239,7 +247,7 @@ public class SchemaGeneratorTest extends AbstractTestCase {
     }
     
     public void testDeleteExistingLocalElement() {
-        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",GE_SIZE,getSchemaModel().getSchema().getElements().size());
         Element element = axiModel.getComponentFactory().createElement();
         element.setName("NewElement"+axiModel.getRoot().getElements().size());
         axiModel.startTransaction();
@@ -258,7 +266,8 @@ public class SchemaGeneratorTest extends AbstractTestCase {
             }
         }
         axiModel.endTransaction();
-        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());
+        // deleted LOCAL element, no effect on global element
+        assertEquals("global elements",GE_SIZE,getSchemaModel().getSchema().getElements().size());
         validateSchema(axiModel.getSchemaModel());
         
 //        try {
@@ -271,7 +280,8 @@ public class SchemaGeneratorTest extends AbstractTestCase {
     }
     
     public void testSimpleToComplexContent() {
-        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());        
+        // 4: OTA_TravelItineraryRS, CancellationStatus, CancellationStatus2, MyAddress
+        assertEquals("global elements", GE_SIZE,getSchemaModel().getSchema().getElements().size());        
         Element newElem = axiModel.getComponentFactory().createElement();
         newElem.setName("City");
         Attribute newAttr = axiModel.getComponentFactory().createAttribute();
@@ -294,7 +304,7 @@ public class SchemaGeneratorTest extends AbstractTestCase {
         e2.addAttribute(newAttr);
         axiModel.endTransaction();   
    
-        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",GE_SIZE,getSchemaModel().getSchema().getElements().size());
         assertEquals("global Complex types",4,getSchemaModel().getSchema().getComplexTypes().size());
         assertEquals("local element",1,e2.getChildElements().size());
         assertEquals("local attr",2,e2.getAttributes().size());
@@ -325,7 +335,7 @@ public class SchemaGeneratorTest extends AbstractTestCase {
     }   
     
     public void testCreateSimpleContent() {
-        assertEquals("global elements",GE_SIZE-1,getSchemaModel().getSchema().getElements().size());        
+        assertEquals("global elements",GE_SIZE,getSchemaModel().getSchema().getElements().size());        
         Element newElem = axiModel.getComponentFactory().createElement();
         newElem.setName("e1");
         
@@ -343,7 +353,7 @@ public class SchemaGeneratorTest extends AbstractTestCase {
         axiModel.endTransaction();
         
         assertTrue("complexcontent",ge2.getType().get() instanceof GlobalSimpleType);
-        assertEquals("global elements",GE_SIZE,getSchemaModel().getSchema().getElements().size());
+        assertEquals("global elements",GE_SIZE + 1,getSchemaModel().getSchema().getElements().size());
         validateSchema(axiModel.getSchemaModel());
         
         Attribute newAttr = axiModel.getComponentFactory().createAttribute();

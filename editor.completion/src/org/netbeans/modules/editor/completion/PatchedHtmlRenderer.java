@@ -48,7 +48,9 @@ import java.awt.Color;
 import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
+import java.awt.Graphics2D;
 import java.awt.Rectangle;
+import java.awt.RenderingHints;
 import java.awt.Shape;
 import java.awt.font.LineMetrics;
 import java.awt.geom.Area;
@@ -58,6 +60,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import org.openide.ErrorManager;
@@ -76,7 +80,7 @@ public final class PatchedHtmlRenderer {
     /**
      * Constant used by {@link #renderString renderString}, {@link #renderPlainString renderPlainString},
      * {@link #renderHTML renderHTML}, and {@link Renderer#setRenderStyle}
-     * if painting should simply be cut off at the boundary of the cooordinates passed.
+     * if painting should simply be cut off at the boundary of the coordinates passed.
      */
     public static final int STYLE_CLIP = 0;
 
@@ -104,6 +108,8 @@ public final class PatchedHtmlRenderer {
     /** Cache for strings which have produced errors, so we don't post an
      * error message more than once */
     private static Set<String> badStrings = null;
+
+    private static Logger LOG = Logger.getLogger(PatchedHtmlRenderer.class.getName());
 
     /** Definitions for a limited subset of SGML character entities */
     private static final Object[] entities = new Object[] {
@@ -174,13 +180,20 @@ public final class PatchedHtmlRenderer {
         }
 
         FontMetrics fm = g.getFontMetrics(f);
-        Rectangle2D r = fm.getStringBounds(s, g);
+//        Rectangle2D r = fm.getStringBounds(s, g);
+        int wid;
+        if (Utilities.isMac()) {
+            // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
+            wid = fm.stringWidth(s);
+        } else {
+            wid = (int)fm.getStringBounds(s, g).getWidth();
+        }
 
         if (paint) {
             g.setColor(foreground);
             g.setFont(f);
 
-            if ((r.getWidth() <= w) || (style == STYLE_CLIP)) {
+            if ((wid <= w) || (style == STYLE_CLIP)) {
                 g.drawString(s, x, y);
             } else {
                 char[] chars = s.toCharArray();
@@ -189,11 +202,28 @@ public final class PatchedHtmlRenderer {
                     return 0;
                 }
 
-                double chWidth = r.getWidth() / chars.length;
-                int estCharsOver = new Double((r.getWidth() - w) / chWidth).intValue();
+                double chWidth = wid / chars.length;
+                int estCharsToPaint = new Double(w / chWidth).intValue();
+                if( estCharsToPaint > chars.length )
+                    estCharsToPaint = chars.length;
+                //let's correct the estimate now
+                while( estCharsToPaint > 3 ) {
+                    if( estCharsToPaint < chars.length )
+                        chars[estCharsToPaint-1] = '…';
+                    int  newWidth;
+                    if (Utilities.isMac()) {
+                        // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
+                        newWidth = fm.stringWidth(new String(chars, 0, estCharsToPaint));
+                    } else {
+                        newWidth = (int)fm.getStringBounds(chars, 0, estCharsToPaint, g).getWidth();
+                    }
+                    if( newWidth <= w )
+                        break;
+                    estCharsToPaint--;
+                }
 
                 if (style == STYLE_TRUNCATE) {
-                    int length = chars.length - estCharsOver;
+                    int length = estCharsToPaint;
 
                     if (length <= 0) {
                         return 0;
@@ -201,21 +231,24 @@ public final class PatchedHtmlRenderer {
 
                     if (paint) {
                         if (length > 3) {
-                            Arrays.fill(chars, length - 3, length, '.'); //NOI18N
                             g.drawChars(chars, 0, length, x, y);
                         } else {
                             Shape shape = g.getClip();
-
-                            if (s != null) {
-                                Area area = new Area(shape);
-                                area.intersect(new Area(new Rectangle(x, y, w, h)));
-                                g.setClip(area);
-                            } else {
-                                g.setClip(new Rectangle(x, y, w, h));
+                            // clip only if clipping is supported
+                            if (shape != null) {
+                                if (s != null) {
+                                    Area area = new Area(shape);
+                                    area.intersect(new Area(new Rectangle(x, y, w, h)));
+                                    g.setClip(area);
+                                } else {
+                                    g.setClip(new Rectangle(x, y, w, h));
+                                }
                             }
 
-                            g.drawString("...", x, y); // NOI18N
-                            g.setClip(shape);
+                            g.drawString("…", x, y); // NOI18N
+                            if (shape != null) {
+                                g.setClip(shape);
+                            }
                         }
                     }
                 } else {
@@ -224,7 +257,7 @@ public final class PatchedHtmlRenderer {
             }
         }
 
-        return r.getWidth();
+        return wid;
     }
 
     /**
@@ -351,6 +384,9 @@ public final class PatchedHtmlRenderer {
 
         g.setColor(defaultColor);
         g.setFont(f);
+        if (g instanceof Graphics2D) {
+            ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+        }
 
         char[] chars = s.toCharArray();
         int origX = x;
@@ -367,11 +403,12 @@ public final class PatchedHtmlRenderer {
         boolean lastWasWhitespace = false; //flag to skip additional whitespace if one whitespace char already painted
         double lastHeight = 0; //the last line height, for calculating total required height
 
-        double dotsWidth = 0;
+        double dotWidth = 0;
+        boolean dotsPainted = false;
 
         //Calculate the width of a . character if we may need to truncate
         if (style == STYLE_TRUNCATE) {
-            dotsWidth = g.getFontMetrics().stringWidth("..."); //NOI18N
+            dotWidth = g.getFontMetrics().charWidth('.'); //NOI18N
         }
 
         /* How this all works, for anyone maintaining this code (hopefully it will
@@ -403,6 +440,11 @@ public final class PatchedHtmlRenderer {
         //Enter the painting loop
         while (!done) {
             if (pos == s.length()) {
+                if( truncated && paint && !dotsPainted ) {
+                    g.setColor(defaultColor);
+                    g.setFont(f);
+                    g.drawString("…", x, y); //NOI18N
+                }
                 return widthPainted;
             }
 
@@ -420,7 +462,7 @@ public final class PatchedHtmlRenderer {
                 if (STRICT_HTML) {
                     throw aib;
                 } else {
-                    ErrorManager.getDefault().notify(ErrorManager.WARNING, aib);
+                    Logger.getLogger(PatchedHtmlRenderer.class.getName()).log(Level.WARNING, null, aib);
 
                     return renderPlainString(s, g, x, y, w, h, f, defaultColor, style, paint);
                 }
@@ -434,7 +476,8 @@ public final class PatchedHtmlRenderer {
                 g.setFont(f);
 
                 if (paint) {
-                    g.drawString("...", x, y); //NOI18N
+                    g.drawString("…", x, y); //NOI18N
+                    dotsPainted = true; //make sure we paint the dots only once
                 }
 
                 done = true;
@@ -453,7 +496,8 @@ public final class PatchedHtmlRenderer {
                 }
 
                 if (done) {
-                    throw new IllegalArgumentException("HTML rendering failed on string \"" + s + "\""); // NOI18N
+                    throwBadHTML("Matching '>' not found", pos, chars); //NOI18N
+                    break;
                 }
 
                 if (inClosingTag) {
@@ -643,10 +687,6 @@ public final class PatchedHtmlRenderer {
                         Color c = findColor(chars, pos, tagEnd);
                         colorStack.push(g.getColor());
 
-                        if (background != null) {
-                            //c = org.openide.awt.HtmlLabelUI.ensureContrastingColor(c, background);
-                        }
-
                         if (!disableColorChange) {
                             g.setColor(c);
                         }
@@ -671,6 +711,9 @@ public final class PatchedHtmlRenderer {
                     case 'h': //Just an opening HTML tag
 
                         if (pos == 1) {
+                            break;
+                        } else { // fallthrough warning
+                            throwBadHTML("Malformed or unsupported HTML", pos, chars); //NOI18N
                             break;
                         }
 
@@ -730,7 +773,7 @@ public final class PatchedHtmlRenderer {
                 }
 
                 for (int i = pos; i < chars.length; i++) {
-                    if (((chars[i] == '<') && (!nextLtIsEntity)) || ((chars[i] == '&') && !isAmp)) { //NOI18N
+                    if ((chars[i] == '<' && !nextLtIsEntity) || (chars[i] == '&' && !isAmp && i != chars.length - 1)) {
                         nextTag = i - 1;
 
                         break;
@@ -745,6 +788,10 @@ public final class PatchedHtmlRenderer {
 
                 //Get the bounds of the substring we'll paint
                 Rectangle2D r = fm.getStringBounds(chars, pos, nextTag + 1, g);
+                if (Utilities.isMac()) {
+                    // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
+                    r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, nextTag - pos + 1)), r.getHeight());
+                } 
 
                 //Store the height, so we can add it if we're in word wrap mode,
                 //to return the height painted
@@ -763,89 +810,125 @@ public final class PatchedHtmlRenderer {
                 //Work out the per-character avg width of the string, for estimating
                 //when we'll be out of space and should start the ... in truncate
                 //mode
-                double chWidth = r.getWidth() / length;;
+                double chWidth;
 
-                if (style == STYLE_TRUNCATE) {
-                    double newWidth = widthPainted + r.getWidth();
-                    if (newWidth > (w - dotsWidth)) {
-                        if (newWidth > w || _renderHTML(s, 0, g.create(), x, y, Integer.MAX_VALUE, h, f, defaultColor, STYLE_CLIP, false, background, disableColorChange) > w) {
-                            double pixelsOff = widthPainted + r.getWidth() - w - dotsWidth;
-                            
-                            double estCharsOver = pixelsOff / chWidth;
-                            
-                            length = new Double((w - dotsWidth - widthPainted) / chWidth).intValue();
-                            
-                            if (length < 0) {
-                                length = 0;
-                            }
-                            
-                            r = fm.getStringBounds(chars, pos, pos + length, g);
-                            
-                            truncated = true;
-                        }
+                if (truncated) {
+                    //if we're truncating, use the width of one dot from an
+                    //ellipsis to get an accurate result for truncation
+                    chWidth = dotWidth;
+                } else {
+                    //calculate an average character width
+                    chWidth = r.getWidth() / (nextTag+1 - pos);
+
+                    //can return this sometimes, so handle it
+                    if ((chWidth == Double.POSITIVE_INFINITY) || (chWidth == Double.NEGATIVE_INFINITY)) {
+                        chWidth = fm.getMaxAdvance();
                     }
-                } else if (style == STYLE_WORDWRAP) {
-                    if ((widthPainted + r.getWidth()) > w && chWidth > 3) {
+                }
+
+                if (
+                    ((style != STYLE_CLIP) &&
+                        ((style == STYLE_TRUNCATE) && ((widthPainted + r.getWidth()) > (w /*- (chWidth * 3)*/)))) ||
+                        /** mkleint - commented out the "- (chWidth *3) because it makes no sense to strip the text and add dots when it fits exactly
+                         * into the rendering rectangle.. with this condition we stripped even strings that came close to the limit..
+                         **/
+                        ((style == STYLE_WORDWRAP) && ((widthPainted + r.getWidth()) > w))
+                ) {
+                    if (chWidth > 3) {
                         double pixelsOff = (widthPainted + (r.getWidth() + 5)) - w;
 
                         double estCharsOver = pixelsOff / chWidth;
 
-                        goToNextRow = true;
-                        
-                        int lastChar = new Double(nextTag - estCharsOver).intValue();
-                        
-                        //Unlike Swing's word wrap, which does not wrap on tag boundaries correctly, if we're out of space,
-                        //we're out of space
-                        brutalWrap = x == 0;
-                        
-                        for (int i = lastChar; i > pos; i--) {
-                            lastChar--;
-                            
-                            if (Character.isWhitespace(chars[i])) {
-                                length = (lastChar - pos) + 1;
-                                brutalWrap = false;
-                                
-                                break;
+                        if (style == STYLE_TRUNCATE) {
+                            int charsToPaint = Math.round(Math.round(Math.ceil((w - widthPainted) / chWidth)));
+
+                            /*                            System.err.println("estCharsOver = " + estCharsOver);
+                                                        System.err.println("Chars to paint " + charsToPaint + " chwidth = " + chWidth + " widthPainted " + widthPainted);
+                                                        System.err.println("Width painted + width of tag: " + (widthPainted + r.getWidth()) + " available: " + w);
+                             */
+                            int startPeriodsPos = (pos + charsToPaint) - 3;
+
+                            if (startPeriodsPos >= chars.length) {
+                                startPeriodsPos = chars.length - 4;
                             }
-                        }
-                        
-                        if ((lastChar <= pos) && (length > estCharsOver) && !brutalWrap) {
-                            x = origX;
-                            y += r.getHeight();
-                            heightPainted += r.getHeight();
-                            
-                            boolean boundsChanged = false;
-                            
-                            while (!done && Character.isWhitespace(chars[pos]) && (pos < nextTag)) {
-                                pos++;
-                                boundsChanged = true;
-                                done = pos == (chars.length - 1);
+
+                            length = (startPeriodsPos - pos);
+
+                            if (length < 0) {
+                                length = 0;
                             }
-                            
-                            if (pos == nextTag) {
-                                lastWasWhitespace = true;
-                            }
-                            
-                            if (boundsChanged) {
-                                //recalculate the width we will add
-                                r = fm.getStringBounds(chars, pos, nextTag + 1, g);
-                            }
-                            
-                            goToNextRow = false;
-                            widthPainted = 0;
-                            
-                            if (chars[pos - 1 + length] == '<') {
-                                length--;
-                            }
-                        } else if (brutalWrap) {
-                            //wrap without checking word boundaries
-                            length = (new Double((w - widthPainted) / chWidth)).intValue();
-                            
-                            if ((pos + length) > nextTag) {
-                                length = (nextTag - pos);
-                            }
-                            
+
+                            r = fm.getStringBounds(chars, pos, pos + length, g);
+                            if (Utilities.isMac()) {
+                                // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
+                                r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, length)), r.getHeight());
+                            } 
+
+                            //                            System.err.println("Truncated set to true at " + pos + " (" + chars[pos] + ")");
+                            truncated = true;
+                        } else {
+                            //Word wrap mode
                             goToNextRow = true;
+
+                            int lastChar = new Double(nextTag - estCharsOver).intValue();
+
+                            //Unlike Swing's word wrap, which does not wrap on tag boundaries correctly, if we're out of space,
+                            //we're out of space
+                            brutalWrap = x == 0;
+
+                            for (int i = lastChar; i > pos; i--) {
+                                lastChar--;
+
+                                if (Character.isWhitespace(chars[i])) {
+                                    length = (lastChar - pos) + 1;
+                                    brutalWrap = false;
+
+                                    break;
+                                }
+                            }
+
+                            if ((lastChar <= pos) && (length > estCharsOver) && !brutalWrap) {
+                                x = origX;
+                                y += r.getHeight();
+                                heightPainted += r.getHeight();
+
+                                boolean boundsChanged = false;
+
+                                while (!done && Character.isWhitespace(chars[pos]) && (pos < nextTag)) {
+                                    pos++;
+                                    boundsChanged = true;
+                                    done = pos == (chars.length - 1);
+                                }
+
+                                if (pos == nextTag) {
+                                    lastWasWhitespace = true;
+                                }
+
+                                if (boundsChanged) {
+                                    //recalculate the width we will add
+                                    r = fm.getStringBounds(chars, pos, nextTag + 1, g);
+                                    if (Utilities.isMac()) {
+                                        // #54257 - on macosx + chinese/japanese fonts, the getStringBounds() method returns bad value
+                                        r.setRect(r.getX(), r.getY(), (double)fm.stringWidth(new String(chars, pos, nextTag - pos + 1)), r.getHeight());
+                                    } 
+                                }
+
+                                goToNextRow = false;
+                                widthPainted = 0;
+
+                                if (chars[pos - 1 + length] == '<') {
+                                    length--;
+                                }
+                            } else if (brutalWrap) {
+                                //wrap without checking word boundaries
+                                length = (new Double((w - widthPainted) / chWidth)).intValue();
+
+                                if ((pos + length) > nextTag) {
+                                    length = (nextTag - pos);
+                                }
+
+                                goToNextRow = true;
+                            }
                         }
                     }
                 }
@@ -917,13 +1000,16 @@ public final class PatchedHtmlRenderer {
         }
     }
 
-    /** Parse a font color tag and return an appopriate java.awt.Color instance */
+    /** Parse a font color tag and return an appropriate java.awt.Color instance */
     private static Color findColor(final char[] ch, final int pos, final int tagEnd) {
         int colorPos = pos;
         boolean useUIManager = false;
 
         for (int i = pos; i < tagEnd; i++) {
-            if (ch[i] == 'c' && i + 6 < ch.length) {
+            if (ch[i] == 'c') {
+                //#195703 - check for broken HTML
+                if( i + 6 >= ch.length )
+                    break;
                 colorPos = i + 6;
 
                 if ((ch[colorPos] == '\'') || (ch[colorPos] == '"')) {
@@ -966,7 +1052,7 @@ public final class PatchedHtmlRenderer {
 
             s = new String(ch, colorPos, end - colorPos);
         } else {
-            s = new String(ch, colorPos, Math.min(6, ch.length - colorPos));
+            s = new String(ch, colorPos, Math.min(ch.length-colorPos, 6));
         }
 
         Color result = null;
@@ -1096,31 +1182,30 @@ public final class PatchedHtmlRenderer {
         Arrays.fill(chh, ' '); //NOI18N
         chh[pos - 1] = '^'; //NOI18N
 
-        String out = msg + "\n  " + new String(chars) + "\n  " + new String(chh) + "\n Full HTML string:" + // NOI18N
+        String out = msg + "\n  " + new String(chars) + "\n  " + new String(chh) + "\n Full HTML string:" +
             new String(chars); //NOI18N
 
         if (!STRICT_HTML) {
-            if (ErrorManager.getDefault().isLoggable(ErrorManager.WARNING)) {
+            if (LOG.isLoggable(Level.WARNING)) {
                 if (badStrings == null) {
                     badStrings = new HashSet<String>();
                 }
 
                 if (!badStrings.contains(msg)) {
-                    //ErrorManager bug, issue 38372 - log messages containing
+                    // bug, issue 38372 - log messages containing
                     //newlines are truncated - so for now we iterate the
                     //string we've just constructed
-                    StringTokenizer tk = new StringTokenizer(out, "\n", false); // NOI18N
+                    StringTokenizer tk = new StringTokenizer(out, "\n", false);
 
                     while (tk.hasMoreTokens()) {
-                        ErrorManager.getDefault().log(ErrorManager.WARNING, tk.nextToken());
+                        LOG.warning(tk.nextToken());
                     }
 
-                    badStrings.add(msg.intern());
+                    badStrings.add(msg.intern());   // NOPMD
                 }
             }
         } else {
             throw new IllegalArgumentException(out);
         }
     }
-
 }

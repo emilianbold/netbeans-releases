@@ -43,6 +43,8 @@
  */
 package org.netbeans.modules.java.editor.completion;
 
+import org.netbeans.modules.java.source.parsing.JavacParser;
+
 /**
  *
  * @author Dusan Balek
@@ -355,5 +357,9 @@ public class JavaCompletionProvider18FeaturesTest extends CompletionTestBase {
 
     public void testMoreCandidatesAfterReturnFromLambdaBlock() throws Exception {
         performTest("LambdaExpression", 350, null, "lambdaSmartInt2.pass", "1.8");
+    }
+    
+    static {
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
 }

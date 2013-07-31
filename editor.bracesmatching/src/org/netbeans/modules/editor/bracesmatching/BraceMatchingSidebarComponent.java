@@ -578,13 +578,6 @@ public class BraceMatchingSidebarComponent extends JComponent implements
         Element lineRootElement = doc.getDefaultRootElement();
 
         // Set the same kit and document
-        tooltipPane.setEditorKit(kit);
-        tooltipPane.setDocument(doc);
-        EditorUI editorUI = Utilities.getEditorUI(tooltipPane);
-        if (editorUI == null) {
-            // see #232827; the NB editor kit is either not yet installed, or has been just uninstalled
-            return null;
-        }
         
         tooltipPane.setEditable(false);
         tooltipPane.setFocusable(false);
@@ -605,6 +598,14 @@ public class BraceMatchingSidebarComponent extends JComponent implements
             tooltipPane.putClientProperty("document-view-end-position", pos);
             tooltipPane.putClientProperty("document-view-accurate-span", true);
 
+            // setEditorKit must come after doc-view-accurate-span
+            tooltipPane.setEditorKit(kit);
+            tooltipPane.setDocument(doc);
+            EditorUI editorUI = Utilities.getEditorUI(tooltipPane);
+            if (editorUI == null) {
+                // see #232827; the NB editor kit is either not yet installed, or has been just uninstalled
+                return null;
+            }
             if (braceContext != null) {
                 tooltipPane.putClientProperty(MATCHED_BRACES, origin);
             }

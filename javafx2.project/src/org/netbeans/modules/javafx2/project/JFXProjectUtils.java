@@ -116,8 +116,8 @@ public final class JFXProjectUtils {
     private static Set<SearchScope> scopes = new HashSet<SearchScope>(Arrays.asList(SearchScope.SOURCE));
     
     private static final String JFX_BUILD_TEMPLATE = "Templates/JFX/jfx-impl.xml"; //NOI18N
-    private static final String CURRENT_EXTENSION = "jfx2";  //NOI18N
-    private static final String[] OLD_EXTENSIONS = new String[] {"jfx"}; // NOI18N
+    private static final String CURRENT_EXTENSION = "jfx3";  //NOI18N
+    private static final String[] OLD_EXTENSIONS = new String[] {"jfx", "jfx2"}; // NOI18N
     private static final String NBPROJECT = "nbproject"; // NOI18N
     private static final String JFX_BUILD_IMPL_NAME = "jfx-impl"; // NOI18N
     private static final String JFX_BUILD_IMPL_PATH = NBPROJECT + "/" + JFX_BUILD_IMPL_NAME + ".xml";   //NOI18N
@@ -760,8 +760,8 @@ public final class JFXProjectUtils {
                 AntBuildExtender.Extension ext = extender.addExtension(CURRENT_EXTENSION, jfxBuildFile); // NOI18N
                 // NOTE: change in dependencies = change of metafile updates API;
                 //       do not forget to update CURRENT_EXTENSION and add the old one to OLD_EXTENSIONS
-                ext.addDependency("jar", "-jfx-copylibs"); // NOI18N
-                ext.addDependency("jar", "-rebase-libs"); //NOI18N
+                ext.addDependency("-post-jar", "-jfx-copylibs"); // NOI18N
+                ext.addDependency("-post-jar", "-rebase-libs"); //NOI18N
                 ext.addDependency("-post-jar", "jfx-deployment"); //NOI18N 
                 ext.addDependency("run", "jar"); //NOI18N
                 ext.addDependency("debug", "jar");//NOI18N
