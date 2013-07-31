@@ -406,7 +406,7 @@ public class ModelVisitor extends PathNodeVisitor {
         } else if(binaryNode.tokenType() != TokenType.ASSIGN
                 || (binaryNode.tokenType() == TokenType.ASSIGN && binaryNode.lhs() instanceof IndexNode)) {
             if (binaryNode.lhs() instanceof IdentNode) {
-                addOccurence((IdentNode)binaryNode.lhs(), true);
+                addOccurence((IdentNode)binaryNode.lhs(), binaryNode.tokenType() == TokenType.ASSIGN);
             }
             if (binaryNode.rhs() instanceof IdentNode) {
                 addOccurence((IdentNode)binaryNode.rhs(), false);
