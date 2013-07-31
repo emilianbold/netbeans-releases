@@ -42,30 +42,40 @@
 
 package org.netbeans.modules.groovy.support.spi;
 
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.groovy.support.api.GroovyExtender;
+
 /**
- * Provides an ability to change project settings when some groovy file is created.
- * This enables to change build script in Ant based projects, pom.xml in Maven
- * based projects etc.
+ * SPI for activation/deactivation of Groovy support in certain {@link Project}.
+ * This enables to change build script in Ant based projects, <i>pom.xml</i> in Maven based projects etc.
  *
+ * <p>
+ * Projects can provide implementation of this interface in its {@link Project#getLookup lookup}
+ * to allow clients to activate/deactivate Groovy support or to find out if the support is
+ * already active for a certain {@link Project}.
+ *
+ * @author Martin Janicek <mjanicek@netbeans.org>
+ *
+ * @see GroovyExtender
  * @since 1.22
- * @author Martin Janicek
  */
-public interface GroovyExtender {
+public interface GroovyExtenderImplementation {
 
     /**
      * Check if groovy has been already activated for the project.
      *
-     * @return true if the groovy is already active, false if groovy is not active yet
+     * @return {@code true} if the Groovy support is already active,
+     *         {@code false} if the Groovy support is not active yet
      */
     public boolean isActive();
 
     /**
-     * Called when groovy is activated for the project. (e.g. when new Groovy file
+     * Activates Groovy support for the project. (e.g. when new Groovy file
      * is created). Implementator should change project configuration with respect
      * to groovy source files (e.g. change the ant build script and use groovyc
      * instead of javac, update pom.xml in maven etc.)
      *
-     * @return true if activation were successful, false otherwise
+     * @return {@code true} if activation were successful, {@code false} otherwise
      */
     public boolean activate();
 
@@ -75,7 +85,7 @@ public interface GroovyExtender {
      * in the project configuration (e.g. remove maven-groovy-plugin and related groovy
      * dependencies from pom.xml, change the ant build script to use javac again etc.)
      *
-     * @return true if deactivation were successful, false otherwise
+     * @return {@code true} if deactivation were successful, {@code false} otherwise
      */
     public boolean deactivate();
 }
