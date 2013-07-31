@@ -64,7 +64,7 @@ import org.netbeans.api.project.Sources;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.project.libraries.Library;
 import org.netbeans.api.project.libraries.LibraryManager;
-import org.netbeans.modules.groovy.support.spi.GroovyExtender;
+import org.netbeans.modules.groovy.support.spi.GroovyExtenderImplementation;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -82,7 +82,7 @@ import org.openide.util.Parameters;
  *
  * @author Martin Janicek
  */
-public abstract class AbstractGroovyExtender implements GroovyExtender {
+public abstract class AbstractGroovyExtender implements GroovyExtenderImplementation {
 
 
     private static final String EXTENSIBLE_TARGET_NAME = "-pre-pre-compile"; // NOI18N

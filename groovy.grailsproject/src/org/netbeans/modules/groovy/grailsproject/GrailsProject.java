@@ -66,7 +66,7 @@ import org.netbeans.modules.groovy.grailsproject.queries.GrailsProjectEncodingQu
 import org.netbeans.modules.groovy.grailsproject.ui.GrailsLogicalViewProvider;
 import org.netbeans.modules.groovy.grailsproject.ui.TemplatesImpl;
 import org.netbeans.modules.groovy.grailsproject.ui.customizer.GrailsProjectCustomizerProvider;
-import org.netbeans.modules.groovy.support.spi.GroovyExtender;
+import org.netbeans.modules.groovy.support.spi.GroovyExtenderImplementation;
 import org.netbeans.spi.project.AuxiliaryConfiguration;
 import org.netbeans.spi.project.ProjectState;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
@@ -274,7 +274,7 @@ public final class GrailsProject implements Project {
         }
     }
 
-    private static final class GroovyExtenderImpl implements GroovyExtender {
+    private static final class GroovyExtenderImpl implements GroovyExtenderImplementation {
 
         @Override
         public boolean isActive() {
