@@ -157,6 +157,8 @@ public final class ElementFactoryImpl implements ElementFactory {
             return new WsI(model, node);
         } else if(className.equals("Token")) {
             return new PlainElementI(model, node);
+        } else if(className.equals("Error")) {
+            return new PlainElementI(model, node);
         } else {
             //fallback for unknown types???
             Logger.getLogger(ElementFactoryImpl.class.getName()).log( Level.WARNING, "created element by reflection for {0}, update the ElementFactoryImpl.createElement() methods ugly switch!", className);
