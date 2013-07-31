@@ -287,11 +287,6 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                         default:
                             assert false : codeCompletionType;
                     }
-
-                } else if (generateAs.isQualified() && (ifq instanceof TypeElement)
-                        && ifq.getNamespaceName().toString().equals(NamespaceDeclarationInfo.DEFAULT_NAMESPACE_NAME)) {
-                    //TODO: this is sort of hack for CCV after use, namespace keywords - should be changed
-                    generateAs = QualifiedNameKind.FULLYQUALIFIED;
                 }
             } else {
                 template.append(getName());
