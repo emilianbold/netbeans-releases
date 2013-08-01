@@ -74,6 +74,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -92,6 +94,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.jumpto.type.TypeBrowser;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.JumpList;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
@@ -481,7 +484,30 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
 
         @Override
-        public void run() {
+        public void run() {            
+            final Future<?> f = OpenProjects.getDefault().openProjects();
+            if (!f.isDone()) {
+                try {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            panel.updateMessage(NbBundle.getMessage(GoToTypeAction.class, "TXT_LoadingProjects"));
+                        }
+                    });
+                    f.get();
+                } catch (InterruptedException ex) {
+                    LOGGER.fine(ex.getMessage());
+                } catch (ExecutionException ex) {
+                    LOGGER.fine(ex.getMessage());
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            panel.updateMessage(NbBundle.getMessage(GoToTypeAction.class, "TXT_Searching"));
+                        }
+                    });
+                }
+            }
             for (;;) {
                 final int[] retry = new int[1];
 

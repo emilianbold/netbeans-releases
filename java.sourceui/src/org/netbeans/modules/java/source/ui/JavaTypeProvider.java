@@ -52,8 +52,6 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.logging.Logger;
 import java.util.logging.Level;
 import java.util.regex.Pattern;
@@ -76,7 +74,6 @@ import org.netbeans.api.java.source.ui.TypeElementFinder;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
-import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.modules.java.BinaryElementOpen;
 import org.netbeans.modules.java.source.usages.ClassIndexImpl;
 import org.netbeans.modules.java.source.usages.ClassIndexImplEvent;
@@ -178,15 +175,6 @@ public class JavaTypeProvider implements TypeProvider {
         case CASE_INSENSITIVE_REGEXP: nameKind = ClassIndex.NameKind.CASE_INSENSITIVE_REGEXP; break;
         case CAMEL_CASE: nameKind = ClassIndex.NameKind.CAMEL_CASE; break;
         default: throw new RuntimeException("Unexpected search type: " + searchType);
-        }
-
-        Future<Project[]> openProjectsTask = OpenProjects.getDefault().openProjects();
-        try {
-            openProjectsTask.get();
-        } catch (InterruptedException ex) {
-            LOGGER.fine(ex.getMessage());
-        } catch (ExecutionException ex) {
-            LOGGER.fine(ex.getMessage());
         }
 
         if (getRootCache() == null) {
