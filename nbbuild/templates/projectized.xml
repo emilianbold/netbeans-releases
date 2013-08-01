@@ -452,7 +452,9 @@ If you are sure you want to build with JDK 8+ anyway, use: -Dpermit.jdk8.builds=
         <jar jarfile="${cluster}/${javahelp.jar}" compress="true">
             <fileset dir="${build.javahelp.dir}">
                 <!-- XXX this does not exclude the folder, unfortunately... -->
-                <exclude name="org/netbeans/modules/usersguide/ide.css"/>
+                <!-- temporary commented out
+                     <exclude name="org/netbeans/modules/usersguide/ide.css"/>
+                -->
             </fileset>
         </jar>
     </target>
