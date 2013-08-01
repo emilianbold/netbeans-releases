@@ -63,12 +63,6 @@ public final class PhpTesting {
      */
     public static final String TESTING_PATH = "PHP/Testing"; //NOI18N
     /**
-     * Path on SFS where Project Customizer panels (ProjectCustomizer.CompositeCategoryProvider)
-     * need to be registered (so they display as a proper subcategory of Testing panel in Project Properties).
-     * @since 0.6
-     */
-    public static final String CUSTOMIZERS_PATH = TESTING_PATH + "/Customizers"; // NOI18N
-    /**
      * Identifier of Project Customizer for testing.
      * @since 0.6
      */
