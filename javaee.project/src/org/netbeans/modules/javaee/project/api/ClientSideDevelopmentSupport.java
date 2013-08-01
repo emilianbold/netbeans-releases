@@ -86,6 +86,8 @@ public final class ClientSideDevelopmentSupport implements
     private BrowserSupport browserSupport = null;
     // @GuardedBy("this")
     private boolean browserSupportInitialized = false;
+    // @GuardedBy("this")
+    private boolean initialized = false;
 
     
     public static ClientSideDevelopmentSupport createInstance(Project project) {
@@ -260,7 +262,11 @@ public final class ClientSideDevelopmentSupport implements
     private final List<String> servletURLPatterns = new CopyOnWriteArrayList<String>();
     private final List<String> welcomeFiles = new CopyOnWriteArrayList<String>();
 
-    private void readWebAppMetamodelData() {
+    private synchronized void readWebAppMetamodelData() {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
         final WebModule webModule = getWebModule();
         try {
             webModule.getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
