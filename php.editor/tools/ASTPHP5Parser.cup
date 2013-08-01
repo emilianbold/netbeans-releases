@@ -200,6 +200,7 @@ terminal  T_GOTO;
 terminal  T_FUNCTION;
 terminal  T_CONST;
 terminal  T_RETURN;
+terminal  T_YIELD;
 terminal  T_TRY;
 terminal  T_CATCH;
 terminal  T_THROW;

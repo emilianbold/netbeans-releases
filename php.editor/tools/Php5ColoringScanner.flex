@@ -385,6 +385,10 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_RETURN;
 }
 
+<ST_PHP_IN_SCRIPTING>"yield" {
+    return PHPTokenId.PHP_YIELD;
+}
+
 <ST_PHP_IN_SCRIPTING>"try" {
     return PHPTokenId.PHP_TRY;
 }
