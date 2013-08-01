@@ -53,6 +53,10 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
 
     @Override
     protected void setUp() throws Exception {
+        System.setProperty("cnd.modelimpl.tracemodel.project.name", "DummyProject"); // NOI18N
+        System.setProperty("parser.report.errors", "true");
+        System.setProperty("antlr.exceptions.hideExpectedTokens", "true");
+        System.setProperty("cnd.language.flavor.cpp11", "true");         
         super.setUp();
     }
 
@@ -166,4 +170,15 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         // Bug 232383 - auto const & identifier cannot be resolved
         performTest("bug232383.cpp", 31, 20, "bug232383.cpp", 3, 9);
     }    
+    
+    public void testBug225611() throws Exception {
+        // Bug 225611 - decltype, unable to resolve identifier 
+        performTest("bug225611.cpp", 17, 12, "bug225611.cpp", 8, 9);
+        
+        performTest("bug225611.cpp", 20, 23, "bug225611.cpp", 7, 9);        
+        performTest("bug225611.cpp", 21, 12, "bug225611.cpp", 3, 9);
+        
+        performTest("bug225611.cpp", 23, 27, "bug225611.cpp", 7, 9);        
+        performTest("bug225611.cpp", 24, 12, "bug225611.cpp", 3, 9);        
+    }  
 }
