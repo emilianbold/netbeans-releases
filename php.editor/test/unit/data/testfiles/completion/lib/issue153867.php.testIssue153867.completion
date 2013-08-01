@@ -535,3 +535,4 @@ KEYWORD    use                                        null
 KEYWORD    var                                        null
 KEYWORD    while                                      null
 KEYWORD    xor                                        null
+KEYWORD    yield                                      null
