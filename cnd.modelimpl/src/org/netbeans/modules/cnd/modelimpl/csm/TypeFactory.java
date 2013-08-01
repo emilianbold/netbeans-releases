@@ -50,12 +50,14 @@ import java.util.Collection;
 import java.util.List;
 import org.netbeans.modules.cnd.api.model.*;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable.Position;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 import org.netbeans.modules.cnd.modelimpl.content.file.FileContent;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstRenderer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.AstUtil;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableBase;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase.NameBuilder;
 import org.netbeans.modules.cnd.modelimpl.csm.core.OffsetableIdentifiableBase.OffsetableIdentifiableBuilder;
+import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.debug.DiagnosticExceptoins;
 import org.netbeans.modules.cnd.modelimpl.debug.TraceFlags;
@@ -206,7 +208,11 @@ public class TypeFactory {
 
         boolean functionPointerType = false;
         
-        if (parent != null) {
+        if (ast != null && ast.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND && DeclTypeImpl.isDeclType(ast.getFirstChild())) {
+            type = new DeclTypeImpl(ast.getFirstChild(), file, scope, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
+        } else if (DeclTypeImpl.isDeclType(ast)) {
+            type = new DeclTypeImpl(ast, file, scope, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
+        } else if (parent != null) {
             type = NestedType.create(parent, file, parent.getPointerDepth(), getReferenceValue(parent), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
         } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast, inFunctionParameters, inTypedef)) {
             type = new TypeFunPtrImpl(file, returnTypePointerDepth, refence, arrayDepth, TypeImpl.initIsConst(ast), OffsetableBase.getStartOffset(ast), TypeFunPtrImpl.getEndOffset(ast));
@@ -269,6 +275,10 @@ public class TypeFactory {
                                 sb.append(text);
                                 l.add(NameCache.getManager().getString(text));
                                 //l.add(namePart.getText());
+                            } else if (templateDepth == 0 && namePart.getType() == CPPTokenTypes.CSM_TYPE_DECLTYPE) {
+                                CharSequence text = AstUtil.getText(namePart.getFirstChild());
+                                sb.append(text);
+                                l.add(NameCache.getManager().getString(text));                                
                             } else if( namePart.getType() == CPPTokenTypes.LESSTHAN ) {
                                 // the beginning of template parameters
                                 templateDepth++;

@@ -183,8 +183,12 @@ public class CsmCompletionExpression {
     public static final int SPECIAL_PARENTHESIS = 45;
     /** Parenthesis like in 'if (condition)' */
     public static final int SPECIAL_PARENTHESIS_OPEN = 46;
+    /** Left opened decltype */
+    public static final int DECLTYPE_OPEN = 47;
+    /** Closed decltype holding the subexpression */
+    public static final int DECLTYPE = 48;    
     /** Last used id of the expression ids. */
-    private static final int LAST_ID = SPECIAL_PARENTHESIS_OPEN;
+    private static final int LAST_ID = DECLTYPE;
     private static final int cppTokenIDsLength = EnumSet.allOf(CppTokenId.class).size();
     /** Array that holds the precedence of the operator
      * and whether it's right associative or not.

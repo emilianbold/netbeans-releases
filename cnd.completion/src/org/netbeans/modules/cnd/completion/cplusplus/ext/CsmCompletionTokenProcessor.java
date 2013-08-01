@@ -1942,6 +1942,7 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                 pushExp(mtdExp);
                                 break;
 
+                            case DECLTYPE_OPEN:    // decltype(                                
                             case ARRAY_OPEN:       // a[(
                             case PARENTHESIS_OPEN: // ((
                             case SPECIAL_PARENTHESIS_OPEN: // if((
@@ -2036,6 +2037,20 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                                             top = top2;
 
                                             pushExp(top);
+                                        } else if (getValidExpID(top3) == DECLTYPE_OPEN) {
+                                            popExp();
+                                            popExp();
+                                            popExp();
+                                            
+                                            top2.addParameter(top);
+                                            top2.setExpID(DECLTYPE);                                            
+
+                                            top3.addParameter(top2);
+                                            top3.setExpID(PARENTHESIS);
+
+                                            top = top3;
+
+                                            pushExp(top);                                              
                                         } else {
                                             popExp();
                                             top2.addParameter(top);
@@ -2339,6 +2354,10 @@ final class CsmCompletionTokenProcessor implements CndTokenProcessor<Token<Token
                     case CONST:
                         // OK, just skip it
                         break;
+                        
+                    case DECLTYPE:
+                        pushExp(createTokenExp(DECLTYPE_OPEN));
+                        break;                        
 
                     default:
                         errorState = true;
