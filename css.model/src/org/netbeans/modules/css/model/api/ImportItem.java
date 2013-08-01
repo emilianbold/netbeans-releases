@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.css.model.api;
 
-import java.util.Collection;
-import java.util.List;
-
 /**
  *
  * @author marekfukala

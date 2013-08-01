@@ -42,7 +42,11 @@
 package org.netbeans.modules.css.model.impl;
 
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.model.api.Media;
+import org.netbeans.modules.css.model.api.MediaBody;
+import org.netbeans.modules.css.model.api.MediaQueryList;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.PlainElement;
 import org.openide.util.CharSequences;
 
 /**

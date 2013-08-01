@@ -43,8 +43,8 @@ package org.netbeans.modules.css.model.impl;
 
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.Declaration;
-import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 
 /**
  *
