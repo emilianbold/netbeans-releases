@@ -613,8 +613,8 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
 
     private void loadSelectedProject() {
         synchronized( LOCK ) {
-            TeamServer ss = getSelectedServer();
-            if(ss != null && ss == server) {
+            String selectedUrl = getSelectedServerUrl();
+            if(selectedUrl != null && selectedUrl.equals(server.getUrl().toString())) {
                 String id = getSelectedProjectId();
                 if(id != null) {
                     getProjectPicker().startLoadingSelection();
@@ -722,12 +722,9 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         }
     }
 
-    private TeamServer getSelectedServer() {
+    private String getSelectedServerUrl() {
         String url = getPrefs().get(DashboardSupport.PREF_SELECTED_SERVER, "");
-        if("".equals(url)) {
-            return null;
-        }
-        return TeamServerManager.getDefault().getTeamServer(url);
+        return !"".equals(url) ? url : null;
     }
     
     private String getSelectedProjectId() {

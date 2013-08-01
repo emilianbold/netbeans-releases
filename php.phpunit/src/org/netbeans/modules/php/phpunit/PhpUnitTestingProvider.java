@@ -52,6 +52,7 @@ import org.netbeans.modules.php.phpunit.create.TestCreator;
 import org.netbeans.modules.php.phpunit.locate.PhpUnitTestLocator;
 import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferences;
 import org.netbeans.modules.php.phpunit.run.TestRunner;
+import org.netbeans.modules.php.phpunit.ui.customizer.PhpUnitCustomizer;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
@@ -59,6 +60,7 @@ import org.netbeans.modules.php.spi.testing.locate.TestLocator;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -150,6 +152,11 @@ public final class PhpUnitTestingProvider implements PhpTestingProvider {
             }
         }
         return null;
+    }
+
+    @Override
+    public ProjectCustomizer.CompositeCategoryProvider createCustomizer(PhpModule phpModule) {
+        return new PhpUnitCustomizer(phpModule);
     }
 
 }

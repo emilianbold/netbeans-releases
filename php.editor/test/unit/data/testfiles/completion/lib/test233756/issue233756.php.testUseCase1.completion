@@ -1,7 +1,9 @@
 Code completion result for source line:
-| //CC_HERE
+|// CC HERE
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     baseClassfunctionName() - over  [PROTECTE  \FrontSpace\BaseClass
+METHOD     __construct($foo) - override    [PUBLIC]   Foo
+METHOD     bat() - override                [PUBLIC]   Foo
+METHOD     baz() - generate                [PUBLIC,   Foo
 ------------------------------------
 METHOD     __call($name, $arguments) - ge  [PUBLIC]   Magic Method
 METHOD     __callStatic($name, $arguments  [STATIC]   Magic Method

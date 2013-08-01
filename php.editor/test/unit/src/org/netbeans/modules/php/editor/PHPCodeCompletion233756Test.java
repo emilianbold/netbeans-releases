@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,72 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.css.model.impl;
+package org.netbeans.modules.php.editor;
 
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.model.api.Element;
-import org.netbeans.modules.css.model.api.GenericAtRule;
-import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.api.MozDocument;
-import org.netbeans.modules.css.model.api.VendorAtRule;
-import org.netbeans.modules.css.model.api.WebkitKeyframes;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author marekfukala
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class VendorAtRuleI extends ModelElement implements VendorAtRule {
+public class PHPCodeCompletion233756Test extends PHPCodeCompletionTestBase {
 
-    private Element element;
-
-    private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
-
-        @Override
-        public void elementAdded(MozDocument rule) {
-            element = rule;
-        }
-
-        @Override
-        public void elementAdded(WebkitKeyframes rule) {
-            element = rule;
-        }
-        
-        @Override
-        public void elementAdded(GenericAtRule rule) {
-            element = rule;
-        }
-        
-    };
-
-    public VendorAtRuleI(Model model) {
-        super(model);
+    public PHPCodeCompletion233756Test(String testName) {
+        super(testName);
     }
 
-    public VendorAtRuleI(Model model, Node node) {
-        super(model, node);
-        initChildrenElements();
-    }
-    
-    @Override
-    public Element getElement() {
-        return element;
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test233756/issue233756.php", "^// CC HERE", false);
     }
 
     @Override
-    public void setElement(Element element) {
-        super.setElement(element);
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test233756/"))
+            })
+        );
     }
 
-    @Override
-    protected ModelElementListener getElementListener() {
-        return elementListener;
-    }
-    
-      @Override
-    protected Class getModelClass() {
-        return VendorAtRule.class;
-    }
-    
 }
