@@ -453,8 +453,8 @@ public class RestartTask extends BasicTask<TaskState> {
      *                        for it to finish. Server will be started after
      *                        that.
      */
-//    @Override
-    public TaskState call2() {
+    @Override
+    public TaskState call() {
         GlassFishStatus state = GlassFishState.getStatus(instance).getStatus();
         StateChange change;
         switch (state) {
@@ -503,8 +503,8 @@ public class RestartTask extends BasicTask<TaskState> {
      * 
      */
     @SuppressWarnings("SleepWhileInLoop")
-    @Override
-    public TaskState call() {
+//    @Override
+    public TaskState call2() {
         Logger.getLogger("glassfish").log(Level.FINEST,
                 "RestartTask.call() called on thread \"{0}\"",
                 Thread.currentThread().getName());
