@@ -75,12 +75,15 @@ import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
+import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 
 /**
  *
@@ -89,8 +92,10 @@ import org.openide.execution.ExecutorTask;
 @ServiceProvider(service = BuildPerformer.class)
 public class CordovaPerformer implements BuildPerformer {
     public static final String NAME_BUILD_XML = "build.xml"; // NOI18N
+    public static final String NAME_PLUGINS_PROPERTIES = "plugins.properties"; //NII18N
     public static final String NAME_CONFIG_XML = "config.xml"; // NOI18N
     public static final String PATH_BUILD_XML = "nbproject/" + NAME_BUILD_XML; // NOI18N
+    public static final String PATH_PLUGINS_PROPERTIES = "nbproject/" + NAME_PLUGINS_PROPERTIES; // NOI18N
     public static final String PATH_EXTRA_ANT_JAR = "ant/extra/org-netbeans-modules-cordova-projectupdate.jar"; // NOI18N
     public static final String DEFAULT_ID_PREFIX = "com.coolappz"; // NOI18N
     public static final String DEFAULT_EMAIL = "info@com.coolappz"; // NOI18N
@@ -103,29 +108,24 @@ public class CordovaPerformer implements BuildPerformer {
     
     private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
 
-    private final int BUILD_SCRIPT_VERSION = 11;
+    private final int BUILD_SCRIPT_VERSION = 30;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
     }
     
     
-    public Task createPlatforms(Project project) {
-        Task task1 = null;
-        Task task2 = null;
-        if (PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
-            task1 = perform("create-android", project); // NOI18N
-        }
-        if (PlatformManager.getPlatform(PlatformManager.IOS_TYPE).isReady()) {
-            task2 = perform("create-ios", project); // NOI18N
-        }
+    public Task createPlatforms(final Project project) {
+        return RP.post(new Runnable() {
+
+            @Override
+            public void run() {
+                perform("upgrade-to-cordova-project", project).result();
+                ClientSideModule clientSideModule = project.getLookup().lookup(ClientSideModule.class);
+                clientSideModule.getProperties().setSiteRoot("www");
+            }
+        });
         
-        if (task1 == null && task2 == null ) {
-            task1 = perform("create-resources", project); // NOI18N
-        }
-        
-        Task t = new CompoundTask(task1, task2);
-        return t;
     }
     
     @NbBundle.Messages({
@@ -147,7 +147,7 @@ public class CordovaPerformer implements BuildPerformer {
         }
         
         if (((target.startsWith("build") || target.startsWith("sim")) // NOI18N
-                && ClientProjectUtilities.getSiteRoot(project).getFileObject("res") == null)) { // NOI18N
+                && !CordovaPlatform.isCordovaProject(project))) { // NOI18N
             String message = NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaCustomizerPanel.createConfigsLabel.text") + "\n"
                     + NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaPanel.createConfigs.text") + "?";
             NotifyDescriptor desc = new NotifyDescriptor(
@@ -161,6 +161,17 @@ public class CordovaPerformer implements BuildPerformer {
             if (desc.getValue() != NotifyDescriptor.OK_OPTION) {
                 return null;
             }
+            final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(project);
+            siteRoot.addFileChangeListener(new FileChangeAdapter() {
+                @Override
+                public void fileDeleted(FileEvent fe) {
+                    if (fe.getFile().equals(siteRoot)) {
+                        ClientSideModule clientSideModule = project.getLookup().lookup(ClientSideModule.class);
+                        clientSideModule.getProperties().setSiteRoot("www");
+                    }
+                }
+                
+            });
         }
 
         if (!CordovaPlatform.getDefault().isReady()) {
@@ -217,7 +228,7 @@ public class CordovaPerformer implements BuildPerformer {
     private Properties properties(Project p) {
         Properties props = new Properties();
         final CordovaPlatform phoneGap = CordovaPlatform.getDefault();
-        props.put(PROP_CORDOVA_HOME, phoneGap.getSdkLocation());//NOI18N
+//        props.put(PROP_CORDOVA_HOME, phoneGap.getSdkLocation());//NOI18N
         props.put(PROP_CORDOVA_VERSION, phoneGap.getVersion().toString());//NOI18N
         final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(p);
         final String siteRootRelative = FileUtil.getRelativePath(p.getProjectDirectory(), siteRoot);
@@ -249,7 +260,10 @@ public class CordovaPerformer implements BuildPerformer {
 
         //workaround for some strange behavior of ant execution in netbeans
         props.put(PROP_ENV_DISPLAY, ":0.0");//NOI18N
-        props.put(PROP_ANDROID_SDK_HOME, PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
+        final String sdkLocation = PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation();
+        if (sdkLocation!=null) {
+            props.put(PROP_ANDROID_SDK_HOME, sdkLocation);
+        }
 
         ProjectBrowserProvider provider = p.getLookup().lookup(ProjectBrowserProvider.class);
         if (provider != null && provider.getActiveBrowser().getBrowserFamily()==BrowserFamilyId.PHONEGAP) {
@@ -294,6 +308,7 @@ public class CordovaPerformer implements BuildPerformer {
             }
             if (fresh) {
                 preferences.putInt(PROP_BUILD_SCRIPT_VERSION, BUILD_SCRIPT_VERSION);
+                createScript(project, "empty.properties", PATH_PLUGINS_PROPERTIES, false);
             }
 
             getConfig(project);
@@ -330,7 +345,7 @@ public class CordovaPerformer implements BuildPerformer {
         }
     }
 
-    private static boolean createScript(Project project, String source, String target, boolean overwrite) throws IOException {
+    public static boolean createScript(Project project, String source, String target, boolean overwrite) throws IOException {
         FileObject build = null;
         if (!overwrite) {
             build = project.getProjectDirectory().getFileObject(target);

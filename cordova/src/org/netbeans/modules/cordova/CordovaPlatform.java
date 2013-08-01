@@ -42,11 +42,11 @@
 package org.netbeans.modules.cordova;
 
 import java.io.*;
-import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import java.util.regex.Pattern;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -72,6 +72,7 @@ public class CordovaPlatform {
         return instance;
     }
     
+/*
     public String getSdkLocation() {
         String sdkLoc = NbPreferences.forModule(CordovaPlatform.class).get(CORDOVA_SDK_ROOT_PREF, null);
         if (sdkLoc != null && sdkLoc.trim().isEmpty()) {
@@ -96,7 +97,6 @@ public class CordovaPlatform {
         }
         throw new IllegalStateException();
     }
-    
     public static Version getVersion(String sdkLocation) {
         if (!checkPhonegapLocation(sdkLocation)) {
             throw new IllegalArgumentException();
@@ -136,12 +136,19 @@ public class CordovaPlatform {
                 && version.exists();
     }
     
-
+*/
+    
+    private static Pattern versionPattern = Pattern.compile("[0-9]+\\.[0-9]+\\.[0-9]+");
+    
     public Version getVersion() {
-        final String sdkLocation = getSdkLocation();
-        assert sdkLocation != null;
         if (version == null) {
-            version = getVersion(sdkLocation);
+            try {
+                String v = ProcessUtilities.callProcess(Utilities.isWindows()?"cordova.cmd":"cordova", true, 60*1000, "-v");
+                if (versionPattern.matcher(v.trim()).matches()) {
+                    version = new Version(v);
+                }
+            } catch (IOException ex) {
+            }
         }
         return version;
     }
@@ -166,7 +173,13 @@ public class CordovaPlatform {
     }
     
     public boolean isReady() {
-        return getSdkLocation() != null;
+        return getVersion() != null;
+    }
+    
+    public static boolean isCordovaProject(Project project) {
+        final FileObject root = project.getProjectDirectory();
+        root.refresh();
+        return root.getFileObject(".cordova") != null; // NOI18N
     }
 
     public static class Version implements Comparable<Version> {

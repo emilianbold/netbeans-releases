@@ -67,6 +67,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
     MobilePlatformsPanel(MobilePlatformsOptionsPanelController controller) {
         this.controller = controller;
         initComponents();
+        cordovaPanel.setVisible(false);
         documentL = new DocumentListener() {
 
             @Override
@@ -316,7 +317,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
             cordovaSdkField.getDocument().removeDocumentListener(documentL);
         }
         androidSdkField.setText(PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
-        cordovaSdkField.setText(CordovaPlatform.getDefault().getSdkLocation());
+//        cordovaSdkField.setText(CordovaPlatform.getDefault().getSdkLocation());
         final MobilePlatform iosPlatform = PlatformManager.getPlatform(PlatformManager.IOS_TYPE);
         
         identityTextField.setText(iosPlatform.getCodeSignIdentity());
@@ -334,7 +335,7 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
 
     void store() {
         PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).setSdkLocation(androidSdkField.getText());
-        CordovaPlatform.getDefault().setSdkLocation(cordovaSdkField.getText());
+//        CordovaPlatform.getDefault().setSdkLocation(cordovaSdkField.getText());
         PlatformManager.getPlatform(PlatformManager.IOS_TYPE).setCodeSignIdentity(identityTextField.getText());
         final ProvisioningProfile prov = (ProvisioningProfile) provisioningCombo.getSelectedItem();
         if (prov !=null)
@@ -362,23 +363,23 @@ final class MobilePlatformsPanel extends javax.swing.JPanel {
         }
 
         boolean cordovaSdkValid = true;
-        if (!cordovaSdkField.getText().trim().isEmpty()) {
-            try {
-                CordovaPlatform.Version v = CordovaPlatform.getVersion(cordovaSdkField.getText());
-                if (v.isSupported()) {
-                    phonegapVersion.setText(Bundle.LBL_PhoneGapVersion(v.toString()));
-                    phonegapVersion.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
-                } else {
-                    phonegapVersion.setForeground(Color.red);
-                    phonegapVersion.setText(Bundle.ERR_PhoneGapVersion(v));
-                    cordovaSdkValid = false;
-                }
-            } catch (IllegalArgumentException ex) {
-                phonegapVersion.setForeground(Color.red);
-                phonegapVersion.setText(Bundle.ERR_NoPhoneGap());
-                cordovaSdkValid = false;
-            }
-        }
+//        if (!cordovaSdkField.getText().trim().isEmpty()) {
+//            try {
+//                CordovaPlatform.Version v = CordovaPlatform.getVersion(cordovaSdkField.getText());
+//                if (v.isSupported()) {
+//                    phonegapVersion.setText(Bundle.LBL_PhoneGapVersion(v.toString()));
+//                    phonegapVersion.setForeground(UIManager.getColor("Label.foreground")); // NOI18N
+//                } else {
+//                    phonegapVersion.setForeground(Color.red);
+//                    phonegapVersion.setText(Bundle.ERR_PhoneGapVersion(v));
+//                    cordovaSdkValid = false;
+//                }
+//            } catch (IllegalArgumentException ex) {
+//                phonegapVersion.setForeground(Color.red);
+//                phonegapVersion.setText(Bundle.ERR_NoPhoneGap());
+//                cordovaSdkValid = false;
+//            }
+//        }
         boolean cordovaValid = cordovaSdkValid;
 //        String text = provisioningTextField.getText();
 //        

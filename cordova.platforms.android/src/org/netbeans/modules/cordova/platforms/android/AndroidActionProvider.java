@@ -54,6 +54,7 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.spi.project.ActionProvider;
 import static org.netbeans.spi.project.ActionProvider.COMMAND_BUILD;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
@@ -68,7 +69,7 @@ import org.openide.util.NbBundle;
     "ERR_Title=Error",
     "LBL_CheckingDevice=Connecting to android device...",
     "ERR_WebDebug=Cannot connect to Chrome.\nPlease check if USB Web Debugging is enabled in Chrome on your mobile device.",    
-    "ERR_NO_PhoneGap=PhoneGap Platform is not configured.\nConfigure? "
+    "ERR_NO_PhoneGap=<html><body>NetBeans cannot find cordova on your PATH. Please install cordova.<br>NetBeans might require restart for changes to take effect.</body></html>"
 })
 /**
  * Cordova Action Provider. Invokes cordova build.
@@ -127,17 +128,10 @@ public class AndroidActionProvider implements ActionProvider {
                         break;
                 }
             } catch (IllegalStateException ex) {
-                NotifyDescriptor not = new NotifyDescriptor(
+                NotifyDescriptor.Message not = new DialogDescriptor.Message(
                         Bundle.ERR_NO_PhoneGap(),
-                        Bundle.ERR_Title(),
-                        NotifyDescriptor.OK_CANCEL_OPTION,
-                        NotifyDescriptor.ERROR_MESSAGE,
-                        null,
-                        null);
+                        DialogDescriptor.ERROR_MESSAGE);
                 Object value = DialogDisplayer.getDefault().notify(not);
-                if (NotifyDescriptor.CANCEL_OPTION != value) {
-                    OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms"); // NOI18N
-                }
                 return;
             }
         } else if (COMMAND_RUN.equals(command) || COMMAND_RUN_SINGLE.equals(command)) {

@@ -46,6 +46,7 @@ import org.netbeans.modules.cordova.platforms.spi.Device;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cordova.project.ConfigUtils;
+import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -72,7 +73,7 @@ public class CordovaProjectExtender implements ClientProjectExtender {
         "LBL_iPhoneDevice=iPhone Device",
     })
 
-    public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath) {
+    public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath, ClientSideModule.Properties props) {
         try {
             createMobileConfigs(projectRoot);
         } catch (IOException ex) {

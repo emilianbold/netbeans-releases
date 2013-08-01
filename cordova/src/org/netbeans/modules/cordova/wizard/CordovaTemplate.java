@@ -59,12 +59,14 @@ import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
 import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
 import org.netbeans.modules.cordova.project.CordovaPanel;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.clientproject.api.ClientProjectWizardProvider;
+import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
@@ -96,33 +98,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
 
     @Override
     public void apply(FileObject projectDir, ProjectProperties projectProperties, ProgressHandle handle) throws IOException {
-        try {
-            FileObject p = FileUtil.createFolder(projectDir, projectProperties.getSiteRootFolder());
-            final CordovaPlatform cordovaPlatform = CordovaPlatform.getDefault();
-            File examplesFolder = new File(cordovaPlatform.getSdkLocation() + "/lib/android/example/assets/www");//NOI18N
-            FileObject examples = FileUtil.toFileObject(examplesFolder);
-            FileObject index = FileUtil.copyFile(examples.getFileObject("index.html"), p, "index");//NOI18N
-            FileUtil.copyFile(examples.getFileObject("main.js"), p, "main");//NOI18N
-            FileUtil.copyFile(examples.getFileObject("master.css"), p, "master");//NOI18N
-            FileUtil.copyFile(examples.getFileObject("js/index.js"), FileUtil.createFolder(p, "js"), "index");//NOI18N
-            FileUtil.copyFile(examples.getFileObject("css/index.css"), FileUtil.createFolder(p, "css"), "index");//NOI18N
-            FileUtil.copyFile(examples.getFileObject("img/cordova.png"), FileUtil.createFolder(p, "img"), "cordova");//NOI18N
-            FileUtil.copyFile(examples.getFileObject("img/logo.png"), FileUtil.createFolder(p, "img"), "logo");//NOI18N
-            DataObject find = DataObject.find(index);
-            EditorCookie c = find.getLookup().lookup(EditorCookie.class);
-            StyledDocument openDocument = c.openDocument();
-            String version = cordovaPlatform.getVersion().toString();
-            final String cordova = cordovaPlatform.getCordovaJS(PlatformManager.ANDROID_TYPE).getNameExt();//NOI18N
-            int start = openDocument.getText(0, openDocument.getLength()).indexOf(cordova);
-            openDocument.remove(start, cordova.length());
-            openDocument.insertString(start, "js/libs/Cordova-" + version + "/" + "cordova-" + version + ".js", null);//NOI18N
-            find.getCookie(SaveCookie.class).save();
-
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (Throwable ex) {
-            
-        }
+        CordovaPerformer.getDefault().perform("create-hello-world", FileOwnerQuery.getOwner(projectDir)).waitFinished();
     }
 
 
@@ -142,13 +118,13 @@ public class CordovaTemplate implements SiteTemplateImplementation {
 
     @Override
     public Collection<String> supportedLibraries() {
-        return Collections.singletonList("Cordova");//NOI18N
+        return Collections.emptyList();//NOI18N
     }
 
     @Override
     public void configure(ProjectProperties projectProperties) {
         projectProperties.setConfigFolder("config");//NOI18N
-        projectProperties.setSiteRootFolder("public_html");//NOI18N
+        projectProperties.setSiteRootFolder("www");//NOI18N
         projectProperties.setTestFolder("test");//NOI18N
     }
 
@@ -182,16 +158,11 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             "LBL_AndroidEmulator=Android Emulator",
             "LBL_AndroidDevice=Android Device"
         })
-        public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath) {
+        public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath, ClientSideModule.Properties properties) {
             try {
-                librariesPath = librariesPath == null ? "js/libs":librariesPath; // NOI18N
-                final CordovaPlatform cordovaPlatform = CordovaPlatform.getDefault();
-                String version = cordovaPlatform.getVersion().toString();
-
-                FileObject libFo = cordovaPlatform.getCordovaJS(PlatformManager.ANDROID_TYPE);
-                FileObject createFolder = FileUtil.createFolder(siteRoot, librariesPath + "/Cordova-" + version);//NOI18N
-                FileUtil.copyFile(libFo, createFolder, "cordova-" + version);//NOI18N
                 final Project project = FileOwnerQuery.getOwner(projectRoot);
+                
+                CordovaPerformer.getDefault().createPlatforms(project).waitFinished();
                 
                 Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
                 preferences.put("phonegap", "true"); // NOI18N
@@ -207,8 +178,8 @@ public class CordovaTemplate implements SiteTemplateImplementation {
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
-
-                    CordovaPerformer.getDefault().createPlatforms(project);
+                    CordovaPerformer.createScript(project, "plugins.properties", "nbproject/plugins.properties", true);
+                    CordovaPerformer.getDefault().createPlatforms(project).waitFinished();
                     panel = null;
                 }
             } catch (IOException ex) {
@@ -298,18 +269,18 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             "ERR_InvalidAppId={0} is not a valid Application ID"
         })
         public boolean isValid() {
-            final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
-            if (sdkLocation == null) {
-                setErrorMessage(Bundle.ERR_MobilePlatforms());
-                return false;
-            }
-            
-            if (!SourceConfig.isValidId(panel.getPackageName())) {
-                setErrorMessage(Bundle.ERR_InvalidAppId(panel.getPackageName()));
-                return false;
-            }
-
-            setErrorMessage("");
+//            final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
+//            if (sdkLocation == null) {
+//                setErrorMessage(Bundle.ERR_MobilePlatforms());
+//                return false;
+//            }
+//            
+//            if (!SourceConfig.isValidId(panel.getPackageName())) {
+//                setErrorMessage(Bundle.ERR_InvalidAppId(panel.getPackageName()));
+//                return false;
+//            }
+//
+//            setErrorMessage("");
             return true;
         }
 

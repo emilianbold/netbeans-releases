@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.cordova.wizard;
 
+import org.netbeans.modules.cordova.project.PhoneGapNotFound;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cordova.options.MobilePlatformsOptionsPanelController;
@@ -56,26 +57,22 @@ import org.openide.util.NbBundle;
 public class CordovaSetupPanel implements WizardDescriptor.Panel<WizardDescriptor> {
 
     private WizardDescriptor myDescriptor;
-    private MobilePlatformsOptionsPanelController controller;
     private JComponent panel;
 
 
     public CordovaSetupPanel(WizardDescriptor descriptor) {
         myDescriptor = descriptor;
-        controller = new MobilePlatformsOptionsPanelController();
     }
 
     @Override
     public void addChangeListener(ChangeListener listener) {
-        controller.addChangeListener(listener);
     }
 
     @Override
     public JComponent getComponent() {
         if (panel == null) {
-            panel = controller.getComponent(Lookup.EMPTY);
+            panel = new PhoneGapNotFound();
             panel.setName(NbBundle.getMessage(CordovaSetupPanel.class, "LBL_MobilePlatformsSetup"));//NOI18N
-            controller.update();
         }
         return panel;
     }
@@ -87,13 +84,8 @@ public class CordovaSetupPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public boolean isValid() {
-        if (!controller.isValid() || controller.isCordovaEmpty()) {
-            setErrorMessage(Bundle.ERR_MobilePlatforms());
-            return false;
-        }
-        // everything ok
-        setErrorMessage(null);
-        return true;
+        setErrorMessage("Install Cordova and restart NetBeans");
+        return false;
     }
 
     @Override
@@ -105,12 +97,10 @@ public class CordovaSetupPanel implements WizardDescriptor.Panel<WizardDescripto
 
     @Override
     public void removeChangeListener(ChangeListener listener) {
-        controller.removeChangeListener(listener);
     }
 
     @Override
     public void storeSettings(WizardDescriptor descriptor) {
-        controller.applyChanges();
     }
 
     private void setErrorMessage(String message) {

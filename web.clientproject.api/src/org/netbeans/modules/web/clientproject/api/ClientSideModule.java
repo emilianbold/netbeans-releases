@@ -81,7 +81,8 @@ public interface ClientSideModule {
          */
         @NonNull
         String getWebContextRoot();
-
+        
+        void setSiteRoot(String name);
     }
 
 }

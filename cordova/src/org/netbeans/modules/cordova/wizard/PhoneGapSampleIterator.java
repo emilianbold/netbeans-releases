@@ -191,15 +191,6 @@ public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<Wiz
         FileObject template = Templates.getTemplate(descriptor);
         unZipFile(template.getInputStream(), projectFolder);
         final CordovaPlatform cordovaPlatform = CordovaPlatform.getDefault();
-        File destFolder = new File(projectFolder.getPath() + "/public_html/js/libs/Cordova-" + cordovaPlatform.getVersion()); // NOI18N
-        
-        FileObject cordovajsFo = cordovaPlatform.getCordovaJS(PlatformManager.ANDROID_TYPE);
-        
-        FileUtil.createFolder(destFolder);
-        
-        FileObject destFolderFo = FileUtil.toFileObject(destFolder);
-        
-        FileUtil.copyFile(cordovajsFo, destFolderFo, "cordova-" + cordovaPlatform.getVersion(), "js"); // NOI18N
                 
         ProjectManager.getDefault().clearNonProjectCache();
 
@@ -207,13 +198,10 @@ public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<Wiz
         map.put("${project.name}", targetName);                             // NOI18N
         replaceTokens(projectFolder, map , "nbproject/project.properties"); // NOI18N
         
-        Map<String, String> map2 = new HashMap<String, String>();
-        map2.put("js/libs/Cordova-2.5.0/cordova-2.5.0.js", "js/libs/Cordova-" + cordovaPlatform.getVersion() + "/cordova-" + cordovaPlatform.getVersion() + ".js" ); // NOI18N
-        replaceTokens(projectFolder, map2 , "public_html/index.html"); // NOI18N
-
         final Project project = FileOwnerQuery.getOwner(projectFolder);
+        CordovaPerformer.createScript(project, "mapplugins.properties", "nbproject/plugins.properties", true);
         CordovaTemplate.CordovaExtender.setPhoneGapBrowser(project);
-        CordovaPerformer.getDefault().createPlatforms(project);
+        CordovaPerformer.getDefault().createPlatforms(project).waitFinished();
         
         return Collections.singleton(projectFolder);
     }
