@@ -3263,7 +3263,6 @@ public class CasualDiff {
                                 this.printer = oldPrinter;
                                 this.printer.undent(old);
                                 lastdel = null;
-                                if (LineInsertionType.AFTER == estimator.lineInsertType()) printer.newline();
                                 break;
                             }
                         }

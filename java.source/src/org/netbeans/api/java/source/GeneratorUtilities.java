@@ -682,7 +682,6 @@ public final class GeneratorUtilities {
             pkg = elements.getPackageElement(elements.getName("")); //NOI18N
         pkgCounts.put(pkg, -2);
         Map<TypeElement, Integer> typeCounts = new LinkedHashMap<TypeElement, Integer>();
-        Scope scope = trees.getScope(new TreePath(cut));
         StarImportScope importScope = new StarImportScope((Symbol)pkg);
         if (((JCCompilationUnit)cut).starImportScope != null)
             importScope.importAll(((JCCompilationUnit)cut).starImportScope);
