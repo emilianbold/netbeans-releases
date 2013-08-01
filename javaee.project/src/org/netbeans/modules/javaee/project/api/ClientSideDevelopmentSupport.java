@@ -86,6 +86,8 @@ public final class ClientSideDevelopmentSupport implements
     private BrowserSupport browserSupport = null;
     // @GuardedBy("this")
     private boolean browserSupportInitialized = false;
+    // @GuardedBy("this")
+    private boolean initialized = false;
 
     
     public static ClientSideDevelopmentSupport createInstance(Project project) {
@@ -122,7 +124,8 @@ public final class ClientSideDevelopmentSupport implements
             return null;
         }
         String relPath = FileUtil.getRelativePath(webDocumentRoot, projectFile);
-        relPath = applyServletPattern(relPath);
+        // #233748 - disable using Servlet URL mapping for now:
+        // relPath = applyServletPattern(relPath);
         try {
             URL u = new URL(projectRootURL + relPath);
             WebBrowser browser = getWebBrowser();
@@ -260,7 +263,11 @@ public final class ClientSideDevelopmentSupport implements
     private final List<String> servletURLPatterns = new CopyOnWriteArrayList<String>();
     private final List<String> welcomeFiles = new CopyOnWriteArrayList<String>();
 
-    private void readWebAppMetamodelData() {
+    private synchronized void readWebAppMetamodelData() {
+        if (initialized) {
+            return;
+        }
+        initialized = true;
         final WebModule webModule = getWebModule();
         try {
             webModule.getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
