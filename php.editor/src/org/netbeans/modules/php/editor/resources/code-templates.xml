@@ -175,7 +175,7 @@ ${cursor}]]>
         </code>
     </codetemplate>
 
-    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.pfnc" abbreviation="ptfnc" contexts="php-code">
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.ptfnc" abbreviation="ptfnc" contexts="php-code">
         <code>
 <![CDATA[protected function ${functionName}($$${param}) {
     ${selection}${cursor}
@@ -183,7 +183,7 @@ ${cursor}]]>
         </code>
     </codetemplate>
 
-    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.pfnc" abbreviation="pvfnc" contexts="php-code">
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.pvfnc" abbreviation="pvfnc" contexts="php-code">
         <code>
 <![CDATA[private function ${functionName}($$${param}) {
     ${selection}${cursor}
