@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,25 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.spi.model.services;
 
-package org.netbeans.modules.web.common.spi;
-
-import java.util.Collection;
-import org.netbeans.api.annotations.common.NonNull;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
 
 /**
- * Provides an ability to get the web root folder for a file
- * within web-like project.
  *
- * Instance of this interface must be registered into project's lookup
- *
- * @author marekfukala
+ * @author petrk
  */
-public interface ProjectWebRootProvider {
-
+public interface CsmTypeResolverImplementation {
+    
     /**
-     * Finds a web root for a file.
-     *
-     * @param file The file you wish to find a web root for.
-     * @return A web root containing the searched file. The returned web root
-     * must contain the searched file. Null is returned if no web root find for
-     * the file.
+     * Resolves type of expression
+     * 
+     * @param expression - expression to resolve
+     * @return type of expression
      */
-    public FileObject getWebRoot(FileObject file);
-
-    /**
-     * Finds all web roots for a project.
-     * @return collection of web roots of the given project, can be empty but never {@code null}.
-     * @since 1.57
-     */
-    @NonNull
-    Collection<FileObject> getWebRoots();
-
+    CsmType resolveType(CsmExpression expression);
+    
 }

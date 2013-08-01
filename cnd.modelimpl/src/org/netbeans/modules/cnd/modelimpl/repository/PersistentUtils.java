@@ -71,6 +71,7 @@ import org.netbeans.modules.cnd.modelimpl.csm.deep.EmptyCompoundStatementImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.ExpressionBase;
 import org.netbeans.modules.cnd.modelimpl.csm.deep.LazyCompoundStatementImpl;
 import org.netbeans.modules.cnd.apt.utils.APTSerializeUtils;
+import org.netbeans.modules.cnd.modelimpl.csm.DeclTypeImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.ExpressionBasedSpecializationParameterImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.FunctionParameterListImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.NestedType;
@@ -448,6 +449,10 @@ public class PersistentUtils {
             case TYPE_FUN_PTR_IMPL:
                 obj = new TypeFunPtrImpl(stream);
                 break;
+                
+            case TYPE_DECLTYPE_IMPL:
+                obj = new DeclTypeImpl(stream);
+                break;
 
             case TEMPLATE_PARAM_TYPE:
                 obj = new TemplateParameterTypeImpl(stream);
@@ -466,7 +471,10 @@ public class PersistentUtils {
             } else if (type instanceof NoType) {
                 stream.writeInt(NO_TYPE);
             } else if (type instanceof TypeImpl) {
-                if (type instanceof TypeFunPtrImpl) {
+                if (type instanceof DeclTypeImpl) {
+                    stream.writeInt(TYPE_FUN_PTR_IMPL);
+                    ((DeclTypeImpl) type).write(stream);
+                } else if (type instanceof TypeFunPtrImpl) {
                     stream.writeInt(TYPE_FUN_PTR_IMPL);
                     ((TypeFunPtrImpl) type).write(stream);
                 } else if (type instanceof NestedType) {
@@ -780,7 +788,8 @@ public class PersistentUtils {
     private static final int TYPE_IMPL = NO_TYPE + 1;
     private static final int NESTED_TYPE = TYPE_IMPL + 1;
     private static final int TYPE_FUN_PTR_IMPL = NESTED_TYPE + 1;
-    private static final int TEMPLATE_PARAM_TYPE = TYPE_FUN_PTR_IMPL + 1;
+    private static final int TYPE_DECLTYPE_IMPL = TYPE_FUN_PTR_IMPL + 1;
+    private static final int TEMPLATE_PARAM_TYPE = TYPE_DECLTYPE_IMPL + 1;
 
     // state
     private static final int PREPROC_STATE_STATE_IMPL = TEMPLATE_PARAM_TYPE + 1;

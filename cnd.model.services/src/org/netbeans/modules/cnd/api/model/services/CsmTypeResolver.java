@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,63 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.api.model.services;
 
-package org.netbeans.modules.web.common.spi;
-
-import java.util.Collection;
-import org.netbeans.api.annotations.common.NonNull;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.spi.model.services.CsmTypeResolverImplementation;
+import org.openide.util.Lookup;
 
 /**
- * Provides an ability to get the web root folder for a file
- * within web-like project.
  *
- * Instance of this interface must be registered into project's lookup
- *
- * @author marekfukala
+ * @author petrk
  */
-public interface ProjectWebRootProvider {
-
+public final class CsmTypeResolver {
+    
+    public static CsmType resolveType(CsmExpression expression) {
+        return DEFAULT.resolveType(expression);
+    }
+    
+//<editor-fold defaultstate="collapsed" desc="impl">
+    
+    private static final CsmTypeResolverImplementation DEFAULT = new Default();
+    
+    private CsmTypeResolver() {
+        throw new AssertionError("Not instantiable"); // NOI18N
+    }    
+    
     /**
-     * Finds a web root for a file.
-     *
-     * @param file The file you wish to find a web root for.
-     * @return A web root containing the searched file. The returned web root
-     * must contain the searched file. Null is returned if no web root find for
-     * the file.
+     * Default implementation (just a proxy to a real service)
      */
-    public FileObject getWebRoot(FileObject file);
-
-    /**
-     * Finds all web roots for a project.
-     * @return collection of web roots of the given project, can be empty but never {@code null}.
-     * @since 1.57
-     */
-    @NonNull
-    Collection<FileObject> getWebRoots();
-
+    private static final class Default implements CsmTypeResolverImplementation {
+        
+        private final Lookup.Result<CsmTypeResolverImplementation> res;
+        
+        private CsmTypeResolverImplementation delegate;
+        
+        
+        private Default() {
+            res = Lookup.getDefault().lookupResult(CsmTypeResolverImplementation.class);
+        }
+        
+        private CsmTypeResolverImplementation getDelegate(){
+            CsmTypeResolverImplementation service = delegate;
+            if (service == null) {
+                for (CsmTypeResolverImplementation resolver : res.allInstances()) {
+                    service = resolver;
+                    break;
+                }
+                delegate = service;
+            }
+            return service;
+        }
+        
+        @Override
+        public CsmType resolveType(CsmExpression expression) {
+            return getDelegate().resolveType(expression);
+        }
+    }
+//</editor-fold>
 }
