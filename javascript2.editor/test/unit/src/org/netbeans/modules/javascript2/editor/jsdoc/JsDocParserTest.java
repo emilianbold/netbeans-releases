@@ -44,7 +44,9 @@ package org.netbeans.modules.javascript2.editor.jsdoc;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map.Entry;
+import static junit.framework.Assert.assertEquals;
 import org.netbeans.modules.javascript2.editor.JsTestBase;
+import org.netbeans.modules.javascript2.editor.jsdoc.model.DeclarationElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.DescriptionElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElement;
 import org.netbeans.modules.javascript2.editor.jsdoc.model.JsDocElementType;
@@ -161,6 +163,15 @@ public class JsDocParserTest extends JsTestBase {
         List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
         assertEquals(JsDocElementType.PARAM, tags.get(0).getType());
         assertTrue(tags.get(0) instanceof NamedParameterElement);
+    }
+
+    public void testIssue233176() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/issue233176.js"));
+        List<? extends JsDocElement> tags = getFirstJsDocBlock(source.createSnapshot()).getTags();
+        assertEquals(JsDocElementType.TYPE, tags.get(0).getType());
+        assertTrue(tags.get(0) instanceof DeclarationElement);
+        assertEquals("Number", ((DeclarationElement) tags.get(0)).getDeclaredType().getDisplayName());
+        assertEquals(48, ((DeclarationElement) tags.get(0)).getDeclaredType().getOffset());
     }
 
     private void checkElementTypes(String filePath) {
