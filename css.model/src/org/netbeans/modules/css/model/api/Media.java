@@ -52,11 +52,13 @@ public interface Media extends Element {
     public void setMediaQueryList(MediaQueryList mediaQueryList);
 
     /**
+     * @return 
      * @since 1.20
      */
     public MediaBody getMediaBody();
     
     /**
+     * @param mediaBody
      * @since 1.20
      */
     public void setMediaBody(MediaBody mediaBody);

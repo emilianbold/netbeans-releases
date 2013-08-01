@@ -43,8 +43,15 @@ package org.netbeans.modules.css.model.impl;
 
 import java.util.List;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.model.api.AtRuleId;
+import org.netbeans.modules.css.model.api.Declaration;
+import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.ModelTestBase;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
+import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.css.model.api.WebkitKeyframeSelectors;
+import org.netbeans.modules.css.model.api.WebkitKeyframes;
+import org.netbeans.modules.css.model.api.WebkitKeyframesBlock;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
