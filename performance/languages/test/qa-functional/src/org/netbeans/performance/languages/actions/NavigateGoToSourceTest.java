@@ -41,19 +41,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.actions;
 
+import java.awt.Rectangle;
+import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-
-import java.awt.Rectangle;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.JTextComponent;
-
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -61,14 +59,11 @@ import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author mrkam@netbeans.org
  */
-
 public class NavigateGoToSourceTest extends PerformanceTestCase {
 
     protected Node fileToBeOpened;
@@ -76,47 +71,43 @@ public class NavigateGoToSourceTest extends PerformanceTestCase {
     protected String docName, openedDocName;
     protected String pathName;
     protected String textToFind, openedText;
-    protected static ProjectsTabOperator projectsTab = null;    
+    protected static ProjectsTabOperator projectsTab = null;
     private EditorOperator editorOperator;
     private int caretBlinkRate;
-    
 
     public NavigateGoToSourceTest(String testName) {
         super(testName);
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 2000;
     }
 
     public NavigateGoToSourceTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 2000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(NavigateGoToSourceTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(NavigateGoToSourceTest.class).suite();
     }
 
     protected Node getProjectNode(String projectName) {
-        if(projectsTab==null)
+        if (projectsTab == null) {
             projectsTab = ScriptingUtilities.invokePTO();
+        }
         return projectsTab.getProjectRootNode(projectName);
     }
-    
+
     @Override
     public void initialize() {
         closeAllModal();
-        String path = pathName+docName;
-        fileToBeOpened = new Node(getProjectNode(testProject),path);        
+        String path = pathName + docName;
+        fileToBeOpened = new Node(getProjectNode(testProject), path);
         new OpenAction().performAPI(fileToBeOpened);
         editorOperator = EditorWindowOperator.getEditor(docName);
-        caretBlinkRate =  editorOperator.txtEditorPane().getCaret().getBlinkRate();
+        caretBlinkRate = editorOperator.txtEditorPane().getCaret().getBlinkRate();
         editorOperator.txtEditorPane().getCaret().setBlinkRate(0);
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
     }
-    
+
     @Override
     public void prepare() {
         try {
@@ -135,7 +126,7 @@ public class NavigateGoToSourceTest extends PerformanceTestCase {
         EditorOperator op = new EditorOperator(openedDocName);
         return null;
     }
-    
+
     public void test_PHP_NavigateGoToSourceInTheCurrentClass() {
         testProject = Projects.PHP_PROJECT;
         pathName = "Source Files|classes|";

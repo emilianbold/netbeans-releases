@@ -41,7 +41,6 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.actions;
 
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
@@ -49,19 +48,17 @@ import org.netbeans.modules.performance.guitracker.LoggingRepaintManager.RegionF
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-
 import java.awt.Container;
 import javax.swing.JComponent;
-
+import junit.framework.Test;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.NavigatorOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -82,21 +79,17 @@ public class PHPNavigatorTest extends PerformanceTestCase {
     public PHPNavigatorTest(String testName) {
         super(testName);
         expectedTime = 1000;
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 2000;
     }
 
     public PHPNavigatorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = 1000;
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 2000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(PHPNavigatorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(PHPNavigatorTest.class).suite();
     }
 
     @Override
@@ -104,13 +97,14 @@ public class PHPNavigatorTest extends PerformanceTestCase {
         closeAllModal();
         String path = nodePath + "|" + fileName;
         fileToBeOpened = new Node(getProjectNode(testProject), path);
-        final Container navigator = (Container)(new NavigatorOperator().getSource());
+        final Container navigator = (Container) (new NavigatorOperator().getSource());
 
         repaintManager().addRegionFilter(new RegionFilter() {
 
             public boolean accept(JComponent c) {
                 return navigator.isAncestorOf(c);
             }
+
             public String getFilterName() {
                 return "Accept paints only from Navigator";
             }
