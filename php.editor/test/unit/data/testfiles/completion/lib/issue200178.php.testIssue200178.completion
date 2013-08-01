@@ -7,6 +7,7 @@ METHOD     foo()                           [PUBLIC]   issue200178.php
 ------------------------------------
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
+CLASS      Foo                             [PUBLIC,   issue233756.php
 CLASS      Foo                             [PUBLIC]   test203294.php
 CLASS      FooUrl                          [PUBLIC]   foo\lib\url
 CLASS      Foooo                           [PUBLIC]   test204104.php
