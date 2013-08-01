@@ -56,6 +56,7 @@ import org.netbeans.modules.php.spi.testing.locate.TestLocator;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.test.MockLookup;
@@ -162,6 +163,11 @@ public class PhpTestingProviderRegistrationTest extends NbTestCase {
 
         @Override
         public TestLocator getTestLocator(PhpModule phpModule) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public ProjectCustomizer.CompositeCategoryProvider createCustomizer(PhpModule phpModule) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
