@@ -1,7 +1,7 @@
 <?php
 
 class Example {
-    
+
     public function ifExample ($a, $b) {
         if (convert($a) > $b) {
             echo "a is bigger than b";
@@ -52,6 +52,8 @@ public function tryExample() {
     echo inverse(5) . "\n";
 } catch (Exception $e) {
     echo 'Caught exception: '.  $e->getMessage(). "\n";
+} finally {
+    echo "Finally block";
 }
 
 }

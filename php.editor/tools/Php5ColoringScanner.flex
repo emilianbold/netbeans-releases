@@ -393,6 +393,10 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
     return PHPTokenId.PHP_CATCH;
 }
 
+<ST_PHP_IN_SCRIPTING>"finally" {
+    return PHPTokenId.PHP_FINALLY;
+}
+
 <ST_PHP_IN_SCRIPTING>"throw" {
     return PHPTokenId.PHP_THROW;
 }

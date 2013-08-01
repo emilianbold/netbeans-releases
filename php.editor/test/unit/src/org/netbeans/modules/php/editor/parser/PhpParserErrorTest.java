@@ -307,4 +307,28 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testIssue222857() throws Exception {
         checkErrors("testfiles/parser/issue222857.php");
     }
+
+    public void testFinally_01() throws Exception {
+        checkErrors("testfiles/parser/finally_01.php");
+    }
+
+    public void testFinally_02() throws Exception {
+        checkErrors("testfiles/parser/finally_02.php");
+    }
+
+    public void testListInForeach() throws Exception {
+        checkErrors("testfiles/parser/listInForeach.php");
+    }
+
+    public void testExpressionArrayAccess_01() throws Exception {
+        checkErrors("testfiles/parser/expressionArrayAccess_01.php");
+    }
+
+    public void testExpressionArrayAccess_02() throws Exception {
+        checkErrors("testfiles/parser/expressionArrayAccess_02.php");
+    }
+
+    public void testExpressionArrayAccess_03() throws Exception {
+        checkErrors("testfiles/parser/expressionArrayAccess_03.php");
+    }
 }
