@@ -103,6 +103,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
     private TeamServer server;
 
     private final Object LOCK = new Object();
+    private final ProgressLabel progressLabel;
     
     public OneProjectDashboardPicker() {
         setLayout( new GridBagLayout() );
@@ -139,11 +140,15 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         btnPick.setRolloverEnabled(true);
         add( btnPick, new GridBagConstraints(1,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,0,0,0), 0,0) );            
 
+        progressLabel = new ProgressLabel("", this);
+        add( progressLabel, new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
+        progressLabel.setVisible(false);
+        
         placeholder = new JLabel();
-        add( placeholder, new GridBagConstraints(2,0,1,1,1.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
+        add( placeholder, new GridBagConstraints(3,0,1,1,1.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );
 
         JToolBar toolbar = new ProjectToolbar();
-        add( toolbar, new GridBagConstraints(3,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );            
+        add( toolbar, new GridBagConstraints(4,0,1,1,0.0,0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(3,3,3,3), 0,0) );            
 
         bookmarkAction = new AbstractAction() {
             @Override
@@ -213,32 +218,37 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
     }
 
     void setButtons() {
-        btnNewServer.setVisible(mListener.mouseOver);
-
-        if(currentProject != null) {
-            boolean isMemberProject = getDashboard(server).isMemberProject(currentProject);
-            btnClose.setVisible(mListener.mouseOver && !isMemberProject);
-            
-            btnBookmark.setVisible(mListener.mouseOver && !bookmarking);
-            lblBookmarkingProgress.setVisible(mListener.mouseOver && bookmarking);
-            separator.setVisible(mListener.mouseOver);
-            
-            btnBookmark.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, isMemberProject?"LBL_LeaveProject":"LBL_Bookmark"));
-            btnBookmark.setIcon(
-                ImageUtilities.loadImageIcon(
-                    "org/netbeans/modules/team/server/resources/"  + (isMemberProject ? "bookmark.png" : "unbookmark.png"), true));
-            btnBookmark.setRolloverIcon(
-                ImageUtilities.loadImageIcon(
-                    "org/netbeans/modules/team/server/resources/" + (isMemberProject ? "bookmark_over.png" : "unbookmark_over.png"), true)); // NOI18N                                
-        } else {
-            btnClose.setVisible(false);
-            btnBookmark.setVisible(false);
-            lblBookmarkingProgress.setVisible(false);
-            separator.setVisible(false);                
-        }
+        runInAwt(new Runnable() {
+            @Override
+            public void run() {
+                btnNewServer.setVisible(mListener.mouseOver);
+                
+                if (currentProject != null) {
+                    boolean isMemberProject = getDashboard(server).isMemberProject(currentProject);
+                    btnClose.setVisible(mListener.mouseOver && !isMemberProject);
+                    
+                    btnBookmark.setVisible(mListener.mouseOver && !bookmarking);
+                    lblBookmarkingProgress.setVisible(mListener.mouseOver && bookmarking);
+                    separator.setVisible(mListener.mouseOver);
+                    
+                    btnBookmark.setToolTipText(NbBundle.getMessage(OneProjectDashboard.class, isMemberProject ? "LBL_LeaveProject" : "LBL_Bookmark"));
+                    btnBookmark.setIcon(
+                            ImageUtilities.loadImageIcon(
+                            "org/netbeans/modules/team/server/resources/" + (isMemberProject ? "bookmark.png" : "unbookmark.png"), true));
+                    btnBookmark.setRolloverIcon(
+                            ImageUtilities.loadImageIcon(
+                            "org/netbeans/modules/team/server/resources/" + (isMemberProject ? "bookmark_over.png" : "unbookmark_over.png"), true)); // NOI18N                                
+                } else {
+                    btnClose.setVisible(false);
+                    btnBookmark.setVisible(false);
+                    lblBookmarkingProgress.setVisible(false);
+                    separator.setVisible(false);                    
+                }
+            }
+        });
     }
 
-    void setCurrentProject(final TeamServer server, ProjectHandle<P> project, ListNode node) {
+    void setCurrentProject(final TeamServer server, ProjectHandle<P> project, ListNode node, boolean hideMegaMenu) {
         synchronized ( LOCK ) {
             this.server = server;
             if (project != null) {
@@ -250,8 +260,11 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
             }
             TeamView.getInstance().setSelectedServer(server);
         }
+        setLoadingButtons(false);
         setButtons();
-        hideMenu();
+        if(hideMegaMenu) {
+            hideMenu();
+        }
     }
 
     void setNoProject() {
@@ -260,9 +273,28 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
             this.currentProjectNode = null;
         }
         setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "CLICK_TO_SELECT"));
+        setLoadingButtons(false);
         setButtons();
     }
 
+    @NbBundle.Messages({"LBL_LoadingSelection=Loading last selection"})
+    void startLoadingSelection() {
+        setProjectLabel(Bundle.LBL_LoadingSelection());
+        setLoadingButtons(true);
+    }    
+
+    private void setLoadingButtons(final boolean on) {
+        runInAwt(new Runnable() {
+            @Override
+            public void run() {
+                lbl.setEnabled(!on);
+                btnPick.setEnabled(!on);
+                btnPick.setVisible(!on);                
+                progressLabel.setVisible(on);                
+            }
+        });
+    }
+    
     boolean removed(TeamServer server, ProjectHandle<P> project) {
         if(isCurrentProject(server, project)) {
             setNoProject();
@@ -293,7 +325,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
     }
     
     private void switchProject() {
-        SwingUtilities.invokeLater(new Runnable() {
+        runInAwt(new Runnable() {
             @Override
             public void run() {
                 if(!OneProjectDashboardPicker.this.isShowing()) {
@@ -316,8 +348,8 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
                                 curNode = currentProjectNode;
                             }
                             if(curNode == null || !node.equals(curNode)) {
-                                setCurrentProject(mpn.getTeamServer(), ph, node);
-                                getDashboard(mpn.getTeamServer()).switchProject(ph);
+                                setCurrentProject(mpn.getTeamServer(), ph, node, true);
+                                getDashboard(mpn.getTeamServer()).switchProject(ph, false);
                             }
                         }
                     }
@@ -330,17 +362,12 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
     private void hideMenu() {
         final MegaMenu mm = MegaMenu.getCurrent();
         if(mm != null) {
-            Runnable r = new Runnable() {
+            runInAwt(new Runnable() {
                 @Override
                 public void run() {
                     mm.hide();
                 }
-            };
-            if(SwingUtilities.isEventDispatchThread()) {
-                r.run();
-            } else {
-                SwingUtilities.invokeLater(r);
-            }
+            });
         }
     }
 
@@ -357,7 +384,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
     }
 
     private void setProjectLabel(final String name) {
-        SwingUtilities.invokeLater(new Runnable() {
+        runInAwt(new Runnable() {
             @Override
             public void run() {
                 lbl.setText(name);
@@ -366,6 +393,14 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
                 }
             }
         });
+    }
+
+    private void runInAwt(Runnable r) {
+        if(SwingUtilities.isEventDispatchThread()) {
+            r.run();
+        } else {
+            SwingUtilities.invokeLater(r);
+        }
     }
 
     private class MouseOverListener extends MouseAdapter {
