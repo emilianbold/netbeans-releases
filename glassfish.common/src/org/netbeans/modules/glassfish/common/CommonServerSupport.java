@@ -491,7 +491,7 @@ public class CommonServerSupport
     public Future<ResultString> restartServer(final int debugPort,
             boolean debug, TaskStateListener[] listeners) {
         if (-1 == debugPort) {
-            Command command = new CommandRestartDAS(false, false, false);
+            Command command = new CommandRestartDAS(false);
             return ServerAdmin.<ResultString>exec(
                     instance, command, null, listeners);
         }
@@ -523,7 +523,7 @@ public class CommonServerSupport
             LOGGER.log(Level.INFO,
                     "Could not retrieve property from server.", gfie);
         }
-        Command command = new CommandRestartDAS(debug, false, false);
+        Command command = new CommandRestartDAS(debug);
         return ServerAdmin.<ResultString>exec(
                 instance, command, null, listeners);
     }
