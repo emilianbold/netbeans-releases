@@ -41,88 +41,51 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.model.api.*;
-import org.openide.util.CharSequences;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.model.api.ElementFactory;
+import org.netbeans.modules.css.model.api.Media;
+import org.netbeans.modules.css.model.api.MediaBody;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.ModelTestBase;
+import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author marekfukala
  */
-public class MediaI extends ModelElement implements Media {
+public class MediaITest extends ModelTestBase {
 
-    private MediaQueryList mediaQueryList;
-    private MediaBody mediaBody;
-    
-    
-    private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
-
-        @Override
-        public void elementAdded(MediaQueryList value) {
-            mediaQueryList = value;
-        }
-
-        @Override
-        public void elementAdded(MediaBody value) {
-            mediaBody = value;
-        }
-
-    };
-
-    public MediaI(Model model) {
-        super(model);
-        
-        addTextElement("@media");
-        addTextElement(" ");
-        addEmptyElement(MediaQueryList.class);
-        addTextElement(" ");
-        addTextElement("{");
-        addEmptyElement(MediaBody.class);
-        addTextElement("}");
+    public MediaITest(String name) {
+        super(name);
     }
 
-    public MediaI(Model model, Node node) {
-        super(model, node);
-        initChildrenElements();
-    }
+    public void testResolvedProperty() throws BadLocationException, ParseException {
+        String code = "@media screen {}";
+        Model model = createModel(code);
+        StyleSheet styleSheet = getStyleSheet(model);
 
-    @Override
-    protected Class getModelClass() {
-        return Media.class;
-    }
+        Media m = styleSheet.getBody().getMedias().get(0);
+        assertNotNull(m);
+        assertNull(m.getMediaBody()); //no mediaBody element
 
-    @Override
-    protected ModelElementListener getElementListener() {
-        return elementListener;
-    }
+        ElementFactory ef = model.getElementFactory();
+        MediaBody mb = ef.createMediaBody();
+        mb.addRule(ef.createRule(ef.createSelectorsGroup(ef.createSelector(".clz")),
+                ef.createDeclarations(ef.createPropertyDeclaration(ef.createProperty("color"),
+                ef.createPropertyValue(ef.createExpression("red")), false))));
+        m.setMediaBody(mb);
 
-    @Override
-    public MediaQueryList getMediaQueryList() {
-        return mediaQueryList;
-    }
+        assertEquals("@media screen {\n"
+                + "\n"
+                + ".clz {\n"
+                + "    color: red;\n"
+                + "\n"
+                + "}\n"
+                + "\n"
+                + "\n"
+                + "}", model.getModelSource().toString());
 
-    @Override
-    public void setMediaQueryList(MediaQueryList mediaQueryList) {
-        setElement(mediaQueryList);
-    }
-
-    @Override
-    public MediaBody getMediaBody() {
-        return mediaBody;
-    }
-
-    @Override
-    public void setMediaBody(MediaBody mediaBody) {
-        //find the existing curly braces and put the element between them
-        for(int i = getElementsCount() - 1; i >= 0; i--) {
-            PlainElement e = getElementAt(i, PlainElement.class);
-            if(e != null && CharSequences.indexOf(e.getContent(), "}") != -1) {
-                //found the closing curly brace, put the mediaBody before it
-                insertElement(i, mediaBody);
-                return ;
-            }
-        }
-        throw new IllegalStateException("Can't found curly braces in Media element!"); //NOI18N
     }
 
 }
