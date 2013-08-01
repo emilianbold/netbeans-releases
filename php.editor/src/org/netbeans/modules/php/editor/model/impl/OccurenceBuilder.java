@@ -873,16 +873,12 @@ class OccurenceBuilder {
             elementInfo.setDeclarations(methods);
         } else {
             if (nodeInfo != null) {
-                if (scope instanceof VariableScope) {
-                    ASTNode originalNode = nodeInfo.getOriginalNode();
-                    if (originalNode instanceof VariableBase) {
-                        types.addAll(getClassName((VariableScope) scope, (VariableBase) originalNode));
-                    }
+                ASTNode originalNode = nodeInfo.getOriginalNode();
+                if (scope instanceof MethodScopeImpl && originalNode instanceof MethodDeclaration) {
+                    types.add((TypeElement) scope.getInScope());
+                } else if (scope instanceof VariableScope && originalNode instanceof VariableBase) {
+                    types.addAll(getClassName((VariableScope) scope, (VariableBase) originalNode));
                 }
-            }
-            if (scope instanceof MethodScopeImpl && nodeInfo != null && nodeInfo.getOriginalNode() instanceof MethodDeclaration) {
-                final Scope inScope = scope.getInScope();
-                types.add((TypeElement) inScope);
             }
 
             if (types.size() > 0) {
