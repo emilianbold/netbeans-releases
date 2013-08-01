@@ -58,7 +58,7 @@ public class MediaQueryI extends ModelElement implements MediaQuery {
 
     private MediaQueryOperator mediaQueryOperator;
     private MediaType mediaType;
-    private Collection<MediaExpression> mediaExpressions = new ArrayList<MediaExpression>();
+    private Collection<MediaExpression> mediaExpressions = new ArrayList<>();
     
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 

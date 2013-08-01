@@ -55,7 +55,7 @@ import org.netbeans.modules.css.model.api.MozDocumentFunction;
  */
 public class MozDocumentI extends ModelElement implements MozDocument {
 
-    private List<MozDocumentFunction> mozDocumentFunctions = new ArrayList<MozDocumentFunction>();
+    private List<MozDocumentFunction> mozDocumentFunctions = new ArrayList<>();
     private Body body;
     
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
