@@ -156,7 +156,7 @@ public class FormEditorOperatorTest extends JellyTestCase {
         FormDesignerOperator designer = new FormDesignerOperator(SAMPLE_FRAME);
         JFrameOperator myFrame = designer.previewForm(SAMPLE_FRAME.substring(0, SAMPLE_FRAME.indexOf('.')));
         myFrame.resize(400, 400);
-        myFrame.close();
+        myFrame.requestClose();
     }
 
     /** Closes java source together with form editor. */
