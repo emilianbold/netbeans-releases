@@ -2,25 +2,25 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Editor Options: Hints</title>
+<title>Editor Options: Code Templates</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="netbeans.optionsDialog.editor.hints" name="netbeans.optionsDialog.editor.hints"></a></p>
+<p><a id="netbeans.optionsDialog.editor.codeTemplates" name="netbeans.optionsDialog.editor.codeTemplates"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref8" name="sthref8"></a>
-<h1>Editor Options: Hints</h1>
+<h1>Editor Options: Code Templates</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>This tab enables you to customize hints and tips that help you as you type in the Source Editor. You can select which hints to display and whether to display hints as errors, warnings, or info. 
+<p>Use this tab to add, delete, or modify code templates. Code Templates are abbreviations that you type into the code and that the editor expands into code blocks. The templates include placeholder values. After you expand a code template, you go through the expanded block and replace the placeholder values. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG613">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2205">
 <param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>You can access this panel by choosing <b>Tools</b> &gt; <b>Options</b> from the main menu, and then clicking the <b>Hints</b> tab in the <b>Editor</b> category.</p>
-<p>You can set the following options:</p>
+<p>You can access this panel by choosing Tools &gt; Options from the main menu, and then clicking the <b>Code Templates</b> tab in the <b>Editor</b> category.</p>
+<p>You can modify the following elements:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -37,31 +37,31 @@
 <p>Language</p>
 </td>
 <td align="left" headers="r2c1-t11 r1c2-t11">
-<p>Select which language's hints you want to customize. The hints for the selected language appear in the tree view of hints.</p>
+<p>Select a language from the drop-down list to see the code templates available for that language.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t11" headers="r1c1-t11">
-<p>Tree view</p>
+<p>Templates</p>
 </td>
 <td align="left" headers="r3c1-t11 r1c2-t11">
-<p>Beneath the Language field is a tree view of the hints for that language. Tick a hint or group of hints for that hint or group of hints to display. When you select a hint, the Show As field for that hint is enabled, and a description of the hint appears in the Description field.</p>
+<p>The table displays the current code templates for the selected language. The fields in the table are read-only.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t11" headers="r1c1-t11">
-<p>Search</p>
+<p>Abbreviation</p>
 </td>
 <td align="left" headers="r4c1-t11 r1c2-t11">
-<p>Enabled only for Java hints. Type part of the hint name in the field, and the IDE filters the tree view of hints to include only relevant hints.</p>
+<p>The abbreviation for the expanded code.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t11" headers="r1c1-t11">
-<p>Show As</p>
+<p>Expanded Text</p>
 </td>
 <td align="left" headers="r5c1-t11 r1c2-t11">
-<p>For the selected hint, select whether to display the hint as an error, a warning, a warning on the current line, or as info.</p>
+<p>The code that the editor will generate when you type the abbreviation.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -69,7 +69,44 @@
 <p>Description</p>
 </td>
 <td align="left" headers="r6c1-t11 r1c2-t11">
-<p>Description of the selected hint. This field cannot be edited.</p>
+<p>A description of the template. (Optional)</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t11" headers="r1c1-t11">
+<p>Expanded Text</p>
+</td>
+<td align="left" headers="r7c1-t11 r1c2-t11">
+<p>This tab contains the expanded code. You can type in this text area to modifyan existing code template or when you create a new code template.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t11" headers="r1c1-t11">
+<p>Description</p>
+</td>
+<td align="left" headers="r8c1-t11 r1c2-t11">
+<p>This tab contains a description of the code template. You can type in this text area to modify or create a description for a code template.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t11" headers="r1c1-t11">
+<p>Expand Template On</p>
+</td>
+<td align="left" headers="r9c1-t11 r1c2-t11">
+<p>Select the key or key combination that is used to expand code template abbreviations. By default, press Tab to expand an abbreviation. You can change this to Shift, Shift-Space, or Enter.</p>
+<ul>
+<li>Test files ABCDE</li>
+<li>Test files ABCDE</li>
+<li>Test files ABCDE</li>
+</ul>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t11" headers="r1c1-t11">
+<p>On Template Expansion</p>
+</td>
+<td align="left" headers="r10c1-t11 r1c2-t11">
+<p>Select the formatting task that the IDE performs when you expand a code template abbreviation. By default, the IDE reformats the code. The IDE instead can only reindent the code or do no formatting.</p>
 </td>
 </tr>
 </tbody>
@@ -81,6 +118,14 @@
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG117">
 <param name="text" value="<html><u>&quot;Working with the Options Window&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG506">
+<param name="text" value="<html><u>&quot;Using Special Code Templates&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

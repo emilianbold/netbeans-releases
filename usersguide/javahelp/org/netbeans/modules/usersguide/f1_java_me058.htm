@@ -8,7 +8,7 @@
 
 <body>
 <p><a id="me.wcb_clientoptions" name="me.wcb_clientoptions"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref623" name="sthref623"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref624" name="sthref624"></a>
 <h1>New Java ME Client to Web Application: Generator Client Options Page</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use to generate a MIDP client and servlet that connects to a web application that includes a web service client. This type of connection utilizes three "tiers": client, web application with servlet, and server. The client communicates with the generated middleware servlet using a proprietary communication protocol. The servlet and server communicate using standard Simple Object Access Protocol (SOAP) messages. 
@@ -68,7 +68,7 @@
 <p>Generate stubs</p>
 </td>
 <td align="left" headers="r6c1-t60 r1c2-t60">
-<p>Generates stub (client-side proxy) methods on the client for each exported service. Method names are incorporated in the class name. Using HelloService for example, the sayHello() method is exported. The generated stub method creates a method on the client called example_HelloService_sayHello(). If this option is not selected, only one method is generated on the client.</p>
+<p>Generates stub (client-side proxy) methods on the client for each exported service. Method names are incorporated in the class name. Using HelloService for example, the <code>sayHello()</code> method is exported. The generated stub method creates a method on the client called <code>example_HelloService_sayHello()</code>. If this option is not selected, only one method is generated on the client.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -92,9 +92,9 @@
 <p>Generate grouped calls</p>
 </td>
 <td align="left" headers="r9c1-t60 r1c2-t60">
-<p>Generates additional code to support making multiple calls to server-side services in a single HTTP request and response. When turned on with the Generate Stub Methods option also turned on, a generated method is created on the client for each exported service with the stub method name ending in Grouped. Using HelloService for example, the sayHello() method is exported. The generated stub method creates a method on the client called example_HelloService_sayHelloGrouped().</p>
-<p>When the option is selected, the server is called only after several grouped calls are made and the getGroupedResults() method on the client class is called. All the method calls are invoked in a single HTTP request and response. Methods are invoked in the order they were called. Results are returned in an enumeration object.</p>
-<p>If a server call causes an exception, the exception is thrown when getGroupedResults() is called. When an exception is thrown in a sequence of grouped calls, the calls following the exception are not processed.</p>
+<p>Generates additional code to support making multiple calls to server-side services in a single HTTP request and response. When turned on with the Generate Stub Methods option also turned on, a generated method is created on the client for each exported service with the stub method name ending in Grouped. Using <code>HelloService</code> for example, the <code>sayHello()</code> method is exported. The generated stub method creates a method on the client called <code>example_HelloService_sayHelloGrouped()</code>.</p>
+<p>When the option is selected, the server is called only after several grouped calls are made and the <code>getGroupedResults()</code> method on the client class is called. All the method calls are invoked in a single HTTP request and response. Methods are invoked in the order they were called. Results are returned in an enumeration object.</p>
+<p>If a server call causes an exception, the exception is thrown when <code>getGroupedResults()</code> is called. When an exception is thrown in a sequence of grouped calls, the calls following the exception are not processed.</p>
 </td>
 </tr>
 <tr align="left" valign="top">

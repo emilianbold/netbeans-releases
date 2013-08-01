@@ -2,18 +2,18 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Save Dialog Box</title>
+<title>Properties Window</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="help_on_exit_dialog" name="help_on_exit_dialog"></a></p>
+<p><a id="org.netbeans.core.windows.view.ui.NbSheet" name="org.netbeans.core.windows.view.ui.NbSheet"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref48" name="sthref48"></a>
-<h1>Save Dialog Box</h1>
+<h1>Properties Window</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Save dialog box opens automatically if there are any files that contain changes that are not saved when you choose to quit the IDE. The dialog box displays a list of all files that contain changes that are not saved.</p>
-<p>To save some of the files in the list, select the files that you want to save and click Save. You can select multiple files in the dialog box. The IDE will quit only after the changes to the files in the list are either saved or discarded.</p>
-<p>The dialog box contains the following buttons.</p>
+<p>Most elements that can be represented by nodes in the Projects, Files, or Navigator windows, or in the Visual Debugger or Swing Design editor for JavaFX and Java GUIs, have properties that can be viewed in a property sheet. The Properties window displays the names and values of the properties of the currently selected node or element.</p>
+<p>To open the Properties window choose <b>Window</b> &gt; <b>IDE Tools</b> &gt; <b>Properties</b> (Ctrl-Shift-7).</p>
+<p>Depending on the type of element selected, you might see additional nodes for distinct categories of properties. The properties for the selected element are generally grouped into one or more of the following categories.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -27,40 +27,54 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t51" headers="r1c1-t51">
-<p>Cancel</p>
+<p>Properties</p>
 </td>
 <td align="left" headers="r2c1-t51 r1c2-t51">
-<p>Click Cancel if you do not want to quit the IDE. No files will be saved.</p>
+<p>Displays a list of the properties of the element. You can edit some of the properties by typing in the text field or selected an option from the dropdown list. Some properties are read-only.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t51" headers="r1c1-t51">
-<p>Save</p>
+<p>Text</p>
 </td>
 <td align="left" headers="r3c1-t51 r1c2-t51">
-<p>Click Save to save the selected file or files.</p>
+<p>Displays the text encoding for a file. This field is read-only.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t51" headers="r1c1-t51">
-<p>Save All</p>
+<p>Element Attributes</p>
 </td>
 <td align="left" headers="r4c1-t51 r1c2-t51">
-<p>Click Save All to save all the listed files and quit the IDE.</p>
+<p>Displays a list of the attributes of the element that you can edit by typing in the text field or selected an option from the dropdown list.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t51" headers="r1c1-t51">
-<p>Discard All</p>
+<p>Sorting</p>
 </td>
 <td align="left" headers="r5c1-t51 r1c2-t51">
-<p>Click Discard All to discard all changes in the files that are not saved and quit the IDE.</p>
+<p>Enables you to select how lists are ordered. Select a sort method from the dropdown list.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t51" headers="r1c1-t51">
+<p>Classpaths</p>
+</td>
+<td align="left" headers="r6c1-t51 r1c2-t51">
+<p>Displays the various classspaths for the selected element. This is read-only.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<p>You can edit the values of most properties in the Properties window. To change a property value, click the property's value field. The appearance of the field changes depending on the type of value required:</p>
+<ul>
+<li>If a string value is required, the field becomes a text field. You can type the new value directly in this field and press Enter.</li>
+<li>If a specific list of values is allowed, a drop-down arrow appears. You can click this arrow and select the value from the combo box that appears. You can also double-click the property name to rotate through the available values.</li>
+<li>If a property editor is available for that property, an ellipsis (...) button appears. You can click the ellipsis button to open the property editor.</li>
+</ul>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

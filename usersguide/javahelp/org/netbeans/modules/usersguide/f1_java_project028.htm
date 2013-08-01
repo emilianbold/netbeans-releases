@@ -2,14 +2,14 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Libraries Wizard: Actions</title>
+<title>New Libraries Wizard: Library Folder</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel2" name="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel2"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref216" name="sthref216"></a>
-<h1>New Libraries Wizard: Actions</h1>
+<p><a id="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel1" name="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel1"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref219" name="sthref219"></a>
+<h1>New Libraries Wizard: Library Folder</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use to set a folder to hold your Java classpath libraries or to hold references to those libraries. Setting a libraries folder makes it easier to share libraries among different users and projects. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -19,57 +19,7 @@
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>On the Actions page, you determine how each library is referenced. The simplest case is to have the libraries copied to that folder. You can also refer to the libraries in their existing location (with a relative path or an absolute path). If you have specified an existing folder, you also have the option of using copies of libraries that are already in that folder instead of the copies that are contained in the IDE's Ant Library Manager. For each library, the wizard tries to select the most suitable action.</p>
-
-<table summary="Descriptions of New Libraries wizards actions." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="38%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t25">Element</th>
-<th align="left" valign="bottom" id="r1c2-t25">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t25" headers="r1c1-t25">
-<p>Library JAR Files to New Libraries Folder</p>
-</td>
-<td align="left" headers="r2c1-t25 r1c2-t25">
-<p>Places library JAR files in the selected libraries folder.</p>
-<p>Use this option if the library is not in the folder that you have selected and you want to have the library JAR files placed there.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t25" headers="r1c1-t25">
-<p>Use Relative Path to Library JAR Files</p>
-</td>
-<td align="left" headers="r3c1-t25 r1c2-t25">
-<p>Accesses a library that is not in the libraries folder using a relative path.</p>
-<p>Use this option if the library is not in the libraries folder and you need to access the library in its existing location using a relative path. An entry with a relative reference is added for the library in the libraries folder's <code>nblibraries.properties</code> file.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t25" headers="r1c1-t25">
-<p>Use Absolute Path to Library JAR Files</p>
-</td>
-<td align="left" headers="r4c1-t25 r1c2-t25">
-<p>Accesses a library that is not in the libraries folder using an absolute path.</p>
-<p>Use this option if the library is not in the libraries folder and you need to access the library in its existing location using an absolute path. An entry with an absolute reference is added for the library in the libraries folder's <code>nblibraries.properties</code> file.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t25" headers="r1c1-t25">
-<p>Use Existing Library in Libraries Folder</p>
-</td>
-<td align="left" headers="r5c1-t25 r1c2-t25">
-<p>Uses the copy of the library that already exists in the libraries folder.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
+<p>On the New Library page, you set the folder. You can create a new folder or specify an existing folder that already contains copies of the libraries on which your project depends. You can reference the folder as a relative path or an absolute path. The default library folder location (<code>./lib</code>) is within your project folder at the same level as the <code>src</code>, <code>build</code>, and <code>dist</code> folders. You can change this to a location outside of the project, such as a folder that contains other projects.</p>
 <hr><p><b>Related Topics</b></p>
 <p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

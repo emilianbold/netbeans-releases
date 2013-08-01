@@ -2,30 +2,54 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Favorites Window</title>
+<title>Local History: Revert To Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.favorites.Tab" name="org.netbeans.modules.favorites.Tab"></a></p>
+<p><a id="org.netbeans.modules.localhistory.ui.revert.RevertFileChanges" name="org.netbeans.modules.localhistory.ui.revert.RevertFileChanges"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref57" name="sthref57"></a>
-<h1>Favorites Window</h1>
+<h1>Local History: Revert To Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Favorites window enables you to access any file on your computer or network without having to create a project for the file. You can open the Favorites window by choosing <b>Window</b> &gt; <b>Favorites</b> (Ctrl-3).</p>
-<p>When you first open the Favorites window, it only contains your computer's home directory. You can add any folder as a top-level folder to the Favorites window by right-clicking a folder in the window and choosing Add to Favorites or by right-clicking in the whitespace in the window and choosing Add to Favorites to open the Add to Favorites dialog box. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2070">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>Project-level commands, such as Run Project, are not available from the Favorites window. For such commands to be available, you need to have a project open in the Projects window.</p>
+<p>The Local History Revert To dialog box enables you to revert a current version of a file to a previous version, as maintained in the IDE's local history repository.</p>
+<p>You access this dialog box by right-clicking a file or folder in the Projects or Files window and choosing Local History &gt; Revert to.</p>
+<p>The dialog box is displays a two-column table presenting all previous versions of the selected file, listed in chronological order. You can revert to any version by selecting the corresponding table row and clicking Revert.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t60">Element</th>
+<th align="left" valign="bottom" id="r1c2-t60">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t60" headers="r1c1-t60">
+<p>Version</p>
+</td>
+<td align="left" headers="r2c1-t60 r1c2-t60">
+<p>Versions are arranged by date and named accordingly.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t60" headers="r1c1-t60">
+<p>Label</p>
+</td>
+<td align="left" headers="r3c1-t60 r1c2-t60">
+<p>Labels can be added to specific versions. To add a label to a version, click in the label text area for the corresponding version and type in a label.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG217">
-<param name="text" value="<html><u>&quot;Working with Source Files in NetBeans IDE&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG337">
+<param name="text" value="<html><u>&quot;About Local History&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

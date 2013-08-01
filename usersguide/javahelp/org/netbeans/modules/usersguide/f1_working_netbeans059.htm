@@ -2,24 +2,18 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Project Wizard: Choose Project</title>
+<title>Project Group: Create New Group Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.project.ui.ProjectTemplatePanel" name="org.netbeans.modules.project.ui.ProjectTemplatePanel"></a></p>
+<p><a id="org.netbeans.modules.project.ui.groups.GroupsMenu" name="org.netbeans.modules.project.ui.groups.GroupsMenu"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref61" name="sthref61"></a>
-<h1>New Project Wizard: Choose Project</h1>
+<h1>Project Group: Create New Group Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You use the New Project wizard to create a new IDE project. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG208">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>To open the New Project wizard, choose <b>File</b> &gt; <b>New Project</b> (Ctrl-Shift-N). Select a template category and a project template and click Next.</p>
+<p>The Create New Group dialog box enables you to create groupings of projects so that you can open and close several projects at once. In addition, each group can have a different main project.</p>
+<p>You can open the Create New Group dialog box by choosing <b>File</b> &gt; <b>Project Group</b> &gt; <b>New Group</b>.</p>
+<p>You can use the dialog box to create the following types of groups:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -33,26 +27,43 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t63" headers="r1c1-t63">
-<p>Categoris</p>
+<p>Free Group</p>
 </td>
 <td align="left" headers="r2c1-t63 r1c2-t63">
-<p>Displays a list of the categories of projects grouped by technology. This categories in the list are determined by the plugins that are enabled in the IDE.</p>
+<p>When you create a free group, you can choose either of the following options:</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t63" headers="r1c1-t63">
-<p>Projects</p>
+<p>Use Currently Open Projects</p>
 </td>
 <td align="left" headers="r3c1-t63 r1c2-t63">
-<p>Displays a list of project templates available for the selected project category.</p>
+<p>Adds the currently open projects to the group.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t63" headers="r1c1-t63">
-<p>Description</p>
+<p>Automatically Save Project List</p>
 </td>
 <td align="left" headers="r4c1-t63 r1c2-t63">
-<p>A short description of the selected project template.</p>
+<p>Changes the contents of the project group according to the projects that you open and close when the project group is open.</p>
+<p>Deselect this option if you do not want the contents of a free group to change as you open and close projects.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t63" headers="r1c1-t63">
+<p>Project and All Required Projects</p>
+</td>
+<td align="left" headers="r5c1-t63 r1c2-t63">
+<p>Creates a group that consists of a master project and all of the projects that it depends on.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t63" headers="r1c1-t63">
+<p>Folder of Projects.</p>
+</td>
+<td align="left" headers="r6c1-t63 r1c2-t63">
+<p>Creates a group out of all of the projects that are within a folder you specify.</p>
 </td>
 </tr>
 </tbody>

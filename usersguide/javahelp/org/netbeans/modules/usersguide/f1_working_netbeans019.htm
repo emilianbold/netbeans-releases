@@ -2,18 +2,18 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Options Window: Miscellaneous: Versioning</title>
+<title>Options Window: Miscellaneous: Output</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.versioning.util.VcsAdvancedOptions" name="org.netbeans.modules.versioning.util.VcsAdvancedOptions"></a></p>
+<p><a id="netbeans.optionsDialog.advanced.output" name="netbeans.optionsDialog.advanced.output"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref21" name="sthref21"></a>
-<h1>Options Window: Miscellaneous: Versioning</h1>
+<h1>Options Window: Miscellaneous: Output</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You use this panel to configure VCS-specific parameters that affect the behavior of Git, Local History, Mercurial, and Subversion in the IDE.</p>
-<p>You access this panel by choosing <b>Tools</b> &gt; <b>Options</b> from the main menu, then selecting the <b>Versioning</b> tab in the <b>Miscellaneous</b> category.</p>
-<p>After you select the versioning system you can specify the following options:</p>
+<p>You use this panel to specify the display options of the Output window. The preview pane at the bottom of the window displays sample text that reflects the changes you make to the settings.</p>
+<p>You can access this panel by choosing <b>Tools</b> &gt; <b>Options</b> from the main menu and clicking the <b>Output</b> tab in the <b>Miscellaneous</b> category of the Options window.</p>
+<p>You can set the following options for Output Window Settings:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -27,135 +27,83 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t25" headers="r1c1-t25">
-<p>Versioning Systems</p>
+<p>Restore</p>
 </td>
 <td align="left" headers="r2c1-t25 r1c2-t25">
-<p>To make changes to settings for Git, Local History, Mercurial, or Subversion, select the appropriate versioning tool from the list. Available settings immediately display within the window.</p>
+<p>Click Restore to change the IDE's settings for the Output window to the default settings.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t25" headers="r1c1-t25">
-<p>General</p>
+<p>Font</p>
 </td>
-<td align="left" headers="r3c1-t25 r1c2-t25"></td>
+<td align="left" headers="r3c1-t25 r1c2-t25">
+<p>Click the Browse button to select the display font.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t25" headers="r1c1-t25">
-<p>Disconnected Repositories</p>
+<p>Font Chooser (...)</p>
 </td>
 <td align="left" headers="r4c1-t25 r1c2-t25">
-<p>Displays when General is selected in the Versioning Systems list.</p>
-<p>To disconnect a repository from a version control system, select the required versioning tool in the Versioning System drop-down list, and specify the repository folder after clicking Add.</p>
-<p>To reconnect a disconnected repository folder, select the appropriate folder in the Disconnected Folders list and click Remove.</p>
+<p>Specify the preferred font family, style, and size.</p>
+<p>Font settings apply to tabs that are not wrapped only. Wrapped tabs always use a fixed-width font family.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t25" headers="r1c1-t25">
-<p>History</p>
+<p>Font size</p>
 </td>
 <td align="left" headers="r5c1-t25 r1c2-t25">
-<p>When selected you can modify the options that affect the History view of files in the Editor.</p>
+<p>Use the arrows to set the size of the display font or type in the text field.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t25" headers="r1c1-t25">
-<p>Local History</p>
+<p>Background Color</p>
 </td>
 <td align="left" headers="r6c1-t25 r1c2-t25">
-<p>Define the options to be applied to the IDE built-in versioning support for local projects and files. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG346">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Select a background color from the list or select Custom in the list to pick a custom color.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t25" headers="r1c1-t25">
-<p>Remove Local History files older than x days</p>
+<p>Standard Color</p>
 </td>
 <td align="left" headers="r7c1-t25 r1c2-t25">
-<p>Set the maximum age of local history files before the IDE deletes them. You must enter a whole number. The default value is 7.</p>
+<p>Select a foreground color from the list or select Custom in the list to pick a custom color.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r8c1-t25" headers="r1c1-t25">
-<p>Only remove revisions without a label</p>
+<p>Error Color</p>
 </td>
 <td align="left" headers="r8c1-t25 r1c2-t25">
-<p>Check this box and the IDE will not delete Local History versions that you labeled. To label a version of a file, open the Local History view of the file, select the version, and type something in the label field.</p>
+<p>Select a standard error foreground color from the list or select Custom in the list to pick a custom color.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r9c1-t25" headers="r1c1-t25">
-<p>Never remove Local History files</p>
+<p>Link Color</p>
 </td>
 <td align="left" headers="r9c1-t25 r1c2-t25">
-<p>Select this option and the IDE will never delete file versions in local history. Note that this can add up to a lot of disk space over time.</p>
+<p>Select a links foreground color from the list or select Custom in the list to pick a custom color.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r10c1-t25" headers="r1c1-t25">
-<p>Versioning History</p>
+<p>Important Link Color</p>
 </td>
 <td align="left" headers="r10c1-t25 r1c2-t25">
-<p>Define the options to be applied to versioning control systems that the IDE supports.</p>
+<p>Select an important links foreground color from the list or select Custom in the list to pick a custom color.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r11c1-t25" headers="r1c1-t25">
-<p>Increments for loading revisions x days</p>
+<p>Link Style</p>
 </td>
 <td align="left" headers="r11c1-t25 r1c2-t25">
-<p>Select to retrieve the versioning history for the specified amount of days. The default value is 30.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r12c1-t25" headers="r1c1-t25">
-<p>Load all revisions</p>
-</td>
-<td align="left" headers="r12c1-t25 r1c2-t25">
-<p>Select to retrieve all revisions made to a versioning control system.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r13c1-t25" headers="r1c1-t25">
-<p>Git</p>
-</td>
-<td align="left" headers="r13c1-t25 r1c2-t25">
-<p>When selected you can modify the global options for the Git versioning system. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG272">
-<param name="text" value="<html><u>More</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r14c1-t25" headers="r1c1-t25">
-<p>Mercurial</p>
-</td>
-<td align="left" headers="r14c1-t25 r1c2-t25">
-<p>When selected you can modify the global options for the Mercurial versioning system. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG336">
-<param name="text" value="<html><u>More</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r15c1-t25" headers="r1c1-t25">
-<p>Subversion</p>
-</td>
-<td align="left" headers="r15c1-t25 r1c2-t25">
-<p>When selected you can modifythe global options for the Subversion versioning system.</p>
+<p>By default, links are underlined. Specify the preferred link style.</p>
 </td>
 </tr>
 </tbody>
@@ -163,30 +111,6 @@
 <br />
 <!-- -->
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG237">
-<param name="text" value="<html><u>&quot;Versioning Applications with Git&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG274">
-<param name="text" value="<html><u>&quot;Versioning Applications with Subversion&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG318">
-<param name="text" value="<html><u>&quot;Versioning Applications with Mercurial&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG117">

@@ -2,18 +2,50 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Login to netbeans.org Dialog Box</title>
+<title>Shelved Changes Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.bugzilla.NBLoginPanel" name="org.netbeans.modules.bugzilla.NBLoginPanel"></a></p>
+<p><a id="org.netbeans.modules.versioning.shelve.impl.UnshelveChangesAction" name="org.netbeans.modules.versioning.shelve.impl.UnshelveChangesAction"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref66" name="sthref66"></a>
-<h1>Login to netbeans.org Dialog Box</h1>
+<h1>Shelved Changes Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>This dialog box opens when you choose to submit an issue with NetBeans IDE and you are not logged in to netbeans.org.</p>
-<p>You can report a problem with NetBeans IDE and submit an issue to the netbeans.org issue tracker by choosing Help &gt; Report Issue from the main menu. To report an issue from the IDE you need to have an account at netbeans.org and you must be logged in. After you log in, you can submit an issue in the New Issue window.</p>
-<p>If you do not have an account, you can click the link in the dialog box to open netbeans.org in your browser and create an account.</p>
+<p>The Shelved Changes dialog box enables you to get the temporarily shelved changes back into a working directory.</p>
+<p>You access this dialog box by choosing <b>Team</b> &gt; <b>Shelve</b> &gt; <b>Unshelve Changes</b> from the main menu.</p>
+<p>When you click Unshelve Changes, the IDE gets the changes shelved in a patch file back into the working directory. When you click Remove Patch, the IDE deletes the selected patch file with the shelved changes from the storage folder.</p>
+<p>To define the patch to be unshelved, you need to specify the following options:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t68">Element</th>
+<th align="left" valign="bottom" id="r1c2-t68">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t68" headers="r1c1-t68">
+<p>Patches</p>
+</td>
+<td align="left" headers="r2c1-t68 r1c2-t68">
+<p>Choose the name of a patch you want to unshelve.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t68" headers="r1c1-t68">
+<p>Keep Patch File</p>
+</td>
+<td align="left" headers="r3c1-t68 r1c2-t68">
+<p>When selected, the shelved patch file is not removed from the patch storage folder.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

@@ -2,17 +2,24 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Editor Options: Code Completion</title>
+<title>Editor Options: Formatting</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="netbeans.optionsDialog.editor.codeCompletion" name="netbeans.optionsDialog.editor.codeCompletion"></a></p>
+<p><a id="netbeans.optionsDialog.editor.indentation" name="netbeans.optionsDialog.editor.indentation"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref6" name="sthref6"></a>
-<h1>Editor Options: Code Completion</h1>
+<h1>Editor Options: Formatting</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>As you type in the Source Editor, you can use the IDE's code completion feature to find code snippets and have them filled in for you automatically. In this tab, you can customize code completion. Some code completion properties apply to all languages, while others are language-specific.</p>
-<p>You can access this panel by choosing Tools &gt; Options from the main menu, and then clicking the <b>Code Completion</b> tab in the <b>Editor</b> category.</p>
+<p>This tab enables you to define the formatting style you want to apply to your source files in the editor. The settings in this panel apply globally. Some options apply to all languages while others are language-specific. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2297">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>You can access this panel by choosing Tools &gt; Options from the main menu, and then clicking the <b>Formatting</b> tab in the <b>Editor</b> category.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -29,406 +36,228 @@
 <p>Language</p>
 </td>
 <td align="left" headers="r2c1-t5 r1c2-t5">
-<p>The language whose global formatting options you want to edit.</p>
+<p>Select a language from the dropdown list modify the formatting settings for the selected language. The languages that are available in the dropdown list will depend upon the languages that are enabled in your IDE installation.</p>
+<p>All Languages refers to all languages except C++.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t5" headers="r1c1-t5">
-<p>All Languages</p>
+<p>Category</p>
 </td>
 <td align="left" headers="r3c1-t5 r1c2-t5">
-<p>All languages except C++.</p>
+<p>Select a category from the dropdown list. If you selected All Languages, the only Category of options is Tabs and Indents.</p>
+<p>The categories that are available in the dropdown list depend upon the language that is selected.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t5" headers="r1c1-t5">
-<p>HTML</p>
+<p>Tabs and Indents</p>
 </td>
 <td align="left" headers="r4c1-t5 r1c2-t5">
-<p>Formatting options that are specific to HTML.</p>
+<p>Select this category to specify the values for tabs and indentations in the editor.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t5" headers="r1c1-t5">
-<p>Java</p>
+<p>Use All Languages Settings</p>
 </td>
 <td align="left" headers="r5c1-t5 r1c2-t5">
-<p>Formatting options that are specific to Java.</p>
+<p>When selected the source editor uses the values for tabs and spaces that are specified for All Languages.</p>
+<p>This option is only available when a specific language is selected.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t5" headers="r1c1-t5">
-<p>PHP</p>
+<p>Expand Tabs to Spaces</p>
 </td>
 <td align="left" headers="r6c1-t5 r1c2-t5">
-<p>Formatting options that are specific to PHP. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1978">
-<param name="text" value="<html><u>More</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>When selected, inserts spaces when the Tab key is typed. When unselected, typing the Tab key inserts the tab character (\t) into the file if possible. It also replaces preceding spaces with the tab character if possible. The Source Editor calculates where to place tab characters based on the value of the Tab Size property.</p>
+<p>If Expand Tabs to Spaces is unselected and the Number of Spaces per Indent is different than the Tab Size property, the indentation created by typing the Tab key is made up of a combination of spaces and tab characters. It is easiest to predict the location of tab characters if you set Number of Spaces per Indent to an even multiple or divisor of Tab Size.</p>
+<p>Important: This feature does not convert existing tabs to spaces. Only tabs that you add after you enable this option are converted.</p>
 </td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t5" headers="r1c1-t5">
+<p>Number of Spaces per Indent</p>
+</td>
+<td align="left" headers="r7c1-t5 r1c2-t5">
+<p>Number of spaces per indentation level for sub-elements, new lines inside brackets, etc.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t5" headers="r1c1-t5">
+<p>Tab size</p>
+</td>
+<td align="left" headers="r8c1-t5 r1c2-t5">
+<p>See the description of Expand Tabs to Spaces, above.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t5" headers="r1c1-t5">
+<p>Right Margin</p>
+</td>
+<td align="left" headers="r9c1-t5 r1c2-t5">
+<p>Specifies the position of the vertical red line that indicates the right margin. The default is 80 characters.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t5" headers="r1c1-t5">
+<p>Line Wrap</p>
+</td>
+<td align="left" headers="r10c1-t5 r1c2-t5">
+<p>Whether lines are wrapped when they are longer than the width of the Editor window (no relationship to right margin). You can select from the following options.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t5" headers="r1c1-t5">
+<p>Off</p>
+</td>
+<td align="left" headers="r11c1-t5 r1c2-t5">
+<p>No line wrapping (default).</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t5" headers="r1c1-t5">
+<p>After words</p>
+</td>
+<td align="left" headers="r12c1-t5 r1c2-t5">
+<p>Words are not broken by line wrapping.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r13c1-t5" headers="r1c1-t5">
+<p>Anywhere</p>
+</td>
+<td align="left" headers="r13c1-t5 r1c2-t5">
+<p>Lines are broken in the middle of words by line wrapping.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r14c1-t5" headers="r1c1-t5">
+<p>Alignment</p>
+</td>
+<td align="left" headers="r14c1-t5 r1c2-t5">
+<p>Select this category to specify which elements should be aligned after a line break.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r15c1-t5" headers="r1c1-t5">
+<p>New Lines</p>
+</td>
+<td align="left" headers="r15c1-t5 r1c2-t5">
+<p>The IDE breaks lines before any elements you select here.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r16c1-t5" headers="r1c1-t5">
+<p>Group Multiline Alignment</p>
+</td>
+<td align="left" headers="r16c1-t5 r1c2-t5">
+<p>Aligns the selected character horizontally across all lines in a group. A group is defined as a number of lines that contain the same type of assignments. The group can be terminated by an empty line, a line with only a comment, a different expression, or the end of a block.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r17c1-t5" headers="r1c1-t5">
+<p>Assignment</p>
+</td>
+<td align="left" headers="r17c1-t5 r1c2-t5">
+<p>Affects position of the equal sign character = in a group of lines with assignments. When you set this to 'on', the assignment char '=' is aligned after the longest identifier in a group. This formatting option works for variable assignments, field initializations, and constants.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r18c1-t5" headers="r1c1-t5">
+<p>Array Initializer</p>
+</td>
+<td align="left" headers="r18c1-t5 r1c2-t5">
+<p>Affects position of the initializer characters =&gt; in a group of lines.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r19c1-t5" headers="r1c1-t5">
+<p>Multiline Alignment</p>
+</td>
+<td align="left" headers="r19c1-t5 r1c2-t5">
+<p>Use if you set lines to wrap automatically at an element and you want that element to be aligned vertically.</p>
+<p>Requires that <b>wrapping</b> is enabled for the element before you select the element in this dialog.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r20c1-t5" headers="r1c1-t5">
+<p>Braces</p>
+</td>
+<td align="left" headers="r20c1-t5 r1c2-t5">
+<p>Select where to place the braces for each type of statement listed in this dialog. Use the Format function (Alt+Shift+F) to apply the Braces settings to a PHP document.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r21c1-t5" headers="r1c1-t5">
+<p>Blank Lines</p>
+</td>
+<td align="left" headers="r21c1-t5 r1c2-t5">
+<p>Improves readability by setting off sections of code that are logically related according to the specified options. Select the number of blank lines to place in the listed positions.</p>
+<p>In the PHP editor, you also have the option to Group Fields Without PHP Doc. This is selected by default. When you select this option, there are no blank lines between fields that do not have PHPDoc documentation.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r22c1-t5" headers="r1c1-t5">
+<p>Spaces</p>
+</td>
+<td align="left" headers="r22c1-t5 r1c2-t5">
+<p>In this panel, set where the IDE automatically puts whitespaces. Due to the large number of possible places to put whitespaces, the places to put whitespaces are displayed in a tree of categories. Expand a tree node to see the places under a category, or collapse a node to hide the places under a category.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r23c1-t5" headers="r1c1-t5">
+<p>Wrapping</p>
+</td>
+<td align="left" headers="r23c1-t5 r1c2-t5">
+<p>In this panel set the rules for the IDE to wrap lines automatically. The panel lists the possible elements before which the IDE wraps lines. For each element you can have the IDE never wrap lines, always wrap lines, or wrap lines if the statement is long (wider than the Editor window).</p>
+<p>You can also have the IDE automatically wrap lines after opening and before closing block braces, and between statements that are typed on the same line. Both of these options are enabled by default.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r24c1-t5" headers="r1c1-t5">
+<p>Uses</p>
+</td>
+<td align="left" headers="r24c1-t5 r1c2-t5">
+<p>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r25c1-t5" headers="r1c1-t5">
+<p>Comments</p>
+</td>
+<td align="left" headers="r25c1-t5 r1c2-t5">
+<p>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r26c1-t5" headers="r1c1-t5">
+<p>Imports</p>
+</td>
+<td align="left" headers="r26c1-t5 r1c2-t5">
+<p>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r27c1-t5" headers="r1c1-t5">
+<p>Naming</p>
+</td>
+<td align="left" headers="r27c1-t5 r1c2-t5">
+<p>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r28c1-t5" headers="r1c1-t5">
+<p>Ordering</p>
+</td>
+<td align="left" headers="r28c1-t5 r1c2-t5"></td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>The following code completion options are available when you select <b>All Languages</b> as the language and apply to all languages, where applicable.</p>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t6">Element</th>
-<th align="left" valign="bottom" id="r1c2-t6">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t6" headers="r1c1-t6">
-<p>Auto Popup Completion Window</p>
-</td>
-<td align="left" headers="r2c1-t6 r1c2-t6">
-<p>When selected, enables the editor to display a code completion box with options for how to complete an expression.</p>
-<p>This property applies only to editor types that support code completion, such as Java, HTML, and JSP.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t6" headers="r1c1-t6">
-<p>Auto Popup Documentation Window</p>
-</td>
-<td align="left" headers="r3c1-t6 r1c2-t6">
-<p>When selected, the documentation window appears automatically, otherwise only if it is invoked explicitly (Ctrl-Shift-Space, by default).</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t6" headers="r1c1-t6">
-<p>Display Documentation Next to Completion</p>
-</td>
-<td align="left" headers="r4c1-t6 r1c2-t6">
-<p>Specifies that the code completion window appears next to, rather than above/below, the related code.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t6" headers="r1c1-t6">
-<p>Insert Single Proposals Automatically</p>
-</td>
-<td align="left" headers="r5c1-t6 r1c2-t6">
-<p>When selected, the code completion box does not appear when the IDE is aware of only one possible completion for the expression. The expression is completed automatically, but only if you invoke code completion explicitly, not if you simply type "." behind an identifier.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t6" headers="r1c1-t6">
-<p>Case Sensitive Code Completion</p>
-</td>
-<td align="left" headers="r6c1-t6 r1c2-t6">
-<p>If selected, the code completion box only displays results that match the case of the expression that you are typing.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t6" headers="r1c1-t6">
-<p>Show Deprecated Members in Code Completion</p>
-</td>
-<td align="left" headers="r7c1-t6 r1c2-t6">
-<p>If selected, any deprecrated class elements that are available are shown in the completion box. Deprecated members are struck through with a line to indicate that they are deprecated.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t6" headers="r1c1-t6">
-<p>Insert Closing Brackets Automatically</p>
-</td>
-<td align="left" headers="r8c1-t6 r1c2-t6">
-<p>When selected, the Source Editor generates the closing parenthesis, bracket, brace, or quotation mark after you type the first one.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<p>The following code completion options are available when you select <b>HTML</b> as the language and apply only to HTML files.</p>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t7">Element</th>
-<th align="left" valign="bottom" id="r1c2-t7">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t7" headers="r1c1-t7">
-<p>Auto Popup Completion Window</p>
-</td>
-<td align="left" headers="r2c1-t7 r1c2-t7">
-<p>When selected, enables the editor to display a code completion box with options for how to complete an expression.</p>
-<p>This property applies only to editor types that support code completion, such as Java, HTML, and JSP.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t7" headers="r1c1-t7">
-<p>Equals-sign (=) Keypress After Attribute Name Autocompletes Quote Set</p>
-</td>
-<td align="left" headers="r3c1-t7 r1c2-t7">
-<p>If you type an HTML tag with an attribute name, like <code>&lt;img src</code>, and then type <code>=</code>, the IDE adds a pair of quote tags and places your cursor between the quote tags. So if you type &lt;img src=, the IDE expands this to &lt;img src="|". Enabled by default.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t7" headers="r1c1-t7">
-<p>Display Documentation Next to Completion</p>
-</td>
-<td align="left" headers="r4c1-t7 r1c2-t7">
-<p>Specifies that the code completion window appears next to, rather than above/below, the related code.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t7" headers="r1c1-t7">
-<p>Insert Single Proposals Automatically</p>
-</td>
-<td align="left" headers="r5c1-t7 r1c2-t7">
-<p>When selected, the code completion box does not appear when the IDE is aware of only one possible completion for the expression. The expression is completed automatically, but only if you invoke code completion explicitly, not if you simply type "." behind an identifier.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t7" headers="r1c1-t7">
-<p>Case Sensitive Code Completion</p>
-</td>
-<td align="left" headers="r6c1-t7 r1c2-t7">
-<p>If selected, the code completion box only displays results that match the case of the expression that you are typing.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t7" headers="r1c1-t7">
-<p>Show Deprecated Members in Code Completion</p>
-</td>
-<td align="left" headers="r7c1-t7 r1c2-t7">
-<p>If selected, any deprecrated class elements that are available are shown in the completion box. Deprecated members are struck through with a line to indicate that they are deprecated.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t7" headers="r1c1-t7">
-<p>Insert Closing Brackets Automatically</p>
-</td>
-<td align="left" headers="r8c1-t7 r1c2-t7">
-<p>When selected, the Source Editor generates the closing parenthesis, bracket, brace, or quotation mark after you type the first one.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<p>The following code completion options are available when you select <b>Java</b> as the language and apply only to Java files.</p>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t8">Element</th>
-<th align="left" valign="bottom" id="r1c2-t8">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t8" headers="r1c1-t8">
-<p>Guess Filled Method Arguments</p>
-</td>
-<td align="left" headers="r2c1-t8 r1c2-t8">
-<p>When selected, enables the editor to insert a variable available in the current context as the method argument. Enabled by default.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t8" headers="r1c1-t8">
-<p>Auto Popup Triggers for Java</p>
-</td>
-<td align="left" headers="r3c1-t8 r1c2-t8">
-<p>Specify the patterns upon which code completion appears. For example, a new dot can trigger code completion, so that related method parameters are shown.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t8" headers="r1c1-t8">
-<p>Auto Popup on Typing Any Java Identifier Part</p>
-</td>
-<td align="left" headers="r4c1-t8 r1c2-t8">
-<p>If this option is enabled, code completion is shown when a new Java identifier part is entered.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t8" headers="r1c1-t8">
-<p>Completion Selectors for Java</p>
-</td>
-<td align="left" headers="r5c1-t8 r1c2-t8">
-<p>Specify the characters that confirm the current selection in the code completion box. When one of the selectors is pressed, the current item in the code completion box is selected and entered in the editor, with the selector appearing after it.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t8" headers="r1c1-t8">
-<p>Subword completion</p>
-</td>
-<td align="left" headers="r6c1-t8 r1c2-t8">
-<p>Enables code completion of subwords when selected.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t8" headers="r1c1-t8">
-<p>Packages/classes</p>
-</td>
-<td align="left" headers="r7c1-t8 r1c2-t8">
-<p>Enables you to limit what is shown in the code completion box.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t8" headers="r1c1-t8">
-<p>Exclude</p>
-</td>
-<td align="left" headers="r8c1-t8 r1c2-t8">
-<p>Define which packages, classes, or methods must be excluded from code completion. Click Add to specify, Edit to modify, or Remove to delete an excluded pattern.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t8" headers="r1c1-t8">
-<p>Include</p>
-</td>
-<td align="left" headers="r9c1-t8 r1c2-t8">
-<p>Define which packages, classes, or methods must be included into code completion. Click Add to specify, Edit to modify, or Remove to delete an included pattern.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r10c1-t8" headers="r1c1-t8">
-<p>Apply rules to methods</p>
-</td>
-<td align="left" headers="r10c1-t8 r1c2-t8">
-<p>When selected, enables the editor to apply the specified excluded and included patterns to methods.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r11c1-t8" headers="r1c1-t8">
-<p>Auto Popup Triggers for Javadoc</p>
-</td>
-<td align="left" headers="r11c1-t8 r1c2-t8">
-<p>Specify the patterns upon which the code completion box prompts inside Javadoc comments.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<p>The following code completion options are available when you select <b>PHP</b> as the language and apply only to PHP files.</p>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t9">Element</th>
-<th align="left" valign="bottom" id="r1c2-t9">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t9" headers="r1c1-t9">
-<p>Enable Auto Popup Completion Window</p>
-</td>
-<td align="left" headers="r2c1-t9 r1c2-t9">
-<p>Enables the editor to display a code completion box with options for how to complete an expression. Decide the circumstances under which the completion window opens from the following options:</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t9" headers="r1c1-t9">
-<p>All Possible Situations</p>
-</td>
-<td align="left" headers="r3c1-t9 r1c2-t9">
-<p>The auto popup completion window opens whenever it can be of use.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t9" headers="r1c1-t9">
-<p>Customize</p>
-</td>
-<td align="left" headers="r4c1-t9 r1c2-t9">
-<p>Select the Customize option and then tick the boxes for the circumstances under which the auto popup completion window opens. If you select Customize and do not select any of the circumstances under Customize, the auto popup completion window will never open.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t9" headers="r1c1-t9">
-<p>Code Completion for Class Methods</p>
-</td>
-<td align="left" headers="r5c1-t9 r1c2-t9">
-<p>Select the class methods that prompt a code completion window.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t9" headers="r1c1-t9">
-<p>Also Static Methods after "-&gt;"</p>
-</td>
-<td align="left" headers="r6c1-t9 r1c2-t9">
-<p>Selected by default.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t9" headers="r1c1-t9">
-<p>Also Non-static Methods after "::"</p>
-</td>
-<td align="left" headers="r7c1-t9 r1c2-t9">
-<p>Disabled by default.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t9" headers="r1c1-t9">
-<p>Use Smart Parameters Pre-Filling</p>
-</td>
-<td align="left" headers="r8c1-t9 r1c2-t9">
-<p>Code completion suggests valid variables (of desired type), so you don't have to rewrite method calls every time you use code completion. Enabled by default.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t9" headers="r1c1-t9">
-<p>Code Completion for Variables</p>
-</td>
-<td align="left" headers="r9c1-t9 r1c2-t9">
-<p>Select to have code completion for all variables (default) or only variables in the local file.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r10c1-t9" headers="r1c1-t9">
-<p>Type of Code Completion (PHP 5.3 only)</p>
-</td>
-<td align="left" headers="r10c1-t9 r1c2-t9">
-<p>Select which type of code completion to use when referring to classes:</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r11c1-t9" headers="r1c1-t9">
-<p>Smart</p>
-</td>
-<td align="left" headers="r11c1-t9 r1c2-t9">
-<p>Uses partially qualified names according to namespace declarations. Default.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r12c1-t9" headers="r1c1-t9">
-<p>Fully Qualified</p>
-</td>
-<td align="left" headers="r12c1-t9 r1c2-t9">
-<p>Always use fully qualified names regardless of namespace declarations.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r13c1-t9" headers="r1c1-t9">
-<p>Unqualified</p>
-</td>
-<td align="left" headers="r13c1-t9 r1c2-t9">
-<p>Always use names without namespaces.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
+<p>The Preview pane displays how the applied changes will appear in the Source Editor.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

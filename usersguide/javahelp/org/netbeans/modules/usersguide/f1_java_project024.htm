@@ -2,31 +2,167 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Standard Java SE Project Properties Dialog Box: Disabled Web Service Clients</title>
+<title>Standard Java SE Project Properties Dialog Box: Web Service Clients</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHostDisabled" name="org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHostDisabled"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref212" name="sthref212"></a>
-<h1>Standard Java SE Project Properties Dialog Box: Disabled Web Service Clients</h1>
+<!-- infolevel="all" infotype="General" --><a id="sthref215" name="sthref215"></a>
+<h1>Standard Java SE Project Properties Dialog Box: Web Service Clients</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use to preconfigure the features that are used by the JAX-RPC <code>wscompile</code> tool to compile a web service client. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG373">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1851">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>If you have not created any web service clients, this page is empty. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1893">
-<param name="text" value="<html><u>More</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>You open the Standard Java SE Project Properties dialog box by right-clicking any standard Java SE project and choosing <b>Properties</b>.</p>
+
+<table summary="Descriptions of Web Service Client features" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="38%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t23">Features</th>
+<th align="left" valign="bottom" id="r1c2-t23">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t23" headers="r1c1-t23">
+<p><code>datahandleronly</code></p>
+</td>
+<td align="left" headers="r2c1-t23 r1c2-t23">
+<p>Maps attachments to the <code>DataHandler</code> type.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t23" headers="r1c1-t23">
+<p><code>donotoverride</code></p>
+</td>
+<td align="left" headers="r3c1-t23 r1c2-t23">
+<p>Does not allow regeneration of classes that already exist on the classpath.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t23" headers="r1c1-t23">
+<p><code>donounwrap</code></p>
+</td>
+<td align="left" headers="r4c1-t23 r1c2-t23">
+<p>Disables unwrapping of document/literal wrapper elements in WSI mode (default)..</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t23" headers="r1c1-t23">
+<p><code>explicitcontext</code></p>
+</td>
+<td align="left" headers="r5c1-t23 r1c2-t23">
+<p>Turns on explicit service context mapping.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t23" headers="r1c1-t23">
+<p><code>jaxbenumtype</code></p>
+</td>
+<td align="left" headers="r6c1-t23 r1c2-t23">
+<p>Maps anonymous enumeration to its base type.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t23" headers="r1c1-t23">
+<p><code>nodatabinding</code></p>
+</td>
+<td align="left" headers="r7c1-t23 r1c2-t23">
+<p>Turns off data binding for literal encoding</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t23" headers="r1c1-t23">
+<p><code>noencodedtypes</code></p>
+</td>
+<td align="left" headers="r8c1-t23 r1c2-t23">
+<p>Turns off encoding type information.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t23" headers="r1c1-t23">
+<p><code>nomultirefs</code></p>
+</td>
+<td align="left" headers="r9c1-t23 r1c2-t23">
+<p>Turns off support for multiple references.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t23" headers="r1c1-t23">
+<p><code>norpcstructures</code></p>
+</td>
+<td align="left" headers="r10c1-t23 r1c2-t23">
+<p>Does not allow generation of RPC structures (<code>-import</code> only).</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t23" headers="r1c1-t23">
+<p><code>novalidation</code></p>
+</td>
+<td align="left" headers="r11c1-t23 r1c2-t23">
+<p>Turns off full validation of imported WSDL documents.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t23" headers="r1c1-t23">
+<p><code>resolveidref</code></p>
+</td>
+<td align="left" headers="r12c1-t23 r1c2-t23">
+<p>Resolve <code>xsd:IDREF.</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r13c1-t23" headers="r1c1-t23">
+<p><code>searchschema</code></p>
+</td>
+<td align="left" headers="r13c1-t23 r1c2-t23">
+<p>Searches schema aggressively for types.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r14c1-t23" headers="r1c1-t23">
+<p><code>serializeinterfaces</code></p>
+</td>
+<td align="left" headers="r14c1-t23 r1c2-t23">
+<p>Turns on direct serialization of interface types.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r15c1-t23" headers="r1c1-t23">
+<p><code>strict</code></p>
+</td>
+<td align="left" headers="r15c1-t23 r1c2-t23">
+<p>Generates code strictly compliant with JAX-RPC Specification.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r16c1-t23" headers="r1c1-t23">
+<p><code>unwrap</code></p>
+</td>
+<td align="left" headers="r16c1-t23 r1c2-t23">
+<p>Enables unwrapping of document/literal wrapper elements in WSI mode.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r17c1-t23" headers="r1c1-t23">
+<p><code>wsi</code></p>
+</td>
+<td align="left" headers="r17c1-t23 r1c2-t23">
+<p>Checks for compliance with the WSI-Basic Profile, which is a specification for improved interoperability.</p>
+<p>For example, the WS-I Basic Profile prohibits the use of <code>rpc/encoded</code>. Therefore, if you set the <code>wsi</code> feature, a warning is generated when you build a web service client that uses a WSDL file that uses <code>rpc/encoded</code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
 <hr><p><b>Related Topics</b></p>
 <p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

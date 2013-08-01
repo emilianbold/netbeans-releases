@@ -2,65 +2,95 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Java Platform Manager Dialog Box</title>
+<title>New Libraries Wizard: Actions</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.api.java.platform.PlatformsCustomizer" name="org.netbeans.api.java.platform.PlatformsCustomizer"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref217" name="sthref217"></a>
-<h1>Java Platform Manager Dialog Box</h1>
+<p><a id="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel2" name="org.netbeans.spi.java.project.support.ui.MakeSharableVisualPanel2"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref220" name="sthref220"></a>
+<h1>New Libraries Wizard: Actions</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to register different versions of the Java Development Kit (JDK) and other Java tools that your programs depend on. The dialog box lists all of your registered JDKs in the left pane and lists the JDK that the IDE is running on as the Default Platform. 
+<p>Use to set a folder to hold your Java classpath libraries or to hold references to those libraries. Setting a libraries folder makes it easier to share libraries among different users and projects. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG466">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG456">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>Using the Java Platform Manager, you can perform the following:</p>
-<ul>
-<li>
-<p>Register a new Java platform. Directories that contain JDKs are marked with an <img width="16" height="16" src="images/sample_icon2.gif" alt="Platform Directory icon" title="Platform Directory icon" /> icon in the file chooser.</p>
-<p>Select <b>Add Platform</b> to add a new Java Platform.</p>
-</li>
-<li>View registered JDK's classpaths.</li>
-<li>Register source code for a JDK in the Sources tab.</li>
-<li>Register Javadoc documentation for a JDK in the Javadoc tab.</li>
-<li>Enable JavaFX for the Java platform in the JavaFX tab. Enter the path to the JavaFX SDK and JavaFX Runtime in this tab.</li>
-</ul>
-<p>Once you have registered a JDK, you can configure a standard project to use that JDK for compilation, execution, and debugging. Go to the project's Project Properties dialog box, select the Libraries node, and choose the appropriate JDK in the Java Platform combo box.</p>
-<p>For free-form projects, you have to set the target JDK in your Ant script. To configure the IDE to show the correct JDK's classes for code completion, Javadoc documentation, and source files, you must register the JDK in the Java Platform Manager dialog box. Then go to the project's Project Properties dialog box, click <b>Sources</b>, and set Source/Binary Format to the correct JDK. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1555">
-<param name="text" value="<html><u>More</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>For Java ME MIDP and CDC projects, you can add emulators and SDK platforms for mobile devices. You also use the Java Platform Manager to take advantage of special tools and extensions of each platform you install. More</p>
+<p>On the Actions page, you determine how each library is referenced. The simplest case is to have the libraries copied to that folder. You can also refer to the libraries in their existing location (with a relative path or an absolute path). If you have specified an existing folder, you also have the option of using copies of libraries that are already in that folder instead of the copies that are contained in the IDE's Ant Library Manager. For each library, the wizard tries to select the most suitable action.</p>
+
+<table summary="Descriptions of New Libraries wizards actions." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="38%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t26">Element</th>
+<th align="left" valign="bottom" id="r1c2-t26">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t26" headers="r1c1-t26">
+<p>Library JAR Files to New Libraries Folder</p>
+</td>
+<td align="left" headers="r2c1-t26 r1c2-t26">
+<p>Places library JAR files in the selected libraries folder.</p>
+<p>Use this option if the library is not in the folder that you have selected and you want to have the library JAR files placed there.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t26" headers="r1c1-t26">
+<p>Use Relative Path to Library JAR Files</p>
+</td>
+<td align="left" headers="r3c1-t26 r1c2-t26">
+<p>Accesses a library that is not in the libraries folder using a relative path.</p>
+<p>Use this option if the library is not in the libraries folder and you need to access the library in its existing location using a relative path. An entry with a relative reference is added for the library in the libraries folder's <code>nblibraries.properties</code> file.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t26" headers="r1c1-t26">
+<p>Use Absolute Path to Library JAR Files</p>
+</td>
+<td align="left" headers="r4c1-t26 r1c2-t26">
+<p>Accesses a library that is not in the libraries folder using an absolute path.</p>
+<p>Use this option if the library is not in the libraries folder and you need to access the library in its existing location using an absolute path. An entry with an absolute reference is added for the library in the libraries folder's <code>nblibraries.properties</code> file.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t26" headers="r1c1-t26">
+<p>Use Existing Library in Libraries Folder</p>
+</td>
+<td align="left" headers="r5c1-t26 r1c2-t26">
+<p>Uses the copy of the library that already exists in the libraries folder.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
 <hr><p><b>Related Topics</b></p>
 <p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG465">
-<param name="text" value="<html><u>&quot;Setting the Target JDK in a Project&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG371">
+<param name="text" value="<html><u>&quot;Standard Project Templates&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG461">
-<param name="text" value="<html><u>&quot;Adding Javadoc to a Project&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG406">
+<param name="text" value="<html><u>&quot;Creating Free-form Projects&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
 <p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2103">
-<param name="text" value="<html><u>&quot;Working Javadoc Documentation&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG455">
+<param name="text" value="<html><u>&quot;Sharing Libraries a Library with Other Users&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

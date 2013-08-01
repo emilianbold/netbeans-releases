@@ -2,24 +2,17 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Replace in Projects Dialog</title>
+<title>Services Window</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.search.SearchPanel.true" name="org.netbeans.modules.search.SearchPanel.true"></a></p>
+<p><a id="org.netbeans.core.actions.ViewRuntimeTabAction" name="org.netbeans.core.actions.ViewRuntimeTabAction"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref49" name="sthref49"></a>
-<h1>Replace in Projects Dialog</h1>
+<h1>Services Window</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>This dialog searches projects for instances of specified text or a regular expression and replaces those instances with another specified text. Open the dialog by selecting one or more projects in the Projects Window and clicking <b>Edit</b> &gt; <b>Replace</b> in Projects. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG498">
-<param name="text" value="<html><u>More</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>This dialog contains the following fields:</p>
+<p>The Services window is the main entry point to your runtime resources. It shows a logical view of important runtime resources such as the servers, databases, and web services that are registered with the IDE. You can open the Services window by choosing <b>Window</b> &gt; <b>Services</b> (Ctrl-5).</p>
+<p>The following table lists the icons and descriptions of the runtime resources as they appear in the Services window. You can right-click the resource nodes and sub-nodes to open context-sensitive popup menus that list commands that you can run on the node.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -33,93 +26,101 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t52" headers="r1c1-t52">
-<p>Containing Text</p>
+<p><img width="16" height="17" src="images/jdbc_resources.png" alt="Databases node" title="Databases node" /> Databases</p>
 </td>
 <td align="left" headers="r2c1-t52 r1c2-t52">
-<p>In this field, type or paste the text or regular expression. Click the down arrow for a drop-down list of previously used search expressions.</p>
+<p>Expand the node to view the databases, database connections and database drivers that have been added to the IDE. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1821">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t52" headers="r1c1-t52">
-<p>Match Case</p>
+<p><img width="18" height="18" src="images/services-window-wsm.png" alt="Web Services node" title="Web Services node" /> Web Services</p>
 </td>
 <td align="left" headers="r3c1-t52 r1c2-t52">
-<p>Search only for instances of the text or expression that match the exact upper and lower case characters entered in the Containing Text field.</p>
+<p>Expand the node to view the web services that are registered with the IDE.</p>
+<p>You can drag and drop web service operations from this list into PHP applications to create PHP RESTful web service clients. You can also use web services in this list to create Java Jersey RESTful web service clients. This section of the Services window is also called the Web Services Manager.</p>
+<p>You can register a web service with the IDE if you have the URL of the service's WSDL or WADL file. Right-click the Web Services node and select Add Web Service.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t52" headers="r1c1-t52">
-<p>Preserve Case When Replacing</p>
+<p><img width="17" height="16" src="images/servers.png" alt="Servers node" title="Servers node" /> Servers</p>
 </td>
 <td align="left" headers="r4c1-t52 r1c2-t52">
-<p>If Match Case is not selected, click this to preserve upper and lower case characters when replacing text.</p>
+<p>Expand the node to view all the servers currently registered with the IDE. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2194">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Any servers installed during the IDE installation process are automatically registered with the IDE. Use the IDE to register all other servers.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t52" headers="r1c1-t52">
-<p>Whole Words</p>
+<p><img width="16" height="16" src="images/runtime-window-hudson.png" alt="Hudson Builders node" title="Hudson Builders node" /> Hudson Builders</p>
 </td>
 <td align="left" headers="r5c1-t52 r1c2-t52">
-<p>Search only for whole words. Ignore longer words that are made up in part of the text in the Containing Text field</p>
+<p>Lists the Hudson instances that have been added to the IDE. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG521">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t52" headers="r1c1-t52">
-<p>Regular Expression</p>
+<p><img width="16" height="16" src="images/runtime-window-bugtracking.png" alt="Issue Trackers node" title="Issue Trackers node" /> Issue Trackers</p>
 </td>
 <td align="left" headers="r6c1-t52 r1c2-t52">
-<p>Indicates that the entry in the containing text field is a regular expression. Click test, and another search dialog opens where you can search for one text pattern.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t52" headers="r1c1-t52">
-<p>Replace With...</p>
-</td>
-<td align="left" headers="r7c1-t52 r1c2-t52">
-<p>Text that should replace the contents of the Containing Text field. Click the down arrow for a drop-down list of previously used replacement texts.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t52" headers="r1c1-t52">
-<p>Scope</p>
-</td>
-<td align="left" headers="r8c1-t52 r1c2-t52">
-<p>The scope of projects to search. You can either search the projects you selected in the Projects window or all open projects.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t52" headers="r1c1-t52">
-<p>File Name Pattern</p>
-</td>
-<td align="left" headers="r9c1-t52 r1c2-t52">
-<p>The pattern of file names, such as *.html, to search through.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r10c1-t52" headers="r1c1-t52">
-<p>Use Ignore List</p>
-</td>
-<td align="left" headers="r10c1-t52 r1c2-t52">
-<p>Use a list of files to ignore when performing the search. Click edit to open a dialog where you can add or remove files and file paths from the ignore list.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r11c1-t52" headers="r1c1-t52">
-<p>Regular Expression</p>
-</td>
-<td align="left" headers="r11c1-t52 r1c2-t52">
-<p>Indicates that the entry in the file name pattern field is a regular expression.</p>
+<p>Expand the node to view the issue trackers that have been added to the IDE. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG360">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<p>Other nodes may appear, depending on the modules that are installed in the IDE.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG497">
-<param name="text" value="<html><u>&quot;Finding and Replacing Text&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1793">
+<param name="text" value="<html><u>&quot;Working with Database Tools&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG351">
+<param name="text" value="<html><u>&quot;About Issue Trackers&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1651">
+<param name="text" value="<html><u>&quot;About Working with Web and Application Servers&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

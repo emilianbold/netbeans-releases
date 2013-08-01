@@ -13,109 +13,7 @@
 <a name="BEGIN" id="BEGIN"></a>
 <p>You open the Standard Web Project Properties dialog box by right-clicking any standard Web project and choosing Properties.</p>
 <p>The Sources page lets you set the locations for commonly-used directories within the project folder of a Java web project, such as the <code>WEB-INF</code> and Web Pages folders. It also allows you to specify the project's source package and test package folders, set the JDK version that corresponds to the project's source/binary format, include or exclude classes to be compiled with the project, and set the default project character encoding.</p>
-<a id="sthref485" name="sthref485"></a>
-<p><b>Project Folders</b></p>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t34">Element</th>
-<th align="left" valign="bottom" id="r1c2-t34">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t34" headers="r1c1-t34">
-<p>Project Folder</p>
-</td>
-<td align="left" headers="r2c1-t34 r1c2-t34">
-<p>(read-only) Lists the directory on your computer where the project sources are located.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t34" headers="r1c1-t34">
-<p>Web Pages Folder</p>
-</td>
-<td align="left" headers="r3c1-t34 r1c2-t34">
-<p>Lists the webroot of the application. This is typically the web folder contained within the project folder.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t34" headers="r1c1-t34">
-<p>WEB-INF Folder</p>
-</td>
-<td align="left" headers="r4c1-t34 r1c2-t34">
-<p>Lists the location of the <code>WEB-INF</code> directory contained in the Java web application project. The <code>WEB-INF</code> directory is typically contained within the application's webroot.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<a id="sthref486" name="sthref486"></a>
-<p><b>Source and Test Package Folders</b></p>
-<p>A pane is provided for both source and test package folders, listing the location of package folders, and the label used for them in the Project Properties window. You can use the Test Package Folders pane to specify the folder that the IDE uses when creating JUnit tests. By default, when you create a project the IDE creates a test packages folder called test with the label Test Packages. Use the buttons to the right of the panes to add, remove, and change the order of the package folders.</p>
-<p>To create JUnit tests with the IDE, a project must include a test package folder. If the test packages folder for your project is missing or unavailable, you can create a new folder in your project and then use this pane to designate the new folder as the Test Package folder.</p>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t35">Element</th>
-<th align="left" valign="bottom" id="r1c2-t35">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t35" headers="r1c1-t35">
-<p>Add Folder</p>
-</td>
-<td align="left" headers="r2c1-t35 r1c2-t35">
-<p>Click to add a new package folder to the adjacent pane. In the Add Source/Test Folder dialog that displays, navigate to and select the folder containing the resources you want to add, then click Open. The resources are then added to the corresponding Package Folders pane.</p>
-<p><b>Note:</b> To edit the name of a package folder listed in either of the Package Folder panes, double-click the listed entry and type directly into the field.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t35" headers="r1c1-t35">
-<p>Remove</p>
-</td>
-<td align="left" headers="r3c1-t35 r1c2-t35">
-<p>Select an entry in a Package Folders pane, then click the Remove button to delete it.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t35" headers="r1c1-t35">
-<p>Move Up</p>
-</td>
-<td align="left" headers="r4c1-t35 r1c2-t35">
-<p>Select an entry in a Package Folders pane, then click Move Up to have it listed higher in the pane. The order in which packages are listed corresponds to the order in which they display in the Projects window.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t35" headers="r1c1-t35">
-<p>Move Down</p>
-</td>
-<td align="left" headers="r5c1-t35 r1c2-t35">
-<p>Select an entry in a Package Folders pane, then click Move Down to have it listed lower in the pane. The order in which packages are listed corresponds to the order in which they display in the Projects window.</p>
-</td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
-<p>You can have multiple source roots in a standard project, with the following exceptions:</p>
-<ul>
-<li>The source root cannot already exist in another IDE project.</li>
-<li>The source root cannot already be added to another compilation unit of the same project. For example, a source root that is registered under Test Packages cannot be added to the list of Source Packages.</li>
-<li>All of the source roots are packaged into the same WAR file and share the same classpath.</li>
-</ul>
-<p><b>Note:</b> If you have a source root that needs to be used by several projects, you should create a separate project for the source root and set up compilation dependencies between the projects.</p>
-<a id="sthref487" name="sthref487"></a>
-<p><b>Source/Binary Format</b></p>
-<p>You can use the Source/Binary Format combo box to set the lowest Java platform version with which the generated Java code should be compatible. This setting corresponds to the javac <code>-source</code> option. Setting the source/binary format helps prevent you from using Java language constructs that are not available in the platform version to which you want to deploy. However, setting the source/binary format does not ensure that the platform APIs are used compatibly with that platform version. To make sure that your application is fully compatible with an earlier Java platform version, you need to switch to the Libraries tab and set the Java Platform setting to the minimum version on which you plan to deploy.</p>
+<p>Use the buttons to the right of the panes to add, remove, and change the order of the package folders.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -129,28 +27,122 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t36" headers="r1c1-t36">
-<p>Source/Binary Format</p>
+<p>Project Folder</p>
 </td>
 <td align="left" headers="r2c1-t36 r1c2-t36">
-<p>Choose the JDK version that applies to the lowest Java platform version with which the Java code in your project is compatible. Default options range from JDK 1.2 to 6.</p>
+<p>(read-only) Lists the directory on your computer where the project sources are located.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t36" headers="r1c1-t36">
-<p>Includes/Excludes</p>
+<p>Web Pages Folder</p>
 </td>
 <td align="left" headers="r3c1-t36 r1c2-t36">
-<p>Click the Includes/Excludes button if you want to include or exclude specific classes in or from compilation. In the Configure Includes and Excludes dialog, use regex patterns in the Includes and Excludes fields to specify which classes on the project classpath you want to have compiled. The Included Files and Excluded Files panes list the resources that will be compiled based on the supplied patterns.</p>
+<p>Lists the webroot of the application. This is typically the web folder contained within the project folder.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t36" headers="r1c1-t36">
+<p>WEB-INF Folder</p>
+</td>
+<td align="left" headers="r4c1-t36 r1c2-t36">
+<p>Lists the location of the <code>WEB-INF</code> directory contained in the Java web application project. The <code>WEB-INF</code> directory is typically contained within the application's webroot.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t36" headers="r1c1-t36">
+<p>Source Package Folders</p>
+</td>
+<td align="left" headers="r5c1-t36 r1c2-t36">
+<p>Lists the location of the source package folders and the label used for them in the Project Properties window. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG372">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t36" headers="r1c1-t36">
+<p>Add Folder</p>
+</td>
+<td align="left" headers="r6c1-t36 r1c2-t36">
+<p>Click to add a new package folder to the adjacent pane. In the <b>Add Source/Test Folder</b> dialog that displays, navigate to and select the folder containing the resources you want to add, then click <b>Open</b>. The resources are then added to the corresponding <b>Package Folders</b> pane.</p>
+<p><b>Note:</b> To edit the name of a package folder listed in either of the Package Folder panes, double-click the listed entry and type directly into the field.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t36" headers="r1c1-t36">
+<p>Remove</p>
+</td>
+<td align="left" headers="r7c1-t36 r1c2-t36">
+<p>Select an entry in a <b>Package Folders</b> pane, then click the <b>Remove</b> button to delete it.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t36" headers="r1c1-t36">
+<p>Move Up</p>
+</td>
+<td align="left" headers="r8c1-t36 r1c2-t36">
+<p>Select an entry in a <b>Package Folders</b> pane, then click <b>Move Up</b> to have it listed higher in the pane. The order in which packages are listed corresponds to the order in which they display in the Projects window.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t36" headers="r1c1-t36">
+<p>Move Down</p>
+</td>
+<td align="left" headers="r9c1-t36 r1c2-t36">
+<p>Select an entry in a Package Folders pane, then click Move Down to have it listed lower in the pane. The order in which packages are listed corresponds to the order in which they display in the Projects window.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t36" headers="r1c1-t36">
+<p>Test Package Folders</p>
+</td>
+<td align="left" headers="r10c1-t36 r1c2-t36">
+<p>Lists the location of the test package folders and the label used for them in the Project Properties window.</p>
+<p>Specifies the folder that the IDE uses when creating Unit tests. By default, when you create a project the IDE creates a test packages folder called test with the label Test Packages.</p>
+<p>To create Unit tests with the IDE, a project must include a test package folder. If the test packages folder for your project is missing or unavailable, you can create a new folder in your project and then use this pane to designate the new folder as the Test Package folder.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t36" headers="r1c1-t36">
+<p>Source/Binary Format</p>
+</td>
+<td align="left" headers="r11c1-t36 r1c2-t36">
+<p>Set the lowest Java platform version with which the generated Java code should be compatible. Default options range from JDK 1.2 to 7.</p>
+<p>This setting corresponds to the javac <code>-source</code> option. Setting the source/binary format helps prevent you from using Java language constructs that are not available in the platform version to which you want to deploy. However, setting the source/binary format does not ensure that the platform APIs are used compatibly with that platform version. To make sure that your application is fully compatible with an earlier Java platform version, you need to switch to the Libraries tab and set the Java Platform setting to the minimum version on which you plan to deploy.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t36" headers="r1c1-t36">
+<p>Includes/Excludes</p>
+</td>
+<td align="left" headers="r12c1-t36 r1c2-t36">
+<p>Click the <b>Includes/Excludes</b> button if you want to include or exclude specific classes in or from compilation. In the Configure Includes and Excludes dialog, use regex patterns in the Includes and Excludes fields to specify which classes on the project classpath you want to have compiled. The Included Files and Excluded Files panes list the resources that will be compiled based on the supplied patterns.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r13c1-t36" headers="r1c1-t36">
+<p>Encoding</p>
+</td>
+<td align="left" headers="r13c1-t36 r1c2-t36">
+<p>Choose the character encoding that you want the IDE to apply when it saves and displays project source files. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2065">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p><b>Note:</b> Specifying the source/binary format does not change the Java platform whose libraries and executables are used to compile and run your project. To set the Java platform that is used for compiling and running your project, click Libraries and set the Java Platform setting accordingly. You cannot set the source/binary format of a project to a higher release than the project's Java platform.</p>
-<a id="sthref488" name="sthref488"></a>
-<p><b>Project Character Encoding</b></p>
-<p>The project character encoding determines how the IDE interprets characters in your source files. The IDE displays and saves any new files you create using the encoding set by the project in which they reside. The default character encoding used with projects is UTF-8. Use the Encoding drop-down to change the character encoding used with the project.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -164,17 +156,18 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t37" headers="r1c1-t37">
-<p>Encoding</p>
+<p>Source/Binary Format</p>
 </td>
 <td align="left" headers="r2c1-t37 r1c2-t37">
-<p>Choose the character encoding that you want the IDE to apply when it saves and displays project source files. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2065">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Choose the JDK version that applies to the lowest Java platform version with which the Java code in your project is compatible. Default options range from JDK 1.2 to 6.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t37" headers="r1c1-t37">
+<p>Includes/Excludes</p>
+</td>
+<td align="left" headers="r3c1-t37 r1c2-t37">
+<p>Click the <b>Includes/Excludes</b> button if you want to include or exclude specific classes in or from compilation. In the <b>Configure Includes and Excludes</b> dialog, use regex patterns in the Includes and Excludes fields to specify which classes on the project classpath you want to have compiled. The Included Files and Excluded Files panes list the resources that will be compiled based on the supplied patterns.</p>
 </td>
 </tr>
 </tbody>

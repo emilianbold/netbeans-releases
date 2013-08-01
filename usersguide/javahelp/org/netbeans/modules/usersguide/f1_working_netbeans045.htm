@@ -2,17 +2,17 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Services Window</title>
+<title>Documents Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.core.actions.ViewRuntimeTabAction" name="org.netbeans.core.actions.ViewRuntimeTabAction"></a></p>
+<p><a id="org.netbeans.core.windows.view.ui.DocumentsDlg" name="org.netbeans.core.windows.view.ui.DocumentsDlg"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref47" name="sthref47"></a>
-<h1>Services Window</h1>
+<h1>Documents Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Services window is the main entry point to your runtime resources. It shows a logical view of important runtime resources such as the servers, databases, and web services that are registered with the IDE. You can open the Services window by choosing <b>Window</b> &gt; <b>Services</b> (Ctrl-5).</p>
-<p>The following table lists the icons and descriptions of the runtime resources as they appear in the Services window. You can right-click the resource nodes and sub-nodes to open context-sensitive popup menus that list commands that you can run on the node.</p>
+<p>The Documents dialog box displays a list of the documents that are open in the editor and enables you to save, close or switch the editor focus to an open document. You open this dialog by choosing <b>Window</b> &gt; <b>Documents</b> from the main menu.</p>
+<p>The list of open documents is displayed in the left pane of the dialog box. When you select a document or documents in the list you can perform the following commands.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -26,101 +26,40 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t50" headers="r1c1-t50">
-<p><img width="16" height="17" src="images/jdbc_resources.png" alt="Databases node" title="Databases node" /> Databases</p>
+<p>Switch to Document</p>
 </td>
 <td align="left" headers="r2c1-t50 r1c2-t50">
-<p>Expand the node to view the databases, database connections and database drivers that have been added to the IDE. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1821">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Click this button to make the document the active document in the editor. This button is disabled if multiple documents are selected.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t50" headers="r1c1-t50">
-<p><img width="18" height="18" src="images/services-window-wsm.png" alt="Web Services node" title="Web Services node" /> Web Services</p>
+<p>Close Document(s)</p>
 </td>
 <td align="left" headers="r3c1-t50 r1c2-t50">
-<p>Expand the node to view the web services that are registered with the IDE.</p>
-<p>You can drag and drop web service operations from this list into PHP applications to create PHP RESTful web service clients. You can also use web services in this list to create Java Jersey RESTful web service clients. This section of the Services window is also called the Web Services Manager.</p>
-<p>You can register a web service with the IDE if you have the URL of the service's WSDL or WADL file. Right-click the Web Services node and select Add Web Service.</p>
+<p>Click this button to close the selected documents.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t50" headers="r1c1-t50">
-<p><img width="17" height="16" src="images/servers.png" alt="Servers node" title="Servers node" /> Servers</p>
+<p>Save Document(s)</p>
 </td>
 <td align="left" headers="r4c1-t50 r1c2-t50">
-<p>Expand the node to view all the servers currently registered with the IDE. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2194">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p>Any servers installed during the IDE installation process are automatically registered with the IDE. Use the IDE to register all other servers.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t50" headers="r1c1-t50">
-<p><img width="16" height="16" src="images/runtime-window-hudson.png" alt="Hudson Builders node" title="Hudson Builders node" /> Hudson Builders</p>
-</td>
-<td align="left" headers="r5c1-t50 r1c2-t50">
-<p>Lists the Hudson instances that have been added to the IDE. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG521">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t50" headers="r1c1-t50">
-<p><img width="16" height="16" src="images/runtime-window-bugtracking.png" alt="Issue Trackers node" title="Issue Trackers node" /> Issue Trackers</p>
-</td>
-<td align="left" headers="r6c1-t50 r1c2-t50">
-<p>Expand the node to view the issue trackers that have been added to the IDE. 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG360">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
+<p>Click this button to save the selected documents. The names of documents that are not saved are displayed in bold.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>Other nodes may appear, depending on the modules that are installed in the IDE.</p>
+<p>When only one document is selected the location of the selected document is displayed in the Description textfield.</p>
+<p>You can use the ctrl and shift keys to select multiple documents.</p>
+<p>The names of documents that are under version control follow the color scheme that is specified for versioned documents in the Options window.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1793">
-<param name="text" value="<html><u>&quot;Working with Database Tools&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG351">
-<param name="text" value="<html><u>&quot;About Issue Trackers&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1651">
-<param name="text" value="<html><u>&quot;About Working with Web and Application Servers&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG217">
+<param name="text" value="<html><u>&quot;Working with Source Files in the IDE&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

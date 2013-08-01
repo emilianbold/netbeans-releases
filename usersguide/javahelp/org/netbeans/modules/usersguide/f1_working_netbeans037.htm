@@ -2,19 +2,25 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Customize Toolbars Window</title>
+<title>Plugins Manager: Settings</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.core.windows.view.ui.toolbars.ConfigureToolbarPanel" name="org.netbeans.core.windows.view.ui.toolbars.ConfigureToolbarPanel"></a></p>
+<p><a id="org.netbeans.modules.autoupdate.ui.SettingsTab" name="org.netbeans.modules.autoupdate.ui.SettingsTab"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref39" name="sthref39"></a>
-<h1>Customize Toolbars Window</h1>
+<h1>Plugins Manager: Settings</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Customize Toolbars window enables you to modify the contents of the IDE toolbars by adding or removing toolbar icons. You can also use the window to create a custom named toolbar configuration.</p>
-<p>You open the window by choosing View &gt; Toolbars &gt; Customize from the main menu.</p>
-<p>The Customize Toolbars window displays a list of IDE commands that are organized by category. You add commands to a toolbar in the IDE by dragging the icon for the command from the window to the desired position in a toolbar. You can remove commands from a toolbar by dragging the icon from the toolbar into the window.</p>
-<p>You can click the New Toolbar button to open the New Toolbar dialog and create a new named toolbar configuration.</p>
+<p>You use the Plugins manager to dynamically update the IDE from the registered update centers and to manage IDE plugins. You use the Settings tab of the Plugins manager to view and change settings for the registered update centers and to set how often the IDE checks the update centers for updates. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG177">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>You can access this tab by choosing <b>Tools</b> &gt; <b>Plugins</b> from the main menu and clicking the Settings tab in the Plugins manager.</p>
+<p>This tab contains the following settings for managing update centers.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -28,25 +34,67 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t41" headers="r1c1-t41">
-<p>New Toolbar</p>
+<p>Configuration of Update Centers</p>
 </td>
-<td align="left" headers="r2c1-t41 r1c2-t41"></td>
+<td align="left" headers="r2c1-t41 r1c2-t41">
+<p>The left pane displays the registered update centers. Click Edit or Remove to edit the update center details or remove the update center. Click Add to add a new update center. Type the details for the new update center in the Update Center Customizer dialog box.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t41" headers="r1c1-t41">
-<p>Small Toolbar Icons</p>
+<p>Edit</p>
 </td>
-<td align="left" headers="r3c1-t41 r1c2-t41"></td>
+<td align="left" headers="r3c1-t41 r1c2-t41">
+<p>Click to edit the name or URL of the selected update center.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t41" headers="r1c1-t41">
-<p>Reset Toolbars</p>
+<p>Remove</p>
 </td>
-<td align="left" headers="r4c1-t41 r1c2-t41"></td>
+<td align="left" headers="r4c1-t41 r1c2-t41">
+<p>Click to remove the selected update center from the list.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t41" headers="r1c1-t41"></td>
-<td align="left" headers="r5c1-t41 r1c2-t41"></td>
+<td align="left" id="r5c1-t41" headers="r1c1-t41">
+<p>Add</p>
+</td>
+<td align="left" headers="r5c1-t41 r1c2-t41">
+<p>Click to add a new update center to the list.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t41" headers="r1c1-t41">
+<p>Automatically Check for Updates</p>
+</td>
+<td align="left" headers="r6c1-t41 r1c2-t41">
+<p>Specifies how often the IDE checks for updates. Use the drop-down list to select how often you want the IDE to check for updates. Click Proxy Settings to set any proxy settings needed to access the update centers.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t41" headers="r1c1-t41">
+<p>Check Interval</p>
+</td>
+<td align="left" headers="r7c1-t41 r1c2-t41">
+<p>Select an interval from the dropdown list.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t41" headers="r1c1-t41">
+<p>Proxy Settings</p>
+</td>
+<td align="left" headers="r8c1-t41 r1c2-t41">
+<p>Click to open the proxy settings panel in the Options window.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t41" headers="r1c1-t41">
+<p>Plugin Install Location</p>
+</td>
+<td align="left" headers="r9c1-t41 r1c2-t41">
+<p>Force install into shared directories. If selected, plugins are installed into directories that are accessible to users other than the current user in a multi-user environment. If unselected (default), the installed plugins are only available to the user who installed the plugin.</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -55,8 +103,8 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG132">
-<param name="text" value="<html><u>&quot;Customizing Toolbars in the IDE&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG166">
+<param name="text" value="<html><u>&quot;Managing Plugins in the IDE&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

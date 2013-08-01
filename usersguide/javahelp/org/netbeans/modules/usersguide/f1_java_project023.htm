@@ -2,162 +2,169 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Standard Java SE Project Properties Dialog Box: Web Service Clients</title>
+<title>Standard Java SE Project Properties Dialog Box: Web Start</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHost" name="org.netbeans.modules.java.j2seproject.wsclient.CustomizerWSClientHost"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref211" name="sthref211"></a>
-<h1>Standard Java SE Project Properties Dialog Box: Web Service Clients</h1>
+<p><a id="org.netbeans.modules.javawebstart.ui.customizer.JWSCustomizerPanel" name="org.netbeans.modules.javawebstart.ui.customizer.JWSCustomizerPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref214" name="sthref214"></a>
+<h1>Standard Java SE Project Properties Dialog Box: Web Start</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to preconfigure the features that are used by the JAX-RPC <code>wscompile</code> tool to compile a web service client. 
+<p>Use to configure your application so that the application can be deployed using Java Web Start. Java Web Start enables users of your application to download and launch the application by clicking a link in a web browser. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG373">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG371">
 <param name="text" value="<html><u>How?</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>You open the Standard Java SE Project Properties dialog box by right-clicking any standard Java SE project and choosing <b>Properties</b>.</p>
+<p>The Web Start page has the following properties, which are used in the creation of the JNLP file. The JNLP file is used to launch the application. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG403">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
-<table summary="Descriptions of Web Service Client features" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="38%" />
+<table summary="Descriptions of configuration options for using Java Web Start." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="40%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t22">Features</th>
+<th align="left" valign="bottom" id="r1c1-t22">Element</th>
 <th align="left" valign="bottom" id="r1c2-t22">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t22" headers="r1c1-t22">
-<p><code>datahandleronly</code></p>
+<p>Enable Web Start</p>
 </td>
 <td align="left" headers="r2c1-t22 r1c2-t22">
-<p>Maps attachments to the <code>DataHandler</code> type.</p>
+<p>Creates the necessary artifacts to make the application deployable with Java Web Start when you build the application. These artifacts can be found in the application's <code>dist</code> folder.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t22" headers="r1c1-t22">
-<p><code>donotoverride</code></p>
+<p>Icon</p>
 </td>
 <td align="left" headers="r3c1-t22 r1c2-t22">
-<p>Does not allow regeneration of classes that already exist on the classpath.</p>
+<p>Specifies the icon to be used to represent the application on the user's system, such as on the desktop.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t22" headers="r1c1-t22">
-<p><code>donounwrap</code></p>
+<p>Codebase</p>
 </td>
 <td align="left" headers="r4c1-t22 r1c2-t22">
-<p>Disables unwrapping of document/literal wrapper elements in WSI mode (default)..</p>
+<p>Specifies a URL representing the location of the application.</p>
+<p>This field is a represented by a combo box from which you can select <b>Local Execution</b>, <b>Web Deployment</b>, or <b>User Defined</b>. For <b>Local Execution</b> and <b>Web Deployment</b>, the URL is determined automatically for you.</p>
+<p>If you select <b>Web Deployment</b>, <code>$$codebase</code> is shown as the URL. When you run the application, the application is served by special servlet in which <code>$$codebase</code> is replaced with the real location of the application.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t22" headers="r1c1-t22">
-<p><code>explicitcontext</code></p>
+<p>Allow Offline</p>
 </td>
 <td align="left" headers="r5c1-t22 r1c2-t22">
-<p>Turns on explicit service context mapping.</p>
+<p>Enables the user to run the application without a network connection.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t22" headers="r1c1-t22">
-<p><code>jaxbenumtype</code></p>
+<p>Extension Resources</p>
 </td>
 <td align="left" headers="r6c1-t22 r1c2-t22">
-<p>Maps anonymous enumeration to its base type.</p>
+<p>Specifies dependencies on the JNLP files of additional resources (APIs, libraries, or system properties) that should be used as part of your application when it loads through Java Web Start.</p>
+<p>To specify an extension resource, enter the following attributes: Href, Name, and Version.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t22" headers="r1c1-t22">
-<p><code>nodatabinding</code></p>
+<p>Href</p>
 </td>
 <td align="left" headers="r7c1-t22 r1c2-t22">
-<p>Turns off data binding for literal encoding</p>
+<p>Specifies a URL to a JNLP file of the resource you want to add. For example, <code>http://somesite.org/mylib.jnlp</code></p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r8c1-t22" headers="r1c1-t22">
-<p><code>noencodedtypes</code></p>
+<p>Name</p>
 </td>
 <td align="left" headers="r8c1-t22 r1c2-t22">
-<p>Turns off encoding type information.</p>
+<p>(Optional) Specifies an arbitrary name of the extension resource.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r9c1-t22" headers="r1c1-t22">
-<p><code>nomultirefs</code></p>
+<p>Version</p>
 </td>
 <td align="left" headers="r9c1-t22 r1c2-t22">
-<p>Turns off support for multiple references.</p>
+<p>(Optional) Specifies a version of the extension resource.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r10c1-t22" headers="r1c1-t22">
-<p><code>norpcstructures</code></p>
+<p>Self-signed</p>
 </td>
 <td align="left" headers="r10c1-t22 r1c2-t22">
-<p>Does not allow generation of RPC structures (<code>-import</code> only).</p>
+<p>Signs the application using a certificate that is generated when the project is built.</p>
+<p>This certificate is not certified by any Certification Authority. Self-signing an application enables the application to do things such as write files to disk and access the network.</p>
+<p>If you select the Self-signed option, choose one of the following options that determine how to handle the signed and unsigned components in your Java Web Start applications and applets: <b>Enable Software Protections</b>, <b>Trusted Only</b>, or <b>Trusted Library</b>.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r11c1-t22" headers="r1c1-t22">
-<p><code>novalidation</code></p>
+<p>Enable Software Protections</p>
 </td>
 <td align="left" headers="r11c1-t22 r1c2-t22">
-<p>Turns off full validation of imported WSDL documents.</p>
+<p>Displays a warning dialog box during loading of your Java Web Start application with mixed components (signed and unsigned).</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r12c1-t22" headers="r1c1-t22">
-<p><code>resolveidref</code></p>
+<p>Trusted Only</p>
 </td>
 <td align="left" headers="r12c1-t22 r1c2-t22">
-<p>Resolve <code>xsd:IDREF.</code></p>
+<p>Does not display a warning dialog and an application or applet that loads a jar file containing this attribute does not load any untrusted classes or resources. This measure prevents a signed application or applet from being re-purposed with unsigned components.</p>
+<p>Use this attribute for applications and applets that do not require unsigned components. All classes and resources in the application or applet must be signed.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r13c1-t22" headers="r1c1-t22">
-<p><code>searchschema</code></p>
+<p>Trusted Library</p>
 </td>
 <td align="left" headers="r13c1-t22 r1c2-t22">
-<p>Searches schema aggressively for types.</p>
+<p>Allows unsigned components to be mixed with signed components (for example, signed libraries) without a warning dialog being displayed.</p>
+<p>All classes and resources in a JAR file containing this manifest attribute must be signed. Trusted library code is loaded into a separate dedicated class loader which is unique to the application or applet. This ensures that the trusted library code cannot be replaced.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r14c1-t22" headers="r1c1-t22">
-<p><code>serializeinterfaces</code></p>
+<p>Application Descriptor</p>
 </td>
 <td align="left" headers="r14c1-t22 r1c2-t22">
-<p>Turns on direct serialization of interface types.</p>
+<p>Generates the JNLP file with the <code>application-desc</code> element.</p>
+<p>The <code>application-desc</code> element points to the project's main class.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r15c1-t22" headers="r1c1-t22">
-<p><code>strict</code></p>
+<p>Applet Descriptor</p>
 </td>
 <td align="left" headers="r15c1-t22 r1c2-t22">
-<p>Generates code strictly compliant with JAX-RPC Specification.</p>
+<p>Generates the JNLP file with the <code>applet-desc</code> element.</p>
+<p>The <code>applet-desc</code> element points to the applet that you specify in the Applet Class drop-down list. Click <b>Applet Parameters</b> to change the height and width of the applet and add new parameters.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r16c1-t22" headers="r1c1-t22">
-<p><code>unwrap</code></p>
+<p>Component Descriptor</p>
 </td>
 <td align="left" headers="r16c1-t22 r1c2-t22">
-<p>Enables unwrapping of document/literal wrapper elements in WSI mode.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r17c1-t22" headers="r1c1-t22">
-<p><code>wsi</code></p>
-</td>
-<td align="left" headers="r17c1-t22 r1c2-t22">
-<p>Checks for compliance with the WSI-Basic Profile, which is a specification for improved interoperability.</p>
-<p>For example, the WS-I Basic Profile prohibits the use of <code>rpc/encoded</code>. Therefore, if you set the <code>wsi</code> feature, a warning is generated when you build a web service client that uses a WSDL file that uses <code>rpc/encoded</code>.</p>
+<p>Allows the project to be called as a resource from the JNLP file of another application.</p>
 </td>
 </tr>
 </tbody>
@@ -175,8 +182,8 @@
 </p>
 <p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1883">
-<param name="text" value="<html><u>&quot;Creating JAX_WS Web Service Clients&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG455">
+<param name="text" value="<html><u>&quot;Sharing Libraries a Library with Other Users&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

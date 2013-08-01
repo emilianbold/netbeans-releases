@@ -2,95 +2,131 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Issue Tracking: Create Issue Tracker Dialog Box: Bugzilla</title>
+<title>Options Window: Miscellaneous: Windows</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.bugzilla.repository.BugzillaRepositoryController" name="org.netbeans.modules.bugzilla.repository.BugzillaRepositoryController"></a></p>
+<p><a id="org.netbeans.core.windows.options.WinSysOptionsPanelController" name="org.netbeans.core.windows.options.WinSysOptionsPanelController"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref24" name="sthref24"></a>
-<h1>Issue Tracking: Create Issue Tracker Dialog Box: Bugzilla</h1>
+<h1>Options Window: Miscellaneous: Windows</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Create Issue Tracker dialog box enables you to specify the connection details for an issue tracker. After you create a tracker, a node for the tracker appears under the Issue Tracker node in the Services window and you can view, submit and resolve issues in the IDE.</p>
-<p>You see this dialog box when you right-click the Issue Trackers node in the Services window and choose Create Issue Tracker and select Bugzilla in the Connector dropdown list. You might also see this dialog if you right-click a registered Bugzilla issue tracker node in the Services window and choose Edit in the popup menu.</p>
-<p>To register a Bugzilla issue tracker, specify the following properties.</p>
+<p>You use this panel to customize the NetBeans window system's functionality.</p>
+<p>You can access this panel by choosing <b>Tools</b> &gt; <b>Options</b> from the main menu and clicking the <b>Windows</b> tab in the <b>Miscellaneous</b> category.</p>
+<p>You can set the following options:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t28">Property</th>
+<th align="left" valign="bottom" id="r1c1-t28">Element</th>
 <th align="left" valign="bottom" id="r1c2-t28">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t28" headers="r1c1-t28">
-<p>Connector</p>
+<p>Drag window image</p>
 </td>
 <td align="left" headers="r2c1-t28 r1c2-t28">
-<p>Select Bugzilla from the dropdown list.</p>
+<p>If selected, the IDE displays a small copy of the window content when dragging a window. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG126">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t28" headers="r1c1-t28">
-<p>Name</p>
+<p>Transparent drag window image</p>
 </td>
 <td align="left" headers="r3c1-t28 r1c2-t28">
-<p>The name of the tracker as it will be displayed in the IDE under the Issue Tracking node in the Services window. The name will also be listed in the drop down menu when you open the Find Issues tab from the Services window.</p>
+<p>If selected, the IDE displays a small transparent copy of the window content when dragging a window.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t28" headers="r1c1-t28">
-<p>Issue Tracker URL</p>
+<p>Snapping floating windows</p>
 </td>
 <td align="left" headers="r4c1-t28 r1c2-t28">
-<p>Specify the URL for the tracker.</p>
+<p>If selected, undocked windows snap to edges of other undocked windows when being dragged.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t28" headers="r1c1-t28">
-<p>Username</p>
+<p>Snap to screen edges</p>
 </td>
 <td align="left" headers="r5c1-t28 r1c2-t28">
-<p>Specify the username that is registered with the issue tracker.</p>
+<p>If selected, the IDE snaps an undocked window to the edges of the screen.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t28" headers="r1c1-t28">
-<p>Password</p>
+<p>Transparent floating windows</p>
 </td>
 <td align="left" headers="r6c1-t28 r1c2-t28">
-<p>Specify the username that is registered with the issue tracker.</p>
+<p>If selected, the IDE makes floating windows semi-transparent a few seconds after they go out of focus.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t28" headers="r1c1-t28">
-<p>Use HTTP Authentication</p>
+<p>Document tabs</p>
 </td>
 <td align="left" headers="r7c1-t28 r1c2-t28">
-<p>Select if the issue tracker requires authentication. If selected, you need to specify the username and password. Click Validate to connect to the tracker and check that the authentication details are correct.</p>
+<p>Modify the position of tabs in the document area by using the following options:</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r8c1-t28" headers="r1c1-t28">
-<p>Enable Local Usernames</p>
+<p>New document opens next to active document tab</p>
 </td>
 <td align="left" headers="r8c1-t28 r1c2-t28">
-<p>When selected, the IDE uses the user name (e.g., without <code>@mydomain.com</code>) instead of an email address when submitting issues.</p>
-<p>When authorizing and identifying users, some issue trackers are configured to use a registered user name as the user id and some are configured to use an email address. Select this option when the issue tracker is configured to use a user name.</p>
+<p>If selected, a new document opens in the same docking spot next to the active document tab.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r9c1-t28" headers="r1c1-t28">
-<p></p></td>
-<td align="left" headers="r9c1-t28 r1c2-t28"></td>
+<p>Close activates most recent document</p>
+</td>
+<td align="left" headers="r9c1-t28 r1c2-t28">
+<p>If selected, the most recent document becomes active after an active document is closed.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r10c1-t28" headers="r1c1-t28">
-<p></p></td>
-<td align="left" headers="r10c1-t28 r1c2-t28"></td>
+<p>Tabs placement</p>
+</td>
+<td align="left" headers="r10c1-t28 r1c2-t28">
+<p>Select where to place the editor tabs. You can choose top, bottom, left or right.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t28" headers="r1c1-t28">
+<p>Multi-row tabs</p>
+</td>
+<td align="left" headers="r11c1-t28 r1c2-t28">
+<p>If selected, the editor tabs display in multiple rows.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t28" headers="r1c1-t28">
+<p>Native Look and Feel</p>
+</td>
+<td align="left" headers="r12c1-t28 r1c2-t28">
+<p>The IDE uses platform-specific user interface components if the components offer sufficient functionality.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r13c1-t28" headers="r1c1-t28">
+<p>Maximize use of native look and feel</p>
+</td>
+<td align="left" headers="r13c1-t28 r1c2-t28">
+<p>If selected, the IDE uses native user interface components (for example, native file chooser on OS X).</p>
+</td>
 </tr>
 </tbody>
 </table>
@@ -99,8 +135,8 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG352">
-<param name="text" value="<html><u>&quot;How to Work with Issues&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG124">
+<param name="text" value="<html><u>&quot;Managing IDE Window&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
