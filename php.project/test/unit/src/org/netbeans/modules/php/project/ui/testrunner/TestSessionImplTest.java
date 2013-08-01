@@ -57,6 +57,7 @@ import org.netbeans.modules.php.spi.testing.locate.TestLocator;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSuite;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -158,6 +159,11 @@ public class TestSessionImplTest extends PhpTestCase {
 
         @Override
         public Locations.Line parseFileFromOutput(String line) {
+            throw new UnsupportedOperationException("Not supported yet.");
+        }
+
+        @Override
+        public ProjectCustomizer.CompositeCategoryProvider createCustomizer(PhpModule phpModule) {
             throw new UnsupportedOperationException("Not supported yet.");
         }
 
