@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,41 +37,31 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.cnd.completion.cplusplus;
 
-package org.netbeans.modules.web.common.spi;
-
-import java.util.Collection;
-import org.netbeans.api.annotations.common.NonNull;
-import org.openide.filesystems.FileObject;
+import org.netbeans.modules.cnd.api.model.CsmType;
+import org.netbeans.modules.cnd.api.model.deep.CsmExpression;
+import org.netbeans.modules.cnd.completion.cplusplus.ext.CsmCompletionQuery;
+import org.netbeans.modules.cnd.completion.csm.CompletionResolver;
+import org.netbeans.modules.cnd.spi.model.services.CsmTypeResolverImplementation;
 
 /**
- * Provides an ability to get the web root folder for a file
- * within web-like project.
  *
- * Instance of this interface must be registered into project's lookup
- *
- * @author marekfukala
+ * @author petrk
  */
-public interface ProjectWebRootProvider {
+@org.openide.util.lookup.ServiceProvider(service=org.netbeans.modules.cnd.spi.model.services.CsmTypeResolverImplementation.class)
+public final class CsmTypeResolverImpl implements CsmTypeResolverImplementation {
 
-    /**
-     * Finds a web root for a file.
-     *
-     * @param file The file you wish to find a web root for.
-     * @return A web root containing the searched file. The returned web root
-     * must contain the searched file. Null is returned if no web root find for
-     * the file.
-     */
-    public FileObject getWebRoot(FileObject file);
-
-    /**
-     * Finds all web roots for a project.
-     * @return collection of web roots of the given project, can be empty but never {@code null}.
-     * @since 1.57
-     */
-    @NonNull
-    Collection<FileObject> getWebRoots();
-
+    @Override
+    public CsmType resolveType(CsmExpression expression) {
+        CsmCompletionQuery query = getCompletionQuery(expression);
+        CsmType type = query.queryType(expression);
+        return type;
+    }    
+    
+    private static CsmCompletionQuery getCompletionQuery(CsmExpression expression) {
+        return new NbCsmCompletionQuery(expression.getContainingFile(), CompletionResolver.QueryScope.GLOBAL_QUERY, null);
+    }    
 }
