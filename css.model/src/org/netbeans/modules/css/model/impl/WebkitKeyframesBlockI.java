@@ -41,14 +41,10 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.model.api.AtRuleId;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.WebkitKeyframeSelectors;
-import org.netbeans.modules.css.model.api.WebkitKeyframes;
 import org.netbeans.modules.css.model.api.WebkitKeyframesBlock;
 
 /**

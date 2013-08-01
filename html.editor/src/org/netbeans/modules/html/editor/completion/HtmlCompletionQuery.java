@@ -65,6 +65,7 @@ import org.netbeans.modules.html.editor.lib.api.HtmlParseResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlVersion;
 import org.netbeans.modules.html.editor.lib.api.ParseResult;
 import org.netbeans.modules.html.editor.lib.api.ProblemDescription;
+import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlModel;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTag;
@@ -207,8 +208,9 @@ public class HtmlCompletionQuery extends UserTask {
 
     CompletionResult query(HtmlParserResult parserResult) {
         HtmlParseResult htmlResult;
+        SyntaxAnalyzerResult syntaxResult = parserResult.getSyntaxAnalyzerResult();
         try {
-            htmlResult = parserResult.getSyntaxAnalyzerResult().parseHtml();
+            htmlResult = syntaxResult.parseHtml();
         } catch (org.netbeans.modules.html.editor.lib.api.ParseException ex) {
             Exceptions.printStackTrace(ex);
             return null;
@@ -217,7 +219,7 @@ public class HtmlCompletionQuery extends UserTask {
         HtmlModel model = htmlResult.model();
 
         Snapshot snapshot = parserResult.getSnapshot();
-        String sourceMimetype = snapshot.getSource().getMimeType();
+        String sourceMimetype = Utils.getWebPageMimeType(syntaxResult);
         int astOffset = snapshot.getEmbeddedOffset(offset);
 
         //in some cases the embedded offset cannot be mapped, then we can do very less

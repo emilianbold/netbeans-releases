@@ -41,68 +41,51 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.model.api.Element;
-import org.netbeans.modules.css.model.api.GenericAtRule;
+import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.model.api.ElementFactory;
+import org.netbeans.modules.css.model.api.Media;
+import org.netbeans.modules.css.model.api.MediaBody;
 import org.netbeans.modules.css.model.api.Model;
-import org.netbeans.modules.css.model.api.MozDocument;
-import org.netbeans.modules.css.model.api.VendorAtRule;
-import org.netbeans.modules.css.model.api.WebkitKeyframes;
+import org.netbeans.modules.css.model.api.ModelTestBase;
+import org.netbeans.modules.css.model.api.StyleSheet;
+import org.netbeans.modules.parsing.spi.ParseException;
 
 /**
  *
  * @author marekfukala
  */
-public class VendorAtRuleI extends ModelElement implements VendorAtRule {
+public class MediaITest extends ModelTestBase {
 
-    private Element element;
-
-    private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
-
-        @Override
-        public void elementAdded(MozDocument rule) {
-            element = rule;
-        }
-
-        @Override
-        public void elementAdded(WebkitKeyframes rule) {
-            element = rule;
-        }
-        
-        @Override
-        public void elementAdded(GenericAtRule rule) {
-            element = rule;
-        }
-        
-    };
-
-    public VendorAtRuleI(Model model) {
-        super(model);
+    public MediaITest(String name) {
+        super(name);
     }
 
-    public VendorAtRuleI(Model model, Node node) {
-        super(model, node);
-        initChildrenElements();
-    }
-    
-    @Override
-    public Element getElement() {
-        return element;
+    public void testResolvedProperty() throws BadLocationException, ParseException {
+        String code = "@media screen {}";
+        Model model = createModel(code);
+        StyleSheet styleSheet = getStyleSheet(model);
+
+        Media m = styleSheet.getBody().getMedias().get(0);
+        assertNotNull(m);
+        assertNull(m.getMediaBody()); //no mediaBody element
+
+        ElementFactory ef = model.getElementFactory();
+        MediaBody mb = ef.createMediaBody();
+        mb.addRule(ef.createRule(ef.createSelectorsGroup(ef.createSelector(".clz")),
+                ef.createDeclarations(ef.createPropertyDeclaration(ef.createProperty("color"),
+                ef.createPropertyValue(ef.createExpression("red")), false))));
+        m.setMediaBody(mb);
+
+        assertEquals("@media screen {\n"
+                + "\n"
+                + ".clz {\n"
+                + "    color: red;\n"
+                + "\n"
+                + "}\n"
+                + "\n"
+                + "\n"
+                + "}", model.getModelSource().toString());
+
     }
 
-    @Override
-    public void setElement(Element element) {
-        super.setElement(element);
-    }
-
-    @Override
-    protected ModelElementListener getElementListener() {
-        return elementListener;
-    }
-    
-      @Override
-    protected Class getModelClass() {
-        return VendorAtRule.class;
-    }
-    
 }

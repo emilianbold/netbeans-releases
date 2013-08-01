@@ -56,7 +56,7 @@ import org.netbeans.modules.css.model.api.WebkitKeyframesBlock;
 public class WebkitKeyframesI extends ModelElement implements WebkitKeyframes {
 
     private AtRuleId atRuleId;
-    private List<WebkitKeyframesBlock> blocks = new ArrayList<WebkitKeyframesBlock>();
+    private List<WebkitKeyframesBlock> blocks = new ArrayList<>();
     
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 

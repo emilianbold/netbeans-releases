@@ -54,7 +54,7 @@ import org.netbeans.modules.css.model.api.Model;
  */
 public class ImportsI extends ModelElement implements Imports {
 
-    private List<ImportItem> imports = new ArrayList<ImportItem>();
+    private List<ImportItem> imports = new ArrayList<>();
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 
         @Override

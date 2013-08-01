@@ -43,8 +43,12 @@ package org.netbeans.modules.css.model.impl;
 
 import java.util.List;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.model.api.Body;
+import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.ModelTestBase;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.model.api.MozDocument;
+import org.netbeans.modules.css.model.api.MozDocumentFunction;
+import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**

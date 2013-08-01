@@ -42,7 +42,12 @@
 package org.netbeans.modules.css.model.impl;
 
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.model.api.Body;
+import org.netbeans.modules.css.model.api.CharSet;
+import org.netbeans.modules.css.model.api.Imports;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.Namespaces;
+import org.netbeans.modules.css.model.api.StyleSheet;
 
 /**
  *
