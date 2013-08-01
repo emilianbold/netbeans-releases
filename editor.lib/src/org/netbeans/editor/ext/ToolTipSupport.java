@@ -809,7 +809,7 @@ public class ToolTipSupport {
                     } catch (BadLocationException ble) {}
                     toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, computeMouseMoveIgnoredArea(
                             toolTip.getBounds(),
-                            SwingUtilities.convertRectangle(component, blockBounds, toolTip.getParent()),
+                            blockBounds != null ? SwingUtilities.convertRectangle(component, blockBounds, toolTip.getParent()) : null,
                             SwingUtilities.convertRectangle(component, cursorBounds, toolTip.getParent())));
                 }
                 toolTip.setVisible(true);
