@@ -76,7 +76,7 @@ import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
-import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
+import org.netbeans.modules.web.jsfapi.api.JsfUtils;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
@@ -94,7 +94,7 @@ import org.openide.util.Exceptions;
  *
  * @author marekfukala
  */
-@MimeRegistration(mimeType=JsfUtils.XHTML_MIMETYPE, service=HtmlExtension.class)
+@MimeRegistration(mimeType=JsfUtils.JSF_XHTML_FILE_MIMETYPE, service=HtmlExtension.class)
 public class JsfHtmlExtension extends HtmlExtension {
 
     private static final String EL_ENABLED_KEY = "el_enabled"; //NOI18N
@@ -120,7 +120,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             inputAttributes = new InputAttributes();
             doc.putProperty(InputAttributes.class, inputAttributes);
         }
-        Language xhtmlLang = Language.find(JsfUtils.XHTML_MIMETYPE); //NOI18N
+        Language xhtmlLang = Language.find(org.netbeans.modules.web.jsf.editor.JsfUtils.XHTML_MIMETYPE); //NOI18N
         if (inputAttributes.getValue(LanguagePath.get(xhtmlLang), EL_ENABLED_KEY) == null) {
             inputAttributes.setValue(LanguagePath.get(xhtmlLang), EL_ENABLED_KEY, new Object(), false);
 

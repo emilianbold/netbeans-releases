@@ -42,7 +42,11 @@
 package org.netbeans.modules.css.model.impl;
 
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.model.api.AtRule;
+import org.netbeans.modules.css.model.api.BodyItem;
+import org.netbeans.modules.css.model.api.Element;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.Rule;
 
 /**
  * Temporary solution for not yet implemented models for | media | page |

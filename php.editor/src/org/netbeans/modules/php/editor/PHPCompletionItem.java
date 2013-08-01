@@ -997,11 +997,19 @@ public abstract class PHPCompletionItem implements CompletionProposal {
         }
 
         @Override
-        @NbBundle.Messages("Generate=- generate")
+        @NbBundle.Messages({
+            "Generate=- generate",
+            "Override=- override"
+        })
         public String getLhsHtml(HtmlFormatter formatter) {
             StringBuilder sb = new StringBuilder();
             sb.append(super.getLhsHtml(formatter));
-            sb.append(' ').append(Bundle.Generate());
+            sb.append(' ');
+            if (getMethod().isAbstract() || isMagic()) {
+                sb.append(Bundle.Generate());
+            } else {
+                sb.append(Bundle.Override());
+            }
             return sb.toString();
         }
 
