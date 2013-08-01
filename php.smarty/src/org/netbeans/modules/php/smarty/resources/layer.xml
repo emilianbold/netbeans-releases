@@ -83,6 +83,20 @@
                             </file>
                         </folder>
                     </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-php-smarty-resources-fontsColors-CityLights.xml" url="fontsColors-CityLights.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-php-smarty-resources-fontsColors-BlueTheme.xml" url="fontsColors-BlueTheme.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
                 <folder name="Popup">
                     <file name="generate-code">
