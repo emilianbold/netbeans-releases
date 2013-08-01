@@ -272,6 +272,29 @@ public final class FastTypeProvider implements TypeProvider {
         }
 
         @Override
+        public int hashCode() {
+            int hc = 17;
+            hc = hc * 31 + (root == null ? 0 : root.hashCode());
+            hc = hc * 31 + (pkgName == null ? 0 : pkgName.hashCode());
+            hc = hc * 31 + (simpleName == null ? 0 : simpleName.hashCode());
+            return hc;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (!(obj instanceof SimpleDescriptor)) {
+                return false;
+            }
+            final SimpleDescriptor other = (SimpleDescriptor) obj;
+            return root == null ? other.root == null : root.equals(other.root) &&
+                pkgName == null ? other.pkgName == null : pkgName.equals(other.pkgName) &&
+                simpleName == null ? other.simpleName == null : simpleName.equals(other.simpleName);
+        }
+
+        @Override
         public void open() {
             boolean success = false;
             try {

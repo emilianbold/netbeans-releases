@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.jumpto.type;
 
-import java.util.List;
+import java.util.Collection;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
 import org.netbeans.spi.jumpto.type.SearchType;
@@ -68,7 +68,7 @@ public abstract class TypeProviderAccessor {
     public abstract Context createContext(Project p, String text, SearchType t);
 
     @NonNull
-    public abstract Result createResult(@NonNull List<? super TypeDescriptor> result, @NonNull String[] message, @NonNull Context context);
+    public abstract Result createResult(@NonNull Collection<? super TypeDescriptor> result, @NonNull String[] message, @NonNull Context context);
 
     public abstract int getRetry(Result result);
 

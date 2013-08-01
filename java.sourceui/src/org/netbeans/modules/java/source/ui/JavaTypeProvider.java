@@ -97,6 +97,7 @@ import org.openide.filesystems.URLMapper;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -112,25 +113,11 @@ public class JavaTypeProvider implements TypeProvider {
 
     //@NotThreadSafe //Confinement within a thread
     private Map<URI,CacheItem> rootCache;    
-    //@GuardedBy("dataCache")
-    private final Map<CacheItem,Collection<? extends JavaTypeDescription>> dataCache =
-            Collections.synchronizedMap(new HashMap<CacheItem, Collection<? extends JavaTypeDescription>>());
-    //@NotThreadSafe //Confinement within a thread
-    private String lastText;
-    //@NotThreadSafe //Confinement within a thread
-    private SearchType lastType;
 
     private volatile boolean isCanceled = false;
     private ClasspathInfo cpInfo;
 
     private final TypeElementFinder.Customizer customizer;
-    private final CacheItem.DataCacheCallback callBack = new CacheItem.DataCacheCallback() {
-        @Override
-        public void handleDataCacheChange(CacheItem ci) {
-            assert ci != null;
-            dataCache.put(ci, null);
-        }
-    };
 
     @Override
     public String name() {
@@ -146,9 +133,7 @@ public class JavaTypeProvider implements TypeProvider {
     @Override
     public void cleanup() {
         isCanceled = false;
-        lastText = null;
-        lastType = null;
-        dataCache.clear();
+        DataCache.clear();
         setRootCache(null);
     }
 
@@ -172,11 +157,15 @@ public class JavaTypeProvider implements TypeProvider {
         String originalText = context.getText();
         SearchType searchType = context.getSearchType();
 
-        if (!originalText.equals(lastText) || !searchType.equals(lastType)) {
-            dataCache.clear();
-            lastText = originalText;
-            lastType = searchType;
-        }
+        final DataCache dataCache = DataCache.forText(originalText, searchType);
+        assert dataCache != null;
+        final CacheItem.DataCacheCallback callBack = new CacheItem.DataCacheCallback() {
+            @Override
+            public void handleDataCacheChange(@NonNull final CacheItem ci) {
+                assert ci != null;
+                dataCache.put(ci, null);
+            }
+        };
 
         boolean hasBinaryOpen = Lookup.getDefault().lookup(BinaryElementOpen.class) != null;
         final ClassIndex.NameKind nameKind;
@@ -398,28 +387,22 @@ public class JavaTypeProvider implements TypeProvider {
                                     return null;
                                 }
                                 try {
-                                    final Set<JavaTypeDescription> ct = new HashSet<JavaTypeDescription>();
+                                    final Collection<JavaTypeDescription> ct = new ArrayList<JavaTypeDescription>();
                                     boolean exists = false;
                                     //WB(dataCache[ci], ACTIVE)
                                     dataCache.put(ci, ACTIVE);
                                     try {
-                                        exists = ci.collectDeclaredTypes(packageName, textForQuery,nameKind, ct);
-                                        if (nameKind == ClassIndex.NameKind.CAMEL_CASE) {
-                                            exists &= ci.collectDeclaredTypes(packageName, textForQuery, ClassIndex.NameKind.CASE_INSENSITIVE_PREFIX, ct);
-                                        }
+                                        exists = ci.collectDeclaredTypes(packageName, textForQuery,nameKind, ct);                                        
                                         if (exists) {
                                             types.addAll(ct);
                                         }
                                     } finally {
                                         if (exists) {
                                             //CAS(dataCache[ci], ACTIVE, ct)
-                                            synchronized (dataCache) {
-                                                if (dataCache.get(ci) == ACTIVE) {
-                                                    dataCache.put(
-                                                        ci,
-                                                        ct.isEmpty() ? Collections.<JavaTypeDescription>emptySet() : ct);
-                                                }
-                                            }
+                                            dataCache.compareAndSet(
+                                                ci,
+                                                ACTIVE,
+                                                ct.isEmpty() ? Collections.<JavaTypeDescription>emptySet() : ct);
                                         } else {
                                             //WB(dataCache[ci], NULL)
                                             dataCache.put(ci, null);
@@ -578,13 +561,13 @@ public class JavaTypeProvider implements TypeProvider {
         
         private final URI rootURI;
         private final boolean isBinary;
-        private final DataCacheCallback callBack;
+        private final String cpType;
 
+        private DataCacheCallback callBack;
         private String projectName;
         private Icon projectIcon;
         private ClasspathInfo cpInfo;
-        private ClassIndexImpl index;
-        private final String cpType;
+        private ClassIndexImpl index;        
         private FileObject cachedRoot;
 
         public CacheItem (
@@ -768,6 +751,7 @@ public class JavaTypeProvider implements TypeProvider {
         }
 
         private void dispose() {
+            callBack = null;
             if (index != null) {
                 index.removeClassIndexImplListener(this);
             }
@@ -814,6 +798,68 @@ public class JavaTypeProvider implements TypeProvider {
                 return eh == null ? null : new JavaTypeDescription(ci, eh);
             }
 
+        }
+
+    }
+
+    //@ThreadSafe
+    private static final class DataCache {
+
+        //@GuardedBy("DataCache.class")
+        private static String forText;
+        //@GuardedBy("DataCache.class")
+        private static final Map<SearchType,DataCache> instances =
+            new EnumMap<>(SearchType.class);
+
+        //@GuardedBy("this")
+        private final Map<CacheItem,Collection<? extends JavaTypeDescription>> dataCache = new HashMap<>();
+
+
+        private DataCache() {}
+
+        @CheckForNull
+        synchronized Collection<? extends JavaTypeDescription> get(@NonNull final CacheItem item) {
+            return dataCache.get(item);
+        }
+
+        synchronized void put (
+            @NonNull final CacheItem item,
+            @NullAllowed final Collection<? extends JavaTypeDescription> data) {
+            dataCache.put(item, data);
+        }
+
+        synchronized boolean compareAndSet(
+            @NonNull final CacheItem item,
+            @NullAllowed final Collection<? extends JavaTypeDescription> expected,
+            @NullAllowed final Collection<? extends JavaTypeDescription> update) {
+            if (dataCache.get(item) == expected) {
+                dataCache.put(item,update);
+                return true;
+            }
+            return false;
+        }        
+
+        static synchronized void clear() {
+            forText = null;
+            instances.clear();
+        }
+
+        @NonNull
+        static synchronized DataCache forText(
+            @NonNull final String text,
+            @NonNull final SearchType searchType) {
+            Parameters.notNull("text", text);   //NOI18N
+            Parameters.notNull("searchType", searchType);   //NOI18N
+            if (!text.equals(forText)) {
+                clear();
+                forText = text;
+            }
+            DataCache cacheInstance = instances.get(searchType);
+            if (cacheInstance == null) {
+                cacheInstance = new DataCache();
+                instances.put(searchType, cacheInstance);
+            }
+            return cacheInstance;
         }
 
     }
