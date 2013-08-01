@@ -94,7 +94,7 @@ public class ODCSExecutor {
             } else {
                 ODCS.LOG.log(Level.SEVERE, null, re);
             }
-        } 
+        }
     }
     
     private static void notifyError(CoreException ce) {
@@ -122,7 +122,8 @@ public class ODCSExecutor {
         return msg != null ? msg.trim() : null;
     }
 
-    @NbBundle.Messages({"# {0} - the returned error message", "MSG_Error_Warning=The following error was returned:\n\n{0}"})  // NOI18N
+    @NbBundle.Messages({"# {0} - the returned error message", "MSG_Error_Warning=The following error was returned:\n\n{0}",
+                        "MSG_UnexpectedServerResponse=Unexpected response format."})  // NOI18N
     private boolean handleStatus(PerformQueryCommand cmd, boolean handleExceptions) throws CoreException {
         IStatus status = cmd.getStatus();
         if(status == null || status.isOK()) {
@@ -131,8 +132,12 @@ public class ODCSExecutor {
         ODCS.LOG.log(Level.FINE, "command {0} returned status : {1}", new Object[] {cmd, status.getMessage()}); // NOI18N
 
         Throwable t = status.getException();
+        boolean jsonParseException = false;
         if (t instanceof CoreException) {
             throw (CoreException) status.getException();
+        } else if (t.getClass().getName().contains("JsonParseException")) {
+            ODCS.LOG.log(Level.INFO, null, t);
+            jsonParseException = true;
         } else {
             ODCS.LOG.log(Level.WARNING, null, t);
         }
@@ -158,7 +163,12 @@ public class ODCSExecutor {
             assertHtmlMsg(errMsg); // any reason to expect this ???
         } 
         
-        notifyErrorMessage(Bundle.MSG_Error_Warning(errMsg)); 
+        if(jsonParseException) {
+            ODCS.LOG.info(Bundle.MSG_Error_Warning(errMsg));
+            notifyErrorMessage(Bundle.MSG_UnexpectedServerResponse()); 
+        } else {
+            notifyErrorMessage(Bundle.MSG_Error_Warning(errMsg)); 
+        }
         return true;
     }    
 
