@@ -84,7 +84,7 @@ public class AddLocaleActionTest extends JellyTestCase {
         new AddLocaleAction().performPopup(n);
         // "New Locale"
         String newLocaleTitle = Bundle.getString("org.netbeans.modules.properties.Bundle", "CTL_NewLocaleTitle");
-        new JDialogOperator(newLocaleTitle).close();
+        new JDialogOperator(newLocaleTitle).requestClose();
     }
     
 }
