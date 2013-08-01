@@ -47,8 +47,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.List;
 import java.util.Set;
 import javax.swing.JPanel;
@@ -65,7 +65,7 @@ import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
 import org.netbeans.modules.css.prep.ui.customizer.OptionsPanel;
 import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
-import org.netbeans.modules.web.common.spi.ProjectWebRootProvider;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
@@ -219,27 +219,14 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         Templates.setTargetFolder(wizard, webRoot);
     }
 
-    // XXX not nice
     @CheckForNull
     private FileObject findWebRoot(Project project) {
-        ProjectWebRootProvider webRootProvider = project.getLookup().lookup(ProjectWebRootProvider.class);
-        if (webRootProvider == null) {
+        Collection<FileObject> webRoots = ProjectWebRootQuery.getWebRoots(project);
+        if (webRoots.isEmpty()) {
             return null;
         }
-        int i = 0;
-        Enumeration<? extends FileObject> children = project.getProjectDirectory().getChildren(true);
-        while (children.hasMoreElements()) {
-            FileObject child = children.nextElement();
-            FileObject webRoot = webRootProvider.getWebRoot(child);
-            if (webRoot != null) {
-                return webRoot;
-            }
-            if (i++ == 20) {
-                // check only 20 files
-                return null;
-            }
-        }
-        return null;
+        // simply return the first one
+        return webRoots.iterator().next();
     }
 
     private SourceGroup[] getSourceGroups(Project project) {
