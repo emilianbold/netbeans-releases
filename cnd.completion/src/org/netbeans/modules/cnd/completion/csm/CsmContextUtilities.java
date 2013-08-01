@@ -663,7 +663,7 @@ public class CsmContextUtilities {
 
     public static boolean isInFunction(CsmContext context, int offset) {
         CsmFunction fun = getFunction(context, true);
-        return fun != null;
+        return fun != null; 
     }     
 
     public static boolean isInFunctionInstantiation(CsmContext context, int offset) {
@@ -676,7 +676,7 @@ public class CsmContextUtilities {
         // in instantianiton and decltype everything is possible
         return (type != null) && 
                 !type.isInstantiation() && 
-                !type.getText().toString().startsWith("decltype") && // NOI18N
+                !checkDecltype(type) &&
                 CsmOffsetUtilities.isInObject(type, offset);
     }
     
@@ -702,4 +702,18 @@ public class CsmContextUtilities {
         return type;
     }
     
+    /**
+     * @param type
+     * @return true if type is based on decltype
+     */
+    private static boolean checkDecltype(CsmType type) {
+        String fullName = type.getClassifierText().toString();
+        String nameParts[] = fullName.split("::"); // NOI18N         
+        for (String part : nameParts) {
+            if (part.equals("decltype")) { // NOI18N
+                return true;
+            }
+        }
+        return false;
+    }    
 }

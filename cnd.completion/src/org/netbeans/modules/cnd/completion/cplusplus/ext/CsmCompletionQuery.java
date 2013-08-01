@@ -45,10 +45,12 @@ package org.netbeans.modules.cnd.completion.cplusplus.ext;
 
 import java.awt.Component;
 import java.awt.Graphics;
+import java.io.IOException;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
@@ -126,6 +128,7 @@ import org.netbeans.modules.cnd.modelutil.CsmPaintComponent;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.spi.editor.completion.CompletionItem;
+import org.openide.text.CloneableEditorSupport;
 import org.openide.util.NbBundle;
 
 /**
@@ -144,6 +147,19 @@ abstract public class CsmCompletionQuery {
     private static CsmItemFactory itemFactory;
 
     private static final int MAX_DEPTH = 15;
+    
+    private static enum AntiloopClient {
+        query_type
+    }
+    
+    private static final ThreadLocal<Map<AntiloopClient, Set<CsmExpression>>> threadLocalAntiloopMap = new ThreadLocal<Map<AntiloopClient, Set<CsmExpression>>>() {
+
+        @Override
+        protected Map<AntiloopClient, Set<CsmExpression>> initialValue() {
+            return new EnumMap<AntiloopClient, Set<CsmExpression>>(AntiloopClient.class);
+        }
+        
+    };
 
     Set<CsmExpression> antiLoop = new HashSet<CsmExpression>();
         
@@ -206,6 +222,64 @@ abstract public class CsmCompletionQuery {
         BaseDocument doc = (BaseDocument) component.getDocument();
 //        CompletionDocumentationProviderImpl.doc = doc; // Fixup....
         return query(component, doc, offset, openingSource, sort, instantiateTypes, tooltip);
+    }
+    
+    /**
+     * Perform the query on the given component to get type of expression.
+     * 
+     * @param expression - expression to get type from
+     */
+    public CsmType queryType(CsmExpression expression) {
+        if (enterThreadLocalAntiloop(AntiloopClient.query_type, expression)) {
+            try {
+                baseDocument = (BaseDocument) CsmUtilities.getDocument(expression.getContainingFile());                
+                if (baseDocument == null) {
+                    CloneableEditorSupport support = CsmUtilities.findCloneableEditorSupport(expression.getContainingFile());
+                    baseDocument = (BaseDocument) support.openDocument();
+                }
+
+                final int startOffset = expression.getStartOffset();
+                final int endOffset = expression.getEndOffset();
+
+                CsmType ret = null;        
+
+                if (!checkCondition(baseDocument, endOffset, true)) {
+                    return null;
+                }
+
+                long docVersion = DocumentUtilities.getDocumentVersion(baseDocument);
+
+        //        TokenProcessorCache property = (TokenProcessorCache) baseDocument.getProperty(TOKEN_PROCESSOR_CACHE_KEY);
+        //        CsmCompletionTokenProcessor tp = null;
+        //        if (property != null) {
+        //            if (property.queryOffset == endOffset && property.docVersion == docVersion) {
+        //                tp = property.tp;
+        //            }
+        //        }
+                CsmFile csmFile = getCsmFile();
+                if (csmFile == null) {
+                    csmFile = CsmUtilities.getCsmFile(baseDocument, true, false);
+                }
+                CsmCompletionTokenProcessor tp = processTokensInFile(csmFile, startOffset, endOffset, baseDocument, docVersion);           
+
+                if (!checkErrorTokenState(tp)) {
+                    CsmCompletionExpression exp = tp.getResultExp();
+                    ret = getResultType(baseDocument, exp, endOffset, true, true);
+                    if (TRACE_COMPLETION) {
+                        System.err.println("expression " + exp);
+                    }
+                } else if (TRACE_COMPLETION) {
+                    System.err.println("Error expression " + tp.getResultExp());
+                }
+
+                return ret;   
+            } catch (IOException ex) {
+                ex.printStackTrace(System.err);
+            } finally {
+                exitThreadLocalAntiloop(AntiloopClient.query_type, expression);
+            }
+        }
+        return null;
     }
     
     public static boolean checkCondition(final Document doc, final int dot, boolean takeLock) {
@@ -320,27 +394,8 @@ abstract public class CsmCompletionQuery {
             if (tp == null) {
                 // find last separator position
                 final int lastSepOffset = sup.getLastCommandSeparator(offset);
-                tp = new CsmCompletionTokenProcessor(offset, lastSepOffset);
-                final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(csmFile, doc, tp, offset);
-                if(etp instanceof CsmExpandedTokenProcessor) {
-                    tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
-                }
-                boolean enableTemplates = true;
-                if (csmFile != null) {
-                    switch (csmFile.getFileType()) {
-                        case SOURCE_C_FILE:
-                        case SOURCE_FORTRAN_FILE:
-                            enableTemplates = false;
-                    }
-                }
-                tp.enableTemplateSupport(enableTemplates);
-                doc.render(new Runnable() {
-                    @Override
-                    public void run() {
-                        CndTokenUtilities.processTokens(etp, doc, lastSepOffset, offset);
-                    }
-                });
-                baseDocument.putProperty(TOKEN_PROCESSOR_CACHE_KEY, new TokenProcessorCache(offset, docVersion, tp));
+                tp = processTokensInFile(csmFile, lastSepOffset, offset, doc, docVersion);
+                baseDocument.putProperty(TOKEN_PROCESSOR_CACHE_KEY, new TokenProcessorCache(offset, docVersion, tp));        
             } else {
                 // hit
             }
@@ -351,36 +406,7 @@ abstract public class CsmCompletionQuery {
 //                cont = tp.isStopped() && (lastSepOffset = sup.findMatchingBlock(tp.getCurrentOffest(), true)[0]) < offset - 1;
 //            }
 
-            // Check whether there's an erroneous token state under the cursor
-            boolean errState = false;
-            CppTokenId lastValidTokenID = tp.getLastValidTokenID();
-            if (lastValidTokenID != null) {
-                switch (lastValidTokenID) {
-//                case STAR:
-//                    errState = true;
-//                    break;
-                    case BLOCK_COMMENT:
-                        if (tp.getLastValidTokenText() == null || !tp.getLastValidTokenText().endsWith("*/") // NOI18N
-                                ) {
-                            errState = true;
-                        }
-                        break;
-
-                    case LINE_COMMENT:
-                    case DOXYGEN_LINE_COMMENT:
-                        errState = true;
-                        break;
-                    default:
-                        if (CppTokenId.PREPROCESSOR_KEYWORD_CATEGORY.equals(lastValidTokenID.primaryCategory())) {
-                            // this provider doesn't handle preprocessor tokens
-                            errState = true;
-                        } else {
-                            errState = tp.isErrorState();
-                        }
-                }
-            }
-
-            if (!errState) {
+            if (!checkErrorTokenState(tp)) {
                 CsmCompletionExpression exp = null;
                 if(!tooltip) {
                     exp = tp.getResultExp();
@@ -441,6 +467,87 @@ abstract public class CsmCompletionQuery {
         }
 
         return ret;
+    }
+    
+    private boolean enterThreadLocalAntiloop(AntiloopClient client, CsmExpression expression) {
+        Map<AntiloopClient, Set<CsmExpression>> antiloopMap = threadLocalAntiloopMap.get();
+        Set<CsmExpression> antiloopSet = antiloopMap.get(client);
+        
+        if (antiloopSet == null) {
+            antiloopSet = new HashSet<CsmExpression>(4);
+            antiloopMap.put(client, antiloopSet);
+        }
+        
+        if (!antiloopSet.contains(expression)) {
+            antiloopSet.add(expression);
+            return true;
+        }
+        return false;
+    }
+    
+    private void exitThreadLocalAntiloop(AntiloopClient client, CsmExpression expression) {
+        Map<AntiloopClient, Set<CsmExpression>> antiloopMap = threadLocalAntiloopMap.get();
+        Set<CsmExpression> antiloopSet = antiloopMap.get(client);
+        
+        assert antiloopSet != null : "Must be set in enter method!"; //NOI18N
+        
+        antiloopSet.remove(expression);
+    }
+    
+    private boolean checkErrorTokenState(CsmCompletionTokenProcessor tp) {
+        // Check whether there's an erroneous token state under the cursor
+        boolean errState = false;
+        CppTokenId lastValidTokenID = tp.getLastValidTokenID();
+        if (lastValidTokenID != null) {
+            switch (lastValidTokenID) {
+//            case STAR:
+//                errState = true;
+//                break;
+                case BLOCK_COMMENT:
+                    if (tp.getLastValidTokenText() == null || !tp.getLastValidTokenText().endsWith("*/") // NOI18N
+                            ) {
+                        errState = true;
+                    }
+                    break;
+
+                case LINE_COMMENT:
+                case DOXYGEN_LINE_COMMENT:
+                    errState = true;
+                    break;
+                default:
+                    if (CppTokenId.PREPROCESSOR_KEYWORD_CATEGORY.equals(lastValidTokenID.primaryCategory())) {
+                        // this provider doesn't handle preprocessor tokens
+                        errState = true;
+                    } else {
+                        errState = tp.isErrorState();
+                    }
+            }
+        }    
+        return errState;
+    }
+    
+    private CsmCompletionTokenProcessor processTokensInFile(CsmFile csmFile, final int startOffset, final int endOffset, final BaseDocument doc, final long docVersion) {
+        CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(endOffset, startOffset);
+        final CndTokenProcessor<Token<TokenId>> etp = CsmExpandedTokenProcessor.create(csmFile, doc, tp, endOffset);
+        if(etp instanceof CsmExpandedTokenProcessor) {
+            tp.setMacroCallback((CsmExpandedTokenProcessor)etp);
+        }
+        boolean enableTemplates = true;
+        if (csmFile != null) {
+            switch (csmFile.getFileType()) {
+                case SOURCE_C_FILE:
+                case SOURCE_FORTRAN_FILE:
+                    enableTemplates = false;
+            }
+        }
+        tp.enableTemplateSupport(enableTemplates);
+        doc.render(new Runnable() {
+            @Override
+            public void run() {
+                CndTokenUtilities.processTokens(etp, doc, startOffset, endOffset);
+            }
+        });
+        return tp;
     }
 
     abstract protected boolean isProjectBeeingParsed(boolean openingSource);
@@ -517,6 +624,29 @@ abstract public class CsmCompletionQuery {
 //	}
 //	return result;
     }
+    
+    private CsmType getResultType(Document doc, CsmCompletionExpression expression, int offset, boolean openingSource, boolean instantiateTypes) {
+        CompletionResolver resolver = getCompletionResolver(openingSource, false, false);
+        if (resolver != null) {
+            CompletionSupport sup = CompletionSupport.get(doc);
+            CsmOffsetableDeclaration context = sup.getDefinition(getCsmFile(), offset, getFileReferencesContext());
+            if (!openingSource && context == null) {
+                instantiateTypes = false;
+            }
+            
+            Context ctx = new Context(null, sup, openingSource, offset, getFinder(), resolver, context, false, instantiateTypes);
+            ctx.setFindType(true);
+            
+            ctx.resolveExp(expression, true);
+            
+            if (TRACE_COMPLETION) {
+                System.err.println("Completion Type " + ctx.lastType); // NOI18N
+            }
+            
+            return ctx.lastType;
+        }
+        return null;
+    }    
 
     // ================= help methods to generate CsmCompletionResult ==========
     private String formatName(String name, boolean appendStar) {
@@ -986,40 +1116,9 @@ abstract public class CsmCompletionQuery {
                 CsmVariable var = (CsmVariable)resolveObj;
                 final CsmExpression initialValue = var.getInitialValue();
                 if (initialValue != null) {
-                    CharSequence initText = initialValue.getText();
-                    if (initText != null) {
-                        TokenHierarchy<String> hi = TokenHierarchy.create(initText.toString(), CndLexerUtilities.getLanguage(getBaseDocument()));
-                        List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(initialValue.getEndOffset(), true);
-                        // Go from inner to outer TSes
-                        TokenSequence<TokenId> cppts = null;
-                        for (int i = tsList.size() - 1; i >= 0; i--) {
-                            TokenSequence<?> ts = tsList.get(i);
-                            final Language<?> lang = ts.languagePath().innerLanguage();
-                            if (CndLexerUtilities.isCppLanguage(lang, false)) {
-                                @SuppressWarnings("unchecked") // NOI18N
-                                TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
-                                cppts = uts;
-                            }
-                        }
-                        if(cppts != null && !antiLoop.contains(initialValue)) {
-                            antiLoop.add(initialValue);
-
-                            final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(initialValue.getEndOffset(), initialValue.getStartOffset());
-                            tp.enableTemplateSupport(true);
-                            final BaseDocument bDoc = getBaseDocument();
-                            bDoc.render(new Runnable() {
-                                @Override
-                                public void run() {
-                                    CndTokenUtilities.processTokens(tp, bDoc, initialValue.getStartOffset(), initialValue.getEndOffset());
-                                }
-                            });
-                            CsmCompletionExpression exp = tp.getResultExp();
-
-                            resolveType = resolveType(exp);
-                            if(resolveType != null) {
-                                resolveType = CsmCompletion.createType(resolveType.getClassifier(), oldType.getPointerDepth(), getReferenceValue(oldType), oldType.getArrayDepth(), oldType.isConst());
-                            }
-                        }
+                    resolveType = findExpressionType(initialValue);
+                    if (resolveType != null) {
+                        resolveType = CsmCompletion.createType(resolveType.getClassifier(), oldType.getPointerDepth(), getReferenceValue(oldType), oldType.getArrayDepth(), oldType.isConst());
                     }
                 } else {
                     if(CsmKindUtilities.isStatement(var.getScope()) ) {
@@ -1094,6 +1193,42 @@ abstract public class CsmCompletionQuery {
             
             return resolveType;
         }
+        
+        private CsmType findExpressionType(final CsmExpression expression) {
+            if (expression != null && !antiLoop.contains(expression)) {
+                String expressionText = expression.getText().toString();
+                TokenHierarchy<String> hi = TokenHierarchy.create(expressionText, CndLexerUtilities.getLanguage(getBaseDocument()));
+                List<TokenSequence<?>> tsList = hi.embeddedTokenSequences(expression.getEndOffset(), true);
+                // Go from inner to outer TSes
+                TokenSequence<TokenId> cppts = null;
+                for (int i = tsList.size() - 1; i >= 0; i--) {
+                    TokenSequence<?> ts = tsList.get(i);
+                    final Language<?> lang = ts.languagePath().innerLanguage();
+                    if (CndLexerUtilities.isCppLanguage(lang, false)) {
+                        @SuppressWarnings("unchecked") // NOI18N
+                        TokenSequence<TokenId> uts = (TokenSequence<TokenId>) ts;
+                        cppts = uts;
+                    }
+                }
+                if(cppts != null) {
+                    antiLoop.add(expression);
+
+                    final CsmCompletionTokenProcessor tp = new CsmCompletionTokenProcessor(expression.getEndOffset(), expression.getStartOffset());
+                    tp.enableTemplateSupport(true);
+                    final BaseDocument bDoc = getBaseDocument();
+                    bDoc.render(new Runnable() {
+                        @Override
+                        public void run() {
+                            CndTokenUtilities.processTokens(tp, bDoc, expression.getStartOffset(), expression.getEndOffset());
+                        }
+                    });
+                    CsmCompletionExpression exp = tp.getResultExp();
+
+                    return resolveType(exp);
+                }            
+            }
+            return null;
+        }        
 
         private void fillVisibleListAndFilterTypedefs(CsmObject elem, AtomicBoolean hasClassifier, List<CsmObject> visibleObjects, List<CsmObject> td) {
             if (CsmKindUtilities.isTypedef(elem)) {
@@ -1152,7 +1287,7 @@ abstract public class CsmCompletionQuery {
         private CsmClassifier extractTypeClassifier(CsmType type, ExprKind expKind) {
             if (type != null) {
                 CsmClassifier cls;
-                if (type.getArrayDepth() == 0 || (expKind == ExprKind.ARROW)) {
+                if (type.getArrayDepth() == 0 || (expKind == ExprKind.ARROW)) {                    
                     // Not array or deref array with arrow
                     cls = getClassifier(type, contextFile, endOffset);
                 } else {
@@ -1163,7 +1298,7 @@ abstract public class CsmCompletionQuery {
             } 
             return null;
         }
-
+        
         private Collection<CsmFunction> getConstructors(CsmClass cls) {
             Collection<CsmFunction> out = new ArrayList<CsmFunction>();
             CsmFilterBuilder filterBuilder = CsmSelect.getFilterBuilder();
@@ -2139,6 +2274,7 @@ abstract public class CsmCompletionQuery {
                     }
                     break;
 
+                case CsmCompletionExpression.DECLTYPE:
                 case CsmCompletionExpression.PARENTHESIS:
                     lastType = resolveType(item.getParameter(item.getParameterCount() - 1));
                     break;
