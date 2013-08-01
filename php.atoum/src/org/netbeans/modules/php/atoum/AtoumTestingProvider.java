@@ -58,6 +58,7 @@ import org.netbeans.modules.php.spi.testing.locate.TestLocator;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -138,6 +139,11 @@ public class AtoumTestingProvider implements PhpTestingProvider {
                 return new Locations.Line(fo, Integer.valueOf(matcher.group(2)));
             }
         }
+        return null;
+    }
+
+    @Override
+    public ProjectCustomizer.CompositeCategoryProvider createCustomizer(PhpModule phpModule) {
         return null;
     }
 

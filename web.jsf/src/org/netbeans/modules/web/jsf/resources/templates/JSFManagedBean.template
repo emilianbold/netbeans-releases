@@ -6,7 +6,7 @@
   is performed using FreeMaker (http://freemarker.org/) - see its documentation
   for full syntax. Variables available for templating are:
 
-    CDIEnabled - CDI is enabled in project or not (type: Boolean)
+    cdiEnabled - CDI is enabled in project or not (type: Boolean)
     classAnnotation - type of class annotation if any (type: String, values: @ManagedBean, @Named)
     scope - bean scope information (type: ScopeEntry)
         ScopeEntry#getClassName() - scope simple name (type: String)
@@ -26,7 +26,7 @@
 package ${package};
 
 </#if>
-<#if CDIEnabled??>
+<#if cdiEnabled?? && cdiEnabled>
     <#if classAnnotation??>
 import javax.inject.Named;
     </#if>

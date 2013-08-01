@@ -25,7 +25,6 @@
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="configurationCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="suiteCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
-                  <Component id="phpUnitLabel" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="bootstrapCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="runTestUsingUnitCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="askForTestGroupsCheckBox" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -39,7 +38,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="configurationLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="configurationTextField" max="32767" attributes="0"/>
+                      <Component id="configurationTextField" pref="0" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="configurationBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
@@ -67,7 +66,7 @@
                   <Group type="102" alignment="0" attributes="0">
                       <Component id="bootstrapLabel" min="-2" max="-2" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
-                      <Component id="bootstrapTextField" max="32767" attributes="0"/>
+                      <Component id="bootstrapTextField" pref="0" max="32767" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="bootstrapBrowseButton" linkSize="1" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
@@ -87,10 +86,9 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <Component id="phpUnitLabel" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="-2" attributes="0"/>
+              <EmptySpace min="0" pref="0" max="-2" attributes="0"/>
               <Component id="bootstrapCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace min="-2" max="-2" attributes="0"/>
+              <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="bootstrapLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="bootstrapTextField" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -130,30 +128,11 @@
               <Component id="runTestUsingUnitCheckBox" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Component id="askForTestGroupsCheckBox" min="-2" max="-2" attributes="0"/>
-              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
   </Layout>
   <SubComponents>
-    <Component class="javax.swing.JLabel" name="phpUnitLabel">
-      <Properties>
-        <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
-          <ComponentRef name="Form"/>
-        </Property>
-        <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/phpunit/ui/customizer/Bundle.properties" key="CustomizerPhpUnit.phpUnitLabel.text" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </Properties>
-      <AccessibilityProperties>
-        <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/phpunit/ui/customizer/Bundle.properties" key="CustomizerPhpUnit.phpUnitLabel.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-        <Property name="AccessibleContext.accessibleDescription" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
-          <ResourceString bundle="org/netbeans/modules/php/phpunit/ui/customizer/Bundle.properties" key="CustomizerPhpUnit.phpUnitLabel.AccessibleContext.accessibleDescription" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
-        </Property>
-      </AccessibilityProperties>
-    </Component>
     <Component class="javax.swing.JLabel" name="bootstrapLabel">
       <Properties>
         <Property name="labelFor" type="java.awt.Component" editor="org.netbeans.modules.form.ComponentChooserEditor">
@@ -173,6 +152,9 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="bootstrapTextField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/phpunit/ui/customizer/Bundle.properties" key="CustomizerPhpUnit.bootstrapTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -267,6 +249,9 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="configurationTextField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/phpunit/ui/customizer/Bundle.properties" key="CustomizerPhpUnit.configurationTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -361,6 +346,9 @@
       </AccessibilityProperties>
     </Component>
     <Component class="javax.swing.JTextField" name="suiteTextField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
       <AccessibilityProperties>
         <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
           <ResourceString bundle="org/netbeans/modules/php/phpunit/ui/customizer/Bundle.properties" key="CustomizerPhpUnit.suiteTextField.AccessibleContext.accessibleName" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -421,6 +409,9 @@
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="scriptTextField">
+      <Properties>
+        <Property name="columns" type="int" value="20"/>
+      </Properties>
     </Component>
     <Component class="javax.swing.JButton" name="scriptBrowseButton">
       <Properties>

@@ -39,42 +39,39 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.phpunit.ui.customizer;
+package org.netbeans.modules.php.editor;
 
-import javax.swing.JComponent;
-import org.netbeans.modules.php.api.phpmodule.PhpModule;
-import org.netbeans.modules.php.phpunit.PhpUnitTestingProvider;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer;
-import org.netbeans.spi.project.ui.support.ProjectCustomizer.Category;
-import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
+import java.io.File;
+import java.util.Collections;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
- * Project customizer for PhpUnit.
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PhpUnitCustomizer implements ProjectCustomizer.CompositeCategoryProvider {
+public class PHPCodeCompletion233756Test extends PHPCodeCompletionTestBase {
 
-    private final PhpModule phpModule;
-
-
-    public PhpUnitCustomizer(PhpModule phpModule) {
-        assert phpModule != null;
-        this.phpModule = phpModule;
+    public PHPCodeCompletion233756Test(String testName) {
+        super(testName);
     }
 
-    @NbBundle.Messages("PhpUnitCustomizer.name=PHPUnit")
-    @Override
-    public Category createCategory(Lookup context) {
-        return ProjectCustomizer.Category.create(
-                PhpUnitTestingProvider.getInstance().getIdentifier(),
-                Bundle.PhpUnitCustomizer_name(),
-                null,
-                (ProjectCustomizer.Category[]) null);
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test233756/issue233756.php", "^// CC HERE", false);
     }
 
     @Override
-    public JComponent createComponent(Category category, Lookup context) {
-        return new CustomizerPhpUnit(category, phpModule);
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        return Collections.singletonMap(
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test233756/"))
+            })
+        );
     }
 
 }

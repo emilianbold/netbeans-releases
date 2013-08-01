@@ -116,6 +116,7 @@ CLASS      B135618                         [PUBLIC]   issue135618.php
 CLASS      BadRequestException             [PUBLIC]   Nette\Application
 CLASS      Bar                             [PUBLIC]   Froo
 CLASS      Bar                             [PUBLIC]   issue191666.php
+CLASS      Bar                             [PUBLIC]   issue233756.php
 CLASS      Barrr                           [PUBLIC]   test204104.php
 CLASS      Barrr                           [PUBLIC]   test204104_02.php
 CLASS      Base                            [PUBLIC]   issue208193.php
@@ -192,6 +193,7 @@ CLASS      Exception1                      [PUBLIC]   issue204958.php
 CLASS      ExceptionClassName              [PUBLIC]   issue207594.php
 CLASS      Foo                             [PUBLIC]   issue159970.php
 CLASS      Foo                             [PUBLIC]   issue191666.php
+CLASS      Foo                             [PUBLIC,   issue233756.php
 CLASS      Foo                             [PUBLIC]   test203294.php
 CLASS      FooUrl                          [PUBLIC]   foo\lib\url
 CLASS      Foooo                           [PUBLIC]   test204104.php
