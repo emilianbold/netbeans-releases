@@ -4964,7 +4964,7 @@ public class CasualDiff {
         }
     }
     
-    public String printCodeStyle(CodeStyle style) {
+    private static String printCodeStyle(CodeStyle style) {
         if (style == null) {
             return "<none>"; // NOI18N
         }
