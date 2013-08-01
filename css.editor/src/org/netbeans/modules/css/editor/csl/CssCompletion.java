@@ -886,6 +886,14 @@ public class CssCompletion implements CodeCompletionHandler {
 
         Node node = completionContext.getActiveNode();
         switch (node.type()) {
+            case media:
+                //check if we are in the mediaQuery section and not in the media body
+                if(null == LexerUtils.followsToken(completionContext.getTokenSequence(), CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                    //@media | { div {} }
+                    break;
+                } 
+                //@media xxx { | }
+                //=>fallback to the mediaQuery 
             case mediaBody:
                 completionProposals.addAll(completeHtmlSelectors(completionContext, completionContext.getPrefix(), completionContext.getCaretOffset()));
                 break;

@@ -187,14 +187,15 @@ public class CssCompletionTest extends CssModuleTestBase {
     }
 
     public void testHtmlSelectorsInMedia() throws ParseException {
-//        checkCC("@media page {  |   } ", arr("html"), Match.CONTAINS);
-//        checkCC("@media page {  |   } ", arr("@media"), Match.DOES_NOT_CONTAIN); //media not supported here
-        checkCC("@media page {  h1 { } |   } ", arr("html"), Match.CONTAINS); //media not supported here
-
-//        checkCC("@media page {  htm|   } ", arr("html"), Match.EXACT);
-//        checkCC("@media page {  html, |   } ", arr("body"), Match.CONTAINS);
-//        checkCC("@media page {  html, bo|   } ", arr("body"), Match.CONTAINS);
-//        checkCC("@media page {  html > bo|   } ", arr("body"), Match.CONTAINS);
+        checkCC("@media page {  |   } ", arr("screen"), Match.DOES_NOT_CONTAIN);
+        checkCC("@media page {  |   } ", arr("@media"), Match.DOES_NOT_CONTAIN); //media not supported here        
+        checkCC("@media page {  |   } ", arr("html", "div"), Match.CONTAINS); //selector are offered inside media query body
+        
+        checkCC("@media page {  h1 { } |   } ", arr("html"), Match.CONTAINS); 
+        checkCC("@media page {  htm|   } ", arr("html"), Match.EXACT);
+        checkCC("@media page {  html, |   } ", arr("body"), Match.CONTAINS);
+        checkCC("@media page {  html, bo|   } ", arr("body"), Match.CONTAINS);
+        checkCC("@media page {  html > bo|   } ", arr("body"), Match.CONTAINS);
     }
 
     public void testVendorSpecificPropertyCompletion() throws ParseException {

@@ -62,14 +62,14 @@ import org.openide.util.RequestProcessor;
  */
 public class EditInstanceAction extends AbstractAction {
 
-    @NbBundle.Messages("CTL_Change=Change")
+    @NbBundle.Messages("CTL_Change=Edit")
     public static final String CHANGE_BUTTON = Bundle.CTL_Change();
     public static final String CANCEL_BUTTON = Bundle.CTL_Cancel();
     
     private JDialog dialog;
     
     public TeamServer server;
-    @NbBundle.Messages("CTL_ChangeInstance=Change Team Server...")
+    @NbBundle.Messages("CTL_ChangeInstance=Edit Team Server...")
     public EditInstanceAction(TeamServer server) {
         super(Bundle.CTL_ChangeInstance());
         this.server = server;

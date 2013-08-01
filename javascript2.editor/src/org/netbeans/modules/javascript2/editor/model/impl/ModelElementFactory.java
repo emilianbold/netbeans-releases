@@ -155,15 +155,19 @@ class ModelElementFactory {
 
     @CheckForNull
     static IdentifierImpl create(JsParserResult parserResult, IdentNode node) {
-        if (JsEmbeddingProvider.containsGeneratedIdentifier(node.getName())) {
-            return null;
-        }
-        return new IdentifierImpl(node.getName(), new OffsetRange(node.getStart(), node.getFinish()));
+        return create(parserResult, node.getName(), node.getStart(), node.getFinish());
     }
 
     @NonNull
     static IdentifierImpl create(JsParserResult parserResult, LiteralNode node) {
-        return new IdentifierImpl(node.getString(), new OffsetRange(node.getStart(), node.getFinish()));
+        return create(parserResult, node.getString(), node.getStart(), node.getFinish());
+    }
+    
+    static IdentifierImpl create(JsParserResult parserResult, String name, int start, int end) {
+        if (JsEmbeddingProvider.containsGeneratedIdentifier(name)) {
+            return null;
+        }
+        return new IdentifierImpl(name, new OffsetRange(start, end));
     }
 
     @CheckForNull
