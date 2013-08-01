@@ -135,7 +135,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                 String mimeType = NbEditorUtilities.getMimeType(doc);
                 for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(mimeType)) {
                     range = ext.getReferenceSpan(doc, caretOffset);
-                    if (range != null) {
+                    if (range != null && range != OffsetRange.NONE) {
                         result_ref.set(range);
                         return ;
                     }
