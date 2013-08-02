@@ -41,67 +41,25 @@
  */
 package org.netbeans.modules.web.browser.ui.picker;
 
-import java.util.Collection;
 import javax.swing.ComboBoxModel;
 import javax.swing.JComboBox;
-import javax.swing.SwingUtilities;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.browser.api.WebBrowser;
-import org.netbeans.modules.web.browser.api.WebBrowsers;
 
 /**
- * Browser combo box that uses BrowserMenu as its popup list.
+ * Browser combo box.
  * 
  * @author S. Aubrecht
  */
 public final class BrowserCombo extends JComboBox<WebBrowser> {
 
-    private final BrowserMenu popup;
-
     public BrowserCombo( @NullAllowed String selectedBrowserId, 
             boolean showIDEGlobalBrowserOption, boolean includePhoneGap,
             ComboBoxModel model) {
 
-        Collection<WebBrowser> browsers = WebBrowsers.getInstance().getAll(false, showIDEGlobalBrowserOption, includePhoneGap, true);
-        WebBrowser selectedBrowser = null;
-        if( null != selectedBrowserId ) {
-            selectedBrowser = BrowserUISupport.getBrowser( selectedBrowserId);
-        }
-        popup = new BrowserMenu( browsers, selectedBrowser );
-        setMaximumRowCount( 1 );
         setRenderer( BrowserUISupport.createBrowserRenderer() );
 
         setModel( model );
-
-        popup.addChangeListener( new ChangeListener() {
-
-            @Override
-            public void stateChanged( ChangeEvent e ) {
-                WebBrowser selBrowser = popup.getSelectedBrowser();
-                if( null == selBrowser )
-                    return;
-                for( int i=0; i<getItemCount(); i++ ) {
-                    WebBrowser wb = getItemAt( i );
-                    if( wb.getId().equals( selBrowser.getId() ) ) {
-                        setSelectedItem( wb );
-                        break;
-                    }
-                }
-            }
-        });
-    }
-
-    @Override
-    public void firePopupMenuWillBecomeVisible() {
-        super.firePopupMenuWillBecomeVisible();
-        SwingUtilities.invokeLater( new Runnable() {
-            @Override
-            public void run() {
-                popup.show( BrowserCombo.this, 0, getHeight() );
-            }
-        });
     }
 }
