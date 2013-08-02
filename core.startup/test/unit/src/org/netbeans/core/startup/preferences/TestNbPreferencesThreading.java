@@ -70,7 +70,7 @@ public class TestNbPreferencesThreading extends NbTestCase {
                 }
                 try {
                     synchronized (fileEventBlock1) {
-                        if (fileEventBlock1[0]) {
+                        if (!fileEventBlock1[0]) {
                             fileEventBlock1.wait();
                         }
                     }
