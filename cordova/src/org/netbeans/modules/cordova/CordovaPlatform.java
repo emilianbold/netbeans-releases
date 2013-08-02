@@ -59,6 +59,7 @@ public class CordovaPlatform {
     private static String CORDOVA_SDK_ROOT_PREF = "cordova.home";//NOI18N
 
     private Version version;
+    private boolean isGitReady;
 
     private transient final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
@@ -107,13 +108,26 @@ public class CordovaPlatform {
     }
     
     public boolean isReady() {
-        return getVersion() != null;
+        return isGitReady() && getVersion() != null;
     }
     
     public static boolean isCordovaProject(Project project) {
         final FileObject root = project.getProjectDirectory();
         root.refresh();
         return root.getFileObject(".cordova") != null; // NOI18N
+    }
+
+    private boolean isGitReady() {
+        if (!isGitReady) {
+            try {
+                String v = ProcessUtilities.callProcess(Utilities.isWindows() ? "git.exe" : "git", true, 60 * 1000, "--version");
+                if (v.contains("version")) {
+                    isGitReady = true;
+                }
+            } catch (IOException ex) {
+            }
+        } 
+        return isGitReady;
     }
 
     public static class Version implements Comparable<Version> {

@@ -69,7 +69,8 @@ import org.openide.util.NbBundle;
     "ERR_Title=Error",
     "LBL_CheckingDevice=Connecting to android device...",
     "ERR_WebDebug=Cannot connect to Chrome.\nPlease check if USB Web Debugging is enabled in Chrome on your mobile device.",    
-    "ERR_NO_Cordova=<html><body>NetBeans cannot find cordova on your PATH. Please install cordova.<br>NetBeans might require restart for changes to take effect.</body></html>"
+    "ERR_NO_Cordova=NetBeans cannot find cordova or git on your PATH. Please install cordova and git.\n" +
+            "NetBeans might require restart for changes to take effect.\n"
 })
 /**
  * Cordova Action Provider. Invokes cordova build.

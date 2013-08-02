@@ -80,7 +80,8 @@ public class IOSActionProvider implements ActionProvider {
         "ERR_NotMac=iOS Development is available only on Mac OS X",
         "ERR_Title=Error",
         "LBL_Opening=Connecting to iOS Simulator",
-        "ERR_NO_Cordova=<html><body>NetBeans cannot find cordova on your PATH. Please install cordova.<br>NetBeans might require restart for changes to take effect.</body></html>",
+        "ERR_NO_Cordova=NetBeans cannot find cordova or git on your PATH. Please install cordova and git.\n" +
+            "NetBeans might require restart for changes to take effect.\n",
         "ERR_NO_Xcode=Supported version of Xcode and Command Line Tools for Xcode not found.\n"
             + "Make sure, that you have latest version of Xcode and iOS SDK installed from Mac App Store."
     })
