@@ -601,7 +601,7 @@ final class DefaultDashboard<P> implements DashboardImpl<P> {
     }
 
     private JComponent createEmptyContent() {
-        return TeamView.getInstance().getNoProjectComponent(null);
+        return TeamView.getInstance().createNoProjectComponent(null);
     }
 
     private void startLoadingAllProjects(boolean forceRefresh) {
