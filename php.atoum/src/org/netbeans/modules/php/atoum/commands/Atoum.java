@@ -62,6 +62,7 @@ import org.netbeans.modules.php.api.phpmodule.PhpModule;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.atoum.AtoumTestingProvider;
 import org.netbeans.modules.php.atoum.options.AtoumOptions;
+import org.netbeans.modules.php.atoum.preferences.AtoumPreferences;
 import org.netbeans.modules.php.atoum.run.TapParser;
 import org.netbeans.modules.php.atoum.run.TestCaseVo;
 import org.netbeans.modules.php.atoum.run.TestSuiteVo;
@@ -70,14 +71,15 @@ import org.netbeans.modules.php.spi.testing.locate.Locations;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
+import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.netbeans.modules.php.spi.testing.run.TestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 
 import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.DEBUG;
 import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.TEST;
-import org.netbeans.modules.php.spi.testing.run.TestSession;
-import org.netbeans.modules.php.spi.testing.run.TestSuite;
 
 /**
  * Represents <tt>atoum</tt> or <tt>mageekguy.atoum.phar</tt>.
@@ -88,6 +90,8 @@ public final class Atoum {
 
     public static final String PHAR_FILE_NAME = "mageekguy.atoum.phar"; // NOI18N
     public static final String ATOUM_FILE_NAME = "atoum"; // NOI18N
+    public static final String BOOTSTRAP_FILE_NAME = ".bootstrap.atoum.php"; // NOI18N
+    public static final String CONFIGURATION_FILE_NAME = ".atoum.php"; // NOI18N
 
     public static final Pattern LINE_PATTERN = Pattern.compile("([^:]+):(\\d+)"); // NOI18N
 
@@ -97,6 +101,9 @@ public final class Atoum {
     private static final String DIRECTORY_PARAM = "-d"; // NOI18N
     private static final String FILE_PARAM = "-f"; // NOI18N
     private static final String FILTER_PARAM = "-m"; // NOI18N
+    private static final String BOOTSTRAP_PARAM = "-bf"; // NOI18N
+    private static final String CONFIGURATION_PARAM = "-c"; // NOI18N
+    private static final String INIT_PARAM = "--init"; // NOI18N
 
     private final String atoumPath;
 
@@ -145,9 +152,33 @@ public final class Atoum {
     }
 
     @CheckForNull
+    public static File getDefaultBootstrap(PhpModule phpModule) {
+        FileObject testDirectory = phpModule.getTestDirectory();
+        if (testDirectory == null) {
+            return null;
+        }
+        File testDir = FileUtil.toFile(testDirectory);
+        assert testDir != null : testDirectory;
+        return new File(testDir, BOOTSTRAP_FILE_NAME);
+    }
+
+    @CheckForNull
+    public static File getDefaultConfiguration(PhpModule phpModule) {
+        FileObject testDirectory = phpModule.getTestDirectory();
+        if (testDirectory == null) {
+            return null;
+        }
+        File testDir = FileUtil.toFile(testDirectory);
+        assert testDir != null : testDirectory;
+        return new File(testDir, CONFIGURATION_FILE_NAME);
+    }
+
+    @CheckForNull
     public Integer runTests(PhpModule phpModule, TestRunInfo runInfo, final TestSession testSession) throws TestRunException {
         PhpExecutable atoum = getExecutable(phpModule, getOutputTitle(runInfo));
         List<String> params = new ArrayList<>();
+        addBootstrap(phpModule, params);
+        addConfiguration(phpModule, params);
         params.add(TAP_FORMAT_PARAM);
         if (runInfo.isCoverageEnabled()) {
             // XXX add coverage params once atoum supports it
@@ -192,6 +223,32 @@ public final class Atoum {
             LOGGER.log(Level.INFO, null, ex);
             UiUtils.processExecutionException(ex, AtoumOptionsPanelController.OPTIONS_SUB_PATH);
             throw new TestRunException(ex);
+        }
+        return null;
+    }
+
+    @NbBundle.Messages("Atoum.init=atoum (init)")
+    @CheckForNull
+    public Pair<File, File> init(PhpModule phpModule) {
+        PhpExecutable atoum = getExecutable(phpModule, Bundle.Atoum_init());
+        List<String> params = new ArrayList<>();
+        addBootstrap(phpModule, params);
+        addConfiguration(phpModule, params);
+        params.add(INIT_PARAM);
+        atoum.additionalParameters(params);
+        try {
+            Integer result = atoum.runAndWait(getDescriptor(), "Running atoum init..."); // NOI18N
+            if (result == null
+                    || result != 0) {
+                return null;
+            }
+            return Pair.of(getDefaultBootstrap(phpModule), getDefaultConfiguration(phpModule));
+        } catch (CancellationException ex) {
+            // cancelled
+            LOGGER.log(Level.FINE, "Init cancelled", ex);
+        } catch (ExecutionException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            UiUtils.processExecutionException(ex, AtoumOptionsPanelController.OPTIONS_SUB_PATH);
         }
         return null;
     }
@@ -243,6 +300,20 @@ public final class Atoum {
             return className.substring(1);
         }
         return className;
+    }
+
+    private void addBootstrap(PhpModule phpModule, List<String> params) {
+        if (AtoumPreferences.isBootstrapEnabled(phpModule)) {
+            params.add(BOOTSTRAP_PARAM);
+            params.add(AtoumPreferences.getBootstrapPath(phpModule));
+        }
+    }
+
+    private void addConfiguration(PhpModule phpModule, List<String> params) {
+        if (AtoumPreferences.isConfigurationEnabled(phpModule)) {
+            params.add(CONFIGURATION_PARAM);
+            params.add(AtoumPreferences.getConfigurationPath(phpModule));
+        }
     }
 
     //~ Inner classes

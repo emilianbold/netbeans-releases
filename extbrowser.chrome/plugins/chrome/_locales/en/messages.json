@@ -185,7 +185,7 @@
 
 
     "_Warning_DoNotShowMeThisAgain": {
-        "message": "Do not show me this again"
+        "message": "Do not show this message again"
     },
     "_Warning_DisconnectedDebuggerTitle": {
         "message": "NetBeans Connector has Closed"
@@ -201,7 +201,7 @@
         "message": "Window cannot be resized properly"
     },
     "_Warning_WindowTooSmallPerex": {
-        "message": "Unfortunately, on Mac OS, the minimal width of the Chrome window is 400 pixels."
+        "message": "Unfortunately, on Mac OS X, the minimal width of the Chrome window is 400 pixels."
     }
 
 }
