@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,42 +37,71 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.openide.util;
 
-package org.netbeans.jellytools.testutils;
-
-import org.netbeans.jellytools.Bundle;
-import org.netbeans.jellytools.NbDialogOperator;
-import org.netbeans.jellytools.actions.DeleteAction;
-import org.netbeans.jellytools.nodes.Node;
-import org.netbeans.jemmy.operators.JDialogOperator;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import static junit.framework.Assert.assertTrue;
+import org.junit.Test;
 
 /**
- * An extension to NodeUtils which adds support for safe delete dialog.
  *
- * @author Vojtech.Sigler@sun.com
+ * @author Tim Boudreau
  */
-public class JavaNodeUtils extends NodeUtils {
+public class RequestProcessor226051Test {
 
-    public static void closeSafeDeleteDialog()
-    {
-        String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle",
-                "LBL_SafeDel_Delete"); // NOI18N
-        new JDialogOperator(safeDeleteTitle).requestClose();
+    private static final long DELAY = 2000;
+
+    @Test
+    public void testAwaitTermination() throws InterruptedException {
+        int count = 5;
+        RequestProcessor rp = new RequestProcessor(getClass().getSimpleName(), count+1, false);
+        CountDownLatch latch = new CountDownLatch(count);
+        List<R> rs = new LinkedList<R>();
+        for (int i = 0; i < count; i++) {
+            R r = new R(latch);
+            rs.add(r);
+            rp.post(r);
+        }
+        rp.shutdown();
+        boolean res = rp.awaitTermination(DELAY * (count + 1), TimeUnit.MILLISECONDS);
+        for (R r : rs) {
+            assertTrue(r.ran.get());
+        }
+        assertTrue(res);
     }
 
-    public static void performSafeDelete(Node node) {
-        new DeleteAction().performAPI(node);
-        // wait for one of Delete dialogs
-        NbDialogOperator deleteDialogOper = new NbDialogOperator("Delet");
-        if (deleteDialogOper.getTitle().equals("Delete")) {
-            // "Delete" - safe delete when scanning is not running
-            deleteDialogOper.ok();
-        } else {
-            // "Confirm Object Deletion" - if scanning is in progress
-            deleteDialogOper.yes();
+    static class R implements Runnable {
+
+        private final CountDownLatch exitLatch;
+        private final AtomicBoolean ran = new AtomicBoolean();
+
+        R(CountDownLatch exitLatch) {
+            this.exitLatch = exitLatch;
         }
-        deleteDialogOper.waitClosed();
+
+        @Override
+        public void run() {
+            try {
+                boolean done = false;
+                while (!done) {
+                    try {
+                        Thread.sleep(DELAY);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } finally {
+                        done = true;
+                    }
+                }
+            } finally {
+                ran.set(true);
+            }
+            exitLatch.countDown();
+        }
     }
 }

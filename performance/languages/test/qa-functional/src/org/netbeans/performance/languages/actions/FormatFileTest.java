@@ -41,25 +41,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.actions;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -69,40 +67,36 @@ public class FormatFileTest extends PerformanceTestCase {
 
     protected Node fileToBeOpened;
     protected String testProject;
-    protected String fileName; 
+    protected String fileName;
     protected String nodePath;
     private EditorOperator editorOperator;
     protected static ProjectsTabOperator projectsTab = null;
     private int caretBlinkRate;
-    
+
     public FormatFileTest(String testName) {
         super(testName);
     }
 
     public FormatFileTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(FormatFileTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(FormatFileTest.class).suite();
     }
 
     @Override
     public void initialize() {
         closeAllModal();
         String path = nodePath + "|" + fileName;
-        fileToBeOpened = new Node(getProjectNode(testProject),path);
+        fileToBeOpened = new Node(getProjectNode(testProject), path);
     }
-    
+
     @Override
     public void prepare() {
         new OpenAction().performAPI(fileToBeOpened);
         editorOperator = EditorWindowOperator.getEditor(fileName);
-        caretBlinkRate =  editorOperator.txtEditorPane().getCaret().getBlinkRate();
+        caretBlinkRate = editorOperator.txtEditorPane().getCaret().getBlinkRate();
         editorOperator.txtEditorPane().getCaret().setBlinkRate(0);
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
         editorOperator.txtEditorPane().clickForPopup();
@@ -117,23 +111,24 @@ public class FormatFileTest extends PerformanceTestCase {
     @Override
     public void close() {
         editorOperator.txtEditorPane().getCaret().setBlinkRate(caretBlinkRate);
-        repaintManager().resetRegionFilters();        
+        repaintManager().resetRegionFilters();
         EditorOperator.closeDiscardAll();
     }
 
     protected Node getProjectNode(String projectName) {
-        if(projectsTab==null)
+        if (projectsTab == null) {
             projectsTab = ScriptingUtilities.invokePTO();
+        }
         return projectsTab.getProjectRootNode(projectName);
     }
-    
+
     public void testFormatPHPFile() {
         testProject = Projects.PHP_PROJECT;
         fileName = "php20kb.php";
         nodePath = "Source Files";
         expectedTime = 1000;
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 2000;
         doMeasurement();
     }
-   
+
 }
