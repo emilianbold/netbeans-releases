@@ -41,27 +41,24 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.actions;
 
+import java.awt.event.InputEvent;
+import java.awt.event.KeyEvent;
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager.RegionFilter;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-
-import java.awt.event.InputEvent;
-import java.awt.event.KeyEvent;
-
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -73,28 +70,24 @@ public class ScriptingCodeCompletionInEditorTest extends PerformanceTestCase {
     private EditorOperator editorOperator;
     protected Node fileToBeOpened;
     protected String testProject;
-    protected String fileName; 
-    protected String nodePath;    
+    protected String fileName;
+    protected String nodePath;
     protected static ProjectsTabOperator projectsTab = null;
-    
+
     public ScriptingCodeCompletionInEditorTest(String testName) {
         super(testName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 2000;
     }
 
     public ScriptingCodeCompletionInEditorTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
         expectedTime = WINDOW_OPEN;
-        WAIT_AFTER_OPEN=2000;
+        WAIT_AFTER_OPEN = 2000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(ScriptingCodeCompletionInEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(ScriptingCodeCompletionInEditorTest.class).suite();
     }
 
     @Override
@@ -102,23 +95,24 @@ public class ScriptingCodeCompletionInEditorTest extends PerformanceTestCase {
         repaintManager().addRegionFilter(COMPLETION_FILTER);
         closeAllModal();
 
-        String path = nodePath+"|"+fileName;
-        
-        fileToBeOpened = new Node(getProjectNode(testProject),path);
+        String path = nodePath + "|" + fileName;
+
+        fileToBeOpened = new Node(getProjectNode(testProject), path);
         new OpenAction().performAPI(fileToBeOpened);
-        editorOperator = EditorWindowOperator.getEditor(fileName);        
+        editorOperator = EditorWindowOperator.getEditor(fileName);
     }
-    
+
     protected Node getProjectNode(String projectName) {
-        if(projectsTab==null)
+        if (projectsTab == null) {
             projectsTab = ScriptingUtilities.invokePTO();
-        
+        }
+
         return projectsTab.getProjectRootNode(projectName);
     }
-    
+
     @Override
     public void prepare() {
-        editorOperator.setCaretPositionToEndOfLine(lineNumber);        
+        editorOperator.setCaretPositionToEndOfLine(lineNumber);
     }
 
     @Override
@@ -137,7 +131,6 @@ public class ScriptingCodeCompletionInEditorTest extends PerformanceTestCase {
         repaintManager().resetRegionFilters();
         editorOperator.closeDiscard();
     }
-
 
     public void testCC_InJavaScriptEditor() {
         testProject = Projects.SCRIPTING_PROJECT;
@@ -171,18 +164,16 @@ public class ScriptingCodeCompletionInEditorTest extends PerformanceTestCase {
         doMeasurement();
     }
 
-    
-    private static final RegionFilter COMPLETION_FILTER =
-            new RegionFilter() {
+    private static final RegionFilter COMPLETION_FILTER
+            = new RegionFilter() {
 
                 public boolean accept(javax.swing.JComponent c) {
-                    return c.getClass().getName().equals("org.netbeans.modules.editor.completion.CompletionScrollPane") ||
-                           c.getClass().getName().equals("org.openide.text.QuietEditorPane");
+                    return c.getClass().getName().equals("org.netbeans.modules.editor.completion.CompletionScrollPane")
+                    || c.getClass().getName().equals("org.openide.text.QuietEditorPane");
                 }
 
                 public String getFilterName() {
                     return "Accept paints from org.netbeans.modules.editor.completion.CompletionScrollPane || org.openide.text.QuietEditorPane";
                 }
-            };    
-
+            };
 }

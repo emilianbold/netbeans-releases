@@ -44,7 +44,6 @@
 package org.netbeans.performance.j2ee.menus;
 
 import junit.framework.Test;
-import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
@@ -62,9 +61,7 @@ public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
     private static ProjectsTabOperator projectsTab = null;
     protected static Node dataObjectNode;
 
-    private static final String JAVA_EE_MODULES = Bundle.getStringTrimmed(
-            "org.netbeans.modules.j2ee.earproject.ui.Bundle",
-            "LBL_LogicalViewNode");
+    private static final String JAVA_EE_MODULES = "Java EE Modules";
 
     /**
      * Creates a new instance of J2EEProjectsViewPopupMenuTest
@@ -210,8 +207,7 @@ public class J2EEProjectsViewPopupMenuTest extends PerformanceTestCase {
     @Override
     public ComponentOperator open() {
         java.awt.Point point = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
-        int button = dataObjectNode.tree().getPopupMouseButton();
-        dataObjectNode.tree().clickMouse(point.x, point.y, 1, button);
+        dataObjectNode.tree().clickForPopup(point.x, point.y);
         return new JPopupMenuOperator();
     }
 }

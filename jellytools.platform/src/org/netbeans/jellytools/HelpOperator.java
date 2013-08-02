@@ -294,6 +294,12 @@ public class HelpOperator extends WindowOperator {
     public String getContentText() {
         return txtContentViewer().getText();
     }
+    
+    @SuppressWarnings("deprecation")
+    @Override
+    public void close() {
+        requestClose();
+    }
 
     /** Performs verification by accessing all sub-components */    
     public void verify() {
