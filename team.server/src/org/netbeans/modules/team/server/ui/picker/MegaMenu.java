@@ -114,7 +114,11 @@ public class MegaMenu {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if(TeamServerManager.PROP_INSTANCES.equals(evt.getPropertyName())) {
-                        showAgain();
+                        if(TeamServerManager.getDefault().getTeamServers().isEmpty()) {
+                            hide();
+                        } else {
+                            showAgain();
+                        }
                     }
                 }
             };

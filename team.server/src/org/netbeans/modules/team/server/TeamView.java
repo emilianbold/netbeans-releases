@@ -49,6 +49,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Collection;
@@ -59,6 +61,7 @@ import org.netbeans.modules.team.ide.spi.TeamDashboardComponentProvider;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.openide.windows.TopComponent;
 import static org.netbeans.modules.team.server.Bundle.*;
+import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.netbeans.modules.team.server.ui.common.AddInstanceAction;
 import org.netbeans.modules.team.server.ui.common.DashboardSupport;
 import org.netbeans.modules.team.server.ui.common.LinkButton;
@@ -69,19 +72,31 @@ import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.NbBundle.Messages;
+import org.openide.util.WeakListeners;
 
 public final class TeamView {
 
     private JPanel dashboardPanel;
     private JScrollPane dashboardScrollPane;
-    private JComponent emptyComponent;
     private JComboBox combo;    
     private JComponent noProjectComponent;
     private TeamServer teamServer;
     private OneProjectDashboardPicker projectPicker;
 
+    private final PropertyChangeListener serverManagerListener;
+    
     @Messages("A11Y_TeamProjects=Team Projects")
     private TeamView() {
+        serverManagerListener = new PropertyChangeListener() {
+            @Override
+            public void propertyChange(PropertyChangeEvent evt) {
+                if(TeamServerManager.PROP_INSTANCES.equals(evt.getPropertyName())) {
+                    switchContent();
+                }
+            }
+        };
+        TeamServerManager.getDefault().addPropertyChangeListener(WeakListeners.propertyChange(serverManagerListener, TeamServerManager.getDefault()));                    
+        
         teamServer = Utilities.getLastTeamServer();
         if(teamServer == null) {
             teamServer = Utilities.getPreferredServer();
@@ -211,6 +226,12 @@ public final class TeamView {
     }
 
     public synchronized JComponent getComponent() {
+        JComponent c = getComponentIntern();
+        switchContent();
+        return c;
+    }
+    
+    private synchronized JComponent getComponentIntern() {
         if(dashboardPanel == null) {
             dashboardPanel = new JPanel();
             dashboardPanel.setBackground(ColorManager.getDefault().getDefaultBackground());
@@ -246,46 +267,39 @@ public final class TeamView {
             String a11y = A11Y_TeamProjects();
             accessibleContext.setAccessibleName(a11y);
             accessibleContext.setAccessibleDescription(a11y);
-        }        
-        switchContent();
+        }      
         return dashboardPanel;
     }
-
+    
     private void switchContent() {
-        if(dashboardPanel == null) {
+        if(getComponentIntern()== null) {
             return;
         }
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                JComponent comp = teamServer == null ? emptyComponent = getNoProjectComponent() : teamServer.getDashboardComponent();
-                boolean isEmpty = teamServer == null || comp == null;
-                if( isEmpty ) {
-                    if( dashboardScrollPane.getViewport().getView() == null 
-                            || dashboardScrollPane.getViewport().getView() != emptyComponent ) {
-                        dashboardScrollPane.setViewportView(emptyComponent = getNoProjectComponent());
-                        if(projectPicker != null) {
-                            projectPicker.setVisible(false);
-                        }                        
-                        dashboardScrollPane.invalidate();
-                        dashboardScrollPane.revalidate();
-                        dashboardScrollPane.repaint();
-                    }
+                JComponent comp;
+                boolean noServers = TeamServerManager.getDefault().getTeamServers().isEmpty();
+                if(noServers) {
+                    comp = createNoProjectComponent(new AddInstanceAction());
+                } else if(getProjectPicker().isNoProject()) {
+                    comp = createNoProjectComponent(null);
                 } else {
-                    if( comp != dashboardScrollPane.getViewport().getView() ) {
-                        dashboardScrollPane.setViewportView(comp);
-                        if(projectPicker != null) {
-                            projectPicker.setVisible(true);
-                        }                        
-                        dashboardScrollPane.invalidate();
-                        dashboardScrollPane.revalidate();
-                        dashboardScrollPane.repaint();
-                        // hack: ensure the dashboard component has focus (when
-                        // added to already visible and activated TopComponent)
-                        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, dashboardScrollPane);
-                        if (tc != null && TopComponent.getRegistry().getActivated() == tc) {
-                            comp.requestFocus();
-                        }
+                    comp = teamServer.getDashboardComponent();
+                }
+                if( comp != dashboardScrollPane.getViewport().getView() ) {
+                    dashboardScrollPane.setViewportView(comp);
+                    if(projectPicker != null) {
+                        projectPicker.setVisible(!noServers);
+                    }                        
+                    dashboardScrollPane.invalidate();
+                    dashboardScrollPane.revalidate();
+                    dashboardScrollPane.repaint();
+                    // hack: ensure the dashboard component has focus (when
+                    // added to already visible and activated TopComponent)
+                    TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, dashboardScrollPane);
+                    if (tc != null && TopComponent.getRegistry().getActivated() == tc) {
+                        comp.requestFocus();
                     }
                 }
             }
@@ -297,11 +311,7 @@ public final class TeamView {
         }
     }
 
-    private JComponent getNoProjectComponent() {
-        return getNoProjectComponent(new AddInstanceAction());
-    }
-    
-    public JComponent getNoProjectComponent(Action addInstanceAction) {
+    public JComponent createNoProjectComponent(Action addInstanceAction) {
         if(noProjectComponent == null) {
             Collection<? extends TeamDashboardComponentProvider> c = Lookup.getDefault().lookupAll(TeamDashboardComponentProvider.class);
             TeamDashboardComponentProvider providerImpl = c != null && c.size() > 0 ? c.iterator().next() : null;

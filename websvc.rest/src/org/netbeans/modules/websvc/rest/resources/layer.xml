@@ -108,7 +108,7 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/JerseyClientWizard.html"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/>
             </file>
-            <file name="RestClientStubs">
+<!--            <file name="RestClientStubs">
                 <attr name="position" intvalue="480"/>
                 <attr name="template" boolvalue="true"/>
                 <attr name="templateCategory" stringvalue="web-types"/>
@@ -116,7 +116,7 @@
                 <attr name="templateWizardURL" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/wizard/resources/ClientStubs.html"/>
                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.websvc.rest.wizard.Bundle"/>
                 <attr name="SystemFileSystem.icon" urlvalue="nbresloc:/org/netbeans/modules/websvc/rest/nodes/resources/restservice.png"/> 
-            </file>
+            </file>-->
             <file name="CrossOriginResourceSharingFilter.java">
                 <attr name="position" intvalue="490"/>
                 <attr name="template" boolvalue="true"/>

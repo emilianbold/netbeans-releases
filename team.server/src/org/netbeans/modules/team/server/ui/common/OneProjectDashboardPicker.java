@@ -49,6 +49,7 @@ import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.BorderFactory;
@@ -71,6 +72,7 @@ import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
 import org.netbeans.modules.team.server.ui.spi.TeamServer;
 import org.netbeans.modules.team.commons.treelist.ListNode;
 import org.netbeans.modules.team.commons.treelist.ProgressLabel;
+import org.netbeans.modules.team.server.api.TeamServerManager;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -214,7 +216,7 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         lblBookmarkingProgress.addMouseListener(mListener);
         lblBookmarkingProgress.addMouseMotionListener(mListener);
 
-        setNoProject();
+        setNoProjectFields();
     }
 
     void setButtons() {
@@ -255,11 +257,11 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
                 this.currentProject = project;
                 this.currentProjectNode = node;
                 setProjectLabel(project.getDisplayName());
+                TeamView.getInstance().setSelectedServer(server);
             } else {
                 setNoProject();
             }
-            TeamView.getInstance().setSelectedServer(server);
-        }
+        } 
         setLoadingButtons(false);
         setButtons();
         if(hideMegaMenu) {
@@ -267,11 +269,16 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         }
     }
 
-    void setNoProject() {
+    private void setNoProject() {
         synchronized ( LOCK ) {
             this.currentProject = null;
             this.currentProjectNode = null;
+            TeamView.getInstance().setSelectedServer(null);
         }
+        setNoProjectFields();
+    }
+
+    private void setNoProjectFields() throws MissingResourceException {
         setProjectLabel(NbBundle.getMessage(DashboardSupport.class, "CLICK_TO_SELECT"));
         setLoadingButtons(false);
         setButtons();
@@ -318,10 +325,14 @@ public final class OneProjectDashboardPicker<P> extends JPanel {
         }
     }
 
-    boolean isNoProject() {
+    public boolean isNoProject() {
         synchronized ( LOCK ) {
             return currentProject == null;
         }
+    }
+    
+    public boolean isSelectedServer(TeamServer server) {
+        return this.server == server;
     }
     
     private void switchProject() {

@@ -1699,7 +1699,12 @@ public class DirectoryChooserUI extends BasicFileChooserUI {
                         try {
                             newFolderNode = new DirectoryNode(fileChooser.getFileSystemView().createNewFolder(selectedNode.getFile()));
                             model.insertNodeInto(newFolderNode, selectedNode, selectedNode.getChildCount());
-                            applyEdit(newFolderNode);
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run () {
+                                    applyEdit(newFolderNode);
+                                }
+                            });
                         } catch (IOException ex) {
                             Exceptions.printStackTrace(ex);
                         }

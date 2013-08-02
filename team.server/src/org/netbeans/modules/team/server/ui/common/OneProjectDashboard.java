@@ -179,6 +179,7 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         dashboardPanel.setBackground(ColorManager.getDefault().getDefaultBackground());
         
         scrollPane.getViewport().setBackground(ColorManager.getDefault().getDefaultBackground());
+        scrollPane.setViewportView(dashboardComponent.getComponent());
         
         dashboardPanel.add(scrollPane, BorderLayout.CENTER);
                     
@@ -295,15 +296,14 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
                 otherProjects.clear();
                 memberProjects.clear();
                 projectNodes.clear();
-                getProjectPicker().setNoProject();
-                switchProject(null, true);
+                OneProjectDashboardPicker picker = getProjectPicker();
+                if(picker.isSelectedServer(server)) {
+                    picker.setCurrentProject(null, null, null, false);
+                    switchProject(null, true);
+                }
             } 
             memberProjectsLoaded = false;
             
-            // the reload is handled from the mega menu in case it happens 
-//            if( null != login ) {
-//                startAllProjectsLoading(false, false);
-//            }
             if( null != this.login ) {
                 this.login.addPropertyChangeListener(userListener);
                 loadSelectedProject();                
@@ -436,35 +436,16 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         Runnable r = new Runnable() {
             @Override
             public void run() {
-                boolean isEmpty;
-
-                synchronized( LOCK ) {
-                    isEmpty = getProjectPicker().isNoProject();
-                }
-
-                boolean dashboardComponentShowing = scrollPane.getViewport().getView() == dashboardComponent.getComponent();
-                if( isEmpty ) {
-                    if( dashboardComponentShowing || scrollPane.getViewport().getView() == null ) {
-                        scrollPane.setViewportView(createEmptyContent());
-                        scrollPane.invalidate();
-                        scrollPane.revalidate();
-                        scrollPane.repaint();
-                    }
-                } else {
-                    dashboardComponent.beforeShow();
-                    switchMemberProjects();
-                    if( !dashboardComponentShowing ) {
-                        scrollPane.setViewportView(dashboardComponent.getComponent());
-                        scrollPane.invalidate();
-                        scrollPane.revalidate();
-                        scrollPane.repaint();
-                        // hack: ensure the dashboard component has focus (when
-                        // added to already visible and activated TopComponent)
-                        TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, scrollPane);
-                        if (tc != null && TopComponent.getRegistry().getActivated() == tc) {
-                            dashboardComponent.getComponent().requestFocus();
-                        }
-                    }
+                dashboardComponent.beforeShow();
+                switchMemberProjects();
+                scrollPane.invalidate();
+                scrollPane.revalidate();
+                scrollPane.repaint();
+                // hack: ensure the dashboard component has focus (when
+                // added to already visible and activated TopComponent)
+                TopComponent tc = (TopComponent) SwingUtilities.getAncestorOfClass(TopComponent.class, scrollPane);
+                if (tc != null && TopComponent.getRegistry().getActivated() == tc) {
+                    dashboardComponent.getComponent().requestFocus();
                 }
             }
         };
@@ -473,10 +454,6 @@ public final class OneProjectDashboard<P> implements DashboardImpl<P> {
         } else {
             SwingUtilities.invokeLater(r);
         }
-    }
-
-    private JComponent createEmptyContent() {
-        return TeamView.getInstance().getNoProjectComponent(null);
     }
 
     private void setOtherProjects(ArrayList<ProjectHandle<P>> projects) {

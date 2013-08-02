@@ -60,6 +60,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -1871,13 +1872,20 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
 
         @Override
         public void run() {
-            synchronized (this) {
+            synchronized (JSFConfigurationPanelVisual.this) {
                 long time = System.currentTimeMillis();
                 for (Library library : getOrCacheJsfLibraries()) {
                     List<URL> content = library.getContent("classpath"); //NOI18N
                     JSFVersion jsfVersion = JSFVersion.forClasspath(content);
                     LibraryItem item = jsfVersion != null ? new LibraryItem(library, jsfVersion) : new LibraryItem(library, JSFVersion.JSF_1_1);
                     jsfLibraries.add(item);
+                    Collections.sort(jsfLibraries, new Comparator<LibraryItem>() {
+                        @Override
+                        public int compare(LibraryItem li1, LibraryItem li2) {
+                            return li1.getLibrary().getDisplayName().compareTo(li2.getLibrary().getDisplayName());
+                        }
+                    });
+                    Collections.reverse(jsfLibraries);
                 }
 
                 // if maven, exclude user defined libraries
@@ -1892,8 +1900,6 @@ private void serverLibrariesActionPerformed(java.awt.event.ActionEvent evt) {//G
                         for (LibraryItem libraryItem : jsfLibraries) {
                             registeredItems.add(libraryItem.getLibrary().getDisplayName());
                         }
-                        Collections.sort(registeredItems);
-                        Collections.reverse(registeredItems);
                         setRegisteredLibraryModel(registeredItems.toArray(new String[registeredItems.size()]));
                         updatePreferredLanguages();
                         updateJsfComponents();
