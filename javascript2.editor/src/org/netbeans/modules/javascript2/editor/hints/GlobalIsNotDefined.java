@@ -55,12 +55,15 @@ import org.netbeans.modules.csl.api.HintSeverity;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.hints.JsHintsProvider.JsRuleContext;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.model.DeclarationScope;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
 import org.netbeans.modules.javascript2.editor.model.Occurrence;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
+import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,17 +82,23 @@ public class GlobalIsNotDefined extends JsAstRule {
     void computeHints(JsRuleContext context, List<Hint> hints, int offset, HintsProvider.HintsManager manager) throws BadLocationException {
         JsObject globalObject = context.getJsParserResult().getModel().getGlobalObject();
         Collection<? extends JsObject> variables = ModelUtils.getVariables((DeclarationScope)globalObject);
+        FileObject fo = context.parserResult.getSnapshot().getSource().getFileObject();
+        JsIndex jsIndex = JsIndex.get(fo);
         for (JsObject variable : variables) {
             if(!variable.isDeclared() 
                     && !KNOWN_GLOBAL_OBJECTS.contains(variable.getName())
                     && (variable.getJSKind() == JsElement.Kind.VARIABLE
                     || variable.getJSKind() == JsElement.Kind.OBJECT)) {
                 String varName = variable.getName();
-                if (variable.getOccurrences().isEmpty()) {
-                    addHint(context, hints, offset, varName, variable.getOffsetRange());
-                } else {
-                    for(Occurrence occurrence : variable.getOccurrences()) {
-                        addHint(context, hints, offset, varName, occurrence.getOffsetRange());
+                // check whether is defined as window property
+                Collection<? extends IndexResult> findByFqn = jsIndex.findByFqn("window." + varName, JsIndex.FIELD_BASE_NAME);
+                if (findByFqn.isEmpty()) {
+                    if (variable.getOccurrences().isEmpty()) {
+                        addHint(context, hints, offset, varName, variable.getOffsetRange());
+                    } else {
+                        for(Occurrence occurrence : variable.getOccurrences()) {
+                            addHint(context, hints, offset, varName, occurrence.getOffsetRange());
+                        }
                     }
                 }
             }

@@ -255,4 +255,20 @@ public class WhereUsedSupportTest extends FindUsagesTestBase {
         findUsages("define('ROLE_^ADMIN', 7);");
     }
 
+    public void testIssue217360_01() throws Exception {
+        findUsages("private function get^Two() //One");
+    }
+
+    public void testIssue217360_02() throws Exception {
+        findUsages("$two = $this->get^Two();");
+    }
+
+    public void testIssue217360_03() throws Exception {
+        findUsages("return $two->get^Two();");
+    }
+
+    public void testIssue217360_04() throws Exception {
+        findUsages("(new Two)->get^Two();");
+    }
+
 }

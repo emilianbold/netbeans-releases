@@ -49,7 +49,6 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
 import javax.swing.JComponent;
@@ -57,8 +56,9 @@ import javax.swing.JLabel;
 import javax.swing.JList;
 import javax.swing.JTable;
 import javax.swing.ListModel;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.ListDataListener;
-import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.TableCellRenderer;
@@ -109,6 +109,10 @@ public class ConfigFilesUIs {
 
     public static void connectFilesSelectionTable(List<File> availableFiles, Set<File> alreadySelectedFiles, JTable table) {
         table.setModel(new ConfigFileSelectionTableModel(availableFiles, alreadySelectedFiles));
+    }
+
+    public static void setCheckBoxListener(JTable table, ChangeListener changeListener) {
+        ((ConfigFileSelectionTableModel) table.getModel()).setCheckBoxListener(changeListener);
     }
 
     public static List<File> getSelectedFiles(JTable table) {
@@ -197,7 +201,7 @@ public class ConfigFilesUIs {
 
         private final List<File> availableFiles;
         private final Set<File> alreadySelectedFiles;
-        private final List<TableModelListener> listeners = new CopyOnWriteArrayList<TableModelListener>();
+        private ChangeListener checkBoxChangeListener;
         private boolean[] selected;
 
         public ConfigFileSelectionTableModel(List<File> availableFiles, Set<File> alreadySelectedFiles) {
@@ -208,7 +212,6 @@ public class ConfigFilesUIs {
 
         @Override
         public void addTableModelListener(TableModelListener l) {
-            listeners.add(l);
         }
 
         @Override
@@ -243,15 +246,18 @@ public class ConfigFilesUIs {
 
         @Override
         public void removeTableModelListener(TableModelListener l) {
-            listeners.remove(l);
         }
 
         @Override
         public void setValueAt(Object aValue, int rowIndex, int columnIndex) {
             if (isEnabled(rowIndex)) {
                 selected[rowIndex] = (Boolean)aValue;
-                informListeners();
+                checkBoxChangeListener.stateChanged(new ChangeEvent(this));
             }
+        }
+
+        public void setCheckBoxListener(ChangeListener checkBoxChangeListener) {
+            this.checkBoxChangeListener = checkBoxChangeListener;
         }
 
         public boolean isEnabled(int rowIndex) {
@@ -298,14 +304,9 @@ public class ConfigFilesUIs {
                     selected[rowIndex] = state;
                 }
             }
-            informListeners();
+            checkBoxChangeListener.stateChanged(new ChangeEvent(this));
         }
 
-        private void informListeners() {
-            for (TableModelListener l : listeners) {
-                l.tableChanged(new TableModelEvent(this));
-            }
-        }
     }
 
     private static final class ConfigFileSelectionFileRenderer extends DefaultTableCellRenderer {

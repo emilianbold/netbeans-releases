@@ -72,6 +72,7 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class).clear();
+        JsTypedBreakInterceptor.completeDocumentation = false;
     }
 
     @Override
