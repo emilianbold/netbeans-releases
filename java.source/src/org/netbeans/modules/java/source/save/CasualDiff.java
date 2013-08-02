@@ -3257,7 +3257,7 @@ public class CasualDiff {
                                 int index = oldList.indexOf(lastdel);
                                 int[] poss = estimator.getPositions(index);
                                 //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
-                                localPointer = Math.max(localPointer, diffTree(lastdel, item.element, poss));
+                                localPointer = Math.max(localPointer - 1, diffTree(lastdel, item.element, poss));
                                 printer.print(this.printer.toString());
                                 printer.reindentRegions.addAll(this.printer.reindentRegions);
                                 this.printer = oldPrinter;
