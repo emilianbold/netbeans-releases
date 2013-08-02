@@ -69,7 +69,7 @@ import org.netbeans.modules.cordova.wizard.CordovaProjectExtender;
 import org.netbeans.modules.cordova.platforms.spi.SDK;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.cordova.project.CordovaCustomizerPanel;
-import org.netbeans.modules.cordova.project.PhoneGapBrowserFactory;
+import org.netbeans.modules.cordova.project.CordovaBrowserFactory;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
@@ -101,7 +101,7 @@ public class CordovaPerformer implements BuildPerformer {
     public static final String DEFAULT_EMAIL = "info@com.coolappz"; // NOI18N
     public static final String DEFAULT_WWW = "http://www.coolappz.com";
     public static final String DEFAULT_VERSION = "1.0.0"; // NOI18N
-    public static final String DEFAULT_DESCRIPTION = Bundle.DSC_PhoneGap();
+    public static final String DEFAULT_DESCRIPTION = Bundle.DSC_Cordova();
     public static final String PROP_BUILD_SCRIPT_VERSION = "cordova_build_script_version"; // NOI18N
     public static final String PROP_PROVISIONING_PROFILE = "ios.provisioning.profile"; // NOI18N
     public static final String PROP_CERTIFICATE_NAME = "ios.certificate.name"; // NOI18N
@@ -131,7 +131,7 @@ public class CordovaPerformer implements BuildPerformer {
     @NbBundle.Messages({
         "LBL_InstallThroughItunes=Install application using iTunes and tap on it",
         "CTL_InstallAndRun=Install and Run",
-        "DSC_PhoneGap=PhoneGap Application",
+        "DSC_Cordova=Cordova Application",
         "ERR_StartFileNotFound=Start file cannot be found."
     })
     @Override
@@ -198,7 +198,7 @@ public class CordovaPerformer implements BuildPerformer {
                                 URL u = ServerURLMapping.toServer(project, startFile);
                                 activeConfiguration.toBrowserURL(project, startFile, u);
                                 
-                                BrowserURLMapperImplementation.BrowserURLMapper mapper = ((PhoneGapBrowserFactory) activeConfiguration.getHtmlBrowserFactory()).getMapper();
+                                BrowserURLMapperImplementation.BrowserURLMapper mapper = ((CordovaBrowserFactory) activeConfiguration.getHtmlBrowserFactory()).getMapper();
                                 if (!device.isEmulator()) {
                                     DialogDescriptor dd = new DialogDescriptor(Bundle.LBL_InstallThroughItunes(), Bundle.CTL_InstallAndRun());
                                     if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
@@ -227,9 +227,9 @@ public class CordovaPerformer implements BuildPerformer {
 
     private Properties properties(Project p) {
         Properties props = new Properties();
-        final CordovaPlatform phoneGap = CordovaPlatform.getDefault();
-//        props.put(PROP_CORDOVA_HOME, phoneGap.getSdkLocation());//NOI18N
-        props.put(PROP_CORDOVA_VERSION, phoneGap.getVersion().toString());//NOI18N
+        final CordovaPlatform cordovaPlatform = CordovaPlatform.getDefault();
+//        props.put(PROP_CORDOVA_HOME, cordovaPlatform.getSdkLocation());//NOI18N
+        props.put(PROP_CORDOVA_VERSION, cordovaPlatform.getVersion().toString());//NOI18N
         final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(p);
         final String siteRootRelative = FileUtil.getRelativePath(p.getProjectDirectory(), siteRoot);
         props.put(PROP_SITE_ROOT, siteRootRelative);

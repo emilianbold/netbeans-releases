@@ -72,72 +72,6 @@ public class CordovaPlatform {
         return instance;
     }
     
-/*
-    public String getSdkLocation() {
-        String sdkLoc = NbPreferences.forModule(CordovaPlatform.class).get(CORDOVA_SDK_ROOT_PREF, null);
-        if (sdkLoc != null && sdkLoc.trim().isEmpty()) {
-            sdkLoc = null;
-        }
-        return sdkLoc;
-    }
-
-    public void setSdkLocation(String sdkLocation) {
-        version = null;
-        NbPreferences.forModule(CordovaPlatform.class).put(CORDOVA_SDK_ROOT_PREF, sdkLocation);
-        propertyChangeSupport.firePropertyChange("SDK", null, sdkLocation);//NOI18N
-    }
-    
-    public FileObject getCordovaJS(String platform) {
-        if (PlatformManager.ANDROID_TYPE.equals(platform)) {
-           File js = new File(getSdkLocation() + "/lib/android/cordova.js");//NOI18N
-           if (!js.exists()) {
-               js = new File(getSdkLocation() + "/lib/android/cordova-" + getVersion() + ".js");//NOI18N
-           }
-           return FileUtil.toFileObject(js);
-        }
-        throw new IllegalStateException();
-    }
-    public static Version getVersion(String sdkLocation) {
-        if (!checkPhonegapLocation(sdkLocation)) {
-            throw new IllegalArgumentException();
-        }
-
-        final BufferedReader bufferedReader;
-        try {
-            bufferedReader = new BufferedReader(new FileReader(sdkLocation + "/VERSION")); //NOI18N;
-            try {
-                String v = bufferedReader.readLine().trim();
-                return new Version(v);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-
-            } finally {
-                try {
-                    bufferedReader.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-
-            }
-        } catch (FileNotFoundException ex) {
-            throw new IllegalArgumentException();
-        }
-        throw new IllegalArgumentException();
-    }
-    
-    private static boolean checkPhonegapLocation(String sdkLocation) {
-        File cordovaLoc = new File(sdkLocation);
-        File cordovaAndroid = new File(cordovaLoc, "lib/android"); //NOI18N
-        File cordovaIOS = new File(cordovaLoc, "lib/ios"); //NOI18N
-        File version = new File(cordovaLoc, "VERSION"); // NOI18N
-        return (cordovaLoc.exists() && cordovaLoc.isDirectory()
-                && cordovaAndroid.exists() && cordovaAndroid.isDirectory()
-                && cordovaIOS.exists() && cordovaIOS.isDirectory())
-                && version.exists();
-    }
-    
-*/
-    
     private static Pattern versionPattern = Pattern.compile("[0-9]+\\.[0-9]+\\.[0-9]+");
     
     public Version getVersion() {
@@ -202,7 +136,7 @@ public class CordovaPlatform {
         }
         
         public boolean isSupported() {
-            return compareTo(new Version(("2.4")))>0; // NOI18N
+            return compareTo(new Version(("3.0")))>0; // NOI18N
         }
     }
 }

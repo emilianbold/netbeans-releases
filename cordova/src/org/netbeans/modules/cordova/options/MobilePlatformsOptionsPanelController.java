@@ -89,10 +89,6 @@ public final class MobilePlatformsOptionsPanelController extends OptionsPanelCon
         return getPanel().valid();
     }
     
-    public boolean isCordovaEmpty() {
-        return getPanel().isCordovaEmpty();
-    }
-
     @Override
     public boolean isChanged() {
         return changed;

@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.cordova.wizard;
 
-import org.netbeans.modules.cordova.project.PhoneGapNotFound;
+import org.netbeans.modules.cordova.project.CordovaNotFound;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.cordova.options.MobilePlatformsOptionsPanelController;
@@ -71,7 +71,7 @@ public class CordovaSetupPanel implements WizardDescriptor.Panel<WizardDescripto
     @Override
     public JComponent getComponent() {
         if (panel == null) {
-            panel = new PhoneGapNotFound();
+            panel = new CordovaNotFound();
             panel.setName(NbBundle.getMessage(CordovaSetupPanel.class, "LBL_MobilePlatformsSetup"));//NOI18N
         }
         return panel;

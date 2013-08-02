@@ -69,7 +69,7 @@ import org.openide.util.NbBundle;
     "ERR_Title=Error",
     "LBL_CheckingDevice=Connecting to android device...",
     "ERR_WebDebug=Cannot connect to Chrome.\nPlease check if USB Web Debugging is enabled in Chrome on your mobile device.",    
-    "ERR_NO_PhoneGap=<html><body>NetBeans cannot find cordova on your PATH. Please install cordova.<br>NetBeans might require restart for changes to take effect.</body></html>"
+    "ERR_NO_Cordova=<html><body>NetBeans cannot find cordova on your PATH. Please install cordova.<br>NetBeans might require restart for changes to take effect.</body></html>"
 })
 /**
  * Cordova Action Provider. Invokes cordova build.
@@ -129,7 +129,7 @@ public class AndroidActionProvider implements ActionProvider {
                 }
             } catch (IllegalStateException ex) {
                 NotifyDescriptor.Message not = new DialogDescriptor.Message(
-                        Bundle.ERR_NO_PhoneGap(),
+                        Bundle.ERR_NO_Cordova(),
                         DialogDescriptor.ERROR_MESSAGE);
                 Object value = DialogDisplayer.getDefault().notify(not);
                 return;
@@ -158,7 +158,7 @@ public class AndroidActionProvider implements ActionProvider {
                         build.perform(BuildPerformer.RUN_ANDROID, p);
             } catch (IllegalStateException ex) {
                 NotifyDescriptor not = new NotifyDescriptor(
-                        Bundle.ERR_NO_PhoneGap(),
+                        Bundle.ERR_NO_Cordova(),
                         Bundle.ERR_Title(),
                         NotifyDescriptor.OK_CANCEL_OPTION,
                         NotifyDescriptor.ERROR_MESSAGE,

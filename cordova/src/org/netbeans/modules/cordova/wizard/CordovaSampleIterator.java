@@ -82,7 +82,7 @@ import org.openide.util.NbBundle;
  * @author Martin Janicek
  * @author Jan Becicka
  */
-public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<WizardDescriptor> {
+public class CordovaSampleIterator implements ProgressInstantiatingIterator<WizardDescriptor> {
 
     protected transient Panel[] myPanels;
     protected transient int myIndex;
@@ -114,12 +114,12 @@ public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<Wiz
     
     @NbBundle.Messages({
         "LBL_NameNLocation=Name and Location",
-        "LBL_PhoneGapSetup=Mobile Platforms Setup"})
+        "LBL_CordovaSetup=Mobile Platforms Setup"})
     protected String[] createSteps() {
         if (CordovaPlatform.getDefault().isReady()) {
             return new String[] {LBL_NameNLocation()};
         } else {
-            return new String[] {LBL_PhoneGapSetup(), LBL_NameNLocation()};
+            return new String[] {LBL_CordovaSetup(), LBL_NameNLocation()};
         }
     }
 

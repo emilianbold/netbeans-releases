@@ -43,14 +43,12 @@ package org.netbeans.modules.cordova.wizard;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -58,8 +56,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
-import org.netbeans.modules.cordova.platforms.api.PlatformManager;
-import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
 import org.netbeans.modules.cordova.project.CordovaPanel;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
@@ -71,11 +67,7 @@ import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -87,7 +79,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  *
  */
-@NbBundle.Messages({"LBL_Name=PhoneGap Sample Project"})
+@NbBundle.Messages({"LBL_Name=Cordova Sample Project"})
 @ServiceProvider(service = SiteTemplateImplementation.class, position = 1000)
 public class CordovaTemplate implements SiteTemplateImplementation {
 
@@ -300,11 +292,11 @@ public class CordovaTemplate implements SiteTemplateImplementation {
     }
     
     @NbBundle.Messages({
-        "LBL_PhoneGapApp=PhoneGap Application"
+        "LBL_CordovaApp=Cordova Application"
     })
     @TemplateRegistration(folder = "Project/ClientSide",
-            displayName = "#LBL_PhoneGapApp",
-            description = "../resources/PhoneGapProjectDescription.html", // NOI18N
+            displayName = "#LBL_CordovaApp",
+            description = "../resources/CordovaProjectDescription.html", // NOI18N
             iconBase = "org/netbeans/modules/cordova/resources/project.png", // NOI18N
             position = 400)
     public static WizardDescriptor.InstantiatingIterator newProjectWithExtender() {

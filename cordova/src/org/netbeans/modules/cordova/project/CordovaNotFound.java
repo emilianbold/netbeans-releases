@@ -50,12 +50,12 @@ import org.openide.util.Exceptions;
  *
  * @author Jan Becicka
  */
-public class PhoneGapNotFound extends javax.swing.JPanel {
+public class CordovaNotFound extends javax.swing.JPanel {
 
     /**
-     * Creates new form PhoneGapNotFound
+     * Creates new form CordovaNotFound
      */
-    public PhoneGapNotFound() {
+    public CordovaNotFound() {
         initComponents();
     }
 
@@ -71,14 +71,14 @@ public class PhoneGapNotFound extends javax.swing.JPanel {
         jLabel2 = new javax.swing.JLabel();
         jLabel1 = new javax.swing.JLabel();
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(PhoneGapNotFound.class, "PhoneGapNotFound.jLabel2.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel2, org.openide.util.NbBundle.getMessage(CordovaNotFound.class, "CordovaNotFound.jLabel2.text")); // NOI18N
         jLabel2.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
                 jLabel2MouseClicked(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PhoneGapNotFound.class, "PhoneGapNotFound.jLabel1.text")); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(CordovaNotFound.class, "CordovaNotFound.jLabel1.text")); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);

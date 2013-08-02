@@ -82,7 +82,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         this.cat = cat;
         if (!CordovaPlatform.getDefault().isReady()) {
             setLayout(new BorderLayout());
-            add(new PhoneGapNotFound(), BorderLayout.CENTER);
+            add(new CordovaNotFound(), BorderLayout.CENTER);
             validate();
             CordovaPlatform.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
                 @Override
