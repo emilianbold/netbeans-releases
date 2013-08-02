@@ -888,6 +888,18 @@ public class GotoDeclarationTest extends PHPNavTestBase {
         checkDeclaration(getTestPath(), "class AbstractController implements Dispatch^able2 {", "use Zend\\Stdlib2\\DispatchableInterface2 as ^Dispatchable2;");
     }
 
+    public void testIssue217360_01() throws Exception {
+        checkDeclaration(getTestPath(), "$two = $this->getT^wo();", "private function ^getTwo() //One");
+    }
+
+    public void testIssue217360_02() throws Exception {
+        checkDeclaration(getTestPath(), "return $two->getT^wo();", "public function ^getTwo() //Two");
+    }
+
+    public void testIssue217360_03() throws Exception {
+        checkDeclaration(getTestPath(), "(new Two)->getT^wo();", "public function ^getTwo() //Two");
+    }
+
     //TODO: these tests need to be checked, filtered , rewritten , enabled
 //    public void testGotoTypeClsIface6() throws Exception {
 //        String gotoTest = prepareTestFile(

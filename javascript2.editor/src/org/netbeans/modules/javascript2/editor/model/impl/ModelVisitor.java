@@ -575,8 +575,10 @@ public class ModelVisitor extends PathNodeVisitor {
                         property.addOccurrence(new OffsetRange(indexNode.getIndex().getStart(), indexNode.getIndex().getFinish()));
                     } else {
                         Identifier name = ModelElementFactory.create(parserResult, (LiteralNode)indexNode.getIndex());
-                        property = new JsObjectImpl(parent, name, name.getOffsetRange(), parserResult.getSnapshot().getMimeType(), null);
-                        parent.addProperty(name.getName(), property);
+                        if (name != null) {
+                            property = new JsObjectImpl(parent, name, name.getOffsetRange(), parserResult.getSnapshot().getMimeType(), null);
+                            parent.addProperty(name.getName(), property);
+                        }
                     }
                 }
             }

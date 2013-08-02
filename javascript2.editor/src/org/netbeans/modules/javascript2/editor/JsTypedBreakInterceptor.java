@@ -75,6 +75,9 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
      */
     static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("js.cont.comment"); // NOI18N
 
+    // unit testing
+    static boolean completeDocumentation = true;
+
     private static final Logger LOGGER = Logger.getLogger(JsTypedBreakInterceptor.class.getName());
 
     private final Language<JsTokenId> language;
@@ -474,7 +477,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
     @Override
     public void afterInsert(Context context) throws BadLocationException {
-        if (commentGenerator != null) {
+        if (completeDocumentation && commentGenerator != null) {
             JsDocumentationCompleter.generateCompleteComment(
                     (BaseDocument) context.getDocument(),
                     commentGenerator.getOffset(),
