@@ -201,7 +201,7 @@
         "message": "Window cannot be resized properly"
     },
     "_Warning_WindowTooSmallPerex": {
-        "message": "Unfortunately, on Mac OS X, the minimal width of the Chrome window is 400 pixels."
+        "message": "Unfortunately, on OS X, the minimal width of the Chrome window is 400 pixels."
     }
 
 }
