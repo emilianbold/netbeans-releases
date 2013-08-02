@@ -79,7 +79,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  *
  */
-@NbBundle.Messages({"LBL_Name=Cordova Sample Project"})
+@NbBundle.Messages({"LBL_Name=Cordova Hello World"})
 @ServiceProvider(service = SiteTemplateImplementation.class, position = 1000)
 public class CordovaTemplate implements SiteTemplateImplementation {
 
