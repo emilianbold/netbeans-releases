@@ -173,7 +173,12 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
                     repositoryModel,
                     repositoryConnector,
                     taskRepository,
-                    tasksToSynchronize);
+                    new HashSet<ITask>(tasksToSynchronize));
+                for (ITask t : tasksToSynchronize) {
+                    if (t instanceof AbstractTask) {
+                        ((AbstractTask) t).setSynchronizing(true);
+                    }
+                }
                 syncTasksJob.run(monitor);
             }
         } finally {
