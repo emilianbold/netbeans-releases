@@ -863,6 +863,7 @@ class OccurenceBuilder {
         Set<MethodElement> methods = new HashSet<>();
         final Scope scope = elementInfo.getScope();
         final ASTNodeInfo nodeInfo = elementInfo.getNodeInfo();
+        ModelElement modelElement = elementInfo.getModelElemnt();
         if (methods.isEmpty()) {
             methods = index.getMethods(methodName);
         }
@@ -879,6 +880,8 @@ class OccurenceBuilder {
                 } else if (scope instanceof VariableScope && originalNode instanceof VariableBase) {
                     types.addAll(getClassName((VariableScope) scope, (VariableBase) originalNode));
                 }
+            } else if (modelElement instanceof MethodScopeImpl && modelElement.getInScope() instanceof TypeScope) {
+                types.add((TypeElement) scope.getInScope());
             }
 
             if (types.size() > 0) {
@@ -902,9 +905,6 @@ class OccurenceBuilder {
                     accuracy = Accuracy.MORE_MEMBERS;
                     elementInfo.setDeclarations(methods);
                 }
-            } else {
-                accuracy = Accuracy.MORE;
-                elementInfo.setDeclarations(methods);
             }
         }
         if (accuracy != null) {

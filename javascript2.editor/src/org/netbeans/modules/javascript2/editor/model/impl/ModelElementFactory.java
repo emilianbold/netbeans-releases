@@ -158,11 +158,12 @@ class ModelElementFactory {
         return create(parserResult, node.getName(), node.getStart(), node.getFinish());
     }
 
-    @NonNull
+    @CheckForNull
     static IdentifierImpl create(JsParserResult parserResult, LiteralNode node) {
         return create(parserResult, node.getString(), node.getStart(), node.getFinish());
     }
-    
+
+    @CheckForNull
     static IdentifierImpl create(JsParserResult parserResult, String name, int start, int end) {
         if (JsEmbeddingProvider.containsGeneratedIdentifier(name)) {
             return null;
