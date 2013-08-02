@@ -53,7 +53,7 @@ public interface JsWith extends JsObject {
      * 
      * @return collection types that corresponds to the expression in the with ()
      */
-    public Collection<? extends TypeUsage> getTypes();
+    public Collection<TypeUsage> getTypes();
     
     public Collection<? extends JsWith> getInnerWiths();
             

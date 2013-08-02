@@ -1114,18 +1114,13 @@ public class ModelUtils {
         }
         if (jsObject != null && jsObject.getJSKind() == JsElement.Kind.WITH_OBJECT) {
             List<TypeUsage> types = new ArrayList<TypeUsage>();
-            Map<String, List<JsElement>> properties = new HashMap<String, List<JsElement>>();
             JsWith wObject = (JsWith)jsObject;
-            Collection<? extends TypeUsage> unresolvedTypes = wObject.getTypes();
-            for (TypeUsage type : unresolvedTypes) {
-                types.addAll(ModelUtils.resolveTypeFromSemiType(wObject, type));
-            }
+            Collection<? extends TypeUsage> withTypes = wObject.getTypes();
+            types.addAll(withTypes);
             while (wObject.getOuterWith() != null) {
                 wObject = wObject.getOuterWith();
-                unresolvedTypes = wObject.getTypes();
-                for (TypeUsage type : unresolvedTypes) {
-                    types.addAll(ModelUtils.resolveTypeFromSemiType(wObject, type));
-                }
+                withTypes = wObject.getTypes();
+                types.addAll(withTypes);
             }
             return types;
         }

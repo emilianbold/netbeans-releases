@@ -188,13 +188,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     for (IndexedElement indexElement : fromIndex) {
                         addPropertyToMap(request, addedProperties, indexElement);
                     }
-                    completeInWith(request, resultList);
+                    completeInWith(request, added);
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
                 case EXPRESSION:
                     completeKeywords(request, resultList);
                     completeExpression(request, added);
-                    completeInWith(request, resultList);
+                    completeInWith(request, added);
                     break;
                 case OBJECT_PROPERTY:
                     completeObjectProperty(request, added);
@@ -626,32 +626,28 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
     }
 
-    private void completeInWith (CompletionRequest request, List<CompletionProposal> resultList) {
+    private void completeInWith (CompletionRequest request,HashMap <String, List<JsElement>> addedItems) {
         int offset = request.anchor;
         Collection<? extends TypeUsage> typesFromWith = ModelUtils.getTypeFromWith(request.result.getModel(), offset);
         if (!typesFromWith.isEmpty()) {
             FileObject fo = request.info.getSnapshot().getSource().getFileObject();
             JsIndex jsIndex = JsIndex.get(fo);
             Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(typesFromWith, request.result);
-            Map<String, List<JsElement>> properties = new HashMap<String, List<JsElement>>();
             for (TypeUsage type : resolveTypes) {
                 JsObject localObject = ModelUtils.findJsObjectByName(request.result.getModel(), type.getType());
                 if (localObject != null) {
-                    addObjectPropertiesToCC(localObject, request, properties);
+                    addObjectPropertiesToCC(localObject, request, addedItems);
                 } 
                 
                 Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(type.getType(), request.prefix);
                 for (IndexedElement indexedElement : indexResults) {
                     if (!indexedElement.isAnonymous()
                             && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
-                        addPropertyToMap(request, properties, indexedElement);
+                        addPropertyToMap(request, addedItems, indexedElement);
                     }
                 }
             }
-            
-            JsCompletionItem.Factory.create(properties, request, resultList);
         }
-        
     }
     
     private void completeKeywords(CompletionRequest request, List<CompletionProposal> resultList) {

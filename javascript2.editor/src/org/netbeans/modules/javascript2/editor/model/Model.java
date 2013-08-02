@@ -196,7 +196,8 @@ public final class Model {
     }
     
     private void processWithObject(JsWith with, JsIndex jsIndex, List<String> outerExpression) {
-        Collection<? extends TypeUsage> withTypes = with.getTypes();
+        Collection<TypeUsage> withTypes = with.getTypes();
+        withTypes.clear();
         Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
         int offset = ((JsWithObjectImpl)with).getExpressionRange().getEnd();
         List<String> ech = ModelUtils.resolveExpressionChain(parserResult.getSnapshot(), offset, false);
@@ -206,6 +207,7 @@ public final class Model {
             outerExpression = ech;
             resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, ech, offset));
             resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult);
+            withTypes.addAll(resolveTypeFromExpression);
         } else {
             ech.addAll(outerExpression);
             boolean resolved = false;
@@ -216,6 +218,7 @@ public final class Model {
                 if (fromType != null) {
                     resolved = true;
                     outerExpression = ech;
+                    withTypes.add(type);
                     break;
                 }
             }
@@ -228,6 +231,7 @@ public final class Model {
                     if (fromType != null) {
                         resolved = true;
                         outerExpression = originalExp;
+                        withTypes.add(type);
                         break;
                     }
                 }
