@@ -81,7 +81,7 @@ public class Bugzilla {
     private IssueNode.ChangesProvider<BugzillaIssue> bcp;
 
     private Bugzilla() {
-        brc = new BugzillaRepositoryConnector();
+        brc = MylynRepositoryConnectorProvider.getInstance().getConnector();
         clientManager = brc.getClientManager();
         MylynSupport.getInstance().addRepositoryListener(clientManager);
     }
