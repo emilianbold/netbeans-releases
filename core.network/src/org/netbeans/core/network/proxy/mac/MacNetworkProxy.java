@@ -79,13 +79,15 @@ public class MacNetworkProxy implements NetworkProxyResolver {
     
     @Override
     public NetworkProxySettings getNetworkProxySettings() {
+        boolean resolved = false;
+        
         LOGGER.log(Level.FINE, "Mac system proxy resolver started."); //NOI18N
         Pointer settingsDictionary = cfNetworkLibrary.CFNetworkCopySystemProxySettings(); 
 
         Pointer autoDiscoveryEnable = cfLibrary.CFDictionaryGetValue(settingsDictionary, getKeyCFStringRef(KEY_AUTO_DISCOVERY_ENABLE));
         if (getIntFromCFNumberRef(autoDiscoveryEnable) != 0) {
-            LOGGER.log(Level.INFO, "Mac system proxy resolver: auto detect"); //NOI18N
-            return new NetworkProxySettings();
+            LOGGER.log(Level.INFO, "Mac system proxy resolver: auto detect"); //NOI18N                                    
+            resolved = true;
         }
         
         Pointer pacEnable = cfLibrary.CFDictionaryGetValue(settingsDictionary, getKeyCFStringRef(KEY_PAC_ENABLE));
@@ -122,7 +124,7 @@ public class MacNetworkProxy implements NetworkProxyResolver {
             return new NetworkProxySettings(httpHost, httpPort, httpsHost, httpsPort, socksHost, socksPort, noProxyHosts);
         }
         
-        return new NetworkProxySettings(false);
+        return new NetworkProxySettings(resolved);
     }
     
     /**
