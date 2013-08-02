@@ -103,7 +103,7 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
                 configurationCheckBox, configurationTextField);
 
         enableFile(bootstrapCheckBox.isSelected(), bootstrapLabel, bootstrapTextField, bootstrapBrowseButton);
-        enableFile(configurationCheckBox.isSelected(), configurationLabel, configurationTextField, configurationBrowseButton);
+        enableFile(configurationCheckBox.isSelected(), configurationLabel, configurationTextField, configurationBrowseButton, configurationWarningLabel);
 
         addListeners();
         validateData();
@@ -173,7 +173,7 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 enableFile(e.getStateChange() == ItemEvent.SELECTED,
-                        configurationLabel, configurationTextField, configurationBrowseButton);
+                        configurationLabel, configurationTextField, configurationBrowseButton, configurationWarningLabel);
                 validateData();
             }
         });
@@ -231,6 +231,7 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
         configurationLabel = new JLabel();
         configurationTextField = new JTextField();
         configurationBrowseButton = new JButton();
+        configurationWarningLabel = new JLabel();
         createLabel = new JLabel();
         createButton = new JButton();
 
@@ -262,6 +263,8 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
             }
         });
 
+        Mnemonics.setLocalizedText(configurationWarningLabel, NbBundle.getMessage(CustomizerAtoum.class, "CustomizerAtoum.configurationWarningLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(createLabel, NbBundle.getMessage(CustomizerAtoum.class, "CustomizerAtoum.createLabel.text")); // NOI18N
 
         Mnemonics.setLocalizedText(createButton, NbBundle.getMessage(CustomizerAtoum.class, "CustomizerAtoum.createButton.text")); // NOI18N
@@ -276,8 +279,20 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(bootstrapCheckBox)
+                    .addComponent(configurationCheckBox))
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(createLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(createButton))
+            .addGroup(layout.createSequentialGroup()
                 .addGap(21, 21, 21)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(configurationWarningLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(bootstrapLabel)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -287,18 +302,9 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(configurationLabel)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(configurationTextField, GroupLayout.DEFAULT_SIZE, 238, Short.MAX_VALUE)
+                        .addComponent(configurationTextField)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(configurationBrowseButton))))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(bootstrapCheckBox)
-                    .addComponent(configurationCheckBox))
-                .addGap(0, 0, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(createLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(createButton))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {bootstrapBrowseButton, configurationBrowseButton, createButton});
@@ -319,6 +325,8 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
                     .addComponent(configurationLabel)
                     .addComponent(configurationTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(configurationBrowseButton))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(configurationWarningLabel)
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(createLabel)
@@ -406,6 +414,7 @@ public class CustomizerAtoum extends JPanel implements HelpCtx.Provider {
     private JCheckBox configurationCheckBox;
     private JLabel configurationLabel;
     private JTextField configurationTextField;
+    private JLabel configurationWarningLabel;
     private JButton createButton;
     private JLabel createLabel;
     // End of variables declaration//GEN-END:variables
