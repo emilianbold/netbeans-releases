@@ -46,7 +46,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -134,7 +133,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     for (IndexedElement indexElement : fromIndex) {
                         addPropertyToMap(request, added, indexElement);
                     }
-                    added.putAll(getWithCompletionResults(request, null));
                     break;    
                 case EXPRESSION:
                     completeKeywords(request, resultList);
@@ -190,13 +188,13 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     for (IndexedElement indexElement : fromIndex) {
                         addPropertyToMap(request, addedProperties, indexElement);
                     }
-
-                    addedProperties.putAll(getWithCompletionResults(request, null));
+                    completeInWith(request, resultList);
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
                 case EXPRESSION:
                     completeKeywords(request, resultList);
                     completeExpression(request, added);
+                    completeInWith(request, resultList);
                     break;
                 case OBJECT_PROPERTY:
                     completeObjectProperty(request, added);
@@ -453,65 +451,14 @@ class JsCodeCompletion implements CodeCompletionHandler {
             }
         }
 
-        addedItems.putAll(getWithCompletionResults(request, null));
     }
 
     private int checkRecursion;
 
     private void completeObjectProperty(CompletionRequest request, Map<String, List<JsElement>> addedItems) {
-        List<String> expChain = resolveExpressionChain(request, request.anchor, false);
+        List<String> expChain = ModelUtils.resolveExpressionChain(request.result.getSnapshot(), request.anchor, false);
         Map<String, List<JsElement>> toAdd = getCompletionFromExpressionChain(request, expChain);
-        Map<String, List<JsElement>> toAddWith = getWithCompletionResults(request, expChain);
         addedItems.putAll(toAdd);
-        if (!toAddWith.isEmpty()) {
-            addedItems.putAll(toAddWith);
-        }
-    }
-
-    private Map<String, List<JsElement>> getWithCompletionResults(CompletionRequest request, @NullAllowed List<String> expChain) {
-        Map<String, List<JsElement>> result = new HashMap<String, List<JsElement>>(1);
-
-        DeclarationScope scope = ModelUtils.getDeclarationScope(request.result.getModel(), request.anchor);
-        List<String> realExpChain = expChain;
-        if (realExpChain == null) {
-            realExpChain = resolveExpressionChain(request, request.anchor, false);
-        }
-        List<String> combinedChain = new ArrayList<String>();
-        while (scope != null) {
-            List<? extends TypeUsage> found = scope.getWithTypesForOffset(request.anchor);
-
-            // we iterate in reverse order (by offset) to from the deepest with up
-            for (int i = found.size() - 1; i >= 0; i--) {
-                for (TypeUsage resolved : ModelUtils.resolveTypeFromSemiType(
-                        ModelUtils.findJsObject(request.result.getModel(), request.anchor), found.get(i))) {
-                    List<String> typeChain = ModelUtils.expressionFromType(resolved);
-                    if (typeChain.size() == 1) {
-                        typeChain = new ArrayList<String>(typeChain);
-                        typeChain.add("@pro"); // NOI18N
-                    }
-                    List<String> workingChain = new ArrayList<String>(typeChain.size() + realExpChain.size() + 2);
-                    workingChain.addAll(realExpChain);
-                    workingChain.addAll(typeChain);
-                    result.putAll(getCompletionFromExpressionChain(request, workingChain));
-
-                    if (!combinedChain.isEmpty()) {
-                        workingChain.clear();
-                        workingChain.addAll(combinedChain);
-                        workingChain.addAll(typeChain);
-                        result.putAll(getCompletionFromExpressionChain(request, workingChain));
-                    }
-                    combinedChain.addAll(typeChain);                    
-                }
-            }
-
-            // FIXME more generic solution
-            if ((scope instanceof JsFunction) && !(scope instanceof CatchBlockImpl)) {
-                // the with is not propagated to function afaik
-                break;
-            }
-            scope = scope.getParentScope();
-        }
-        return result;
     }
 
     private Map<String, List<JsElement>> getCompletionFromExpressionChain(CompletionRequest request, List<String> expChain) {
@@ -645,132 +592,6 @@ class JsCodeCompletion implements CodeCompletionHandler {
         return Collections.<String>emptyList();
     }
 
-    /**
-     * 
-     * @param request
-     * @param offset offset where the expression should be resolved
-     * @param lookBefore if yes, looks for the beginning of the expression before the offset,
-     *                  if no, it can be in a middle of expression
-     * @return 
-     */
-    private List<String> resolveExpressionChain(CompletionRequest request, int offset, boolean lookBefore) {
-        TokenHierarchy<?> th = request.info.getSnapshot().getTokenHierarchy();
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, offset);
-        if (ts == null) {
-            return Collections.<String>emptyList();
-        }
-
-        ts.move(offset);
-        if (ts.movePrevious() && (ts.moveNext() || ((ts.offset() + ts.token().length()) == request.result.getSnapshot().getText().length()))) {
-            if (!lookBefore && ts.token().id() != JsTokenId.OPERATOR_DOT) {
-                ts.movePrevious();
-            }
-            Token<? extends JsTokenId> token = lookBefore ? LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL)) : ts.token();
-            int parenBalancer = 0;
-            // 1 - method call, 0 - property, 2 - array
-            int partType = 0;
-            boolean wasLastDot = lookBefore;
-            int offsetFirstRightParen = -1;
-            List<String> exp = new ArrayList();
-
-            while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
-                    && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY
-                    && token.id() != JsTokenId.BRACKET_LEFT_PAREN
-                    && token.id() != JsTokenId.BLOCK_COMMENT
-                    && token.id() != JsTokenId.LINE_COMMENT
-                    && token.id() != JsTokenId.OPERATOR_ASSIGNMENT
-                    && token.id() != JsTokenId.OPERATOR_PLUS) {
-
-                if (token.id() != JsTokenId.EOL) {
-                    if (token.id() != JsTokenId.OPERATOR_DOT) {
-                        if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
-                            parenBalancer++;
-                            partType = 1;
-                            if (offsetFirstRightParen == -1) {
-                                offsetFirstRightParen = ts.offset();
-                            }
-                            while (parenBalancer > 0 && ts.movePrevious()) {
-                                token = ts.token();
-                                if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
-                                    parenBalancer++;
-                                } else {
-                                    if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
-                                        parenBalancer--;
-                                    }
-                                }
-                            }
-                        } else if (token.id() == JsTokenId.BRACKET_RIGHT_BRACKET) {
-                            parenBalancer++;
-                            partType = 2;
-                            while (parenBalancer > 0 && ts.movePrevious()) {
-                                token = ts.token();
-                                if (token.id() == JsTokenId.BRACKET_RIGHT_BRACKET) {
-                                    parenBalancer++;
-                                } else {
-                                    if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET) {
-                                        parenBalancer--;
-                                    }
-                                }
-                            }
-                        } else if (parenBalancer == 0 && "operator".equals(token.id().primaryCategory())) { // NOI18N
-                            return exp;
-                        } else {
-                            exp.add(token.text().toString());
-                            switch (partType) {
-                                case 0:
-                                    exp.add("@pro");   // NOI18N
-                                    break;
-                                case 1:
-                                    exp.add("@mtd");   // NOI18N
-                                    offsetFirstRightParen = -1;
-                                    break;
-                                case 2:
-                                    exp.add("@arr");    // NOI18N
-                                    break;
-                                default:
-                                    break;
-                            }
-                            partType = 0;
-                            wasLastDot = false;
-                        }
-                    } else {
-                        wasLastDot = true;
-                    }
-                } else {
-                    if (!wasLastDot && ts.movePrevious()) {
-                        // check whether it's continuatino of previous line
-                        token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
-                        if (token.id() != JsTokenId.OPERATOR_DOT) {
-                            // the dot was not found => it's not continuation of expression
-                            break;
-                        }
-                    }
-                }
-                if (!ts.movePrevious()) {
-                    break;
-                }
-                token = ts.token();
-            }
-            if (token.id() == JsTokenId.WHITESPACE) {
-                if (ts.movePrevious()) {
-                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL));
-                    if (token.id() == JsTokenId.KEYWORD_NEW && !exp.isEmpty()) {
-                        exp.remove(exp.size() - 1);
-                        exp.add("@pro");    // NOI18N
-                    } else if (!lookBefore && offsetFirstRightParen > -1) {
-                        // in the case when the expression is like ( new Object()).someMethod
-                        exp.addAll(resolveExpressionChain(request, offsetFirstRightParen - 1, true));
-                    }
-                }
-            } else if (exp.isEmpty() && !lookBefore && offsetFirstRightParen > -1) {
-                // in the case when the expression is like ( new Object()).someMethod
-                exp.addAll(resolveExpressionChain(request, offsetFirstRightParen - 1, true));
-            }
-            return exp;
-        }
-        return Collections.<String>emptyList();
-    }
-
     private void completeObjectMember(CompletionRequest request, Map<String, List<JsElement>> addedItems) {
         JsParserResult result = (JsParserResult)request.info;
         JsObject jsObject = (JsObject)ModelUtils.getDeclarationScope(result.getModel(), request.anchor);
@@ -787,7 +608,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
     }
     
     private void completeObjectMembers(JsObject jsObject, CompletionRequest request, Map<String, List<JsElement>> properties) {
-        if (jsObject.getJSKind() == JsElement.Kind.OBJECT || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR) {
+        if (jsObject.getJSKind() == JsElement.Kind.OBJECT || jsObject.getJSKind() == JsElement.Kind.CONSTRUCTOR
+                || jsObject.getJSKind() == JsElement.Kind.OBJECT_LITERAL) {
             for (JsObject property : jsObject.getProperties().values()) {
                 if(!property.getModifiers().contains(Modifier.PRIVATE) && !property.isAnonymous()) {
                     addPropertyToMap(request, properties, property);
@@ -804,6 +626,34 @@ class JsCodeCompletion implements CodeCompletionHandler {
         }
     }
 
+    private void completeInWith (CompletionRequest request, List<CompletionProposal> resultList) {
+        int offset = request.anchor;
+        Collection<? extends TypeUsage> typesFromWith = ModelUtils.getTypeFromWith(request.result.getModel(), offset);
+        if (!typesFromWith.isEmpty()) {
+            FileObject fo = request.info.getSnapshot().getSource().getFileObject();
+            JsIndex jsIndex = JsIndex.get(fo);
+            Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(typesFromWith, request.result);
+            Map<String, List<JsElement>> properties = new HashMap<String, List<JsElement>>();
+            for (TypeUsage type : resolveTypes) {
+                JsObject localObject = ModelUtils.findJsObjectByName(request.result.getModel(), type.getType());
+                if (localObject != null) {
+                    addObjectPropertiesToCC(localObject, request, properties);
+                } 
+                
+                Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(type.getType(), request.prefix);
+                for (IndexedElement indexedElement : indexResults) {
+                    if (!indexedElement.isAnonymous()
+                            && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
+                        addPropertyToMap(request, properties, indexedElement);
+                    }
+                }
+            }
+            
+            JsCompletionItem.Factory.create(properties, request, resultList);
+        }
+        
+    }
+    
     private void completeKeywords(CompletionRequest request, List<CompletionProposal> resultList) {
         for (String keyword : JsKeyWords.KEYWORDS.keySet()) {
             if (startsWith(keyword, request.prefix)) {

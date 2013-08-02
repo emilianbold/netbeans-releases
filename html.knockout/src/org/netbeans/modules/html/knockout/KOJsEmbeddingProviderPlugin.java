@@ -76,7 +76,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     private final LinkedList<StackItem> stack;
     private String lastTagOpen = null;
 
-    private final List<String> parents = new ArrayList<>();
+    private final List<ParentContext> parents = new ArrayList<>();
 
     private String data;
 
@@ -200,6 +200,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     }
 
     private void startKnockoutSnippet(String newData, boolean foreach) {
+        assert !foreach || newData != null;
         if (newData != null) {
             String replacement = (data == null || data.equals("$root")) ? "ko.$bindings" : data;
             String toAdd = newData.replaceAll("$data", replacement);
@@ -207,48 +208,46 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
             if (foreach) {
                 toAdd = toAdd + "[0]";
             }
-            parents.add((data == null || "$root".equals(data)) ? "ko.$bindings" : data);
+            if (data == null || "$root".equals(data)) {
+                parents.add(new ParentContext("ko.$bindings", false));
+            } else {
+                parents.add(new ParentContext(data, foreach));
+            }
             data = toAdd;
             inForEach = foreach;
         } else {
             StringBuilder sb = new StringBuilder();
             sb.append("(function(){\n"); // NOI18N
 
+            // for now this is actually just a placeholder
+            sb.append("var $element;\n");
+
             // define root as reference
             sb.append("var $root = ko.$bindings;\n"); // NOI18N
+
+            if (inForEach) {
+                sb.append("var $index = 0;\n");
+            }
 
             // define data object
             if (data == null) {
                 data = "$root"; // NOI18N
             }
 
-            // define parent and parents array
-            if (parents.isEmpty()) {
-                sb.append("var $parent = undefined;\n"); // NOI18N
-            } else {
-                sb.append("var $parent = ").append(parents.get(parents.size() - 1)).append(";\n"); // NOI18N
-            }
+            sb.append("var $parentContext = ");
+            generateContext(sb, parents);
+            sb.append(";\n");
 
-            sb.append("var $parents = ["); // NOI18N
-            for (String parent : parents) {
-                sb.append(parent);
-                sb.append(",");
-            }
-            if (!parents.isEmpty()) {
-                sb.setLength(sb.length() - 1);
-            }
-            sb.append("];\n"); // NOI18N
+            sb.append("var $context = ");
+            List<ParentContext> current = new ArrayList<>(parents);
+            current.add(new ParentContext(data, inForEach));
+            generateContext(sb, current);
+            sb.append(";\n");
+            generateParentAndContextData("$context.", sb, parents);
 
-            if (inForEach) {
-                sb.append("var $index = 0;\n");
-            }
+            generateParents(sb, parents);
 
-            // for now this is actually just a placeholder
-            sb.append("var $element;\n");
-
-            for (int i = 0; i < parents.size(); i++) {
-                sb.append("with (").append(parents.get(i)).append(") {\n");
-            }
+            generateWithHierarchyStart(sb, parents);
 
             String dataValue = data;
             if (data == null || "$root".equals(data)) {
@@ -260,7 +259,9 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                 dataValue = "undefined";
             }
             sb.append("var $data = ").append(dataValue).append(";\n");
-            sb.append("with (").append(dataValue).append(") {\n");
+            generateWithHierarchyEnd(sb, parents);
+
+            sb.append("with ($data) {\n");
 
             embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
         }
@@ -272,15 +273,88 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
             if (parents.isEmpty()) {
                 throw new IllegalStateException();
             }
-            data = parents.remove(parents.size() - 1);
+            ParentContext context = parents.remove(parents.size() - 1);
+            data = context.getValue();
         } else {
             StringBuilder sb = new StringBuilder();
             sb.append("}\n");
-            for (int i = 0; i < parents.size(); i++) {
-                sb.append("}\n");
-            }
             sb.append("});\n");
             embeddings.add(snapshot.create(sb.toString(), KOUtils.JAVASCRIPT_MIMETYPE));
+        }
+    }
+
+    private static void generateContext(StringBuilder sb, List<ParentContext> parents) {
+        if (parents.isEmpty()) {
+            sb.append("undefined");
+        } else {
+            sb.append("{\n");
+            sb.append("$parentContext :");
+            generateContext(sb, parents.subList(0, parents.size() - 1));
+            ParentContext parent = parents.get(parents.size() - 1);
+            sb.append(",\n");
+            sb.append("$root : ko.$bindings,\n");
+                        if (parent.hasIndex()) {
+                sb.append("$index : 0,\n");
+            }
+            sb.append("}");
+        }
+    }
+
+    private static void generateParentAndContextData(String additionalPrefix,
+            StringBuilder sb, List<ParentContext> parents) {
+
+        if (parents.isEmpty()) {
+            if (additionalPrefix != null) {
+                sb.append(additionalPrefix).append("$parentContext.$data = undefined;\n");
+            }
+            sb.append("$parentContext.$data = undefined;\n");
+            sb.append("var $parent = undefined;\n");
+            return;
+        }
+        String prefix = "$parentContext.";
+        for (int i = 0; i < parents.size() - 1; i++) {
+            sb.append("with (").append(parents.get(i).getValue()).append(") {\n");
+        }
+        sb.append("var $parent = ").append(parents.get(parents.size() - 1).getValue()).append(";\n");
+        for (int i = parents.size() - 2; i >= 0; i--) {
+            if (additionalPrefix != null) {
+                sb.append(additionalPrefix).append(prefix).append("$data = ").append(parents.get(i + 1).getValue()).append(";\n");
+            }
+            sb.append(prefix).append("$data = ").append(parents.get(i + 1).getValue()).append(";\n");
+            prefix = prefix + "$parentContext.";
+            sb.append("}\n");
+        }
+        if (additionalPrefix != null) {
+            sb.append(additionalPrefix).append(prefix).append("$data = ko.$bindings;\n");
+        }
+        sb.append(prefix).append("$data = ko.$bindings;\n");
+    }
+
+    private static void generateParents(StringBuilder sb, List<ParentContext> parents) {
+        sb.append("var $parents = ["); // NOI18N
+        int pos = sb.length();
+        String prefix = "$parentContext.";
+        for (int i = 0; i < parents.size(); i++) {
+            sb.insert(pos, ",");
+            sb.insert(pos, "$data");
+            sb.insert(pos, prefix);
+            prefix = prefix + "$parentContext.";
+        }
+        if (!parents.isEmpty()) {
+            sb.setLength(sb.length() - 1);
+        }
+        sb.append("];\n"); // NOI18N
+    }
+
+    private static void generateWithHierarchyStart(StringBuilder sb, List<ParentContext> parents) {
+        for (ParentContext context : parents) {
+            sb.append("with (").append(context.getValue()).append(") {\n");
+        }
+    }
+
+    private static void generateWithHierarchyEnd(StringBuilder sb, List<ParentContext> parents) {
+        for (int i = 0; i < parents.size(); i++) {
+            sb.append("}\n");
         }
     }
 
@@ -292,6 +366,26 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
         public StackItem(String tag) {
             this.tag = tag;
             this.balance = 1;
+        }
+    }
+
+    private static class ParentContext {
+
+        private final String value;
+
+        private final boolean index;
+
+        public ParentContext(String value, boolean index) {
+            this.value = value;
+            this.index = index;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public boolean hasIndex() {
+            return index;
         }
     }
 }
