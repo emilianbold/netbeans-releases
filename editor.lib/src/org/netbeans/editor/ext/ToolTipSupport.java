@@ -741,6 +741,7 @@ public class ToolTipSupport {
                     if (toolTipText.startsWith(HTML_PREFIX_LOWERCASE) || toolTipText.startsWith(HTML_PREFIX_UPPERCASE)) {
                         JEditorPane jep = createHtmlTextToolTip();
                         jep.setText(toolTipText);
+                        jep.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
                         setToolTip(jep);
                     } else {
 // With the improved algorithm for placing popups we can have all text tooltips to wrap lines.
