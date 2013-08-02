@@ -57,21 +57,23 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class KOCodeCompletionTest extends JsCodeCompletionBase {
+public class KOCodeCompletionIssue233004Test extends JsCodeCompletionBase {
 
-    public KOCodeCompletionTest(String testName) {
+    public KOCodeCompletionIssue233004Test(String testName) {
         super(testName);
     }
+
+    public void testIssue233004() throws Exception {
+        checkCompletion("completion/issue233004/index.html", "            <div data-bind=\"text: j^ \"></div>", false);
+    }
     
-    public void testForEach() throws Exception {
-        checkCompletion("completion/foreach/index.html", "            <div data-bind=\"text: ^ , css: jmeno == 'pepa' ? 'jouda' :", false);
-    }
-
-    public void testWith() throws Exception {
-        checkCompletion("completion/with/index.html", "            <div data-bind=\"text: ^\"></div>", false);
-    }
-
-    public void testIssue234569() throws Exception {
-        checkCompletion("completion/issue231569/index.html", "                <input data-bind='value: userNameToAdd, valueUpdate: \"keyup\", css: { invalid: ^ }' /></input>", false);
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<>(/*ClasspathProviderImplAccessor.getJsStubs()*/);
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "completion/issue233004")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
 }
