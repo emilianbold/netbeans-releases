@@ -81,6 +81,7 @@ import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.AnonymousObjectVariable;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayCreation;
 import org.netbeans.modules.php.editor.parser.astnodes.Assignment;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassInstanceCreation;
@@ -840,7 +841,10 @@ public final class VariousUtils {
     }
 
     private static String extractVariableTypeFromVariableBase(VariableBase varBase, Map<String, AssignmentImpl> allAssignments) {
-        if (varBase instanceof Variable) {
+        if (varBase instanceof AnonymousObjectVariable) {
+            String className = CodeUtils.extractVariableName((Variable) varBase);
+            return PRE_OPERATION_TYPE_DELIMITER + CONSTRUCTOR_TYPE_PREFIX + className;
+        } else if (varBase instanceof Variable) {
             String varName = CodeUtils.extractVariableName((Variable) varBase);
             AssignmentImpl assignmentImpl = allAssignments.get(varName);
             if (assignmentImpl != null) {
