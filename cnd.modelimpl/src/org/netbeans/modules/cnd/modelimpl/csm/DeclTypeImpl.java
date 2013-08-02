@@ -61,7 +61,7 @@ import org.netbeans.modules.cnd.repository.spi.RepositoryDataOutput;
  */
 public class DeclTypeImpl extends TypeImpl {
     
-    public static final String DECLTYPE = "decltype"; // NO18N
+    public static final String DECLTYPE = "decltype"; // NOI18N
         
     public static boolean isDeclType(AST node) {
         return node != null 
