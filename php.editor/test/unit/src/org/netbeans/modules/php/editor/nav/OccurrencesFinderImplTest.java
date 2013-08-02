@@ -1156,6 +1156,22 @@ public class OccurrencesFinderImplTest extends PHPNavTestBase {
         checkOccurrences(getTestPath(), "$this->cont^ext[0]", true);
     }
 
+    public void testIssue217360_01() throws Exception {
+        checkOccurrences(getTestPath(), "private function get^Two()", true);
+    }
+
+    public void testIssue217360_02() throws Exception {
+        checkOccurrences(getTestPath(), "$two = $this->get^Two();", true);
+    }
+
+    public void testIssue217360_03() throws Exception {
+        checkOccurrences(getTestPath(), "return $two->get^Two();", true);
+    }
+
+    public void testIssue217360_04() throws Exception {
+        checkOccurrences(getTestPath(), "(new Two)->get^Two();", true);
+    }
+
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         return new FileObject[]{FileUtil.toFileObject(new File(getDataDir(), getTestFolderPath()))};
