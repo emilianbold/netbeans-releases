@@ -63,13 +63,20 @@ import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.index.IndexedElement;
+import org.netbeans.modules.javascript2.editor.index.JsIndex;
 import org.netbeans.modules.javascript2.editor.model.impl.AnonymousObject;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsWithObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
 import org.netbeans.modules.javascript2.editor.model.impl.ParameterObject;
@@ -121,11 +128,17 @@ public final class Model {
     private final UsageBuilder usageBuilder;
     
     private ModelVisitor visitor;
+    
+    /**
+     * contains with expression?
+     */
+    private boolean resolveWithObjects;
 
     Model(JsParserResult parserResult) {
         this.parserResult = parserResult;
         this.occurrencesSupport = new OccurrencesSupport(this);
         this.usageBuilder = new UsageBuilder();
+        this.resolveWithObjects = false;
     }
 
     private synchronized ModelVisitor getModelVisitor() {
@@ -137,7 +150,7 @@ public final class Model {
                 root.accept(visitor);
             }
             long startResolve = System.currentTimeMillis();
-            resolveLocalTypes(getGlobalObject(), parserResult.getDocumentationHolder());
+            resolveLocalTypes(visitor.getGlobalObject(), parserResult.getDocumentationHolder());
 
             ModelElementFactory elementFactory = ModelElementFactoryAccessor.getDefault().createModelElementFactory();
             long startCallingME = System.currentTimeMillis();
@@ -157,10 +170,255 @@ public final class Model {
             if(LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms. Extending model took {2}", new Object[]{(end - start), (startCallingME - startResolve), (end - startCallingME)}));
             }
+        } else if (resolveWithObjects) {
+            long start = System.currentTimeMillis();
+            resolveWithObjects = false;
+            JsIndex jsIndex = JsIndex.get(parserResult.getSnapshot().getSource().getFileObject());
+            processWithObjectIn(visitor.getGlobalObject(), jsIndex);
+            long end = System.currentTimeMillis();
+            System.out.println("resolving with took: " + (end - start));
         }
         return visitor;
     }
 
+    private void processWithObjectIn(JsObject where, JsIndex jsIndex) {
+        if (where.getProperties().isEmpty()) {
+            return;
+        }
+        List<JsObject> properties = new ArrayList(where.getProperties().values());
+        for (JsObject property : properties) {
+            if (property instanceof JsWith) {
+                processWithObject((JsWith)property, jsIndex, null);
+            } else {
+                processWithObjectIn(property, jsIndex);
+            }
+        }
+    }
+    
+    private void processWithObject(JsWith with, JsIndex jsIndex, List<String> outerExpression) {
+        Collection<TypeUsage> withTypes = with.getTypes();
+        withTypes.clear();
+        Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
+        int offset = ((JsWithObjectImpl)with).getExpressionRange().getEnd();
+        List<String> ech = ModelUtils.resolveExpressionChain(parserResult.getSnapshot(), offset, false);
+        List<String> originalExp = new ArrayList<String>(ech);
+        JsObject fromType = null;
+        if (outerExpression == null) {
+            outerExpression = ech;
+            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, ech, offset));
+            resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult);
+            withTypes.addAll(resolveTypeFromExpression);
+        } else {
+            ech.addAll(outerExpression);
+            boolean resolved = false;
+            resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, ech, offset));
+            resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult);
+            for(TypeUsage type : resolveTypeFromExpression) {
+                fromType = ModelUtils.findJsObjectByName(visitor.getGlobalObject(), type.getType());
+                if (fromType != null) {
+                    resolved = true;
+                    outerExpression = ech;
+                    withTypes.add(type);
+                    break;
+                }
+            }
+            if (!resolved) {
+                resolveTypeFromExpression.clear();
+                resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(this, jsIndex, originalExp, offset));
+                resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, parserResult);
+                for (TypeUsage type : resolveTypeFromExpression) {
+                    fromType = ModelUtils.findJsObjectByName(visitor.getGlobalObject(), type.getType());
+                    if (fromType != null) {
+                        resolved = true;
+                        outerExpression = originalExp;
+                        withTypes.add(type);
+                        break;
+                    }
+                }
+            }
+        }
+        
+        
+        for (JsWith innerWith : with.getInnerWiths()) {
+            processWithObject(innerWith, jsIndex, outerExpression);
+        }
+
+        for (TypeUsage type : resolveTypeFromExpression) {
+            fromType = ModelUtils.findJsObjectByName(visitor.getGlobalObject(), type.getType());
+            if (fromType != null) {
+                processWithExpressionOccurrences(fromType, ((JsWithObjectImpl)with).getExpressionRange(), originalExp);
+                Collection<TypeUsage> assignments = ModelUtils.resolveTypes(fromType.getAssignments(), parserResult);
+                for (TypeUsage assignment : assignments) {
+                    Collection<IndexedElement> properties = jsIndex.getProperties(assignment.getType());
+                    for (IndexedElement indexedElement : properties) {
+                        JsObject jsWithProperty = with.getProperty(indexedElement.getName());
+                        if (jsWithProperty != null) {
+                            moveProperty(fromType, jsWithProperty);
+                        }
+                    }
+                }
+                
+                for (JsObject fromTypeProperty : fromType.getProperties().values()) {
+                    JsObject jsWithProperty = with.getProperty(fromTypeProperty.getName());
+                    if (jsWithProperty != null) {
+                        moveProperty(fromType, jsWithProperty);
+                    }
+                }
+            } else {
+                Collection<IndexedElement> properties = jsIndex.getProperties(type.getType());
+                if (!properties.isEmpty()) {
+                    StringBuilder fqn = new StringBuilder();
+                    for (int i =outerExpression.size() - 1; i > -1; i--) {
+                        fqn.append(outerExpression.get(--i));
+                        fqn.append('.');
+                    }
+                    if (fqn.length() > 0) {
+                        DeclarationScope ds = ModelUtils.getDeclarationScope(with);
+                        JsObject fromExpression = ModelUtils.findJsObjectByName((JsObject)ds, fqn.toString());
+                        if (fromExpression != null) {
+                            for (IndexedElement indexedElement : properties) {
+                                JsObject jsWithProperty = with.getProperty(indexedElement.getName());
+                                    if (jsWithProperty != null) {
+                                        moveProperty(fromExpression, jsWithProperty);
+                                    }
+                            }
+                            processWithExpressionOccurrences(fromExpression, ((JsWithObjectImpl)with).getExpressionRange(), originalExp);
+                        }
+                    }
+                        
+                }
+            }
+        }
+        
+//        for (TypeUsage typeUsage : withTypes) {
+//            for (TypeUsage rType : ModelUtils.resolveTypeFromSemiType(with, typeUsage)) {
+//                String type = rType.getType();
+//                if (type.startsWith("@exp;")) {
+//                    type = type.substring(5);
+//                }
+//                if (type.contains("@pro;")) {
+//                    type = type.replace("@pro;", ".");
+//                }
+//                JsObject fromType = ModelUtils.findJsObjectByName((JsObject)ModelUtils.getDeclarationScope(with), type);
+//                if (fromType != null) {
+//                    Collection<TypeUsage> assignments = ModelUtils.resolveTypes(fromType.getAssignments(), parserResult);
+//                    for (TypeUsage assignment : assignments) {
+//                        Collection<IndexedElement> properties = jsIndex.getProperties(assignment.getType());
+//                        for (IndexedElement indexedElement : properties) {
+//                            JsObject jsWithProperty = with.getProperty(indexedElement.getName());
+//                            if (jsWithProperty != null) {
+//                                moveProperty(fromType, jsWithProperty);
+//                            }
+//                        }
+//                    }
+//                    
+//                    for (TypeUsage typeFE : ModelUtils.resolveTypes(withTypes, parserResult)) {
+//                        Collection<IndexedElement> properties = jsIndex.getProperties(typeFE.getType());
+//                        for (IndexedElement indexedElement : properties) {
+//                            JsObject jsWithProperty = with.getProperty(indexedElement.getName());
+//                            if (jsWithProperty != null) {
+//                                moveProperty(fromType, jsWithProperty);
+//                            }
+//                        }
+//                    }
+//                    
+//                    String typeName = rType.getType();
+//                    if (!typeName.startsWith("@")) {
+//                        typeName = "@exp;" + typeName;
+//                    } else if (typeName.startsWith("@var")) {
+//                        typeName = "@exp;" + typeName.substring(5);
+//                    }
+//                    List<String> exp = ModelUtils.expressionFromType(new TypeUsageImpl(typeName));
+//                    Collection<TypeUsage> resolveTypeFromExpression2 = ModelUtils.resolveTypeFromExpression(this, jsIndex, exp, typeUsage.getOffset());
+//
+//                    for (TypeUsage typeFE : resolveTypeFromExpression2) {
+//                        Collection<IndexedElement> properties = jsIndex.getProperties(typeFE.getType());
+//                        for (IndexedElement indexedElement : properties) {
+//                            JsObject jsWithProperty = with.getProperty(indexedElement.getName());
+//                            if (jsWithProperty != null) {
+//                                moveProperty(fromType, jsWithProperty);
+//                            }
+//                        }
+//                    }
+//                }
+//
+//            }
+//            
+//        }
+            
+        boolean hasOuter = with.getOuterWith() != null;
+        Collection<? extends JsObject> variables = ModelUtils.getVariables(ModelUtils.getDeclarationScope(with));
+        List<JsObject> withProperties = new ArrayList(with.getProperties().values());
+        for (JsObject jsWithProperty : withProperties) {
+            if (!(jsWithProperty instanceof JsWith)) {
+                String name = jsWithProperty.getName();
+                boolean moved = false;
+                if (hasOuter) {
+                    // move the property for one level up
+                    moveProperty(with.getOuterWith(), jsWithProperty);
+                    moved = true;
+                } else {
+                    for (JsObject variable : variables) {
+                        if (variable.getName().equals(name)) {
+                            moveProperty(variable.getParent(), jsWithProperty);
+                            moved = true;
+                            break;
+                        }
+                    }
+                }
+                if (!moved) {
+                    // move the property to the global space
+                    moveProperty(visitor.getGlobalObject(), jsWithProperty);
+                }
+            }
+        }
+    }
+    
+    private void processWithExpressionOccurrences(JsObject jsObject, OffsetRange expRange, List<String> expression) {
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot(), expRange.getEnd());
+        if (ts == null) {
+            return;
+        }
+        ts.move(expRange.getEnd());
+        if(!ts.movePrevious()) {
+            return;
+        }
+        Token<? extends JsTokenId> token = ts.token();
+        JsObject parent = jsObject.getParent();
+        for (int i = 0; i < expression.size() - 1; i++) {
+            String name = expression.get(i++);
+            while ((token.id() != JsTokenId.IDENTIFIER || !(token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name))) && ts.offset() > expRange.getStart() && ts.movePrevious()) {
+                token = ts.token();
+            }
+            if (token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name)) {
+                JsObject property = parent.getProperty(name);
+                if (property != null) {
+                    property.addOccurrence(new OffsetRange(ts.offset(), ts.offset() + name.length()));
+                }
+                parent = parent.getParent();
+            }
+        }
+    }
+    
+    private void moveProperty (JsObject newParent, JsObject property) {
+        JsObject newProperty = newParent.getProperty(property.getName());
+        System.out.println("moving property: " + property.getName() + " to " + newParent.getName());
+        if (property.getParent() != null) {
+            property.getParent().getProperties().remove(property.getName());
+        }
+        if (newProperty == null) {
+            ((JsObjectImpl)property).setParent(newParent);
+            newParent.addProperty(property.getName(), property);
+        } else {
+            JsObjectImpl.moveOccurrenceOfProperties((JsObjectImpl) newProperty, property);
+            for (Occurrence occurrence : property.getOccurrences()) {
+                newProperty.addOccurrence(occurrence.getOffsetRange());
+            }
+            // the property needs to be resolved again to handle right occurrences
+            resolveLocalTypes(newProperty, parserResult.getDocumentationHolder());
+        }
+    }
+    
     public JsObject getGlobalObject() {
         return getModelVisitor().getGlobalObject();
     }
@@ -174,7 +432,9 @@ public final class Model {
         DeclarationScope scope = ModelUtils.getDeclarationScope(this, offset);
         while (scope != null) {
             for (JsObject object : ((JsObject)scope).getProperties().values()) {
-                result.add(object);
+                if (!object.isAnonymous()) {
+                    result.add(object);
+                }
             }
             for (JsObject object : ((JsFunction)scope).getParameters()) {
                 result.add(object);
@@ -185,10 +445,13 @@ public final class Model {
     }
 
     private void resolveLocalTypes(JsObject object, JsDocumentationHolder docHolder) {
-         if(object instanceof JsFunctionImpl) {
+        if(object instanceof JsFunctionImpl) {
             ((JsFunctionImpl)object).resolveTypes(docHolder);
         } else {
             ((JsObjectImpl)object).resolveTypes(docHolder);
+            if (object instanceof JsWith) {
+                resolveWithObjects = true;
+            }
         }
         ArrayList<JsObject> copy = new ArrayList(object.getProperties().values());
         for(JsObject property: copy) {
