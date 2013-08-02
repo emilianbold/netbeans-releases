@@ -76,6 +76,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.jumpto.SearchHistory;
 import org.netbeans.spi.jumpto.type.TypeDescriptor;
 import org.openide.util.ImageUtilities;
@@ -97,6 +98,7 @@ public class GoToPanel extends javax.swing.JPanel {
     private Iterable<? extends TypeDescriptor> selectedTypes = Collections.emptyList();
     private volatile int textId = 0;
     private String oldText;
+    private String oldMessage;
     
     // Time when the serach stared (for debugging purposes)
     long time = -1;
@@ -434,17 +436,27 @@ public class GoToPanel extends javax.swing.JPanel {
     public boolean isCaseSensitive () {
         return this.caseSensitive.isSelected();
     }
+
+    void updateMessage(@NullAllowed final String message) {
+        final String text = getText();
+        if (oldText == null || oldText.trim().length() == 0 || !text.startsWith(oldText) ||
+        (message == null ? oldMessage != null : !message.equals(oldMessage))) {
+            setListPanelContent(message,true); // NOI18N
+        }
+    }
     
     void setListPanelContent( String message ,boolean waitIcon ) {
-        
-        if ( message == null && !containsScrollPane ) {
-           listPanel.remove( messageLabel );
-           listPanel.add( matchesScrollPane1 );
-           containsScrollPane = true;
-           revalidate();
-           repaint();
-        }        
-        else if ( message != null ) { 
+        assert SwingUtilities.isEventDispatchThread();
+        oldMessage = message;
+        if (message == null) {            
+            if (!containsScrollPane) {
+               listPanel.remove( messageLabel );
+               listPanel.add( matchesScrollPane1 );
+               containsScrollPane = true;
+               revalidate();
+               repaint();
+            }
+        } else {
            jTextFieldLocation.setText(""); 
            //handling http://netbeans.org/bugzilla/show_bug.cgi?id=178555
             messageLabel.setText(waitIcon
@@ -563,10 +575,8 @@ public class GoToPanel extends javax.swing.JPanel {
         
         private void update() {
             dialog.time = System.currentTimeMillis();
-            String text = dialog.getText();
-            if ( dialog.oldText == null || dialog.oldText.trim().length() == 0 || !text.startsWith(dialog.oldText) ) {
-                dialog.setListPanelContent(NbBundle.getMessage(GoToPanel.class, "TXT_Searching"),true); // NOI18N
-            }
+            dialog.updateMessage(NbBundle.getMessage(GoToPanel.class, "TXT_Searching"));
+            String text = dialog.getText();            
             dialog.oldText = text;
             dialog.textId++;
             dialog.contentProvider.setListModel(dialog,text);            
@@ -589,5 +599,5 @@ public class GoToPanel extends javax.swing.JPanel {
         public boolean hasValidContent ();
                 
     }
-    
+
 }

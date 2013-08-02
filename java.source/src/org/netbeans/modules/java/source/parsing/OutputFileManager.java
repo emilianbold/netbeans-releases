@@ -75,6 +75,7 @@ public class OutputFileManager extends CachingFileManager {
 
     private static final ClassPath EMPTY_PATH = ClassPathSupport.createClassPath(new URL[0]);
     private static final String OUTPUT_ROOT = "output-root";   //NOI18N
+    private static final Logger LOG = Logger.getLogger(OutputFileManager.class.getName());
     /**
      * Exception used to signal that the sourcepath is broken (project is deleted)
      */
@@ -114,12 +115,9 @@ public class OutputFileManager extends CachingFileManager {
 
     public @Override JavaFileObject getJavaFileForOutput( Location l, String className, JavaFileObject.Kind kind, javax.tools.FileObject sibling ) 
         throws IOException, UnsupportedOperationException, IllegalArgumentException {
-
-
         if (kind != JavaFileObject.Kind.CLASS) {
             throw new IllegalArgumentException ();
-        }
-        else {
+        } else {
             File activeRoot = null;
             if (outputRoot != null) {
                 activeRoot = new File(outputRoot);
@@ -131,8 +129,14 @@ public class OutputFileManager extends CachingFileManager {
                     if (activeRoot == null) {
                         //Deleted project
                         if (this.scp.getRoots().length > 0) {
-                            Logger.getLogger(OutputFileManager.class.getName()).log(
-                                Level.WARNING, "No output for class: {0} sibling: {1} srcRoots: {2}", new Object[]{className, sibling, this.scp});    //NOI18N
+                            LOG.log(
+                                Level.WARNING,
+                                "No output for class: {0} sibling: {1} srcRoots: {2}",    //NOI18N
+                                new Object[]{
+                                    className,
+                                    sibling,
+                                    this.scp
+                                });
                         }
                         throw new InvalidSourcePath ();
                     }
@@ -141,7 +145,18 @@ public class OutputFileManager extends CachingFileManager {
             String baseName = className.replace('.', File.separatorChar);       //NOI18N
             String nameStr = baseName + '.' + FileObjects.SIG;            
             final File f = new File (activeRoot, nameStr);
-            return tx.createFileObject(l, f, activeRoot, null, null);
+            if (isValidClassName(className)) {
+                return tx.createFileObject(l, f, activeRoot, null, null);
+            } else {
+                LOG.log(
+                    Level.WARNING,
+                    "Invalid class name: {0} sibling: {1}", //NOI18N
+                    new Object[]{
+                        className,
+                        sibling
+                    });
+                return FileObjects.nullWriteFileObject(FileObjects.fileFileObject(f, activeRoot, null, null));
+            }
         }
     }
 
@@ -197,6 +212,15 @@ public class OutputFileManager extends CachingFileManager {
         return super.getJavaFileForInput(l, className, kind);
     }
 
+    /**
+     * Prevents <error>, <any> from being generated.
+     * @param fqn to check
+     * @return true if the name does not contain '<'
+     */
+    private static boolean isValidClassName(@NonNull final String fqn) {
+        int ld = fqn.lastIndexOf('.');      //NOI18N
+        return fqn.indexOf('<', ld) < 0;    //NOI18N
+    }
 
     private File getClassFolderForSource (final javax.tools.FileObject sibling, final String baseName) throws IOException {
         return sibling == null ? getClassFolderForSourceImpl(baseName) : getClassFolderForSourceImpl(sibling.toUri().toURL());
