@@ -371,4 +371,5 @@
 	<mapID target="GlobalDebuggingOptions" url="CandC++ProjectBasics/GlobalDebuggingOptions.html"/>
 	<mapID target="DebuggingOptions" url="CandC++ProjectBasics/DebuggingOptions.html"/>
 	<mapID target="RemoteModes" url="WorkingWithCandC++Projects/RemoteModes.html"/>
+	<mapID target="CodeCompletionOptions" url="WorkingWithCandC++Projects/CodeCompletionOptions.html"/>
 </map>
