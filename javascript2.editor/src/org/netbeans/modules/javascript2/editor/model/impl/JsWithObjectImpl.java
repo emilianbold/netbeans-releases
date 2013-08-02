@@ -67,9 +67,10 @@ public class JsWithObjectImpl extends JsObjectImpl implements JsWith {
     private Collection<TypeUsage> withTypes;
     private JsWith outerWith;
     private Collection<JsWith> innerWith = new ArrayList<JsWith>();
+    private OffsetRange expressionRange;
     
     public JsWithObjectImpl(JsObject parent, String name, Collection<TypeUsage> withTypes,
-            OffsetRange offsetRange, String mimeType, String sourceLabel) {
+            OffsetRange offsetRange, OffsetRange expressionRange, String mimeType, String sourceLabel) {
         super(parent, name, false, offsetRange, EnumSet.of(Modifier.PUBLIC), mimeType, sourceLabel);
         this.withTypes = withTypes;
 //        while (parent != null && !(parent instanceof JsWithObjectImpl)) {
@@ -79,6 +80,7 @@ public class JsWithObjectImpl extends JsObjectImpl implements JsWith {
             outerWith = (JsWith)parent;
             ((JsWithObjectImpl)outerWith).addInnerWith(this);
         }
+        this.expressionRange = expressionRange;
     }
 
     @Override
@@ -158,6 +160,10 @@ public class JsWithObjectImpl extends JsObjectImpl implements JsWith {
         return true;
     }
 
+    public OffsetRange getExpressionRange() {
+        return expressionRange;
+    }
+
     private void moveOccurrenceOfObject(JsObjectImpl original, JsObjectImpl copy) {
         for (Occurrence occurrence: copy.getOccurrences()) {
             original.addOccurrence(occurrence.getOffsetRange());
@@ -223,4 +229,6 @@ public class JsWithObjectImpl extends JsObjectImpl implements JsWith {
         
         
     }
+    
+    
 }

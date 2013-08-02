@@ -41,37 +41,24 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import jdk.nashorn.internal.ir.AccessNode;
-import jdk.nashorn.internal.ir.BinaryNode;
-import jdk.nashorn.internal.ir.CallNode;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.IdentNode;
-import jdk.nashorn.internal.ir.IndexNode;
-import jdk.nashorn.internal.ir.LiteralNode;
 import jdk.nashorn.internal.ir.Node;
-import jdk.nashorn.internal.ir.ObjectNode;
-import jdk.nashorn.internal.ir.ReferenceNode;
-import jdk.nashorn.internal.ir.UnaryNode;
-import jdk.nashorn.internal.parser.Lexer;
-import jdk.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import jdk.nashorn.internal.ir.TernaryNode;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.JsCompletionItem;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -89,6 +76,7 @@ import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.openide.filesystems.FileObject;
 
@@ -1239,5 +1227,131 @@ public class ModelUtils {
     
     public static boolean isKnownGLobalType(String type) {
         return knownGlobalObjects.contains(type);
+    }
+    
+    /**
+     * 
+     * @param snapshot
+     * @param offset offset where the expression should be resolved
+     * @param lookBefore if yes, looks for the beginning of the expression before the offset,
+     *                  if no, it can be in a middle of expression
+     * @return 
+     */
+    public static List<String> resolveExpressionChain(Snapshot snapshot, int offset, boolean lookBefore) {
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, offset);
+        if (ts == null) {
+            return Collections.<String>emptyList();
+        }
+
+        ts.move(offset);
+        if (ts.movePrevious() && (ts.moveNext() || ((ts.offset() + ts.token().length()) == snapshot.getText().length()))) {
+            if (!lookBefore && ts.token().id() != JsTokenId.OPERATOR_DOT) {
+                ts.movePrevious();
+            }
+            Token<? extends JsTokenId> token = lookBefore ? LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL)) : ts.token();
+            int parenBalancer = 0;
+            // 1 - method call, 0 - property, 2 - array
+            int partType = 0;
+            boolean wasLastDot = lookBefore;
+            int offsetFirstRightParen = -1;
+            List<String> exp = new ArrayList();
+
+            while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
+                    && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY
+                    && token.id() != JsTokenId.BRACKET_LEFT_PAREN
+                    && token.id() != JsTokenId.BLOCK_COMMENT
+                    && token.id() != JsTokenId.LINE_COMMENT
+                    && token.id() != JsTokenId.OPERATOR_ASSIGNMENT
+                    && token.id() != JsTokenId.OPERATOR_PLUS) {
+
+                if (token.id() != JsTokenId.EOL) {
+                    if (token.id() != JsTokenId.OPERATOR_DOT) {
+                        if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
+                            parenBalancer++;
+                            partType = 1;
+                            if (offsetFirstRightParen == -1) {
+                                offsetFirstRightParen = ts.offset();
+                            }
+                            while (parenBalancer > 0 && ts.movePrevious()) {
+                                token = ts.token();
+                                if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
+                                    parenBalancer++;
+                                } else {
+                                    if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
+                                        parenBalancer--;
+                                    }
+                                }
+                            }
+                        } else if (token.id() == JsTokenId.BRACKET_RIGHT_BRACKET) {
+                            parenBalancer++;
+                            partType = 2;
+                            while (parenBalancer > 0 && ts.movePrevious()) {
+                                token = ts.token();
+                                if (token.id() == JsTokenId.BRACKET_RIGHT_BRACKET) {
+                                    parenBalancer++;
+                                } else {
+                                    if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET) {
+                                        parenBalancer--;
+                                    }
+                                }
+                            }
+                        } else if (parenBalancer == 0 && "operator".equals(token.id().primaryCategory())) { // NOI18N
+                            return exp;
+                        } else {
+                            exp.add(token.text().toString());
+                            switch (partType) {
+                                case 0:
+                                    exp.add("@pro");   // NOI18N
+                                    break;
+                                case 1:
+                                    exp.add("@mtd");   // NOI18N
+                                    offsetFirstRightParen = -1;
+                                    break;
+                                case 2:
+                                    exp.add("@arr");    // NOI18N
+                                    break;
+                                default:
+                                    break;
+                            }
+                            partType = 0;
+                            wasLastDot = false;
+                        }
+                    } else {
+                        wasLastDot = true;
+                    }
+                } else {
+                    if (!wasLastDot && ts.movePrevious()) {
+                        // check whether it's continuatino of previous line
+                        token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                        if (token.id() != JsTokenId.OPERATOR_DOT) {
+                            // the dot was not found => it's not continuation of expression
+                            break;
+                        }
+                    }
+                }
+                if (!ts.movePrevious()) {
+                    break;
+                }
+                token = ts.token();
+            }
+            if (token.id() == JsTokenId.WHITESPACE) {
+                if (ts.movePrevious()) {
+                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL));
+                    if (token.id() == JsTokenId.KEYWORD_NEW && !exp.isEmpty()) {
+                        exp.remove(exp.size() - 1);
+                        exp.add("@pro");    // NOI18N
+                    } else if (!lookBefore && offsetFirstRightParen > -1) {
+                        // in the case when the expression is like ( new Object()).someMethod
+                        exp.addAll(resolveExpressionChain(snapshot, offsetFirstRightParen - 1, true));
+                    }
+                }
+            } else if (exp.isEmpty() && !lookBefore && offsetFirstRightParen > -1) {
+                // in the case when the expression is like ( new Object()).someMethod
+                exp.addAll(resolveExpressionChain(snapshot, offsetFirstRightParen - 1, true));
+            }
+            return exp;
+        }
+        return Collections.<String>emptyList();
     }
 }

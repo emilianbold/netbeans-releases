@@ -11,6 +11,6 @@ var |>CLASS:testWith02<| = {
    
 with (testWith02) {
     app.|>FIELD:description<| = "new description";
-    console.log(app.|>FIELD:description<|);
+    |>GLOBAL:console<|.log(app.|>FIELD:description<|);
 }
 })();

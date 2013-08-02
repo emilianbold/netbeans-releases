@@ -1318,10 +1318,28 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node enter(WithNode withNode) {
         JsObjectImpl currentObject = modelBuilder.getCurrentObject();
+//        Collection<TypeUsage> originalTypes = ModelUtils.resolveSemiTypeOfExpression(parserResult, withNode.getExpression());
+//        List<TypeUsage> types = new ArrayList(originalTypes);
+//        if (currentObject instanceof JsWith) {
+//            JsWith outerWith = (JsWith) currentObject;
+//            for (TypeUsage type : outerWith.getTypes()) {
+//                for (TypeUsage oType : originalTypes) {
+//                    String typeName = type.getType();
+//                    String alteredName = oType.getType();
+//                    if (alteredName.startsWith("@var;")) {
+//                        alteredName = alteredName.substring(5);
+//                        alteredName = "@pro;" + alteredName;
+//                    }
+//                    typeName = typeName + alteredName;
+//                    types.add(new TypeUsageImpl(typeName, oType.getOffset(), false));
+//                }
+//            }
+//        }
         Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, withNode.getExpression());
-        JsWithObjectImpl withObject = new JsWithObjectImpl(currentObject, modelBuilder.getUnigueNameForWithObject(), types, new OffsetRange(withNode.getStart(), withNode.getFinish()), parserResult.getSnapshot().getMimeType(), null);
+        JsWithObjectImpl withObject = new JsWithObjectImpl(currentObject, modelBuilder.getUnigueNameForWithObject(), types, new OffsetRange(withNode.getStart(), withNode.getFinish()), 
+                        new OffsetRange(withNode.getExpression().getStart(), withNode.getExpression().getFinish()),parserResult.getSnapshot().getMimeType(), null);
         currentObject.addProperty(withObject.getName(), withObject);
-        withNode.getExpression().accept(this); // expression should be visted when the with object is the current object.
+//        withNode.getExpression().accept(this); // expression should be visted when the with object is the current object.
         modelBuilder.setCurrentObject(withObject);
         withNode.getBody().accept(this);
         modelBuilder.reset();
@@ -1585,18 +1603,18 @@ public class ModelVisitor extends PathNodeVisitor {
             IdentifierImpl name = ModelElementFactory.create(parserResult, iNode);
             if (name != null) {
                 JsObjectImpl newObject;
+                if (!(parent instanceof JsWith)) {
+                        parent = modelBuilder.getGlobal();
+                }
                 if (!isFunction) {
-                    newObject = new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange(),
+                    newObject = new JsObjectImpl(parent, name, name.getOffsetRange(),
                             leftSite, parserResult.getSnapshot().getMimeType(), null);
                 } else {
                     FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-                    newObject = new JsFunctionImpl(fo, modelBuilder.getGlobal(), name, Collections.EMPTY_LIST,
+                    newObject = new JsFunctionImpl(fo, parent, name, Collections.EMPTY_LIST,
                             parserResult.getSnapshot().getMimeType(), null);
                 }
                 newObject.addOccurrence(name.getOffsetRange());
-                if (!(parent instanceof JsWith)) {
-                    parent = modelBuilder.getGlobal();
-                }
                 parent.addProperty(name.getName(), newObject);
             }
         }
