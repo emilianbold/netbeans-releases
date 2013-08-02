@@ -793,10 +793,12 @@ public class ModelUtils {
                         Collection<? extends IndexResult> indexResults = null;        
                         for (String fqn : prototypeChain) {
                             // at first look at the properties of the object
-                            indexResults = jsIndex.findByFqn(fqn + "." + name, JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES); //NOI18N
+                            indexResults = jsIndex.findByFqn(fqn + "." + name,
+                                    JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES, JsIndex.FIELD_ARRAY_TYPES); //NOI18N
                             if (indexResults.isEmpty()) {
                                 // if the property was not found, try to look at the prototype of the object
-                                indexResults = jsIndex.findByFqn(fqn + ".prototype." + name, JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES); //NOI18N
+                                indexResults = jsIndex.findByFqn(fqn + ".prototype." + name,
+                                        JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES, JsIndex.FIELD_ARRAY_TYPES); //NOI18N
                             }
                             if(!indexResults.isEmpty()) {
                                 // if the property / method was already found, we don't need to continue. 
@@ -812,6 +814,9 @@ public class ModelUtils {
                             if ("@mtd".equals(kind) && jsKind.isFunction()) {
                                 //Collection<TypeUsage> resolved = resolveTypeFromSemiType(model, ModelUtils.findJsObject(model, offset), IndexedElement.getReturnTypes(indexResult));
                                 Collection<TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
+                                ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
+                            } else if ("@arr".equals(kind)) { // NOI18N
+                                Collection<TypeUsage> resolvedTypes = IndexedElement.getArrayTypes(indexResult);
                                 ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
                             } else {
                                 checkProperty = true;
