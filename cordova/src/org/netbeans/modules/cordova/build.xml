@@ -188,7 +188,7 @@ made subject to such option by the copyright holder.
             <arg value="-v"/>
             <arg value="${project.name}.app"/>
             <arg value="-o"/>
-            <arg value="${basedir}/build/ios/${project.name}.ipa"/>
+            <arg value="${basedir}/platforms/ios/build/${project.name}.ipa"/>
             <arg value="--sign"/>
             <arg value="${ios.certificate.name}"/>
             <arg value="--embed"/>
@@ -202,10 +202,10 @@ made subject to such option by the copyright holder.
     
     <target name="ios-run-device" if="build.for.device">
         <echo>
-            Install "${basedir}/build/ios/${project.name}.ipa" through iTunes and run it. 
+            Install "${basedir}/platforms/ios/build/${project.name}.ipa" through iTunes and run it. 
         </echo> 
         <exec executable="open">
-            <arg value="${basedir}/build/ios/${project.name}.ipa"/>
+            <arg value="${basedir}/platforms/ios/build/${project.name}.ipa"/>
         </exec>
     </target>
 
