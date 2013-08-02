@@ -42,7 +42,6 @@
 package org.netbeans.modules.web.clientproject.spi;
 
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
 import org.openide.filesystems.FileObject;
@@ -80,6 +79,6 @@ public interface ClientProjectExtender {
      * @param siteRoot
      * @param libsPath 
      */
-    public void apply(FileObject projectRoot, FileObject siteRoot, String libsPath, ClientSideModule.Properties properties);
+    public void apply(FileObject projectRoot, FileObject siteRoot, String libsPath);
     
 }

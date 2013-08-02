@@ -73,7 +73,7 @@ public class CordovaProjectExtender implements ClientProjectExtender {
         "LBL_iPhoneDevice=iPhone Device",
     })
 
-    public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath, ClientSideModule.Properties props) {
+    public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath) {
         try {
             createMobileConfigs(projectRoot);
         } catch (IOException ex) {

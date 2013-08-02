@@ -150,7 +150,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             "LBL_AndroidEmulator=Android Emulator",
             "LBL_AndroidDevice=Android Device"
         })
-        public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath, ClientSideModule.Properties properties) {
+        public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath) {
             try {
                 final Project project = FileOwnerQuery.getOwner(projectRoot);
                 
