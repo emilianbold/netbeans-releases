@@ -4,6 +4,8 @@ Code completion result for source line:
 ------------------------------------
 CONSTRUCTO Bulici(): Bulici                [PUBLIC]   index.html
 CONSTRUCTO Clobrda(jmeno): Clobrda         [PUBLIC]   index.html
+CLASS      $context                        [PRIVATE]  index.html
+CLASS      $parentContext                  [PRIVATE]  index.html
 CLASS      ko                              [PUBLIC]   Knockout
 METHOD     init(): undefined               [PUBLIC]   index.html
 FIELD      age: Number                     [PUBLIC]   index.html
