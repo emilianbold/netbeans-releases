@@ -337,6 +337,30 @@ public class TypeAndSymbolProvider {
         public void open() {
             delegated.open();
         }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (this == obj) {
+                return true;
+            }
+            if (!(obj instanceof TypeWrapper)) {
+                return false;
+            }
+            final TypeWrapper other = (TypeWrapper) obj;
+            return this.delegated == null ?
+                    other.delegated == null :
+                    this.delegated.equals(other.delegated);
+        }
+
+        @Override
+        public int hashCode() {
+            return delegated == null ?
+                0 :
+                delegated.hashCode();
+        }
+
+
+
     } // End of TypeWrapper class
 
     private static final class SymbolWrapper extends SymbolDescriptor {

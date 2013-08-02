@@ -74,6 +74,7 @@ import com.sun.tools.javac.tree.TreeInfo;
 import com.sun.tools.javac.util.Context;
 import com.sun.tools.javac.util.Name;
 import com.sun.tools.javac.util.Position;
+import java.lang.reflect.Method;
 import org.netbeans.api.java.lexer.JavaTokenId;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.modules.java.source.pretty.VeryPretty;
@@ -383,6 +384,14 @@ public class CasualDiff {
         localPointer = diffList(oldT.getImports(), newT.getImports(), localPointer, est, Measure.DEFAULT, printer);
         est = EstimatorFactory.toplevel(oldT.getTypeDecls(), newT.getTypeDecls(), diffContext);
         localPointer = diffList(oldT.getTypeDecls(), newT.getTypeDecls(), localPointer, est, Measure.REAL_MEMBER, printer);
+        // diagnostics for defect #226498: log the tres iff the localPointer is bad
+        if (localPointer < 0 || localPointer > origText.length()) {
+            LOG.warning("Invalid localPointer (" + localPointer + "), see defect #226498 and report the log to the issue");
+            LOG.warning("OldT:" + oldT);
+            LOG.warning("NewT:" + newT);
+            LOG.warning("CodeStyle: " + printCodeStyle(diffContext.style));
+            LOG.warning("origText(" + origText.length() + "): " + origText);
+        }
         printer.print(origText.substring(localPointer));
     }
     
@@ -3248,7 +3257,7 @@ public class CasualDiff {
                                 int index = oldList.indexOf(lastdel);
                                 int[] poss = estimator.getPositions(index);
                                 //TODO: should the original text between the return position of the following method and poss[1] be copied into the new text?
-                                localPointer = diffTree(lastdel, item.element, poss);
+                                localPointer = Math.max(localPointer, diffTree(lastdel, item.element, poss));
                                 printer.print(this.printer.toString());
                                 printer.reindentRegions.addAll(this.printer.reindentRegions);
                                 this.printer = oldPrinter;
@@ -4954,4 +4963,32 @@ public class CasualDiff {
             }
         }
     }
+    
+    private static String printCodeStyle(CodeStyle style) {
+        if (style == null) {
+            return "<none>"; // NOI18N
+        }
+        StringBuilder sb = new StringBuilder();
+        try {
+            Method[] arr = style.getClass().getMethods();
+            for (Method m : arr) {
+                if (java.lang.reflect.Modifier.isPublic(m.getModifiers()) &&
+                    (m.getParameterTypes().length == 0)) {
+                    String s = m.getName();
+                    if (s.startsWith("get")) { // NOI18N
+                        s = s.substring(3);
+                    } else if (s.startsWith("is")) { // NOI18N
+                        s = s.substring(2);
+                    }
+                    Object val= m.invoke(style);
+                    if (val instanceof Object[]) {
+                        val = Arrays.asList((Object[])val);
+                    }
+                    sb.append(s).append(":").append(val).append("\n"); // NOI18N
+                } 
+            }
+        } catch (Exception ex) {}
+        return sb.toString();
+    }
+
 }

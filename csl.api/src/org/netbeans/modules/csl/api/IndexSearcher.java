@@ -160,6 +160,30 @@ public interface IndexSearcher {
          *   in Ruby. It might be more convenient
          */
         public abstract void open();
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == this) {
+                return true;
+            }
+            if (!(obj instanceof Descriptor)) {
+                return false;
+            }
+            final Descriptor other = (Descriptor) obj;
+            final FileObject thisFo = getFileObject();
+            final FileObject otherFo = other.getFileObject();
+            return thisFo == null ?
+                otherFo == null :
+                thisFo.equals(otherFo);
+        }
+
+        @Override
+        public int hashCode() {
+            final FileObject fo = getFileObject();
+            return fo == null ?
+                0 :
+                fo.hashCode();
+        }
     }
 
     
