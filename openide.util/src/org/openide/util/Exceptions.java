@@ -220,7 +220,7 @@ public final class Exceptions extends Object {
     /** An exception that has a log record associated with itself, so
      * the NbErrorManager can extract info about the annotation.
      */
-    private static final class AnnException extends Exception implements Callable<LogRecord[]> {
+    static final class AnnException extends Exception implements Callable<LogRecord[]> {
         private List<LogRecord> records;
         
         private AnnException() {
@@ -235,7 +235,8 @@ public final class Exceptions extends Object {
         public String getMessage() {
             StringBuilder sb = new StringBuilder();
             String sep = "";
-            for (LogRecord r : records) {
+            final List<LogRecord> rec = records;
+            if (rec != null) for (LogRecord r : rec) {
                 String m = r.getMessage();
                 if (m != null && !m.equals(LOC_MSG_PLACEHOLDER)) {
                     sb.append(sep);
