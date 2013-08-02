@@ -133,7 +133,7 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 
-@Keywords(location="Editor", tabTitle="#CTL_Hints_DisplayName", keywords={"#CTL_DepScanning", "#CTL_Scope_Desc", "#CTL_Scope_Label"})
+@Keywords(location="Editor", tabTitle="#CTL_Hints_DisplayName2", keywords={"#CTL_DepScanning", "#CTL_Scope_Desc", "#CTL_Scope_Label"})
 public final class HintsPanel extends javax.swing.JPanel   {
     
     private static final String DELETE = "delete";
