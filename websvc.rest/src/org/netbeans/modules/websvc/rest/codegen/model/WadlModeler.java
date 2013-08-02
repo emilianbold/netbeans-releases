@@ -55,7 +55,7 @@ import javax.xml.xpath.XPathExpressionException;
 
 import org.netbeans.modules.websvc.rest.RestUtils;
 import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
-import org.netbeans.modules.websvc.rest.wizard.ClientStubsSetupPanelVisual;
+import org.netbeans.modules.websvc.rest.wizard.AbstractPanel;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.w3c.dom.Attr;
@@ -122,7 +122,7 @@ public class WadlModeler extends ResourceModel {
         State state = validate();
         if(state != State.VALID) {
             throw new IOException(
-                    NbBundle.getMessage(ClientStubsSetupPanelVisual.class,
+                    NbBundle.getMessage(AbstractPanel.class,
                     "MSG_"+state.value()));
         }
         InputStream is = null;
