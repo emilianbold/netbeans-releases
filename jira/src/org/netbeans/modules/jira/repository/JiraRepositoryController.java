@@ -217,6 +217,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
             getHttpPassword());
     }
 
+    @Override
     public void populate() {
         taskRunner = new TaskRunner(NbBundle.getMessage(RepositoryPanel.class, "LBL_ReadingRepoData")) {  // NOI18N
             @Override
@@ -359,7 +360,7 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
     private abstract class TaskRunner implements Runnable, Cancellable, ActionListener {
         private Task task;
         private ProgressHandle handle;
-        private String labelText;
+        private final String labelText;
 
         public TaskRunner(String labelText) {
             this.labelText = labelText;
@@ -373,11 +374,21 @@ public class JiraRepositoryController implements RepositoryController, DocumentL
 
         @Override
         final public void run() {
-            preRun();
+            JiraUtils.runInAWT(new Runnable() {
+                @Override
+                public void run() {
+                    preRun();
+                }
+            });
             try {
                 execute();
             } finally {
-                postRun();
+                JiraUtils.runInAWT(new Runnable() {
+                    @Override
+                    public void run() {                
+                        postRun();
+                    }
+                });
             }
         }
 

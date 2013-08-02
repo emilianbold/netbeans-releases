@@ -388,11 +388,21 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
 
         @Override
         final public void run() {
-            preRun();
+            BugzillaUtil.runInAWT(new Runnable() {
+                @Override
+                public void run() {
+                    preRun();
+                }
+            });
             try {
                 execute();
             } finally {
-                postRun();
+                BugzillaUtil.runInAWT(new Runnable() {
+                    @Override
+                    public void run() {                
+                        postRun();
+                    }
+                });
             }
         }
 
@@ -406,17 +416,12 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
             panel.cancelButton.addActionListener(this);
             panel.connectionLabel.setVisible(false);
             handle.start();
-            BugzillaUtil.runInAWT(new Runnable() {
-                @Override
-                public void run() {
-                    panel.progressPanel.setVisible(true);
-                    panel.cancelButton.setVisible(true);
-                    panel.validateButton.setVisible(false);
-                    panel.validateLabel.setVisible(true);
-                    panel.enableFields(false);
-                    panel.validateLabel.setText(labelText); // NOI18N
-                }
-            });
+            panel.progressPanel.setVisible(true);
+            panel.cancelButton.setVisible(true);
+            panel.validateButton.setVisible(false);
+            panel.validateLabel.setVisible(true);
+            panel.enableFields(false);
+            panel.validateLabel.setText(labelText); // NOI18N
         }
 
         protected void postRun() {
@@ -424,16 +429,11 @@ public class BugzillaRepositoryController implements RepositoryController, Docum
                 handle.finish();
             }
             panel.cancelButton.removeActionListener(this);
-            BugzillaUtil.runInAWT(new Runnable() {
-                @Override
-                public void run() {            
-                    panel.progressPanel.setVisible(false);
-                    panel.validateLabel.setVisible(false);
-                    panel.validateButton.setVisible(true);
-                    panel.cancelButton.setVisible(false);
-                    panel.enableFields(true);
-                }
-            });
+            panel.progressPanel.setVisible(false);
+            panel.validateLabel.setVisible(false);
+            panel.validateButton.setVisible(true);
+            panel.cancelButton.setVisible(false);
+            panel.enableFields(true);
         }
 
         @Override
