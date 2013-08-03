@@ -1207,8 +1207,12 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         }
         return javaPlatform;
     }
-    
 
+    /**
+     * Get domains root folder with write access.
+     * <p/>
+     * @return Domains root folder with write access.
+     */
     public synchronized String getDomainsRoot() {
         String retVal = getDomainsFolder();
         if (null == retVal) {
@@ -1217,7 +1221,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         File candidate = new File(retVal);
         if (candidate.exists() && !Utils.canWrite(candidate)) {
             // we need to do some surgury here...
-            String foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3");
+            String domainsFolder = org.netbeans.modules.glassfish.common.utils
+                    .ServerUtils.getDomainsFolder(this);
+            String foldername = FileUtil.findFreeFolderName(
+                    FileUtil.getConfigRoot(), domainsFolder);
             FileObject destdir = null;
             try {
                 destdir = FileUtil.createFolder(FileUtil.getConfigRoot(),foldername);
@@ -1234,7 +1241,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                     setDomainsFolder(retVal);
                 } catch (IOException ex) {
                     // need to try again... since the domain is probably unreadable.
-                    foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3"); // NOI18N
+                    foldername = FileUtil.findFreeFolderName(
+                            FileUtil.getConfigRoot(), domainsFolder); // NOI18N
                     try {
                         destdir = FileUtil.createFolder(FileUtil.getConfigRoot(), foldername);
                     } catch (IOException ioe) {
