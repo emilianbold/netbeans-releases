@@ -826,7 +826,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         @Override
         public boolean addJsr311Api( Project project ) {
             Library library = libraryProvider.getJaxRsLibrary();
-            if ( library!= null ){
+            if (library != null) {
                 try {
                     String classPathType;
                     if (hasJee6Profile()) {
