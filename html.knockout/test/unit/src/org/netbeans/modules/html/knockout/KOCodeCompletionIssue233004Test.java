@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,43 +34,46 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.websvc.rest.wizard;
+package org.netbeans.modules.html.knockout;
 
-import org.openide.WizardDescriptor;
-import org.openide.util.HelpCtx;
+import java.io.File;
+import java.util.Collections;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.modules.javascript2.editor.JsCodeCompletionBase;
+import static org.netbeans.modules.javascript2.editor.JsTestBase.JS_SOURCE_ID;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author  Nam Nguyen
+ * @author Petr Pisl
  */
-public class ClientStubsSetupPanel extends AbstractPanel implements WizardDescriptor.Panel {
-    
-    /**
-     * The visual component that displays this panel. If you need to access the
-     * component from this class, just use getComponent().
-     */
-    private ClientStubsSetupPanelVisual component;
+public class KOCodeCompletionIssue233004Test extends JsCodeCompletionBase {
 
-    public ClientStubsSetupPanel(String name, WizardDescriptor wizardDescriptor) {
-        super(name, wizardDescriptor);
-    }
-    
-    public ClientStubsSetupPanelVisual getComponent() {
-        if (component == null) {
-            component = new ClientStubsSetupPanelVisual(getName());
-            component.addChangeListener(this);
-        }
-        return component;
+    public KOCodeCompletionIssue233004Test(String testName) {
+        super(testName);
     }
 
-    public boolean isFinishPanel() {
-        return true;
+    public void testIssue233004() throws Exception {
+        checkCompletion("completion/issue233004/index.html", "            <div data-bind=\"text: j^ \"></div>", false);
     }
     
-    public HelpCtx getHelp() {
-        return null;
+    @Override
+    protected Map<String, ClassPath> createClassPathsForTest() {
+        List<FileObject> cpRoots = new LinkedList<>(/*ClasspathProviderImplAccessor.getJsStubs()*/);
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "completion/issue233004")));
+        return Collections.singletonMap(
+            JS_SOURCE_ID,
+            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+        );
     }
-    
 }
-
