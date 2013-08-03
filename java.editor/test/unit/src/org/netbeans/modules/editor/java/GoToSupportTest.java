@@ -799,6 +799,27 @@ public class GoToSupportTest extends NbTestCase {
         assertTrue(wasCalled[0]);
     }
 
+    public void test228438() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        String code = "package test; public enum Test { ONE(\"one\"); private String str; private Test(String str) {this.str = str}}";
+
+        performTest(code, code.indexOf("ONE") + 1, new OrigUiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                assertTrue(source == fo);
+                assertEquals(65, pos);
+                wasCalled[0] = true;
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, false);
+
+        assertTrue(wasCalled[0]);
+    }
+
     public void testNearlyMatchingMethod1() throws Exception {
         final boolean[] wasCalled = new boolean[1];
         String code = "package test; public class Test { public void x() {Object o = null; test(o);} public void test(int i, float f) {} public void test(Integer i) {} }";

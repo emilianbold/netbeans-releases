@@ -692,6 +692,10 @@ public class GsfFoldManager implements FoldManager {
                     mergeSpecialFoldState(initComment, initialCommentFold);
                     
                     Map<FoldInfo, Fold> newState = operation.update(infos, null, null);
+                    if (newState == null) {
+                        // manager has been released, no further folds should be created.
+                        return;
+                    }
                     if (imports != null) {
                         importsFold = newState.get(imports);
                     }

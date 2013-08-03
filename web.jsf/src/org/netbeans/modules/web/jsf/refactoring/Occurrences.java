@@ -57,13 +57,12 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
 import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
 import org.netbeans.modules.web.jsf.api.facesmodel.*;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelProvider;
-import org.netbeans.modules.web.jsf.impl.metamodel.JsfModelProviderImpl;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -430,8 +429,7 @@ public class Occurrences {
              * @author ads
              * Migrated code .
              */
-            JsfModelProvider modelProvider = project.getLookup().lookup(JsfModelProvider.class);
-            MetadataModel<JsfModel> model = modelProvider.getModel();
+            MetadataModel<JsfModel> model = JSFUtils.getModel(project);
             if ( model == null ){
                 return result;
             }
@@ -517,8 +515,7 @@ public class Occurrences {
             /**
              * @author ads
              */
-            JsfModelProvider modelProvider = project.getLookup().lookup(JsfModelProvider.class);
-            MetadataModel<JsfModel> model = modelProvider.getModel();
+            MetadataModel<JsfModel> model = JSFUtils.getModel(project);
             if ( model == null ){
                 return result;
             }

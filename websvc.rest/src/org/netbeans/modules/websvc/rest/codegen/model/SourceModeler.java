@@ -78,7 +78,7 @@ import org.netbeans.modules.websvc.rest.codegen.Constants.HttpMethodType;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import org.netbeans.modules.websvc.rest.support.AbstractTask;
 import org.netbeans.modules.websvc.rest.support.JavaSourceHelper;
-import org.netbeans.modules.websvc.rest.wizard.ClientStubsSetupPanelVisual;
+import org.netbeans.modules.websvc.rest.wizard.AbstractPanel;
 import org.openide.util.NbBundle;
 
 /**
@@ -100,7 +100,7 @@ public class SourceModeler extends ResourceModel {
         State state = validate();
         if(state != State.VALID) {
             throw new IOException(
-                    NbBundle.getMessage(ClientStubsSetupPanelVisual.class,
+                    NbBundle.getMessage(AbstractPanel.class,
                     "MSG_ProjectsWithoutREST")+", "+state.value());
         }
         List<JavaSource> sources = JavaSourceHelper.getJavaSources(project);

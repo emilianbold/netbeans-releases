@@ -218,7 +218,7 @@ public class PatternResourcesIterator implements WizardDescriptor.ProgressInstan
     public void initialize(WizardDescriptor wizard) {
         this.wizard = wizard;
         wizard.putProperty("NewFileWizard_Title",
-                NbBundle.getMessage(ClientStubsIterator.class, "Templates/WebServices/RestServicesFromPatterns"));
+                NbBundle.getMessage(PatternResourcesIterator.class, "Templates/WebServices/RestServicesFromPatterns"));
         String step1Name =
                 NbBundle.getMessage(PatternResourcesIterator.class, "LBL_Select_Pattern");
         AbstractPanel patternPanel = new PatternSelectionPanel(step1Name, wizard); // NOI18N
