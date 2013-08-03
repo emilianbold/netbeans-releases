@@ -67,6 +67,7 @@ import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
+import org.netbeans.api.project.libraries.Library;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.ServerUtilities;
 import org.netbeans.modules.j2ee.deployment.common.api.J2eeLibraryTypeProvider;
@@ -80,7 +81,6 @@ import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.spi.WSStackFactory;
-import org.netbeans.api.project.libraries.Library;
 import org.netbeans.spi.project.libraries.LibraryImplementation;
 import org.openide.filesystems.*;
 import org.openide.util.ImageUtilities;
@@ -817,40 +817,37 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
 
     private class JaxRsStackSupportImpl implements JaxRsStackSupportImplementation {
         
-        private static final String VERSION_30X = "v3";     // NOI18N
-        private static final String VERSION_31X = "3.1";    // NOI18N
-
+        // Bug# 233840 - Fixing to avoid AssertionError and provide library
+        // for GF4. But JAR names remain hardcoded. This shall be rewritten
+        // to use Hk2LibraryProvider!
         /* (non-Javadoc)
          * @see org.netbeans.modules.javaee.specs.support.spi.JaxRsStackSupportImplementation#addJsr311Api(org.netbeans.api.project.Project)
          */
         @Override
-        public boolean addJsr311Api( Project project ) {
+        public boolean addJsr311Api(Project project) {
             Library library = libraryProvider.getJaxRsLibrary();
-            if (library != null) {
+            FileObject sourceRoot = getSourceRoot(project);
+            if (library != null && sourceRoot != null) {
                 try {
-                    String classPathType;
-                    if (hasJee6Profile()) {
-                        classPathType = JavaClassPathConstants.COMPILE_ONLY;
-                    } else {
-                        classPathType = ClassPath.COMPILE;
-                    }
+                    String classPathType = hasJee6Profile()
+                            ? JavaClassPathConstants.COMPILE_ONLY
+                            : ClassPath.COMPILE;
                     return ProjectClassPathModifier.addLibraries(
-                            new Library[] { library }, getSourceRoot(project), 
-                            classPathType);
-                }
-                catch (UnsupportedOperationException ex) {
+                            new Library[] {library}, sourceRoot, classPathType);
+                } catch (UnsupportedOperationException ex) {
                     return false;
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     return false;
                 }
             }
-            String version = getGFVersion();
+            // TODO: Rewrite to use Hk2LibraryProvider#getJaxRsName()
+            // or getJaxRsClassPathURLs()
+            GlassFishVersion version = getGFVersion();
             try {
                 if (version == null) {
                     return false;
-                }
-                else if (version.startsWith(VERSION_30X)) {
+                }                
+                else if (version.equalsMajorMinor(GlassFishVersion.GF_3)) {
                     File jsr311 = ServerUtilities.getJarName(dm.getProperties()
                             .getGlassfishRoot(), "jsr311-api.jar"); // NOI18N
                     if (jsr311 == null || !jsr311.exists()) {
@@ -859,14 +856,23 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                     return addJars(project, Collections.singletonList(Utilities
                             .toURI(jsr311).toURL()));
                 }
-                else if (version.startsWith(VERSION_31X)) {
+                else if (version.equalsMajorMinor(GlassFishVersion.GF_3_1)) {
                     File jerseyCore = ServerUtilities.getJarName(dm.getProperties().
-                            getGlassfishRoot(), "jersey-core.jar");          // NOI18N
+                            getGlassfishRoot(), "jersey-core.jar"); // NOI18N
                     if ( jerseyCore== null || !jerseyCore.exists()){
                         return false;
                     }
                     return addJars(project, Collections.singletonList(
                             Utilities.toURI(jerseyCore).toURL()));
+                }
+                else if (version.equalsMajorMinor(GlassFishVersion.GF_4)) {
+                    File javaxWsRs = ServerUtilities.getJarName(dm.getProperties().
+                            getGlassfishRoot(), "javax.ws.rs-api.jar"); // NOI18N
+                    if ( javaxWsRs== null || !javaxWsRs.exists()){
+                        return false;
+                    }
+                    return addJars(project, Collections.singletonList(
+                            Utilities.toURI(javaxWsRs).toURL()));
                 }
             } catch (MalformedURLException ex) {
                 return false;
@@ -1038,14 +1044,11 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
         }
         
         /**
-         * Get GlassFish version as string.
+         * Get GlassFish version from instance stored in deployment manager.
          * <p/>
-         * Returns {@see GlassFishVersion#toString()} method output for current
-         * GlassFish server instance.
-         * <p/>
-         * @return GlassFish version as string.
+         * @return GlassFish version from instance stored in deployment manager.
          */
-        private String getGFVersion() {
+        private GlassFishVersion getGFVersion() {
             GlassFishVersion version = null;
             try {
                 version = dm
@@ -1055,7 +1058,7 @@ public class Hk2JavaEEPlatformImpl extends J2eePlatformImpl2 {
                         "Caught NullPointerException in Hk2JavaEEPlatformImpl "
                         + "while checking GlassFish version", npe);
             }
-            return version != null ? version.toString() : "";
+            return version;
         }
     }
 
