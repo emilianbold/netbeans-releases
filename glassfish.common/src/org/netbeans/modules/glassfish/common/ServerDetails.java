@@ -138,6 +138,18 @@ public enum ServerDetails {
         400,
         "http://download.java.net/glassfish/4.0/release/glassfish-4.0-ml.zip?nbretriever=fallback", // NOI18N
         "http://serverplugins.netbeans.org/glassfishv3/post71v4-0.txt" // NOI18N
+    ),
+
+    /**
+     * details for an instance of GlassFish Server 4.0.1
+     */
+    GLASSFISH_SERVER_4_0_1(NbBundle.getMessage(ServerDetails.class, "STR_401_SERVER_NAME", new Object[]{}), // NOI18N
+        "deployer:gfv3ee6wc", // NOI18N
+        new String[]{"lib/install/applications/__admingui/WEB-INF/lib/console-core-4.0.1"}, // NOI18N
+        new String[0],
+        401,
+        "http://download.java.net/glassfish/4.0.1/release/glassfish-4.0.1-ml.zip?nbretriever=fallback", // NOI18N
+        "http://serverplugins.netbeans.org/glassfishv3/post71v4-0-1.txt" // NOI18N
     );
 
     /**
@@ -149,13 +161,14 @@ public enum ServerDetails {
     public static WizardDescriptor.InstantiatingIterator
             getInstantiatingIterator() {
         return new ServerWizardIterator(new ServerDetails[]{
-                    GLASSFISH_SERVER_3_1_1,
+                    GLASSFISH_SERVER_4_0_1,
+                    GLASSFISH_SERVER_4_0,
                     GLASSFISH_SERVER_3_1_2_2,
                     GLASSFISH_SERVER_3_1_2,
-                    GLASSFISH_SERVER_4_0,
+                    GLASSFISH_SERVER_3_1_1,
+                    GLASSFISH_SERVER_3_1,
                     GLASSFISH_SERVER_3_0_1,
-                    GLASSFISH_SERVER_3,
-                    GLASSFISH_SERVER_3_1,},
+                    GLASSFISH_SERVER_3,},
                 new ServerDetails[]{
                     GLASSFISH_SERVER_4_0,
                     GLASSFISH_SERVER_3_1_2_2});
@@ -167,8 +180,30 @@ public enum ServerDetails {
      * @return -1 if the directory is not a GlassFish server install
      */
     public static int getVersionFromInstallDirectory(File glassfishDir)  {
+// This commented out code shall be activated in next release to replace current
+// trials and errors, it's faster.
+//        GlassFishVersion version
+//                = ServerUtils.getServerVersion(glassfishDir.getAbsolutePath());
         ServerDetails sd = null;
-        if (GLASSFISH_SERVER_4_0.isInstalledInDirectory(glassfishDir)) {
+//        if (version != null) {
+//            switch(version) {
+//                case GF_3:       return GLASSFISH_SERVER_3.getVersion();
+//                case GF_3_0_1:   return GLASSFISH_SERVER_3_0_1.getVersion();
+//                case GF_3_1:     return GLASSFISH_SERVER_3_1.getVersion();
+//                case GF_3_1_1:   return GLASSFISH_SERVER_3_1_1.getVersion();
+//                case GF_3_1_2:   return GLASSFISH_SERVER_3_1_2.getVersion();
+//                case GF_3_1_2_2:
+//                case GF_3_1_2_3:
+//                case GF_3_1_2_4:
+//                case GF_3_1_2_5: return GLASSFISH_SERVER_3_1_2_2.getVersion();
+//                case GF_4:       return GLASSFISH_SERVER_4_0.getVersion();
+//                case GF_4_0_1:   return GLASSFISH_SERVER_4_0_1.getVersion();
+//                default:         return -1;
+//            }
+//        }
+        if (GLASSFISH_SERVER_4_0_1.isInstalledInDirectory(glassfishDir)) {
+            sd = GLASSFISH_SERVER_4_0_1;
+        } else if (GLASSFISH_SERVER_4_0.isInstalledInDirectory(glassfishDir)) {
             sd = GLASSFISH_SERVER_4_0;
         } else if (GLASSFISH_SERVER_3_1_2_2.isInstalledInDirectory(glassfishDir)) {
             sd = GLASSFISH_SERVER_3_1_2_2;
