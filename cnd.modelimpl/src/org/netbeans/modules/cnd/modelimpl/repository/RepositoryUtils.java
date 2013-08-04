@@ -79,7 +79,7 @@ public final class RepositoryUtils {
     /**
      * the version of the persistency mechanism
      */
-    private static final int CURRENT_VERSION_OF_PERSISTENCY = 147;
+    private static final int CURRENT_VERSION_OF_PERSISTENCY = 148;
 
 //    /** temporary flag, to be removed as soon as relocatable repository is achieved */
 //    public static final boolean RELOCATABLE = true;
