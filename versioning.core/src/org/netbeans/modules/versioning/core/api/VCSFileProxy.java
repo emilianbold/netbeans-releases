@@ -42,6 +42,9 @@
 package org.netbeans.modules.versioning.core.api;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.logging.Level;
@@ -317,6 +320,23 @@ public final class VCSFileProxy {
             return VCSFileProxy.createFileProxy(parent);
         } else {
             return proxy.getParentFile(this);
+        }
+    }
+
+    public InputStream getInputStream(boolean checkLock) throws FileNotFoundException {
+        if (proxy == null) {
+            if (checkLock) {
+                FileObject fo = toFileObject();
+                if (fo != null) {
+                    return fo.getInputStream();
+                } else {
+                    throw new FileNotFoundException("File not found: " + path); //NOI18N
+                }
+            } else {
+                return new FileInputStream(new File(path));
+            }
+        } else {
+            return proxy.getInputStream(this, checkLock);
         }
     }
     

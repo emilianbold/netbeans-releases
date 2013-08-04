@@ -41,9 +41,10 @@
  */
 package org.netbeans.modules.versioning.core.filesystems;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.openide.filesystems.FileObject;
@@ -92,4 +93,6 @@ public interface VCSFileProxyOperations {
     long lastModified(VCSFileProxy file);
 
     URI toURI(VCSFileProxy file) throws URISyntaxException;
+
+    InputStream getInputStream(VCSFileProxy file, boolean checkLock) throws FileNotFoundException;
 }
