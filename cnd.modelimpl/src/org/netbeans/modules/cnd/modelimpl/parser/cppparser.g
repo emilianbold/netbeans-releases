@@ -4036,6 +4036,8 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
 
             |   ts=builtin_type[0] (options {greedy=true;}: balanceSquaresInExpression)* (balanceCurlies)?
 
+            |   lazy_type_decltype[templateLevel] {ts = tsTYPEID;}
+
             |   LITERAL_struct
             |   LITERAL_union
             |   LITERAL_class
@@ -4391,7 +4393,7 @@ scope_override returns [String s = ""]
                 (
                         (IDENT (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)?) 
                     |
-                        type_decltype
+                        lazy_type_decltype[0]
                 )
                 SCOPE                        
             ) => sp = scope_override_part[0]
@@ -4431,7 +4433,7 @@ scope_override_part[int level] returns [String s = ""]
                 (
                         (IDENT (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)?) 
                     |
-                        type_decltype
+                        lazy_type_decltype[0]
                 )
                 SCOPE                        
             ) => sp = scope_override_part[level + 1]
@@ -4440,6 +4442,13 @@ scope_override_part[int level] returns [String s = ""]
             sitem.append(sp);
             s = sitem.toString();
         }        
+    ;
+
+// lazy_type_decltype skips expression and 
+// works faster then type_decltype.
+lazy_type_decltype[int templateLevel]
+    :
+        literal_decltype LPAREN lazy_expression[false, false, templateLevel] RPAREN
     ;
 
 type_decltype 
