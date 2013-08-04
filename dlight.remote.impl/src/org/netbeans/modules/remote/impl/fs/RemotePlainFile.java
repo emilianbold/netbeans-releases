@@ -335,6 +335,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             if (rwl.tryReadLock()) {
                 return new InputStreamWrapper(newStream);
             } else {
+                newStream.close();
                 return new InputStream() {
 
                     @Override
