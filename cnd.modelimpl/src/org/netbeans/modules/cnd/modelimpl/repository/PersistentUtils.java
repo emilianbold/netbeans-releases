@@ -472,7 +472,7 @@ public class PersistentUtils {
                 stream.writeInt(NO_TYPE);
             } else if (type instanceof TypeImpl) {
                 if (type instanceof DeclTypeImpl) {
-                    stream.writeInt(TYPE_FUN_PTR_IMPL);
+                    stream.writeInt(TYPE_DECLTYPE_IMPL);
                     ((DeclTypeImpl) type).write(stream);
                 } else if (type instanceof TypeFunPtrImpl) {
                     stream.writeInt(TYPE_FUN_PTR_IMPL);
