@@ -41,13 +41,13 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.actions;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-
 import org.netbeans.jellytools.Bundle;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.NbDialogOperator;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
@@ -56,39 +56,33 @@ import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JCheckBoxOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author mrkam@netbeans.org
  */
-public class SavingPHPProjectPropertiesTest  extends PerformanceTestCase {
+public class SavingPHPProjectPropertiesTest extends PerformanceTestCase {
 
-    public String category, project, projectName, projectType,  editorName;
+    public String category, project, projectName, projectType, editorName;
     private Node testNode;
     private JButtonOperator okButton;
 
     public SavingPHPProjectPropertiesTest(String testName) {
-        super(testName);        
-        expectedTime = 1000;
-    }
-    
-    public SavingPHPProjectPropertiesTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName);
         expectedTime = 1000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(SavingPHPProjectPropertiesTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public SavingPHPProjectPropertiesTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = 1000;
+    }
+
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(SavingPHPProjectPropertiesTest.class).suite();
     }
 
     @Override
-    public void initialize(){
+    public void initialize() {
         closeAllModal();
         createProject();
         testNode = (Node) new ProjectsTabOperator().getProjectRootNode("PhpPerfTest");
@@ -97,7 +91,7 @@ public class SavingPHPProjectPropertiesTest  extends PerformanceTestCase {
     private void createProject() {
 
         NewProjectWizardOperator wizard = NewProjectWizardOperator.invoke();
-        
+
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
@@ -105,19 +99,19 @@ public class SavingPHPProjectPropertiesTest  extends PerformanceTestCase {
     }
 
     @Override
-    public void prepare(){
+    public void prepare() {
         new PropertiesAction().performPopup(testNode);
         NbDialogOperator propertiesDialog = new NbDialogOperator("Project Properties");
         new JCheckBoxOperator(propertiesDialog, Bundle.getStringTrimmed(
                 "org.netbeans.modules.php.project.ui.customizer.Bundle",
                 "CustomizerSources.shortTagsCheckBox.AccessibleContext.accessibleName"))
                 .clickMouse();
-        okButton = new JButtonOperator(propertiesDialog, 
+        okButton = new JButtonOperator(propertiesDialog,
                 Bundle.getStringTrimmed("org.netbeans.modules.project.uiapi.Bundle",
                 "LBL_Customizer_Ok_Option"));
     }
 
-    public ComponentOperator open(){
+    public ComponentOperator open() {
         okButton.push();
         return null;
     }
@@ -127,7 +121,7 @@ public class SavingPHPProjectPropertiesTest  extends PerformanceTestCase {
         project = Bundle.getString("org.netbeans.modules.php.project.ui.wizards.Bundle", "Templates/Project/PHP/PHPProject.php");
         projectType = "PHPApplication";
         editorName = "index.php";
-        doMeasurement();        
+        doMeasurement();
     }
 
 }

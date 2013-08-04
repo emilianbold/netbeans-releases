@@ -41,11 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages;
 
-
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.dialogs.*;
@@ -55,6 +53,7 @@ import org.netbeans.performance.languages.dialogs.*;
  * @author mkhramov@netbeans.org
  */
 public class ScriptingMeasureDialogsTest {
+
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
@@ -62,11 +61,9 @@ public class ScriptingMeasureDialogsTest {
         System.setProperty("suitename", ScriptingMeasureDialogsTest.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Scripting Dialogs suite");
 
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
-        .addTest(ScriptingProjectsPropertiesDialogTest.class)
-        .enableModules(".*").clusters(".*").reuseUserDir(true)));
-                
+        suite.addTest(JellyTestCase.emptyConfiguration().reuseUserDir(true)
+                .addTest(ScriptingProjectsPropertiesDialogTest.class)
+                .suite());
         return suite;
     }
-
 }

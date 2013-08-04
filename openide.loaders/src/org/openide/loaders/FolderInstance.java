@@ -55,6 +55,7 @@ import java.util.logging.Logger;
 import org.netbeans.modules.openide.loaders.AWTTask;
 import org.openide.filesystems.*;
 import org.openide.cookies.InstanceCookie;
+import org.openide.util.Exceptions;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.util.RequestProcessor;
@@ -329,7 +330,16 @@ public abstract class FolderInstance extends Task implements InstanceCookie { //
             if (isLog) {
                 err.fine("checkRecognizingStarted: " + originalRecognizing); // NOI18N
             }
-            originalRecognizing.waitFinished ();
+            try {
+                if (!originalRecognizing.waitFinished(10000)) {
+                    err.log(Level.WARNING, "timeout exceeded waiting for {0}", originalRecognizing);
+                    recreate();
+                    continue;
+                }
+            } catch (InterruptedException ex) {
+                err.log(Level.INFO, null, ex);
+                continue;
+            }
 
             Task t = creationTask;
             if (isLog) {

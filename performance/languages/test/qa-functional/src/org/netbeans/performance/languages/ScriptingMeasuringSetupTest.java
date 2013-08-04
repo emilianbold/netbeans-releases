@@ -44,7 +44,7 @@
 
 package org.netbeans.performance.languages;
 
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
 
@@ -57,8 +57,7 @@ public class ScriptingMeasuringSetupTest extends NbTestSuite {
         NbTestSuite suite = new NbTestSuite("Scripting pack UI Responsiveness Setup suite");
         System.setProperty("suitename", ScriptingMeasuringSetupTest.class.getCanonicalName());
 
-        suite.addTest(NbModuleSuite.create(ScriptingSetup.class, ".*", ".*"));
-
+        suite.addTest(JellyTestCase.emptyConfiguration().addTest(ScriptingSetup.class).suite());
         return suite;
     }
 }

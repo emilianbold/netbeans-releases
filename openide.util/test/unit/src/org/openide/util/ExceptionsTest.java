@@ -260,6 +260,12 @@ public class ExceptionsTest extends TestCase {
         if (!stackTrace.contains(msg)) fail("\'"+msg+"\' not found: "+stackTrace);
     }    
     
+    public void testToStringWithNoLogRecords() {
+        Throwable t = new Throwable();
+        Exceptions.AnnException ann = Exceptions.AnnException.findOrCreate(t, true);
+        assertNotNull(ann.toString());
+    }
+    
     public static final class MyHandler extends Handler {
         public static final StringBuffer messages = new StringBuffer ();
         
