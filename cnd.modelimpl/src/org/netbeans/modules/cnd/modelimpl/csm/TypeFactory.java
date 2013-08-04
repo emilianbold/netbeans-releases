@@ -208,10 +208,12 @@ public class TypeFactory {
 
         boolean functionPointerType = false;
         
-        if (ast != null && ast.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND && DeclTypeImpl.isDeclType(ast.getFirstChild())) {
-            type = new DeclTypeImpl(ast.getFirstChild(), file, scope, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
-        } else if (DeclTypeImpl.isDeclType(ast)) {
-            type = new DeclTypeImpl(ast, file, scope, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
+        AST typeStart = AstRenderer.getFirstSiblingSkipQualifiers(ast);
+        
+        if (typeStart != null && typeStart.getType() == CPPTokenTypes.CSM_TYPE_COMPOUND && DeclTypeImpl.isDeclType(typeStart.getFirstChild())) {
+            type = new DeclTypeImpl(typeStart.getFirstChild(), file, scope, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
+        } else if (DeclTypeImpl.isDeclType(typeStart)) {
+            type = new DeclTypeImpl(typeStart, file, scope, pointerDepth, refence, arrayDepth, TypeImpl.initConstQualifiers(ast), OffsetableBase.getStartOffset(ast), TypeImpl.getEndOffset(ast, inFunctionParameters));
         } else if (parent != null) {
             type = NestedType.create(parent, file, parent.getPointerDepth(), getReferenceValue(parent), parent.getArrayDepth(), parent.isConst(), parent.getStartOffset(), parent.getEndOffset());
         } else if (TypeFunPtrImpl.isFunctionPointerParamList(ast, inFunctionParameters, inTypedef)) {
@@ -225,7 +227,6 @@ public class TypeFactory {
         // TODO: pass extra parameters to the constructor insdead of calling methods!!!
         
         ///// INIT CLASSFIER stuff
-        AST typeStart = AstRenderer.getFirstSiblingSkipQualifiers(ast);
         if( typeStart != null) {
             if (typeStart.getType() == CPPTokenTypes.LITERAL_struct ||
                     typeStart.getType() == CPPTokenTypes.LITERAL_class ||
