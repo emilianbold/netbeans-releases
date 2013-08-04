@@ -84,7 +84,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     /**
      * Current profile
      */
-    private String              currentProfile;
+    private volatile String              currentProfile;
 
     /**
      * Key: category name. Value = pair of List&lt;ShortcutAction>. The 1st List
@@ -98,17 +98,17 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
      * Profiles, which has been modified. All keybindings are searched in this Map
      * first.
      */
-    private Map<String, Map<ShortcutAction, Set<String>>> modifiedProfiles = 
+    private volatile Map<String, Map<ShortcutAction, Set<String>>> modifiedProfiles = 
             new HashMap<String, Map<ShortcutAction, Set<String>>> ();
     
-    private Set<String> revertedProfiles = new HashSet<String>();
+    private volatile Set<String> revertedProfiles = new HashSet<String>();
     
-    private Set<ShortcutAction> revertedActions = new HashSet<ShortcutAction>();
+    private volatile Set<ShortcutAction> revertedActions = new HashSet<ShortcutAction>();
     
     /**
      * Set of profiles to be deleted
      */
-    private Set<String> deletedProfiles = new HashSet<String> ();
+    private volatile Set<String> deletedProfiles = new HashSet<String> ();
     
     /**
      * Global ShortcutsFinder to reset when the keymap is changed.
@@ -116,7 +116,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
     @NullAllowed
     private ShortcutsFinder master;
     
-    private boolean dirty;
+    private volatile boolean dirty;
     
     private List<ChangeListener> chListeners;
     
@@ -146,7 +146,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         return model.isCustomProfile (profile);
     }
     
-    boolean deleteOrRestoreProfile (String profile) {
+    synchronized boolean deleteOrRestoreProfile (String profile) {
         if (model.isCustomProfile (profile)) {
             deletedProfiles.add (profile);
             modifiedProfiles.remove (profile);
@@ -207,7 +207,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         }
     }
     
-    void cloneProfile (String newProfileName) {
+    synchronized void cloneProfile (String newProfileName) {
         Map<ShortcutAction, Set<String>> result = new HashMap<ShortcutAction, Set<String>> ();
         cloneProfile ("", result);
         modifiedProfiles.put (newProfileName, result);
@@ -332,19 +332,20 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         } else {
             base = super.getKeymap(profile);
         }
-        if (modifiedProfiles.containsKey(profile)) {
+        Map<ShortcutAction,Set<String>> p = modifiedProfiles.get(profile);
+        if (p != null) {
             base = new HashMap<ShortcutAction,Set<String>>(base);
-            base.putAll(modifiedProfiles.get(profile));
+            base.putAll(p);
         }
         return base;
     }
     
     public String[] getShortcuts (ShortcutAction action) {
         String profile = getCurrentProfile();
-        if (modifiedProfiles.containsKey (profile)) {
+        Map<ShortcutAction,Set<String>> p = modifiedProfiles.get(profile);
+        if (p != null) {
             // find it in modified shortcuts
-            Map<ShortcutAction, Set<String>> actionToShortcuts = modifiedProfiles.
-                get (profile);
+            Map<ShortcutAction, Set<String>> actionToShortcuts = p;
             if (actionToShortcuts.containsKey (action)) {
                 Set<String> s = actionToShortcuts.get (action);
                 return s.toArray (new String [s.size ()]);
@@ -411,7 +412,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
      * @param force if true, does not check conflicts; used after user confirmation
      * @return {@code null} for success, or collection of conflicting actions 
      */
-    Collection<ShortcutAction> revertShortcutsToDefault(ShortcutAction action, boolean force) {
+    synchronized Collection<ShortcutAction> revertShortcutsToDefault(ShortcutAction action, boolean force) {
         if (model.isCustomProfile(getCurrentProfile())) {
             return null;
         }
@@ -445,7 +446,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         return null;
     }
 
-    public void setShortcuts (ShortcutAction action, Set<String> shortcuts) {
+    public synchronized void setShortcuts (ShortcutAction action, Set<String> shortcuts) {
         Map<ShortcutAction, Set<String>> actionToShortcuts = modifiedProfiles.get (getCurrentProfile());
         if (actionToShortcuts == null) {
             actionToShortcuts = new HashMap<ShortcutAction, Set<String>> ();
@@ -471,11 +472,27 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         postApply();
     }
     
-    /* test only */ Task postApply() {
+    private Map<String, Map<ShortcutAction, Set<String>>> cloneProfileMap(Map<String, Map<ShortcutAction, Set<String>>> profiles) {
+        Map<String, Map<ShortcutAction, Set<String>>> result = new HashMap<String, Map<ShortcutAction, Set<String>>>(profiles.size());
+        for (Map.Entry<String, Map<ShortcutAction, Set<String>>> e : profiles.entrySet()) {
+            result.put(e.getKey(), new HashMap<ShortcutAction, Set<String>>(e.getValue()));
+        }
+        return result;
+    }
+    
+    /* test only */ synchronized Task postApply() {
         if (applyInProgress) {
             return null;
         }
         applyInProgress = true;
+        
+        final Set<String> revertedProfiles = new HashSet<String>(this.revertedProfiles);
+        final Set<ShortcutAction> revertedActions = new HashSet<ShortcutAction>(this.revertedActions);
+        final Map<String, Map<ShortcutAction, Set<String>>> modifiedProfiles = 
+            cloneProfileMap(this.modifiedProfiles);
+        final Set<String> deletedProfiles = new HashSet<String> (this.deletedProfiles);
+        final String currentProfile = this.currentProfile;
+        
         return RequestProcessor.getDefault ().post (new Runnable () {
             public void run () {
                 for (String profile : revertedProfiles) {
@@ -525,7 +542,7 @@ class MutableShortcutsModel extends ShortcutsFinderImpl implements ShortcutsFind
         return dirty || (!modifiedProfiles.isEmpty ()) || !deletedProfiles.isEmpty () || !revertedProfiles.isEmpty() || !revertedActions.isEmpty();
     }
     
-    private void clearState() {
+    private synchronized void clearState() {
         modifiedProfiles = new HashMap<String, Map<ShortcutAction, Set<String>>> ();
         deletedProfiles = new HashSet<String> ();
         revertedActions = new HashSet<ShortcutAction>();
