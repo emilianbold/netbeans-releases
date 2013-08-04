@@ -181,4 +181,12 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug225611.cpp", 23, 27, "bug225611.cpp", 7, 9);        
         performTest("bug225611.cpp", 24, 12, "bug225611.cpp", 3, 9);        
     }  
+    
+    public void testDecltypes1() throws Exception {
+        // Static asserts for decltypes 
+        performTest("decltypes1.cpp", 19, 57, "decltypes1.cpp", 11, 5);      
+        performTest("decltypes1.cpp", 21, 46, "decltypes1.cpp", 11, 5);
+        performTest("decltypes1.cpp", 23, 52, "decltypes1.cpp", 11, 5);
+//        performTest("decltypes1.cpp", 25, 61, "decltypes1.cpp", 11, 5); // TODO: it fails now!
+    }
 }
