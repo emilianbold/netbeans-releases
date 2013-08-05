@@ -53,6 +53,4 @@ See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action name
 -->
 <bindings>
     <bind actionName="fix-groovy-imports" key="DS-I"/>
-    <bind actionName="csl-prev-marked-occurrence" key="O-UP"/>
-    <bind actionName="csl-next-marked-occurrence" key="O-DOWN"/>
 </bindings>

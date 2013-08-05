@@ -73,6 +73,7 @@ import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -100,20 +101,23 @@ public final class ImportHelper {
      * it's missing.
      *
      * @param fo fileObject of the current file where the import is missing
+     * @param packageName name of the package where the current class is placed
      * @param importName name of the import to resolve (not fully qualified name)
      */
-    public static void resolveImport(FileObject fo, String importName) {
-        resolveImports(fo, Collections.singletonList(importName));
+    public static void resolveImport(FileObject fo, String packageName, String importName) {
+        resolveImports(fo, packageName, Collections.singletonList(importName));
     }
 
     /**
      * Resolve imports and add them as import statements into the source code.
      *
      * @param fo fileObject of the current file where the imports are missing
+     * @param packageName name of the package where the current class is placed
      * @param missingNames list of missing names (not fully qualified names)
      */
     public static void resolveImports(
         final FileObject fo,
+        final String packageName,
         final List<String> missingNames) {
 
         final AtomicBoolean cancel = new AtomicBoolean();
@@ -124,7 +128,7 @@ public final class ImportHelper {
         // or populate choosers input list if there is more than one candidate.
 
         for (String name : missingNames) {
-            List<ImportCandidate> importCandidates = getImportCandidate(fo, name);
+            List<ImportCandidate> importCandidates = getImportCandidate(fo, packageName, name);
 
             switch (importCandidates.size()) {
                 case 0: continue;
@@ -161,20 +165,21 @@ public final class ImportHelper {
      * what could be possibly imported to fix the problem.
      *
      * @param fo current file
+     * @param packageName name of the package where the current class is placed
      * @param missingClass class name for which we are looking for import candidates
      * @return list of possible import candidates
      */
-    public static List<ImportCandidate> getImportCandidate(FileObject fo, String missingClass) {
+    public static List<ImportCandidate> getImportCandidate(FileObject fo, String packageName, String missingClass) {
         LOG.log(Level.FINEST, "Looking for class: {0}", missingClass);
 
         List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
-        candidates.addAll(findGroovyImports(fo, missingClass));
-        candidates.addAll(findJavaImports(fo, missingClass));
+        candidates.addAll(findGroovyImportCandidates(fo, packageName, missingClass));
+        candidates.addAll(findJavaImportCandidates(fo, packageName, missingClass));
 
         return candidates;
     }
 
-    private static List<ImportCandidate> findGroovyImports(FileObject fo, String missingClass) {
+    private static List<ImportCandidate> findGroovyImportCandidates(FileObject fo, String packageName, String missingClass) {
         final List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
         final GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
                 Collections.singleton(ClassPath.SOURCE), null, null));
@@ -182,6 +187,12 @@ public final class ImportHelper {
         Set<IndexedClass> classes = index.getClasses(missingClass, QuerySupport.Kind.PREFIX, true, false, false);
         for (IndexedClass indexedClass : classes) {
             if (!indexedClass.getName().equals(missingClass)) {
+                continue;
+            }
+
+            // Skip classes within the same package
+            String pkgName = GroovyUtils.stripClassName(indexedClass.getFqn());
+            if (packageName.equals(pkgName)) {
                 continue;
             }
 
@@ -195,7 +206,7 @@ public final class ImportHelper {
         return candidates;
     }
 
-    private static List<ImportCandidate> findJavaImports(FileObject fo, String missingClass) {
+    private static List<ImportCandidate> findJavaImportCandidates(FileObject fo, String packageName, String missingClass) {
         final List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
         final ClasspathInfo pathInfo = createClasspathInfo(fo);
 
@@ -204,6 +215,12 @@ public final class ImportHelper {
 
         for (ElementHandle<TypeElement> typeName : typeNames) {
             ElementKind kind = typeName.getKind();
+
+            // Skip classes within the same package
+            String pkgName = GroovyUtils.stripClassName(typeName.getQualifiedName());
+            if (packageName.equals(pkgName)) {
+                continue;
+            }
 
             if (kind == ElementKind.CLASS || kind == ElementKind.INTERFACE || kind == ElementKind.ANNOTATION_TYPE) {
                 candidates.add(createImportCandidate(missingClass, typeName.getQualifiedName(), kind));

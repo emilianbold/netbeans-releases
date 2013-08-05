@@ -230,7 +230,7 @@ public final class QualifiedName {
         } else if (kind.isFullyQualified()) {
             name = name.substring(1);
         }
-        final String[] segments = name.split("\\\\"); //NOI18N
+        final String[] segments = name.split("[\\\\]+"); //NOI18N
         List<String> list;
         if (name.endsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR)) {
             list = new ArrayList<>(Arrays.asList(segments));

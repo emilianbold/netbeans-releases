@@ -76,7 +76,7 @@ abstract class CollapsiblePanel extends JPanel {
     protected final JPanel sectionPanel;
     protected final VCSCommitPanel master;
 
-    public CollapsiblePanel(VCSCommitPanel master, boolean defaultSectionDisplayed) {
+    public CollapsiblePanel(VCSCommitPanel master, String sectionButtonText, boolean defaultSectionDisplayed) {
         this.master = master;
         ActionListener al = new ActionListener() {
            @Override
@@ -95,6 +95,7 @@ abstract class CollapsiblePanel extends JPanel {
         this.sectionButton.setSelected(defaultSectionDisplayed);
 
         setLayout(new BoxLayout(this, Y_AXIS));
+        Mnemonics.setLocalizedText(sectionButton, sectionButtonText);
         sectionButton.setMaximumSize(new Dimension(Integer.MAX_VALUE, sectionButton.getMaximumSize().height));
         add(sectionButton);
         add(master.makeVerticalStrut(sectionButton, sectionPanel, RELATED, master));
@@ -141,17 +142,16 @@ abstract class CollapsiblePanel extends JPanel {
         private final JToolBar toolbar;
         private final Map<String, VCSCommitFilter> filters;
         public FilesPanel(VCSCommitPanel master, Map<String, VCSCommitFilter> filters, int preferedHeight)  {
-            super(master, DEFAULT_DISPLAY_FILES);
+            super(master, master.getModifier().getMessage(VCSCommitPanelModifier.BundleMessage.FILE_PANEL_TITLE), DEFAULT_DISPLAY_FILES);
             this.filters = filters;
             
-            Mnemonics.setLocalizedText(sectionButton, master.getModifier().getMessage(VCSCommitPanelModifier.BundleMessage.FILE_PANEL_TITLE));
             master.getCommitTable().labelFor(filesLabel);
             
             JComponent table = master.getCommitTable().getComponent();
             
+            Mnemonics.setLocalizedText(filesLabel, getMessage("CTL_CommitForm_FilesToCommit"));         // NOI18N
             filesLabel.setMaximumSize(new Dimension(Integer.MAX_VALUE, filesLabel.getMaximumSize().height));
             
-            Mnemonics.setLocalizedText(filesLabel, getMessage("CTL_CommitForm_FilesToCommit"));         // NOI18N
             table.setPreferredSize(new Dimension(0, preferedHeight));
             
             ButtonGroup bg = new ButtonGroup();
@@ -217,14 +217,13 @@ abstract class CollapsiblePanel extends JPanel {
         private static final boolean DEFAULT_DISPLAY_HOOKS = false;
         
         public HookPanel(VCSCommitPanel master, Collection<? extends VCSHook> hooks, VCSHookContext hookContext) {            
-            super(master, DEFAULT_DISPLAY_HOOKS);
+            super(master, (hooks.size() == 1)
+                    ? hooks.iterator().next().getDisplayName()
+                    : getMessage("LBL_Advanced"), //NOI18N
+                    DEFAULT_DISPLAY_HOOKS);
             this.hooks = hooks;
             this.hookContext = hookContext;
             
-            Mnemonics.setLocalizedText(sectionButton, (hooks.size() == 1)
-                                           ? hooks.iterator().next().getDisplayName()
-                                           : getMessage("LBL_Advanced")); // NOI18N                 
-
             // need this to happen in addNotify() - depends on how 
             // repositoryComboSupport in hook.createComponents works for bugzilla|jira
             if (hooks.size() == 1) {                
