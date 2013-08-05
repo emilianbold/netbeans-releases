@@ -1724,14 +1724,14 @@ public class ActionFactory {
         while (pos < endPos) {
             int stopPos = endPos;
             if (gdoc != null) { // adjust to start of the next guarded block
-                stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos);
-                if (stopPos == -1 || stopPos > endPos) {
+                stopPos = gdoc.getGuardedBlockChain().adjustToNextBlockStart(pos) - 1;
+                if (stopPos < 0 || stopPos > endPos) {
                     stopPos = endPos;
                 }
             }
 
             if (pos < stopPos) {
-                regions.addFirst(new PositionRegion(doc, pos, stopPos - 1));
+                regions.addFirst(new PositionRegion(doc, pos, stopPos));
                 pos = stopPos;
             } else {
                 pos++; //ensure to make progress
