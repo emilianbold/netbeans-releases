@@ -118,7 +118,7 @@ function MyApplication() {
     }
 
     this.showPhoneStatus = function() {
-        showAlert(window.device.name + "(" + window.device.platform + " " + window.device.version + ")\nConnection: " + states[window.navigator.connection.type], "About");
+        showAlert(window.device.model + "(" + window.device.platform + " " + window.device.version + ")\nConnection: " + states[window.navigator.connection.type], "About");
     };
 
     /**
@@ -199,7 +199,7 @@ function MyApplication() {
     }
 
     this.about = function() {
-        $("#aboutContent").html("<h1>Sample Map App</h1><div>Sample map application built with PhoneGap in NetBeans IDE. Visit <a href='#' id='externalLink' target='_blank' rel='https://www.netbeans.org'>netbeans.org</a> for more information</div><br/><div><b>Device: </b>" + window.device.name + "(" + window.device.platform + ": " + window.device.version + ")</div><div><b>Connection: </b>" + states[navigator.connection.type] + "</div>");
+        $("#aboutContent").html("<h1>Sample Map App</h1><div>Sample map application built with PhoneGap in NetBeans IDE. Visit <a href='#' id='externalLink' target='_blank' rel='https://www.netbeans.org'>netbeans.org</a> for more information</div><br/><div><b>Device: </b>" + window.device.model + "(" + window.device.platform + ": " + window.device.version + ")</div><div><b>Connection: </b>" + states[navigator.connection.type] + "</div>");
         $("#externalLink").live('tap', function() {
             window.navigator.app.loadUrl($(this).attr("rel"), {openExternal: true});
             return false;

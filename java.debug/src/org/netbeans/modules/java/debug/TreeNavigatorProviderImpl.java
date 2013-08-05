@@ -201,7 +201,7 @@ public class TreeNavigatorProviderImpl implements NavigatorPanel {
         }
     }
     
-    private static final AttributeSet HIGHLIGHT = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(224, 224, 224));
+    private static final AttributeSet HIGHLIGHT = AttributesUtilities.createImmutable(StyleConstants.Background, new Color(150, 190, 180));
     private static final AttributeSet HIGHLIGHT_PREF = AttributesUtilities.createImmutable(StyleConstants.Underline, new Color(30, 255, 0));
     
     private final class TaskImpl implements CancellableTask<CompilationInfo> {

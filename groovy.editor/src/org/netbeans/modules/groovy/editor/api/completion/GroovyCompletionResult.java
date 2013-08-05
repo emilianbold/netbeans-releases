@@ -103,7 +103,7 @@ public class GroovyCompletionResult extends DefaultCompletionResult {
             List<String> imports = ImportCollector.collect(root);
 
             if (!imports.contains(name)) {
-                ImportHelper.resolveImport(fo, name);
+                ImportHelper.resolveImport(fo, root.getPackageName(), name);
             }
         }
     }
