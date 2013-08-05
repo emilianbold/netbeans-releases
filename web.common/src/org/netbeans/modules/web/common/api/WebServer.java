@@ -331,6 +331,12 @@ public final class WebServer {
                         if ("content/unknown".equals(mime)) { //NOI18N
                             mime = "text/plain"; //NOI18N
                         }
+
+                        // #228966 - Run an xhtml file in a Html5 Project, Browser Treats xhtml like text
+                        if ("text/xhtml".equals(mime)) { //NOI18N
+                            mime = "application/xhtml+xml"; //NOI18N
+                        }
+                        
                         try {
                             out.writeBytes("HTTP/1.1 200 OK\nContent-Length: "+fo.getSize()+"\n" //NOI18N
                                     + "Content-Type: "+mime+"\n\n"); //NOI18N
