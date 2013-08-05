@@ -1978,8 +1978,9 @@ outer:  do {
          */
         @Override
         public void run() {
-            RequestProcessor current = null;
-            for (;;) try {
+            for (;;) {
+                RequestProcessor current = null;
+
                 synchronized (lock) {
                     try {
                         if (source == null) {
@@ -1990,6 +1991,7 @@ outer:  do {
                      // not interesting
 
                     current = source;
+                    source = null;
 
                     if (current == null) { // We've timeouted
 
@@ -2079,13 +2081,6 @@ outer:  do {
                         procesing = null;
                     }
                 }
-            } finally {
-                synchronized(lock) {
-                    if (source == current) {
-                        source = null;
-                    }
-                }
-                current = null;
             }
         }
         
