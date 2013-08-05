@@ -418,8 +418,8 @@ public class SelectModePanel extends javax.swing.JPanel {
             controller.getWizardStorage().setCompilerSet(item.getCompilerSet());
             controller.getWizardStorage().setDefaultCompilerSet(item.isDefaultCompilerSet());
         }
-        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO, controller.getWizardStorage().getSourcesFileObject()); 
         FileObject fo = controller.getWizardStorage().getSourcesFileObject();
+        wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_FO, fo);
         wizardDescriptor.putProperty(WizardConstants.PROPERTY_NATIVE_PROJ_DIR, (fo == null) ? null : fo.getPath()); 
         initialized = false;
     }
