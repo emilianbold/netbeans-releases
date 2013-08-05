@@ -330,13 +330,14 @@ public final class FoldHierarchyTransactionImpl {
                     // Now correct the end offset to the one before insertion
                     api.foldSetEndOffset(childFold, doc, insertOffset);
                     FoldStateChange state = getFoldStateChange(childFold);
-                    if (state.getOriginalStartOffset() >= 0 && state.getOriginalStartOffset() > childFoldEndOffset) {
+                    if (state.getOriginalEndOffset() >= 0 && state.getOriginalStartOffset() > childFoldEndOffset) {
                         LOG.warning("Original start offset > end offset, dumping fold hierarchy: " + execution);
                         LOG.warning("Document event was: " + evt + " offset: " + insertOffset + ", len: " + evt.getLength());
                     }
                     api.foldStateChangeEndOffsetChanged(state, childFoldEndOffset);
-                    if (fold.getStartOffset() > fold.getEndOffset()) {
-                        LOG.warning("Updated fold is inconsistent, dumping fold hierarchy: " + execution);
+                    if (childFold.getStartOffset() > childFold.getEndOffset()) {
+                        LOG.warning("Updated fold " + childFold + " is inconsistent, dumping fold hierarchy: " + execution);
+                        LOG.warning("The original offsets were: " + childFoldStartOffset + "-" + childFoldEndOffset);
                         LOG.warning("Document event was: " + evt + " offset: " + insertOffset + ", len: " + evt.getLength());
                     }
                     
