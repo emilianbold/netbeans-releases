@@ -164,9 +164,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
                     
                     try {
                         final SourceConfig config = CordovaPerformer.getConfig(project);
-                        config.setId(panel.getPackageName());
-                        config.save();
-
+                        panel.save(config);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
@@ -286,8 +284,8 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             panel.update();
         }
 
-        private String getPackageName() {
-            return panel.getPackageName();
+        private void save(SourceConfig c) throws IOException {
+            panel.save(c);
         }
     }
     
