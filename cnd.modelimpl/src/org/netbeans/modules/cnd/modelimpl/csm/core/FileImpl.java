@@ -641,7 +641,9 @@ public final class FileImpl implements CsmFile,
                                         break; // does not make sense parsing old data
                                     }
                                 }
-                                updateModelAfterParsing(parseParams.content, compUnitCRC);
+                                if (parsingState == ParsingState.BEING_PARSED) {
+                                    updateModelAfterParsing(parseParams.content, compUnitCRC);
+                                }
                             } finally {
                                 postParse();
                                 synchronized (changeStateLock) {
@@ -683,12 +685,14 @@ public final class FileImpl implements CsmFile,
                                         break; // does not make sense parsing old data
                                     }
                                 }
-                                updateModelAfterParsing(parseParams.content, compUnitCRC);
-                                if (tryPartialReparse) {
-                                    assert lastFileBasedSignature != null;
-                                    newSignature = FileContentSignature.create(this);
-                                    oldSignature = lastFileBasedSignature;
-                                    lastFileBasedSignature = null;
+                                if (parsingState == ParsingState.BEING_PARSED) {
+                                    updateModelAfterParsing(parseParams.content, compUnitCRC);
+                                    if (tryPartialReparse) {
+                                        assert lastFileBasedSignature != null;
+                                        newSignature = FileContentSignature.create(this);
+                                        oldSignature = lastFileBasedSignature;
+                                        lastFileBasedSignature = null;
+                                    }
                                 }
                             } finally {
                                 postParse();

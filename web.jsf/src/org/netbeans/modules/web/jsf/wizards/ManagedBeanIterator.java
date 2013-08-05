@@ -189,7 +189,7 @@ public class ManagedBeanIterator implements TemplateWizard.Iterator {
             Map<String, Object> templateProperties = new HashMap<String, Object>();
             String targetName = Templates.getTargetName(wizard);
             if (JSFUtils.isCDIEnabled(wm)) {
-                templateProperties.put("CDIEnabled", "true");
+                templateProperties.put("cdiEnabled", true);
                 templateProperties.put("classAnnotation", "@Named(value=\"" + beanName + "\")");   //NOI18N
                 templateProperties.put("scope", ScopeEntry.getFor(scope));    //NOI18N
                 NamedScope namedScope = (NamedScope) scope;

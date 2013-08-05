@@ -372,6 +372,12 @@ public class JsDocModelTest extends JsDocumentationTestBase {
         checkJsDocBlock(source, caretOffset, "@param||type=NULL:name=p1:desc=textA;@param||type=Cislo:name=p2:desc=text2");
     }
 
+    public void test233176() throws Exception {
+        Source source = getTestSource(getTestFile("testfiles/jsdoc/issue233176.js"));
+        final int caretOffset = getCaretOffset(source, "^this.buildingId;");
+        checkJsDocBlock(source, caretOffset, "@type||type=Number");
+    }
+
     /**
      * Examples of expected values:
      * @borrows <param1> as <param2>

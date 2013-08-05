@@ -63,6 +63,7 @@ import org.netbeans.modules.html.editor.HtmlExtensions;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
+import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.completion.AttrValuesCompletion;
 import org.netbeans.modules.web.common.api.ValueCompletion;
 import org.netbeans.modules.web.common.api.WebUtils;
@@ -79,8 +80,6 @@ import org.openide.util.NbBundle;
  */
 public class HtmlDeclarationFinder implements DeclarationFinder {
 
-    private static final String XHTML_MIMETYPE = "text/xhtml"; //NOI18N
-
     /**
      * Find the declaration for the program element that is under the caretOffset
      * Return a Set of regions that should be renamed if the element under the caret offset is
@@ -91,12 +90,13 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
      */
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
+        HtmlParserResult result = (HtmlParserResult)info;
         DeclarationLocation loc = findCoreHtmlDeclaration(info, caretOffset);
         if (loc != null) {
             return loc;
         }
-
-        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(info.getSnapshot().getSource().getMimeType())) {
+        String sourceMimetype = Utils.getWebPageMimeType(result.getSyntaxAnalyzerResult());
+        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
             loc = ext.findDeclaration(info, caretOffset);
             if (loc != null) {
                 return loc;
@@ -135,7 +135,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                 String mimeType = NbEditorUtilities.getMimeType(doc);
                 for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(mimeType)) {
                     range = ext.getReferenceSpan(doc, caretOffset);
-                    if (range != null) {
+                    if (range != null && range != OffsetRange.NONE) {
                         result_ref.set(range);
                         return ;
                     }

@@ -152,7 +152,7 @@ final class JavadocCompletionQuery extends AsyncCompletionQuery{
     protected boolean canFilter(JTextComponent component) {
         final int newOffset = component.getSelectionStart();
         final Document doc = component.getDocument();
-        if (newOffset > caretOffset) {
+        if (newOffset > caretOffset && items != null && !items.isEmpty()) {
             try {
                 String prefix = doc.getText(caretOffset, newOffset - caretOffset);
                 if (!isJavaIdentifierPart(prefix)) {

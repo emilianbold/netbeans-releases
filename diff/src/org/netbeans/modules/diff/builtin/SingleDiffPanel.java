@@ -51,7 +51,6 @@ import org.netbeans.api.diff.Difference;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.openide.filesystems.FileRenameEvent;
-import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.lookup.Lookups;
 import org.openide.filesystems.FileObject;
@@ -68,8 +67,10 @@ import java.io.InputStreamReader;
 import java.io.Writer;
 import java.util.logging.Logger;
 import java.util.logging.Level;
+import org.netbeans.modules.diff.Utils;
 import org.netbeans.modules.diff.options.DiffOptionsController;
 import org.openide.awt.UndoRedo;
+import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileChangeAdapter;
 import org.openide.filesystems.FileChangeListener;
 import org.openide.loaders.DataObject;
@@ -438,8 +439,14 @@ public class SingleDiffPanel extends javax.swing.JPanel implements PropertyChang
         @Override
         public String getMIMEType() {
             if (type != null) {
+                if (Utils.isFileContentBinary(type)) {
+                    return null;
+                }
                 return type.getMIMEType();
             } else {
+                if (Utils.isFileContentBinary(fileObject)) {
+                    return null;
+                }
                 return fileObject.getMIMEType();
             }
         }

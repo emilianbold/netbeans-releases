@@ -653,7 +653,7 @@ public final class WebProject implements Project {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(getSourceRoots(), getTestSourceRoots(), helper, eval),
-            new ProjectWebRootProviderImpl(),
+            new ProjectWebRootProviderImpl(this),
             easelSupport,
             CssPreprocessors.getDefault().createProjectProblemsProvider(this),
             new JavaEEProjectSettingsImpl(this),
@@ -2422,6 +2422,14 @@ public final class WebProject implements Project {
 
     private static final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
 
+        private final WebProject project;
+
+
+        private ProjectWebRootProviderImpl(WebProject project) {
+            assert project != null;
+            this.project = project;
+        }
+
         @Override
         public FileObject getWebRoot(FileObject file) {
             WebModule webModule = WebModule.getWebModule(file);
@@ -2434,6 +2442,16 @@ public final class WebProject implements Project {
                     null;
             }
             return null;
+        }
+
+        @Override
+        public Collection<FileObject> getWebRoots() {
+            WebModule webModule = project.getAPIWebModule();
+            FileObject webRoot = webModule != null ? webModule.getDocumentBase() : null;
+            if (webRoot != null) {
+                return Collections.singleton(webRoot);
+            }
+            return Collections.emptyList();
         }
 
     }

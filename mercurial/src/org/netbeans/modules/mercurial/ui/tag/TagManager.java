@@ -118,8 +118,9 @@ class TagManager implements ListSelectionListener, DocumentListener, ActionListe
 
     void showDialog () {
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(CreateTag.class, "LBL_TagManagerPanel.title", repository.getName()), //NOI18N
-                true, new Object[] { DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION }, DialogDescriptor.OK_OPTION, 
-                DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CreateTagPanel.class), null);
+                true, new Object[] { DialogDescriptor.OK_OPTION, DialogDescriptor.CANCEL_OPTION },
+                DialogDescriptor.OK_OPTION, DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx("org.netbeans.modules.mercurial.ui.tag.TagManagerPanel"), null); //NOI18N
         dialog = DialogDisplayer.getDefault().createDialog(dd);
         loadRevisions();
         dialog.setVisible(true);

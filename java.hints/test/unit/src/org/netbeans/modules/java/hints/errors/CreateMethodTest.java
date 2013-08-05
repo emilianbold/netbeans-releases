@@ -60,7 +60,7 @@ public class CreateMethodTest extends ErrorHintsTestBase {
     
     /** Creates a new instance of CreateElementTest */
     public CreateMethodTest(String name) {
-        super(name);
+        super(name, CreateElement.class);
     }
 
     @Override
@@ -303,8 +303,32 @@ public class CreateMethodTest extends ErrorHintsTestBase {
                         "}\n").replaceAll("[ \n\t\r]+", " "));
     }
 
-    protected List<Fix> computeFixes(CompilationInfo info, int pos, TreePath path) throws IOException {
-        List<Fix> fixes = new CreateElement().analyze(info, pos);
+    public void test233502() throws Exception {
+        performFixTest("test/Test.java",
+                       "package test;\n" +
+                       "public class Test {\n" +
+                       "    public static void foo(Number str) {\n" +
+                       "        m(str);\n" +
+                       "    }\n" +
+                       "    public static void m(String str) {}\n" +
+                       "}\n",
+                       -1,
+                       "CreateMethodFix:m(java.lang.Number str)void:test.Test",
+                       ("package test;\n" +
+                        "public class Test {\n" +
+                        "    public static void foo(Number str) {\n" +
+                        "        m(str);\n" +
+                        "    }\n" +
+                        "    public static void m(String str) {}\n" +
+                        "    private static void m(Number str) {\n" +
+                        "         throw new UnsupportedOperationException(\"Not supported yet.\"); //To change body of generated methods, choose Tools | Templates. \n" +
+                        "    }\n" +
+                        "}\n").replaceAll("[ \n\t\r]+", " "));
+    }
+
+    @Override
+    protected List<Fix> computeFixes(CompilationInfo info, String diagnosticCode, int pos, TreePath path) throws Exception {
+        List<Fix> fixes = new CreateElement().analyze(info, diagnosticCode, pos);
         List<Fix> result=  new LinkedList<Fix>();
         
         for (Fix f : fixes) {

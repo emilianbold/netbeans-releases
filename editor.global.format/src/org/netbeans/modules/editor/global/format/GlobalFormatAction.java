@@ -128,10 +128,12 @@ public final class GlobalFormatAction extends AbstractAction {
         });
         final Dialog[] d = new Dialog[1];
         final AtomicBoolean cancel = new AtomicBoolean();
+        final AtomicBoolean started = new AtomicBoolean();
         ok.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
                 ok.setEnabled(false);
                 panel.started();
+                started.set(true);
                 WORKER.post(new Runnable() {
                     @Override public void run() {
                         try {
@@ -153,6 +155,10 @@ public final class GlobalFormatAction extends AbstractAction {
         cancelButton.addActionListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
                 cancel.set(true);
+                if (!started.get()) {
+                    d[0].setVisible(false);
+                    d[0].dispose();
+                }
             }
         });
         handle.start(1);//need to "start" the progress, so that the progressbars have reasonable size

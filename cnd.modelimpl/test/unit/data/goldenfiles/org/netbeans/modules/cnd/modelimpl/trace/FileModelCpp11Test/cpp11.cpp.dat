@@ -114,7 +114,7 @@ FUNCTION DEFINITION foo2  [83:1/1592-85:2/1620] FunctionDDImpl SCOPE: $Global$
 VARIABLE some_strange_callable_type [86:1/1621-86:42/1662]  TYPE: auto TEXT=auto  [86:1/1621-86:5/1625]  INIT: text='foo2()'  SCOPE: $Global$ 
 VARIABLE other_variable [87:1/1663-87:25/1687]  TYPE: auto TEXT=auto  [87:1/1663-87:5/1667]  INIT: text='5'  SCOPE: $Global$ 
 VARIABLE some_int [89:1/1689-89:14/1702]  TYPE: int TEXT=int  [89:1/1689-89:4/1692]  INIT: null  SCOPE: $Global$ 
-VARIABLE other_integer_variable [90:1/1703-90:47/1749]  TYPE: decltype ( CSM_EXPRESSION ) TEXT=decltype ( CSM_EXPRESSION )  [90:1/1703-90:19/1721]  INIT: text='5'  SCOPE: $Global$ 
+VARIABLE other_integer_variable [90:1/1703-90:47/1749]  TYPE: int TEXT=decltype  [90:1/1703-90:19/1721]  INIT: text='5'  SCOPE: $Global$ 
 FUNCTION DEFINITION foo3  [93:1/1771-97:2/1889] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE foo3()
     UNIQUE NAME f:foo3()
@@ -478,7 +478,7 @@ FUNCTION DEFINITION foo2  [83:1/1592-85:2/1620] FunctionDDImpl SCOPE: $Global$
 VARIABLE some_strange_callable_type [86:1/1621-86:42/1662]  TYPE: auto TEXT=auto  [86:1/1621-86:5/1625]  INIT: text='foo2()'  SCOPE: $Global$ 
 VARIABLE other_variable [87:1/1663-87:25/1687]  TYPE: auto TEXT=auto  [87:1/1663-87:5/1667]  INIT: text='5'  SCOPE: $Global$ 
 VARIABLE some_int [89:1/1689-89:14/1702]  TYPE: int TEXT=int  [89:1/1689-89:4/1692]  INIT: null  SCOPE: $Global$ 
-VARIABLE other_integer_variable [90:1/1703-90:47/1749]  TYPE: decltype ( CSM_EXPRESSION ) TEXT=decltype ( CSM_EXPRESSION )  [90:1/1703-90:19/1721]  INIT: text='5'  SCOPE: $Global$ 
+VARIABLE other_integer_variable [90:1/1703-90:47/1749]  TYPE: int TEXT=decltype  [90:1/1703-90:19/1721]  INIT: text='5'  SCOPE: $Global$ 
 FUNCTION DEFINITION foo3  [93:1/1771-97:2/1889] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE foo3()
     UNIQUE NAME f:foo3()

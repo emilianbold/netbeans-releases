@@ -44,7 +44,10 @@ package org.netbeans.modules.css.model.impl;
 import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.model.api.MediaBody;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.Page;
+import org.netbeans.modules.css.model.api.Rule;
 
 /**
  *

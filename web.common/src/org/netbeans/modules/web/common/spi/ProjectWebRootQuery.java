@@ -41,10 +41,13 @@
  */
 package org.netbeans.modules.web.common.spi;
 
+import java.util.Collection;
+import java.util.Collections;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.Parameters;
 
 /**
  * Clients uses this class to obtain a  web root for a file within a web-like project.
@@ -81,4 +84,24 @@ public final class ProjectWebRootQuery {
         }
         return null;
     }
+
+    /**
+     * Gets all web roots for given project.
+     *
+     * @param project a project which you want to get web roots for
+     * @return collection of web roots of the given project, can be empty but never {@code null}
+     * @since 1.57
+     */
+    @NonNull
+    public static Collection<FileObject> getWebRoots(@NonNull Project project) {
+        Parameters.notNull("project", project); // NOI18N
+        ProjectWebRootProvider provider = project.getLookup().lookup(ProjectWebRootProvider.class);
+        if (provider == null) {
+            return Collections.emptyList();
+        }
+        Collection<FileObject> webRoots = provider.getWebRoots();
+        assert webRoots != null : "WebRoots cannot be null in " + provider.getClass().getName();
+        return webRoots;
+    }
+
 }

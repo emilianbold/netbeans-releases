@@ -164,7 +164,9 @@ public class HtmlHintsProvider implements HintsProvider {
     @Override
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
         //html extensions
-        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
+        HtmlParserResult result = (HtmlParserResult)context.parserResult;
+        String sourceMimetype = Utils.getWebPageMimeType(result.getSyntaxAnalyzerResult());
+        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
             ext.computeSelectionHints(manager, context, suggestions, start, end);
         }
 
@@ -297,7 +299,8 @@ public class HtmlHintsProvider implements HintsProvider {
         }
 
         //html extensions
-        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
+        String sourceMimetype = Utils.getWebPageMimeType(result.getSyntaxAnalyzerResult());
+        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
             ext.computeErrors(manager, context, hints, unhandled);
         }
 

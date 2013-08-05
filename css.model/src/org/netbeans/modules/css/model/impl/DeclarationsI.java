@@ -45,11 +45,11 @@ import java.util.ArrayList;
 import java.util.List;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.model.api.Declaration;
-import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.Declarations;
 import org.netbeans.modules.css.model.api.Expression;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.PlainElement;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.PropertyValue;
 import org.openide.util.CharSequences;
 

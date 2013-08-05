@@ -82,12 +82,13 @@ public class JsIndex {
     public static final String FIELD_RETURN_TYPES = "return"; //NOI18N
     public static final String FIELD_PARAMETERS = "param"; //NOI18N
     public static final String FIELD_FLAG = "flag"; //NOI18N
+    public static final String FIELD_ARRAY_TYPES = "array"; //NOI18N
 
     private static final String PROPERTIES_PATTERN = "\\.[^\\.]*[^" + IndexedElement.PARAMETER_POSTFIX + "]";
     
     @org.netbeans.api.annotations.common.SuppressWarnings("MS_MUTABLE_ARRAY")
     public static final String[] TERMS_BASIC_INFO = new String[] { FIELD_BASE_NAME, FIELD_FQ_NAME, FIELD_OFFSET,
-        FIELD_RETURN_TYPES, FIELD_PARAMETERS, FIELD_FLAG, FIELD_ASSIGNMENTS};
+        FIELD_RETURN_TYPES, FIELD_PARAMETERS, FIELD_FLAG, FIELD_ASSIGNMENTS, FIELD_ARRAY_TYPES};
 
     private static final Logger LOG = Logger.getLogger(JsIndex.class.getName());
 
@@ -114,17 +115,20 @@ public class JsIndex {
 
     private final QuerySupport querySupport;
 
+    private final boolean updateCache;
+
     private final SoftReference<Map<CacheKey, CacheValue>> resultCache =
             new SoftReference<Map<CacheKey, CacheValue>>(new HashMap<CacheKey, CacheValue>());
 
-    private JsIndex(QuerySupport querySupport) {
+    private JsIndex(QuerySupport querySupport, boolean updateCache) {
         this.querySupport = querySupport;
+        this.updateCache = updateCache;
     }
 
     public static JsIndex get(Collection<FileObject> roots) {
         // XXX no cache - is it needed?
         LOG.log(Level.FINE, "JsIndex for roots: {0}", roots); //NOI18N
-        return new JsIndex(QuerySupportFactory.get(roots));
+        return new JsIndex(QuerySupportFactory.get(roots), false);
     }
 
     public static void changeInIndex() {
@@ -135,7 +139,7 @@ public class JsIndex {
         JsIndex index = CACHE.get(fo);
         if (index == null) {
             LOG.log(Level.FINE, "Creating JsIndex for FileObject: {0}", fo); //NOI18N
-            index = new JsIndex(QuerySupportFactory.get(fo));
+            index = new JsIndex(QuerySupportFactory.get(fo), true);
             CACHE.put(fo, index);
         }
         return index;
@@ -166,11 +170,13 @@ public class JsIndex {
                     if (value == null || !value.contains(fieldsToLoad)) {
                         CACHE_MISS.incrementAndGet();
                         result = querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
-                        value = new CacheValue(fieldsToLoad, result);
-                        CACHE_INDEX_RESULT.put(key, value);
+                        if (updateCache) {
+                            value = new CacheValue(fieldsToLoad, result);
+                            CACHE_INDEX_RESULT.put(key, value);
 
-                        if (currentCache != null) {
-                            currentCache.put(key, value);
+                            if (currentCache != null) {
+                                currentCache.put(key, value);
+                            }
                         }
                     } else {
                         CACHE_HIT.incrementAndGet();

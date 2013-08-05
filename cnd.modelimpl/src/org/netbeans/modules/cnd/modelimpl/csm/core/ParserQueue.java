@@ -185,6 +185,9 @@ public final class ParserQueue {
                     }
                 }
             }
+            if (states.isEmpty()) {
+                states.addAll(ppStates);
+            }
         }
 
         private synchronized void setStates(Collection<APTPreprocHandler.State> ppStates) {

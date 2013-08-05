@@ -48,6 +48,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -709,6 +711,16 @@ public class ClientSideProject implements Project {
             }
             return null;
         }
+
+        @Override
+        public Collection<FileObject> getWebRoots() {
+            FileObject siteRoot = getSiteRootFolder();
+            if (siteRoot == null) {
+                return Collections.emptyList();
+            }
+            return Collections.singleton(siteRoot);
+        }
+
     }
 
     private static final class ProjectSearchInfo extends SearchInfoDefinition {

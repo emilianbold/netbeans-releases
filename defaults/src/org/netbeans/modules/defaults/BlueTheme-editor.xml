@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="block-search" bgColor="ffe0e8f1"/>
+    <fontcolor name="block-search" foreColor="white" bgColor="ff5d719c"/>
     <fontcolor name="code-folding" foreColor="white" bgColor="253E5A"/>
     <fontcolor name="code-folding-bar" foreColor="253E5A"/>
     <fontcolor name="guarded" bgColor="darkGray"/>

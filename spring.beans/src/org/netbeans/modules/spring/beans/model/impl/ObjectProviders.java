@@ -43,6 +43,7 @@ package org.netbeans.modules.spring.beans.model.impl;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -110,14 +111,15 @@ class ObjectProviders {
 
         @Override
         public boolean modifyObjects(TypeElement type, List<T> objects) {
-            assert objects.size() == 1;
-            T object = objects.get(0);
-            assert object != null;
-            if (!object.refresh(type)) {
-                objects.remove(0);
-                return true;
+            boolean isModified = false;
+            for (Iterator<T> it = objects.iterator(); it.hasNext();) {
+                T object = it.next();
+                if (!object.refresh(type)) {
+                    it.remove();
+                    isModified = true;
+                }
             }
-            return false;
+            return isModified;
         }
 
         abstract T createObject(AnnotationModelHelper helper, TypeElement typeElement);

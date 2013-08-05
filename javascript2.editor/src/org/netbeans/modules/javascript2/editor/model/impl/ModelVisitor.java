@@ -337,61 +337,37 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
 
             } else {
-                IdentNode ident = null;
+                JsObject lObject = null;
+                int assignmentOffset = lhs.getFinish();
                 if (lhs instanceof IndexNode) {
                     IndexNode iNode = (IndexNode)lhs;
                     if (iNode.getBase() instanceof IdentNode) {
-                        ident = (IdentNode)iNode.getBase();
+                        lObject = processLhs(ModelElementFactory.create(parserResult, (IdentNode)iNode.getBase()), parent, false);
+                        assignmentOffset = iNode.getFinish();
+                    }
+                    if (lObject != null && iNode.getIndex() instanceof LiteralNode) {
+                        LiteralNode lNode = (LiteralNode)iNode.getIndex();
+                        if (lNode.isString()) {
+                            Identifier newPropName = ModelElementFactory.create(parserResult, lNode);
+                            if (lObject.getProperty(lNode.getString()) == null) {
+                                JsObject newProperty = new JsObjectImpl(lObject, newPropName, newPropName.getOffsetRange(), true, parserResult.getSnapshot().getMimeType(), null);
+                                lObject.addProperty(newPropName.getName(), newProperty);
+                                assignmentOffset = lNode.getFinish();
+                            }
+                            lObject = processLhs(newPropName, lObject, true);
+                        }
                     }
                 } else if (lhs instanceof IdentNode) {
-                    ident = (IdentNode)lhs;
+                    lObject = processLhs(ModelElementFactory.create(parserResult, (IdentNode)lhs), parent, true);
                 }
                 
-                if (ident != null) {
-                    final Identifier name = ModelElementFactory.create(parserResult, ident);
-                    if (name != null) {
-                        final String newVarName = name.getName();
-                        boolean hasParent = parent.getProperty(newVarName) != null ;
-                        boolean hasGrandParent = parent.getJSKind() == JsElement.Kind.METHOD && parent.getParent().getProperty(newVarName) != null;
-                        JsObject lObject = null;
-                        if (!hasParent && !hasGrandParent && modelBuilder.getGlobal().getProperty(newVarName) == null) {
-                            addOccurence(ident, true);
-                        } else {
-                            lObject = hasParent ? parent.getProperty(newVarName) : hasGrandParent ? parent.getParent().getProperty(newVarName) : null;
-                            if (lObject != null) {
-                                ((JsObjectImpl)lObject).addOccurrence(name.getOffsetRange());
-                            } else {
-                                addOccurence(ident, true);
-                            }
-                        }
-                        JsObjectImpl jsObject = (JsObjectImpl)parent.getProperty(newVarName);
-                        if (jsObject == null) {
-                            // it's not a property of the parent -> try to find in different context
-                            Model model = parserResult.getModel();
-                            Collection<? extends JsObject> variables = model.getVariables(name.getOffsetRange().getStart());
-                            for(JsObject variable : variables) {
-                                if(variable.getName().equals(newVarName)) {
-                                    jsObject = (JsObjectImpl)variable;
-                                    break;
-                                }
-                            }
-                            if (jsObject == null) {
-                                // the object with the name wasn't find yet -> create in global scope
-                                jsObject = new JsObjectImpl(model.getGlobalObject(), name,
-                                        name.getOffsetRange(), false, parserResult.getSnapshot().getMimeType(), null);
-                            }
-                        }
-
-                        Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, binaryNode.rhs());
-                        if (lhs instanceof IndexNode && jsObject instanceof JsArrayImpl) {
-                            ((JsArrayImpl)jsObject).addTypesInArray(types);
-                        } else {
-                            for (TypeUsage type : types) {
-                                jsObject.addAssignment(type, binaryNode.lhs().getFinish());
-                            }
-                        }
-                        if (!(lObject != null && jsObject.getName().equals(lObject.getName()))) {
-                            addOccurence(ident, true);
+                if (lObject != null) {
+                    Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(parserResult, binaryNode.rhs());
+                    if (lhs instanceof IndexNode && lObject instanceof JsArrayImpl) {
+                        ((JsArrayImpl)lObject).addTypesInArray(types);
+                    } else {
+                        for (TypeUsage type : types) {
+                            lObject.addAssignment(type, assignmentOffset);
                         }
                     }
                 }
@@ -420,7 +396,7 @@ public class ModelVisitor extends PathNodeVisitor {
         functionArgumentStack.push(new ArrayList<JsObjectImpl>(3));
         if (callNode.getFunction() instanceof IdentNode) {
             IdentNode iNode = (IdentNode)callNode.getFunction();
-            addOccurence(iNode, false, true, callNode.getArgs().size());
+            addOccurence(iNode, false, true);
         }
         for (Node argument : callNode.getArgs()) {
             if (argument instanceof IdentNode) {
@@ -599,8 +575,10 @@ public class ModelVisitor extends PathNodeVisitor {
                         property.addOccurrence(new OffsetRange(indexNode.getIndex().getStart(), indexNode.getIndex().getFinish()));
                     } else {
                         Identifier name = ModelElementFactory.create(parserResult, (LiteralNode)indexNode.getIndex());
-                        property = new JsObjectImpl(parent, name, name.getOffsetRange(), parserResult.getSnapshot().getMimeType(), null);
-                        parent.addProperty(name.getName(), property);
+                        if (name != null) {
+                            property = new JsObjectImpl(parent, name, name.getOffsetRange(), parserResult.getSnapshot().getMimeType(), null);
+                            parent.addProperty(name.getName(), property);
+                        }
                     }
                 }
             }
@@ -1511,11 +1489,15 @@ public class ModelVisitor extends PathNodeVisitor {
     }
 
     private void addOccurence(IdentNode iNode, boolean leftSite) {
-        addOccurence(iNode, leftSite, false, 0);
+        addOccurence(iNode, leftSite, false);
     }
 
-    private void addOccurence(IdentNode iNode, boolean leftSite, boolean isFunction, int countParam) {
-        if ("this".equals(iNode.getName())) {
+    private void addOccurence(IdentNode iNode, boolean leftSite, boolean isFunction) {
+        addOccurrence(iNode.getName(), new OffsetRange(iNode.getStart(), iNode.getFinish()), leftSite, isFunction);
+    }
+    
+    private void addOccurrence(String name, OffsetRange range, boolean leftSite, boolean isFunction) {
+        if ("this".equals(name)) {
             // don't process this node.
             return;
         }
@@ -1524,8 +1506,8 @@ public class ModelVisitor extends PathNodeVisitor {
         JsObject parameter = null;
         while (scope != null && property == null && parameter == null) {
             JsFunction function = (JsFunction)scope;
-            property = function.getProperty(iNode.getName());
-            parameter = function.getParameter(iNode.getName());
+            property = function.getProperty(name);
+            parameter = function.getParameter(name);
             scope = scope.getParentScope();
         }
         if(parameter != null) {
@@ -1544,22 +1526,22 @@ public class ModelVisitor extends PathNodeVisitor {
             addDocNameOccurence(((JsObjectImpl)property));
             addDocTypesOccurence(((JsObjectImpl)property));
 
-            ((JsObjectImpl)property).addOccurrence(new OffsetRange(iNode.getStart(), iNode.getFinish()));
+            ((JsObjectImpl)property).addOccurrence(range);
         } else {
             // it's a new global variable?
-            IdentifierImpl name = ModelElementFactory.create(parserResult, iNode);
-            if (name != null) {
+            IdentifierImpl nameIden = ModelElementFactory.create(parserResult, name, range.getStart(), range.getEnd());
+            if (nameIden != null) {
                 JsObjectImpl newObject;
                 if (!isFunction) {
-                    newObject = new JsObjectImpl(modelBuilder.getGlobal(), name, name.getOffsetRange(),
+                    newObject = new JsObjectImpl(modelBuilder.getGlobal(), nameIden, nameIden.getOffsetRange(),
                             leftSite, parserResult.getSnapshot().getMimeType(), null);
                 } else {
                     FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-                    newObject = new JsFunctionImpl(fo, modelBuilder.getGlobal(), name, Collections.EMPTY_LIST,
+                    newObject = new JsFunctionImpl(fo, modelBuilder.getGlobal(), nameIden, Collections.EMPTY_LIST,
                             parserResult.getSnapshot().getMimeType(), null);
                 }
-                newObject.addOccurrence(name.getOffsetRange());
-                modelBuilder.getGlobal().addProperty(name.getName(), newObject);
+                newObject.addOccurrence(nameIden.getOffsetRange());
+                modelBuilder.getGlobal().addProperty(nameIden.getName(), newObject);
             }
         }
     }
@@ -1636,6 +1618,42 @@ public class ModelVisitor extends PathNodeVisitor {
         return null;
     }
 
+    private JsObject processLhs(Identifier name, JsObject parent, boolean lastOnLeft) {
+        JsObject lObject = null;
+        if (name != null) {
+            final String newVarName = name.getName();
+            boolean hasParent = parent.getProperty(newVarName) != null ;
+            boolean hasGrandParent = parent.getJSKind() == JsElement.Kind.METHOD && parent.getParent().getProperty(newVarName) != null;
+            if (!hasParent && !hasGrandParent && modelBuilder.getGlobal().getProperty(newVarName) == null) {
+                addOccurrence(name.getName(), name.getOffsetRange(), lastOnLeft, false);
+            } else {
+                lObject = hasParent ? parent.getProperty(newVarName) : hasGrandParent ? parent.getParent().getProperty(newVarName) : null;
+                if (lObject != null) {
+                    ((JsObjectImpl)lObject).addOccurrence(name.getOffsetRange());
+                } else {
+                    addOccurrence(name.getName(), name.getOffsetRange(), lastOnLeft, false);
+                }
+            }
+            lObject = (JsObjectImpl)parent.getProperty(newVarName);
+            if (lObject == null) {
+                // it's not a property of the parent -> try to find in different context
+                Model model = parserResult.getModel();
+                Collection<? extends JsObject> variables = model.getVariables(name.getOffsetRange().getStart());
+                for(JsObject variable : variables) {
+                    if(variable.getName().equals(newVarName)) {
+                        lObject = (JsObjectImpl)variable;
+                        break;
+                    }
+                }
+                if (lObject == null) {
+                    // the object with the name wasn't find yet -> create in global scope
+                    lObject = new JsObjectImpl(model.getGlobalObject(), name,
+                            name.getOffsetRange(), false, parserResult.getSnapshot().getMimeType(), null);
+                }
+            }
+        }
+        return lObject;
+    }
     /**
      * 
      * @param where the declaration context, where this is used

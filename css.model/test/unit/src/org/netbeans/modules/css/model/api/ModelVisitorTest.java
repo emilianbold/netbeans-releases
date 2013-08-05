@@ -43,7 +43,6 @@ package org.netbeans.modules.css.model.api;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 
 /**
@@ -58,7 +57,7 @@ public class ModelVisitorTest extends ModelTestBase {
 
     @Test
     public void testRules() {
-        final Set<Rule> rules = new HashSet<Rule>();
+        final Set<Rule> rules = new HashSet<>();
         ModelVisitor visitor = new ModelVisitor.Adapter() {
 
             @Override

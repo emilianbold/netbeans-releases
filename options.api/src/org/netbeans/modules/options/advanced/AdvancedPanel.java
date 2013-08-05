@@ -60,6 +60,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.options.OptionsPanelControllerAccessor;
+import org.netbeans.modules.options.Utils;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
@@ -204,6 +205,8 @@ public final class AdvancedPanel extends JPanel {
                 scroll.setOpaque(false);
                 scroll.getViewport().setOpaque(false);
                 scroll.setBorder(BorderFactory.createEmptyBorder());
+                scroll.getVerticalScrollBar().setUnitIncrement(Utils.ScrollBarUnitIncrement);
+                scroll.getHorizontalScrollBar().setUnitIncrement(Utils.ScrollBarUnitIncrement);
                 tabbedPanel.setComponentAt(tabbedPanel.getSelectedIndex(), scroll);
             }
             model.update(category);
