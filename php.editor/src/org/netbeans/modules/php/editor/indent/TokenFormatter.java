@@ -110,6 +110,7 @@ public class TokenFormatter {
         public boolean spaceBeforeSwitchLeftBrace;
         public boolean spaceBeforeTryLeftBrace;
         public boolean spaceBeforeCatchLeftBrace;
+        public boolean spaceBeforeFinallyLeftBrace;
         public boolean spaceBeforeUseTraitBodyLeftBrace;
         public boolean spaceBeforeMethodDeclParen;
         public boolean spaceBeforeMethodCallParen;
@@ -122,6 +123,7 @@ public class TokenFormatter {
         public boolean spaceBeforeWhile;
         public boolean spaceBeforeElse;
         public boolean spaceBeforeCatch;
+        public boolean spaceBeforeFinally;
         public boolean spaceAroundObjectOp;
         public boolean spaceAroundStringConcatOp;
         public boolean spaceAroundUnaryOps;
@@ -149,6 +151,7 @@ public class TokenFormatter {
         public boolean placeElseOnNewLine;
         public boolean placeWhileOnNewLine;
         public boolean placeCatchOnNewLine;
+        public boolean placeFinallyOnNewLine;
         public boolean placeNewLineAfterModifiers;
         public int blankLinesBeforeNamespace;
         public int blankLinesAfterNamespace;
@@ -235,6 +238,7 @@ public class TokenFormatter {
             spaceBeforeSwitchLeftBrace = codeStyle.spaceBeforeSwitchLeftBrace();
             spaceBeforeTryLeftBrace = codeStyle.spaceBeforeTryLeftBrace();
             spaceBeforeCatchLeftBrace = codeStyle.spaceBeforeCatchLeftBrace();
+            spaceBeforeFinallyLeftBrace = codeStyle.spaceBeforeFinallyLeftBrace();
             spaceBeforeUseTraitBodyLeftBrace = codeStyle.spaceBeforeUseTraitBodyLeftBrace();
 
             spaceBeforeMethodDeclParen = codeStyle.spaceBeforeMethodDeclParen();
@@ -249,6 +253,7 @@ public class TokenFormatter {
             spaceBeforeWhile = codeStyle.spaceBeforeWhile();
             spaceBeforeElse = codeStyle.spaceBeforeElse();
             spaceBeforeCatch = codeStyle.spaceBeforeCatch();
+            spaceBeforeFinally = codeStyle.spaceBeforeFinally();
 
             spaceAroundObjectOp = codeStyle.spaceAroundObjectOps();
             spaceAroundStringConcatOp = codeStyle.spaceAroundStringConcatOps();
@@ -280,6 +285,7 @@ public class TokenFormatter {
             placeElseOnNewLine = codeStyle.placeElseOnNewLine();
             placeWhileOnNewLine = codeStyle.placeWhileOnNewLine();
             placeCatchOnNewLine = codeStyle.placeCatchOnNewLine();
+            placeFinallyOnNewLine = codeStyle.placeFinallyOnNewLine();
             placeNewLineAfterModifiers = codeStyle.placeNewLineAfterModifiers();
 
             blankLinesBeforeNamespace = codeStyle.getBlankLinesBeforeNamespace();
@@ -520,6 +526,12 @@ public class TokenFormatter {
                                     case WHITESPACE_BEFORE_CATCH_LEFT_BRACE:
                                         indentRule = true;
                                         ws = countWhiteSpaceBeforeLeftBrace(docOptions.catchBracePlacement, docOptions.spaceBeforeCatchLeftBrace, oldText, indent, 0);
+                                        newLines = ws.lines;
+                                        countSpaces = ws.spaces;
+                                        break;
+                                    case WHITESPACE_BEFORE_FINALLY_LEFT_BRACE:
+                                        indentRule = true;
+                                        ws = countWhiteSpaceBeforeLeftBrace(docOptions.catchBracePlacement, docOptions.spaceBeforeFinallyLeftBrace, oldText, indent, 0);
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
@@ -1276,6 +1288,12 @@ public class TokenFormatter {
                                     case WHITESPACE_BEFORE_CATCH:
                                         indentRule = true;
                                         ws = countWSBeforeKeyword(docOptions.placeCatchOnNewLine, docOptions.spaceBeforeCatch, indent, formatTokens, index);
+                                        newLines = ws.lines;
+                                        countSpaces = ws.spaces;
+                                        break;
+                                    case WHITESPACE_BEFORE_FINALLY:
+                                        indentRule = true;
+                                        ws = countWSBeforeKeyword(docOptions.placeFinallyOnNewLine, docOptions.spaceBeforeFinally, indent, formatTokens, index);
                                         newLines = ws.lines;
                                         countSpaces = ws.spaces;
                                         break;
