@@ -134,6 +134,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.UseTraitStatementPart;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.Visitor;
 import org.netbeans.modules.php.editor.parser.astnodes.WhileStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.YieldExpression;
 
 /**
  *
@@ -641,6 +642,12 @@ public class DefaultVisitor implements Visitor {
     @Override
     public void visit(UseTraitStatementPart useTraitStatementPart) {
         scan(useTraitStatementPart.getName());
+    }
+
+    @Override
+    public void visit(YieldExpression node) {
+        scan(node.getKey());
+        scan(node.getValue());
     }
 
     @Override

@@ -331,4 +331,28 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testExpressionArrayAccess_03() throws Exception {
         checkErrors("testfiles/parser/expressionArrayAccess_03.php");
     }
+
+    public void testYield_01() throws Exception {
+        checkErrors("testfiles/parser/yield_01.php");
+    }
+
+    public void testYield_02() throws Exception {
+        checkErrors("testfiles/parser/yield_02.php");
+    }
+
+    public void testYield_03() throws Exception {
+        checkErrors("testfiles/parser/yield_03.php");
+    }
+
+    public void testYield_04() throws Exception {
+        checkErrors("testfiles/parser/yield_04.php");
+    }
+
+    public void testYield_05() throws Exception {
+        checkErrors("testfiles/parser/yield_05.php");
+    }
+
+    public void testYield_06() throws Exception {
+        checkErrors("testfiles/parser/yield_06.php");
+    }
 }

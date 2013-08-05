@@ -339,6 +339,8 @@ non terminal possible_comma;
 non terminal List non_empty_static_array_pair_list;
 non terminal Expression expr;
 non terminal Expression expr_without_class_instance;
+non terminal Expression yield_expr;
+non terminal Expression parenthesis_expr;
 non terminal Variable reference_variable;
 non terminal Variable variable_class_name;
 non terminal Variable compound_variable;
@@ -757,6 +759,12 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 | T_RETURN:token variable:expr T_SEMICOLON:end
 {:
 	RESULT = new ReturnStatement(tokenleft, endright, expr);
+:}
+
+| yield_expr:expr T_SEMICOLON:end
+{:
+    ExpressionStatement expressionStatement = new ExpressionStatement(exprleft, endright, expr);
+	RESULT = expressionStatement;
 :}
 
 | T_GLOBAL:start global_var_list:list T_SEMICOLON:end
@@ -2396,10 +2404,9 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 	RESULT = new InstanceOfExpression(exprleft, classNameright, expr , className);
 :}
 
-| T_OPEN_PARENTHESE:start expr_without_class_instance:expr T_CLOSE_PARENTHESE:end
+| parenthesis_expr:expr
 {:
-    ParenthesisExpression parenthesisExpression = new ParenthesisExpression(startleft, endright, expr);
-    RESULT = parenthesisExpression;
+    RESULT = expr;
 :}
 
 | expr:condition T_QUESTION_MARK expr:ifTrue T_NEKUDOTAIM expr:ifFalse
@@ -3009,6 +3016,42 @@ non_empty_static_array_pair_list:list T_COMMA static_scalar:key T_DOUBLE_ARROW s
 	ArrayElement element = new ArrayElement(valueleft, valueright, value);
 	list.add(element);
 	RESULT = list;
+:}
+;
+
+parenthesis_expr ::=
+T_OPEN_PARENTHESE:start expr_without_class_instance:expr T_CLOSE_PARENTHESE:end
+{:
+    ParenthesisExpression parenthesisExpression = new ParenthesisExpression(startleft, endright, expr);
+    RESULT = parenthesisExpression;
+:}
+
+| T_OPEN_PARENTHESE:start yield_expr:expr T_CLOSE_PARENTHESE:end
+{:
+    ParenthesisExpression parenthesisExpression = new ParenthesisExpression(startleft, endright, expr);
+    RESULT = parenthesisExpression;
+:}
+;
+
+yield_expr ::=
+T_YIELD:s expr_without_variable:ewv
+{:
+    RESULT = new YieldExpression(sleft, ewvright, ewv);
+:}
+
+| T_YIELD:s variable:var
+{:
+    RESULT = new YieldExpression(sleft, varright, var);
+:}
+
+| T_YIELD:s expr:e T_DOUBLE_ARROW expr_without_variable:ewv
+{:
+    RESULT = new YieldExpression(sleft, ewvright, e, ewv);
+:}
+
+| T_YIELD:s expr:e T_DOUBLE_ARROW variable:var
+{:
+    RESULT = new YieldExpression(sleft, varright, e, var);
 :}
 ;
 

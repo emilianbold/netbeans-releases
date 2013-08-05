@@ -284,6 +284,8 @@ public interface Visitor {
     ////public void endVisit(Variable variable);
     public void visit(WhileStatement whileStatement);
 
+    public void visit(YieldExpression node);
+
     ////public void endVisit(WhileStatement whileStatement);
     public void visit(ASTNode node);
     ////public void endVisit(ASTNode node);

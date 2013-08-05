@@ -476,6 +476,22 @@ public class ASTPHP5ParserTest extends ParserTestBase {
         performTest("parser/expressionArrayAccess_03");
     }
 
+    public void testYield_01() throws Exception {
+        performTest("parser/yield_01");
+    }
+
+    public void testYield_02() throws Exception {
+        performTest("parser/yield_02");
+    }
+
+    public void testYield_03() throws Exception {
+        performTest("parser/yield_03");
+    }
+
+    public void testYield_04() throws Exception {
+        performTest("parser/yield_04");
+    }
+
     @Override
     protected String getTestResult(String filename) throws Exception {
         File testFile = new File(getDataDir(), "testfiles/" + filename + ".php");
