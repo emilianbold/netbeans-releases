@@ -52,37 +52,53 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 /**
  *
  * @author Tomas Zezula
  */
-class RemotePlatform extends JavaPlatform {
+public final class RemotePlatform extends JavaPlatform {
 
     private static final String SPEC_NAME = "j2se-remote";  //NOI18N
 
     private final String displayName;
-    private final Collection<? extends URL> installFolders;
     private final Map<String,String> props;
     private final Specification spec;
 
-    RemotePlatform(
+    private RemotePlatform(
         @NonNull final String displayName,
-        @NonNull final Collection<? extends URL> installFolders,
         @NonNull final Map<String,String> properties,
         @NonNull final Map<String,String> sysProperties) {
         Parameters.notNull("displayName", displayName); //NOI18N
-        Parameters.notNull("installFolders", installFolders);   //NOI18N
         Parameters.notNull("properties", properties);   //NOI18N
         Parameters.notNull("sysProperties", sysProperties); //NOI18N
         this.displayName = displayName;
-        this.installFolders = installFolders;
         this.props = Collections.unmodifiableMap(properties);
         this.spec = new Specification(
             SPEC_NAME,
-            new SpecificationVersion("1.5"));  //TODO: Take from sys props
+            new SpecificationVersion("1.5"),//TODO: Take from sys props
+            NbBundle.getMessage(RemotePlatform.class, "TXT_RemotePlatform"),
+            null);
         setSystemProperties(sysProperties);
+    }
+
+    @NonNull
+    public static RemotePlatform create(@NonNull final RemotePlatform prototype) {
+        Parameters.notNull("prototype", prototype); //NOI18N
+        return new RemotePlatform(
+            prototype.getDisplayName(),
+            prototype.getProperties(),
+            prototype.getSystemProperties());
+    }
+
+    @NonNull
+    public static RemotePlatform create(
+            @NonNull final String name,
+            @NonNull final Map<String,String> properties,
+            @NonNull final Map<String,String> sysProperties) {
+        return new RemotePlatform(name, properties, sysProperties);
     }
 
     @Override

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE platform PUBLIC "-//NetBeans//DTD Remote Java Platform Definition 1.0//EN" "http://www.netbeans.org/dtds/remote-java-platformdefinition-1_0.dtd">
+<platform name="Remote ARM Cortex v7">
+    <properties>
+        <property name="platform.ant.name" value="test_remote_platform"/>
+    </properties>
+</platform>
