@@ -57,7 +57,10 @@ import org.apache.tools.ant.types.Resource;
  */
 public class PluginTask extends Task {
 
-    
+    public static boolean isWin() {
+        boolean isWin = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
+        return isWin;
+    }
     
     @Override
     public void execute() throws BuildException {
@@ -101,7 +104,7 @@ public class PluginTask extends Task {
     }
     
     public static String getCordovaCommand() {
-         boolean isWin = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
+         boolean isWin = isWin();
          return isWin?"cordova.cmd":"cordova";
     }
 

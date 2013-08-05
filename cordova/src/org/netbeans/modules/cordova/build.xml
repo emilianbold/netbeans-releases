@@ -120,6 +120,7 @@ made subject to such option by the copyright holder.
     
         
     <target name="check-cordova-version">
+        <property environment="env"/>        
         <checkVersion first="${cordova.version}" property="cordova.ver.3"/>
         <fail message="Cordova version 3 or greater required." unless="cordova.ver.3"/>
         <readconfig/>
@@ -135,10 +136,8 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="create-android" depends="check-android-template,check-cordova-version,upgrade-to-cordova-project" unless="android.generated.exists">
-        <property environment="env"/>
         <exec executable="${cordova.command}">
-            <env key="PATH" path="${env.PATH}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
-            <env key="Path" path="${env.Path}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
+            <env key="${cordova.path.key}" path="${cordova.path.value}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
             <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="-d"/>
             <arg value="platform"/>   
@@ -220,10 +219,8 @@ made subject to such option by the copyright holder.
     </target>    
     
     <target name="update-android">
-        <property environment="env"/>
         <exec executable="${cordova.command}" resolveexecutable="true" failonerror="true">
-            <env key="PATH" path="${env.PATH}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
-            <env key="Path" path="${env.Path}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
+            <env key="${cordova.path.key}" path="${cordova.path.value}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
             <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="prepare"/>
             <arg value="android"/>
@@ -241,10 +238,8 @@ made subject to such option by the copyright holder.
     <target name="rebuild-android" depends="clean-android,build-android"/>      
     
     <target name="build-android" depends="create-android,update-plugins">
-        <property environment="env"/>
         <exec executable="${cordova.command}">
-            <env key="PATH" path="${env.PATH}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
-            <env key="Path" path="${env.Path}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
+            <env key="${cordova.path.key}" path="${cordova.path.value}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
             <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="-d"/>   
             <arg value="build"/>   
@@ -253,10 +248,8 @@ made subject to such option by the copyright holder.
     </target>    
     
     <target name="sim-android" depends="create-android,update-plugins">
-        <property environment="env"/>
         <exec executable="${cordova.command}">
-            <env key="PATH" path="${env.PATH}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
-            <env key="Path" path="${env.Path}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
+            <env key="${cordova.path.key}" path="${cordova.path.value}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
             <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="-d"/>
             <arg value="${android.target.device.arg}"/>
