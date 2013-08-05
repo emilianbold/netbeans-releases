@@ -50,6 +50,8 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.util.HgCommand;
 import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -63,6 +65,8 @@ import org.openide.util.RequestProcessor;
     "# {0} - repository folder name",
     "CTL_MenuItem_PushBranchRoot=Pu&sh Current Branch - {0}"
 })
+@ActionID(id = "org.netbeans.modules.mercurial.ui.push.PushCurrentBranchAction", category = "Mercurial")
+@ActionRegistration(lazy = false, displayName = "#CTL_MenuItem_PushBranchLocal")
 public class PushCurrentBranchAction extends ContextAction {
     
     public static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/push.png"; //NOI18N
