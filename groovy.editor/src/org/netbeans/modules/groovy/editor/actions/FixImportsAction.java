@@ -45,6 +45,7 @@ import org.netbeans.modules.groovy.editor.imports.ImportHelper;
 import java.awt.event.ActionEvent;
 import java.util.*;
 import javax.swing.text.JTextComponent;
+import org.codehaus.groovy.ast.ModuleNode;
 import org.codehaus.groovy.control.ErrorCollector;
 import org.codehaus.groovy.control.messages.SyntaxErrorMessage;
 import org.codehaus.groovy.syntax.SyntaxException;
@@ -92,29 +93,35 @@ public class FixImportsAction extends BaseAction {
         final FileObject fo = NbEditorUtilities.getDataObject(target.getDocument()).getPrimaryFile();
         final Source source = Source.create(fo);
 
-        final List<String> missingNames = new ArrayList<>();
+        CollectMissingImportsTask task = new CollectMissingImportsTask();
+
         try {
-            ParserManager.parse(Collections.singleton(source), new CollectMissingImportsTask(missingNames));
+            ParserManager.parse(Collections.singleton(source), task);
         } catch (ParseException ex) {
             Exceptions.printStackTrace(ex);
         }
 
-        ImportHelper.resolveImports(fo, missingNames);
+        ImportHelper.resolveImports(fo, task.getPackageName(), task.getMissingNames());
     }
 
     private static final class CollectMissingImportsTask extends UserTask {
 
         private final List<String> missingNames;
+        private String packageName;
 
-        public CollectMissingImportsTask(List<String> missingNames) {
-            this.missingNames = missingNames;
+        public CollectMissingImportsTask() {
+            this.missingNames = new ArrayList<>();
         }
-
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
             GroovyParserResult result = ASTUtils.getParseResult(resultIterator.getParserResult());
             if (result != null) {
+                ModuleNode rootModule = ASTUtils.getRoot(result);
+                if (rootModule != null) {
+                    packageName = rootModule.getPackageName();
+                }
+
                 ErrorCollector errorCollector = result.getErrorCollector();
                 if (errorCollector == null) {
                     return;
@@ -144,6 +151,14 @@ public class FixImportsAction extends BaseAction {
                     }
                 }
             }
+        }
+
+        public List<String> getMissingNames() {
+            return missingNames;
+        }
+
+        public String getPackageName() {
+            return packageName;
         }
     }
 }
