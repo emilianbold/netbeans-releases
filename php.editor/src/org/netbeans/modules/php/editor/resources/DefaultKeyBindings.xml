@@ -54,8 +54,6 @@ See http://wiki.netbeans.info/wiki/view/DevFaqLogicalKeybindings for action name
 <bindings>
     <bind actionName="fast-import" key="OS-I"/>
     <bind actionName="fix-uses" key="DS-I"/>
-    <bind actionName="csl-prev-marked-occurrence" key="O-UP"/>
-    <bind actionName="csl-next-marked-occurrence" key="O-DOWN"/>
     <bind actionName="complete-line" key="D-SEMICOLON"/>
     <bind actionName="complete-line-newline" key="DS-SEMICOLON"/>
 </bindings>

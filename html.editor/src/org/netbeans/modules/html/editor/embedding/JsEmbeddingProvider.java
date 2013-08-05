@@ -129,9 +129,14 @@ public class JsEmbeddingProvider extends EmbeddingProvider {
             public void run(ResultIterator resultIterator) throws Exception {
                 ResultIterator htmlRI = WebUtils.getResultIterator(resultIterator, "text/html");
                 if(htmlRI != null) {
-                    process((HtmlParserResult)htmlRI.getParserResult(), snapshot, tokenSequence, state, embeddings);
+                    HtmlParserResult result = (HtmlParserResult)htmlRI.getParserResult();
+                    if(result != null) {
+                        process(result, snapshot, tokenSequence, state, embeddings);
+                    } else {
+                        //likely a bug in parsing.api
+                        //https://netbeans.org/bugzilla/show_bug.cgi?id=233926
+                    }
                 }
-                
             }
         });
         
