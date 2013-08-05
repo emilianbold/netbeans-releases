@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.utils;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
@@ -868,6 +869,18 @@ public final class GitUtils {
         } catch (Exception ex) {
             throw new GitException("Cannot run without indexing due to: " + ex.getMessage(), ex); //NOI18N
         }
+    }
+    
+    public static String getColorString (Color c) {
+        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
+    }
+
+    private static String getHex (int i) {
+        String hex = Integer.toHexString(i & 0x000000FF);
+        if (hex.length() == 1) {
+            hex = "0" + hex; //NOI18N
+        }
+        return hex;
     }
 
     private static boolean indexingFilesSubtree (Set<File> recursiveRoots, File[] files) {
