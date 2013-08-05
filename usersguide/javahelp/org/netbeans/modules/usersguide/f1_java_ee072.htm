@@ -1,0 +1,51 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Deploying to a Registered Tomcat Web Server</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="tomcat_setup_registered" name="tomcat_setup_registered"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref631" name="sthref631"></a>
+<h1>Deploying to a Registered Tomcat Web Server</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>When you install a version of the IDE that contains Java EE technologies, you can choose to install and register the Tomcat Web Server during the installation process. You can also configure the IDE to deploy web applications to other installations of supported versions of the Tomcat Web Server. These versions need to be first.</p>
+<p>Use the following steps to check that the Tomcat Web Server is the target server for the current application.</p>
+<a id="sthref632" name="sthref632"></a>
+<p><b>To check the target server:</b></p>
+<ol>
+<li>Right-click the project node in the Projects window and choose Properties.</li>
+<li>Select Run in the Project Properties dialog box.</li>
+<li>Look at the target server specified in the Server drop-down. Verify that it is the one you want to use. Select a different server if necessary.</li>
+<li>Click OK.</li>
+</ol>
+<a id="sthref633" name="sthref633"></a>
+<p><b>To deploy to the target server:</b></p>
+<ol>
+<li>(Optional) Define parameters to pass to one or more JSP files.</li>
+<li>In the Projects window, right-click the project's node.</li>
+<li>Choose Run Project from the contextual menu.</li>
+</ol>
+<p>The IDE sends the web application's URL to the server. The URL is derived from the server's URL and the web application's context path. The server runs through the files listed in the welcome-file-list element in the deployment descriptor (the web.xml file), displaying the first one it finds. If the server does not find a welcome file, the server's default servlet displays the root of the web application. You can change the behavior of the default servlet in the web.xml file.</p>
+<hr><p><b>Related Topics</b></p>
+<p>About the Tomcat Web Server</p>
+<p>Viewing the Tomcat Web Server in the IDE</p>
+<p>Customizing the Tomcat Configuration File</p>
+<p>Registering a Tomcat Web Server</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

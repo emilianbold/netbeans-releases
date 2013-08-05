@@ -1,0 +1,135 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Tomcat Web Server Tasks: Quick Reference</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="tomcat_quickref" name="tomcat_quickref"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref630" name="sthref630"></a>
+<h1>Tomcat Web Server Tasks: Quick Reference</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>This topic describes common tasks you can perform with the Tomcat Web Server. For more detailed information, click the links in the right column.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="25%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t59">To perform this task:</th>
+<th align="left" valign="bottom" id="r1c2-t59">Follow these steps:</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t59" headers="r1c1-t59">
+<p>Register a Tomcat Web Server with the IDE</p>
+</td>
+<td align="left" headers="r2c1-t59 r1c2-t59">
+<ol>
+<li>Choose Tools &gt; Servers from the main menu.</li>
+<li>Click Add Server to open the Add Server Instance wizard.</li>
+<li>Choose the server type, give the server instance a name, and click Next.</li>
+<li>Define the server instance properties and click Finish.</li>
+</ol>
+<p>For more information, see Registering a Tomcat Web Server.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t59" headers="r1c1-t59">
+<p>Set a project's target server</p>
+</td>
+<td align="left" headers="r3c1-t59 r1c2-t59">
+<ol>
+<li>Right-click the project node in the Projects window and choose Properties.</li>
+<li>Select Run in the Project Properties dialog box.</li>
+<li>Select the target server from the Server drop-down and click OK.</li>
+</ol>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t59" headers="r1c1-t59">
+<p>Customize the server</p>
+</td>
+<td align="left" headers="r4c1-t59 r1c2-t59">
+<ol>
+<li>In the Services window, right-click the Tomcat Web Server node and choose Properties.</li>
+<li>Change the server's properties.</li>
+</ol>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t59" headers="r1c1-t59">
+<p>Open the Tomcat Web Application Manager</p>
+</td>
+<td align="left" headers="r5c1-t59 r1c2-t59">
+<ol>
+<li>In the Services window, right-click the Tomcat Web Server node and choose Start.</li>
+<li>Expand the Web Applications node and right-click the node for the /manager context and choose Open in Browser.</li>
+<li>Log in using a valid username and password.</li>
+</ol>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t59" headers="r1c1-t59">
+<p>Start the server</p>
+</td>
+<td align="left" headers="r6c1-t59 r1c2-t59">
+<ol>
+<li>The server starts automatically when you deploy a web application. Do the following to start the server manually:</li>
+<li>In the Services window, expand the Servers node.</li>
+<li>Right-click the Tomcat Web Server node and choose Start or Restart.</li>
+</ol>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t59" headers="r1c1-t59">
+<p>Authenticate the server</p>
+</td>
+<td align="left" headers="r7c1-t59 r1c2-t59">
+<ol>
+<li>
+<p>In your system, go to Tomcat's base directory and then to its \conf subfolder.</p>
+<p><b>Note:</b> If you don't know where Tomcat's base directory is, right-click the Tomcat Web Server instance node in the Services window and select Properties. In the Properties dialog box, the Base Directory property points to the base directory.</p>
+</li>
+<li>Open the tomcat-users.xml file and make a note of the password that is defined for the ide username.</li>
+<li>Right-click the Tomcat Web Server instance node in the Services window and select Properties. In the Properties dialog box, type the username and password.</li>
+</ol>
+<p>For more information, see Authenticating the Tomcat Web Server.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t59" headers="r1c1-t59">
+<p>Undeploy an application</p>
+</td>
+<td align="left" headers="r8c1-t59 r1c2-t59">
+<ol>
+<li>In the Services window, expand the Tomcat Web Server instance and the Web Applications node in the Services window.</li>
+<li>Expand the node which contains the type of application to undeploy.</li>
+<li>Right-click the application and choose Undeploy from the contextual menu.</li>
+</ol>
+<p>For more information, see Removing an Application from a Server.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>
