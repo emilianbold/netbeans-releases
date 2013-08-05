@@ -159,13 +159,9 @@ public class CommonServerSupport
                                             "MSG_ADMIN_FAILED", args);
                                 }
                                 break;
-                            case LOCAL_AUTH_FAILED:
+                            case AUTH_FAILED: case AUTH_FAILED_HTTP:
                                 message = adminCommandFailedMsg(
-                                        "MSG_ADMIN_LOCAL_AUTH_FAILED", args);
-                                break;
-                            case REMOTE_AUTH_FAILED:
-                                message = adminCommandFailedMsg(
-                                        "MSG_ADMIN_LOCAL_AUTH_FAILED", args);
+                                        "MSG_ADMIN_AUTH_FAILED", args);
                                 break;
                             default:
                                 message = adminCommandFailedMsg(
