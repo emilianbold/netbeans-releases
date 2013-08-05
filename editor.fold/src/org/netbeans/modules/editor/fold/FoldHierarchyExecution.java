@@ -71,6 +71,7 @@ import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
 import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
+import javax.swing.JEditorPane;
 import javax.swing.SwingUtilities;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -886,21 +887,66 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
         initTask.schedule(delay);
     }
     
+    private class ComponentL implements PropertyChangeListener, HierarchyListener,
+            Runnable {
+        private boolean editorKitLive = true;
+
+        private boolean updating;
+
+        @Override
+        public void hierarchyChanged(HierarchyEvent e) {
+            if ((e.getChangeFlags() & HierarchyEvent.PARENT_CHANGED) == 0) {
+                return;
+            }
+            // the component may be reparented, usually in the same execution sequence
+            // within an event. Let's update (suspend or resume) the changes depending on
+            // the stabilized state in a next AWT event:
+            if (updating) {
+                return;
+            }
+            updating = true;
+            SwingUtilities.invokeLater(this);
+        }
+        
+        /**
+         * See issue #233759; in fullscreen mode, the Component without focus
+         * is removed from the visible hierarchy so the displayable returns false. 
+         * It seems that during *real* close of CloneableEditor the editor kit gets
+         * reset, but in a way not observable through getter (for null, a new default
+         * EK is created by the getter). So we also observe property changes during
+         * hierarchy processing and if ekit becomes null, it's the real editor close
+         * 
+         * TODO - possibly the check could be made using EditorRegistry
+         */
+        public void run() {
+            updating = false;
+            JTextComponent c = getComponent();
+            boolean disableFolding = !c.isDisplayable() &&
+                    !editorKitLive;
+            postWatchDocumentChanges(disableFolding);
+            editorKitLive = true;
+        }
+
+        public void propertyChange(PropertyChangeEvent evt) {
+            String propName = evt.getPropertyName();
+            if ("document".equals(propName)) { //NOI18N
+                foldingEnabled = getFoldingEnabledSetting();
+                scheduleInit(0);
+            } else if (PROPERTY_FOLDING_ENABLED.equals(propName)) {
+                foldingEnabledSettingChange();
+            } else if ("editorKit".equals(propName)) { // NOI18N
+                editorKitLive = evt.getNewValue() != null;
+            }
+        }
+        
+        
+    }
+    
     private void startComponentChangesListening() {
         if (componentChangesListener == null) {
+            final ComponentL l = new ComponentL();
             // Start listening on component changes
-            componentChangesListener = new PropertyChangeListener() {
-                public void propertyChange(PropertyChangeEvent evt) {
-                    String propName = evt.getPropertyName();
-                    if ("document".equals(propName)) { //NOI18N
-                        foldingEnabled = getFoldingEnabledSetting();
-                        scheduleInit(0);
-                    } else if (PROPERTY_FOLDING_ENABLED.equals(propName)) {
-                        foldingEnabledSettingChange();
-                    }
-                }
-            };
-
+            componentChangesListener = l;
             // Start listening on the component.
             // As the hierarchy instance is stored as a property of the component
             // (and in fact the spi and the reference to the listener as well)
@@ -914,30 +960,7 @@ public final class FoldHierarchyExecution implements DocumentListener, Runnable 
                 public void run() {
                     // will suspend document listening iff the component is not shown
                     // fixes some bugs, and even improves performance :)
-                    getComponent().addHierarchyListener(new HierarchyListener() {
-                        private boolean updating;
-                        
-                        @Override
-                        public void hierarchyChanged(HierarchyEvent e) {
-                            if ((e.getChangeFlags() & HierarchyEvent.PARENT_CHANGED) == 0) {
-                                return;
-                            }
-                            // the component may be reparented, usually in the same execution sequence
-                            // within an event. Let's update (suspend or resume) the changes depending on
-                            // the stabilized state in a next AWT event:
-                            if (updating) {
-                                return;
-                            }
-                            updating = true;
-                            SwingUtilities.invokeLater(new Runnable() {
-                                public void run() {
-                                    updating = false;
-                                    postWatchDocumentChanges(!getComponent().isDisplayable());
-                                }
-                            });
-                        }
-
-                    });
+                    getComponent().addHierarchyListener(l);
                 }
             });
         }
