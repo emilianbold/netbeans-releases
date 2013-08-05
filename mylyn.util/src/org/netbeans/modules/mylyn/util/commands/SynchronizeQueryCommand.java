@@ -112,6 +112,8 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
         }
         
         final Set<ITask> tasksToSynchronize = new HashSet<ITask>();
+        // in the end this will contain tasks removed from the query
+        final Set<ITask> archivedQueryTasks = new HashSet<ITask>();
         ITaskListChangeListener list = new ITaskListChangeListener() {
             @Override
             public void containersChanged (Set<TaskContainerDelta> deltas) {
@@ -120,15 +122,20 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
                         if (!query.isSynchronizing()) {
                             // if sync ended -> fire event, and collect tasks to refresh
                             tasksToSynchronize.addAll(query.getChildren());
+                            archivedQueryTasks.removeAll(tasksToSynchronize);
+                            Set<ITask> toSync = new HashSet<ITask>(tasksToSynchronize);
+                            toSync.addAll(archivedQueryTasks);
+                            Collection<NbTask> nbTasks = accessor.toNbTasks(toSync);
                             for (CommandProgressListener cmdList : listeners.toArray(new CommandProgressListener[listeners.size()])) {
-                                cmdList.tasksRefreshStarted(accessor.toNbTasks(tasksToSynchronize));
+                                cmdList.tasksRefreshStarted(nbTasks);
                             }
                         }
                     } else if (delta.getElement() instanceof ITask) {
                         ITask task = (ITask) delta.getElement();
                         if (delta.getKind() == TaskContainerDelta.Kind.CONTENT && task instanceof AbstractTask
                                 && !((AbstractTask) task).isSynchronizing()) {
-                            if (tasksToSynchronize.remove(task)) {
+                            if (tasksToSynchronize.remove(task) && !monitor.isCanceled()) {
+                                archivedQueryTasks.remove(task);
                                 // task finished synchronize
                                 for (CommandProgressListener cmdList : listeners.toArray(new CommandProgressListener[listeners.size()])) {
                                     cmdList.taskSynchronized(accessor.toNbTask(task));
@@ -152,11 +159,9 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
         taskList.addChangeListener(list);
         try {
             query.setSynchronizing(true);
-            tasksToSynchronize.clear();
-            Collection<ITask> tasks = query.getChildren();
-            tasksToSynchronize.addAll(tasks);
+            archivedQueryTasks.addAll(query.getChildren());
             for (CommandProgressListener cmdList : listeners.toArray(new CommandProgressListener[listeners.size()])) {
-                cmdList.queryRefreshStarted(accessor.toNbTasks(tasksToSynchronize));
+                cmdList.queryRefreshStarted(accessor.toNbTasks(archivedQueryTasks));
             }
             job.run(monitor);
             status = query.getStatus();
@@ -167,14 +172,25 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
                     throw new CoreException(status);
                 }
             }
-            if (!monitor.isCanceled() && !tasksToSynchronize.isEmpty()) {
+            if (monitor.isCanceled()) {
+                return;
+            }
+            // at this point caller was notified about modified tasks
+            // but not about unchanged tasks
+            for (ITask task : tasksToSynchronize) {
+                for (CommandProgressListener cmdList : listeners.toArray(new CommandProgressListener[listeners.size()])) {
+                    cmdList.taskSynchronized(accessor.toNbTask(task));
+                }
+            }
+            // now refresh also tasks removed from the query
+            if (!monitor.isCanceled() && !archivedQueryTasks.isEmpty()) {
                 SynchronizeTasksJob syncTasksJob = new SynchronizeTasksJob(taskList,
                     taskDataManager,
                     repositoryModel,
                     repositoryConnector,
                     taskRepository,
-                    new HashSet<ITask>(tasksToSynchronize));
-                for (ITask t : tasksToSynchronize) {
+                    new HashSet<ITask>(archivedQueryTasks));
+                for (ITask t : archivedQueryTasks) {
                     if (t instanceof AbstractTask) {
                         ((AbstractTask) t).setSynchronizing(true);
                     }
