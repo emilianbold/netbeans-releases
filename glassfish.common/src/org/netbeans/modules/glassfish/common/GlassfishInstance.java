@@ -1632,19 +1632,15 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     /**
      * Generate hash code for GlassFish instance data object.
      * <p/>
-     * Hash code is based on server address, port, domain name and domains root
-     * directory.
+     * Hash code is based on name attribute
+     * (<code>GlassfishModule.DISPLAY_NAME_ATTR</code> property) which
+     * is unique.
      * <p/>
      * @return Hash code for GlassFish instance data object.
      */
     @Override
     public int hashCode() {
-        StringBuilder sb = new StringBuilder(
-                getDeployerUri().replace("127.0.0.1", "localhost"));
-        sb.append(getHttpPort());
-        sb.append(getDomainsRoot());
-        sb.append(getDomainName());
-        return sb.toString().hashCode();
+        return getName().hashCode();
     }
 
 }
