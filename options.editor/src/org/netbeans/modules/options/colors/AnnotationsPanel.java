@@ -331,6 +331,7 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         }
         
         toBeSaved.add(currentScheme);
+        changed = true;
     }
     
     private void refreshUI () {
