@@ -355,4 +355,12 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testYield_06() throws Exception {
         checkErrors("testfiles/parser/yield_06.php");
     }
+
+    public void testYield_07() throws Exception {
+        checkErrors("testfiles/parser/yield_07.php");
+    }
+
+    public void testYield_08() throws Exception {
+        checkErrors("testfiles/parser/yield_08.php");
+    }
 }

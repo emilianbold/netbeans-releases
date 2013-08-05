@@ -3034,7 +3034,12 @@ T_OPEN_PARENTHESE:start expr_without_class_instance:expr T_CLOSE_PARENTHESE:end
 ;
 
 yield_expr ::=
-T_YIELD:s expr_without_variable:ewv
+T_YIELD:s
+{:
+    RESULT = new YieldExpression(sleft, sright, null);
+:}
+
+| T_YIELD:s expr_without_variable:ewv
 {:
     RESULT = new YieldExpression(sleft, ewvright, ewv);
 :}
