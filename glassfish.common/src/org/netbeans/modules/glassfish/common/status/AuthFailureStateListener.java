@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.tools.ide.GlassFishStatus;
 import org.glassfish.tools.ide.data.GlassFishServer;
+import static org.glassfish.tools.ide.data.GlassFishStatusCheck.LOCATIONS;
 import static org.glassfish.tools.ide.data.GlassFishStatusCheck.VERSION;
 import org.glassfish.tools.ide.data.GlassFishStatusTask;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
@@ -165,10 +166,13 @@ public class AuthFailureStateListener extends BasicStateListener {
     @Override
     public void error(final GlassFishServer server,
             final GlassFishStatusTask task) {
-        switch (task.getEvent()) {
-            case LOCAL_AUTH_FAILED: case REMOTE_AUTH_FAILED:
-                switch (task.getType()) {
-                    case LOCATIONS: case VERSION:
+        switch (task.getType()) {
+            case LOCATIONS: case VERSION:
+                switch (task.getEvent()) {
+                    case AUTH_FAILED_HTTP:
+                        GlassFishStatus.suspend(server);
+                        break;
+                    case AUTH_FAILED:
                         // NetBeans credentiuals pop up window
                         if (allowPopup) {
                             // Double checked pattern on popUpLock
@@ -182,11 +186,6 @@ public class AuthFailureStateListener extends BasicStateListener {
                         }
                         break;
                 }
-                break;
-            case EXCEPTION:
-                LOGGER.log(Level.FINEST, NbBundle.getMessage(
-                    AuthFailureStateListener.class,
-                    "AuthFailureStateListener.error.exception"));
                 break;
         }
     }
