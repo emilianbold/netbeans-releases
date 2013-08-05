@@ -41,21 +41,23 @@
  */
 package org.netbeans.modules.glassfish.common.status;
 
-import org.glassfish.tools.ide.GlassFishStatus;
-import org.glassfish.tools.ide.data.GlassFishServer;
-import org.glassfish.tools.ide.data.GlassFishStatusTask;
+import org.glassfish.tools.ide.GlassFishStatusListener;
 
 /**
- * Notification about server state check results.
- * <p/>
- * Handles initial period of time after adding new server into status
- * monitoring.
- * <p/>
- * Should receive all state change events except <code>UNKNOWN</code>.
+ * Notification about server state check results containing common attribute
+ * and methods related to listener registration.
  * <p/>
  * @author Tomas Kraus
  */
-public class MonitoringInitStateListener extends WakeUpStateListener {
+public abstract class BasicStateListener implements GlassFishStatusListener {
+
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Informs whether this listener is registered. */
+    private boolean active;
+
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -64,8 +66,8 @@ public class MonitoringInitStateListener extends WakeUpStateListener {
     /**
      * Constructs an instance of state check results notification.
      */
-    public MonitoringInitStateListener() {
-        super();
+    public BasicStateListener() {
+        active = false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -73,19 +75,36 @@ public class MonitoringInitStateListener extends WakeUpStateListener {
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Callback to notify about current server status after every check
-     * when enabled.
+     * Get an information whether this listener is registered.
      * <p/>
-     * Wait for more checking cycles to make sure server status monitoring
-     * has settled down.
+     * @return Value of <code>true</code> when this listener is registered
+     *         or <code>false</code> otherwise.
+     */
+    public boolean isActive() {
+        return active;
+    }
+
+    /**
+     * Monitoring framework calls this method after listener was registered for
+     * at least one event set.
      * <p/>
-     * @param server GlassFish server instance being monitored.
-     * @param status Current server status.
-     * @param task   Last GlassFish server status check task details.
+     * May be called multiple times for individual event sets during
+     * registration phase.
      */
     @Override
-    public void currentState(final GlassFishServer server,
-            final GlassFishStatus status, final GlassFishStatusTask task) {
-        // Not used yet.
+    public void added() {
+        active = true;
     }
+
+    /**
+     * Monitoring framework calls this method after listener was unregistered.
+     * <p/>
+     * Will be called once during listener removal phase when was found
+     * registered for at least one event set.
+     */
+    @Override
+    public void removed() {
+        active = false;
+    }
+
 }

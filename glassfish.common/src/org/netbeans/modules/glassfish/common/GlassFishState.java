@@ -139,15 +139,16 @@ public class GlassFishState {
         if (status == null) {
             MonitoringInitStateListener listener
                     = new MonitoringInitStateListener();
-            added = GlassFishStatus.add(instance, listener, true,
-                    GlassFishStatus.ONLINE, GlassFishStatus.SHUTDOWN,
-                    GlassFishStatus.STARTUP);
+            // All state change events except UNKNOWN.
+            added = GlassFishStatus.add(instance, listener, false,
+                    GlassFishStatus.OFFLINE, GlassFishStatus.STARTUP,
+                    GlassFishStatus.ONLINE, GlassFishStatus.SHUTDOWN);
             if (added) {
-                if (instance.getVersion() != null
-                        && instance.getVersion().ordinal()
-                        >= GlassFishVersion.GF_4.ordinal()) {
+                if (instance.getVersion() != null) {
                    AuthFailureStateListener authListener
-                           =  new AuthFailureStateListener();
+                           =  new AuthFailureStateListener(
+                           instance.getVersion().ordinal()
+                           >= GlassFishVersion.GF_4.ordinal());
                    GlassFishStatus.addChangeListener(
                            instance, authListener, GlassFishStatus.STARTUP);
                     GlassFishStatus.addErrorListener(instance, authListener);
@@ -177,6 +178,37 @@ public class GlassFishState {
     }
 
     /**
+     * Wait for status monitoring to resolve <code>UNKNOWN</code> state.
+     * <p/>
+     * Status monitoring listener will be removed when finished.
+     * <p/>
+     * @param instance GlassFish server instance.
+     * @param listener Already active status monitoring listener waiting
+     *                 for leaving <code>UNKNOWN</code> state.
+     */
+    private static void waitForKnownState(final GlassFishServer instance,
+            final MonitoringInitStateListener listener) {
+        try {
+            long startTime = System.currentTimeMillis();
+            long waitTime = INIT_MONITORING_TIMEOUT;
+            synchronized (listener) {
+                // Guard against spurious wakeup.
+                while (!listener.isWakeUp() && waitTime > 0) {
+                    listener.wait(waitTime);
+                    waitTime = INIT_MONITORING_TIMEOUT
+                            + startTime - System.currentTimeMillis();
+                }
+            }
+        } catch (InterruptedException ie) {
+            LOGGER.log(Level.FINE,
+                    "Interrupted while waiting on server monitoring");
+        } finally {
+            GlassFishStatus.removeListener(instance, listener);
+        }
+
+    }
+
+    /**
      * Retrieve GlassFish server status object from status monitoring.
      * <p/>
      * @param instance GlassFish server instance.
@@ -186,15 +218,23 @@ public class GlassFishState {
      */
     public static GlassFishServerStatus getStatus(
             final GlassFishServer instance) {
-        GlassFishServerStatus status = GlassFishStatus.get(instance);
+        MonitoringInitStateListener listener
+                = new MonitoringInitStateListener();
+        GlassFishServerStatus status = GlassFishStatus.get(instance, listener);
         if (status == null) {
             monitor(instance);
             status = GlassFishStatus.get(instance);
-        }
-        if (status == null) {
-            throw new IllegalStateException(NbBundle.getMessage(
-                    GlassFishState.class,
-                    "GlassFishState.getStatus.statusNull"));
+            if (status == null) {
+                throw new IllegalStateException(NbBundle.getMessage(
+                        GlassFishState.class,
+                        "GlassFishState.getStatus.statusNull"));
+            }
+        } else {
+            // Handle status monitoring restart and wait until UNKNOWN
+            // state is left.
+//            if (listener.isActive()) {
+//                waitForKnownState(instance, listener);
+//            }
         }
         return status;
     }
