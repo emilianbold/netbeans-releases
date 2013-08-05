@@ -42,6 +42,13 @@ enterprise/modules/ext/struts/antlr-2.7.2.jar                         Apache-2.0
 enterprise/modules/ext/struts/bsf-2.3.0.jar                           Apache-2.0
 enterprise/modules/ext/struts/commons-beanutils-1.8.0.jar             Apache-2.0
 enterprise/modules/ext/struts/commons-chain-1.2.jar                   Apache-2.0
+enterprise/modules/ext/struts/commons-digester-1.8.jar                Apache-2.0
+enterprise/modules/ext/struts/commons-fileupload-1.1.1.jar            Apache-2.0
+enterprise/modules/ext/struts/commons-io-1.1.jar                      Apache-2.0
+enterprise/modules/ext/struts/commons-logging-1.0.4.jar               Apache-2.0
+enterprise/modules/ext/struts/commons-validator-1.3.1.jar             Apache-2.0
+enterprise/modules/ext/struts/jstl-1.0.2.jar                          Apache-2.0
+enterprise/modules/ext/struts/oro-2.0.8.jar                           Apache-2.0
 enterprise/modules/ext/struts/standard-1.0.6.jar                      Apache-2.0
 enterprise/modules/ext/struts/struts-core-1.3.10.jar                  Apache-2.0
 enterprise/modules/ext/struts/struts-el-1.3.10.jar                    Apache-2.0
@@ -51,13 +58,6 @@ enterprise/modules/ext/struts/struts-mailreader-dao-1.3.10.jar        Apache-2.0
 enterprise/modules/ext/struts/struts-scripting-1.3.10.jar             Apache-2.0
 enterprise/modules/ext/struts/struts-taglib-1.3.10.jar                Apache-2.0
 enterprise/modules/ext/struts/struts-tiles-1.3.10.jar                 Apache-2.0
-enterprise/modules/ext/struts/commons-digester-1.8.jar                Apache-2.0
-enterprise/modules/ext/struts/commons-fileupload-1.1.1.jar            Apache-2.0
-enterprise/modules/ext/struts/commons-io-1.1.jar                      Apache-2.0
-enterprise/modules/ext/struts/commons-logging-1.0.4.jar               Apache-2.0
-enterprise/modules/ext/struts/commons-validator-1.3.1.jar             Apache-2.0
-enterprise/modules/ext/struts/jstl-1.0.2.jar                          Apache-2.0
-enterprise/modules/ext/struts/oro-2.0.8.jar                           Apache-2.0
 extide/ant/bin                                                        Apache-2.0
 extide/ant/etc                                                        Apache-2.0 (see also extide/ant/etc/ant-bootstrap.jar:/META-INF/LICENSE.txt)
 extide/ant/lib                                                        Apache-2.0 (see also extide/ant/lib/ant.jar:/META-INF/LICENSE.txt)
@@ -66,22 +66,17 @@ harness/antlib/bindex-2.2.jar                                         Apache-2.0
 ide/docs/css21-spec.zip                                               W3C (the original at http://www.w3.org/TR/CSS21/)
 ide/docs/css3-spec.zip                                                W3C (the original at http://www.w3.org/Style/CSS/current-work)
 ide/docs/html-4.01.zip                                                W3C (the original at http://www.w3.org/TR/1999/REC-html401-19991224/)
-ide/jsstubs/corestubs.zip                                             BSD-ecmascript
-ide/jsstubs/domstubs.zip                                              W3C (the original at http://www.w3.org/TR/#tr_DOM)
 ide/docs/html5doc.zip                                                 HTML5DOC
 ide/docs/jquery-api.xml                                               MIT-jquery
+ide/jsstubs/corestubs.zip                                             BSD-ecmascript
+ide/jsstubs/domstubs.zip                                              W3C (the original at http://www.w3.org/TR/#tr_DOM)
+ide/modules/com-jcraft-jsch.jar                                       BSD-jsch
+ide/modules/com-jcraft-jzlib.jar                                      BSD-jzlib
 ide/modules/dict/ispell-enwl-3.1.20.zip                               BSD-ispell-enwl
 ide/modules/ext/antlr-runtime-3.4.jar                                 BSD-antlr-runtime
-ide/modules/org-apache-commons-codec.jar                              Apache-2.0
 ide/modules/ext/asm-all-4.0.jar                                       BSD-ASM40
 ide/modules/ext/bytelist-0.1.jar                                      LGPL-2.1
-ide/modules/org-apache-commons-httpclient.jar                         Apache-2.0
-ide/modules/org-apache-commons-io.jar                                 Apache-2.0
-ide/modules/org-apache-commons-lang.jar                               Apache-2.0
-ide/modules/org-apache-commons-logging.jar                            Apache-2.0
 ide/modules/ext/commons-net-3.3.jar                                   Apache-2.0
-ide/modules/org-apache-ws-commons-util.jar                            Apache-2.0
-ide/modules/org-apache-xmlrpc.jar                                     Apache-2.0
 ide/modules/ext/freemarker-2.3.19.jar                                 freemarker
 ide/modules/ext/html5-datatypes.jar                                   MIT-html5-datatypes
 ide/modules/ext/html5-parser.jar                                      MIT-html5-parser
@@ -98,38 +93,12 @@ ide/modules/ext/jsch-agentproxy-pageant.jar                           BSD-jsch-a
 ide/modules/ext/jsch-agentproxy-sshagent.jar                          BSD-jsch-agent-proxy
 ide/modules/ext/jsch-agentproxy-usocket-jna.jar                       BSD-jsch-agent-proxy
 ide/modules/ext/jsch-agentproxy-usocket-nc.jar                        BSD-jsch-agent-proxy
-ide/modules/com-jcraft-jsch.jar                                       BSD-jsch
-ide/modules/com-jcraft-jzlib.jar                                      BSD-jzlib
 ide/modules/ext/json-simple-1.1.1.jar                                 Apache-2.0
 ide/modules/ext/jvyamlb-0.2.3.jar                                     MIT-jvyamlb
 ide/modules/ext/libpam4j-1.1.jar                                      MIT
 ide/modules/ext/log4j-1.2.15.jar                                      Apache-2.0
 ide/modules/ext/lucene-core-3.5.0.jar                                 Apache-2.0
 ide/modules/ext/non-schema.jar                                        MIT-non-schema
-ide/modules/org-eclipse-core-contenttype.jar                          EPL-v10
-ide/modules/org-eclipse-core-jobs.jar                                 EPL-v10
-ide/modules/org-eclipse-core-net.jar                                  EPL-v10
-ide/modules/org-eclipse-core-runtime.jar                              EPL-v10
-ide/modules/org-eclipse-core-runtime-compatibility-auth.jar           EPL-v10-compatibility-auth
-ide/modules/org-eclipse-equinox-app.jar                               EPL-v10-equinox-app
-ide/modules/org-eclipse-equinox-common.jar                            EPL-v10
-ide/modules/org-eclipse-equinox-preferences.jar                       EPL-v10-equinox-preferences
-ide/modules/org-eclipse-equinox-registry.jar                          EPL-v10-equinox-registry
-ide/modules/org-eclipse-equinox-security.jar                          EPL-v10
-ide/modules/org-eclipse-mylyn-bugzilla-core.jar                       EPL-v10
-ide/modules/org-eclipse-mylyn-commons-core.jar                        EPL-v10
-ide/modules/org-eclipse-mylyn-commons-net.jar                         EPL-v10
-ide/modules/org-eclipse-mylyn-commons-xmlrpc.jar                      EPL-v10
-ide/modules/org-eclipse-mylyn-commons-repositories-core.jar           EPL-v10
-ide/modules/org-eclipse-mylyn-tasks-core.jar                          EPL-v10
-ide/modules/org-eclipse-mylyn-wikitext-confluence-core.jar            EPL-v10
-ide/modules/org-eclipse-mylyn-wikitext-core.jar                       EPL-v10 (see also about.html inside this JAR file)
-ide/modules/org-eclipse-mylyn-wikitext-textile-core.jar               EPL-v10
-ide/modules/org-eclipse-jgit.jar                                      EDL-v10-jgit
-ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/XMLSchema.xsd  W3C (the original at http://www.w3.org/2001/XMLSchema.xsd)
-ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/XMLSchema-instance.xsd  W3C (the original at http://www.w3.org/2001/XMLSchema-instance)
-ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/schema-for-xslt20.xsd  W3C (the original at http://www.w3.org/2007/schema-for-xslt20.xsd)
-ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/xml.xsd  W3C (the original at http://www.w3.org/2001/xml.xsd)
 ide/modules/ext/postgresql-9.2-1002.jdbc4.jar                         BSD-postgresql
 ide/modules/ext/processtreekiller-1.0.1.jar                           MIT
 ide/modules/ext/resolver-1.2.jar                                      Apache-2.0
@@ -149,12 +118,43 @@ ide/modules/ext/validator.jar                                         MIT-valida
 ide/modules/ext/webserver.jar                                         Apache-1.1
 ide/modules/ext/winp-1.14-patched.jar                                 MIT
 ide/modules/ext/xerces-2.8.0.jar                                      Apache-2.0
+ide/modules/org-apache-commons-codec.jar                              Apache-2.0
+ide/modules/org-apache-commons-httpclient.jar                         Apache-2.0
+ide/modules/org-apache-commons-io.jar                                 Apache-2.0
+ide/modules/org-apache-commons-lang.jar                               Apache-2.0
+ide/modules/org-apache-commons-logging.jar                            Apache-2.0
+ide/modules/org-apache-ws-commons-util.jar                            Apache-2.0
+ide/modules/org-apache-xmlrpc.jar                                     Apache-2.0
+ide/modules/org-eclipse-core-contenttype.jar                          EPL-v10
+ide/modules/org-eclipse-core-jobs.jar                                 EPL-v10
+ide/modules/org-eclipse-core-net.jar                                  EPL-v10
+ide/modules/org-eclipse-core-runtime-compatibility-auth.jar           EPL-v10-compatibility-auth
+ide/modules/org-eclipse-core-runtime.jar                              EPL-v10
+ide/modules/org-eclipse-equinox-app.jar                               EPL-v10-equinox-app
+ide/modules/org-eclipse-equinox-common.jar                            EPL-v10
+ide/modules/org-eclipse-equinox-preferences.jar                       EPL-v10-equinox-preferences
+ide/modules/org-eclipse-equinox-registry.jar                          EPL-v10-equinox-registry
+ide/modules/org-eclipse-equinox-security.jar                          EPL-v10
+ide/modules/org-eclipse-jgit.jar                                      EDL-v10-jgit
+ide/modules/org-eclipse-mylyn-bugzilla-core.jar                       EPL-v10
+ide/modules/org-eclipse-mylyn-commons-core.jar                        EPL-v10
+ide/modules/org-eclipse-mylyn-commons-net.jar                         EPL-v10
+ide/modules/org-eclipse-mylyn-commons-repositories-core.jar           EPL-v10
+ide/modules/org-eclipse-mylyn-commons-xmlrpc.jar                      EPL-v10
+ide/modules/org-eclipse-mylyn-tasks-core.jar                          EPL-v10
+ide/modules/org-eclipse-mylyn-wikitext-confluence-core.jar            EPL-v10
+ide/modules/org-eclipse-mylyn-wikitext-core.jar                       EPL-v10 (see also about.html inside this JAR file)
+ide/modules/org-eclipse-mylyn-wikitext-textile-core.jar               EPL-v10
+ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/schema-for-xslt20.xsd  W3C (the original at http://www.w3.org/2007/schema-for-xslt20.xsd)
+ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/XMLSchema-instance.xsd  W3C (the original at http://www.w3.org/2001/XMLSchema-instance)
+ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/XMLSchema.xsd  W3C (the original at http://www.w3.org/2001/XMLSchema.xsd)
+ide/modules/org-netbeans-modules-xml-catalog.jar!org/netbeans/modules/xml/catalog/resources/xml.xsd  W3C (the original at http://www.w3.org/2001/xml.xsd)
 javacard/JCDK3.0.2_ConnectedEdition/lib/ant-contrib-1.0b3.jar         Apache-2.0
 javacard/JCDK3.0.2_ConnectedEdition/lib/commons-codec-1.3.jar         Apache-2.0
 javacard/JCDK3.0.2_ConnectedEdition/lib/commons-httpclient-3.0.jar    Apache-2.0
 javacard/JCDK3.0.2_ConnectedEdition/lib/commons-logging-1.1.jar       Apache-2.0
-java/maven                                                            Apache-2.0 (see also java/maven/NOTICE.txt)
 java/docs/beansbinding-1.2.1-doc.zip                                  LGPL-2.1
+java/maven                                                            Apache-2.0 (see also java/maven/NOTICE.txt)
 java/modules/ext/beansbinding-1.2.1.jar                               LGPL-2.1
 java/modules/ext/cglib-2.2.jar                                        Apache-2.0
 java/modules/ext/eclipselink/eclipselink.jar                          EPL-v10 (see also about.html inside this JAR file)
@@ -162,8 +162,8 @@ java/modules/ext/eclipselink/javax.persistence_2.1.0.v201304241213.jar  EPL-v10 
 java/modules/ext/eclipselink/org.eclipse.persistence.jpa.jpql_2.5.0.v20130507-3faac2b.jar  EPL-v10 (see also about.html inside this JAR file)
 java/modules/ext/eclipselink/org.eclipse.persistence.jpa.modelgen_2.5.0.v20130507-3faac2b.jar  EPL-v10 (see also about.html inside this JAR file)
 java/modules/ext/hibernate                                            LGPL-2.1, incl. BSD, Apache-2.0 (see also Hibernate 3.2.5 at http://hibernate.org)
-java/modules/ext/jaxws22/woodstox-core-asl.jar                        Apache-2.0
 java/modules/ext/jaxws22/stax2-api.jar                                BSD-woodstox
+java/modules/ext/jaxws22/woodstox-core-asl.jar                        Apache-2.0
 java/modules/ext/maven/indexer-artifact-5.1.1.jar                     Apache-2.0
 java/modules/ext/maven/indexer-core-5.1.1.jar                         Apache-2.0
 java/modules/ext/maven/jdom-1.0.jar                                   Apache-JDOM
@@ -207,7 +207,6 @@ php/phpstubs/phpruntime                                               PHP-LICENS
 platform/docs/swing-layout-1.0.4-doc.zip                              LGPL-2.1
 platform/docs/swing-layout-1.0.4-src.zip                              LGPL-2.1
 platform/docs/testng-6.8.1-javadoc.zip                                Apache-2.0
-platform/modules/ext/testng-6.8.1-dist.jar                            Apache-2.0
 platform/modules/ext/felix-4.0.2.jar                                  Apache-2.0
 platform/modules/ext/jna-3.4.0.jar                                    LGPL-2.1
 platform/modules/ext/nsProxyAutoConfig.js                             LGPL-2.1
@@ -216,12 +215,13 @@ platform/modules/ext/osgi.cmpn-4.2.jar                                Apache-2.0
 platform/modules/ext/osgi.core-5.0.0.jar                              Apache-2.0
 platform/modules/ext/platform-3.4.0.jar                               LGPL-2.1
 platform/modules/ext/swing-layout-1.0.4.jar                           LGPL-2.1
+platform/modules/ext/testng-6.8.1-dist.jar                            Apache-2.0
 webcommon/bin/ios-sim                                                 MIT-sim
 webcommon/bin/libimobiledevice.4.dylib                                LGPL-2.1
 webcommon/bin/libplist.1.dylib                                        LGPL-2.1
 webcommon/bin/libusbmuxd.2.dylib                                      LGPL-2.1
-webcommon/modules/ext/dd-plist.jar                                    MIT-plist
 webcommon/modules/ext/cdnjs.zip                                       MIT-cdnjs
+webcommon/modules/ext/dd-plist.jar                                    MIT-plist
 
 
 ===
