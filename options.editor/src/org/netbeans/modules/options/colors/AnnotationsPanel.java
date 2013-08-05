@@ -105,8 +105,8 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         cbForeground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Foreground_Chooser"));
         cbBackground.getAccessibleContext ().setAccessibleName (loc ("AN_Background_Chooser"));
         cbBackground.getAccessibleContext ().setAccessibleDescription (loc ("AD_Background_Chooser"));
-        cbWaveUnderlined.getAccessibleContext ().setAccessibleName (loc ("AN_Wave_Underlined"));
-        cbWaveUnderlined.getAccessibleContext ().setAccessibleDescription (loc ("AD_Wave_Underlined"));
+        cbEffectColor.getAccessibleContext ().setAccessibleName (loc ("AN_Wave_Underlined"));
+        cbEffectColor.getAccessibleContext ().setAccessibleDescription (loc ("AD_Wave_Underlined"));
         lCategories.getAccessibleContext ().setAccessibleName (loc ("AN_Categories"));
         lCategories.getAccessibleContext ().setAccessibleDescription (loc ("AD_Categories"));
         lCategories.setSelectionMode (ListSelectionModel.SINGLE_SELECTION);
@@ -120,13 +120,19 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
 	lCategories.setCellRenderer (new CategoryRenderer ());
         cbForeground.addItemListener(this);
         cbBackground.addItemListener(this);
-        cbWaveUnderlined.addItemListener(this);
+        cbEffectColor.addItemListener(this);
         
         lCategory.setLabelFor (lCategories);
         loc(lCategory, "CTL_Category");
         loc(lForeground, "CTL_Foreground_label");
         loc(lWaveUnderlined, "CTL_Wave_underlined_label");
         loc(lbackground, "CTL_Background_label");
+        
+        cbEffects.addItem (loc ("CTL_Effects_None"));
+        cbEffects.addItem (loc ("CTL_Effects_Wave_Underlined"));
+        cbEffects.getAccessibleContext ().setAccessibleName (loc ("AN_Effects"));
+        cbEffects.getAccessibleContext ().setAccessibleDescription (loc ("AD_Effects"));
+        cbEffects.addActionListener (this);
     }
     
     /** This method is called from within the constructor to
@@ -145,7 +151,9 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         lWaveUnderlined = new javax.swing.JLabel();
         cbForeground = new ColorComboBox();
         cbBackground = new ColorComboBox();
-        cbWaveUnderlined = new ColorComboBox();
+        cbEffectColor = new ColorComboBox();
+        lEffects = new javax.swing.JLabel();
+        cbEffects = new javax.swing.JComboBox();
 
         lCategory.setText(org.openide.util.NbBundle.getMessage(AnnotationsPanel.class, "CTL_Category")); // NOI18N
 
@@ -157,6 +165,9 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
 
         lWaveUnderlined.setText(org.openide.util.NbBundle.getMessage(AnnotationsPanel.class, "CTL_Wave_underlined_label")); // NOI18N
 
+        lEffects.setLabelFor(cbEffects);
+        lEffects.setText(org.openide.util.NbBundle.getMessage(AnnotationsPanel.class, "CTL_Effects_label")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -165,17 +176,19 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                        .addComponent(cpCategories, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                        .addComponent(cpCategories, javax.swing.GroupLayout.DEFAULT_SIZE, 152, Short.MAX_VALUE)
                         .addGap(20, 20, 20)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(lbackground)
-                            .addComponent(lWaveUnderlined)
-                            .addComponent(lForeground))
+                            .addComponent(lForeground)
+                            .addComponent(lEffects)
+                            .addComponent(lWaveUnderlined))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addComponent(cbForeground, 0, 67, Short.MAX_VALUE)
-                            .addComponent(cbBackground, 0, 67, Short.MAX_VALUE)
-                            .addComponent(cbWaveUnderlined, 0, 67, Short.MAX_VALUE)))
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(cbEffectColor, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cbForeground, javax.swing.GroupLayout.Alignment.TRAILING, 0, 122, Short.MAX_VALUE)
+                            .addComponent(cbBackground, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(cbEffects, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                     .addComponent(lCategory))
                 .addContainerGap())
         );
@@ -194,23 +207,32 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(lbackground)
                             .addComponent(cbBackground, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGap(7, 7, 7)
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(lEffects)
+                            .addComponent(cbEffects, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(10, 10, 10)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(lWaveUnderlined)
-                            .addComponent(cbWaveUnderlined, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                            .addComponent(cbEffectColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(cpCategories, javax.swing.GroupLayout.DEFAULT_SIZE, 258, Short.MAX_VALUE))
                 .addContainerGap())
         );
+
+        lEffects.getAccessibleContext().setAccessibleName("&Effect:");
     }// </editor-fold>//GEN-END:initComponents
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JComboBox cbBackground;
+    private javax.swing.JComboBox cbEffectColor;
+    private javax.swing.JComboBox cbEffects;
     private javax.swing.JComboBox cbForeground;
-    private javax.swing.JComboBox cbWaveUnderlined;
     private javax.swing.JScrollPane cpCategories;
     private javax.swing.JList<AttributeSet> lCategories;
     private javax.swing.JLabel lCategory;
+    private javax.swing.JLabel lEffects;
     private javax.swing.JLabel lForeground;
     private javax.swing.JLabel lWaveUnderlined;
     private javax.swing.JLabel lbackground;
@@ -219,6 +241,12 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
  
     public void actionPerformed (ActionEvent evt) {
         if (!listen) return;
+        if (evt.getSource () == cbEffects) {
+            if (cbEffects.getSelectedIndex () == 0)
+                cbEffectColor.setSelectedItem( null );
+	    cbEffectColor.setEnabled (cbEffects.getSelectedIndex () > 0);
+            updateData ();
+	}
         updateData ();
         changed = true;
     }
@@ -323,9 +351,11 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
             c.removeAttribute(StyleConstants.Foreground);
         }
         
-        color = ColorComboBoxSupport.getSelectedColor( (ColorComboBox)cbWaveUnderlined );
-        if (color != null) {
-            c.addAttribute(EditorStyleConstants.WaveUnderlineColor, color);
+        Color wave = null;
+        if (cbEffects.getSelectedIndex () == 1)
+             wave = ColorComboBoxSupport.getSelectedColor( (ColorComboBox)cbEffectColor );
+        if (wave != null) {
+            c.addAttribute(EditorStyleConstants.WaveUnderlineColor, wave);
         } else {
             c.removeAttribute(EditorStyleConstants.WaveUnderlineColor);
         }
@@ -340,12 +370,12 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
 	    // no category selected
             cbForeground.setEnabled (false);
             cbBackground.setEnabled (false);
-            cbWaveUnderlined.setEnabled (false);
+            cbEffectColor.setEnabled (false);
             return;
         }
         cbForeground.setEnabled (true);
         cbBackground.setEnabled (true);
-        cbWaveUnderlined.setEnabled (true);
+        cbEffectColor.setEnabled (true);
         
         listen = false;
         
@@ -370,7 +400,15 @@ public class AnnotationsPanel extends JPanel implements ActionListener,
         AttributeSet c = annotations.get (index);
         ColorComboBoxSupport.setSelectedColor( (ColorComboBox)cbForeground, (Color) c.getAttribute (StyleConstants.Foreground));
         ColorComboBoxSupport.setSelectedColor( (ColorComboBox)cbBackground, (Color) c.getAttribute (StyleConstants.Background));
-        ((ColorComboBox)cbWaveUnderlined).setSelectedColor((Color) c.getAttribute (EditorStyleConstants.WaveUnderlineColor));
+        if (c.getAttribute(EditorStyleConstants.WaveUnderlineColor) != null) {
+            cbEffects.setSelectedIndex(1);
+            cbEffectColor.setEnabled(true);
+            ((ColorComboBox)cbEffectColor).setSelectedColor((Color) c.getAttribute (EditorStyleConstants.WaveUnderlineColor));
+        } else {
+            cbEffects.setSelectedIndex(0);
+            cbEffectColor.setEnabled(false);
+            cbEffectColor.setSelectedIndex(-1);
+        } 
         listen = true;
     }
     
