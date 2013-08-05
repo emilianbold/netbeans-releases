@@ -475,6 +475,7 @@ VARIABLE   $http_response_header                      PHP Platform
 VARIABLE   $php_errormsg                              PHP Platform
 CONSTANT   CNST1 1                         [PUBLIC]   First
 CONSTANT   CNST2 2                         [PUBLIC]   Second
+CONSTANT   SOME_CONSTANT "YES"             [PUBLIC]   Marwel\System
 CONSTANT   aaa 1                           [PUBLIC]   issue137033.php
 CONSTANT   myFirstVar "value"              [PUBLIC]   tests230052.php
 CONSTANT   mySecondVar "value"             [PUBLIC]   tests230052.php
