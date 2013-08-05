@@ -126,6 +126,8 @@ public class CreateLicenseSummary extends Task {
 
                 Set<String> licenseNames = new TreeSet<String>();
                 pw.printf("%-60s %s\n", "THIRD-PARTY COMPONENT FILE", "LICENSE");
+                pw.printf("%-60s %s\n", "(path in the installation)", "(see license text reproduced below)");
+                pw.println("--------------------------------------------------------------------------------");
                 for (Map.Entry<String,Map<String,String>> entry : binaries2LicenseHeaders.entrySet()) {
                     String binary = entry.getKey();
                     Map<String,String> headers = entry.getValue();

@@ -44,6 +44,7 @@ package org.netbeans.modules.git.ui.push;
 import java.text.MessageFormat;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitTag;
+import org.netbeans.modules.git.options.AnnotationColorProvider;
 import org.netbeans.modules.git.ui.selectors.ItemSelector;
 import org.netbeans.modules.git.ui.selectors.ItemSelector.Item;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -62,6 +63,10 @@ public abstract class PushMapping extends ItemSelector.Item {
     private static final String BRANCH_MAPPING_LABEL_UPTODATE = "{0} -> {1}"; //NOI18N
     private final String localName;
     private final String remoteName;
+    private static final String COLOR_NEW = GitUtils.getColorString(AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor());
+    private static final String COLOR_MODIFIED = GitUtils.getColorString(AnnotationColorProvider.getInstance().MODIFIED_FILE.getActualColor());
+    private static final String COLOR_REMOVED = GitUtils.getColorString(AnnotationColorProvider.getInstance().REMOVED_FILE.getActualColor());
+    private static final String COLOR_CONFLICT = GitUtils.getColorString(AnnotationColorProvider.getInstance().CONFLICT_FILE.getActualColor());
     
     protected PushMapping (String localName, String localId, String remoteName, String remoteId, boolean conflict, boolean preselected) {
         super(preselected);
@@ -69,7 +74,7 @@ public abstract class PushMapping extends ItemSelector.Item {
         this.remoteName = remoteName == null ? localName : remoteName;
         if (localName == null) {
             // to remove
-            label = MessageFormat.format(BRANCH_DELETE_MAPPING_LABEL, remoteName, "<font color=\"#999999\">R</font>"); //NOI18N
+            label = MessageFormat.format(BRANCH_DELETE_MAPPING_LABEL, remoteName, "<font color=\"" + COLOR_REMOVED + "\">R</font>"); //NOI18N
             tooltip = NbBundle.getMessage(
                     PushBranchesStep.class,
                     "LBL_PushBranchMapping.description", //NOI18N
@@ -79,7 +84,7 @@ public abstract class PushMapping extends ItemSelector.Item {
                     }); //NOI18N
         } else if (remoteName == null) {
             // added
-            label = MessageFormat.format(BRANCH_MAPPING_LABEL, localName, localName, "<font color=\"#00b400\">A</font>");
+            label = MessageFormat.format(BRANCH_MAPPING_LABEL, localName, localName, "<font color=\"" + COLOR_NEW + "\">A</font>"); //NOI18N
             tooltip = NbBundle.getMessage(
                     PushBranchesStep.class,
                     "LBL_PushBranchMapping.description", //NOI18N
@@ -95,7 +100,7 @@ public abstract class PushMapping extends ItemSelector.Item {
                     remoteName);
         } else if (conflict) {
             // modified
-            label = MessageFormat.format(BRANCH_MAPPING_LABEL, localName, remoteName, "<font color=\"#FF0000\">C</font>"); //NOI18N                 
+            label = MessageFormat.format(BRANCH_MAPPING_LABEL, localName, remoteName, "<font color=\"" + COLOR_CONFLICT + "\">C</font>"); //NOI18N
             tooltip = NbBundle.getMessage(
                     PushBranchesStep.class,
                     "LBL_PushBranchMapping.Mode.conflict.description", //NOI18N
@@ -104,7 +109,7 @@ public abstract class PushMapping extends ItemSelector.Item {
                     });
         } else {
             // modified
-            label = MessageFormat.format(BRANCH_MAPPING_LABEL, localName, remoteName, "<font color=\"#0000FF\">U</font>"); //NOI18N                 
+            label = MessageFormat.format(BRANCH_MAPPING_LABEL, localName, remoteName, "<font color=\"" + COLOR_MODIFIED + "\">U</font>"); //NOI18N
             tooltip = NbBundle.getMessage(
                     PushBranchesStep.class,
                     "LBL_PushBranchMapping.description", //NOI18N
