@@ -892,7 +892,13 @@ public final class ModuleManager extends Modules {
     private void subCreate(Module m) throws DuplicateException {
         Module old = get(m.getCodeNameBase());
         if (old != null) {
-            throw new DuplicateException(old, m);
+            if (!Boolean.getBoolean("netbeans.ignore.dupmodule")) {
+                throw new DuplicateException(old, m);
+            } else {
+                // ignore duplicate module, log and gracefuly exit
+                Util.err.warning("Duplicate loading ignored: " + old + " and " + m);
+                return;
+        }
         }
         modules.add(m);
         modulesByName.put(m.getCodeNameBase(), m);

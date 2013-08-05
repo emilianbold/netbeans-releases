@@ -41,11 +41,9 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages;
 
-
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.actions.*;
@@ -55,6 +53,7 @@ import org.netbeans.performance.languages.actions.*;
  * @author mkhramov@netbeans.org, mrkam@netbeans.org
  */
 public class ScriptingMeasureActionsTest1 {
+
     public static NbTestSuite suite() {
         PerformanceTestCase.prepareForMeasurements();
 
@@ -62,10 +61,9 @@ public class ScriptingMeasureActionsTest1 {
         System.setProperty("suitename", ScriptingMeasureActionsTest1.class.getCanonicalName());
         System.setProperty("suite", "UI Responsiveness Scripting Actions suite");
 
-
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration()
+        suite.addTest(JellyTestCase.emptyConfiguration().reuseUserDir(true)
                 .addTest(SavingPHPProjectPropertiesTest.class)
-//needs to be fixed     .addTest(CreateScriptingPackFilesTest.class)
+                //needs to be fixed     .addTest(CreateScriptingPackFilesTest.class)
                 .addTest(ScriptingExpandFolderTest.class)
                 .addTest(PHPNavigatorTest.class)
                 .addTest(GoToSourceTest.class)
@@ -73,8 +71,7 @@ public class ScriptingMeasureActionsTest1 {
                 .addTest(FormatFileTest.class)
                 .addTest(CloseProjectTest.class)
                 .addTest(CloseScriptingFilesTest.class)
-                .enableModules(".*").clusters(".*").reuseUserDir(true)));
-
-        return suite;        
+                .suite());
+        return suite;
     }
 }

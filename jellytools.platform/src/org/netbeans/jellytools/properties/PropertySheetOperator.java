@@ -304,7 +304,7 @@ public class PropertySheetOperator extends TopComponentOperator {
         } 
         // close window where property sheet is hosted but not main window
         if(getWindow() != MainWindowOperator.getDefault().getSource()) {
-            new WindowOperator(getWindow()).close();
+            new WindowOperator(getWindow()).requestClose();
         }
     }
     
