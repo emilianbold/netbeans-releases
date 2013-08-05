@@ -59,6 +59,8 @@ import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -73,6 +75,8 @@ import org.openide.util.HelpCtx;
 @NbBundle.Messages({
     "CTL_MenuItem_PullOther=Pu&ll..."
 })
+@ActionID(id = "org.netbeans.modules.mercurial.ui.pull.PullOtherAction", category = "Mercurial")
+@ActionRegistration(lazy = false, displayName = "#CTL_MenuItem_PullOther")
 public class PullOtherAction extends ContextAction {
     
     public static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/pull-setting.png"; //NOI18N
