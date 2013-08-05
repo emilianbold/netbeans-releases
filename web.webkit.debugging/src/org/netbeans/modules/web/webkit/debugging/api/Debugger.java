@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
+import org.json.simple.parser.ParseException;
 import org.netbeans.modules.web.webkit.debugging.APIFactory;
 import org.netbeans.modules.web.webkit.debugging.LiveHTML;
 import org.netbeans.modules.web.webkit.debugging.TransportHelper;
@@ -362,7 +363,7 @@ public final class Debugger {
     }*/
     
     @SuppressWarnings("unchecked")    
-    public Breakpoint addLineBreakpoint(String url, int lineNumber, int columnNumber) {
+    public Breakpoint addLineBreakpoint(String url, int lineNumber, int columnNumber) throws BreakpointException {
         if (inLiveHTMLMode) {
             // ignore line breakpoints when in Live HTML mode
             return null;
@@ -375,7 +376,14 @@ public final class Debugger {
         if (resp != null) {
             if (resp.getException() != null) {
                 // transport is broken
-                return null;
+                String message;
+                Object error = resp.getResponse().get("error");
+                if (error instanceof String) {
+                    message = parseError((String) error);
+                } else {
+                    message = resp.getException().getLocalizedMessage();
+                }
+                throw new BreakpointException(message);
             }
             JSONObject result = (JSONObject) resp.getResponse().get("result");
             if (result != null) {
@@ -527,6 +535,23 @@ public final class Debugger {
             LiveHTML.getDefault().storeDocumentVersionAfterChange(transport.getConnectionURL(), 
                     timeStamp, content);
         }
+    }
+    
+    // Parse error response like:
+    // {"message":"{\"code\":-32000,\"message\":\"Breakpoint at specified location already exists.\"}"}
+    private static String parseError(String error) {
+        try {
+            Object eo = new org.json.simple.parser.JSONParser().parse(error);
+            if (eo instanceof JSONObject) {
+                error = (String) ((JSONObject) eo).get("message");
+                eo = new org.json.simple.parser.JSONParser().parse(error);
+                if (eo instanceof JSONObject) {
+                    error = (String) ((JSONObject) eo).get("message");
+                }
+            }
+        } catch (ParseException ex) {
+        }
+        return error;
     }
     
     private class Callback implements ResponseCallback {
