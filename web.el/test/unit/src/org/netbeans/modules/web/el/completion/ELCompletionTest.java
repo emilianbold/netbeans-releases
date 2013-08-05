@@ -181,4 +181,8 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/java/java_completion08.xhtml", "#{V^}", false, toCheck);
     }
 
+    public void testIssue233928() throws Exception {
+        checkCompletion("projects/testWebProject/web/completion/completion22.xhtml", "#{request.r^}", false);
+    }
+
 }
