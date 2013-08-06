@@ -42,16 +42,28 @@
 
 package org.netbeans.modules.web.el.spi;
 
+import java.util.Arrays;
+import java.util.List;
+
 /**
  *
  * @author marekfukala
  */
 public enum ImplicitObjectType {
 
+        /** Object type implicit object - i.e. facesContext */
         OBJECT_TYPE,
+        /** Map type implicit object - i.e. cookie */
         MAP_TYPE,
+        /** Scope type implicit object - i.e. flowScope */
         SCOPE_TYPE,
-        RAW
+        /** Raw implicit object - i.e. cc */
+        RAW;
 
+        /**
+         * Returns all types.
+         */
+        public static final List<ImplicitObjectType> ALL_TYPES = Arrays.asList(ImplicitObjectType.MAP_TYPE,
+            ImplicitObjectType.OBJECT_TYPE, ImplicitObjectType.RAW, ImplicitObjectType.SCOPE_TYPE);
 
 }
