@@ -49,6 +49,7 @@ import com.sun.jdi.InvocationException;
 import com.sun.jdi.Method;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.StringReference;
+import com.sun.jdi.VMMismatchException;
 import com.sun.jdi.Value;
 import com.sun.jdi.VirtualMachine;
 import java.io.PrintStream;
@@ -100,16 +101,18 @@ public class InvocationExceptionTranslated extends ApplicationException {
         this.debugger = debugger;
         VirtualMachine evm = exeption.virtualMachine();
         VirtualMachine dvm = debugger.getVirtualMachine();
-        logger.log(Level.CONFIG,
-                   invocationMessage+
-                   ", evm = "+evm+", dvm = "+dvm,                               // NOI18N
-                   new IllegalStateException("Stack Trace Info"));              // NOI18N
+        if (evm != dvm) {
+            logger.log(Level.INFO,
+                       invocationMessage+
+                       ", evm = "+evm+", dvm = "+dvm,                           // NOI18N
+                       new IllegalStateException("Stack Trace Info"));          // NOI18N
+        }
     }
     
     public void setPreferredThread(JPDAThreadImpl preferredThread) {
         this.preferredThread = preferredThread;
     }
-
+    
     @Override
     public synchronized String getMessage() {
         if (message == null) {
@@ -129,6 +132,10 @@ public class InvocationExceptionTranslated extends ApplicationException {
                         message = sr != null ? StringReferenceWrapper.value(sr) : ""; // NOI18N
                     } catch (InvalidExpressionException ex) {
                         return ex.getMessage();
+                    } catch (VMMismatchException vmMismatchEx) {
+                        throw Exceptions.attachMessage(vmMismatchEx, "DBG VM = "+debugger.getVirtualMachine()+
+                                                                   ", preferredThread VM = "+preferredThread.getThreadReference().virtualMachine()+
+                                                                   ", exeption VM = "+exeption.virtualMachine());
                     }
                 }
             } catch (InternalExceptionWrapper iex) {
@@ -147,6 +154,10 @@ public class InvocationExceptionTranslated extends ApplicationException {
         } else {
             return message;
         }
+    }
+    
+    private String printVM(VirtualMachine vm) {
+        return vm.toString() + "["+vm.name()+", "+vm.description()+", "+vm.version()+"]";
     }
 
     @Override

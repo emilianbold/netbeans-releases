@@ -56,6 +56,7 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JComponent;
 import javax.swing.JEditorPane;
 import javax.swing.JScrollPane;
+import javax.swing.SwingUtilities;
 import javax.swing.border.Border;
 import org.netbeans.api.debugger.Breakpoint.HIT_COUNT_FILTERING_STYLE;
 import org.netbeans.api.debugger.Properties;
@@ -536,6 +537,9 @@ private void cbWhenHitCountActionPerformed(java.awt.event.ActionEvent evt) {//GE
     boolean isSelected = cbWhenHitCount.isSelected();
     cbHitStyle.setEnabled(isSelected);
     tfHitCountFilter.setEnabled(isSelected);
+    if (isSelected) {
+        cbHitStyle.requestFocusInWindow();
+    }
 }//GEN-LAST:event_cbWhenHitCountActionPerformed
 
 private void conditionCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_conditionCheckBoxActionPerformed
@@ -544,6 +548,9 @@ private void conditionCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {/
     conditionComboBox.setEditor(new ConditionComboBoxEditor());
     revalidate();
     repaint();
+    if (isSelected) {
+        tfCondition.requestFocusInWindow();
+    }
 }//GEN-LAST:event_conditionCheckBoxActionPerformed
 
 private void classFilterCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_classFilterCheckBoxActionPerformed

@@ -1771,9 +1771,14 @@ public class TopComponent extends JComponent implements Externalizable, Accessib
         @Deprecated
         public void propertyChange(PropertyChangeEvent ev) {
             if (ev.getPropertyName().equals(Node.PROP_DISPLAY_NAME)) {
-                Node n = (Node) node.get();
+                final Node n = (Node) node.get();
                 if (n != null) {
-                    top.setName(n.getDisplayName());
+                    Mutex.EVENT.readAccess( new Runnable() {
+                        @Override
+                        public void run() {
+                            top.setName(n.getDisplayName());
+                        }
+                    });
                 }
             }
         }

@@ -61,13 +61,8 @@ import static org.glassfish.tools.ide.GlassFishStatus.OFFLINE;
 import static org.glassfish.tools.ide.GlassFishStatus.ONLINE;
 import static org.glassfish.tools.ide.GlassFishStatus.SHUTDOWN;
 import static org.glassfish.tools.ide.GlassFishStatus.STARTUP;
-import org.glassfish.tools.ide.GlassFishStatusListener;
 import org.glassfish.tools.ide.admin.*;
-import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishServerStatus;
-import org.glassfish.tools.ide.data.GlassFishStatusCheckResult;
-import org.glassfish.tools.ide.data.GlassFishStatusTask;
-import org.glassfish.tools.ide.data.GlassFishVersion;
 import org.glassfish.tools.ide.data.StartupArgs;
 import org.glassfish.tools.ide.data.StartupArgsEntity;
 import org.glassfish.tools.ide.data.TaskEvent;
@@ -101,186 +96,11 @@ import org.openide.util.lookup.Lookups;
 public class StartTask extends BasicTask<TaskState> {
 
     ////////////////////////////////////////////////////////////////////////////
-    // Inner classes                                                          //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Notification about server state check results.
-     * <p/>
-     * Handles initial period of time after starting server.
-     * At least port checks are being executed periodically so this class will
-     * be called back in any situation.
-     */
-    private static class StartStateListener implements GlassFishStatusListener {
-
-        /** Server is starting in profiling mode? */
-        private final boolean profile;
-
-        /** Requested wake up of checking thread. */
-        private volatile boolean wakeUp;
-
-        /** Number of verification checks passed. */
-        private short count;
-
-        /**
-         * Constructs an instance of state check results notification.
-         */
-        private StartStateListener(final boolean profile) {
-            this.profile = profile;
-            wakeUp = false;
-            count = 0;
-        }
-
-        /**
-         * Wake up checking thread.
-         */
-        private void wakeUp() {
-            if (!wakeUp) synchronized(this) {
-                wakeUp = true;
-                this.notify();
-            }
-        }
-
-        /**
-         * Get status of wake up request of checking thread.
-         * <p/>
-         * @return Status of wake up request of checking thread.
-         */
-        private boolean isWakeUp() {
-            return wakeUp;
-        }
-
-        /**
-         * Callback to notify about current server status after every check
-         * when enabled.
-         * <p/>
-         * Wake up startup thread when administrator port is active
-         * in profiling mode or when illegal state was detected.
-         * <p/>
-         * @param server GlassFish server instance being monitored.
-         * @param status Current server status.
-         * @param task   Last GlassFish server status check task details.
-         */
-        @Override
-        public void currentState(final GlassFishServer server,
-                final GlassFishStatus status, final GlassFishStatusTask task) {
-            switch(status) {
-                // Consider server as ready when administrator port is active
-                // in profiling mode.
-                case OFFLINE: case STARTUP:
-                    if (profile && task.getStatus()
-                            == GlassFishStatusCheckResult.SUCCESS) {
-                        wakeUp();
-                    }
-                    break;
-                // Interrupt waiting for illegal states.
-                case ONLINE: case SHUTDOWN:
-                    wakeUp();
-                    break;
-            }
-        }
-
-        /**
-         * Callback to notify about server status change when enabled.
-         * <p/>
-         * Listens on <code>ONLINE</code>, <code>SHUTDOWN</code>
-         * state changes where we can wake up checking startup thread 
-         * immediately.
-         * <p/>
-         * @param server GlassFish server instance being monitored.
-         * @param status Current server status.
-         * @param task   Last GlassFish server status check task details.
-         */    
-        @Override
-        public void newState(final GlassFishServer server,
-                final GlassFishStatus status, final GlassFishStatusTask task) {
-            wakeUp();
-        }
-
-        /**
-         * Callback to notify about server status check failures.
-         * <p/>
-         * @param server GlassFish server instance being monitored.
-         * @param event  Failure event.
-         * @param task   GlassFish server status check task details.
-         */
-        @Override
-        public void error(final GlassFishServer server,
-                final GlassFishStatusTask task) {
-            // Not used yet.
-        }
-
-    }
-
-    /**
-     * State change request data.
-     */
-    private static class StateChange {
-
-        /** Command execution task. */
-        private final BasicTask task;
-
-        /** New state of current command execution. */
-        private final TaskState result;
-
-        /** Event that caused  state change. */
-        private final TaskEvent event;
-
-        /** Message bundle key. */
-        private final String msgKey;
-
-        /** Message arguments. */
-        private final String[] msgArgs;
-
-        /**
-         * Constructs an instance of state change request data.
-         * <p/>
-         * @param task   Command execution task.
-         * @param result New state of current command execution.
-         * @param event  Event that caused  state change.
-         * @param msgKey Message bundle key.
-         */
-        StateChange(final BasicTask task, final TaskState result,
-                final TaskEvent event, final String msgKey) {
-            this.task = task;
-            this.result = result;
-            this.event = event;
-            this.msgKey = msgKey;
-            this.msgArgs = null;
-        }
-
-        /**
-         * Constructs an instance of state change request data.
-         * <p/>
-         * @param task    Command execution task.
-         * @param result  New state of current command execution.
-         * @param event   Event that caused  state change.
-         * @param msgKey  Message bundle key.
-         * @param msgArgs Message arguments.
-         */
-        StateChange(final BasicTask task, final TaskState result,
-                final TaskEvent event, final String msgKey,
-                final String... msgArgs) {
-            this.task = task;
-            this.result = result;
-            this.event = event;
-            this.msgKey = msgKey;
-            this.msgArgs = msgArgs;
-        }
-
-        TaskState fireOperationStateChanged() {
-            return task.fireOperationStateChanged(
-                    result, event, msgKey, msgArgs);
-        }
-    }
-
-    ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
     ////////////////////////////////////////////////////////////////////////////
 
     /** Local logger. */
-    private static final Logger LOGGER
-            = GlassFishLogger.get(StartTask.class);
+    private static final Logger LOGGER = GlassFishLogger.get(StartTask.class);
 
     private static final String MAIN_CLASS = "com.sun.enterprise.glassfish.bootstrap.ASMain"; // NOI18N
     private static RequestProcessor NODE_REFRESHER = new RequestProcessor("nodes to refresh");
@@ -695,27 +515,6 @@ public class StartTask extends BasicTask<TaskState> {
                 "MSG_SERVER_STARTED", instanceName);
     }
 
-    /**
-     * Initialize GlassFisg server startup monitoring.
-     * <p/>
-     * Creates and registers listener to monitor server status during startup.
-     * Switches server status monitoring into startup mode.
-     * <p/>
-     * @return Listener instance when server startup monitoring was successfully
-     *         initialized or  <code>null</code> when something failed.
-     */
-    private StartStateListener prepareStartMonitoring() {
-        StartStateListener listener = new StartStateListener(null != jvmArgs);
-        if (GlassFishStatus.addListener(instance, listener, true,
-                GlassFishStatus.ONLINE, GlassFishStatus.SHUTDOWN)
-                && GlassFishStatus.start(instance)) {
-            return listener;
-        } else {
-            GlassFishStatus.removeListener(instance, listener);
-            return null;
-        }
-    }
-
     private TaskState startDAS(String adminHost, int adminPort) {
         StateChange change;
         resetPassword();
@@ -748,7 +547,7 @@ public class StartTask extends BasicTask<TaskState> {
             }
             // We should be listening for reaching ONLINE state before process
             // is started.
-            listener = prepareStartMonitoring();
+            listener = prepareStartMonitoring(jvmArgs != null);
             if (listener == null) {
                 return fireOperationStateChanged(TaskState.FAILED,
                         TaskEvent.CMD_FAILED,

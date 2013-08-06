@@ -48,6 +48,7 @@ import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.model.JsArray;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsElement.Kind;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
@@ -160,6 +161,20 @@ public class IndexedElement implements JsElement {
             elementDocument.addPair(JsIndex.FIELD_PARAMETERS, codeParameters(((JsFunction)object).getParameters()), false, true);
         }
         
+        if (object instanceof JsArray) {
+            sb = new StringBuilder();
+            for(TypeUsage type : ((JsArray)object).getTypesInArray()) {
+                sb.append(type.getType());
+                sb.append(","); //NOI18N
+                sb.append(type.getOffset());
+                sb.append(","); //NOI18N
+                sb.append(type.isResolved() ? "1" : "0");  //NOI18N
+                sb.append("|");
+            }
+            elementDocument.addPair(JsIndex.FIELD_ARRAY_TYPES, sb.toString(), false, true);
+        }
+
+        
         return elementDocument;
     }
     
@@ -235,8 +250,16 @@ public class IndexedElement implements JsElement {
     }
     
     public static Collection<TypeUsage> getReturnTypes(IndexResult indexResult) {
+        return getTypes(indexResult, JsIndex.FIELD_RETURN_TYPES);
+    }
+
+    public static Collection<TypeUsage> getArrayTypes(IndexResult indexResult) {
+        return getTypes(indexResult, JsIndex.FIELD_ARRAY_TYPES);
+    }
+
+    public static Collection<TypeUsage> getTypes(IndexResult indexResult, String field) {
         Collection<TypeUsage> result = new ArrayList<TypeUsage>();
-        String text = indexResult.getValue(JsIndex.FIELD_RETURN_TYPES);
+        String text = indexResult.getValue(field);
         if (text != null) {
             for (StringTokenizer st = new StringTokenizer(text, "|"); st.hasMoreTokens();) {
                 String token = st.nextToken();
@@ -254,33 +277,6 @@ public class IndexedElement implements JsElement {
             }
         }
         return result;
-    }
-    
-    private static String codeProperty(JsObject property) {
-        StringBuilder result = new StringBuilder();
-        JsElement.Kind jsKind = property.getJSKind();
-        result.append(property.getName()).append(';');  //NOI18N
-        result.append(jsKind.getId()).append(';');  //NOI18N
-        result.append(Flag.getFlag(property)).append(';'); //NOI18N
-        for (TypeUsage type : property.getAssignments()) {
-            result.append(type.getType());
-            result.append(":"); //NOI18N
-            result.append(type.getOffset());
-            result.append("|");
-        }
-        result.append(';');
-        if (jsKind.isFunction()) {
-            result.append(codeParameters(((JsFunction)property).getParameters()));
-            result.append(";");
-            for (Iterator<? extends TypeUsage> it = ((JsFunction)property).getReturnTypes().iterator(); it.hasNext();) {
-                TypeUsage type = it.next();
-                result.append(type.getType());
-                if (it.hasNext()) {
-                    result.append(',');
-                }
-            }
-        }
-        return result.toString();
     }
     
     private static String codeParameters(Collection<? extends JsObject> params) {

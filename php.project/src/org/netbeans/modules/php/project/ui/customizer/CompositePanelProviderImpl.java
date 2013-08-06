@@ -42,13 +42,14 @@
 
 package org.netbeans.modules.php.project.ui.customizer;
 
+import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import javax.swing.JComponent;
 import javax.swing.JPanel;
 import org.netbeans.api.annotations.common.NonNull;
@@ -63,6 +64,7 @@ import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleCustomizerExtender;
+import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibraries;
 import org.netbeans.modules.web.clientproject.api.jslibs.JavaScriptLibrarySelectionPanel;
 import org.netbeans.modules.web.common.api.CssPreprocessors;
@@ -71,7 +73,6 @@ import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
-import org.openide.util.lookup.Lookups;
 
 /**
  * @author Tomas Mysik, Radek Matous
@@ -89,7 +90,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
 
     private final String name;
     private final Map<ProjectCustomizer.Category, PhpModuleCustomizerExtender> frameworkCategories;
-    private final Map<ProjectCustomizer.Category, ProjectCustomizer.CompositeCategoryProvider> testingCategories;
+    private final Map<ProjectCustomizer.Category, TestingProviderPanelProvider> testingProviderPanels;
 
     public CompositePanelProviderImpl(String name) {
         this.name = name;
@@ -100,9 +101,9 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             frameworkCategories = null;
         }
         if (TESTING.equals(name)) {
-            testingCategories = new LinkedHashMap<>();
+            testingProviderPanels = Collections.synchronizedMap(new LinkedHashMap<ProjectCustomizer.Category, TestingProviderPanelProvider>());
         } else {
-            testingCategories = null;
+            testingProviderPanels = null;
         }
     }
 
@@ -115,6 +116,11 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
     public ProjectCustomizer.Category createCategory(Lookup context) {
         ProjectCustomizer.Category toReturn = null;
         final ProjectCustomizer.Category[] categories = null;
+        PhpProject project = context.lookup(PhpProject.class);
+        assert project != null;
+        PhpProjectProperties uiProps = context.lookup(PhpProjectProperties.class);
+        assert uiProps != null;
+        assert project == uiProps.getProject() : project + " <> " + uiProps.getProject();
         if (SOURCES.equals(name)) {
             toReturn = ProjectCustomizer.Category.create(
                     SOURCES,
@@ -146,7 +152,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     null,
                     categories);
         } else if (FRAMEWORKS.equals(name)) {
-            fillFrameworkCategories(context.lookup(PhpProject.class));
+            fillFrameworkCategories(project);
             if (frameworkCategories.isEmpty()) {
                 return null;
             }
@@ -157,8 +163,8 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
                     null,
                     subcategories.toArray(new ProjectCustomizer.Category[subcategories.size()]));
         } else if (TESTING.equals(name)) {
-            fillTestingCategories(context);
-            List<ProjectCustomizer.Category> subcategories = new ArrayList<>(testingCategories.keySet());
+            fillTestingProviderPanels(uiProps, context);
+            List<ProjectCustomizer.Category> subcategories = new ArrayList<>(testingProviderPanels.keySet());
             toReturn = ProjectCustomizer.Category.create(
                     TESTING,
                     Bundle.CompositePanelProviderImpl_category_testing_title(),
@@ -191,7 +197,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else if (FRAMEWORKS.equals(nm)) {
             return new JPanel();
         } else if (TESTING.equals(nm)) {
-            return new CustomizerTesting(category, uiProps);
+            return new CustomizerTesting(category, uiProps, creatingTestingPanels());
         } else if (LICENSE.equals(nm)) {
             CustomizerUtilities.LicensePanelContentHandler handler = new CustomizerUtilities.LicensePanelContentHandler() {
                 @Override
@@ -242,10 +248,10 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
             }
         }
         // possibly testing provider?
-        if (testingCategories != null) {
-            ProjectCustomizer.CompositeCategoryProvider categoryProvider = testingCategories.get(category);
-            if (categoryProvider != null) {
-                return categoryProvider.createComponent(category, context);
+        if (testingProviderPanels != null) {
+            TestingProviderPanelProvider panelProvider = testingProviderPanels.get(category);
+            if (panelProvider != null) {
+                return panelProvider.getPanel();
             }
         }
         assert false : "No component found for " + category.getDisplayName();
@@ -378,20 +384,63 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         }
     }
 
-    private void fillTestingCategories(Lookup context) {
-        testingCategories.clear();
-
-        Collection<? extends ProjectCustomizer.CompositeCategoryProvider> testingProviders =
-                Lookups.forPath(PhpTesting.CUSTOMIZERS_PATH).lookupAll(ProjectCustomizer.CompositeCategoryProvider.class);
-        if (testingProviders.isEmpty()) {
-            return;
-        }
-        for (ProjectCustomizer.CompositeCategoryProvider testingProvider : testingProviders) {
-            ProjectCustomizer.Category category = testingProvider.createCategory(context);
+    private void fillTestingProviderPanels(PhpProjectProperties uiProps, Lookup context) {
+        testingProviderPanels.clear();
+        PhpModule phpModule = uiProps.getProject().getPhpModule();
+        for (PhpTestingProvider testingProvider : PhpTesting.getTestingProviders()) {
+            ProjectCustomizer.CompositeCategoryProvider categoryProvider = testingProvider.createCustomizer(phpModule);
+            if (categoryProvider == null) {
+                continue;
+            }
+            ProjectCustomizer.Category category = categoryProvider.createCategory(context);
             if (category != null) {
-                testingCategories.put(category, testingProvider);
+                testingProviderPanels.put(category, new TestingProviderPanelProvider(category, uiProps, testingProvider, categoryProvider, context));
             }
         }
+    }
+
+    private Map<String, TestingProviderPanel> creatingTestingPanels() {
+        Map<String, TestingProviderPanel> providers = new ConcurrentHashMap<>();
+        for (TestingProviderPanelProvider panelProvider : testingProviderPanels.values()) {
+            TestingProviderPanel panel = panelProvider.getPanel();
+            providers.put(panel.getProviderIdentifier(), panel);
+        }
+        return providers;
+    }
+
+    //~ Inner classes
+
+    private static final class TestingProviderPanelProvider {
+
+        private final ProjectCustomizer.Category category;
+        private final PhpProjectProperties uiProps;
+        private final PhpTestingProvider testingProvider;
+        private final ProjectCustomizer.CompositeCategoryProvider categoryProvider;
+        private final Lookup context;
+
+        // @GuardedBy("EDT")
+        private TestingProviderPanel panel;
+
+
+        public TestingProviderPanelProvider(ProjectCustomizer.Category category, PhpProjectProperties uiProps,
+                PhpTestingProvider testingProvider, ProjectCustomizer.CompositeCategoryProvider categoryProvider, Lookup context) {
+            this.category = category;
+            this.uiProps = uiProps;
+            this.testingProvider = testingProvider;
+            this.categoryProvider = categoryProvider;
+            this.context = context;
+        }
+
+        public TestingProviderPanel getPanel() {
+            assert EventQueue.isDispatchThread();
+            if (panel == null) {
+                JComponent component = categoryProvider.createComponent(category, context);
+                assert component != null : "Component should be created by " + categoryProvider.getClass().getName();
+                panel = new TestingProviderPanel(category, uiProps, testingProvider.getIdentifier(), component);
+            }
+            return panel;
+        }
+
     }
 
 }

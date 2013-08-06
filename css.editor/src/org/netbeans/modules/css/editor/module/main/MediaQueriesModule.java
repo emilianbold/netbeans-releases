@@ -146,6 +146,12 @@ public class MediaQueriesModule extends CssEditorModule {
                     break;
                 }
             case media:
+                //check if we are in the mediaQuery section and not in the media body
+                if(null != LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                    //@media xxx { | }
+                    break;
+                } 
+                //fallback to the mediaQuery
             case mediaQuery:
                 //no prefix
                 proposals.addAll(getMediaTypes(context));

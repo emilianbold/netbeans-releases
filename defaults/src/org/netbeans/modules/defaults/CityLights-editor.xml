@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 <!DOCTYPE fontscolors PUBLIC "-//NetBeans//DTD Editor Fonts and Colors settings 1.1//EN" "http://www.netbeans.org/dtds/EditorFontsColors-1_1.dtd">
 
 <fontscolors>
-    <fontcolor name="block-search" bgColor="ffe0e8f1"/>
+    <fontcolor name="block-search" foreColor="white" bgColor="gray"/>
     <fontcolor name="code-folding" foreColor="white"/>
     <fontcolor name="code-folding-bar" foreColor="white"/>
     <fontcolor name="guarded" bgColor="darkGray"/>
@@ -56,7 +56,7 @@ made subject to such option by the copyright holder.
     <fontcolor name="nbeditor-bracesMatching-mismatch" bgColor="red" foreColor="white"/>
     <fontcolor name="nbeditor-bracesMatching-match-multichar" bgColor="green" foreColor="white" />
     <fontcolor name="nbeditor-bracesMatching-mismatch-multichar" bgColor="red" foreColor="white"/>
-    <fontcolor name="highlight-search" bgColor="fff6f88b"/>
+    <fontcolor name="highlight-search" bgColor="darkGray"/>
     <fontcolor name="inc-search" bgColor="ffff9900"/>
     <fontcolor name="line-number" foreColor="white"/>
     <fontcolor name="selection" bgColor="lightGray"/>

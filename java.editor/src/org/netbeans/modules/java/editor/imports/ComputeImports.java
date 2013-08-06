@@ -729,7 +729,7 @@ public class ComputeImports {
         }
         
         public boolean filter(CompilationInfo info, Map<String, List<Element>> rawCandidates, Map<String, List<Element>> candidates) {
-            List<Element> cands = candidates.get(simpleName);
+            List<Element> cands = rawCandidates.get(simpleName);
             
             if (cands == null || cands.isEmpty())
                 return false;
@@ -743,8 +743,8 @@ public class ComputeImports {
                 }
             }
             
-            //remove it from the raw candidates too:
-            rawCandidates.get(simpleName).removeAll(toRemove);
+            //remove it from the candidates too:
+            candidates.get(simpleName).removeAll(toRemove);
             
             return cands.removeAll(toRemove);
         }

@@ -48,6 +48,7 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.css.prep.editor.model.CPElementType;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -56,18 +57,26 @@ import org.openide.filesystems.FileObject;
  */
 public class CPCslElementHandle implements ElementHandle {
       
-    private FileObject file;
-    private CharSequence name;
+    private final CharSequence name;
+    private final FileObject file;
+    private final OffsetRange range;
+    private final CPElementType type;
 
     public CPCslElementHandle(CharSequence name) {
         this(null, name);
     }
 
     public CPCslElementHandle(FileObject file, CharSequence name) {
-        this.file = file;
-        this.name = name;
+        this(file, name, null, null);
     }
 
+    public CPCslElementHandle(FileObject file, CharSequence name, OffsetRange range, CPElementType type) {
+        this.file = file;
+        this.name = name;
+        this.range = range;
+        this.type = type;
+    }
+     
     @Override
     public String getName() {
         return name.toString();
@@ -90,7 +99,15 @@ public class CPCslElementHandle implements ElementHandle {
 
     @Override
     public ElementKind getKind() {
-        return ElementKind.FIELD;
+        switch(type) {
+            case MIXIN_DECLARATION:
+                return ElementKind.METHOD;
+            case VARIABLE_GLOBAL_DECLARATION:
+            case VARIABLE_LOCAL_DECLARATION:
+                return ElementKind.VARIABLE;
+            default:
+                return null;
+        }
     }
 
     @Override
@@ -105,6 +122,6 @@ public class CPCslElementHandle implements ElementHandle {
 
     @Override
     public OffsetRange getOffsetRange(ParserResult result) {
-        return null;
+        return range;
     }
 }

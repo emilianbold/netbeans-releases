@@ -84,7 +84,7 @@ public class MegaMenu {
     }
 
     public void show( JComponent invoker ) {
-        if( PopupWindow.isShowing() ) {
+        if( isShowing() ) {
             PopupWindow.hidePopup();
         }
         this.invoker = invoker;
@@ -114,7 +114,11 @@ public class MegaMenu {
                 @Override
                 public void propertyChange(PropertyChangeEvent evt) {
                     if(TeamServerManager.PROP_INSTANCES.equals(evt.getPropertyName())) {
-                        showAgain();
+                        if(TeamServerManager.getDefault().getTeamServers().isEmpty()) {
+                            hide();
+                        } else {
+                            showAgain();
+                        }
                     }
                 }
             };
@@ -124,9 +128,13 @@ public class MegaMenu {
     }
  
     public static MegaMenu getCurrent() {
-        return current.get();
+        return current != null ? current.get() : null;
     }
 
+    public static boolean isShowing() {
+        return PopupWindow.isShowing();
+    }
+    
     public void showAgain() {
         Runnable r = new Runnable() {
             @Override

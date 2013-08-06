@@ -42,7 +42,12 @@
 package org.netbeans.modules.css.model.impl;
 
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.model.api.Element;
+import org.netbeans.modules.css.model.api.GenericAtRule;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.MozDocument;
+import org.netbeans.modules.css.model.api.VendorAtRule;
+import org.netbeans.modules.css.model.api.WebkitKeyframes;
 
 /**
  *

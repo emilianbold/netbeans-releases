@@ -62,7 +62,6 @@ import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.modules.glassfish.common.ui.GlassFishPropertiesCustomizer;
-import org.netbeans.modules.glassfish.common.ui.WarnPanel;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
@@ -1208,8 +1207,12 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         }
         return javaPlatform;
     }
-    
 
+    /**
+     * Get domains root folder with write access.
+     * <p/>
+     * @return Domains root folder with write access.
+     */
     public synchronized String getDomainsRoot() {
         String retVal = getDomainsFolder();
         if (null == retVal) {
@@ -1218,7 +1221,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         File candidate = new File(retVal);
         if (candidate.exists() && !Utils.canWrite(candidate)) {
             // we need to do some surgury here...
-            String foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3");
+            String domainsFolder = org.netbeans.modules.glassfish.common.utils
+                    .ServerUtils.getDomainsFolder(this);
+            String foldername = FileUtil.findFreeFolderName(
+                    FileUtil.getConfigRoot(), domainsFolder);
             FileObject destdir = null;
             try {
                 destdir = FileUtil.createFolder(FileUtil.getConfigRoot(),foldername);
@@ -1235,7 +1241,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                     setDomainsFolder(retVal);
                 } catch (IOException ex) {
                     // need to try again... since the domain is probably unreadable.
-                    foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3"); // NOI18N
+                    foldername = FileUtil.findFreeFolderName(
+                            FileUtil.getConfigRoot(), domainsFolder); // NOI18N
                     try {
                         destdir = FileUtil.createFolder(FileUtil.getConfigRoot(), foldername);
                     } catch (IOException ioe) {
@@ -1625,19 +1632,15 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     /**
      * Generate hash code for GlassFish instance data object.
      * <p/>
-     * Hash code is based on server address, port, domain name and domains root
-     * directory.
+     * Hash code is based on name attribute
+     * (<code>GlassfishModule.DISPLAY_NAME_ATTR</code> property) which
+     * is unique.
      * <p/>
      * @return Hash code for GlassFish instance data object.
      */
     @Override
     public int hashCode() {
-        StringBuilder sb = new StringBuilder(
-                getDeployerUri().replace("127.0.0.1", "localhost"));
-        sb.append(getHttpPort());
-        sb.append(getDomainsRoot());
-        sb.append(getDomainName());
-        return sb.toString().hashCode();
+        return getName().hashCode();
     }
 
 }

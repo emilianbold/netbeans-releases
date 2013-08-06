@@ -887,6 +887,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue233578.js","this.ag^e = age;", true);
     }
     
+    public void testIssue233738_01() throws Exception {
+        checkOccurrences("testfiles/structure/issue233738.js","var myhelp = window['somep^rom'];", true);
+    }
+    
+    public void testIssue233738_02() throws Exception {
+        checkOccurrences("testfiles/structure/issue233738.js","var myhelp = win^dow['someprom'];", true);
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");

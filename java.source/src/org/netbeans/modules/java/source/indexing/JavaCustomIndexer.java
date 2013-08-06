@@ -210,7 +210,7 @@ public class JavaCustomIndexer extends CustomIndexer {
                 CompileWorker.ParsingOutput compileResult = null;
                 try {
                     if (context.isAllFilesIndexing()) {
-                        cleanUpResources(context.getRootURI(), fmTx);
+                        cleanUpResources(context, fmTx);
                     }
                     if (javaContext.getClassIndexImpl() == null)
                         return; //IDE is exiting, indeces are already closed.
@@ -899,9 +899,9 @@ public class JavaCustomIndexer extends CustomIndexer {
     }
 
     private static void cleanUpResources (
-            @NonNull final URL rootURL,
+            @NonNull final Context ctx,
             @NonNull final FileManagerTransaction fmTx) throws IOException {
-        final File classFolder = JavaIndex.getClassFolder(rootURL);
+        final File classFolder = JavaIndex.getClassFolder(ctx);
         final File resourcesFile = new File (classFolder,FileObjects.RESOURCES);
         try {
             for (String fileName : readRSFile(resourcesFile)) {

@@ -43,7 +43,9 @@
 package org.netbeans.modules.xml.text.syntax;
 
 import javax.swing.text.Document;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Syntax;
+import org.netbeans.editor.SyntaxSupport;
 
 /**
  *
@@ -70,4 +72,10 @@ public class ENTKit extends UniKit {
         return MIME_TYPE;
     }
 
+    /** Create syntax support */
+    @Override
+    public SyntaxSupport createSyntaxSupport(BaseDocument doc) {
+        return new XMLSyntaxSupport(doc);
+    }
+    
 }

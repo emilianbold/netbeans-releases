@@ -592,6 +592,12 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                 if (cls2 != null) {
                                     if (cls2.getQualifiedName().toString().equals(paramsText.get(i).toString())) {
                                         match += 2;
+                                    } else if (cls2.isValid()) {
+                                        if (cls2.getQualifiedName().toString().equals(((CsmTypeBasedSpecializationParameter)param).getClassifier().getQualifiedName().toString())) {
+                                            match += 1;
+                                        } else {
+                                            match -= 1;
+                                        }                                        
                                     }
                                     if (tbsp.isPointer() &&
                                             isPointer(paramsType.get(i))) {
@@ -602,11 +608,6 @@ public final class InstantiationProviderImpl extends CsmInstantiationProvider {
                                         match += 1;
                                         if ((checkReference == 2) == tbsp.isRValueReference()) {
                                             match +=1;
-                                        }
-                                    }
-                                    if (cls2.isValid()) {
-                                        if (cls2.getName().toString().equals(((CsmTypeBasedSpecializationParameter)param).getClassifierText().toString())) {
-                                            match += 1;
                                         }
                                     }
                                 }

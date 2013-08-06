@@ -146,7 +146,7 @@ final class MultiPassCompileWorker extends CompileWorker {
             try {
                 try {
                     if (mem.isLowMemory()) {
-                        dumpSymFiles(jt, previous.createdFiles);
+                        dumpSymFiles(jt, previous.createdFiles, context);
                         mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
@@ -191,7 +191,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     }
                     Iterable<? extends CompilationUnitTree> trees = jt.parse(new JavaFileObject[]{active.jfo});
                     if (mem.isLowMemory()) {
-                        dumpSymFiles(jt, previous.createdFiles);
+                        dumpSymFiles(jt, previous.createdFiles, context);
                         mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
@@ -249,7 +249,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         }
                     }
                     if (mem.isLowMemory()) {
-                        dumpSymFiles(jt, previous.createdFiles);
+                        dumpSymFiles(jt, previous.createdFiles, context);
                         mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
@@ -274,7 +274,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                         JavaCustomIndexer.addAptGenerated(context, javaContext, active, previous.aptGenerated);
                     }
                     if (mem.isLowMemory()) {
-                        dumpSymFiles(jt, previous.createdFiles);
+                        dumpSymFiles(jt, previous.createdFiles, context);
                         mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
@@ -322,7 +322,7 @@ final class MultiPassCompileWorker extends CompileWorker {
                     state  = 0;
                 } catch (CancelAbort ca) {
                     if (mem.isLowMemory()) {
-                        dumpSymFiles(jt, previous.createdFiles);
+                        dumpSymFiles(jt, previous.createdFiles, context);
                         mem.isLowMemory();
                         jt = null;
                         diagnosticListener.cleanDiagnostics();
@@ -431,7 +431,8 @@ final class MultiPassCompileWorker extends CompileWorker {
 
     private void dumpSymFiles(
             final JavacTaskImpl jti,
-            final Set<File> alreadyCreated) throws IOException {
+            final Set<File> alreadyCreated,
+            final Context ctx) throws IOException {
         if (jti != null) {
             final JavaFileManager jfm = jti.getContext().get(JavaFileManager.class);
             checkForMemLow = false;
@@ -469,17 +470,18 @@ final class MultiPassCompileWorker extends CompileWorker {
                     }
                 }
                 final Set<Env<AttrContext>> processedEnvs = new HashSet<Env<AttrContext>>();
+                File classes = JavaIndex.getClassFolder(ctx);
                 for (Env<AttrContext> env : jti.getTodo()) {
                     if (processedEnvs.add(env)) {
                         ScanNested scanner = new ScanNested(env);
                         scanner.scan(env.tree);
                         for (Env<AttrContext> dep: scanner.dependencies) {
                             if (processedEnvs.add(dep)) {
-                                dumpSymFile(jfm, jti, dep.enclClass.sym, alreadyCreated);
+                                dumpSymFile(jfm, jti, dep.enclClass.sym, alreadyCreated, classes);
                             }
                         }
                         if (TreeLoader.pruneTree(env.tree, syms))
-                            dumpSymFile(jfm, jti, env.enclClass.sym, alreadyCreated);
+                            dumpSymFile(jfm, jti, env.enclClass.sym, alreadyCreated, classes);
                     }
                 }
             } finally {
@@ -492,7 +494,8 @@ final class MultiPassCompileWorker extends CompileWorker {
             @NonNull final JavaFileManager jfm,
             @NonNull final JavacTaskImpl jti,
             @NullAllowed final ClassSymbol cs,
-            @NonNull final Set<File> alreadyCreated) throws IOException {
+            @NonNull final Set<File> alreadyCreated,
+            @NonNull final File classes) throws IOException {
         if (cs == null) {
             //ClassDecl has no symbol because compilation was cancelled
             //by low memory before ENTER done.
@@ -501,7 +504,7 @@ final class MultiPassCompileWorker extends CompileWorker {
         JavaFileObject file = jfm.getJavaFileForOutput(StandardLocation.CLASS_OUTPUT,
                 cs.flatname.toString(), JavaFileObject.Kind.CLASS, cs.sourcefile);
         if (file instanceof FileObjects.FileBase && !alreadyCreated.contains(((FileObjects.FileBase)file).getFile())) {
-            TreeLoader.dumpSymFile(jfm, jti, cs);
+            TreeLoader.dumpSymFile(jfm, jti, cs, classes);
         }
     }
 }

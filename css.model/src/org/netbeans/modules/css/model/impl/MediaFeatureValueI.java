@@ -42,7 +42,9 @@
 package org.netbeans.modules.css.model.impl;
 
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.model.api.Expression;
+import org.netbeans.modules.css.model.api.MediaFeatureValue;
+import org.netbeans.modules.css.model.api.Model;
 
 /**
  *

@@ -1,0 +1,122 @@
+<!--
+To change this license header, choose License Headers in Project Properties.
+To change this template file, choose Tools | Templates
+and open the template in the editor.
+-->
+<!DOCTYPE html>
+<html>
+    <head>
+        <title></title>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+        <link rel='stylesheet' href='http://mottie.github.com/tablesorter/css/theme.blue.css'>
+        <link rel='stylesheet' href='http://mottie.github.com/tablesorter/addons/pager/jquery.tablesorter.pager.css'>
+        <script src='js/libs/underscore.js/underscore.js'></script>
+        <script src='js/libs/jquery/jquery.js'></script>
+        <script src='js/libs/backbone.js/backbone.js'></script>
+        <script src='http://mottie.github.com/tablesorter/js/jquery.tablesorter.min.js'></script>
+        <script src='http://mottie.github.com/tablesorter/addons/pager/jquery.tablesorter.pager.js'></script>
+        <script src='CustomerClient.js'></script>
+    </head>
+    <body>
+        <div id='create'></div>
+
+        <table id='datatable' class='tablesorter-blue'>
+        </table>
+        <div class='pager' id='pager'>
+            <img src='http://mottie.github.com/tablesorter/addons/pager/icons/first.png' class='first' alt='First'/>
+            <img src='http://mottie.github.com/tablesorter/addons/pager/icons/prev.png' class='prev' alt='Prev'/>
+            <span class='pagedisplay'></span> <!-- this can be any element, including an input -->
+            <img src='http://mottie.github.com/tablesorter/addons/pager/icons/next.png' class='next' alt='Next'/>
+            <img src='http://mottie.github.com/tablesorter/addons/pager/icons/last.png' class='last' alt='Last'/>
+            <select class='pagesize'>
+                <option selected='selected' value='10'>10</option>
+                <option value='20'>20</option>
+                <option value='30'>30</option>
+                <option value='40'>40</option>
+            </select>
+        </div>
+        <br>
+
+        <div id='details'></div>
+
+
+        <!-- Templates -->
+        <script type='text/template' id='tpl-create'>
+            <!--
+            Put your controls to create new entity here.
+
+            Class 'new' is used to listen on events in JS code.
+            -->
+            <button class='new'>Create</button>
+        </script>
+
+        <script type='text/template' id='thead'>
+            <thead>
+            <tr>
+            <th>customerId</th>
+            <th>addressline2</th>
+            <th>phone</th>
+            <th>addressline1</th>
+            <th>fax</th>
+            <th>email</th>
+            <th>name</th>
+            <th>state</th>
+            <th>creditLimit</th>
+            <th>city</th>
+            </tr>
+            </thead>
+        </script>
+        <script type='text/template' id='tpl-customer-list-item'>
+            <td><a href='#<%= customerId %>'><%= customerId %></a></td>
+            <td><%= addressline2 %></td>
+            <td><%= phone %></td>
+            <td><%= addressline1 %></td>
+            <td><%= fax %></td>
+            <td><%= email %></td>
+            <td><%= name %></td>
+            <td><%= state %></td>
+            <td><%= creditLimit %></td>
+            <td><%= city %></td>
+        </script>
+
+        <script type='text/template' id='tpl-customer-details'>
+            <div>
+            <table>
+            <tbody>
+            <tr><td>Id</td>
+            <td>
+            <input type='text' id='customerId' name='id' value='<%= typeof(customerId)!== "undefined" ? customerId : "" %>'  />
+            </td>
+            </tr>
+            <tr>
+            <td>addressline2</td><td><input type='text' id='addressline2' name='addressline2' value='<%= addressline2 %>'/></td></tr>
+            <tr>
+            <td>phone</td><td><input type='text' id='phone' name='phone' value='<%= phone %>'/></td></tr>
+            <tr>
+            <td>addressline1</td><td><input type='text' id='addressline1' name='addressline1' value='<%= addressline1 %>'/></td></tr>
+            <tr>
+            <td>fax</td><td><input type='text' id='fax' name='fax' value='<%= fax %>'/></td></tr>
+            <tr>
+            <td>email</td><td><input type='text' id='email' name='email' value='<%= email %>'/></td></tr>
+            <tr>
+            <td>name</td><td><input type='text' id='name' name='name' value='<%= name %>'/></td></tr>
+            <tr>
+            <td>state</td><td><input type='text' id='state' name='state' value='<%= state %>'/></td></tr>
+            <tr>
+            <td>creditLimit</td><td><input type='text' id='creditLimit' name='creditLimit' value='<%= creditLimit %>'/></td></tr>
+            <tr>
+            <td>city</td><td><input type='text' id='city' name='city' value='<%= city %>'/></td></tr>
+            </tbody>
+            </table>
+            <!--
+            Put your controls to create new entity here.
+            Classes 'save' and 'delete' are used to listen on events in JS code.
+            -->
+            <button  class='save'>Save</button>
+            <button  class='delete'>Delete</button>
+            </div>
+        </script>
+
+
+    </body>
+</html>

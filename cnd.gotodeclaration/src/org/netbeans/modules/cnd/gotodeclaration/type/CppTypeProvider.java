@@ -122,6 +122,9 @@ public class CppTypeProvider implements TypeProvider {
                     break;
                 }
             } catch (InterruptedException ex) {
+                Thread.interrupted();
+                break;
+            } catch (CancellationException ex) {
                 break;
             } catch (ExecutionException ex) {
                 if (!(ex.getCause() instanceof CancellationException)) {

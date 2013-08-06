@@ -41,9 +41,7 @@
  */
 package org.netbeans.modules.web.el;
 
-import java.io.File;
 import java.io.IOException;
-import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,12 +51,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static junit.framework.Assert.fail;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
-import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
@@ -66,13 +62,14 @@ import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
+import org.netbeans.modules.web.el.spi.ImplicitObjectType;
+import static org.netbeans.modules.web.el.spi.ImplicitObjectType.OBJECT_TYPE;
 import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.netbeans.spi.project.ProjectFactory;
 import org.netbeans.spi.project.ProjectState;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
@@ -193,7 +190,9 @@ public class ELTestBaseForTestProject extends ELTestBase {
 
         @Override
         public Collection<ImplicitObject> getImplicitObjects(FileObject file) {
-            return Collections.emptyList();
+            List<ImplicitObject> implObjects = new ArrayList<ImplicitObject>(9);
+            implObjects.add( new JsfImplicitObject("request", "javax.servlet.http.HttpServletRequest", OBJECT_TYPE) ); //NOI18N
+            return implObjects;
         }
 
         @Override
@@ -295,5 +294,33 @@ public class ELTestBaseForTestProject extends ELTestBase {
                 return null;
             }
         }
+    }
+
+    private static class JsfImplicitObject implements ImplicitObject {
+
+        private String name, clazz;
+        private ImplicitObjectType type;
+
+        public JsfImplicitObject(String name, String clazz, ImplicitObjectType type) {
+            this.name = name;
+            this.clazz = clazz;
+            this.type = type;
+        }
+
+        @Override
+        public String getName() {
+            return name;
+        }
+
+        @Override
+        public ImplicitObjectType getType() {
+            return type;
+        }
+
+        @Override
+        public String getClazz() {
+            return clazz;
+        }
+
     }
 }

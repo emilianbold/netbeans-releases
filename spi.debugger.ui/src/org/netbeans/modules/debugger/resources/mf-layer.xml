@@ -70,7 +70,7 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-debugger-ui-actions-BreakpointsViewAction.instance">
                     <attr name="instanceCreate" methodvalue="org.openide.awt.Actions.alwaysEnabled"/>
                     <attr name="delegate" methodvalue="org.netbeans.modules.debugger.ui.actions.ViewActions.createBreakpointsViewAction"/>
-                    <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint.gif"/>
+                    <attr name="iconBase" stringvalue="org/netbeans/modules/debugger/resources/breakpointsView/Breakpoints.png"/>
                     <attr name="displayName" bundlevalue="org.netbeans.modules.debugger.ui.actions.Bundle#CTL_BreakpointsAction"/>
                 </file>
                 <file name="org-netbeans-modules-debugger-ui-actions-SessionsViewAction.instance">
