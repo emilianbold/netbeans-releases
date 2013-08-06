@@ -320,6 +320,7 @@ public abstract class BasicTask<V> implements Callable<V> {
         StartStateListener listener = new StartStateListener(profile);
         if (GlassFishStatus.start(instance, false, listener,
                 GlassFishStatus.ONLINE, GlassFishStatus.SHUTDOWN)) {
+            GlassFishStatus.addCheckListener(instance, listener);
             return listener;
         } else {
             GlassFishStatus.removeListener(instance, listener);
@@ -343,6 +344,7 @@ public abstract class BasicTask<V> implements Callable<V> {
         if (GlassFishStatus.start(instance, true, listener,
                 GlassFishStatus.OFFLINE, GlassFishStatus.ONLINE,
                 GlassFishStatus.SHUTDOWN, GlassFishStatus.UNKNOWN)) {
+            GlassFishStatus.addCheckListener(instance, listener);
             return listener;
         } else {
             return null;
