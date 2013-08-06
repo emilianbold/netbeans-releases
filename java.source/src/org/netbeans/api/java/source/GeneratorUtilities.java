@@ -668,7 +668,7 @@ public final class GeneratorUtilities {
         CodeStyle cs = DiffContext.getCodeStyle(copy);
         
         // check weather any conversions to star imports are needed
-        int treshold = cs.countForUsingStarImport();
+        int treshold = cs.useSingleClassImport() ? cs.countForUsingStarImport() : 1;
         int staticTreshold = cs.countForUsingStaticStarImport();        
         Map<PackageElement, Integer> pkgCounts = new LinkedHashMap<PackageElement, Integer>();
         PackageElement pkg = elements.getPackageElement("java.lang"); //NOI18N
