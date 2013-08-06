@@ -1,0 +1,8 @@
+namespace FirstNs\WrongNs;
+          ---------------
+HINT:PSR-0 Violation:
+Namespace declaration name doesn't correspond to current directory structure.
+class ClassName {
+      ---------
+HINT:PSR-0 Violation:
+Type declaration name doesn't correspond to current file path.

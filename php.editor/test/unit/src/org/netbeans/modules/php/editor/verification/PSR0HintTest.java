@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,7 +37,7 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.verification;
 
@@ -46,7 +46,6 @@ import java.util.Collections;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.php.editor.PHPTestBase;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -56,26 +55,35 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PHPHintsTestBase extends PHPTestBase {
-    protected static final String TEST_DIRECTORY = "testfiles/verification/"; //NOI18N
+public class PSR0HintTest extends PHPHintsTestBase {
 
-    public PHPHintsTestBase(String testName) {
+    public PSR0HintTest(String testName) {
         super(testName);
     }
 
-    /**
-     * Checks hints in a whole file.
-     *
-     * @param hint Instantion of hint to test.
-     * @param fileName Name of the file which is in "<tt>testfiles/verification/</tt>" directory.
-     * @throws Exception
-     */
-    protected void checkHints(Rule hint, String fileName) throws Exception {
-        checkHints(hint, fileName, null);
+    public void testNsOkClassOk() throws Exception {
+        checkHints(new PSR0Hint(), "FirstNs/SecondNs/ClassName.php");
     }
 
-    protected void checkHints(Rule onLineHint, String fileName, String caretLine) throws Exception {
-        checkHints(this, onLineHint, TEST_DIRECTORY + fileName, caretLine);
+    public void testNsOkClassOk_01() throws Exception {
+        checkHints(new PSR0Hint(), "FirstNs/SecondNs/Some/Class.php");
+    }
+
+    public void testNsNotOkClassNotOk() throws Exception {
+        checkHints(new PSR0Hint(), "FirstNs/SecondNs/WrongName.php");
+    }
+
+    public void testNsOkClassNotOk() throws Exception {
+        checkHints(new PSR0Hint(), "FirstNs/SecondNs/WrongName.php");
+    }
+
+    public void testNsOkClassNotOk_01() throws Exception {
+        checkHints(new PSR0Hint(), "FirstNs/SecondNs/SomeClass.php");
+    }
+
+    @Override
+    protected void checkHints(Rule hint, String fileName) throws Exception {
+        super.checkHints(hint, getTestDir() + "/" + fileName);
     }
 
     @Override
@@ -83,9 +91,13 @@ public class PHPHintsTestBase extends PHPTestBase {
         return Collections.singletonMap(
             PhpSourcePath.SOURCE_CP,
             ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/" + TEST_DIRECTORY))
+                FileUtil.toFileObject(new File(getDataDir(), "/" + TEST_DIRECTORY + getTestDir()))
             })
         );
+    }
+
+    private String getTestDir() {
+        return "PSR0/" + getName();
     }
 
 }
