@@ -382,12 +382,15 @@ public final class ELTypeUtilities {
 //                    PropertySuffix[attrs]
 //                    PropertySuffix[muj]
 
+        return isImplicitObjectReference(info, target, Arrays.asList(ImplicitObjectType.RAW), directly);
+    }
+
+    public static boolean isImplicitObjectReference(CompilationContext info, Node target, List<ImplicitObjectType> types, boolean directly) {
         int repeation = directly ? 2 : Integer.MAX_VALUE;
         do {
             if (target instanceof AstIdentifier) {
                 for (ImplicitObject each : getImplicitObjects(info)) {
-                    if (each.getType() == ImplicitObjectType.RAW
-                            && each.getName().equals(target.getImage())) {
+                    if (types.contains(each.getType()) && each.getName().equals(target.getImage())) {
                         return true;
                     }
                 }
