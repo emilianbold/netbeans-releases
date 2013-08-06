@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,55 +37,44 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+package org.netbeans.modules.groovy.editor.occurrences;
+
+import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
 
 /**
  *
- * @author marekfukala
+ * @author Martin Janicek <mjanicek@netbeans.org>
  */
-public class JsfSupportImplTest extends TestBaseForTestProject {
+public class AliasOccurrencesTest extends GroovyTestBase {
 
-    public JsfSupportImplTest(String testName) {
+    public AliasOccurrencesTest(String testName) {
         super(testName);
     }
 
-    public static Test xsuite() {
-        TestSuite suite = new TestSuite();
-        suite.addTest(new JsfSupportImplTest("testELErrorReporting"));
-        return suite;
+    // #233954
+    public void testMethodAlias() throws Exception {
+        testCaretLine("println n^ow().time");
     }
 
-    public void testJsfSupportProviderInGlobalLookup() {
-        JsfSupportProvider instance = Lookup.getDefault().lookup(JsfSupportProvider.class);
-        assertNotNull(instance);
-        assertTrue(instance instanceof JsfSupportProviderImpl);
+    // #233956
+    public void testMethodStaticImport() throws Exception {
+        testCaretLine("println si^n()");
     }
 
-    public void testGetJsfSupportInstance() throws Exception {
-        FileObject file = getWorkFile("testWebProject/web/index.xhtml");
-        assertNotNull(file);
-        JsfSupportImpl instance = JsfSupportImpl.findFor(file);
-        assertNotNull(instance);
+    // #234000
+    public void testFieldAlias() throws Exception {
+        testCaretLine("println m^in");
     }
 
-    public void testIsTheJsfSupportInstanceCached() throws Exception{
-        FileObject file = getWorkFile("testWebProject/web/index.xhtml");
-        assertNotNull(file);
-        JsfSupportImpl instance1 = JsfSupportImpl.findFor(file);
-        assertNotNull(instance1);
-        JsfSupportImpl instance2 = JsfSupportImpl.findFor(file);
-        assertNotNull(instance2);
-
-        assertSame(instance1, instance2);
-
+    // #233956
+    public void testFieldStaticImport() throws Exception {
+        testCaretLine("println LIG^HT_GRAY");
     }
 
+    private void testCaretLine(String caretLine) throws Exception {
+        checkOccurrences("testfiles/AliasOccurrencesTester.groovy", caretLine, true);
+    }
 }
