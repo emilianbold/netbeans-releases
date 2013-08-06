@@ -646,6 +646,11 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             // For completion documentation
             return ElementHandleSupport.createHandle(info, new KeywordElement(packageName));
         }
+
+        @Override
+        public String getCustomInsertTemplate() {
+            return packageName + "."; //NOI18N
+        }
     }
 
     public static class TypeItem extends CompletionItem {
