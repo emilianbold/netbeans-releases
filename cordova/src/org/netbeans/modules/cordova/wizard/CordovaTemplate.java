@@ -247,6 +247,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             SiteTemplateImplementation template = (SiteTemplateImplementation) wizardDescriptor.getProperty("SITE_TEMPLATE");//NOI18N
             panel.setPanelEnabled(template instanceof CordovaTemplate);
             panel.setProjectName((String) wizardDescriptor.getProperty("NAME"));
+            panel.setVersion(CordovaPerformer.DEFAULT_VERSION);
         }
 
         @Override

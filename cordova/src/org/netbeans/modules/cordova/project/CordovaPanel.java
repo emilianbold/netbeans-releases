@@ -44,11 +44,9 @@ package org.netbeans.modules.cordova.project;
 import java.io.IOException;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.cordova.wizard.CordovaTemplate;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 
 /**
@@ -389,15 +387,9 @@ public class CordovaPanel extends javax.swing.JPanel {
 
         platformsPane.addTab(org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.iOSPanel.TabConstraints.tabTitle"), iOSPanel); // NOI18N
 
-        packageTextField.setText(org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.packageTextField.text")); // NOI18N
-
         org.openide.awt.Mnemonics.setLocalizedText(packageLabel, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.packageLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.nameLabel.text")); // NOI18N
-
-        nameTextField.setText(org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.nameTextField.text")); // NOI18N
-
-        versionTextField.setText(org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.versionTextField.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(versionLabel, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.versionLabel.text")); // NOI18N
 
@@ -516,9 +508,19 @@ public class CordovaPanel extends javax.swing.JPanel {
             //config not created
             return;
         }
-        config.setId(packageTextField.getText());
-        config.setName(nameTextField.getText());
-        config.setVersion(versionTextField.getText());
+        final String pkg = packageTextField.getText();
+        if (!pkg.trim().isEmpty()) {
+            config.setId(pkg);
+        }
+        final String name = nameTextField.getText();
+        if (!name.trim().isEmpty()) {
+            config.setName(name);
+        }
+        
+        final String version = versionTextField.getText();
+        if (!version.trim().isEmpty()) {
+            config.setVersion(version);
+        }
         
 //        config.setIcon(SourceConfig.ANDROID_PLATFORM, tfXhdpiIcon.getText());
 //        config.setIcon(SourceConfig.IOS_PLATFORM, tfRetinaIcon.getText());
@@ -586,5 +588,9 @@ public class CordovaPanel extends javax.swing.JPanel {
     public void setProjectName(String name) {
         packageTextField.setText(CordovaPerformer.DEFAULT_ID_PREFIX + "." + name.replaceAll(" ", "")); // NOI18N
         nameTextField.setText(name);
+    }
+
+    public void setVersion(String string) {
+        versionTextField.setText(string);
     }
 }
