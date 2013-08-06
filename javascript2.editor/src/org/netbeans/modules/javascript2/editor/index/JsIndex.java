@@ -178,6 +178,7 @@ public class JsIndex {
             if (INDEX_CHANGED.get()) {
                 WRITE_LOCK.lock();
                 try {
+                    LOG.log(Level.FINEST, "Cache cleared");
                     CACHE_INDEX_RESULT_SMALL.clear();
                     CACHE_INDEX_RESULT_LARGE.clear();
                 } finally {
