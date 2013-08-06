@@ -46,6 +46,7 @@ package org.netbeans.modules.java.guards;
 
 import java.util.List;
 import junit.framework.TestCase;
+import junit.framework.TestSuite;
 import org.netbeans.api.editor.guards.GuardedSection;
 import org.netbeans.api.editor.guards.InteriorSection;
 import org.netbeans.api.editor.guards.SimpleSection;
@@ -66,6 +67,18 @@ public class JavaGuardedReaderTest extends TestCase {
         super(testName);
     }
 
+    public static TestSuite suite() {
+        TestSuite suite = new TestSuite();
+        suite.addTest(new JavaGuardedReaderTest("testTranslatePlain"));
+        suite.addTest(new JavaGuardedReaderTest("testTranslateLINE"));
+        suite.addTest(new JavaGuardedReaderTest("testTranslateBEGIN_END1"));
+        suite.addTest(new JavaGuardedReaderTest("testTranslateBEGIN_END2"));
+        suite.addTest(new JavaGuardedReaderTest("testTranslateFIRST_LAST"));
+        suite.addTest(new JavaGuardedReaderTest("testTranslateFIRST_HEADEREND_LAST"));
+        return suite;
+    }
+    
+    @Override
     protected void setUp() throws Exception {
         editor = new Editor();
         provider = new JavaGuardedSectionsProvider(editor);
@@ -73,6 +86,7 @@ public class JavaGuardedReaderTest extends TestCase {
         instance = new JavaGuardedReader(provider);
     }
 
+    @Override
     protected void tearDown() throws Exception {
         provider = null;
         instance = null;
