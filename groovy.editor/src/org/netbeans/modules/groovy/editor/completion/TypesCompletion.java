@@ -170,15 +170,12 @@ public class TypesCompletion extends BaseCompletion {
 
         // if we are dealing with a basepackage we simply complete all the packages given in the basePackage
         if (packageRequest.basePackage.length() > 0 || request.isBehindImportStatement()) {
-            if (!(request.isBehindImportStatement() && packageRequest.basePackage.length() == 0)) {
+            List<TypeHolder> typeList = getTypeHoldersForPackage(javaSource, packageRequest.basePackage, currentPackage);
 
-                List<TypeHolder> typeList = getTypeHoldersForPackage(javaSource, packageRequest.basePackage, currentPackage);
+            LOG.log(Level.FINEST, "Number of types found:  {0}", typeList.size());
 
-                LOG.log(Level.FINEST, "Number of types found:  {0}", typeList.size());
-
-                for (TypeHolder singleType : typeList) {
-                    addToProposalUsingFilter(addedTypes, singleType, onlyInterfaces);
-                }
+            for (TypeHolder singleType : typeList) {
+                addToProposalUsingFilter(addedTypes, singleType, onlyInterfaces);
             }
             return true;
         }
