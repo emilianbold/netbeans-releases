@@ -50,7 +50,6 @@ import java.util.Set;
 import junit.framework.TestCase;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.lib.lexer.test.LexerTestUtilities;
 
 /**
