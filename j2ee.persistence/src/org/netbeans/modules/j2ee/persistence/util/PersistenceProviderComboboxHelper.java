@@ -52,6 +52,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
 import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import javax.swing.ComboBoxModel;
@@ -181,8 +182,6 @@ public final class PersistenceProviderComboboxHelper {
         if (providers.getSize() == 0 && providerSupplier.supportsDefaultProvider()){
             providers.addElement(ProviderUtil.DEFAULT_PROVIDER);
         } 
-        
-        addProvidersFromLibraries(providers);
 
         if (providers.getSize() == 0){
             providers.addElement(EMPTY);
@@ -195,7 +194,7 @@ public final class PersistenceProviderComboboxHelper {
         providerCombo.setRenderer(new PersistenceProviderCellRenderer(getDefaultProvider(providers)));
         //select either default or first or preferred provider depending on project details
         int selectIndex = 0;
-        if(providers.getSize()>1){
+        if(providers.getSize()>1 && providers.getElementAt(0) instanceof Provider){
             String defProviderVersion = ProviderUtil.getVersion((Provider) providers.getElementAt(0));
             boolean specialCase = (Util.isJPAVersionSupported(project, Persistence.VERSION_2_0) || Util.isJPAVersionSupported(project, Persistence.VERSION_2_1)) && (defProviderVersion == null || defProviderVersion.equals(Persistence.VERSION_1_0));//jpa 2.0 is supported by default (or first) is jpa1.0 or udefined version provider
             if(specialCase){
@@ -228,25 +227,6 @@ public final class PersistenceProviderComboboxHelper {
         }
         return null;
     }
-    /**
-     * Adds persistence providers found from libraries to the given model.
-     */
-    private void addProvidersFromLibraries(DefaultComboBoxModel model){
-        for (Provider each : PersistenceLibrarySupport.getProvidersFromLibraries()){
-            boolean found = false;
-            for (int i = 0; i < model.getSize(); i++) {
-                Object elem = model.getElementAt(i);
-                if (elem instanceof Provider && each.equals(elem)){
-                    found = true;
-                    break;
-                }
-            }
-            if (!found){
-                model.addElement(each);
-            }
-        }
-    }
-    
     
     public static interface LibraryItem {
         String getText();
@@ -326,8 +306,23 @@ public final class PersistenceProviderComboboxHelper {
      */ 
     private static class DefaultPersistenceProviderSupplier implements PersistenceProviderSupplier{
         
+        @Override
         public List<Provider> getSupportedProviders() {
-            return Collections.<Provider>emptyList();
+            ArrayList<Provider> providers = new ArrayList<Provider>();
+            for (Provider each : PersistenceLibrarySupport.getProvidersFromLibraries()){
+                boolean found = false;
+                for (int i = 0; i < providers.size(); i++) {
+                    Object elem = providers.get(i);
+                    if (elem instanceof Provider && each.equals(elem)){
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found){
+                   providers.add(each);
+                }
+            }
+            return providers;
         }
 
         public boolean supportsDefaultProvider() {

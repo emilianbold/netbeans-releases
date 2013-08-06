@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,55 +37,28 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2009 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.jsf.editor;
 
-import junit.framework.Test;
-import junit.framework.TestSuite;
-import org.netbeans.modules.web.jsfapi.spi.JsfSupportProvider;
-import org.openide.filesystems.FileObject;
-import org.openide.util.Lookup;
+package org.netbeans.modules.groovy.editor.api.completion;
 
 /**
  *
- * @author marekfukala
+ * @author Martin Janicek <mjanicek@netbeans.org>
  */
-public class JsfSupportImplTest extends TestBaseForTestProject {
+public class ImportCCTest extends GroovyCCTestBase {
 
-    public JsfSupportImplTest(String testName) {
+    public ImportCCTest(String testName) {
         super(testName);
     }
 
-    public static Test xsuite() {
-        TestSuite suite = new TestSuite();
-        suite.addTest(new JsfSupportImplTest("testELErrorReporting"));
-        return suite;
+    @Override
+    protected String getTestType() {
+        return "import"; // NOI18N
     }
 
-    public void testJsfSupportProviderInGlobalLookup() {
-        JsfSupportProvider instance = Lookup.getDefault().lookup(JsfSupportProvider.class);
-        assertNotNull(instance);
-        assertTrue(instance instanceof JsfSupportProviderImpl);
+    // #233953
+    public void testStaticImportCompletion() throws Exception {
+        checkCompletion(BASE + "StaticImportCompletion.groovy", "import static java.lang.Math.P^I", false);
     }
-
-    public void testGetJsfSupportInstance() throws Exception {
-        FileObject file = getWorkFile("testWebProject/web/index.xhtml");
-        assertNotNull(file);
-        JsfSupportImpl instance = JsfSupportImpl.findFor(file);
-        assertNotNull(instance);
-    }
-
-    public void testIsTheJsfSupportInstanceCached() throws Exception{
-        FileObject file = getWorkFile("testWebProject/web/index.xhtml");
-        assertNotNull(file);
-        JsfSupportImpl instance1 = JsfSupportImpl.findFor(file);
-        assertNotNull(instance1);
-        JsfSupportImpl instance2 = JsfSupportImpl.findFor(file);
-        assertNotNull(instance2);
-
-        assertSame(instance1, instance2);
-
-    }
-
 }
