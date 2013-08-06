@@ -54,7 +54,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -92,16 +93,38 @@ public class JsIndex {
 
     private static final Logger LOG = Logger.getLogger(JsIndex.class.getName());
 
-    private static final WeakHashMap<FileObject, JsIndex> CACHE = new WeakHashMap<FileObject, JsIndex>();
+    private static final ReentrantReadWriteLock LOCK = new ReentrantReadWriteLock();
 
-    // empirical value
-    private static final int MAX_ENTRIES_CACHE_INDEX_RESULT = 500;
+    private static final Lock READ_LOCK = LOCK.readLock();
+
+    private static final Lock WRITE_LOCK = LOCK.writeLock();
+
+    private static final WeakHashMap<FileObject, JsIndex> INDEX_CACHE = new WeakHashMap<FileObject, JsIndex>();
+
+    // empirical values (update if index is changed)
+    private static final int MAX_ENTRIES_CACHE_INDEX_RESULT = 2000;
+
+    private static final int MAX_CACHE_VALUE_SIZE = 1000000;
+
+    private static final int AVERAGE_BASIC_INFO_SIZE = 60;
+
     // cache to keep latest index results. The cache is cleaned if a file is saved
     // or a file has to be reindexed due to an external change
-    private static final Map <CacheKey, CacheValue> CACHE_INDEX_RESULT = new LinkedHashMap<CacheKey, CacheValue>(MAX_ENTRIES_CACHE_INDEX_RESULT + 1, 0.75F, true) {
+
+    /* GuardedBy(LOCK) */
+    private static final Map <CacheKey, SoftReference<CacheValue>> CACHE_INDEX_RESULT_SMALL = new LinkedHashMap<CacheKey, SoftReference<CacheValue>>(MAX_ENTRIES_CACHE_INDEX_RESULT + 1, 0.75F, true) {
         @Override
         public boolean removeEldestEntry(Map.Entry eldest) {
             return size() > MAX_ENTRIES_CACHE_INDEX_RESULT;
+        }
+    };
+
+    /* GuardedBy(LOCK) */
+    private static final Map <CacheKey, SoftReference<CacheValue>> CACHE_INDEX_RESULT_LARGE = new LinkedHashMap<CacheKey, SoftReference<CacheValue>>(
+            (MAX_ENTRIES_CACHE_INDEX_RESULT / 4) + 1, 0.75F, true) {
+        @Override
+        public boolean removeEldestEntry(Map.Entry eldest) {
+            return size() > (MAX_ENTRIES_CACHE_INDEX_RESULT / 3);
         }
     };
 
@@ -109,16 +132,15 @@ public class JsIndex {
 
     private static final Map<StatsKey, StatsValue> QUERY_STATS = new HashMap<StatsKey, StatsValue>();
 
-    private static final AtomicInteger CACHE_HIT = new AtomicInteger();
+    /* GuardedBy(QUERY_STATS) */
+    private static int cacheHit;
 
-    private static final AtomicInteger CACHE_MISS = new AtomicInteger();
+    /* GuardedBy(QUERY_STATS) */
+    private static int cacheMiss;
 
     private final QuerySupport querySupport;
 
     private final boolean updateCache;
-
-    private final SoftReference<Map<CacheKey, CacheValue>> resultCache =
-            new SoftReference<Map<CacheKey, CacheValue>>(new HashMap<CacheKey, CacheValue>());
 
     private JsIndex(QuerySupport querySupport, boolean updateCache) {
         this.querySupport = querySupport;
@@ -136,89 +158,69 @@ public class JsIndex {
     }
 
     public static JsIndex get(FileObject fo) {
-        JsIndex index = CACHE.get(fo);
+        JsIndex index = INDEX_CACHE.get(fo);
         if (index == null) {
             LOG.log(Level.FINE, "Creating JsIndex for FileObject: {0}", fo); //NOI18N
             index = new JsIndex(QuerySupportFactory.get(fo), true);
-            CACHE.put(fo, index);
+            INDEX_CACHE.put(fo, index);
         }
         return index;
     }
 
-    public Collection<? extends IndexResult> query(
-            final String fieldName, final String fieldValue,
+    public Collection<? extends IndexResult> query(final String fieldName, final String fieldValue,
             final QuerySupport.Kind kind, final String... fieldsToLoad) {
 
-        if (querySupport != null) {
-            try {
-                if (INDEX_CHANGED.get()) {
-                    CACHE_INDEX_RESULT.clear();
-                    Map<CacheKey, CacheValue> currentCache = resultCache.get();
-                    if (currentCache != null) {
-                        currentCache.clear();
-                    }
-                    INDEX_CHANGED.set(false);
-                }
-                CacheKey key = new CacheKey(this, fieldName, fieldValue, kind);
-                CacheValue value = CACHE_INDEX_RESULT.get(key);
-                Collection<? extends IndexResult> result;
-                if (value == null || !value.contains(fieldsToLoad)) {
-                    Map<CacheKey, CacheValue> currentCache = resultCache.get();
-                    if (currentCache != null) {
-                        value = currentCache.get(key);
-                    }
-                    if (value == null || !value.contains(fieldsToLoad)) {
-                        CACHE_MISS.incrementAndGet();
-                        result = querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
-                        if (updateCache) {
-                            value = new CacheValue(fieldsToLoad, result);
-                            CACHE_INDEX_RESULT.put(key, value);
+        if (querySupport == null) {
+            return Collections.<IndexResult>emptySet();
+        }
 
-                            if (currentCache != null) {
-                                currentCache.put(key, value);
+        try {
+            if (INDEX_CHANGED.get()) {
+                WRITE_LOCK.lock();
+                try {
+                    CACHE_INDEX_RESULT_SMALL.clear();
+                    CACHE_INDEX_RESULT_LARGE.clear();
+                } finally {
+                    WRITE_LOCK.unlock();
+                }
+                INDEX_CHANGED.set(false);
+            }
+
+            CacheKey key = new CacheKey(this, fieldName, fieldValue, kind);
+            Collection<? extends IndexResult> result;
+
+            CacheValue value = getCachedValue(key, fieldsToLoad);
+            if (value != null && value.contains(fieldsToLoad)) {
+                logStats(value.getResult(), true, fieldsToLoad);
+                return value.getResult();
+            } else {
+                result = querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
+                if (updateCache) {
+                    WRITE_LOCK.lock();
+                    try {
+                        value = getCachedValue(key, fieldsToLoad);
+                        if (value != null && value.contains(fieldsToLoad)) {
+                            logStats(value.getResult(), false, fieldsToLoad);
+                        } else {
+                            value = new CacheValue(fieldsToLoad, result);
+                            if ((result.size() * AVERAGE_BASIC_INFO_SIZE) < MAX_CACHE_VALUE_SIZE) {
+                                CACHE_INDEX_RESULT_SMALL.put(key, new SoftReference(value));
+                            } else {
+                                CACHE_INDEX_RESULT_LARGE.put(key, new SoftReference(value));
                             }
+                            logStats(result, false, fieldsToLoad);
                         }
-                    } else {
-                        CACHE_HIT.incrementAndGet();
-                        result = value.getResult();
+                        return value.getResult();
+                    } finally {
+                        WRITE_LOCK.unlock();
                     }
                 } else {
-                    CACHE_HIT.incrementAndGet();
-                    result = value.getResult();
+                    logStats(result, false, fieldsToLoad);
+                    return result;
                 }
-
-                if (LOG.isLoggable(Level.FINEST)) {
-                    int size = 0;
-                    for (String field : fieldsToLoad) {
-                        for (IndexResult r : result) {
-                            String val = r.getValue(field);
-                            size += val == null ? 0 : val.length();
-                        }
-                    }
-
-                    synchronized (QUERY_STATS) {
-                        StatsKey statsKey = new StatsKey(fieldsToLoad);
-                        StatsValue statsValue = QUERY_STATS.get(statsKey);
-                        if (statsValue == null) {
-                            QUERY_STATS.put(statsKey,
-                                    new StatsValue(1, result.size(), size));
-                        } else {
-                            QUERY_STATS.put(statsKey,
-                                    new StatsValue(statsValue.getRequests() + 1,
-                                        statsValue.getCount() + result.size(), statsValue.getSize() + size));
-                        }
-
-                        for (Map.Entry<StatsKey, StatsValue> entry : QUERY_STATS.entrySet()) {
-                            LOG.log(Level.FINEST, entry.getKey() + ": " + entry.getValue());
-                        }
-                    }
-                    LOG.log(Level.FINEST, "Cache hit: " + CACHE_HIT.get() + ", Cache miss: "
-                            + CACHE_MISS.get() + ", Ratio: " + (CACHE_HIT.get() / CACHE_MISS.get()));
-                }
-                return result;
-            } catch (IOException ioe) {
-                LOG.log(Level.WARNING, null, ioe);
             }
+        } catch (IOException ioe) {
+            LOG.log(Level.WARNING, null, ioe);
         }
 
         return Collections.<IndexResult>emptySet();
@@ -238,6 +240,66 @@ public class JsIndex {
         long end = System.currentTimeMillis();
         LOG.log(Level.FINE, "Obtaining globals from the index took: {0}", (end - start)); //NOI18N
         return globals;
+    }
+
+    private static CacheValue getCachedValue(CacheKey key, String... fieldsToLoad) {
+        READ_LOCK.lock();
+        try {
+            CacheValue value = null;
+            SoftReference<CacheValue> currentReference = CACHE_INDEX_RESULT_SMALL.get(key);
+            if (currentReference != null) {
+                value = currentReference.get();
+            }
+            if (value == null || !value.contains(fieldsToLoad)) {
+                currentReference = CACHE_INDEX_RESULT_LARGE.get(key);
+                if (currentReference != null) {
+                    value = currentReference.get();
+                }
+            }
+            return value;
+        } finally {
+            READ_LOCK.unlock();
+        }
+    }
+
+    private static void logStats(Collection<? extends IndexResult> result, boolean hit, String... fieldsToLoad) {
+        if (!LOG.isLoggable(Level.FINEST)) {
+            return;
+        }
+        int size = 0;
+        for (String field : fieldsToLoad) {
+            for (IndexResult r : result) {
+                String val = r.getValue(field);
+                size += val == null ? 0 : val.length();
+            }
+        }
+
+        synchronized (QUERY_STATS) {
+            if (hit) {
+                cacheHit++;
+            } else {
+                cacheMiss++;
+            }
+
+            StatsKey statsKey = new StatsKey(fieldsToLoad);
+            StatsValue statsValue = QUERY_STATS.get(statsKey);
+            if (statsValue == null) {
+                QUERY_STATS.put(statsKey,
+                        new StatsValue(1, result.size(), size));
+            } else {
+                QUERY_STATS.put(statsKey,
+                        new StatsValue(statsValue.getRequests() + 1,
+                            statsValue.getCount() + result.size(), statsValue.getSize() + size));
+            }
+
+            if ((cacheHit + cacheMiss) % 500 == 0) {
+                LOG.log(Level.FINEST, "Cache hit: " + cacheHit + ", Cache miss: "
+                        + cacheMiss + ", Ratio: " + (cacheHit  / cacheMiss));
+                for (Map.Entry<StatsKey, StatsValue> entry : QUERY_STATS.entrySet()) {
+                    LOG.log(Level.FINEST, entry.getKey() + ": " + entry.getValue());
+                }
+            }
+        }
     }
 
     private static Collection<IndexedElement> getElementsByPrefix(String prefix, Collection<IndexedElement> items) {
