@@ -304,6 +304,18 @@ ${cursor}]]>
 ]]>
         </code>
     </codetemplate>
+    <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.tryf" abbreviation="tryf" contexts="php-code">
+        <code>
+<![CDATA[try {
+    ${selection}${cursor}
+} catch (${Exception} $$${exc}) {
+    echo $$${exc editable=false}->getTraceAsString();
+} finally {
+    
+}
+]]>
+        </code>
+    </codetemplate>
     <codetemplate uuid="org.netbeans.modules.php.editor.codetemplate.thr" abbreviation="thr" contexts="php-code">
         <code>
 <![CDATA[throw new ${Exception};]]>
