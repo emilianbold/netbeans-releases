@@ -46,16 +46,19 @@ import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishStatusTask;
 
 /**
- * Notification about server state check results.
- * <p/>
- * Handles initial period of time after adding new server into status
- * monitoring.
- * <p/>
- * Should receive all state change events except <code>UNKNOWN</code>.
+ * Notification about server state check results that will wake up waiting
+ * thread to pass notification.
  * <p/>
  * @author Tomas Kraus
  */
-public class MonitoringInitStateListener extends WakeUpStateListener {
+public abstract class WakeUpStateListener extends BasicStateListener {
+    
+    ////////////////////////////////////////////////////////////////////////////
+    // Instance attributes                                                    //
+    ////////////////////////////////////////////////////////////////////////////
+
+    /** Requested wake up of checking thread. */
+    private volatile boolean wakeUp;
 
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
@@ -64,8 +67,9 @@ public class MonitoringInitStateListener extends WakeUpStateListener {
     /**
      * Constructs an instance of state check results notification.
      */
-    public MonitoringInitStateListener() {
+    public WakeUpStateListener() {
         super();
+        wakeUp = false;
     }
 
     ////////////////////////////////////////////////////////////////////////////
@@ -73,19 +77,49 @@ public class MonitoringInitStateListener extends WakeUpStateListener {
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Callback to notify about current server status after every check
-     * when enabled.
+     * Wake up checking thread.
+     */
+    protected void wakeUp() {
+        if (!wakeUp) synchronized(this) {
+            wakeUp = true;
+            this.notify();
+        }
+    }
+
+    /**
+     * Get status of wake up request of checking thread.
      * <p/>
-     * Wait for more checking cycles to make sure server status monitoring
-     * has settled down.
+     * @return Status of wake up request of checking thread.
+     */
+    public boolean isWakeUp() {
+        return wakeUp;
+    }
+
+    /**
+     * Wake up waiting thread immediately on registered state changes.
      * <p/>
      * @param server GlassFish server instance being monitored.
      * @param status Current server status.
      * @param task   Last GlassFish server status check task details.
+     */    
+    @Override
+    public void newState(final GlassFishServer server,
+            final GlassFishStatus status, final GlassFishStatusTask task) {
+        wakeUp();
+    }
+
+    /**
+     * Do nothing.
+     * <p/>
+     * Error callback is expected to be unused.
+     * <p/>
+     * @param server GlassFish server instance being monitored.
+     * @param task   GlassFish server status check task details.
      */
     @Override
-    public void currentState(final GlassFishServer server,
-            final GlassFishStatus status, final GlassFishStatusTask task) {
+    public void error(final GlassFishServer server,
+            final GlassFishStatusTask task) {
         // Not used yet.
     }
+
 }

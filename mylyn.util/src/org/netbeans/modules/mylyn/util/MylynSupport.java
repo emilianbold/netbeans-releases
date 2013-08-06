@@ -673,7 +673,7 @@ public class MylynSupport {
         for (ITask task : tasks) {
             nbTasks.add(toNbTask(task));
         }
-        return nbTasks;
+        return Collections.unmodifiableSet(nbTasks);
     }
 
     NbTask toNbTask (ITask task) {

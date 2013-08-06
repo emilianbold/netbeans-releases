@@ -49,13 +49,13 @@ import static org.glassfish.tools.ide.GlassFishStatus.OFFLINE;
 import static org.glassfish.tools.ide.GlassFishStatus.ONLINE;
 import static org.glassfish.tools.ide.GlassFishStatus.SHUTDOWN;
 import static org.glassfish.tools.ide.GlassFishStatus.STARTUP;
-import org.glassfish.tools.ide.GlassFishStatusListener;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishStatusCheckResult;
 import org.glassfish.tools.ide.data.GlassFishStatusTask;
 import org.glassfish.tools.ide.data.TaskEvent;
+import org.netbeans.modules.glassfish.common.status.WakeUpStateListener;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.util.NbBundle;
 
@@ -78,13 +78,10 @@ public abstract class BasicTask<V> implements Callable<V> {
      * At least port checks are being executed periodically so this class will
      * be called back in any situation.
      */
-    protected static class StartStateListener implements GlassFishStatusListener {
+    protected static class StartStateListener extends WakeUpStateListener {
 
         /** Is server starting in profiling mode? */
         private final boolean profile;
-
-        /** Requested wake up of checking thread. */
-        private volatile boolean wakeUp;
 
         /**
          * Constructs an instance of state check results notification.
@@ -93,27 +90,8 @@ public abstract class BasicTask<V> implements Callable<V> {
          *                <code>true</code>.
          */
         protected StartStateListener(final boolean profile) {
+            super();
             this.profile = profile;
-            wakeUp = false;
-        }
-
-        /**
-         * Wake up checking thread.
-         */
-        void wakeUp() {
-            if (!wakeUp) synchronized(this) {
-                wakeUp = true;
-                this.notify();
-            }
-        }
-
-        /**
-         * Get status of wake up request of checking thread.
-         * <p/>
-         * @return Status of wake up request of checking thread.
-         */
-        boolean isWakeUp() {
-            return wakeUp;
         }
 
         /**
@@ -144,36 +122,6 @@ public abstract class BasicTask<V> implements Callable<V> {
                     wakeUp();
                     break;
             }
-        }
-
-        /**
-         * Callback to notify about server status change when enabled.
-         * <p/>
-         * Listens on <code>ONLINE</code>, <code>SHUTDOWN</code>
-         * state changes where we can wake up checking startup thread 
-         * immediately.
-         * <p/>
-         * @param server GlassFish server instance being monitored.
-         * @param status Current server status.
-         * @param task   Last GlassFish server status check task details.
-         */    
-        @Override
-        public void newState(final GlassFishServer server,
-                final GlassFishStatus status, final GlassFishStatusTask task) {
-            wakeUp();
-        }
-
-        /**
-         * Callback to notify about server status check failures.
-         * <p/>
-         * @param server GlassFish server instance being monitored.
-         * @param event  Failure event.
-         * @param task   GlassFish server status check task details.
-         */
-        @Override
-        public void error(final GlassFishServer server,
-                final GlassFishStatusTask task) {
-            // Not used yet.
         }
 
     }

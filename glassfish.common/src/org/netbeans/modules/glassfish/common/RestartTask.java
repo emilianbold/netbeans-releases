@@ -53,7 +53,6 @@ import static org.glassfish.tools.ide.GlassFishStatus.ONLINE;
 import static org.glassfish.tools.ide.GlassFishStatus.SHUTDOWN;
 import static org.glassfish.tools.ide.GlassFishStatus.STARTUP;
 import static org.glassfish.tools.ide.GlassFishStatus.UNKNOWN;
-import org.glassfish.tools.ide.GlassFishStatusListener;
 import org.glassfish.tools.ide.admin.CommandRestartDAS;
 import org.glassfish.tools.ide.admin.CommandStopDAS;
 import org.glassfish.tools.ide.admin.ResultString;
@@ -67,6 +66,7 @@ import org.glassfish.tools.ide.utils.ServerUtils;
 import static org.netbeans.modules.glassfish.common.BasicTask.START_TIMEOUT;
 import static org.netbeans.modules.glassfish.common.BasicTask.TIMEUNIT;
 import static org.netbeans.modules.glassfish.common.GlassFishState.getStatus;
+import org.netbeans.modules.glassfish.common.status.WakeUpStateListener;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
 import org.openide.util.NbBundle;
@@ -90,36 +90,13 @@ public class RestartTask extends BasicTask<TaskState> {
      * At least port checks are being executed periodically so this class will
      * be called back in any situation.
      */
-    private static class ShutdownStateListener
-            implements GlassFishStatusListener {
-
-        /** Requested wake up of checking thread. */
-        private volatile boolean wakeUp;
+    private static class ShutdownStateListener extends WakeUpStateListener {
 
         /**
          * Constructs an instance of state check results notification.
          */
         private ShutdownStateListener() {
-            wakeUp = false;
-        }
-
-        /**
-         * Wake up checking thread.
-         */
-        private void wakeUp() {
-            if (!wakeUp) synchronized(this) {
-                wakeUp = true;
-                this.notify();
-            }
-        }
-
-        /**
-         * Get status of wake up request of checking thread.
-         * <p/>
-         * @return Status of wake up request of checking thread.
-         */
-        private boolean isWakeUp() {
-            return wakeUp;
+            super();
         }
 
         /**
@@ -139,36 +116,6 @@ public class RestartTask extends BasicTask<TaskState> {
             if (status != SHUTDOWN) {
                 wakeUp();
             }
-        }
-
-        /**
-         * Callback to notify about server status change when enabled.
-         * <p/>
-         * Listens on <code>UNKNOWN</code>, <code>OFFLINE</code>,
-         * <code>STARTUP</code> and <code>ONLINE</code> state changes where
-         * we can wake up checking restart thread immediately.
-         * <p/>
-         * @param server GlassFish server instance being monitored.
-         * @param status Current server status.
-         * @param task   Last GlassFish server status check task details.
-         */    
-        @Override
-        public void newState(final GlassFishServer server,
-                final GlassFishStatus status, final GlassFishStatusTask task) {
-            wakeUp();
-        }
-
-        /**
-         * Callback to notify about server status check failures.
-         * <p/>
-         * @param server GlassFish server instance being monitored.
-         * @param event  Failure event.
-         * @param task   GlassFish server status check task details.
-         */
-        @Override
-        public void error(final GlassFishServer server,
-                final GlassFishStatusTask task) {
-            // Not used yet.
         }
 
     }
