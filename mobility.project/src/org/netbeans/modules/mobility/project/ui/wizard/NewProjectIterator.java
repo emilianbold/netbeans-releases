@@ -50,10 +50,12 @@
 package org.netbeans.modules.mobility.project.ui.wizard;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import org.netbeans.modules.mobility.cldcplatform.J2MEPlatform;
 import org.netbeans.modules.mobility.project.J2MEProjectGenerator;
 import org.netbeans.spi.mobility.cfgfactory.ProjectConfigurationFactory.ConfigurationTemplateDescriptor;
@@ -68,7 +70,7 @@ import org.openide.util.NbBundle;
  *
  * @author  David Kaspar, Petr Somol
  */
-public class NewProjectIterator implements TemplateWizard.Iterator {
+public class NewProjectIterator implements TemplateWizard.AsynchronousInstantiatingIterator<WizardDescriptor> {
     
     private static final long serialVersionUID = 4589834546983L;
 
@@ -78,6 +80,7 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
     ProjectPanel.WizardPanel projectPanel;
     PlatformSelectionPanel psPanel;
     ConfigurationsSelectionPanel csPanel;
+    private WizardDescriptor currentWd;
     
     static Object create() {
         return new NewProjectIterator();
@@ -126,13 +129,13 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
     }
     
     @Override
-    public void initialize(final org.openide.loaders.TemplateWizard templateWizard) {
+    public void initialize(final WizardDescriptor wd) {
         boolean create = true;
-        if (!(Templates.getTemplate(templateWizard).getAttribute("application") instanceof Boolean)) { // NOI18N
+        if (!(Templates.getTemplate(wd).getAttribute("application") instanceof Boolean)) { // NOI18N
             create = false;
         }
         boolean embedded = true;
-        if (!(Templates.getTemplate(templateWizard).getAttribute("embedded") instanceof Boolean)) { // NOI18N
+        if (!(Templates.getTemplate(wd).getAttribute("embedded") instanceof Boolean)) { // NOI18N
             embedded = false;
         }
         
@@ -149,30 +152,36 @@ public class NewProjectIterator implements TemplateWizard.Iterator {
         
         psPanel = new PlatformSelectionPanel();
         csPanel = new ConfigurationsSelectionPanel();
-        templateWizard.putProperty(PlatformSelectionPanel.REQUIRED_CONFIGURATION, null);
-        templateWizard.putProperty(PlatformSelectionPanel.REQUIRED_PROFILE, embedded ? "IMP-NG" : null); // NOI18N
-        templateWizard.putProperty(PlatformSelectionPanel.PLATFORM_DESCRIPTION, null);
-        templateWizard.putProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES, null);
-        templateWizard.putProperty(Utils.IS_LIBRARY, !create);
-        templateWizard.putProperty(Utils.IS_EMBEDDED, embedded);
-        final DataObject dao = templateWizard.getTemplate();
-        templateWizard.putProperty(ProjectPanel.PROJECT_LOCATION, null);
-        templateWizard.putProperty(ProjectPanel.PROJECT_NAME, dao != null ? dao.getPrimaryFile().getName()+'1' : null);
+        wd.putProperty(PlatformSelectionPanel.REQUIRED_CONFIGURATION, null);
+        wd.putProperty(PlatformSelectionPanel.REQUIRED_PROFILE, embedded ? "IMP-NG" : null); // NOI18N
+        wd.putProperty(PlatformSelectionPanel.PLATFORM_DESCRIPTION, null);
+        wd.putProperty(ConfigurationsSelectionPanel.CONFIGURATION_TEMPLATES, null);
+        wd.putProperty(Utils.IS_LIBRARY, !create);
+        wd.putProperty(Utils.IS_EMBEDDED, embedded);
+        final DataObject dao = ((TemplateWizard)wd).getTemplate();
+        wd.putProperty(ProjectPanel.PROJECT_LOCATION, null);
+        wd.putProperty(ProjectPanel.PROJECT_NAME, dao != null ? dao.getPrimaryFile().getName()+'1' : null);
         currentIndex = 0;
         updateStepsList();
+        currentWd = wd;
     }
     
     @Override
     public void uninitialize(@SuppressWarnings("unused")
-	final org.openide.loaders.TemplateWizard templateWizard) {
+	final WizardDescriptor wd) {
         platformPanel = null;
         projectPanel = null;
         psPanel = null;
         csPanel = null;
         currentIndex = -1;
+        currentWd = null;
     }
     
-    public java.util.Set<DataObject> instantiate(final org.openide.loaders.TemplateWizard templateWizard) throws java.io.IOException {
+    
+    @Override
+    public java.util.Set<DataObject> instantiate() throws java.io.IOException {
+        assert !SwingUtilities.isEventDispatchThread();
+        TemplateWizard templateWizard = (TemplateWizard) currentWd;
         final File projectLocation = (File) templateWizard.getProperty(ProjectPanel.PROJECT_LOCATION);
         final String name = (String) templateWizard.getProperty(ProjectPanel.PROJECT_NAME);
         PlatformSelectionPanel.PlatformDescription platform = (PlatformSelectionPanel.PlatformDescription) templateWizard.getProperty(PlatformSelectionPanel.PLATFORM_DESCRIPTION);
