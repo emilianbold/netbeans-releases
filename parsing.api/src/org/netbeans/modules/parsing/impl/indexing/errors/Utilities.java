@@ -54,6 +54,7 @@ import org.netbeans.modules.parsing.impl.indexing.CacheFolder;
 import org.netbeans.modules.parsing.impl.indexing.PathRecognizerRegistry;
 import org.netbeans.modules.parsing.impl.indexing.PathRegistry;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Pair;
 
 /**
  *
@@ -61,15 +62,23 @@ import org.openide.filesystems.FileObject;
  */
 public class Utilities {
 
-    public static ClassPath getSourceClassPathFor(FileObject file) {
-        for (String sourceCP : PathRecognizerRegistry.getDefault().getSourceIds()) {
-            ClassPath cp = ClassPath.getClassPath(file, sourceCP);
+    private static volatile Pair<FileObject,ClassPath> rootCache;
 
+    public static ClassPath getSourceClassPathFor(FileObject file) {
+        Pair<FileObject,ClassPath> ce = rootCache;
+        if (ce != null && ce.first().equals(ce.second().findOwnerRoot(file))) {
+            return ce.second();
+        }
+        for (String sourceCP : PathRecognizerRegistry.getDefault().getSourceIds()) {
+            final ClassPath cp = ClassPath.getClassPath(file, sourceCP);
             if (cp != null) {
+                final FileObject root = cp.findOwnerRoot(file);
+                if (root != null) {
+                    rootCache = Pair.<FileObject,ClassPath>of(root, cp);
+                }
                 return cp;
             }
         }
-
         return null;
     }
 
