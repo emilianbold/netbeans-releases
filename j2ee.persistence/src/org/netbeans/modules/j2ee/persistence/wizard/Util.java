@@ -242,8 +242,6 @@ public class Util {
         if (providers.isEmpty() && aProviderSupplier.supportsDefaultProvider()) {
             providers.add(ProviderUtil.DEFAULT_PROVIDER);
         }
-
-        addProvidersFromLibraries(providers);
         //
         return providers;
     }
@@ -759,25 +757,6 @@ public class Util {
             Logger.getLogger("global").log(Level.FINE, "Can't add library to the project", ex);
         } catch (UnsupportedOperationException ex) {
             Logger.getLogger("global").log(Level.FINE, "Can't add library to the project", ex);
-        }
-    }
-
-    /**
-     * Adds persistence providers found from libraries to the given model.
-     */
-    static private void addProvidersFromLibraries(List<Provider> model) {
-        for (Provider each : PersistenceLibrarySupport.getProvidersFromLibraries()) {
-            boolean found = false;
-            for (int i = 0; i < model.size(); i++) {
-                Object elem = model.get(i);
-                if (elem instanceof Provider && each.equals(elem)) {
-                    found = true;
-                    break;
-                }
-            }
-            if (!found) {
-                model.add(each);
-            }
         }
     }
 

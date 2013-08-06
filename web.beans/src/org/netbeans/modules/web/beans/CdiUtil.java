@@ -210,8 +210,8 @@ public class CdiUtil {
                 return true;//no beans.xml and ee7 environment, default cdi 1.1 behavior
             }
             WebBeansModel model = WebBeansModelFactory.getInstance().getModel(getModelSource(beans, true));
-            if (model == null) {
-                return false;//???
+            if (model == null || model.getRootComponent() == null) {
+                return false;//empty? as in cdi1.0
             }
 
             String attribute = model.getRootComponent().getAttribute(BeansAttributes.XMLNS);
