@@ -287,6 +287,12 @@ public final class Debugger {
     }
     
     private void notifyReset() {
+        if (!breakpointsActive) {
+            // Repeat that the breakpoints are not active
+            JSONObject params = new JSONObject();
+            params.put("active", false);
+            transport.sendCommand(new Command(COMMAND_SET_BRKPS_ACTIVE, params));
+        }
         for (Listener l : listeners ) {
             l.reset();
         }
