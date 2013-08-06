@@ -170,7 +170,7 @@ public class HtmlLexerTest extends NbTestCase {
     }
 
     public void testGenericCssClassEmbedding() {
-        Map<String, Collection<String>> map = new HashMap<String, Collection<String>>();
+        Map<String, Collection<String>> map = new HashMap<>();
         map.put("c:button", Collections.singletonList("styleClass"));
 
         InputAttributes inputAttributes = new InputAttributes();
@@ -352,6 +352,15 @@ public class HtmlLexerTest extends NbTestCase {
         }
         
 //        System.out.println(b);
+    }
+    
+     public void testLexingOfScriptTagWithHtmlContent() {
+        checkTokens("<script type='text/html'><div></div></script>",
+                "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT", 
+                "=|OPERATOR", "'text/html'|VALUE", ">|TAG_CLOSE_SYMBOL", 
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", ">|TAG_CLOSE_SYMBOL", 
+                "</|TAG_OPEN_SYMBOL", "div|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL", 
+                "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
     }
     
     //--------------------------------------------------------------------------
