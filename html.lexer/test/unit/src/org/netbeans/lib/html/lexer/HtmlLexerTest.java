@@ -170,7 +170,7 @@ public class HtmlLexerTest extends NbTestCase {
     }
 
     public void testGenericCssClassEmbedding() {
-        Map<String, Collection<String>> map = new HashMap<String, Collection<String>>();
+        Map<String, Collection<String>> map = new HashMap<>();
         map.put("c:button", Collections.singletonList("styleClass"));
 
         InputAttributes inputAttributes = new InputAttributes();

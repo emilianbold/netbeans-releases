@@ -200,7 +200,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
         
     }
 
-    private final HashMap<CompoundState, CompoundState> STATES_CACHE = new HashMap<CompoundState, CompoundState>();
+    private final HashMap<CompoundState, CompoundState> STATES_CACHE = new HashMap<>();
 
     @Override
     public Object state() {
@@ -318,7 +318,7 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
     
     private static final int ISI_EL = 49; //EL custom open delimiter: {{.....}}
 
-    static final Set<String> EVENT_HANDLER_NAMES = new HashSet<String>();
+    static final Set<String> EVENT_HANDLER_NAMES = new HashSet<>();
     static {
         // See http://www.w3.org/TR/html401/interact/scripts.html
         EVENT_HANDLER_NAMES.add("onload"); // NOI18N
