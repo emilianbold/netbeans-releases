@@ -640,6 +640,7 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             
 
             everythingIsInstalled = true;
+            netBeansIsInstalled = true;
             welcomeText = new StringBuilder(
                     panel.getProperty(WELCOME_TEXT_OPENTAG_PROPERTY));
             for (RegistryNode node: registryNodes) {
@@ -768,10 +769,10 @@ public class NbWelcomePanel extends ErrorMessagePanel {
             final List<Product> products =
                     Registry.getInstance().getProductsToInstall();
 
-            if (products.size() == 0) {
+            if (products.isEmpty()) {
                     // if  (!everythingIsInstalled) && (netBeansIsInstalled)
                     // => there are runtimes to install => show ERROR_NO_RUNTIMES_INSTALL_ONLY_PROPERTY
-                return netBeansIsInstalled?
+                return netBeansIsInstalled ?
                      panel.getProperty(ERROR_NO_RUNTIMES_INSTALL_ONLY_PROPERTY):
                      panel.getProperty(ERROR_NO_CHANGES_INSTALL_ONLY_PROPERTY);
             }

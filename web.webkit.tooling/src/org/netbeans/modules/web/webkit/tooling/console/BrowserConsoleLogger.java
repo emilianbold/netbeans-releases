@@ -117,6 +117,16 @@ public class BrowserConsoleLogger implements Console.Listener {
     @NbBundle.Messages({"BrowserConsoleLoggerTitle=Browser Log"})
     private void initIO() {
         io = IOProvider.getDefault().getIO(Bundle.BrowserConsoleLoggerTitle(), false);
+        setIOColors();
+        io.setInputVisible(true);
+        isFoldingSupported = IOFolding.isSupported(io);
+        //io.getOut().print(PROMPT);
+        Reader r = io.getIn();
+        reader = new ConsoleReader(r);
+        rp.post(reader);
+    }
+    
+    private void setIOColors() {
         if (IOColors.isSupported(io) && IOColorPrint.isSupported(io)) {
             Color colorStd = IOColors.getColor(io, IOColors.OutputType.OUTPUT);
             //Color colorErr = IOColors.getColor(io, IOColors.OutputType.ERROR);
@@ -132,12 +142,6 @@ public class BrowserConsoleLogger implements Console.Listener {
             }
             IOColors.setColor(io, IOColors.OutputType.INPUT, shiftTowards(foreground, Color.GREEN));
         }
-        io.setInputVisible(true);
-        isFoldingSupported = IOFolding.isSupported(io);
-        //io.getOut().print(PROMPT);
-        Reader r = io.getIn();
-        reader = new ConsoleReader(r);
-        rp.post(reader);
     }
 
     public void close() {
@@ -172,6 +176,7 @@ public class BrowserConsoleLogger implements Console.Listener {
         try {
             io.getOut().reset();
         } catch (IOException ex) {}
+        setIOColors();
         io.setInputVisible(true);
         io.getOut().print(PROMPT);
     }
