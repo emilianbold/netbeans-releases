@@ -75,8 +75,8 @@ public class JsfPageMetadataProviderTest extends TestBaseForTestProject {
         assertNotNull(instance);
     }
 
-    public void testGetPageMetadata() {
-        FileObject file = getTestFile("testWebProject/web/index.xhtml");
+    public void testGetPageMetadata() throws Exception {
+        FileObject file = getWorkFile("testWebProject/web/index.xhtml");
         assertNotNull(file);
 
         SyntaxAnalyzerResult result = SyntaxAnalyzer.create(new HtmlSource(file)).analyze();
@@ -97,8 +97,8 @@ public class JsfPageMetadataProviderTest extends TestBaseForTestProject {
         assertEquals(JsfUtils.JSF_XHTML_FILE_MIMETYPE, meta.value(WebPageMetadata.MIMETYPE));
     }
 
-    public void testNoPageMetadataForPlainXHTML() {
-        FileObject file = getTestFile("testWebProject/web/nofacelets.xhtml");
+    public void testNoPageMetadataForPlainXHTML() throws Exception {
+        FileObject file = getWorkFile("testWebProject/web/nofacelets.xhtml");
         assertNotNull(file);
 
         SyntaxAnalyzerResult result = SyntaxAnalyzer.create(new HtmlSource(file)).analyze();
