@@ -62,23 +62,43 @@ public class PSR0HintTest extends PHPHintsTestBase {
     }
 
     public void testNsOkClassOk() throws Exception {
-        checkHints(new PSR0Hint(), "FirstNs/SecondNs/ClassName.php");
+        checkHints(new PSR0Hint.NamespaceDeclarationHint(), "FirstNs/SecondNs/ClassName.php");
     }
 
     public void testNsOkClassOk_01() throws Exception {
-        checkHints(new PSR0Hint(), "FirstNs/SecondNs/Some/Class.php");
+        checkHints(new PSR0Hint.NamespaceDeclarationHint(), "FirstNs/SecondNs/Some/Class.php");
     }
 
     public void testNsNotOkClassNotOk() throws Exception {
-        checkHints(new PSR0Hint(), "FirstNs/SecondNs/WrongName.php");
+        checkHints(new PSR0Hint.NamespaceDeclarationHint(), "FirstNs/SecondNs/WrongName.php");
     }
 
     public void testNsOkClassNotOk() throws Exception {
-        checkHints(new PSR0Hint(), "FirstNs/SecondNs/WrongName.php");
+        checkHints(new PSR0Hint.NamespaceDeclarationHint(), "FirstNs/SecondNs/WrongName.php");
     }
 
     public void testNsOkClassNotOk_01() throws Exception {
-        checkHints(new PSR0Hint(), "FirstNs/SecondNs/SomeClass.php");
+        checkHints(new PSR0Hint.NamespaceDeclarationHint(), "FirstNs/SecondNs/SomeClass.php");
+    }
+
+    public void testNsOkClassOk_type() throws Exception {
+        checkHints(new PSR0Hint.TypeDeclarationHint(), "FirstNs/SecondNs/ClassName.php");
+    }
+
+    public void testNsOkClassOk_01_type() throws Exception {
+        checkHints(new PSR0Hint.TypeDeclarationHint(), "FirstNs/SecondNs/Some/Class.php");
+    }
+
+    public void testNsNotOkClassNotOk_type() throws Exception {
+        checkHints(new PSR0Hint.TypeDeclarationHint(), "FirstNs/SecondNs/WrongName.php");
+    }
+
+    public void testNsOkClassNotOk_type() throws Exception {
+        checkHints(new PSR0Hint.TypeDeclarationHint(), "FirstNs/SecondNs/WrongName.php");
+    }
+
+    public void testNsOkClassNotOk_01_type() throws Exception {
+        checkHints(new PSR0Hint.TypeDeclarationHint(), "FirstNs/SecondNs/SomeClass.php");
     }
 
     @Override

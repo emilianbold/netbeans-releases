@@ -324,7 +324,11 @@
                     <file name="org-netbeans-modules-php-editor-verification-ImmutableVariablesHint.instance" />
                     <file name="org-netbeans-modules-php-editor-verification-NestedBlocksHint.instance" />
                     <file name="org-netbeans-modules-php-editor-verification-ParentConstructorCallHint.instance" />
-                    <file name="org-netbeans-modules-php-editor-verification-PSR0Hint.instance" />
+                    <folder name="psr0">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
+                        <file name="org-netbeans-modules-php-editor-verification-PSR0Hint$NamespaceDeclarationHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-PSR0Hint$TypeDeclarationHint.instance" />
+                    </folder>
                     <folder name="psr1">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
                         <file name="org-netbeans-modules-php-editor-verification-PSR1Hint$ConstantDeclarationHint.instance" />

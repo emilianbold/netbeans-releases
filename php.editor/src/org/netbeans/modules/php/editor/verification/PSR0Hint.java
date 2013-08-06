@@ -43,11 +43,9 @@ package org.netbeans.modules.php.editor.verification;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
@@ -68,9 +66,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PSR0Hint extends HintRule {
-    private static final String HINT_ID = "PSR0.Hint"; //NOI18N
-    private static final String PHP_FILE_EXTENSION = ".php"; //NOI18N
+public abstract class PSR0Hint extends HintRule {
 
     @Override
     public void invoke(PHPRuleContext context, List<Hint> result) {
@@ -78,20 +74,135 @@ public class PSR0Hint extends HintRule {
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
-                CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
+                CheckVisitor checkVisitor = createVisitor(fileObject, context.doc);
                 phpParseResult.getProgram().accept(checkVisitor);
                 result.addAll(checkVisitor.getHints());
             }
         }
     }
 
-    private final class CheckVisitor extends DefaultVisitor {
+    abstract CheckVisitor createVisitor(FileObject fileObject, BaseDocument baseDocument);
+
+    public static class NamespaceDeclarationHint extends PSR0Hint {
+        private static final String HINT_ID = "PSR0.Hint.Namespace"; //NOI18N
+
+        @Override
+        CheckVisitor createVisitor(FileObject fileObject, BaseDocument baseDocument) {
+            return new NamespaceVisitor(this, fileObject, baseDocument);
+        }
+
+        private static final class NamespaceVisitor extends CheckVisitor {
+
+            public NamespaceVisitor(PSR0Hint psr0hint, FileObject fileObject, BaseDocument baseDocument) {
+                super(psr0hint, fileObject, baseDocument);
+            }
+
+            @Override
+            @NbBundle.Messages("PSR0WrongNamespaceNameHintText=Namespace declaration name doesn't correspond to current directory structure.")
+            public void visit(NamespaceDeclaration node) {
+                NamespaceName namespaceName = node.getName();
+                String currentNamespaceName = CodeUtils.extractQualifiedName(namespaceName);
+                String namespaceNameToPath = currentNamespaceName.replace('\\', File.separatorChar);
+                String fileDirPath = getFile().getParent();
+                if (!fileDirPath.contains(namespaceNameToPath)) {
+                    createHint(namespaceName, Bundle.PSR0WrongNamespaceNameHintText());
+                }
+                super.visit(node);
+            }
+
+        }
+
+        @Override
+        public String getId() {
+            return HINT_ID;
+        }
+
+        @Override
+        @NbBundle.Messages("PSR0NamespaceHintDesc=")
+        public String getDescription() {
+            return Bundle.PSR0NamespaceHintDesc();
+        }
+
+        @Override
+        @NbBundle.Messages("PSR0NamespaceHintDisp=Namespace Declaration")
+        public String getDisplayName() {
+            return Bundle.PSR0NamespaceHintDisp();
+        }
+    }
+
+    public static class TypeDeclarationHint extends PSR0Hint {
+        private static final String HINT_ID = "PSR0.Hint.Type"; //NOI18N
+
+        @Override
+        CheckVisitor createVisitor(FileObject fileObject, BaseDocument baseDocument) {
+            return new TypeVisitor(this, fileObject, baseDocument);
+        }
+
+        private static final class TypeVisitor extends CheckVisitor {
+            private static final String PHP_FILE_EXTENSION = ".php"; //NOI18N
+
+            public TypeVisitor(PSR0Hint psr0hint, FileObject fileObject, BaseDocument baseDocument) {
+                super(psr0hint, fileObject, baseDocument);
+            }
+
+            @Override
+            public void visit(ClassDeclaration node) {
+                processTypeDeclaration(node);
+                super.visit(node);
+            }
+
+            @Override
+            public void visit(InterfaceDeclaration node) {
+                processTypeDeclaration(node);
+                super.visit(node);
+            }
+
+            @Override
+            public void visit(TraitDeclaration node) {
+                processTypeDeclaration(node);
+                super.visit(node);
+            }
+
+            @NbBundle.Messages("PSR0WrongTypeNameHintText=Type declaration name doesn't correspond to current file path.")
+            private void processTypeDeclaration(TypeDeclaration node) {
+                String currentTypeName = CodeUtils.extractTypeName(node);
+                String typeNameToPath = currentTypeName.replace('_', File.separatorChar);
+                String filePath = getFile().getPath();
+                if (!filePath.endsWith(typeNameToPath + PHP_FILE_EXTENSION)) {
+                    Identifier name = node.getName();
+                    createHint(name, Bundle.PSR0WrongTypeNameHintText());
+                }
+            }
+
+        }
+
+        @Override
+        public String getId() {
+            return HINT_ID;
+        }
+
+        @Override
+        @NbBundle.Messages("PSR0TypeHintDesc=")
+        public String getDescription() {
+            return Bundle.PSR0TypeHintDesc();
+        }
+
+        @Override
+        @NbBundle.Messages("PSR0TypeHintDisp=Type Declaration")
+        public String getDisplayName() {
+            return Bundle.PSR0TypeHintDisp();
+        }
+    }
+
+    private abstract static class CheckVisitor extends DefaultVisitor {
+        private final PSR0Hint psr0hint;
         private final FileObject fileObject;
         private final BaseDocument baseDocument;
         private final File file;
         private final List<Hint> hints;
 
-        public CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
+        public CheckVisitor(PSR0Hint psr0hint, FileObject fileObject, BaseDocument baseDocument) {
+            this.psr0hint = psr0hint;
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
             this.file = FileUtil.toFile(fileObject);
@@ -102,82 +213,27 @@ public class PSR0Hint extends HintRule {
             return hints;
         }
 
-        @Override
-        @NbBundle.Messages("PSR0WrongNamespaceNameHintText=Namespace declaration name doesn't correspond to current directory structure.")
-        public void visit(NamespaceDeclaration node) {
-            NamespaceName namespaceName = node.getName();
-            String currentNamespaceName = CodeUtils.extractQualifiedName(namespaceName);
-            String namespaceNameToPath = currentNamespaceName.replace('\\', File.separatorChar);
-            String fileDirPath = file.getParent();
-            if (!fileDirPath.contains(namespaceNameToPath)) {
-                createHint(namespaceName, Bundle.PSR0WrongNamespaceNameHintText());
-            }
-            super.visit(node);
-        }
-
-        @Override
-        public void visit(ClassDeclaration node) {
-            processTypeDeclaration(node);
-            super.visit(node);
-        }
-
-        @Override
-        public void visit(InterfaceDeclaration node) {
-            processTypeDeclaration(node);
-            super.visit(node);
-        }
-
-        @Override
-        public void visit(TraitDeclaration node) {
-            processTypeDeclaration(node);
-            super.visit(node);
-        }
-
-        @NbBundle.Messages("PSR0WrongTypeNameHintText=Type declaration name doesn't correspond to current file path.")
-        private void processTypeDeclaration(TypeDeclaration node) {
-            String currentTypeName = CodeUtils.extractTypeName(node);
-            String typeNameToPath = currentTypeName.replace('_', File.separatorChar);
-            String filePath = file.getPath();
-            if (!filePath.endsWith(typeNameToPath + PHP_FILE_EXTENSION)) {
-                Identifier name = node.getName();
-                createHint(name, Bundle.PSR0WrongTypeNameHintText());
-            }
-        }
-
         @NbBundle.Messages({
             "# {0} - Text which describes the violation",
             "PSR0ViolationHintText=PSR-0 Violation:\n{0}"
         })
-        private void createHint(ASTNode node, String message) {
+        protected void createHint(ASTNode node, String message) {
             OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            if (showHint(offsetRange, baseDocument)) {
+            if (psr0hint.showHint(offsetRange, baseDocument)) {
                 hints.add(new Hint(
-                        PSR0Hint.this,
+                        psr0hint,
                         Bundle.PSR0ViolationHintText(message),
                         fileObject,
                         offsetRange,
-                        Collections.<HintFix>emptyList(),
+                        null,
                         500));
             }
         }
 
-    }
+        protected File getFile() {
+            return file;
+        }
 
-    @Override
-    public String getId() {
-        return HINT_ID;
-    }
-
-    @Override
-    @NbBundle.Messages("PSR0HintDesc=The following describes the mandatory requirements that must be adhered to for autoloader interoperability.")
-    public String getDescription() {
-        return Bundle.PSR0HintDesc();
-    }
-
-    @Override
-    @NbBundle.Messages("PSR0HintDisp=PSR-0: Autoloading Standard")
-    public String getDisplayName() {
-        return Bundle.PSR0HintDisp();
     }
 
     @Override
