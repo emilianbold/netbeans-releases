@@ -75,7 +75,6 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
-import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
@@ -143,7 +142,6 @@ public class ClientSideProject implements Project {
     volatile String name;
     private RefreshOnSaveListener refreshOnSaveListener;
     private ClassPath sourcePath;
-    private RemoteFiles remoteFiles;
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
     private ClientSideProjectBrowserProvider projectBrowserProvider;
@@ -208,7 +206,6 @@ public class ClientSideProject implements Project {
         if (ebi != null) {
             lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
         }
-        remoteFiles = new RemoteFiles(this);
         eval.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -332,10 +329,6 @@ public class ClientSideProject implements Project {
             ctx = "/" + ctx; //NOI18N
         }
         return ctx;
-    }
-
-    public RemoteFiles getRemoteFiles() {
-        return remoteFiles;
     }
 
     public AntProjectHelper getProjectHelper() {

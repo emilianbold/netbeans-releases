@@ -40,7 +40,7 @@
  * Portions Copyrighted 2012 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.web.clientproject.remote;
+package org.netbeans.modules.web.clientproject.remotefiles;
 
 import java.io.IOException;
 import java.net.URL;
