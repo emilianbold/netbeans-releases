@@ -611,19 +611,19 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
 
     public static class PackageItem extends CompletionItem {
 
-        private final String keyword;
+        private final String packageName;
         private final ParserResult info;
 
         
-        public PackageItem(String keyword, int anchorOffset, ParserResult info) {
+        public PackageItem(String packageName, int anchorOffset, ParserResult info) {
             super(null, anchorOffset);
-            this.keyword = keyword;
+            this.packageName = packageName;
             this.info = info;
         }
 
         @Override
         public String getName() {
-            return keyword;
+            return packageName;
         }
 
         @Override
@@ -644,7 +644,7 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         @Override
         public ElementHandle getElement() {
             // For completion documentation
-            return ElementHandleSupport.createHandle(info, new KeywordElement(keyword));
+            return ElementHandleSupport.createHandle(info, new KeywordElement(packageName));
         }
     }
 
