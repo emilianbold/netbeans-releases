@@ -49,6 +49,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.PackageElement;
+import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.ClassNode;
 import org.codehaus.groovy.ast.ImportNode;
@@ -372,27 +373,43 @@ public class TypesCompletion extends BaseCompletion {
                     public void run(CompilationController info) {
                         Elements elements = info.getElements();
 
-                        if (elements != null && pkg != null) {
-                            LOG.log(Level.FINEST, "TypeSearcherHelper.run(), elements retrieved");
-                            PackageElement packageElement = elements.getPackageElement(pkg);
+                        addPackageElements(elements.getPackageElement(pkg));
+                        addTypeElements(elements.getTypeElement(pkg));
+                    }
 
-                            if (packageElement == null) {
-                                LOG.log(Level.FINEST, "packageElement is null");
-                            } else {
-                                List<? extends Element> typelist = packageElement.getEnclosedElements();
-                                boolean samePackage = pkg.equals(currentPackage);
+                    private void addPackageElements(PackageElement packageElement) {
+                        if (packageElement != null) {
+                            List<? extends Element> typelist = packageElement.getEnclosedElements();
+                            boolean samePackage = pkg.equals(currentPackage);
 
-                                for (Element element : typelist) {
-                                    Set<Modifier> modifiers = element.getModifiers();
-                                    if (modifiers.contains(Modifier.PUBLIC)
-                                        || samePackage && (modifiers.contains(Modifier.PROTECTED)
-                                        || (!modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.PRIVATE)))) {
-                                        
-                                        result.add(new TypeHolder(element.toString(), element.getKind()));
-                                    }
+                            for (Element element : typelist) {
+                                Set<Modifier> modifiers = element.getModifiers();
+                                if (modifiers.contains(Modifier.PUBLIC)
+                                    || samePackage && (modifiers.contains(Modifier.PROTECTED)
+                                    || (!modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.PRIVATE)))) {
+
+                                    result.add(new TypeHolder(element.toString(), element.getKind()));
                                 }
                             }
                         }
+                    }
+
+                    private void addTypeElements(TypeElement typeElement) {
+                        if (typeElement != null) {
+                            List<? extends Element> typelist = typeElement.getEnclosedElements();
+                            boolean samePackage = pkg.equals(currentPackage);
+
+                            for (Element element : typelist) {
+                                Set<Modifier> modifiers = element.getModifiers();
+                                if (modifiers.contains(Modifier.PUBLIC)
+                                    || samePackage && (modifiers.contains(Modifier.PROTECTED)
+                                    || (!modifiers.contains(Modifier.PUBLIC) && !modifiers.contains(Modifier.PRIVATE)))) {
+
+                                    result.add(new TypeHolder(element.toString(), element.getKind()));
+                                }
+                            }
+                        }
+
                     }
                 }, true);
             } catch (IOException ex) {
