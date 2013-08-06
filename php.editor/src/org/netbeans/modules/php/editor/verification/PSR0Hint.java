@@ -103,7 +103,7 @@ public class PSR0Hint extends HintRule {
         }
 
         @Override
-        @NbBundle.Messages("PSR0WrongNamespaceNameHintText=PSR-0 Violation:\nNamespace declaration name doesn't correspond to current directory structure.")
+        @NbBundle.Messages("PSR0WrongNamespaceNameHintText=Namespace declaration name doesn't correspond to current directory structure.")
         public void visit(NamespaceDeclaration node) {
             NamespaceName namespaceName = node.getName();
             String currentNamespaceName = CodeUtils.extractQualifiedName(namespaceName);
@@ -133,7 +133,7 @@ public class PSR0Hint extends HintRule {
             super.visit(node);
         }
 
-        @NbBundle.Messages("PSR0WrongTypeNameHintText=PSR-0 Violation:\nType declaration name doesn't correspond to current file path.")
+        @NbBundle.Messages("PSR0WrongTypeNameHintText=Type declaration name doesn't correspond to current file path.")
         private void processTypeDeclaration(TypeDeclaration node) {
             String currentTypeName = CodeUtils.extractTypeName(node);
             String typeNameToPath = currentTypeName.replace('_', File.separatorChar);
@@ -144,12 +144,16 @@ public class PSR0Hint extends HintRule {
             }
         }
 
+        @NbBundle.Messages({
+            "# {0} - Text which describes the violation",
+            "PSR0ViolationHintText=PSR-0 Violation:\n{0}"
+        })
         private void createHint(ASTNode node, String message) {
             OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
             if (showHint(offsetRange, baseDocument)) {
                 hints.add(new Hint(
                         PSR0Hint.this,
-                        message,
+                        Bundle.PSR0ViolationHintText(message),
                         fileObject,
                         offsetRange,
                         Collections.<HintFix>emptyList(),
