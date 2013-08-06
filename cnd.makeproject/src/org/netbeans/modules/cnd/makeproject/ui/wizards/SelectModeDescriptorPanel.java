@@ -76,6 +76,8 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
     private String name;
     private final MyWizardStorage wizardStorage;
     private boolean isValid = false;
+    private int generation = 0;
+    private final Object lock = new Object();
 
     public SelectModeDescriptorPanel() {
         name = NbBundle.getMessage(SelectModePanel.class, "SelectModeName"); // NOI18N
@@ -107,12 +109,27 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
 
     @Override
     public boolean isValid() {
-        return isValid;
+        synchronized (lock) {
+            return isValid;
+        }
     }
 
     private void validate(){
-        isValid = component.valid();
-        fireChangeEvent();
+        int gen;
+        synchronized (lock) {
+            gen = generation;
+        }
+        boolean tmpValid = component.valid();
+        boolean fire = false;
+        synchronized (lock) {
+            if (generation == gen) {
+                isValid = tmpValid;
+                fire = true;
+            }
+        }
+        if (fire) {
+            fireChangeEvent();
+        }
     }
 
     private void setMode(boolean isSimple) {
@@ -139,7 +156,10 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
     }
 
     protected final void invalidate() {
-        isValid = false;
+        synchronized (lock) {
+            isValid = false;
+            generation++;
+        }
         fireChangeEvent();
     }
 
@@ -209,16 +229,16 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
     }
 
     private class MyWizardStorage implements WizardStorage {
-        private String projectPath = ""; // NOI18N
-        private FileObject sourceFileObject;
-        private String flags = ""; // NOI18N
-        private boolean setMain = true;
-        private boolean buildProject = true;
-        private CompilerSet cs;
-        private boolean defaultCompilerSet;
-        private ExecutionEnvironment buildEnv;
-        private ExecutionEnvironment sourceEnv;
-        private FileObject makefileFO;
+        private volatile String projectPath = ""; // NOI18N
+        private volatile FileObject sourceFileObject;
+        private volatile String flags = ""; // NOI18N
+        private volatile boolean setMain = true;
+        private volatile boolean buildProject = true;
+        private volatile CompilerSet cs;
+        private volatile boolean defaultCompilerSet;
+        private volatile ExecutionEnvironment buildEnv;
+        private volatile ExecutionEnvironment sourceEnv;
+        private volatile FileObject makefileFO;
 
         public MyWizardStorage() {
             buildEnv = ServerList.getDefaultRecord().getExecutionEnvironment();
@@ -229,7 +249,7 @@ public class SelectModeDescriptorPanel implements ProjectWizardPanels.MakeModePa
         public WizardDescriptor getAdapter() {
             return new WizardDescriptorAdapter(this);
         }
-        
+
         /**
          * @return the path
          */

@@ -1256,7 +1256,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public final InputStream getInputStream() throws FileNotFoundException {
+    public final InputStream getInputStream(boolean checkLock) throws FileNotFoundException {
         throw new FileNotFoundException(getPath());
     }
 

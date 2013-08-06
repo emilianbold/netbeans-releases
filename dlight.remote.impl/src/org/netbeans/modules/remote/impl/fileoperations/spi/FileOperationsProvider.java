@@ -41,7 +41,9 @@
  */
 package org.netbeans.modules.remote.impl.fileoperations.spi;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -352,6 +354,14 @@ abstract public class FileOperationsProvider {
         protected FileObject toFileObject(FileProxyO path) {
             FileObject root = getRoot();
             return root.getFileObject(path.getPath());
+        }
+
+        protected InputStream getInputStream(FileObject fo, boolean checkLock) throws FileNotFoundException {
+            if (fo instanceof RemoteFileObject) {
+                return ((RemoteFileObject)fo).getImplementor().getInputStream(checkLock);
+            } else {
+                return fo.getInputStream();
+            }
         }
 
         protected String[] list(FileProxyO file) {
