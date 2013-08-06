@@ -72,6 +72,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Scalar;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticDispatch;
 import org.netbeans.modules.php.editor.parser.astnodes.StaticMethodInvocation;
+import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation;
 import org.netbeans.modules.php.editor.parser.astnodes.UnaryOperation.Operator;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
@@ -259,6 +260,10 @@ public final class CodeUtils {
 
     public static String extractClassName(ClassDeclaration clsDeclaration) {
         return clsDeclaration.getName().getName();
+    }
+
+    public static String extractTypeName(TypeDeclaration typeDeclaration) {
+        return typeDeclaration.getName().getName();
     }
 
     private static final class VariableNameVisitor extends DefaultVisitor {
