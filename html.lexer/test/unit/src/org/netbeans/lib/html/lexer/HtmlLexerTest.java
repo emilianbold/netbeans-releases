@@ -354,6 +354,15 @@ public class HtmlLexerTest extends NbTestCase {
 //        System.out.println(b);
     }
     
+     public void testLexingOfScriptTagWithHtmlContent() {
+        checkTokens("<script type='text/html'><div></div></script>",
+                "<|TAG_OPEN_SYMBOL", "script|TAG_OPEN", " |WS", "type|ARGUMENT", 
+                "=|OPERATOR", "'text/html'|VALUE", ">|TAG_CLOSE_SYMBOL", 
+                "<|TAG_OPEN_SYMBOL", "div|TAG_OPEN", ">|TAG_CLOSE_SYMBOL", 
+                "</|TAG_OPEN_SYMBOL", "div|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL", 
+                "</|TAG_OPEN_SYMBOL", "script|TAG_CLOSE", ">|TAG_CLOSE_SYMBOL");
+    }
+    
     //--------------------------------------------------------------------------
     
     public static void checkTokens(String text, String... descriptions) {

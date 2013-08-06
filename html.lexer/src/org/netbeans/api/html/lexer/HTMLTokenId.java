@@ -48,6 +48,7 @@ import java.util.EnumSet;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.lexer.*;
 import org.netbeans.lib.html.lexer.HtmlLexer;
 import org.netbeans.lib.html.lexer.HtmlPlugins;
@@ -243,9 +244,7 @@ public enum HTMLTokenId implements TokenId {
                     
                 case SCRIPT:
                     String scriptType = (String)token.getProperty(SCRIPT_TYPE_TOKEN_PROPERTY);
-                    if(scriptType == null || JAVASCRIPT_MIMETYPE.equals(scriptType)) {
-                        mimeType = JAVASCRIPT_MIMETYPE;
-                    }
+                    mimeType = scriptType != null ? scriptType : JAVASCRIPT_MIMETYPE;
                     break;
                     
                 case STYLE:
@@ -267,13 +266,16 @@ public enum HTMLTokenId implements TokenId {
             }
             
             if (mimeType != null) {
-                Language lang = Language.find(mimeType);
-                if (lang == null) {
+                if (MimePath.validate(mimeType)) {
+                    //valid mimetype
+                    Language lang = Language.find(mimeType);
+                    if (lang == null) {
                         LOGGER.log(Level.FINE,
-                        String.format("can't find language for mimetype %s!", mimeType)); //NOI18N
-                    return null; //no language found
-                } else {
-                    return LanguageEmbedding.create(lang, startSkipLen, endSkipLen, joinSections);
+                                String.format("can't find language for mimetype %s!", mimeType)); //NOI18N
+                        return null; //no language found
+                    } else {
+                        return LanguageEmbedding.create(lang, startSkipLen, endSkipLen, joinSections);
+                    }
                 }
             }
             return null;

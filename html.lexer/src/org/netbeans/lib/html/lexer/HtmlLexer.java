@@ -781,7 +781,15 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                                     lexerState = INIT;
                                     break;
                                 case ISI_SCRIPT:
-                                    lexerState = ISI_SCRIPT_CONTENT;
+                                    //script w/ "text/html" content type workaround
+                                    //do lex the script content as normal html code
+                                    if(scriptType != null && "text/html".equalsIgnoreCase(scriptType)) { //NOI18N
+                                        lexerEmbeddingState = INIT;
+                                        scriptType = null;
+                                        lexerState = INIT;
+                                    } else {
+                                        lexerState = ISI_SCRIPT_CONTENT;
+                                    }
                                     break;
                                 case ISI_STYLE:
                                     lexerState = ISI_STYLE_CONTENT;
@@ -1383,8 +1391,8 @@ public final class HtmlLexer implements Lexer<HTMLTokenId> {
                 lexerState = ISP_TAG_X;
                 //test if the tagname is SCRIPT
                 if(equals(SCRIPT, input.readText(), true, true)) {
-                    lexerEmbeddingState = ISI_SCRIPT;
-                }
+                        lexerEmbeddingState = ISI_SCRIPT;
+                    }
                 if(equals(STYLE, input.readText(), true, true)) {
                     lexerEmbeddingState = ISI_STYLE;
                 }
