@@ -42,12 +42,10 @@
 package org.netbeans.modules.php.editor.verification;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.regex.Pattern;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
-import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -61,9 +59,7 @@ import org.openide.util.NbBundle;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class PSR1Hint extends HintRule {
-    private static final String HINT_ID = "PSR1.Hint"; //NOI18N
-    private static final Pattern CONSTANT_PATTERN = Pattern.compile("[A-Z0-9]+[A-Z-0-9_]*[A-Z0-9]+"); //NOI18N
+public abstract class PSR1Hint extends HintRule {
 
     @Override
     public void invoke(PHPRuleContext context, List<Hint> result) {
@@ -71,19 +67,70 @@ public class PSR1Hint extends HintRule {
         if (phpParseResult.getProgram() != null) {
             FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
             if (fileObject != null) {
-                CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
+                CheckVisitor checkVisitor = createVisitor(fileObject, context.doc);
                 phpParseResult.getProgram().accept(checkVisitor);
                 result.addAll(checkVisitor.getHints());
             }
         }
     }
 
-    private final class CheckVisitor extends DefaultVisitor {
+    abstract CheckVisitor createVisitor(FileObject fileObject, BaseDocument baseDocument);
+
+    public static class ConstantDeclarationHint extends PSR1Hint {
+        private static final String HINT_ID = "PSR1.Hint.Constant"; //NOI18N
+        private static final Pattern CONSTANT_PATTERN = Pattern.compile("[A-Z0-9]+[A-Z-0-9_]*[A-Z0-9]+"); //NOI18N
+
+        @Override
+        CheckVisitor createVisitor(FileObject fileObject, BaseDocument baseDocument) {
+            return new ConstantsVisitor(this, fileObject, baseDocument);
+        }
+
+        private static final class ConstantsVisitor extends CheckVisitor {
+
+            public ConstantsVisitor(PSR1Hint psr1hint, FileObject fileObject, BaseDocument baseDocument) {
+                super(psr1hint, fileObject, baseDocument);
+            }
+
+            @Override
+            @NbBundle.Messages("PSR1ConstantDeclarationHintText=Class constants MUST be declared in all upper case with underscore separators.")
+            public void visit(ConstantDeclaration node) {
+                for (Identifier constantNameNode : node.getNames()) {
+                    String constantName = constantNameNode.getName();
+                    if (constantName != null && !CONSTANT_PATTERN.matcher(constantName).matches()) {
+                        createHint(constantNameNode, Bundle.PSR1ConstantDeclarationHintText());
+                    }
+                }
+            }
+
+        }
+
+        @Override
+        public String getId() {
+            return HINT_ID;
+        }
+
+        @Override
+        @NbBundle.Messages("PSR1ConstantHintDesc=Class constants MUST be declared in all upper case with underscore separators.")
+        public String getDescription() {
+            return Bundle.PSR1ConstantHintDesc();
+        }
+
+        @Override
+        @NbBundle.Messages("PSR1ConstantHintDisp=Constants")
+        public String getDisplayName() {
+            return Bundle.PSR1ConstantHintDisp();
+        }
+
+    }
+
+    private abstract static class CheckVisitor extends DefaultVisitor {
+        private final PSR1Hint psr1hint;
         private final FileObject fileObject;
         private final BaseDocument baseDocument;
         private final List<Hint> hints;
 
-        public CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
+        public CheckVisitor(PSR1Hint psr1hint, FileObject fileObject, BaseDocument baseDocument) {
+            this.psr1hint = psr1hint;
             this.fileObject = fileObject;
             this.baseDocument = baseDocument;
             this.hints = new ArrayList<>();
@@ -93,51 +140,23 @@ public class PSR1Hint extends HintRule {
             return hints;
         }
 
-        @Override
-        @NbBundle.Messages("PSR1ConstantNameHintText=Class constants MUST be declared in all upper case with underscore separators.")
-        public void visit(ConstantDeclaration node) {
-            for (Identifier constantNameNode : node.getNames()) {
-                String constantName = constantNameNode.getName();
-                if (constantName != null && !CONSTANT_PATTERN.matcher(constantName).matches()) {
-                    createHint(constantNameNode, Bundle.PSR1ConstantNameHintText());
-                }
-            }
-        }
-
         @NbBundle.Messages({
             "# {0} - Text which describes the violation",
             "PSR1ViolationHintText=PSR-1 Violation:\n{0}"
         })
-        private void createHint(ASTNode node, String message) {
+        protected void createHint(ASTNode node, String message) {
             OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
-            if (showHint(offsetRange, baseDocument)) {
+            if (psr1hint.showHint(offsetRange, baseDocument)) {
                 hints.add(new Hint(
-                        PSR1Hint.this,
+                        psr1hint,
                         Bundle.PSR1ViolationHintText(message),
                         fileObject,
                         offsetRange,
-                        Collections.<HintFix>emptyList(),
+                        null,
                         500));
             }
         }
 
-    }
-
-    @Override
-    public String getId() {
-        return HINT_ID;
-    }
-
-    @Override
-    @NbBundle.Messages("PSR1HintDesc=This section of the standard comprises what should be considered the standard coding elements that are required to ensure a high level of technical interoperability between shared PHP code.")
-    public String getDescription() {
-        return Bundle.PSR1HintDesc();
-    }
-
-    @Override
-    @NbBundle.Messages("PSR1HintDisp=PSR-1: Basic Coding Standard")
-    public String getDisplayName() {
-        return Bundle.PSR1HintDisp();
     }
 
     @Override
