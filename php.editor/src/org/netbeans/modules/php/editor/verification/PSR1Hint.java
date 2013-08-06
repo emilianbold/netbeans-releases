@@ -116,7 +116,7 @@ public abstract class PSR1Hint extends HintRule {
         }
 
         @Override
-        @NbBundle.Messages("PSR1ConstantHintDisp=Constants")
+        @NbBundle.Messages("PSR1ConstantHintDisp=Class Constant Declaration")
         public String getDisplayName() {
             return Bundle.PSR1ConstantHintDisp();
         }
