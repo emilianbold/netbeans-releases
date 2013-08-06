@@ -120,7 +120,7 @@ public class CodeCompletionPanel extends JPanel {
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(autoCompletionSmartQuotesLabel)
                     .addComponent(autoCompletionSmartQuotesCheckBox))

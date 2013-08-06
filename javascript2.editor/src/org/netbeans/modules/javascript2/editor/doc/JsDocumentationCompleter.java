@@ -242,7 +242,7 @@ public class JsDocumentationCompleter {
         JsFunction function = ((JsFunction) jsObject);
         addParameters(doc, toAdd, syntaxProvider, indent, function.getParameters()); //NOI18N
         Collection<? extends TypeUsage> returnTypes = function.getReturnTypes();
-        Collection<TypeUsage> types = ModelUtils.resolveTypes(returnTypes, jsParserResult);
+        Collection<TypeUsage> types = ModelUtils.resolveTypes(returnTypes, jsParserResult, true);
         if (types.isEmpty()) {
             if (hasReturnClause(jsParserResult, jsObject)) {
                 addReturns(doc, toAdd, syntaxProvider, indent, Collections.singleton(new TypeUsageImpl(Type.UNRESOLVED)));

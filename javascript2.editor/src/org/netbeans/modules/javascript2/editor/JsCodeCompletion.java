@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
@@ -87,16 +88,16 @@ import org.openide.util.NbBundle;
  * @author Petr Pisl
  */
 class JsCodeCompletion implements CodeCompletionHandler {
+
     private static final Logger LOGGER = Logger.getLogger(JsCodeCompletion.class.getName());
 
-    private boolean caseSensitive;
-
     private static final List<String> WINDOW_EXPRESSION_CHAIN = Arrays.<String>asList("window", "@pro"); //NOI18N
+
+    private boolean caseSensitive;
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext ccContext) {
         long start = System.currentTimeMillis();
-        
         
         BaseDocument doc = (BaseDocument) ccContext.getParserResult().getSnapshot().getSource().getDocument(false);
         if (doc == null) {
@@ -520,7 +521,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
         Collection<TypeUsage> resolveTypeFromExpression = new ArrayList<TypeUsage>();
         resolveTypeFromExpression.addAll(ModelUtils.resolveTypeFromExpression(request.result.getModel(), jsIndex, expChain, request.anchor));
 
-        resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, request.result);
+        resolveTypeFromExpression = ModelUtils.resolveTypes(resolveTypeFromExpression, request.result, true);
         
         Collection<String> prototypeChain = new ArrayList<String>();
         for (TypeUsage typeUsage : resolveTypeFromExpression) {
