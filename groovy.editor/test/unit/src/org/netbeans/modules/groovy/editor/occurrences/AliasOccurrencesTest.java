@@ -59,9 +59,19 @@ public class AliasOccurrencesTest extends GroovyTestBase {
         testCaretLine("println n^ow().time");
     }
 
+    // #233956
+    public void testMethodStaticImport() throws Exception {
+        testCaretLine("println si^n()");
+    }
+
     // #234000
     public void testFieldAlias() throws Exception {
         testCaretLine("println m^in");
+    }
+
+    // #233956
+    public void testFieldStaticImport() throws Exception {
+        testCaretLine("println LIG^HT_GRAY");
     }
 
     private void testCaretLine(String caretLine) throws Exception {
