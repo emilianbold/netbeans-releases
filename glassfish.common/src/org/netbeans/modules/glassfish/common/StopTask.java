@@ -128,34 +128,13 @@ public class StopTask extends BasicTask<TaskState> {
         fireOperationStateChanged(TaskState.RUNNING, TaskEvent.CMD_RUNNING,
                 "MSG_STOP_SERVER_IN_PROGRESS", instanceName); // NOI18N
         
-        // Waiting for server to stop
-        while(System.currentTimeMillis() - start < STOP_TIMEOUT) {
-            // Send the 'completed' event and return when the server is stopped
-            if(!GlassFishState.isOnline(instance)) {
-                try {
-                    Thread.sleep(1000); // flush the process
-                } catch (InterruptedException e) {
-                }
-                LogViewMgr.removeLog(instance);
-                LogViewMgr logger = LogViewMgr.getInstance(instance.getProperty(GlassfishModule.URL_ATTR));
-                logger.stopReaders();                
-
-                return fireOperationStateChanged(TaskState.COMPLETED,
-                        TaskEvent.CMD_COMPLETED,
-                        "MSG_SERVER_STOPPED", instanceName);
-            }
-            
-            // Sleep for a little so that we do not make our checks too often
-            try {
-                Thread.sleep(DELAY);
-            } catch (InterruptedException e) {}
-            
-            fireOperationStateChanged(TaskState.RUNNING, TaskEvent.CMD_RUNNING,
-                    "MSG_STOP_SERVER_IN_PROGRESS", instanceName);
+        StateChange stateChange = waitShutDown();
+        if (stateChange != null) {
+            return stateChange.fireOperationStateChanged();
         }
-        
-        return fireOperationStateChanged(TaskState.FAILED, TaskEvent.CMD_FAILED,
-                "MSG_STOP_SERVER_FAILED", instanceName);
+        return fireOperationStateChanged(TaskState.COMPLETED,
+                TaskEvent.CMD_COMPLETED,
+                "MSG_SERVER_STOPPED", instanceName);
     }
     
     private TaskState stopClusterOrInstance(String target) {
