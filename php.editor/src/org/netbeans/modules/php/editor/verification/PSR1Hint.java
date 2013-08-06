@@ -41,8 +41,20 @@
  */
 package org.netbeans.modules.php.editor.verification;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.regex.Pattern;
+import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
+import org.netbeans.modules.csl.api.HintFix;
+import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
+import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
 /**
@@ -51,9 +63,64 @@ import org.openide.util.NbBundle;
  */
 public class PSR1Hint extends HintRule {
     private static final String HINT_ID = "PSR1.Hint"; //NOI18N
+    private static final Pattern CONSTANT_PATTERN = Pattern.compile("[A-Z0-9]+[A-Z-0-9_]*[A-Z0-9]+"); //NOI18N
 
     @Override
     public void invoke(PHPRuleContext context, List<Hint> result) {
+        PHPParseResult phpParseResult = (PHPParseResult) context.parserResult;
+        if (phpParseResult.getProgram() != null) {
+            FileObject fileObject = phpParseResult.getSnapshot().getSource().getFileObject();
+            if (fileObject != null) {
+                CheckVisitor checkVisitor = new CheckVisitor(fileObject, context.doc);
+                phpParseResult.getProgram().accept(checkVisitor);
+                result.addAll(checkVisitor.getHints());
+            }
+        }
+    }
+
+    private final class CheckVisitor extends DefaultVisitor {
+        private final FileObject fileObject;
+        private final BaseDocument baseDocument;
+        private final List<Hint> hints;
+
+        public CheckVisitor(FileObject fileObject, BaseDocument baseDocument) {
+            this.fileObject = fileObject;
+            this.baseDocument = baseDocument;
+            this.hints = new ArrayList<>();
+        }
+
+        public List<Hint> getHints() {
+            return hints;
+        }
+
+        @Override
+        @NbBundle.Messages("PSR1ConstantNameHintText=Class constants MUST be declared in all upper case with underscore separators.")
+        public void visit(ConstantDeclaration node) {
+            for (Identifier constantNameNode : node.getNames()) {
+                String constantName = constantNameNode.getName();
+                if (constantName != null && !CONSTANT_PATTERN.matcher(constantName).matches()) {
+                    createHint(constantNameNode, Bundle.PSR1ConstantNameHintText());
+                }
+            }
+        }
+
+        @NbBundle.Messages({
+            "# {0} - Text which describes the violation",
+            "PSR1ViolationHintText=PSR-1 Violation:\n{0}"
+        })
+        private void createHint(ASTNode node, String message) {
+            OffsetRange offsetRange = new OffsetRange(node.getStartOffset(), node.getEndOffset());
+            if (showHint(offsetRange, baseDocument)) {
+                hints.add(new Hint(
+                        PSR1Hint.this,
+                        Bundle.PSR1ViolationHintText(message),
+                        fileObject,
+                        offsetRange,
+                        Collections.<HintFix>emptyList(),
+                        500));
+            }
+        }
+
     }
 
     @Override
