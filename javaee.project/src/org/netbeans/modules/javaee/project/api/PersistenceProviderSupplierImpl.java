@@ -47,6 +47,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.J2eeProjectCapabilities;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
@@ -58,6 +59,7 @@ import org.netbeans.modules.j2ee.persistence.dd.common.Persistence;
 import org.netbeans.modules.j2ee.persistence.provider.Provider;
 import org.netbeans.modules.j2ee.persistence.provider.ProviderUtil;
 import org.netbeans.modules.j2ee.persistence.spi.provider.PersistenceProviderSupplier;
+import org.netbeans.modules.j2ee.persistence.wizard.library.PersistenceLibrarySupport;
 import org.netbeans.modules.javaee.specs.support.api.JpaProvider;
 import org.netbeans.modules.javaee.specs.support.api.JpaSupport;
 
@@ -83,15 +85,11 @@ public final class PersistenceProviderSupplierImpl implements PersistenceProvide
         try {
             J2eeModuleProvider j2eeModuleProvider = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
             ServerInstance si = Deployment.getDefault().getServerInstance(j2eeModuleProvider.getServerInstanceID());
-            if (si == null) {
-                return Collections.emptyList();
+            J2eePlatform platform = null;
+            if (si != null) {
+                platform = si.getJ2eePlatform();
             }
-            J2eePlatform platform = si.getJ2eePlatform();
-            if (platform == null) {
-                return Collections.emptyList();
-            } else {
-                return findPersistenceProviders(platform);
-            }
+            return findPersistenceProviders(platform);
         } catch (InstanceRemovedException ex) {
             return Collections.emptyList();
         }
@@ -99,28 +97,48 @@ public final class PersistenceProviderSupplierImpl implements PersistenceProvide
 
     private List<Provider> findPersistenceProviders(J2eePlatform platform) {
         final List<Provider> providers = new ArrayList<Provider>();
-        final Map<String, JpaProvider> jpaProviderMap = createProviderMap(platform);
+        boolean lessEE7 = true;//we may not know platform
+        if(platform != null) {
+            final Map<String, JpaProvider> jpaProviderMap = createProviderMap(platform);
 
-        boolean defaultFound = false; // see issue #225071
+            boolean defaultFound = false; // see issue #225071
 
-        // Here we are mapping the JpaProvider to the correct Provider
-        for (Provider provider : ProviderUtil.getAllProviders()) {
+            lessEE7 = !platform.getSupportedProfiles().contains(Profile.JAVA_EE_7_WEB) && !platform.getSupportedProfiles().contains(Profile.JAVA_EE_7_FULL);//we know gf4 do not support old providers, #233726
+            // Here we are mapping the JpaProvider to the correct Provider
+            for (Provider provider : ProviderUtil.getAllProviders()) {
 
-            // Find JpaProvider for corespond Provider --> we are using concrete class for that
-            JpaProvider jpa = jpaProviderMap.get(provider.getProviderClass());
-            if (jpa != null) {
-                String version = ProviderUtil.getVersion(provider);
-                if (version == null
-                        || (version.equals(Persistence.VERSION_2_1) && jpa.isJpa21Supported())
-                        || (version.equals(Persistence.VERSION_2_0) && jpa.isJpa2Supported())
-                        || (version.equals(Persistence.VERSION_1_0) && jpa.isJpa1Supported())) {
+                // Find JpaProvider for corespond Provider --> we are using concrete class for that
+                JpaProvider jpa = jpaProviderMap.get(provider.getProviderClass());
+                if (jpa != null) {
+                    String version = ProviderUtil.getVersion(provider);
+                    if (version == null
+                            || (version.equals(Persistence.VERSION_2_1) && jpa.isJpa21Supported())
+                            || (version.equals(Persistence.VERSION_2_0) && jpa.isJpa2Supported() && lessEE7)
+                            || (version.equals(Persistence.VERSION_1_0) && jpa.isJpa1Supported()) && lessEE7) {
 
-                    if (jpa.isDefault() && !defaultFound) {
-                        providers.add(0, provider);
-                        defaultFound = true;
-                    } else {
-                        providers.add(provider);
+                        if (jpa.isDefault() && !defaultFound) {
+                            providers.add(0, provider);
+                            defaultFound = true;
+                        } else {
+                            providers.add(provider);
+                        }
                     }
+                }
+            }
+        }
+        for (Provider each : PersistenceLibrarySupport.getProvidersFromLibraries()){
+            boolean found = false;
+            for (int i = 0; i < providers.size(); i++) {
+                Object elem = providers.get(i);
+                if (elem instanceof Provider && each.equals(elem)){
+                    found = true;
+                    break;
+                }
+            }
+            if (!found){
+                String version = ProviderUtil.getVersion(each);
+                if(lessEE7 || version == null || version.equals(Persistence.VERSION_2_1)) {//we know gf4 do not support old providers, #233726, todo, we need to get supported from gf plugin instead
+                    providers.add(each);
                 }
             }
         }
