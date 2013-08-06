@@ -55,6 +55,7 @@ import org.netbeans.modules.db.sql.editor.api.completion.SubstitutionHandler;
 import org.netbeans.spi.editor.completion.CompletionItem;
 import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -64,12 +65,12 @@ import org.openide.util.NbBundle;
  */
 public abstract class SQLCompletionItem implements CompletionItem {
 
-    private static final String CATALOG_COLOR = "<font color=#515fc5>"; // NOI18N
-    private static final String SCHEMA_COLOR = "<font color=#006666>"; // NOI18N
-    private static final String TABLE_COLOR = "<font color=#cc7800>"; // NOI18N
-    private static final String VIEW_COLOR = "<font color=#bb7800>"; // NOI18N
-    private static final String COLUMN_COLOR = "<font color=#0707ab>"; // NOI18N
-    private static final String KEYWORD_COLOR = "<font color=#005180>"; // NOI18N
+    private static final String CATALOG_COLOR = getHtmlColor(81, 95, 197); // NOI18N
+    private static final String SCHEMA_COLOR = getHtmlColor(0, 102, 102); // NOI18N
+    private static final String TABLE_COLOR = getHtmlColor(204, 120, 0); // NOI18N
+    private static final String VIEW_COLOR = getHtmlColor(187, 120, 0); // NOI18N
+    private static final String COLUMN_COLOR = getHtmlColor(7, 7, 171); // NOI18N
+    private static final String KEYWORD_COLOR = getHtmlColor(0, 81, 128); // NOI18N
     private static final String COLOR_END = "</font>"; // NOI18N
 
     private static final String BOLD = "<b>"; // NOI18N
@@ -445,6 +446,15 @@ public abstract class SQLCompletionItem implements CompletionItem {
         public String toString() {
             return MessageFormat.format("Column {0} in {1} {2}", columnName, view ? "view" : "table", tableName); // NOI18N
         }
+    }
+    
+    private static String getHtmlColor(int r, int g, int b) {
+        Color c = LFCustoms.shiftColor(new Color(r, g, b));
+        return "<font color=#" //NOI18N
+                + LFCustoms.getHexString(c.getRed())
+                + LFCustoms.getHexString(c.getGreen())
+                + LFCustoms.getHexString(c.getBlue())
+                + ">"; //NOI18N
     }
 
     private static class Keyword extends SQLCompletionItem {
