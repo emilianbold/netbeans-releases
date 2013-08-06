@@ -50,6 +50,8 @@ import java.text.MessageFormat;
 import java.util.Collections;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -97,18 +99,19 @@ public class NewWebServiceFromWSDLWizardIterator implements TemplateWizard.Itera
         ServiceCreator creator = CreatorProvider.getServiceCreator(project, wiz);
         if (creator!=null) {
             creator.createServiceFromWsdl();
+            // logging usage of wizard
+            Object[] params = new Object[5];
+            String creatorClassName = creator.getClass().getName();
+            params[0] = creatorClassName.contains("jaxrpc") ? LogUtils.WS_STACK_JAXRPC : LogUtils.WS_STACK_JAXWS; //NOI18N
+            params[1] = project.getClass().getName();
+            J2eeModule j2eeModule = JaxWsUtils.getJ2eeModule(project);
+            params[2] = j2eeModule == null ? "J2SE" : j2eeModule.getModuleVersion()+"("+JaxWsUtils.getModuleType(project)+")"; //NOI18N
+            params[3] = (Boolean) wiz.getProperty(WizardProperties.USE_PROVIDER) ? "PROVIDER": "WS FROM WSDL"; //NOI18N
+            params[4] = (Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN) ? "STATELESS EJB" : "SERVLET"; //NOI18N
+            LogUtils.logWsWizard(params);
+        } else {
+             Logger.getLogger(NewWebServiceFromWSDLWizardIterator.class.getName()).log(Level.WARNING, "Cannot fin=d service creator");
         }
-
-        // logging usage of wizard
-        Object[] params = new Object[5];
-        String creatorClassName = creator.getClass().getName();
-        params[0] = creatorClassName.contains("jaxrpc") ? LogUtils.WS_STACK_JAXRPC : LogUtils.WS_STACK_JAXWS; //NOI18N
-        params[1] = project.getClass().getName();
-        J2eeModule j2eeModule = JaxWsUtils.getJ2eeModule(project);
-        params[2] = j2eeModule == null ? "J2SE" : j2eeModule.getModuleVersion()+"("+JaxWsUtils.getModuleType(project)+")"; //NOI18N
-        params[3] = (Boolean) wiz.getProperty(WizardProperties.USE_PROVIDER) ? "PROVIDER": "WS FROM WSDL"; //NOI18N
-        params[4] = (Boolean)wiz.getProperty(WizardProperties.IS_STATELESS_BEAN) ? "STATELESS EJB" : "SERVLET"; //NOI18N
-        LogUtils.logWsWizard(params);
 
         return Collections.singleton(dTemplate);
     }
