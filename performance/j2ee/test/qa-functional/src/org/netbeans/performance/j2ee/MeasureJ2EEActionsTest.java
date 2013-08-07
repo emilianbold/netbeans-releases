@@ -70,10 +70,8 @@ public class MeasureJ2EEActionsTest {
                 .addTest(OpenJ2EEFilesTest.class)
                 .addTest(OpenJ2EEFilesWithOpenedEditorTest.class)
                 .addTest(CreateJ2EEProjectTest.class)
-                .addTest(MeasureWebServiceActionTest.class)
                 .addTest(MeasureSessionBeanActionTest.class)
                 .addTest(MeasureEntityBeanActionTest.class)
-                .addTest(MeasureCallEjbActionTest.class)
                 .addTest(DeployTest.class)
                 .suite());
         return suite;

@@ -299,7 +299,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    public InputStream getInputStream() throws FileNotFoundException {
+    public InputStream getInputStream(boolean checkLock) throws FileNotFoundException {
         // TODO: check error processing
         try {
 //            CachedRemoteInputStream stream = fileContentCache.get();
@@ -332,9 +332,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             RemoteFileSystemUtils.getCanonicalParent(this).ensureChildSync(this);
             InputStream newStream = new FileInputStream(getCache());
 
-            if (rwl.tryReadLock()) {
+            if (!checkLock) {
+                return newStream;
+            } else if (rwl.tryReadLock()) {
                 return new InputStreamWrapper(newStream);
             } else {
+                newStream.close();
                 return new InputStream() {
 
                     @Override

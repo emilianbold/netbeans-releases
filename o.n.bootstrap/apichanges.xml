@@ -85,6 +85,22 @@ made subject to such option by the copyright holder.
         </description>
         <issue number="201731"/>
     </change>
+     <change id="netbeans.ignore.dupmodule">
+        <api name="launcher"/>
+        <summary>Property to replace DuplicateException with warning log only</summary>
+        <version major="2" minor="63"/>
+        <date day="24" month="7" year="2013"/>
+        <author login="mantlik"/>
+        <compatibility addition="yes" binary="compatible" semantic="compatible" />
+        <description>
+        <p>
+            See <a href="@TOP@architecture-summary.html#systemproperty-netbeans.ignore.dupmodule">
+                netbeans.ignore.dupmodule
+            </a> for details.
+        </p>
+        </description>
+        <issue number="232229"/>
+    </change>
   </changes>
 
   <!-- Now the surrounding HTML text and document structure: -->

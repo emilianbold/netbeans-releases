@@ -380,7 +380,7 @@ public final class RemoteFileObject extends FileObject implements Serializable {
                 }
             }
         }
-        return getImplementor().getInputStream();
+        return getImplementor().getInputStream(true);
     }
 
     @Override

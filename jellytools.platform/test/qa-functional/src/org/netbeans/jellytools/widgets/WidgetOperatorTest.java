@@ -210,7 +210,7 @@ public class WidgetOperatorTest extends JellyTestCase {
     public void testPerformPopupAction() {
         LabelWidgetOperator lwo = new LabelWidgetOperator(tco, "Label 0");
         lwo.performPopupAction("Open");
-        new JDialogOperator("Open").close();
+        new JDialogOperator("Open").requestClose();
     }
 
     /**
@@ -219,7 +219,7 @@ public class WidgetOperatorTest extends JellyTestCase {
     public void testPerformPopupActionNoBlock() {
         LabelWidgetOperator lwo = new LabelWidgetOperator(tco, "Label 0");
         lwo.performPopupActionNoBlock("Modal");
-        new JDialogOperator("Modal").close();
+        new JDialogOperator("Modal").requestClose();
     }
 
     /**
@@ -228,7 +228,7 @@ public class WidgetOperatorTest extends JellyTestCase {
     public void testClickMouse() {
         LabelWidgetOperator lwo = new LabelWidgetOperator(tco, "Label 0");
         lwo.clickMouse(1);
-        new JDialogOperator("Mouse Clicked 1").close();
+        new JDialogOperator("Mouse Clicked 1").requestClose();
     }
 
     /**
@@ -279,6 +279,6 @@ public class WidgetOperatorTest extends JellyTestCase {
      * Close scene.
      */
     public static void testCloseScene() {
-        new JFrameOperator("Test Scene").close();
+        new JFrameOperator("Test Scene").requestClose();
     }
 }
