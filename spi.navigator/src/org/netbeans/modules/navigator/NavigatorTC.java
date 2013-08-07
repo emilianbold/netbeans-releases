@@ -265,14 +265,15 @@ public final class NavigatorTC extends TopComponent implements NavigatorDisplaye
         this.panels = panels;
         int panelsCount = panels == null ? -1 : panels.size();
         selectedPanel = null;
+        toolbarComponent = null;
+        // clear regular content
+        panelSelector.removeActionListener(panelSelectionListener);
+        contentArea.removeAll();
+        panelSelector.removeAllItems();
         // no panel, so make UI look empty
         if (panelsCount <= 0) {
             setToEmpty();
         } else {
-            // clear regular content 
-            panelSelector.removeActionListener(panelSelectionListener);
-            contentArea.removeAll();
-            panelSelector.removeAllItems();
             // #63777: hide panel selector when only one panel available
             holderPanel.setVisible(panelsCount != 1 || (select instanceof NavigatorPanelWithToolbar && ((NavigatorPanelWithToolbar)select).getToolbarComponent() != null));
             boolean selectFound = false;
