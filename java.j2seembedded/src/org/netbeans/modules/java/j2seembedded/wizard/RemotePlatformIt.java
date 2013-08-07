@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
+import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -59,13 +60,25 @@ import org.openide.util.Parameters;
 /**
  *
  * @author Tomas Zezula
+ * @author Roman Svitanic
  */
 class RemotePlatformIt implements WizardDescriptor.InstantiatingIterator<WizardDescriptor> {
+    
+    public static final String PROP_DISPLAYNAME = "displayName"; //NOI18N
+    public static final String PROP_HOST = "host"; //NOI18N
+    public static final String PROP_PORT = "port"; //NOI18N
+    public static final String PROP_USERNAME = "username"; //NOI18N
+    public static final String PROP_PASSWORD = "password"; //NOI18N
+    public static final String PROP_KEYFILE = "keyfile"; //NOI18N
+    public static final String PROP_PASSPHRASE = "passphrase"; //NOI18N
+    public static final String PROP_JREPATH = "jrePath"; //NOI18N
+    public static final String PROP_WORKINGDIR = "workingDir"; //NOI18N
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
     private WizardDescriptor.Panel<WizardDescriptor>[] panels;
+    private WizardDescriptor wizard;
     private String[] names;
     private int index;
 
@@ -102,39 +115,57 @@ class RemotePlatformIt implements WizardDescriptor.InstantiatingIterator<WizardD
 
     @Override
     public void addChangeListener(@NonNull ChangeListener listener) {
-        Parameters.notNull("listener", listener);
+        Parameters.notNull("listener", listener); //NOI18N
         changeSupport.addChangeListener(listener);
     }
 
     @Override
     public void removeChangeListener(@NonNull final ChangeListener listener) {
-        Parameters.notNull("listener", listener);
+        Parameters.notNull("listener", listener); //NOI18N
         changeSupport.removeChangeListener(listener);
     }
 
 
     @Override
     public void initialize(WizardDescriptor wizard) {
+        this.wizard = wizard;
         panels = (WizardDescriptor.Panel<WizardDescriptor>[]) new WizardDescriptor.Panel<?>[] {
             new SetUpRemotePlatform.Panel()
         };
         names = new String[] {
-            NbBundle.getMessage(RemotePlatformIt.class, "TXT_SetUpRemotePlatform")
+            NbBundle.getMessage(RemotePlatformIt.class, "TXT_SetUpRemotePlatform") //NOI18N
         };
         index = 0;
+        ((JComponent) panels[0].getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, names);
     }
 
     @Override
     public Set<JavaPlatform> instantiate() throws IOException {
-        String displayName;
+        String displayName = (String) wizard.getProperty(PROP_DISPLAYNAME); //Platform name from wizard
         String antName;
         for (int i=1;;i++) {
-            displayName = "Remote Platform " + i;
+            displayName = "Remote Platform " + i; //NOI18N
             antName = PropertyUtils.getUsablePropertyName(displayName);
             if (RemotePlatformProvider.isValidPlatformAntName(antName)) {
                 break;
             }
         }
+
+        String host = (String) wizard.getProperty(PROP_HOST);
+        int port = (Integer) wizard.getProperty(PROP_PORT);
+        String username = (String) wizard.getProperty(PROP_USERNAME);
+        String password = null;
+        String keyFile = null;
+        String passphrase = null;
+        if (wizard.getProperty(PROP_PASSWORD) != null) {
+            password = (String) wizard.getProperty(PROP_PASSWORD);
+        } else {
+            keyFile = (String) wizard.getProperty(PROP_KEYFILE);
+            passphrase = (String) wizard.getProperty(PROP_PASSPHRASE);
+        }
+        String jrePath = (String) wizard.getProperty(PROP_JREPATH);
+        String workingDir = (String) wizard.getProperty(PROP_WORKINGDIR);
+
         final Map<String,String> props = Collections.<String,String>singletonMap(RemotePlatformProvider.PLAT_PROP_ANT_NAME, antName);
         final Map<String,String> sysProps = Collections.<String,String>emptyMap();
         final RemotePlatform prototype = RemotePlatform.create(
