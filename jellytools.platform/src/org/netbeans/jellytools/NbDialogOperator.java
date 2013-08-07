@@ -45,7 +45,6 @@
 package org.netbeans.jellytools;
 
 import javax.swing.JDialog;
-import org.netbeans.jellytools.JellyVersion;
 import org.netbeans.jemmy.operators.JButtonOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 
@@ -178,5 +177,11 @@ public class NbDialogOperator extends JDialogOperator {
     /** Pushes "Help" button. */
     public void help() {
         btHelp().push();
+    }
+    
+    @SuppressWarnings("deprecation")
+    @Override
+    public void close() {
+        requestClose();
     }
 }
