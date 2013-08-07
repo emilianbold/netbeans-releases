@@ -89,7 +89,7 @@ import org.openide.util.Utilities;
 import org.openide.util.lookup.Lookups;
 
 /**
- * Asynchronous Glassfish server startup command execution.
+ * Asynchronous GlassFish server startup command execution.
  * <p/>
  * @author Ludovic Chamenois, Peter Williams, Tomas Kraus
  */
@@ -133,8 +133,6 @@ public class StartTask extends BasicTask<TaskState> {
     private final CommonServerSupport support;
     private List<Recognizer> recognizers;
     private List<String> jvmArgs = null;
-    static final private int LOWEST_USER_PORT
-            = org.openide.util.Utilities.isWindows() ? 1 : 1025;
     private final VMIntrospector vmi;
 
     /** internal Java SE platform home cache. */
@@ -232,7 +230,7 @@ public class StartTask extends BasicTask<TaskState> {
                     TaskEvent.CMD_FAILED,
                     "MSG_START_SERVER_FAILED_BADPORT", instanceName);
         }
-
+        // Remote server.
         if (support.isRemote()) {
             if (GlassFishState.isOnline(instance)) {
                 if (Util.isDefaultOrServerTarget(instance.getProperties())) {
@@ -246,7 +244,8 @@ public class StartTask extends BasicTask<TaskState> {
                         "MSG_START_SERVER_FAILED_DASDOWN", instanceName);
             }
         // Local server.
-        } else // Our server is offline.
+        } else
+        // Our server is offline.
         if (GlassFishState.isOffline(instance)) {
             // But administrator port is occupied.
             if (ServerUtils.isDASRunning(instance)) {
@@ -265,7 +264,7 @@ public class StartTask extends BasicTask<TaskState> {
                                 "StartTask.call.matchVersion",
                                 version.getValue());
                         return startClusterOrInstance(adminHost, adminPort);
-                        // There is server with non matching version.
+                    // There is server with non matching version.
                     } else {
                         if (!version.isAuth()) {
                             return fireOperationStateChanged(TaskState.FAILED,
@@ -279,7 +278,7 @@ public class StartTask extends BasicTask<TaskState> {
                                     instanceName, version.getValue());
                         }
                     }
-                    // Got no version response from DAS.
+                // Got no version response from DAS.
                 } else {
                     return fireOperationStateChanged(TaskState.FAILED,
                             TaskEvent.CMD_FAILED,
@@ -364,19 +363,7 @@ public class StartTask extends BasicTask<TaskState> {
                 }};
         int debugPort = -1;
         if (GlassfishModule.DEBUG_MODE.equals(instance.getProperty(GlassfishModule.JVM_MODE))) {
-            try {
-                debugPort = Integer.parseInt(instance.getProperty(GlassfishModule.DEBUG_PORT));
-                if (debugPort < LOWEST_USER_PORT || debugPort > 65535) {
-                    support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, "9009", true);
-                    debugPort = 9009;
-                    LOGGER.log(Level.INFO, "converted debug port to 9009 for {0}", instanceName);
-                }
-            } catch (NumberFormatException nfe) {
-                support.setEnvironmentProperty(GlassfishModule.DEBUG_PORT, "9009", true);
-                support.setEnvironmentProperty(GlassfishModule.USE_SHARED_MEM_ATTR, "false", true);
-                debugPort = 9009;
-                LOGGER.log(Level.INFO, "converted debug type to socket and port to 9009 for {0}", instanceName);
-            }
+            debugPort = instance.getDebugPort();
         }
         support.restartServer(debugPort,
                 support.supportsRestartInDebug() && debugPort >= 0, listeners);
@@ -727,7 +714,8 @@ public class StartTask extends BasicTask<TaskState> {
         } else {
             if (null != debugPortString && debugPortString.trim().length() > 0) {
                 int t = Integer.parseInt(debugPortString);
-                if (t != 0 && (t < LOWEST_USER_PORT || t > 65535)) {
+                if (t != 0 && (t < GlassfishInstance.LOWEST_USER_PORT
+                        || t > 65535)) {
                     throw new NumberFormatException();
                 }
             }

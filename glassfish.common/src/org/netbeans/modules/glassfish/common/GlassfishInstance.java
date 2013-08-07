@@ -260,6 +260,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     public static final int DEFAULT_HTTP_PORT = 8080;
     public static final int DEFAULT_HTTPS_PORT = 8181;
     public static final int DEFAULT_ADMIN_PORT = 4848;
+    public static final int DEFAULT_DEBUG_PORT = 9009;
+    static final int LOWEST_USER_PORT
+            = org.openide.util.Utilities.isWindows() ? 1 : 1025;
     public static final String DEFAULT_DOMAINS_FOLDER = "domains"; //NOI18N
     public static final String DEFAULT_DOMAIN_NAME = "domain1"; // NOI18N
 
@@ -1154,6 +1157,60 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             properties.put(GlassfishModule.JAVA_PLATFORM_ATTR, javahome);
         else
             properties.remove(GlassfishModule.JAVA_PLATFORM_ATTR);
+    }
+
+    /**
+     * Return server JVM mode as <code>String</code> value.
+     * <p/>
+     * @return Server JVM mode.
+     */
+    public String getJvmModeAsString() {
+        return properties.get(GlassfishModule.JVM_MODE);
+    }
+
+    /**
+     * Return server JVM mode.
+     * <p/>
+     * @return Server JVM mode.
+     */
+    public GlassFishJvmMode getJvmMode() {
+        return GlassFishJvmMode.toValue(
+                properties.get(GlassfishModule.JVM_MODE));
+    }
+
+    /**
+     * Return server debug port to be used to attach debugger.
+     * <p/>
+     * Value of <code>GlassfishModule.USE_SHARED_MEM_ATTR</code> is changed
+     * to false.
+     * <p/>
+     * @return Server debug port.
+     */
+    public int getDebugPort() {
+        int debugPort;
+        try {
+            debugPort = Integer.parseInt(
+                    getProperty(GlassfishModule.DEBUG_PORT));
+            if (debugPort < LOWEST_USER_PORT || debugPort > 65535) {
+                putProperty(GlassfishModule.DEBUG_PORT,
+                        Integer.toString(DEFAULT_DEBUG_PORT));
+                debugPort = DEFAULT_DEBUG_PORT;
+                LOGGER.log(Level.INFO, "Converted debug port to {0} for {1}",
+                        new String[] {Integer.toString(DEFAULT_DEBUG_PORT),
+                            getDisplayName()});
+            }
+        } catch (NumberFormatException nfe) {
+            putProperty(GlassfishModule.DEBUG_PORT,
+                    Integer.toString(DEFAULT_DEBUG_PORT));
+            debugPort = DEFAULT_DEBUG_PORT;
+            LOGGER.log(Level.INFO, "Converted debug port to {0} for {1}",
+                    new String[]{Integer.toString(DEFAULT_DEBUG_PORT),
+                getDisplayName()});
+        } finally {
+            putProperty(GlassfishModule.USE_SHARED_MEM_ATTR,
+                    Boolean.toString(false));
+        }
+        return debugPort;
     }
 
     /**
