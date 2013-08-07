@@ -97,8 +97,8 @@ made subject to such option by the copyright holder.
     <fontcolor name="mod-field" foreColor="098A18" default="field" />
     <fontcolor name="mod-local-variable-declaration" default="local-variable" />
     <fontcolor name="mod-local-variable" default="local-variable" />
-    <fontcolor name="mod-parameter-declaration" foreColor="A06001" default="method-parameter" />
-    <fontcolor name="mod-parameter" foreColor="A06001" default="method-parameter" />
+    <fontcolor name="mod-parameter-declaration" foreColor="ec8e01" default="method-parameter" />
+    <fontcolor name="mod-parameter" foreColor="ec8e01" default="method-parameter" />
 
     <fontcolor name="mod-class-declaration" default="class"/>
     <fontcolor name="mod-class" default="class" />
