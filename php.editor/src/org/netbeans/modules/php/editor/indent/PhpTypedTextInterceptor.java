@@ -460,7 +460,7 @@ public class PhpTypedTextInterceptor implements TypedTextInterceptor {
                         && ts.movePrevious()) {
                     // The curly is at the first nonwhite char at the line.
                     // Do we need to indent the { according previous line?
-                    int previousExprestion = IndentationCounter.findStartTokenOfExpression(ts);
+                    int previousExprestion = LexUtilities.findStartTokenOfExpression(ts);
                     int previousIndent = Utilities.getRowIndent(doc, previousExprestion);
                     int currentIndent = Utilities.getRowIndent(doc, offset);
                     int newIndent = IndentUtils.countIndent(doc, offset, previousIndent);
