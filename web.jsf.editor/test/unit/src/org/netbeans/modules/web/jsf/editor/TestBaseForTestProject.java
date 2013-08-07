@@ -41,14 +41,17 @@
  */
 package org.netbeans.modules.web.jsf.editor;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static junit.framework.Assert.assertNotNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.Sources;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.projectapi.SimpleFileOwnerQueryImplementation;
@@ -79,21 +82,21 @@ public class TestBaseForTestProject extends TestBase {
 
         //disable info exceptions from j2eeserver
         Logger.getLogger("org.netbeans.modules.j2ee.deployment.impl.ServerRegistry").setLevel(Level.SEVERE);
-        
+
         //the InstalledFileLocatorImpl needs the netbeans.dirs properly set 
         //so it can find the jsf "modules/ext/jsf-2_1/javax.faces.jar"
         assertNotNull("the netbeans.dirs property must be specified!", System.getProperty("netbeans.dirs"));
 
-        this.projectFo = getTestFile("testWebProject");
+        this.projectFo = copyProjectFolderToWorkDir("testWebProject");
         assertNotNull(projectFo);
-        this.srcFo = getTestFile("testWebProject/src");
+        this.srcFo = FileUtil.toFileObject(getWorkDir()).getFileObject("testWebProject/src");
         assertNotNull(srcFo);
-        this.webFo = getTestFile("testWebProject/web");
+        this.webFo = FileUtil.toFileObject(getWorkDir()).getFileObject("testWebProject/web");
         assertNotNull(webFo);
 
-        this.javaLibProjectFo = getTestFile("testJavaJSFLibrary");
+        this.javaLibProjectFo = copyProjectFolderToWorkDir("testJavaJSFLibrary");
         assertNotNull(javaLibProjectFo);
-        this.javaLibSrc = getTestFile("testJavaJSFLibrary/src");
+        this.javaLibSrc = FileUtil.toFileObject(getWorkDir()).getFileObject("testJavaJSFLibrary/src");
         assertNotNull(javaLibSrc);
 
         Map<FileObject, ProjectInfo> projects = new HashMap<FileObject, ProjectInfo>();
@@ -166,6 +169,41 @@ public class TestBaseForTestProject extends TestBase {
 
     protected FileObject getProjectFolder() {
         return projectFo;
+    }
+
+    //copied from FileChooserAccessory
+    protected FileObject copyFolderRecursively(FileObject sourceFolder, FileObject destination) throws IOException {
+        assert sourceFolder.isFolder() : sourceFolder;
+        assert destination.isFolder() : destination;
+        FileObject destinationSubFolder = destination.getFileObject(sourceFolder.getName());
+        if (destinationSubFolder == null) {
+            destinationSubFolder = destination.createFolder(sourceFolder.getName());
+        }
+        for (FileObject fo : sourceFolder.getChildren()) {
+            if (fo.isFolder()) {
+                copyFolderRecursively(fo, destinationSubFolder);
+            } else {
+                FileObject foExists = destinationSubFolder.getFileObject(fo.getName(), fo.getExt());
+                if (foExists != null) {
+                    foExists.delete();
+                }
+                FileUtil.copyFile(fo, destinationSubFolder, fo.getName(), fo.getExt());
+            }
+        }
+        return destinationSubFolder;
+    }
+
+    protected FileObject copyProjectFolderToWorkDir(String projectName) throws IOException {
+        FileObject projectDir = FileUtil.createFolder(FileUtil.toFileObject(getWorkDir()), projectName);
+        for (FileObject child : getTestFile(projectName).getChildren()) {
+            assertNotNull(child);
+            if (child.isFolder()) {
+                assertNotNull(copyFolderRecursively(child, projectDir));
+            } else {
+                assertNotNull(FileUtil.copyFile(child, projectDir, child.getName()));
+            }
+        }
+        return projectDir;
     }
 
     private static class ProjectInfo {

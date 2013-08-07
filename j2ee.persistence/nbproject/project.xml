@@ -569,6 +569,7 @@ made subject to such option by the copyright holder.
                 <package>org.netbeans.modules.j2ee.persistence.wizard</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard.fromdb</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard.jpacontroller</package>
+                <package>org.netbeans.modules.j2ee.persistence.wizard.library</package>
                 <package>org.netbeans.modules.j2ee.persistence.wizard.unit</package>
             </friend-packages>
         </data>

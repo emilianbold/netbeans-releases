@@ -88,6 +88,12 @@ public class CodeCompletionPanel extends JPanel {
     }
 
     private void initAutoCompletion() {
+        boolean codeCompletionTypeResolution = preferences.getBoolean(
+                OptionsUtils.AUTO_COMPLETION_TYPE_RESOLUTION,
+                OptionsUtils.AUTO_COMPLETION_TYPE_RESOLUTION_DEFAULT);
+        autoCompletionTypeResolutionCheckBox.setSelected(codeCompletionTypeResolution);
+        autoCompletionTypeResolutionCheckBox.addItemListener(defaultCheckBoxListener);
+
         boolean codeCompletionSmartQuotes = preferences.getBoolean(
                 OptionsUtils.AUTO_COMPLETION_SMART_QUOTES,
                 OptionsUtils.AUTO_COMPLETION_SMART_QUOTES_DEFAULT);
@@ -102,6 +108,7 @@ public class CodeCompletionPanel extends JPanel {
     }
 
     void validateData() {
+        preferences.putBoolean(OptionsUtils.AUTO_COMPLETION_TYPE_RESOLUTION, autoCompletionTypeResolutionCheckBox.isSelected());
         preferences.putBoolean(OptionsUtils.AUTO_COMPLETION_SMART_QUOTES, autoCompletionSmartQuotesCheckBox.isSelected());
         preferences.putBoolean(OptionsUtils.AUTO_STRING_CONCATINATION, autoStringConcatenationCheckBox.isSelected());
     }
@@ -118,6 +125,8 @@ public class CodeCompletionPanel extends JPanel {
         autoStringConcatenationCheckBox = new JCheckBox();
         autoCompletionSmartQuotesLabel = new JLabel();
         autoCompletionSmartQuotesCheckBox = new JCheckBox();
+        autoCompletionTypeResolutionLabel = new JLabel();
+        autoCompletionTypeResolutionCheckBox = new JCheckBox();
 
         Mnemonics.setLocalizedText(autoStringConcatenationCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoStringConcatenationCheckBox.text")); // NOI18N
 
@@ -125,21 +134,37 @@ public class CodeCompletionPanel extends JPanel {
 
         Mnemonics.setLocalizedText(autoCompletionSmartQuotesCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionSmartQuotesCheckBox.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(autoCompletionTypeResolutionLabel, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionTypeResolutionLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(autoCompletionTypeResolutionCheckBox, NbBundle.getMessage(CodeCompletionPanel.class, "CodeCompletionPanel.autoCompletionTypeResolutionCheckBox.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
-                    .addComponent(autoCompletionSmartQuotesLabel)
-                    .addComponent(autoCompletionSmartQuotesCheckBox))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(12, 12, 12)
+                        .addComponent(autoCompletionSmartQuotesCheckBox))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(autoCompletionSmartQuotesLabel))
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(Alignment.LEADING)
+                            .addComponent(autoCompletionTypeResolutionCheckBox)
+                            .addComponent(autoCompletionTypeResolutionLabel))))
                 .addContainerGap(30, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
+                .addComponent(autoCompletionTypeResolutionLabel)
+                .addPreferredGap(ComponentPlacement.RELATED)
+                .addComponent(autoCompletionTypeResolutionCheckBox)
+                .addPreferredGap(ComponentPlacement.UNRELATED)
                 .addComponent(autoCompletionSmartQuotesLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addComponent(autoCompletionSmartQuotesCheckBox)
@@ -152,6 +177,8 @@ public class CodeCompletionPanel extends JPanel {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JCheckBox autoCompletionSmartQuotesCheckBox;
     private JLabel autoCompletionSmartQuotesLabel;
+    private JCheckBox autoCompletionTypeResolutionCheckBox;
+    private JLabel autoCompletionTypeResolutionLabel;
     private JCheckBox autoStringConcatenationCheckBox;
     // End of variables declaration//GEN-END:variables
 
