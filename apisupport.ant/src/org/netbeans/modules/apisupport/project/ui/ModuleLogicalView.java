@@ -61,6 +61,7 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -137,7 +138,8 @@ public final class ModuleLogicalView implements LogicalViewProvider {
             
             // XXX add a NodePathResolver impl to lookup
             super(NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-apisupport-project/Nodes"), 
-                  Lookups.fixed(project));
+                  Lookups.fixed(project, DataFolder.findFolder( project.getProjectDirectory() ),
+                    project.getProjectDirectory()));
             this.project = project;
             boolean osgi = false;
                 Manifest man = project.getManifest();

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -41,7 +41,7 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-package org.netbeans.modules.websvc.core.jaxws;
+package org.netbeans.modules.websvc.jaxwsmodel.project;
 
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
@@ -60,33 +60,28 @@ import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
 import org.netbeans.modules.xml.catalog.spi.CatalogListener;
 
-/** Catalog for webservice related schemas that enables completion support in
+/** Catalog for project JAX-WS (JAX-RPC) related schemas that enables validation/completion support in
  *  editor.
  *
  * @author Milan Kuchiak
  *
  */
-public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescriptor, EntityResolver {
+public class JaxWsSchemaCatalog implements CatalogReader, CatalogDescriptor, EntityResolver {
 
-    public static final String SUN_JAXWS_ID = "http://java.sun.com/xml/ns/jax-ws/ri/runtime"; // NOI18N
-    private static final String URL_SUN_JAXWS = "nbres:/org/netbeans/modules/websvc/core/resources/sun-jaxws.xsd"; // NOI18N
-    public static final String JAXWS_WSDL_BINDING_ID = "http://java.sun.com/xml/ns/jaxws"; // NOI18N
-    private static final String URL_JAXWS_WSDL_BINDING = "nbres:/org/netbeans/modules/websvc/core/resources/wsdl_customizationschema_2_0.xsd"; // NOI18N
-    public static final String JAXWS_HANDLER_CHAIN_ID = "http://java.sun.com/xml/ns/javaee"; // NOI18N
-    private static final String URL_JAXWS_HANDLER_CHAIN = "nbres:/org/netbeans/modules/websvc/core/resources/javaee_web_services_metadata_handler_2_0.xsd"; // NOI18N
-
-    public WebServicesSchemaCatalog() {
+    public static final String JAXWS_CONF_ID = "http://www.netbeans.org/ns/jax-ws/1"; // NOI18N
+    public static final String URL_JAXWS_CONF = "nbres:/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xsd"; // NOI18N
+ 
+    public JaxWsSchemaCatalog() {
     }
 
     /**
      * Get String iterator representing all public IDs registered in catalog.
      * @return null if cannot proceed, try later.
      */
+    @Override
     public Iterator<String> getPublicIDs() {
         List<String> list = new ArrayList<String>();
-        list.add(SUN_JAXWS_ID);
-        list.add(JAXWS_WSDL_BINDING_ID);
-        list.add(JAXWS_HANDLER_CHAIN_ID);
+        list.add(JAXWS_CONF_ID);
         return list.listIterator();
     }
 
@@ -94,13 +89,10 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
      * Get registered systemId for given public Id or null if not registered.
      * @return null if not registered
      */
+    @Override
     public String getSystemID(String publicId) {
-        if (SUN_JAXWS_ID.equals(publicId)) {
-            return URL_SUN_JAXWS;
-        } else if (JAXWS_WSDL_BINDING_ID.equals(publicId)) {
-            return URL_JAXWS_WSDL_BINDING;
-        } else if (JAXWS_HANDLER_CHAIN_ID.equals(publicId)) {
-            return URL_JAXWS_HANDLER_CHAIN;
+        if (JAXWS_CONF_ID.equals(publicId)) {
+            return URL_JAXWS_CONF;
         }
         return null;
     }
@@ -108,6 +100,7 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
     /**
      * Refresh content according to content of mounted catalog.
      */
+    @Override
     public void refresh() {
     }
 
@@ -115,6 +108,7 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
      * Optional operation allowing to listen at catalog for changes.
      * @throws UnsupportedOpertaionException if not supported by the implementation.
      */
+    @Override
     public void addCatalogListener(CatalogListener l) {
     }
 
@@ -122,18 +116,21 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
      * Optional operation coupled with addCatalogListener.
      * @throws UnsupportedOpertaionException if not supported by the implementation.
      */
+    @Override
     public void removeCatalogListener(CatalogListener l) {
     }
 
     /** Registers new listener.  */
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
     }
 
     /**
      * @return I18N display name
      */
+    @Override
     public String getDisplayName() {
-        return NbBundle.getMessage(WebServicesSchemaCatalog.class, "LBL_WSSchemaCatalog"); // NOI18N
+        return NbBundle.getMessage(JaxWsSchemaCatalog.class, "LBL_JaxWsSchemaCatalog"); // NOI18N
     }
 
     /**
@@ -141,19 +138,22 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
      * @param type of icon defined by JavaBeans specs
      * @return icon representing current state or null
      */
+    @Override
     public java.awt.Image getIcon(int type) {
-        return ImageUtilities.loadImage("org/netbeans/modules/websvc/core/resources/WSSchemaCatalog.png"); // NOI18N
+        return ImageUtilities.loadImage("org/netbeans/modules/websvc/jaxwsmodel/resources/JaxWsSchemaCatalog.png"); // NOI18N
     }
 
     /**
      * @return I18N short description
      */
+    @Override
     public String getShortDescription() {
-        return NbBundle.getMessage(WebServicesSchemaCatalog.class, "DESC_WSSchemaCatalog");
+        return NbBundle.getMessage(JaxWsSchemaCatalog.class, "DESC_JaxWsSchemaCatalog");
     }
 
     /** Unregister the listener.
      */
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
     }
 
@@ -163,34 +163,25 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
      * @param systemId systemId for resolved entity
      * @return InputSource for
      */
+    @Override
     public InputSource resolveEntity(
             String publicId, String systemId) throws SAXException, IOException {
-        if (SUN_JAXWS_ID.equals(publicId)) {
-            return new InputSource(URL_SUN_JAXWS);
-        } else if (JAXWS_WSDL_BINDING_ID.equals(publicId)) {
-            return new InputSource(URL_JAXWS_WSDL_BINDING);
-        } else if (JAXWS_HANDLER_CHAIN_ID.equals(publicId)) {
-            return new InputSource(URL_JAXWS_HANDLER_CHAIN);
-        } else {
-            return null;
+        if (JAXWS_CONF_ID.equals(publicId)) {
+            return new InputSource(URL_JAXWS_CONF);
         }
-
+        return null;
     }
 
     /**
      * Get registered URI for the given name or null if not registered.
      * @return null if not registered
      */
+    @Override
     public String resolveURI(
             String name) {
-        if (SUN_JAXWS_ID.equals(name)) {
-            return URL_SUN_JAXWS;
-        } else if (JAXWS_WSDL_BINDING_ID.equals(name)) {
-            return URL_JAXWS_WSDL_BINDING;
-        } else if (JAXWS_HANDLER_CHAIN_ID.equals(name)) {
-            return URL_JAXWS_HANDLER_CHAIN;
+        if (JAXWS_CONF_ID.equals(name)) {
+            return URL_JAXWS_CONF;
         }
-
         return null;
     }
 
@@ -198,6 +189,7 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
      * Get registered URI for the given publicId or null if not registered.
      * @return null if not registered
      */
+    @Override
     public String resolvePublic(
             String publicId) {
         return null;
