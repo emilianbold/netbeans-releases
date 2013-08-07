@@ -84,13 +84,13 @@ public class NodeUtils {
         // "Confirm Object Deletion"
         String confirmTitle = Bundle.getString("org.openide.explorer.Bundle",
                                                "MSG_ConfirmDeleteObjectTitle"); // NOI18N
-        new JDialogOperator(confirmTitle).close();
+        new JDialogOperator(confirmTitle).requestClose();
     }
     
     /** Close "Rename" dialog. **/
     public static void closeRenameDialog() {
         String renameTitle = Bundle.getString("org.openide.actions.Bundle", "CTL_RenameTitle"); 
-        new JDialogOperator(renameTitle).close();
+        new JDialogOperator(renameTitle).requestClose();
     }
  
     /** Close properties */

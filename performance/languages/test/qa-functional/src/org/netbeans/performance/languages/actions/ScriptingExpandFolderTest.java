@@ -41,25 +41,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.actions;
 
 import java.io.File;
 import java.net.URISyntaxException;
 import java.net.URL;
+import junit.framework.Test;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.MaximizeWindowAction;
 import org.netbeans.jellytools.actions.RestoreWindowAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -67,24 +65,32 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class ScriptingExpandFolderTest extends PerformanceTestCase {
 
-    /** Name of the folder which test creates and expands */
+    /**
+     * Name of the folder which test creates and expands
+     */
     protected String project;
-    /** Path to the folder which test creates and expands */
+    /**
+     * Path to the folder which test creates and expands
+     */
     protected String pathToFolderNode;
-    /** Node represantation of the folder which test creates and expands */
+    /**
+     * Node represantation of the folder which test creates and expands
+     */
     protected Node nodeToBeExpanded;
-    /** Projects tab */
+    /**
+     * Projects tab
+     */
     protected ProjectsTabOperator projectTab;
-    
+
     public ScriptingExpandFolderTest(String testName) {
         super(testName);
     }
 
     public ScriptingExpandFolderTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
+        super(testName, performanceDataName);
     }
 
-    public static NbTestSuite suite() throws URISyntaxException {
+    public static Test suite() throws URISyntaxException {
         URL u = ScriptingExpandFolderTest.class.getProtectionDomain().getCodeSource().getLocation();
         File f = new File(u.toURI());
         while (f != null) {
@@ -97,43 +103,37 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
             f = f.getParentFile();
         }
 
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.emptyConfiguration().
-             honorAutoloadEager(true).addTest(ScriptingSetup.class)
-             .addTest(ScriptingExpandFolderTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(ScriptingExpandFolderTest.class).suite();
     }
 
     @Override
     public void initialize() {
         projectTab = ScriptingUtilities.invokePTO();
         new MaximizeWindowAction().performAPI(projectTab);
-        
         projectTab.getProjectRootNode(project).collapse();
-        
-        repaintManager().addRegionFilter( LoggingRepaintManager.EXPLORER_FILTER);        
+        repaintManager().addRegionFilter(LoggingRepaintManager.EXPLORER_FILTER);
     }
-    
+
     public void prepare() {
-        if(pathToFolderNode.equals(""))
+        if (pathToFolderNode.equals("")) {
             nodeToBeExpanded = projectTab.getProjectRootNode(project);
-        else
+        } else {
             nodeToBeExpanded = new Node(projectTab.getProjectRootNode(project), pathToFolderNode);
+        }
     }
-    
-    public ComponentOperator open(){
-        repaintManager().addRegionFilter(repaintManager().EXPLORER_FILTER);
+
+    public ComponentOperator open() {
+        repaintManager().addRegionFilter(LoggingRepaintManager.EXPLORER_FILTER);
         nodeToBeExpanded.tree().doExpandPath(nodeToBeExpanded.getTreePath());
         nodeToBeExpanded.expand();
         return null;
     }
-    
+
     @Override
-    public void close(){
+    public void close() {
         nodeToBeExpanded.collapse();
     }
-    
+
     @Override
     public void shutdown() {
         repaintManager().resetRegionFilters();
@@ -148,20 +148,23 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
         expectedTime = 1000;
         doMeasurement();
     }
+
     public void testExpandFolderWith100JSFiles() {
         WAIT_AFTER_OPEN = 1000;
         project = Projects.SCRIPTING_PROJECT;
         pathToFolderNode = "Web Pages" + "|" + "100JsFiles";
         expectedTime = 1000;
-        doMeasurement();           
+        doMeasurement();
     }
+
     public void testExpandFolderWith100CssFiles() {
         WAIT_AFTER_OPEN = 1000;
         project = Projects.SCRIPTING_PROJECT;
         pathToFolderNode = "Web Pages" + "|" + "100CssFiles";
         expectedTime = 1000;
-        doMeasurement();           
-    }  
+        doMeasurement();
+    }
+
     public void testExpandFolderWith100PhpFiles() {
         WAIT_AFTER_OPEN = 1000;
         project = Projects.PHP_PROJECT;
@@ -169,5 +172,4 @@ public class ScriptingExpandFolderTest extends PerformanceTestCase {
         expectedTime = 1000;
         doMeasurement();
     }
-    
 }

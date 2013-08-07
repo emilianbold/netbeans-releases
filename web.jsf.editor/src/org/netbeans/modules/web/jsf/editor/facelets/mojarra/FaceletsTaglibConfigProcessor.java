@@ -558,7 +558,7 @@ public class FaceletsTaglibConfigProcessor extends AbstractConfigProcessor {
                 try {
                     Class<?> clazz = loadClass(sc, functionClass, this, null);
                     m = createMethod(clazz, functionSignature);
-                } catch (Exception e) {
+                } catch (Exception | Error throwable) {
 //                    throw new ConfigurationException(e);
                     //ignore
                 }
