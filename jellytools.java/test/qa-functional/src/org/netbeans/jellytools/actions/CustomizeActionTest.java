@@ -88,7 +88,7 @@ public class CustomizeActionTest extends JellyTestCase {
 
     @Override
     public void tearDown() {
-        new JDialogOperator(CUSTOMIZER_DIALOG_TITLE).close();
+        new JDialogOperator(CUSTOMIZER_DIALOG_TITLE).requestClose();
     }
 
     /** Test performPopup. */

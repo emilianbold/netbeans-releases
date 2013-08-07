@@ -41,80 +41,74 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.actions;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 
 /**
  *
  * @author mkhramov@netbeans.org, mrkam@netbeans.org
  */
-public class CreatePHPSampleProjectTest  extends PerformanceTestCase {
+public class CreatePHPSampleProjectTest extends PerformanceTestCase {
 
     private NewProjectWizardOperator wizard;
     public String category, project, project_name, project_type;
-    
+
     public CreatePHPSampleProjectTest(String testName) {
-        super(testName);        
+        super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;        
-    }
-    
-    public CreatePHPSampleProjectTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;        
+        WAIT_AFTER_OPEN = 20000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(CreatePHPSampleProjectTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public CreatePHPSampleProjectTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = 10000;
+        WAIT_AFTER_OPEN = 20000;
+    }
+
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(CreatePHPSampleProjectTest.class).suite();
     }
 
     @Override
-    public void initialize(){
+    public void initialize() {
         closeAllModal();
     }
 
     @Override
-    public void prepare(){
-        repaintManager().addRegionFilter(repaintManager().IGNORE_STATUS_LINE_FILTER);
-        repaintManager().addRegionFilter(repaintManager().IGNORE_DIFF_SIDEBAR_FILTER);
+    public void prepare() {
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_DIFF_SIDEBAR_FILTER);
 
         wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
     }
-    
-    public ComponentOperator open(){
+
+    public ComponentOperator open() {
         wizard.finish();
         return null;
     }
-    
+
     @Override
-    public void close(){
+    public void close() {
         EditorOperator.closeDiscardAll();
         repaintManager().resetRegionFilters();
-    }    
-    
-    public void testCreatePhpSampleProject() {
-        category = "Samples|PHP";        
-        project = Bundle.getStringTrimmed("org.netbeans.modules.php.samples.Bundle","Templates/Project/Samples/PHP/TodoList");  // "TODOList Sample Application"
-        project_type="PHPSampleApp";              
-        doMeasurement();
     }
 
+    public void testCreatePhpSampleProject() {
+        category = "Samples|PHP";
+        project = Bundle.getStringTrimmed("org.netbeans.modules.php.samples.Bundle", "Templates/Project/Samples/PHP/TodoList");  // "TODOList Sample Application"
+        project_type = "PHPSampleApp";
+        doMeasurement();
+    }
 }
