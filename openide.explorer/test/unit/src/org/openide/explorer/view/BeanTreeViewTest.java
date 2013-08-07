@@ -168,7 +168,7 @@ public class BeanTreeViewTest extends NbTestCase {
             public void tryGc() {
                 WeakReference<Node> wref = new WeakReference<Node>(operateOn);
                 operateOn = null;
-                EQFriendlyGC.assertGC("Node should be released.", wref);    
+                assertGC("Node should be released.", wref);    
             }
         }
         AWTTst awt = new AWTTst();
@@ -364,7 +364,7 @@ public class BeanTreeViewTest extends NbTestCase {
             public void checkGc() {
                 WeakReference<VisualizerNode> wref = new WeakReference<VisualizerNode>(visNode);
                 visNode = null;
-                EQFriendlyGC.assertGC("Collapsed - should be GCed.", wref);
+                assertGC("Collapsed - should be GCed.", wref);
             }            
         }
         AWTTst awt = new AWTTst();
