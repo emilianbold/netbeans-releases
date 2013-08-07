@@ -44,31 +44,36 @@
 
 package org.netbeans.modules.glassfish.common;
 
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.GlassFishIdeException;
 import org.glassfish.tools.ide.GlassFishStatus;
 import static org.glassfish.tools.ide.GlassFishStatus.OFFLINE;
 import static org.glassfish.tools.ide.GlassFishStatus.ONLINE;
 import static org.glassfish.tools.ide.GlassFishStatus.SHUTDOWN;
 import static org.glassfish.tools.ide.GlassFishStatus.STARTUP;
 import static org.glassfish.tools.ide.GlassFishStatus.UNKNOWN;
+import org.glassfish.tools.ide.admin.CommandGetProperty;
 import org.glassfish.tools.ide.admin.CommandRestartDAS;
+import org.glassfish.tools.ide.admin.CommandSetProperty;
 import org.glassfish.tools.ide.admin.CommandStopDAS;
+import org.glassfish.tools.ide.admin.ResultMap;
 import org.glassfish.tools.ide.admin.ResultString;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.admin.TaskStateListener;
-import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishServerStatus;
-import org.glassfish.tools.ide.data.GlassFishStatusTask;
 import org.glassfish.tools.ide.data.TaskEvent;
 import org.glassfish.tools.ide.utils.ServerUtils;
 import static org.netbeans.modules.glassfish.common.BasicTask.START_TIMEOUT;
+import static org.netbeans.modules.glassfish.common.BasicTask.STOP_TIMEOUT;
 import static org.netbeans.modules.glassfish.common.BasicTask.TIMEUNIT;
 import static org.netbeans.modules.glassfish.common.GlassFishState.getStatus;
-import org.netbeans.modules.glassfish.common.status.WakeUpStateListener;
+import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -77,48 +82,6 @@ import org.openide.util.NbBundle;
  * @author Vince Kraemer
  */
 public class RestartTask extends BasicTask<TaskState> {
-
-    ////////////////////////////////////////////////////////////////////////////
-    // Inner classes                                                          //
-    ////////////////////////////////////////////////////////////////////////////
-
-    /**
-     * Notification about server state check results while waiting for server
-     * to shut down.
-     * <p/>
-     * Handles period of time until server shuts down completely.
-     * At least port checks are being executed periodically so this class will
-     * be called back in any situation.
-     */
-    private static class ShutdownStateListener extends WakeUpStateListener {
-
-        /**
-         * Constructs an instance of state check results notification.
-         */
-        private ShutdownStateListener() {
-            super();
-        }
-
-        /**
-         * Callback to notify about current server status after every check
-         * when enabled.
-         * <p/>
-         * Wake up restart thread when server is not in <code>SHUTDOWN</code>
-         * state.
-         * <p/>
-         * @param server GlassFish server instance being monitored.
-         * @param status Current server status.
-         * @param task   Last GlassFish server status check task details.
-         */
-        @Override
-        public void currentState(final GlassFishServer server,
-                final GlassFishStatus status, final GlassFishStatusTask task) {
-            if (status != SHUTDOWN) {
-                wakeUp();
-            }
-        }
-
-    }
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -158,28 +121,6 @@ public class RestartTask extends BasicTask<TaskState> {
     ////////////////////////////////////////////////////////////////////////////
 
     /**
-     * Initialize GlassFisg server startup monitoring.
-     * <p/>
-     * Creates and registers listener to monitor server status during shutdown.
-     * <p/>
-     * @return Listener instance when server startup monitoring was successfully
-     *         initialized or  <code>null</code> when something failed.
-     */
-    private ShutdownStateListener prepareShutdownMonitoring() {
-        ShutdownStateListener listener
-                = new ShutdownStateListener();
-        if (GlassFishStatus.addListener(instance, listener, true,
-                GlassFishStatus.UNKNOWN, GlassFishStatus.OFFLINE,
-                GlassFishStatus.STARTUP, GlassFishStatus.ONLINE)
-                ) {
-            return listener;
-        } else {
-            GlassFishStatus.removeListener(instance, listener);
-            return null;
-        }
-    }
-
-    /**
      * Start local server that is offline.
      * <p/>
      * @return State change request about offline remote server start request.
@@ -216,7 +157,7 @@ public class RestartTask extends BasicTask<TaskState> {
                     TaskState.FAILED, TaskEvent.ILLEGAL_STATE,
                     "RestartTask.remoteOfflineStart.failed", instanceName);
     }
-
+   
     /**
      * Wait for local server currently shutting down and start it up.
      * <p/>
@@ -224,38 +165,10 @@ public class RestartTask extends BasicTask<TaskState> {
      *         start request.
      */
     private StateChange localShutdownStart() {
-        ShutdownStateListener listener = prepareShutdownMonitoring();
-        if (listener == null) {
-            return new StateChange(this,
-                    TaskState.FAILED, TaskEvent.ILLEGAL_STATE,
-                    "RestartTask.localShutdownStart.listenerError",
-                    instanceName);
+        StateChange stateChange = waitShutDown();
+        if (stateChange != null) {
+            return stateChange;
         }
-        long start = System.currentTimeMillis();
-        LOGGER.log(Level.FINEST, NbBundle.getMessage(RestartTask.class,
-                "RestartTask.localShutdownStart.waitingTime",
-                new Object[] {Integer.toString(STOP_TIMEOUT)}));
-        try {
-            synchronized(listener) {
-                while (!listener.isWakeUp()
-                        && (System.currentTimeMillis()
-                        - start < STOP_TIMEOUT)) {
-                    listener.wait(System.currentTimeMillis() - start);
-                }
-            }
-        } catch (InterruptedException ie) {
-            LOGGER.log(Level.INFO, NbBundle.getMessage(RestartTask.class,
-                    "RestartTask.localShutdownStart.interruptedException",
-                    new Object[] {
-                        instance.getName(), ie.getLocalizedMessage()}));
-            
-        } finally {
-            GlassFishStatus.removeListener(instance, listener);
-        }
-        LogViewMgr.removeLog(instance);
-        LogViewMgr logger = LogViewMgr.getInstance(
-                instance.getProperty(GlassfishModule.URL_ATTR));
-        logger.stopReaders();                
         GlassFishServerStatus status = getStatus(instance);
         switch(status.getStatus()) {
             case UNKNOWN: case ONLINE: case SHUTDOWN: case STARTUP:
@@ -355,19 +268,97 @@ public class RestartTask extends BasicTask<TaskState> {
     }
 
     /**
+     * Update server debug options before restart.
+     */
+    private boolean updateDebugOptions(final int debugPort) {
+        boolean updateResult = false;
+        try {
+            ResultMap<String, String> result
+                    = CommandGetProperty.getProperties(instance,
+                    "configs.config.server-config.java-config.debug-options");
+            if (result.getState() == TaskState.COMPLETED) {
+                Map<String, String> values = result.getValue();
+                if (values != null && !values.isEmpty()) {
+                    CommandFactory commandFactory =
+                            instance.getInstanceProvider().getCommandFactory();
+                    String oldValue = values.get(
+                            "configs.config.server-config.java-config.debug-options");
+                    CommandSetProperty setCmd =
+                            commandFactory.getSetPropertyCommand(
+                            "configs.config.server-config.java-config.debug-options",
+                            oldValue.replace("transport=dt_shmem", "transport=dt_socket").
+                            replace("address=[^,]+", "address=" + debugPort));
+                    try {
+                        CommandSetProperty.setProperty(instance, setCmd);
+                        updateResult = true;
+                    } catch (GlassFishIdeException gfie) {
+                        LOGGER.log(Level.INFO, debugPort + "", gfie);
+                    }
+                }
+            }
+        } catch (GlassFishIdeException gfie) {
+            LOGGER.log(Level.INFO,
+                    "Could not retrieve property from server.", gfie);
+        }
+        return updateResult;
+    }
+
+    /**
+     * Wait for debug port to become active.
+     * <p/>
+     * @return Value of <code>true</code> if port become active before timeout
+     *         or <code>false</code> otherwise.
+     */
+    @SuppressWarnings("SleepWhileInLoop")
+    private boolean vaitForDebugPort(final String host, final int port) {
+        boolean result = ServerUtils.isRunningRemote(host, port);
+        if (!result) {
+            long tmStart = System.currentTimeMillis();
+            while (!result
+                    && System.currentTimeMillis() - tmStart
+                    < START_ADMIN_PORT_TIMEOUT) {
+                try {
+                    Thread.sleep(PORT_CHECK_IDLE);
+                } catch (InterruptedException ex) {}
+                result = ServerUtils.isRunningRemote(host, port);
+            }
+        }
+        return result;
+    }
+
+    /**
      * Full restart of remote online server.
      * <p/>
      * @return State change request.
      */
     private StateChange remoteRestart() {
+        boolean debugMode = instance.getJvmMode() == GlassFishJvmMode.DEBUG;
+        // Wrong scenario as default.
+        boolean debugPortActive = true;
+        int debugPort = -1;
+        if (debugMode) {
+            debugPort = instance.getDebugPort();
+            debugMode = updateDebugOptions(debugPort);
+            debugPortActive = ServerUtils.isRunningRemote(
+                    instance.getHost(), debugPort);
+        }
         ResultString result
-                = CommandRestartDAS.restartDAS(instance, false);
+                = CommandRestartDAS.restartDAS(instance, debugMode);
         LogViewMgr.removeLog(instance);
         LogViewMgr logger = LogViewMgr.getInstance(
                 instance.getProperty(GlassfishModule.URL_ATTR));
         logger.stopReaders();                
         switch (result.getState()) {
             case COMPLETED:
+                if (debugMode && !debugPortActive) {
+                    vaitForDebugPort(instance.getHost(), debugPort);
+                    waitStartUp(true, false);
+// This probably won't be needed.
+//                } else {
+//                    try {
+//                        Thread.sleep(RESTART_DELAY);
+//                    } catch (InterruptedException ex) {}
+                }
                 return new StateChange(this,
                         result.getState(), TaskEvent.CMD_COMPLETED,
                         "RestartTask.remoteRestart.completed", instanceName);
