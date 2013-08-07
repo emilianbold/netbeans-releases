@@ -51,15 +51,9 @@ import java.util.Set;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.php.editor.lexer.LexUtilities;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -163,135 +157,6 @@ public class PHPBracketCompleter implements KeystrokeHandler {
     // UGH - this method has gotten really ugly after successive refinements based on unit tests - consider cleaning up
     @Override
     public int getNextWordOffset(Document document, int offset, boolean reverse) {
-        BaseDocument doc = (BaseDocument) document;
-        doc.readLock();
-        try {
-            TokenSequence<? extends PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, offset);
-            if (ts == null) {
-                return -1;
-            }
-            ts.move(offset);
-            if (!ts.moveNext() && !ts.movePrevious()) {
-                return -1;
-            }
-            if (reverse && ts.offset() == offset) {
-                if (!ts.movePrevious()) {
-                    return -1;
-                }
-            }
-
-            Token<? extends PHPTokenId> token = ts.token();
-            TokenId id = token.id();
-
-            if (id == PHPTokenId.WHITESPACE) {
-                // Just eat up the space in the normal IDE way
-                if ((reverse && ts.offset() < offset) || (!reverse && ts.offset() > offset)) {
-                    return ts.offset();
-                }
-                while (id == PHPTokenId.WHITESPACE) {
-                    if (reverse && !ts.movePrevious()) {
-                        return -1;
-                    } else if (!reverse && !ts.moveNext()) {
-                        return -1;
-                    }
-
-                    token = ts.token();
-                    id = token.id();
-                }
-                if (reverse) {
-                    int start = ts.offset() + token.length();
-                    if (start < offset) {
-                        return start;
-                    }
-                } else {
-                    int start = ts.offset();
-                    if (start > offset) {
-                        return start;
-                    }
-                }
-
-            }
-
-            if (id == PHPTokenId.PHP_VARIABLE || id == PHPTokenId.PHP_STRING) {
-                String s = token.text().toString();
-                int length = s.length();
-                int wordOffset = offset - ts.offset();
-                if (reverse) {
-                    // Find previous
-                    int offsetInImage = offset - 1 - ts.offset();
-                    if (offsetInImage < 0) {
-                        return -1;
-                    }
-                    if (offsetInImage < length && Character.isUpperCase(s.charAt(offsetInImage))) {
-                        for (int i = offsetInImage - 1; i >= 0; i--) {
-                            char charAtI = s.charAt(i);
-                            if (charAtI == '_') {
-                                // return offset of previous uppercase char in the identifier
-                                return ts.offset() + i + 1;
-                            } else if (!Character.isUpperCase(charAtI)) {
-                                // return offset of previous uppercase char in the identifier
-                                return ts.offset() + i + 1;
-                            }
-                        }
-                        return ts.offset();
-                    } else {
-                        for (int i = offsetInImage - 1; i >= 0; i--) {
-                            char charAtI = s.charAt(i);
-                            if (charAtI == '_') {
-                                return ts.offset() + i + 1;
-                            }
-                            if (Character.isUpperCase(charAtI)) {
-                                // now skip over previous uppercase chars in the identifier
-                                for (int j = i; j >= 0; j--) {
-                                    char charAtJ = s.charAt(j);
-                                    if (charAtJ == '_') {
-                                        return ts.offset() + j + 1;
-                                    }
-                                    if (!Character.isUpperCase(charAtJ)) {
-                                        // return offset of previous uppercase char in the identifier
-                                        return ts.offset() + j + 1;
-                                    }
-                                }
-                                return ts.offset();
-                            }
-                        }
-
-                        return ts.offset();
-                    }
-                } else {
-                    // Find next
-                    int start = wordOffset + 1;
-                    if (wordOffset < 0 || wordOffset >= s.length()) {
-                        // Probably the end of a token sequence, such as this:
-                        // <%s|%>
-                        return -1;
-                    }
-                    if (Character.isUpperCase(s.charAt(wordOffset))) {
-                        // if starting from a Uppercase char, first skip over follwing upper case chars
-                        for (int i = start; i < length; i++) {
-                            char charAtI = s.charAt(i);
-                            if (!Character.isUpperCase(charAtI)) {
-                                break;
-                            }
-                            if (s.charAt(i) == '_') {
-                                return ts.offset() + i;
-                            }
-                            start++;
-                        }
-                    }
-                    for (int i = start; i < length; i++) {
-                        char charAtI = s.charAt(i);
-                        if (charAtI == '_' || Character.isUpperCase(charAtI)) {
-                            return ts.offset() + i;
-                        }
-                    }
-                }
-            }
-        } finally {
-            doc.readUnlock();
-        }
-
-        // Default handling in the IDE
         return -1;
     }
 }
