@@ -70,9 +70,7 @@ public class JaxWsSchemaCatalog implements CatalogReader, CatalogDescriptor, Ent
 
     public static final String JAXWS_CONF_ID = "http://www.netbeans.org/ns/jax-ws/1"; // NOI18N
     public static final String URL_JAXWS_CONF = "nbres:/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-ws.xsd"; // NOI18N
-    public static final String JAXRPC_CONF_ID = "http://www.netbeans.org/ns/j2se-project/jax-rpc"; // NOI18N
-    public static final String URL_JAXRPC_CONF = "nbres:/org/netbeans/modules/websvc/jaxwsmodel/resources/jax-rpc.xsd"; // NOI18N
-    
+ 
     public JaxWsSchemaCatalog() {
     }
 
@@ -84,7 +82,6 @@ public class JaxWsSchemaCatalog implements CatalogReader, CatalogDescriptor, Ent
     public Iterator<String> getPublicIDs() {
         List<String> list = new ArrayList<String>();
         list.add(JAXWS_CONF_ID);
-        list.add(JAXRPC_CONF_ID);
         return list.listIterator();
     }
 
@@ -96,8 +93,6 @@ public class JaxWsSchemaCatalog implements CatalogReader, CatalogDescriptor, Ent
     public String getSystemID(String publicId) {
         if (JAXWS_CONF_ID.equals(publicId)) {
             return URL_JAXWS_CONF;
-        } else if (JAXRPC_CONF_ID.equals(publicId)) {
-            return URL_JAXRPC_CONF;
         }
         return null;
     }
@@ -173,8 +168,6 @@ public class JaxWsSchemaCatalog implements CatalogReader, CatalogDescriptor, Ent
             String publicId, String systemId) throws SAXException, IOException {
         if (JAXWS_CONF_ID.equals(publicId)) {
             return new InputSource(URL_JAXWS_CONF);
-        } else if (JAXRPC_CONF_ID.equals(publicId)) {
-            return new InputSource(URL_JAXRPC_CONF);
         }
         return null;
     }
@@ -188,8 +181,6 @@ public class JaxWsSchemaCatalog implements CatalogReader, CatalogDescriptor, Ent
             String name) {
         if (JAXWS_CONF_ID.equals(name)) {
             return URL_JAXWS_CONF;
-        } else if (JAXRPC_CONF_ID.equals(name)) {
-            return URL_JAXRPC_CONF;
         }
         return null;
     }
