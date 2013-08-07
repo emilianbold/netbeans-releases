@@ -58,6 +58,7 @@ import java.awt.event.KeyEvent;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import javax.swing.AbstractAction;
 import javax.swing.Icon;
 import javax.swing.InputMap;
@@ -83,12 +84,12 @@ public class ImportChooserInnerPanel extends javax.swing.JPanel{
         initComponents();
     }
     
-    public void initPanel(Map<String,List<ImportCandidate>> multipleCandidates) {
+    public void initPanel(Map<String,Set<ImportCandidate>> multipleCandidates) {
         initComponentsMore(multipleCandidates);
         setAccessible();
     }
     
-    private void initComponentsMore(Map<String,List<ImportCandidate>> multipleCandidates) {
+    private void initComponentsMore(Map<String,Set<ImportCandidate>> multipleCandidates) {
         contentPanel.setLayout( new GridBagLayout() );
         contentPanel.setBackground( UIManager.getColor("Table.background") ); //NOI18N
         jScrollPane1.setBorder( UIManager.getBorder("ScrollPane.border") ); //NOI18N
@@ -116,9 +117,9 @@ public class ImportChooserInnerPanel extends javax.swing.JPanel{
             
             int i = 0;
 
-            for (Map.Entry<String, List<ImportCandidate>> entry : multipleCandidates.entrySet()) {
+            for (Map.Entry<String, Set<ImportCandidate>> entry : multipleCandidates.entrySet()) {
                 String  name = entry.getKey();
-                List<ImportCandidate> importCandidates = entry.getValue();
+                Set<ImportCandidate> importCandidates = entry.getValue();
                 
                 int size = importCandidates.size();
                 int iNum = 0;

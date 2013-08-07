@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -122,17 +123,17 @@ public final class ImportHelper {
 
         final AtomicBoolean cancel = new AtomicBoolean();
         final List<String> singleCandidates = new ArrayList<>();
-        final Map<String, List<ImportCandidate>> multipleCandidates = new HashMap<>();
+        final Map<String, Set<ImportCandidate>> multipleCandidates = new HashMap<>();
 
         // go over list of missing imports, fix it - if there is only one candidate
         // or populate choosers input list if there is more than one candidate.
 
         for (String name : missingNames) {
-            List<ImportCandidate> importCandidates = getImportCandidate(fo, packageName, name);
+            Set<ImportCandidate> importCandidates = getImportCandidate(fo, packageName, name);
 
             switch (importCandidates.size()) {
                 case 0: continue;
-                case 1: singleCandidates.add(importCandidates.get(0).getFqnName()); break;
+                case 1: singleCandidates.add(importCandidates.iterator().next().getFqnName()); break;
                 default: multipleCandidates.put(name, importCandidates);
             }
         }
@@ -169,18 +170,18 @@ public final class ImportHelper {
      * @param missingClass class name for which we are looking for import candidates
      * @return list of possible import candidates
      */
-    public static List<ImportCandidate> getImportCandidate(FileObject fo, String packageName, String missingClass) {
+    public static Set<ImportCandidate> getImportCandidate(FileObject fo, String packageName, String missingClass) {
         LOG.log(Level.FINEST, "Looking for class: {0}", missingClass);
 
-        List<ImportCandidate> candidates = new ArrayList<>();
+        Set<ImportCandidate> candidates = new HashSet<>();
         candidates.addAll(findGroovyImportCandidates(fo, packageName, missingClass));
         candidates.addAll(findJavaImportCandidates(fo, packageName, missingClass));
 
         return candidates;
     }
 
-    private static List<ImportCandidate> findGroovyImportCandidates(FileObject fo, String packageName, String missingClass) {
-        final List<ImportCandidate> candidates = new ArrayList<>();
+    private static Set<ImportCandidate> findGroovyImportCandidates(FileObject fo, String packageName, String missingClass) {
+        final Set<ImportCandidate> candidates = new HashSet<>();
         final GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
                 Collections.singleton(ClassPath.SOURCE), null, null));
 
@@ -206,8 +207,8 @@ public final class ImportHelper {
         return candidates;
     }
 
-    private static List<ImportCandidate> findJavaImportCandidates(FileObject fo, String packageName, String missingClass) {
-        final List<ImportCandidate> candidates = new ArrayList<>();
+    private static Set<ImportCandidate> findJavaImportCandidates(FileObject fo, String packageName, String missingClass) {
+        final Set<ImportCandidate> candidates = new HashSet<>();
         final ClasspathInfo pathInfo = createClasspathInfo(fo);
 
         Set<ElementHandle<TypeElement>> typeNames = pathInfo.getClassIndex().getDeclaredTypes(
@@ -292,7 +293,7 @@ public final class ImportHelper {
         return missingClass;
     }
 
-    private static List<String> showFixImportChooser(Map<String, List<ImportCandidate>> multipleCandidates) {
+    private static List<String> showFixImportChooser(Map<String, Set<ImportCandidate>> multipleCandidates) {
         List<String> result = new ArrayList<>();
         ImportChooserInnerPanel panel = new ImportChooserInnerPanel();
 
