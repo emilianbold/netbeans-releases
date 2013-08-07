@@ -73,7 +73,7 @@ public class MagicCache {
     private final RemoteDirectory dir;
     private Map<String, byte[]> cache;
 
-    private static final RequestProcessor RP = new RequestProcessor("ErrorReader");
+    private static final RequestProcessor RP = new RequestProcessor("ErrorReader"); // NOI18N
 
     public MagicCache(RemoteDirectory dir) {
         this.dir = dir;
