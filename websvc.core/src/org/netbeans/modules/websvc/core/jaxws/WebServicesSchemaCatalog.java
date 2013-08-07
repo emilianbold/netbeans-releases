@@ -55,7 +55,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 
 import org.netbeans.modules.xml.catalog.spi.CatalogReader;
 import org.netbeans.modules.xml.catalog.spi.CatalogDescriptor;
@@ -92,7 +91,7 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
     }
 
     /**
-     * Get registered systemid for given public Id or null if not registered.
+     * Get registered systemId for given public Id or null if not registered.
      * @return null if not registered
      */
     public String getSystemID(String publicId) {
@@ -102,7 +101,6 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
             return URL_JAXWS_WSDL_BINDING;
         } else if (JAXWS_HANDLER_CHAIN_ID.equals(publicId)) {
             return URL_JAXWS_HANDLER_CHAIN;
-        } else {
         }
         return null;
     }
@@ -121,7 +119,7 @@ public class WebServicesSchemaCatalog implements CatalogReader, CatalogDescripto
     }
 
     /**
-     * Optional operation couled with addCatalogListener.
+     * Optional operation coupled with addCatalogListener.
      * @throws UnsupportedOpertaionException if not supported by the implementation.
      */
     public void removeCatalogListener(CatalogListener l) {
