@@ -319,6 +319,17 @@ public final class FileSystemProvider {
         }
     }
 
+    public static void refresh(FileObject fileObject, boolean recursive) {
+        Parameters.notNull("fileObject", fileObject); //NOI18N
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                provider.refresh(fileObject, recursive);
+                return;
+            }
+        }
+        noProvidersWarning(fileObject);
+    }
+
     public static void scheduleRefresh(FileObject fileObject) {
         Parameters.notNull("fileObject", fileObject); //NOI18N
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
