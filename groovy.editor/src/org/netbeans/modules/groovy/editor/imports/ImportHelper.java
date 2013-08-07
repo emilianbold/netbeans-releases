@@ -419,6 +419,14 @@ public final class ImportHelper {
         return Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);
     }
 
+    /**
+     * Returns offset of the package statement or {@literal -1} if no package
+     * statement was found within this in {@link BaseDocument}.
+     *
+     * @param doc document
+     * @return offset of the package statement or {@literal -1} if no package
+     *         statement was found within this in {@link BaseDocument}.
+     */
     private static int getLastPackageStatementOffset(BaseDocument doc) {
         TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
 
@@ -432,6 +440,14 @@ public final class ImportHelper {
         return packageOffset;
     }
 
+    /**
+     * Returns offset of the last import statement or {@literal -1} if no import
+     * statement was found within this in {@link BaseDocument}.
+     *
+     * @param doc document
+     * @return offset of the last import statement or {@literal -1} if no import
+     *         statement was found within this in {@link BaseDocument}.
+     */
     private static int getLastImportStatementOffset(BaseDocument doc) {
         TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
 
