@@ -70,6 +70,7 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.php.editor.nav.NavUtils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.Include;
@@ -124,44 +125,44 @@ public class FSCompletion implements CompletionProvider {
 
                             @Override
                             public void run(ResultIterator resultIterator) throws Exception {
-                                ParserResult parameter = (ParserResult) resultIterator.getParserResult();
-                                if (parameter == null) {
-                                    return;
-                                }
-                                List<ASTNode> path = NavUtils.underCaret(parameter, caretOffset);
-                                if (path.size() < 2) {
-                                    return;
-                                }
-                                ASTNode d1 = path.get(path.size() - 1);
-                                ASTNode d2 = path.get(path.size() - 2);
-                                if (d2 instanceof ParenthesisExpression) {
-                                    if (path.size() < 3) {
+                                Parser.Result parserResult = resultIterator.getParserResult();
+                                if (parserResult instanceof ParserResult) {
+                                    ParserResult parameter = (ParserResult) parserResult;
+                                    List<ASTNode> path = NavUtils.underCaret(parameter, caretOffset);
+                                    if (path.size() < 2) {
                                         return;
                                     }
-                                    d2 = path.get(path.size() - 3);
+                                    ASTNode d1 = path.get(path.size() - 1);
+                                    ASTNode d2 = path.get(path.size() - 2);
+                                    if (d2 instanceof ParenthesisExpression) {
+                                        if (path.size() < 3) {
+                                            return;
+                                        }
+                                        d2 = path.get(path.size() - 3);
+                                    }
+                                    if (!(d1 instanceof Scalar) || !(d2 instanceof Include)) {
+                                        return;
+                                    }
+                                    Scalar s = (Scalar) d1;
+                                    if (s.getScalarType() != Type.STRING || !NavUtils.isQuoted(s.getStringValue())) {
+                                        return;
+                                    }
+                                    int startOffset = s.getStartOffset() + 1;
+                                    if (startOffset > caretOffset || startOffset < 0 || caretOffset < 0) {
+                                        return;
+                                    }
+                                    final String prefix = parameter.getSnapshot().getText().subSequence(startOffset, caretOffset).toString();
+                                    List<FileObject> relativeTo = new LinkedList<>();
+                                    if (!prefix.startsWith("../")) { //NOI18N
+                                        relativeTo.addAll(includePath);
+                                    }
+                                    final PHPIncludesFilter filter = new PHPIncludesFilter(parameter.getSnapshot().getSource().getFileObject());
+                                    final FileObject parent = parameter.getSnapshot().getSource().getFileObject().getParent();
+                                    if (parent != null) {
+                                        relativeTo.add(parent);
+                                    }
+                                    resultSet.addAllItems(computeRelativeItems(relativeTo, prefix, startOffset, filter));
                                 }
-                                if (!(d1 instanceof Scalar) || !(d2 instanceof Include)) {
-                                    return;
-                                }
-                                Scalar s = (Scalar) d1;
-                                if (s.getScalarType() != Type.STRING || !NavUtils.isQuoted(s.getStringValue())) {
-                                    return;
-                                }
-                                int startOffset = s.getStartOffset() + 1;
-                                if (startOffset > caretOffset || startOffset < 0 || caretOffset < 0) {
-                                    return;
-                                }
-                                final String prefix = parameter.getSnapshot().getText().subSequence(startOffset, caretOffset).toString();
-                                List<FileObject> relativeTo = new LinkedList<>();
-                                if (!prefix.startsWith("../")) { //NOI18N
-                                    relativeTo.addAll(includePath);
-                                }
-                                final PHPIncludesFilter filter = new PHPIncludesFilter(parameter.getSnapshot().getSource().getFileObject());
-                                final FileObject parent = parameter.getSnapshot().getSource().getFileObject().getParent();
-                                if (parent != null) {
-                                    relativeTo.add(parent);
-                                }
-                                resultSet.addAllItems(computeRelativeItems(relativeTo, prefix, startOffset, filter));
                             }
                         });
                     } catch (ParseException ex) {
