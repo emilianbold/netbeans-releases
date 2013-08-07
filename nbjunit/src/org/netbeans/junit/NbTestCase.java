@@ -869,7 +869,12 @@ public abstract class NbTestCase extends TestCase implements NbTest {
                 sb.append(Character.toLowerCase(name.charAt(i)));
             }
         }
-        return sb.toString();
+        if (sb.length() == 0) {
+            // for names without uppercase (e.g. test12345, test_a)
+            return name;
+        } else {
+            return sb.toString();
+        }
     }
 
     private File workdirNoCreate() {
@@ -1475,7 +1480,7 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         };
         return assertSize(message, roots, limit, f);
     }
-    
+
     private static int assertSize(String message, Collection<?> roots, int limit,
             org.netbeans.insane.scanner.Filter f) {
         try {
@@ -1532,11 +1537,11 @@ public abstract class NbTestCase extends TestCase implements NbTest {
         int count = Integer.getInteger("assertgc.paths", 1);
         StringBuilder sb = new StringBuilder();
         final Map<Object,Void> skip = new IdentityHashMap<Object,Void>();
-        
+    
         org.netbeans.insane.scanner.Filter knownPath = new org.netbeans.insane.scanner.Filter() {
             public @Override boolean accept(Object obj, Object referredFrom, Field reference) {
                 return !skip.containsKey(obj);
-            }
+}
         };
         
         while (count-- > 0) {
