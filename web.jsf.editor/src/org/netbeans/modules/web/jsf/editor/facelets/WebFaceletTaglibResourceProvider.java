@@ -83,7 +83,10 @@ public class WebFaceletTaglibResourceProvider implements ConfigurationResourcePr
         try {
             MetadataModel<WebAppMetadata> model = wm.getMetadataModel();
             String faceletsLibrariesList = null;
-            if(model != null) {
+            if(model != null && model.isReady()) {
+                // This is executed just in case that the model is ready. Otherwise it leads to uncancelable work.
+                // Another reports against non-consistents result from the first and second invocation should be
+                // consulted with tzetula for better options how to fix this. Related issue is bug #232878.
                 faceletsLibrariesList = model.runReadAction(new MetadataModelAction<WebAppMetadata, String>() {
                     public String run(WebAppMetadata metadata) throws Exception {
                         //TODO can be init param specified by some annotation or the dd must be present?
