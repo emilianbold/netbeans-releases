@@ -49,8 +49,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URLConnection;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.MainWindowOperator;
@@ -96,7 +94,6 @@ import org.netbeans.test.ide.WatchProjects;
  */
 public class J2EEValidation extends J2eeTestCase {
 
-    private static final Logger LOG = Logger.getLogger("org.netbeans.test.j2ee.J2EEValidation");
     // name of sample web application project
     private static final String SAMPLE_WEB_PROJECT_NAME = "SampleWebProject";  //NOI18N
 
@@ -130,7 +127,7 @@ public class J2EEValidation extends J2eeTestCase {
      * - stop application server
      * </pre>
      */
-    public void testWebApplication() throws Exception {
+    public void testWebApplication() {
         // workaround for jelly issue
         NewProjectWizardOperator.invoke().cancel();
         //addServer();
@@ -216,8 +213,6 @@ public class J2EEValidation extends J2eeTestCase {
         try {
             new Action(null, "Run").perform(new ProjectsTabOperator().getProjectRootNode(SAMPLE_WEB_PROJECT_NAME));
             waitText(SAMPLE_WEB_PROJECT_NAME + "/index.jsp", 240000, "JSP Page");
-        } catch (Exception ex) {
-            LOG.log(Level.INFO, "=== Run Project failed:", ex);
         } finally {
             // log messages from output
             getLog("RunOutput").print(new OutputTabOperator(SAMPLE_WEB_PROJECT_NAME).getText()); // NOI18N
