@@ -1272,11 +1272,6 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
             return QueryType.NONE;
         }
         char lastChar = typedText.charAt(typedText.length() - 1);
-
-        if (AUTOPOPUP_STOP_CHARS.contains(Character.valueOf(lastChar))) {
-            return QueryType.STOP;
-        }
-
         Document document = component.getDocument();
         //TokenHierarchy th = TokenHierarchy.get(document);
         int offset = component.getCaretPosition();
@@ -1288,39 +1283,46 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
         if (diff > 0 && ts.moveNext() || ts.movePrevious()) {
             Token t = ts.token();
             if (t != null) {
-                if (OptionsUtils.autoCompletionTypes()) {
-                    if (lastChar == ' ' || lastChar == '\t') {
-                        if (ts.movePrevious()
-                                && TOKENS_TRIGGERING_AUTOPUP_TYPES_WS.contains(ts.token().id())) {
+                if (t.id() == PHPTokenId.T_INLINE_HTML) {
+                    return QueryType.ALL_COMPLETION;
+                } else {
+                    if (AUTOPOPUP_STOP_CHARS.contains(Character.valueOf(lastChar))) {
+                        return QueryType.STOP;
+                    }
+                    if (OptionsUtils.autoCompletionTypes()) {
+                        if (lastChar == ' ' || lastChar == '\t') {
+                            if (ts.movePrevious()
+                                    && TOKENS_TRIGGERING_AUTOPUP_TYPES_WS.contains(ts.token().id())) {
 
+                                return QueryType.ALL_COMPLETION;
+                            } else {
+                                return QueryType.STOP;
+                            }
+                        }
+
+                        if (t.id() == PHPTokenId.PHP_OBJECT_OPERATOR || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
                             return QueryType.ALL_COMPLETION;
-                        } else {
-                            return QueryType.STOP;
                         }
                     }
-
-                    if (t.id() == PHPTokenId.PHP_OBJECT_OPERATOR || t.id() == PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM) {
+                    if (OptionsUtils.autoCompletionVariables()) {
+                        if ((t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$')
+                                || (t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$')) {
+                            return QueryType.ALL_COMPLETION;
+                        }
+                    }
+                    if (OptionsUtils.autoCompletionNamespaces()) {
+                        if (t.id() == PHPTokenId.PHP_NS_SEPARATOR) {
+                            return isPhp53(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
+                        }
+                    }
+                    if (t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
                         return QueryType.ALL_COMPLETION;
                     }
-                }
-                if (OptionsUtils.autoCompletionVariables()) {
-                    if ((t.id() == PHPTokenId.PHP_TOKEN && lastChar == '$')
-                            || (t.id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING && lastChar == '$')) {
-                        return QueryType.ALL_COMPLETION;
-                    }
-                }
-                if (OptionsUtils.autoCompletionNamespaces()) {
-                    if (t.id() == PHPTokenId.PHP_NS_SEPARATOR) {
-                        return isPhp53(document) ? QueryType.ALL_COMPLETION : QueryType.NONE;
-                    }
-                }
-                if (t.id() == PHPTokenId.PHPDOC_COMMENT && lastChar == '@') {
-                    return QueryType.ALL_COMPLETION;
-                }
-                if (OptionsUtils.autoCompletionFull()) {
-                    TokenId id = t.id();
-                    if ((id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_VARIABLE)) && t.length() > 0) {
-                        return QueryType.ALL_COMPLETION;
+                    if (OptionsUtils.autoCompletionFull()) {
+                        TokenId id = t.id();
+                        if ((id.equals(PHPTokenId.PHP_STRING) || id.equals(PHPTokenId.PHP_VARIABLE)) && t.length() > 0) {
+                            return QueryType.ALL_COMPLETION;
+                        }
                     }
                 }
             }
