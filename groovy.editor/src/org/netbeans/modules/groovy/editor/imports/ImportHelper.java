@@ -79,6 +79,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -340,11 +341,28 @@ public final class ImportHelper {
             if (importPosition != -1) {
                 LOG.log(Level.FINEST, "Importing here: {0}", importPosition);
 
-                // Last import means one additiona \n
-                if (i == fqNames.size() - 1) {
-                    edits.replace(importPosition, 0, "import " + fqName + "\n\n", false, 0);
+                // We don't want to import anything inside comment --> see #228641
+                Token<GroovyTokenId> token = LexUtilities.getToken(baseDoc, importPosition);
+
+                if (token.id() == GroovyTokenId.BLOCK_COMMENT) {
+                    int packageOffset = getLastPackageStatementOffset(baseDoc);
+                    int lineOffset = 0;
+                    try {
+                        lineOffset = Utilities.getLineOffset(baseDoc, packageOffset) + 1;
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    int offset = Utilities.getRowStartFromLineOffset(baseDoc, lineOffset);
+
+                    edits.replace(offset - 1, 0, "\n", false, 0);
+                    edits.replace(offset, 0, "import " + fqName + "\n\n", false, 0);
                 } else {
-                    edits.replace(importPosition, 0, "import " + fqName + "\n", false, 0);
+                    // Last import means one additiona \n
+                    if (i == fqNames.size() - 1) {
+                        edits.replace(importPosition, 0, "import " + fqName + "\n\n", false, 0);
+                    } else {
+                        edits.replace(importPosition, 0, "import " + fqName + "\n", false, 0);
+                    }
                 }
             }
         }
@@ -352,23 +370,8 @@ public final class ImportHelper {
     }
 
     private static int getImportPosition(BaseDocument doc) {
-        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
-
-        int importEnd = -1;
-        int packageOffset = -1;
-
-        while (ts.moveNext()) {
-            Token t = ts.token();
-            int offset = ts.offset();
-
-            if (t.id() == GroovyTokenId.LITERAL_import) {
-                LOG.log(Level.FINEST, "GroovyTokenId.LITERAL_import found");
-                importEnd = offset;
-            } else if (t.id() == GroovyTokenId.LITERAL_package) {
-                LOG.log(Level.FINEST, "GroovyTokenId.LITERAL_package found");
-                packageOffset = offset;
-            }
-        }
+        int importEnd = getLastImportStatementOffset(doc);
+        int packageOffset = getLastPackageStatementOffset(doc);
 
         int useOffset = 0;
 
@@ -414,5 +417,31 @@ public final class ImportHelper {
         }
 
         return Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);
+    }
+
+    private static int getLastPackageStatementOffset(BaseDocument doc) {
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
+
+        int packageOffset = -1;
+
+        while (ts.moveNext()) {
+            if (ts.token().id() == GroovyTokenId.LITERAL_package) {
+                packageOffset = ts.offset();
+            }
+        }
+        return packageOffset;
+    }
+
+    private static int getLastImportStatementOffset(BaseDocument doc) {
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
+
+        int importEnd = -1;
+
+        while (ts.moveNext()) {
+            if (ts.token().id() == GroovyTokenId.LITERAL_import) {
+                importEnd = ts.offset();
+            }
+        }
+        return importEnd;
     }
 }
