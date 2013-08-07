@@ -90,7 +90,7 @@ public interface CatalogReader {
     public void addCatalogListener(CatalogListener l);
     
     /**
-     * Optional operation couled with addCatalogListener.
+     * Optional operation coupled with addCatalogListener.
      * @throws UnsupportedOpertaionException if not supported by the implementation.
      */
     public void removeCatalogListener(CatalogListener l);

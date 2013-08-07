@@ -48,13 +48,11 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
-import javax.swing.JTextArea;
 import javax.swing.text.Caret;
 import javax.swing.text.DefaultEditorKit;
 import javax.swing.text.Document;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
@@ -809,26 +807,6 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
 "  snark(%Q(a b c))\n" +
 "  snark(%w(a b c))\n";
         deleteWord(before, after);
-    }
-
-    public void testBackwardsDeletion() throws Exception {
-        String s = "Foo::Bar = whatever('hello')  \n  nextline";
-        PHPBracketCompleter bc = new PHPBracketCompleter();
-        for (int i = s.length(); i >= 1; i--) {
-            String shortened = s.substring(0, i);
-            BaseDocument doc = getDocument(shortened);
-
-            JTextArea ta = new JTextArea(doc);
-            Caret caret = ta.getCaret();
-            int dot = i;
-            caret.setDot(dot);
-            int begin = bc.getNextWordOffset(doc, dot, true);
-            if (begin == -1) {
-                begin = Utilities.getPreviousWord(ta, dot);
-            }
-
-            assert begin != -1 && begin < i;
-        }
     }
 
     public void test108889() throws Exception {
