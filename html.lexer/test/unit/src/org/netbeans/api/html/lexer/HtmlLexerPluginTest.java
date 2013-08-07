@@ -47,9 +47,8 @@ import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.lib.html.lexer.HtmlLexer;
-import org.netbeans.lib.html.lexer.HtmlPlugins;
 import org.netbeans.lib.html.lexer.HtmlLexerTest;
-import org.openide.util.lookup.ServiceProvider;
+import org.netbeans.lib.html.lexer.HtmlPlugins;
 
 /**
  *

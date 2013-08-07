@@ -470,7 +470,7 @@ private void editGlobalButtonActionPerformed(java.awt.event.ActionEvent evt) {//
 
     private static final Logger LOG = Logger.getLogger(FormattingCustomizerPanel.class.getName());
     
-    private static final String GLOBAL_OPTIONS_CATEGORY = "Editor/Formating"; //NOI18N
+    private static final String GLOBAL_OPTIONS_CATEGORY = "Editor/Formatting"; //NOI18N
     private static final String CODE_STYLE_PROFILE = "CodeStyle"; // NOI18N
     private static final String DEFAULT_PROFILE = "default"; // NOI18N
     private static final String PROJECT_PROFILE = "project"; // NOI18N

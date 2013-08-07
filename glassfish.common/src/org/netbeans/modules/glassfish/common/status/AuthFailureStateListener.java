@@ -44,9 +44,8 @@ package org.netbeans.modules.glassfish.common.status;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.tools.ide.GlassFishStatus;
-import org.glassfish.tools.ide.GlassFishStatusListener;
 import org.glassfish.tools.ide.data.GlassFishServer;
-import static org.glassfish.tools.ide.data.GlassFishStatusCheck.PORT;
+import static org.glassfish.tools.ide.data.GlassFishStatusCheck.LOCATIONS;
 import static org.glassfish.tools.ide.data.GlassFishStatusCheck.VERSION;
 import org.glassfish.tools.ide.data.GlassFishStatusTask;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
@@ -66,7 +65,7 @@ import org.openide.util.NbBundle;
  * <p/>
  * @author Tomas Kraus
  */
-public class AuthFailureStateListener implements GlassFishStatusListener {
+public class AuthFailureStateListener extends BasicStateListener {
 
     ////////////////////////////////////////////////////////////////////////////
     // Class attributes                                                       //
@@ -96,6 +95,9 @@ public class AuthFailureStateListener implements GlassFishStatusListener {
     /** Timestamp of last pop up window. */
     private long lastTm;
 
+    /** Allow to display pop up window for GF v4. */
+    private final boolean allowPopup;
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -104,9 +106,11 @@ public class AuthFailureStateListener implements GlassFishStatusListener {
      * Constructs an instance of administration command calls authorization
      * failures handler.
      */
-    public AuthFailureStateListener() {
+    public AuthFailureStateListener(final boolean allowPopup) {
+        super();
         this.popUpLock = false;
         this.lastTm = 0;
+        this.allowPopup = allowPopup;
     }
     
     ////////////////////////////////////////////////////////////////////////////
@@ -162,21 +166,26 @@ public class AuthFailureStateListener implements GlassFishStatusListener {
     @Override
     public void error(final GlassFishServer server,
             final GlassFishStatusTask task) {
-        switch (task.getEvent()) {
-            case LOCAL_AUTH_FAILED: case REMOTE_AUTH_FAILED:
-                switch (task.getType()) {
-                    case PORT: case VERSION:
-                        // Double checked pattern on popUpLock to avoid locking.
-                        if (!popUpLock) {
-                            updateCredentials(server);
+        switch (task.getType()) {
+            case LOCATIONS: case VERSION:
+                switch (task.getEvent()) {
+                    case AUTH_FAILED_HTTP:
+                        GlassFishStatus.suspend(server);
+                        break;
+                    case AUTH_FAILED:
+                        // NetBeans credentiuals pop up window
+                        if (allowPopup) {
+                            // Double checked pattern on popUpLock
+                            // to avoid locking.
+                            if (!popUpLock) {
+                                updateCredentials(server);
+                            }
+                        // java.net.Authenticator pop up window
+                        } else {
+                            GlassFishStatus.suspend(server);
                         }
                         break;
                 }
-                break;
-            case EXCEPTION:
-                LOGGER.log(Level.FINEST, NbBundle.getMessage(
-                    AuthFailureStateListener.class,
-                    "AuthFailureStateListener.error.exception"));
                 break;
         }
     }
@@ -190,12 +199,12 @@ public class AuthFailureStateListener implements GlassFishStatusListener {
      * @param server GlassFish server instance to update credentials.
      */
     private void updateCredentials(final GlassFishServer server) {
+        boolean update = true;
         synchronized (this) {
             if (!popUpLock
                     && lastTm + POPUP_DELAY < System.currentTimeMillis()) {
                 popUpLock = true;
                 if (server instanceof GlassfishInstance) {
-                    boolean update = true;
                     try {
                         GlassfishInstance instance = (GlassfishInstance) server;
                         String message = NbBundle.getMessage(
@@ -212,6 +221,10 @@ public class AuthFailureStateListener implements GlassFishStatusListener {
                 }
             }
         }
+        if (!update) {
+            GlassFishStatus.suspend(server);
+        }
+
     }
 
 }

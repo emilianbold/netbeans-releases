@@ -58,6 +58,7 @@ import java.util.Set;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.JList;
 import javax.swing.DefaultListModel;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 import javax.swing.border.Border;
@@ -632,7 +633,12 @@ private void btnFetchAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-F
                     value = sb.toString();
                 }
             }
-            return super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+            if (isSelected && !list.isEnabled() && c instanceof JLabel) {
+                // hack for unreadable combination: disabled, selectedForegroud, selectedBackground on dark LAF
+                ((JLabel) c).setEnabled(true);
+            }
+            return c;
         }
     }
 

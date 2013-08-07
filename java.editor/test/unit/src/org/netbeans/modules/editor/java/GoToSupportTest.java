@@ -67,6 +67,7 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.editor.java.GoToSupport.UiUtilsCaller;
 import org.netbeans.modules.java.source.TreeLoader;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -91,6 +92,7 @@ public class GoToSupportTest extends NbTestCase {
         SourceUtilsTestUtil.prepareTest(new String[] {"org/netbeans/modules/java/editor/resources/layer.xml"}, new Object[0]);
         org.netbeans.api.project.ui.OpenProjects.getDefault().getOpenProjects();
         TreeLoader.DISABLE_ARTIFICAL_PARAMETER_NAMES = true;
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
     
     public void testGoToMethod() throws Exception {
@@ -784,6 +786,27 @@ public class GoToSupportTest extends NbTestCase {
             public void open(FileObject fo, int pos) {
                 assertTrue(source == fo);
                 assertEquals(14, pos);
+                wasCalled[0] = true;
+            }
+            public void beep() {
+                fail("Should not be called.");
+            }
+            public void open(ClasspathInfo info, Element el) {
+                fail("Should not be called.");
+            }
+        }, false);
+
+        assertTrue(wasCalled[0]);
+    }
+
+    public void test228438() throws Exception {
+        final boolean[] wasCalled = new boolean[1];
+        String code = "package test; public enum Test { ONE(\"one\"); private String str; private Test(String str) {this.str = str}}";
+
+        performTest(code, code.indexOf("ONE") + 1, new OrigUiUtilsCaller() {
+            public void open(FileObject fo, int pos) {
+                assertTrue(source == fo);
+                assertEquals(65, pos);
                 wasCalled[0] = true;
             }
             public void beep() {

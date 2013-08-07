@@ -408,7 +408,7 @@ public final class Model {
 
                 Collection<? extends TypeUsage> ret = function.getReturnTypes();
                 if (parseResult != null) {
-                    ret = ModelUtils.resolveTypes(ret, parseResult);
+                    ret = ModelUtils.resolveTypes(ret, parseResult, true);
                 }
                 List<TypeUsage> returnTypes = new ArrayList<TypeUsage>(ret);
                 Collections.sort(returnTypes, RETURN_TYPES_COMPARATOR);

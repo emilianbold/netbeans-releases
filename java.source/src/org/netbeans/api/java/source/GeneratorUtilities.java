@@ -668,7 +668,7 @@ public final class GeneratorUtilities {
         CodeStyle cs = DiffContext.getCodeStyle(copy);
         
         // check weather any conversions to star imports are needed
-        int treshold = cs.countForUsingStarImport();
+        int treshold = cs.useSingleClassImport() ? cs.countForUsingStarImport() : 1;
         int staticTreshold = cs.countForUsingStaticStarImport();        
         Map<PackageElement, Integer> pkgCounts = new LinkedHashMap<PackageElement, Integer>();
         PackageElement pkg = elements.getPackageElement("java.lang"); //NOI18N
@@ -682,7 +682,6 @@ public final class GeneratorUtilities {
             pkg = elements.getPackageElement(elements.getName("")); //NOI18N
         pkgCounts.put(pkg, -2);
         Map<TypeElement, Integer> typeCounts = new LinkedHashMap<TypeElement, Integer>();
-        Scope scope = trees.getScope(new TreePath(cut));
         StarImportScope importScope = new StarImportScope((Symbol)pkg);
         if (((JCCompilationUnit)cut).starImportScope != null)
             importScope.importAll(((JCCompilationUnit)cut).starImportScope);
@@ -705,8 +704,6 @@ public final class GeneratorUtilities {
                 case FIELD:
                     isStatic = true;
                     el = e.getEnclosingElement();
-                    assert e.getModifiers().contains(Modifier.STATIC) : "Only static members could be imported: " + e; //NOI18N
-                    assert trees.isAccessible(scope, e, (DeclaredType)el.asType()) : "Only accessible members could be imported: " + e + "\nEnclosing element: " + el + "\nScope: " + scope; //NOI18N
                     break;
                 default:
                     assert false : "Illegal element kind: " + e.getKind(); //NOI18N

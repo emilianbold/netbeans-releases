@@ -48,7 +48,7 @@ made subject to such option by the copyright holder.
     <fontcolor bgColor="1A2C47" foreColor="D8D8D8" name="index">
         <font style="bold"/>
     </fontcolor>
-    <fontcolor foreColor="FF1919" name="removed"/>
+    <fontcolor foreColor="FF2B2B" name="removed"/>
     <fontcolor bgColor="1A2C47" foreColor="D8D8D8" name="header">
         <font style="bold"/>
     </fontcolor>
@@ -57,7 +57,7 @@ made subject to such option by the copyright holder.
         <font style="bold+italic"/>
     </fontcolor>
     <fontcolor default="error" name="error"/>
-    <fontcolor foreColor="1919FF" name="added"/>
+    <fontcolor foreColor="00C100" name="added"/>
 </fontscolors>
 
 

@@ -57,6 +57,7 @@ import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
 import org.netbeans.modules.php.spi.testing.locate.TestLocator;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -147,6 +148,15 @@ public interface PhpTestingProvider {
      */
     @CheckForNull
     Locations.Line parseFileFromOutput(String line);
+
+    /**
+     * Create project customizer for the given PHP module.
+     * @param phpModule the PHP module; never {@code null}
+     * @return project customizer, can be {@code null} if not supported
+     * @since 0.8
+     */
+    @CheckForNull
+    ProjectCustomizer.CompositeCategoryProvider createCustomizer(@NonNull PhpModule phpModule);
 
     //~ Inner classes
 

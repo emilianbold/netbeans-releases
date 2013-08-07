@@ -43,9 +43,10 @@
  */
 package org.netbeans.modules.java.editor.overridden;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.Cursor;
-import java.awt.Toolkit;
+import java.awt.Graphics;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import java.awt.event.KeyEvent;
@@ -53,17 +54,15 @@ import java.awt.event.MouseEvent;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import javax.lang.model.element.Element;
-import javax.lang.model.element.ExecutableElement;
 import javax.swing.DefaultListCellRenderer;
 import javax.swing.DefaultListModel;
+import javax.swing.ImageIcon;
 import javax.swing.JList;
 import javax.swing.JPanel;
 import javax.swing.ListModel;
-import org.netbeans.api.java.source.JavaSource;
-import org.netbeans.api.java.source.SourceUtils;
-import org.netbeans.api.java.source.ui.ElementOpen;
-import org.openide.filesystems.FileObject;
+
+import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.openide.util.ImageUtilities;
 
 /**
  *
@@ -192,22 +191,53 @@ public class IsOverriddenPopup extends JPanel implements FocusListener {
     }
     
     private static class RendererImpl extends DefaultListCellRenderer {
+
+        private static final int DARKER_COLOR_COMPONENT = 5;
+        private boolean selected;
+
         public Component getListCellRendererComponent(
                 JList list,
                 Object value,
                 int index,
                 boolean isSelected,
                 boolean cellHasFocus) {
-            Component c = super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
-            
+            super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);            
             if (value instanceof ElementDescription) {
                 ElementDescription desc = (ElementDescription) value;
                 
                 setIcon(desc.getIcon());
                 setText(desc.getDisplayName());
             }
-            
-            return c;
+            selected = isSelected;
+            Color bgColor;
+            if (!isSelected) {
+                bgColor = list.getBackground();
+                if ((index % 2) == 0) { // every second item slightly different
+                    bgColor = new Color(
+                            Math.abs(bgColor.getRed() - DARKER_COLOR_COMPONENT),
+                            Math.abs(bgColor.getGreen() - DARKER_COLOR_COMPONENT),
+                            Math.abs(bgColor.getBlue() - DARKER_COLOR_COMPONENT)
+                    );
+                }
+                // quick check Component.setBackground() always fires change
+                if (getBackground() != bgColor) {
+                    setBackground(bgColor);
+                }
+            }
+            return this;
+        }
+
+        public @Override void paintComponent(Graphics g) {
+            Color bgColor = getBackground();
+            Color fgColor = getForeground();
+
+            // Clear the background
+            g.setColor(bgColor);
+            g.fillRect(0, 0, getWidth(), getHeight());
+            g.setColor(fgColor);
+
+            // Render the item
+            CompletionUtilities.renderHtml(new ImageIcon(ImageUtilities.icon2Image(getIcon())), getText(), null, g, getFont(), fgColor, getWidth(), getHeight(), selected);
         }
     }
     

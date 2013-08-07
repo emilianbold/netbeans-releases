@@ -199,6 +199,7 @@ public class ActiveConfigAction extends CallableSystemAction implements LookupLi
         configListCombo.setRenderer(new ConfigCellRenderer());
         configListCombo.setToolTipText(org.openide.awt.Actions.cutAmpersand(getName()));
         configListCombo.setFocusable(false);
+        configListCombo.setMaximumRowCount(20);
         ProjectConfigurationProvider<?> _pcp;
         synchronized (this) {
             _pcp = pcp;

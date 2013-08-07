@@ -316,12 +316,12 @@ class SummaryView extends AbstractSummaryView {
     
     private static SummaryViewMaster createViewSummaryMaster (final SearchHistoryPanel master) {
         final Map<String, String> colors = new HashMap<String, String>();
-        colors.put("A", getColorString(AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor()));
-        colors.put("C", getColorString(AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor()));
-        colors.put("R", getColorString(AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor()));
-        colors.put("M", getColorString(AnnotationColorProvider.getInstance().MODIFIED_FILE.getActualColor()));
-        colors.put("D", getColorString(AnnotationColorProvider.getInstance().REMOVED_FILE.getActualColor()));
-        colors.put("?", getColorString(AnnotationColorProvider.getInstance().EXCLUDED_FILE.getActualColor()));
+        colors.put("A", GitUtils.getColorString(AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor()));
+        colors.put("C", GitUtils.getColorString(AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor()));
+        colors.put("R", GitUtils.getColorString(AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor()));
+        colors.put("M", GitUtils.getColorString(AnnotationColorProvider.getInstance().MODIFIED_FILE.getActualColor()));
+        colors.put("D", GitUtils.getColorString(AnnotationColorProvider.getInstance().REMOVED_FILE.getActualColor()));
+        colors.put("?", GitUtils.getColorString(AnnotationColorProvider.getInstance().EXCLUDED_FILE.getActualColor()));
 
         return new SummaryViewMaster() {
 
@@ -482,15 +482,4 @@ class SummaryView extends AbstractSummaryView {
         }
     }
 
-    private static String getColorString (Color c) {
-        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
-    }
-
-    private static String getHex (int i) {
-        String hex = Integer.toHexString(i & 0x000000FF);
-        if (hex.length() == 1) {
-            hex = "0" + hex; //NOI18N
-        }
-        return hex;
-    }
 }

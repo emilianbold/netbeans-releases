@@ -42,7 +42,7 @@ _L1    : FUNCTION _L1 [ANONYMOUS: true, DECLARED: true - _L1, MODIFIERS: PUBLIC,
        test      : OBJECT test [ANONYMOUS: false, DECLARED: true - test, MODIFIERS: PRIVATE, OBJECT_LITERAL]
                  # PROPERTIES
                  anotherProperty : OBJECT anotherProperty [ANONYMOUS: false, DECLARED: true - anotherProperty, MODIFIERS: PUBLIC, PROPERTY]
-                 myProperty      : OBJECT myProperty [ANONYMOUS: false, DECLARED: false - myProperty, MODIFIERS: PUBLIC, PROPERTY]
+                 myProperty      : OBJECT myProperty [ANONYMOUS: false, DECLARED: true - myProperty, MODIFIERS: PUBLIC, PROPERTY]
 jQuery : FUNCTION jQuery [ANONYMOUS: false, DECLARED: false - jQuery, MODIFIERS: PUBLIC, FUNCTION]
        # PROPERTIES
        arguments : OBJECT arguments [ANONYMOUS: false, DECLARED: false - arguments, MODIFIERS: PRIVATE, VARIABLE]

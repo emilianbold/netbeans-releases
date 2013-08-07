@@ -173,7 +173,7 @@ public class StaticImport {
             if (fqn == null) {
                 return;
             }
-            CompilationUnitTree cut = copy.getCompilationUnit();
+            CompilationUnitTree cut = (CompilationUnitTree) copy.resolveRewriteTarget(copy.getCompilationUnit());
             CompilationUnitTree nue = GeneratorUtilities.get(copy).addImports(cut, Collections.singleton(e));
             copy.rewrite(cut, nue);
         }

@@ -89,6 +89,11 @@ public class QueryPanel extends javax.swing.JPanel implements FocusListener {
         nameLabel.setFont(jLabel1.getFont().deriveFont(s * 1.7f));
         defaultTextColor = noContentLabel.getForeground();
 
+        Color bkColor = UIUtils.getSectionPanelBackground();
+        gotoPanel.setBackground( bkColor );
+        tablePanel.setBackground( bkColor );
+        criteriaPanel.setBackground( bkColor );
+    
         tablePanel.add(tableComponent);
 
         JTree tv = new JTree();

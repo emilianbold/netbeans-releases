@@ -896,9 +896,6 @@ public abstract class JavaCompletionItem implements CompletionItem {
                     sb.append(STRIKE);
                 }
                 sb.append(escape(typeName));
-                if (hasTypeArgs) {
-                    sb.append("<>"); //NOI18N
-                }
                 for(int i = 0; i < dim; i++) {
                     sb.append("[]"); //NOI18N
                 }

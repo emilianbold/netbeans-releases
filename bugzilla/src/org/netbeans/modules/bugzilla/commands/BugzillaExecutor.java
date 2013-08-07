@@ -46,7 +46,10 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.apache.commons.httpclient.RedirectException;
 import org.eclipse.core.runtime.CoreException;
@@ -55,7 +58,6 @@ import org.eclipse.mylyn.internal.bugzilla.core.BugzillaStatus;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaUserMatchResponse;
 import org.eclipse.mylyn.internal.bugzilla.core.BugzillaVersion;
 import org.eclipse.mylyn.tasks.core.RepositoryStatus;
-import org.eclipse.mylyn.tasks.core.TaskRepository;
 import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.autoupdate.BugzillaAutoupdate;
@@ -67,6 +69,7 @@ import org.netbeans.modules.mylyn.util.commands.SynchronizeQueryCommand;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -88,6 +91,8 @@ public class BugzillaExecutor {
 
     private final BugzillaRepository repository;
 
+    private static final Map<String, Callable<Boolean>> handlerCalls = new HashMap<>();
+    
     public BugzillaExecutor(BugzillaRepository repository) {
         this.repository = repository;
     }
@@ -132,7 +137,11 @@ public class BugzillaExecutor {
 
             cmd.setFailed(false);
             cmd.setErrorMessage(null);
-
+            
+            synchronized ( handlerCalls ) {
+                handlerCalls.remove(repository.getUrl());
+            }
+            
         } catch (CoreException ce) {
             Bugzilla.LOG.log(Level.FINE, null, ce);
 
@@ -552,11 +561,37 @@ public class BugzillaExecutor {
             }
             @Override
             protected boolean handle() {
-                boolean ret = Bugzilla.getInstance().getBugtrackingFactory().editRepository(BugzillaUtil.getRepository(executor.repository), errroMsg);
-                if(!ret) {
-                    notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
+                Callable<Boolean> c;
+                synchronized ( handlerCalls ) {
+                    final String key = repository.getUrl();
+                    c = handlerCalls.get(key);
+                    if(c == null) {
+                        c = new Callable<Boolean>() {
+                            private boolean alreadyCalled = false;
+                            @Override
+                            public Boolean call() {
+                                if(alreadyCalled) {
+                                    Bugzilla.LOG.log(Level.INFO, key, ce); 
+                                    return false;
+                                }
+                                // do not handle this kind of erorr until flag turned false by a succesfull command
+                                alreadyCalled = true;                                
+                                boolean ret = Bugzilla.getInstance().getBugtrackingFactory().editRepository(BugzillaUtil.getRepository(executor.repository), errroMsg);
+                                if(!ret) {
+                                    notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
+                                }
+                                return ret;
+                            }
+                        };
+                        handlerCalls.put(key, c);
+                    } 
                 }
-                return ret;
+                try {
+                    return c.call();
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return false;
             }
         }
         private static class DefaultHandler extends ExceptionHandler {

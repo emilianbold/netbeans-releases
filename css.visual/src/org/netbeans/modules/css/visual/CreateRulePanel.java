@@ -963,6 +963,7 @@ public class CreateRulePanel extends javax.swing.JPanel {
                     MediaBody mediaBody = match.getMediaBody();
                     if(mediaBody == null) {
                         mediaBody = factory.createMediaBody();
+                        match.setMediaBody(mediaBody);
                     }
                     mediaBody.addRule(rule);
                 }

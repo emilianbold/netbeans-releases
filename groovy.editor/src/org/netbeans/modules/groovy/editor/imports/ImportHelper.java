@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -63,7 +64,6 @@ import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseDocument;
@@ -73,10 +73,12 @@ import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.lexer.GroovyTokenId;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -100,35 +102,38 @@ public final class ImportHelper {
      * it's missing.
      *
      * @param fo fileObject of the current file where the import is missing
+     * @param packageName name of the package where the current class is placed
      * @param importName name of the import to resolve (not fully qualified name)
      */
-    public static void resolveImport(FileObject fo, String importName) {
-        resolveImports(fo, Collections.singletonList(importName));
+    public static void resolveImport(FileObject fo, String packageName, String importName) {
+        resolveImports(fo, packageName, Collections.singletonList(importName));
     }
 
     /**
      * Resolve imports and add them as import statements into the source code.
      *
      * @param fo fileObject of the current file where the imports are missing
+     * @param packageName name of the package where the current class is placed
      * @param missingNames list of missing names (not fully qualified names)
      */
     public static void resolveImports(
         final FileObject fo,
+        final String packageName,
         final List<String> missingNames) {
 
         final AtomicBoolean cancel = new AtomicBoolean();
-        final List<String> singleCandidates = new ArrayList<String>();
-        final Map<String, List<ImportCandidate>> multipleCandidates = new HashMap<String, List<ImportCandidate>>();
+        final List<String> singleCandidates = new ArrayList<>();
+        final Map<String, Set<ImportCandidate>> multipleCandidates = new HashMap<>();
 
         // go over list of missing imports, fix it - if there is only one candidate
         // or populate choosers input list if there is more than one candidate.
 
         for (String name : missingNames) {
-            List<ImportCandidate> importCandidates = getImportCandidate(fo, name);
+            Set<ImportCandidate> importCandidates = getImportCandidate(fo, packageName, name);
 
             switch (importCandidates.size()) {
                 case 0: continue;
-                case 1: singleCandidates.add(importCandidates.get(0).getFqnName()); break;
+                case 1: singleCandidates.add(importCandidates.iterator().next().getFqnName()); break;
                 default: multipleCandidates.put(name, importCandidates);
             }
         }
@@ -161,27 +166,34 @@ public final class ImportHelper {
      * what could be possibly imported to fix the problem.
      *
      * @param fo current file
+     * @param packageName name of the package where the current class is placed
      * @param missingClass class name for which we are looking for import candidates
      * @return list of possible import candidates
      */
-    public static List<ImportCandidate> getImportCandidate(FileObject fo, String missingClass) {
+    public static Set<ImportCandidate> getImportCandidate(FileObject fo, String packageName, String missingClass) {
         LOG.log(Level.FINEST, "Looking for class: {0}", missingClass);
 
-        List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
-        candidates.addAll(findGroovyImports(fo, missingClass));
-        candidates.addAll(findJavaImports(fo, missingClass));
+        Set<ImportCandidate> candidates = new HashSet<>();
+        candidates.addAll(findGroovyImportCandidates(fo, packageName, missingClass));
+        candidates.addAll(findJavaImportCandidates(fo, packageName, missingClass));
 
         return candidates;
     }
 
-    private static List<ImportCandidate> findGroovyImports(FileObject fo, String missingClass) {
-        final List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
+    private static Set<ImportCandidate> findGroovyImportCandidates(FileObject fo, String packageName, String missingClass) {
+        final Set<ImportCandidate> candidates = new HashSet<>();
         final GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
                 Collections.singleton(ClassPath.SOURCE), null, null));
 
         Set<IndexedClass> classes = index.getClasses(missingClass, QuerySupport.Kind.PREFIX, true, false, false);
         for (IndexedClass indexedClass : classes) {
             if (!indexedClass.getName().equals(missingClass)) {
+                continue;
+            }
+
+            // Skip classes within the same package
+            String pkgName = GroovyUtils.stripClassName(indexedClass.getFqn());
+            if (packageName.equals(pkgName)) {
                 continue;
             }
 
@@ -195,8 +207,8 @@ public final class ImportHelper {
         return candidates;
     }
 
-    private static List<ImportCandidate> findJavaImports(FileObject fo, String missingClass) {
-        final List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
+    private static Set<ImportCandidate> findJavaImportCandidates(FileObject fo, String packageName, String missingClass) {
+        final Set<ImportCandidate> candidates = new HashSet<>();
         final ClasspathInfo pathInfo = createClasspathInfo(fo);
 
         Set<ElementHandle<TypeElement>> typeNames = pathInfo.getClassIndex().getDeclaredTypes(
@@ -204,6 +216,12 @@ public final class ImportHelper {
 
         for (ElementHandle<TypeElement> typeName : typeNames) {
             ElementKind kind = typeName.getKind();
+
+            // Skip classes within the same package
+            String pkgName = GroovyUtils.stripClassName(typeName.getQualifiedName());
+            if (packageName.equals(pkgName)) {
+                continue;
+            }
 
             if (kind == ElementKind.CLASS || kind == ElementKind.INTERFACE || kind == ElementKind.ANNOTATION_TYPE) {
                 candidates.add(createImportCandidate(missingClass, typeName.getQualifiedName(), kind));
@@ -275,8 +293,8 @@ public final class ImportHelper {
         return missingClass;
     }
 
-    private static List<String> showFixImportChooser(Map<String, List<ImportCandidate>> multipleCandidates) {
-        List<String> result = new ArrayList<String>();
+    private static List<String> showFixImportChooser(Map<String, Set<ImportCandidate>> multipleCandidates) {
+        List<String> result = new ArrayList<>();
         ImportChooserInnerPanel panel = new ImportChooserInnerPanel();
 
         panel.initPanel(multipleCandidates);
@@ -307,94 +325,132 @@ public final class ImportHelper {
     }
 
     private static void addImportStatements(FileObject fo, List<String> fqNames) {
-        BaseDocument baseDoc = LexUtilities.getDocument(fo, true);
-        if (baseDoc == null) {
+        BaseDocument doc = LexUtilities.getDocument(fo, true);
+        if (doc == null) {
             return;
         }
 
-        EditList edits = new EditList(baseDoc);
+        for (String fqName : fqNames) {
+            EditList edits = new EditList(doc);
+            try {
+                int packageLine = getPackageLineIndex(doc);
+                int afterPackageLine = packageLine + 1;
+                int afterPackageOffset = Utilities.getRowStartFromLineOffset(doc, afterPackageLine);
 
-        // Shitty for-loop because after the last line I want to add additional \n
-        for (int i = 0; i < fqNames.size(); i++) {
-            String fqName = fqNames.get(i);
-
-            int importPosition = getImportPosition(baseDoc);
-            if (importPosition != -1) {
-                LOG.log(Level.FINEST, "Importing here: {0}", importPosition);
-
-                // Last import means one additiona \n
-                if (i == fqNames.size() - 1) {
-                    edits.replace(importPosition, 0, "import " + fqName + "\n\n", false, 0);
-                } else {
-                    edits.replace(importPosition, 0, "import " + fqName + "\n", false, 0);
+                // If the line after the package statement isn't empty, put one empty line there
+                if (!Utilities.isRowWhite(doc, afterPackageOffset)) {
+                    int offset = Utilities.getRowStartFromLineOffset(doc, afterPackageLine);
+                    edits.replace(offset, 0, "\n", false, 0);
                 }
+
+                int lastImportLine = getLastImportLineIndex(doc);
+                int afterLastImportLine = lastImportLine + 1;
+
+                // No import statement in the source code, put the new one after the empty line
+                if (lastImportLine == -1) {
+                    int offset = Utilities.getRowStartFromLineOffset(doc, afterPackageLine + 1);
+                    edits.replace(offset, 0, "import " + fqName + "\n", false, 0);
+
+                    // If the line after the last import statement isn't empty, put one empty line there
+                    if (!Utilities.isRowWhite(doc, offset)) {
+                        edits.replace(offset, 0, "\n", false, 0);
+                    }
+                // There are already some imports, put the new one after the last import statement
+                } else {
+                    int offset = Utilities.getRowStartFromLineOffset(doc, afterLastImportLine);
+                    edits.replace(offset, 0, "import " + fqName + "\n", false, 0);
+
+                    // If the line after the last import statement isn't empty, put one empty line there
+                    if (!Utilities.isRowWhite(doc, offset)) {
+                        edits.replace(offset, 0, "\n", false, 0);
+                    }
+                }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
             }
+            edits.apply();
         }
-        edits.apply();
     }
 
-    private static int getImportPosition(BaseDocument doc) {
+    /**
+     * Returns line index (line number - 1) of the package statement or {@literal -1}
+     * if no package statement was found within this in {@link BaseDocument}.
+     *
+     * @param doc document
+     * @return line index (line number - 1) of the package statement or {@literal -1}
+     *         if no package statement was found within this {@link BaseDocument}.
+     */
+    private static int getPackageLineIndex(BaseDocument doc) {
+        try {
+            int lastPackageOffset = getLastPackageStatementOffset(doc);
+            if (lastPackageOffset != -1) {
+                return Utilities.getLineOffset(doc, lastPackageOffset);
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return -1;
+    }
+
+    /**
+     * Returns offset of the package statement or {@literal -1} if no package
+     * statement was found within this in {@link BaseDocument}.
+     *
+     * @param doc document
+     * @return offset of the package statement or {@literal -1} if no package
+     *         statement was found within this {@link BaseDocument}.
+     */
+    private static int getLastPackageStatementOffset(BaseDocument doc) {
         TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
 
-        int importEnd = -1;
         int packageOffset = -1;
 
         while (ts.moveNext()) {
-            Token t = ts.token();
-            int offset = ts.offset();
-
-            if (t.id() == GroovyTokenId.LITERAL_import) {
-                LOG.log(Level.FINEST, "GroovyTokenId.LITERAL_import found");
-                importEnd = offset;
-            } else if (t.id() == GroovyTokenId.LITERAL_package) {
-                LOG.log(Level.FINEST, "GroovyTokenId.LITERAL_package found");
-                packageOffset = offset;
+            if (ts.token().id() == GroovyTokenId.LITERAL_package) {
+                packageOffset = ts.offset();
             }
         }
+        return packageOffset;
+    }
 
-        int useOffset = 0;
-
-        // sanity check: package *before* import
-        if (importEnd != -1 && packageOffset > importEnd) {
-            LOG.log(Level.FINEST, "packageOffset > importEnd");
-            return -1;
-        }
-
-        int lineOffset = 0;
-
-        // nothing set:
-        if (importEnd == -1 && packageOffset == -1) {
-            // place imports in the first line
-            LOG.log(Level.FINEST, "importEnd == -1 && packageOffset == -1");
-            return 0;
-
-        } else if (importEnd == -1 && packageOffset != -1) {
-            // only package set:
-            // place imports behind package statement
-            LOG.log(Level.FINEST, "importEnd == -1 && packageOffset != -1");
-            useOffset = packageOffset;
-            lineOffset++; // we want to have first import two lines behind package statement
-        } else if (importEnd != -1 && packageOffset == -1) {
-            // only imports set:
-            // place imports after the last import statement
-            LOG.log(Level.FINEST, "importEnd != -1 && packageOffset == -1");
-            useOffset = importEnd;
-        } else if (importEnd != -1 && packageOffset != -1) {
-            // both package & import set:
-            // place imports right after the last import statement
-            LOG.log(Level.FINEST, "importEnd != -1 && packageOffset != -1");
-            useOffset = importEnd;
-
-        }
-
+    /**
+     * Returns line index (line number - 1) of the last import statement or {@literal -1}
+     * if no import statement was found within this in {@link BaseDocument}.
+     *
+     * @param doc document
+     * @return line index (line number - 1) of the last import statement or {@literal -1}
+     *         if no import statement was found within this {@link BaseDocument}.
+     */
+    private static int getLastImportLineIndex(BaseDocument doc) {
         try {
-            lineOffset = lineOffset + Utilities.getLineOffset(doc, useOffset);
+            int lastImportOffset = getLastImportStatementOffset(doc);
+            if (lastImportOffset != -1) {
+                return Utilities.getLineOffset(doc, lastImportOffset);
+            }
         } catch (BadLocationException ex) {
-            LOG.log(Level.FINEST, "BadLocationException for offset : {0}", useOffset);
-            LOG.log(Level.FINEST, "BadLocationException : {0}", ex.getMessage());
-            return -1;
+            Exceptions.printStackTrace(ex);
         }
+        return -1;
+    }
 
-        return Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);
+    /**
+     * Returns offset of the last import statement or {@literal -1} if no import
+     * statement was found within this in {@link BaseDocument}.
+     *
+     * @param doc document
+     * @return offset of the last import statement or {@literal -1} if no import
+     *         statement was found within this {@link BaseDocument}.
+     */
+    private static int getLastImportStatementOffset(BaseDocument doc) {
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
+
+        int importEnd = -1;
+
+        while (ts.moveNext()) {
+            if (ts.token().id() == GroovyTokenId.LITERAL_import) {
+                importEnd = ts.offset();
+            }
+        }
+        return importEnd;
     }
 }

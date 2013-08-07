@@ -58,9 +58,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Logger;
 
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.beans.CdiUtil;
 import org.netbeans.modules.web.beans.api.model.BeanArchiveType;
 import org.netbeans.modules.web.beans.api.model.BeansModel;
@@ -77,7 +75,6 @@ import org.netbeans.modules.web.beans.xml.WebBeansModel;
 import org.netbeans.modules.web.beans.xml.WebBeansModelFactory;
 import org.netbeans.modules.xml.retriever.catalog.Utilities;
 import org.netbeans.modules.xml.xam.ModelSource;
-import org.netbeans.modules.xml.xam.dom.Attribute;
 import org.netbeans.modules.xml.xam.locator.CatalogModelException;
 import org.openide.filesystems.FileAttributeEvent;
 import org.openide.filesystems.FileChangeListener;
@@ -93,11 +90,11 @@ import org.openide.filesystems.FileUtil;
  */
 public class BeansModelImpl implements BeansModel {
     
-    private static final String META_INF = "META-INF/";    //NOI18N
+    private static final String META_INF = "META-INF";    //NOI18N
     
     private static final String BEANS_XML   ="beans.xml";  //NOI18N
     
-    private static final String WEB_INF = "WEB-INF/";       //NOI18N
+    private static final String WEB_INF = "WEB-INF";       //NOI18N
     
     private BeanArchiveType beanArchType = null;
     
@@ -328,12 +325,12 @@ public class BeansModelImpl implements BeansModel {
                 }
                 FileObject[] roots = getUnit().getSourcePath().getRoots();
                 for (FileObject root : roots) {
-                    FileObject meta = root.getFileObject(META_INF+BEANS_XML);
-                    if ( fileObject.equals( meta )){
+                    FileObject meta = root.getFileObject(META_INF);
+                    if ( meta != null && fileObject.equals( meta.getFileObject(BEANS_XML) )){
                         return true;
                     }
-                    FileObject webInf = root.getFileObject( WEB_INF + BEANS_XML);
-                    if ( fileObject.equals( webInf)){
+                    FileObject webInf = root.getFileObject( WEB_INF );
+                    if ( webInf!=null && fileObject.equals( webInf.getFileObject(BEANS_XML))){
                         return true;
                     }
                 }
@@ -441,11 +438,14 @@ public class BeansModelImpl implements BeansModel {
     }
 
     private FileObject getBeansFile(FileObject root) {
-        FileObject beans = root.getFileObject(META_INF + BEANS_XML);
+        FileObject beans = null;
+        FileObject meta = root.getFileObject(META_INF);
+        if(meta != null) beans = meta.getFileObject(BEANS_XML);
         if (beans != null) {
             return beans;
         }
-        return root.getFileObject(WEB_INF + BEANS_XML);
+        FileObject web = root.getFileObject(WEB_INF);
+        return web != null ? web.getFileObject(BEANS_XML) : null;
     }
     
     void addCompileModel(FileObject fileObject, FileObject compileRoot, 

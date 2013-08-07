@@ -294,21 +294,26 @@ public class JavacParserTest extends NbTestCase {
     }
     
     public void testIfMissingObjectOnBootCPUseCPToGuessSourceLevel() throws Exception {
-        Source ret = guessSourceLevel(false, false);
+        Source ret = guessSourceLevel(false, false, false);
         assertEquals("Downgraded to 1.4", Source.JDK1_4, ret);
     }
 
     public void testIfObjectPresentOnBootDontUseCPToGuessSourceLevel() throws Exception {
-        Source ret = guessSourceLevel(true, false);
+        Source ret = guessSourceLevel(true, false, false);
         assertEquals("Downgraded to 1.4, as Object on bootCP, but no AssertError", Source.JDK1_3, ret);
     }
 
     public void testIfMissingObjectOnBootCPUseCPToGuessSourceLevelWithStringBuilder() throws Exception {
-        Source ret = guessSourceLevel(false, true);
+        Source ret = guessSourceLevel(false, true, false);
+        assertEquals("Downgraded to 1.6, as Object on bootCP, but no AutoCloseable", Source.JDK1_6, ret);
+    }
+
+    public void testIfMissingObjectOnBootCPUseCPToGuessSourceLevelWithStringBuilderAndAutoCloseable() throws Exception {
+        Source ret = guessSourceLevel(false, true, true);
         assertEquals("Kept to 1.7", Source.JDK1_7, ret);
     }
     
-    private Source guessSourceLevel(boolean objectOnBCP, boolean sbOnCP) throws Exception {
+    private Source guessSourceLevel(boolean objectOnBCP, boolean sbOnCP, boolean acOnCP) throws Exception {
         clearWorkDir();
         File bcp = new File(getWorkDir(), "bootcp");
         bcp.mkdirs();
@@ -335,6 +340,13 @@ public class JavacParserTest extends NbTestCase {
             copyResource(
                 JavacParserTest.class.getResource("/java/lang/StringBuilder.class"),
                 new File(new File(new File(cp, "java"), "lang"), "StringBuilder.class")
+            );
+        }
+
+        if (acOnCP) {
+            copyResource(
+                JavacParserTest.class.getResource("/java/lang/AutoCloseable.class"),
+                new File(new File(new File(cp, "java"), "lang"), "AutoCloseable.class")
             );
         }
         

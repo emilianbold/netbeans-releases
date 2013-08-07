@@ -43,6 +43,7 @@
 package org.netbeans.modules.diff;
 
 import java.io.File;
+import org.openide.cookies.EditorCookie;
 import org.openide.cookies.OpenCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -94,6 +95,23 @@ public class Utils {
             parallelRP = new RequestProcessor("Diff.ParallelTasks", 5); //NOI18N
         }
         return parallelRP;
+    }
+
+    /**
+     * Checks if the fo is binary.
+     *
+     * @param fo fileobject to check
+     * @return true if the fileobject cannot be edited in NetBeans text editor, false otherwise
+     */
+    public static boolean isFileContentBinary (FileObject fo) {
+        if (fo == null) return false;
+        try {
+            DataObject dao = DataObject.find(fo);
+            return dao.getCookie(EditorCookie.class) == null;
+        } catch (DataObjectNotFoundException e) {
+            // not found, continue
+        }
+        return false;
     }
 
     private Utils () {

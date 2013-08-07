@@ -86,7 +86,7 @@ public final class ImportUtils {
     }
     
     public static Set<String> getDefaultImportPackages() {
-        Set<String> defaultPackages = new HashSet<String>();
+        Set<String> defaultPackages = new HashSet<>();
         
         defaultPackages.add("java.io");     // NOI18N
         defaultPackages.add("java.lang");   // NOI18N
@@ -103,7 +103,7 @@ public final class ImportUtils {
     }
     
     public static Set<String> getDefaultImportClasses() {
-        Set<String> defaultClasses = new HashSet<String>();
+        Set<String> defaultClasses = new HashSet<>();
         
         defaultClasses.add("java.math.BigDecimal"); // NOI18N
         defaultClasses.add("java.math.BigInteger"); // NOI18N

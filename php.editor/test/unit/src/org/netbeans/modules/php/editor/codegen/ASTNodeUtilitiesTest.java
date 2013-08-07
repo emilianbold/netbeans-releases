@@ -46,7 +46,7 @@ import java.util.Set;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.php.editor.nav.PHPNavTestBase;
+import org.netbeans.modules.php.editor.csl.PHPNavTestBase;
 
 /**
  *
