@@ -41,23 +41,21 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.actions;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -67,50 +65,45 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
 
     protected Node fileToBeOpened;
     protected String testProject;
-    protected String fileName; 
+    protected String fileName;
     protected String nodePath;
     private EditorOperator editorOperator;
     protected static ProjectsTabOperator projectsTab = null;
-    private int caretBlinkRate;
-    
+
     public TypingInScriptingEditorTest(String testName) {
         super(testName);
-        expectedTime = UI_RESPONSE;       
-        WAIT_AFTER_OPEN=200;
+        expectedTime = UI_RESPONSE;
+        WAIT_AFTER_OPEN = 200;
     }
 
     public TypingInScriptingEditorTest(String testName, String performanceDataName) {
-        super(testName,performanceDataName);
-        expectedTime = UI_RESPONSE;       
-        WAIT_AFTER_OPEN=200;
+        super(testName, performanceDataName);
+        expectedTime = UI_RESPONSE;
+        WAIT_AFTER_OPEN = 200;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(TypingInScriptingEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(TypingInScriptingEditorTest.class).suite();
     }
 
     @Override
     public void initialize() {
-        String path = nodePath+"|"+fileName;
-        fileToBeOpened = new Node(getProjectNode(testProject),path);
+        String path = nodePath + "|" + fileName;
+        fileToBeOpened = new Node(getProjectNode(testProject), path);
         new OpenAction().performAPI(fileToBeOpened);
         editorOperator = EditorWindowOperator.getEditor(fileName);
         waitNoEvent(5000);
     }
-    
+
     @Override
     public void prepare() {
-        editorOperator.setCaretPosition(8, 1);        
+        editorOperator.setCaretPosition(8, 1);
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
     }
 
     @Override
     public ComponentOperator open() {
-        editorOperator.typeKey('z');        
+        editorOperator.typeKey('z');
         return null;
     }
 
@@ -118,13 +111,14 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     public void close() {
     }
 
+    @Override
     public void shutdown() {
         repaintManager().resetRegionFilters();
         EditorOperator.closeDiscardAll();
     }
 
     protected Node getProjectNode(String projectName) {
-        if(projectsTab==null) {
+        if (projectsTab == null) {
             projectsTab = ScriptingUtilities.invokePTO();
         }
         return projectsTab.getProjectRootNode(projectName);
@@ -134,14 +128,14 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "javascript20kb.js";
         nodePath = "Web Pages";
-        doMeasurement();        
+        doMeasurement();
     }
-    
+
     public void test_JScript_EditorTypingBig() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "javascript_200kb.js";
         nodePath = "Web Pages";
-        doMeasurement();        
+        doMeasurement();
     }
 
     public void test_PHP_EditorTyping() {
@@ -150,7 +144,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         nodePath = "Source Files";
         doMeasurement();
     }
-    
+
     public void test_JSON_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "json20kB.json";
@@ -192,5 +186,4 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         nodePath = "Web Pages";
         doMeasurement();
     }
- 
 }

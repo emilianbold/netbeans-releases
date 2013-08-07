@@ -107,14 +107,6 @@ public class MeasureEntityBeanActionTest extends PerformanceTestCase {
         doMeasurement();
     }
 
-    public void testAddFinderMethod() {
-        WAIT_AFTER_OPEN = 1000;
-        popup_menu = "Add|Finder Method";
-        title = "Finder Method";
-        name = "findByTest";
-        doMeasurement();
-    }
-
     public void testAddSelectMethod() {
         WAIT_AFTER_OPEN = 1000;
         popup_menu = "Add|Select Method";

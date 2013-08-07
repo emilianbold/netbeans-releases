@@ -83,12 +83,24 @@ final class MethodOrder {
         if ("natural".equals(orderS)) { // NOI18N
             return;
         }
-        Field declaredMethodsF = Class.class.getDeclaredField("declaredMethods");
-        declaredMethodsF.setAccessible(true);
         Method[] ms = null;
-        while (ms == null) {
+        try {
+            Field declaredMethodsF = Class.class.getDeclaredField("declaredMethods");
+            declaredMethodsF.setAccessible(true);
+            while (ms == null) {
+                c.getDeclaredMethods();
+                ms = (Method[]) ((Reference) declaredMethodsF.get(c)).get();
+            }
+        } catch (NoSuchFieldException ex) {
+            // try JDK8
+            Field rdF = Class.class.getDeclaredField("reflectionData");
+            rdF.setAccessible(true);
             c.getDeclaredMethods();
-            ms = (Method[]) ((Reference) declaredMethodsF.get(c)).get();
+            Reference<Object> ref = (Reference<Object>) rdF.get(c);
+            Object refData = ref.get();
+            Field dmF = refData.getClass().getDeclaredField("declaredMethods");
+            dmF.setAccessible(true);
+            ms = (Method[]) dmF.get(refData);
         }
         allDeclaredMethods.add(ms); // prevent GC
         if (orderS.equals("a-z")) {
