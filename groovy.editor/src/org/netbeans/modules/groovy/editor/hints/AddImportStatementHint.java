@@ -95,7 +95,7 @@ public class AddImportStatementHint extends GroovyErrorRule {
         // FIXME parsing API
         FileObject fo = context.parserResult.getSnapshot().getSource().getFileObject();
 
-        List<ImportCandidate> importCandidates = ImportHelper.getImportCandidate(fo, getPackageName(context), missingClassName);
+        Set<ImportCandidate> importCandidates = ImportHelper.getImportCandidate(fo, getPackageName(context), missingClassName);
 
 
         if (importCandidates.isEmpty()) {
