@@ -125,40 +125,45 @@ public class CreateLicenseSummary extends Task {
                 pw.println();
 
                 Set<String> licenseNames = new TreeSet<String>();
-                pw.printf("%-60s %s\n", "THIRD-PARTY COMPONENT FILE", "LICENSE");
-                pw.printf("%-60s %s\n", "(path in the installation)", "(see license text reproduced below)");
+                pw.printf("%-72s %s\n", "THIRD-PARTY COMPONENT FILE", "LICENSE");
+                pw.printf("%-44s %s\n", "(path in the installation)", "(see license text reproduced below)");
                 pw.println("--------------------------------------------------------------------------------");
                 for (Map.Entry<String,Map<String,String>> entry : binaries2LicenseHeaders.entrySet()) {
                     String binary = entry.getKey();
                     Map<String,String> headers = entry.getValue();
-                    pw.printf("%-60s %s\n", binary, getMaybeMissing(headers, "License"));
-                    String license = headers.get("License");
-                    if (license != null) {
-                        licenseNames.add(license);
+                    String origin = getMaybeMissing(headers, "Origin");
+                    // ignore organic components (Origin starts with Oracle)
+                    if (!origin.startsWith("Oracle"))
+                    {
+                        pw.printf("%-69s %s\n", binary, getMaybeMissing(headers, "License"));
+                        String license = headers.get("License");
+                        if (license != null) {
+                            licenseNames.add(license);
+                        }
                     }
                 }
-                String[] otherHeaders = {"Name", "Version", "Description", "Origin"};
-                Map<Map<String,String>,Set<String>> licenseHeaders2Binaries = new LinkedHashMap<Map<String,String>,Set<String>>();
-                for (Map.Entry<String,Map<String,String>> entry : binaries2LicenseHeaders.entrySet()) {
-                    Map<String,String> headers = new HashMap<String,String>(entry.getValue());
-                    headers.keySet().retainAll(Arrays.asList(otherHeaders));
-                    Set<String> binaries = licenseHeaders2Binaries.get(headers);
-                    if (binaries == null) {
-                        binaries = new TreeSet<String>();
-                        licenseHeaders2Binaries.put(headers, binaries);
-                    }
-                    binaries.add(entry.getKey());
-                }
-                for (Map.Entry<Map<String,String>,Set<String>> entry : licenseHeaders2Binaries.entrySet()) {
-                    pw.println();
-                    for (String header : otherHeaders) {
-                        pw.printf("%s: %s\n", header, getMaybeMissing(entry.getKey(), header));
-                    }
-                    pw.println ("Files:");
-                    for (String binary : entry.getValue()) {
-                        pw.println(binary);
-                    }
-                }
+//                String[] otherHeaders = {"Name", "Version", "Description", "Origin"};
+//                Map<Map<String,String>,Set<String>> licenseHeaders2Binaries = new LinkedHashMap<Map<String,String>,Set<String>>();
+//                for (Map.Entry<String,Map<String,String>> entry : binaries2LicenseHeaders.entrySet()) {
+//                    Map<String,String> headers = new HashMap<String,String>(entry.getValue());
+//                    headers.keySet().retainAll(Arrays.asList(otherHeaders));
+//                    Set<String> binaries = licenseHeaders2Binaries.get(headers);
+//                    if (binaries == null) {
+//                        binaries = new TreeSet<String>();
+//                        licenseHeaders2Binaries.put(headers, binaries);
+//                    }
+//                    binaries.add(entry.getKey());
+//                }
+//                for (Map.Entry<Map<String,String>,Set<String>> entry : licenseHeaders2Binaries.entrySet()) {
+//                    pw.println();
+//                    for (String header : otherHeaders) {
+//                        pw.printf("%s: %s\n", header, getMaybeMissing(entry.getKey(), header));
+//                    }
+//                    pw.println ("Files:");
+//                    for (String binary : entry.getValue()) {
+//                        pw.println(binary);
+//                    }
+//                }
                 File licenses = new File(new File(nball, "nbbuild"), "licenses");
                 for (String licenseName : licenseNames) {
                     if (licenseName == null) {
@@ -213,7 +218,8 @@ public class CreateLicenseSummary extends Task {
                 Set<String> hgFiles = VerifyLibsAndLicenses.findHgControlledFiles(d);
                 Map<String,Map<String,String>> binary2License = findBinary2LicenseHeaderMapping(hgFiles, d);
                 for (String n : hgFiles) {
-                    if (!n.endsWith(".jar") && !n.endsWith(".zip")) {
+                    if (!n.endsWith(".jar") && !n.endsWith(".zip") && !n.endsWith(".xml") &&
+                            !n.endsWith(".js") && !n.endsWith(".dylib")) {
                         continue;
                     }
                     Map<String,String> headers = binary2License.get(n);
@@ -226,6 +232,9 @@ public class CreateLicenseSummary extends Task {
                         crc2LicenseHeaders.put(computeCRC32(is), headers);
                     } finally {
                         is.close();
+                    }
+                    if (!n.endsWith(".jar") && !n.endsWith(".zip")) {
+                        continue;
                     }
                     ZipFile zf = new ZipFile(f);
                     try {
@@ -291,6 +300,9 @@ public class CreateLicenseSummary extends Task {
             } else {
                 binary2LicenseHeaders.put(n.replaceFirst("-license\\.txt$", ".jar"), headers);
                 binary2LicenseHeaders.put(n.replaceFirst("-license\\.txt$", ".zip"), headers);
+                binary2LicenseHeaders.put(n.replaceFirst("-license\\.txt$", ".xml"), headers);
+                binary2LicenseHeaders.put(n.replaceFirst("-license\\.txt$", ".js"), headers);
+                binary2LicenseHeaders.put(n.replaceFirst("-license\\.txt$", ".dylib"), headers);
             }
         }
         return binary2LicenseHeaders;
@@ -310,7 +322,7 @@ public class CreateLicenseSummary extends Task {
             File f = new File(d, n);
             if (f.isDirectory()) {
                 findBinaries(f, binaries2LicenseHeaders, crc2LicenseHeaders, crc2Binary, prefix + n + "/", testBinariesAreUnique, ignoredPatterns);
-            } else if (n.endsWith(".jar") || n.endsWith(".zip")) {
+            } else if (n.endsWith(".jar") || n.endsWith(".zip") || n.endsWith(".xml") || n.endsWith(".js") || n.endsWith(".dylib")) {
                 InputStream is = new FileInputStream(f);
                 try {
                     long crc = computeCRC32(is);

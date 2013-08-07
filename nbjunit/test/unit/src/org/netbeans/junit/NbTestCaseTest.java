@@ -44,6 +44,7 @@
 
 package org.netbeans.junit;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.util.logging.Level;
@@ -214,5 +215,21 @@ public class NbTestCaseTest extends NbTestCase {
     
     public void testWorkDirLengthsimilarname() throws IOException {
         testWorkDirLength();
+    }
+    
+    /**
+     * Tests workdir abbreviation of test method names like test1,
+     * test_12345, testabcd, test_a, abcd, etc.
+     *
+     * @throws IOException
+     */
+    public void testWorkdirLengthWithoutUppercase() throws IOException {
+        System.setProperty("nbjunit.too.long", "10");
+        File workdirRoot = new File(Manager.getWorkDirPath());
+        String[] names = {"test1", "test_12345", "testabcd", "test_a", "abcd"};
+        for (String name : names) {
+            File workdir = new NbTestCaseTest(name).getWorkDir();
+            assertTrue("Workdir is invalid:" + workdir, workdir.isDirectory() && workdir.getParentFile().getParentFile().equals(workdirRoot));
+        }
     }
 }
