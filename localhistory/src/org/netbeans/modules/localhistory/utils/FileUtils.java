@@ -310,19 +310,11 @@ public class FileUtils {
         }
     }
     
-    private static BufferedInputStream createInputStream(VCSFileProxy fileProxy) throws IOException {
-        File file = fileProxy.toFile();
-        if(file != null) {
-            return createInputStream(file);
-        }
+    private static BufferedInputStream createInputStream(VCSFileProxy fileProxy) throws IOException {        
         int retry = 0;
-        while (true) {   
+        while (true) {
             try {
-                FileObject fo = fileProxy.toFileObject();
-                if(fo == null) {
-                    return null;
-                }
-                return new BufferedInputStream(fo.getInputStream());
+                return new BufferedInputStream(fileProxy.getInputStream(false));
             } catch (IOException ex) {
                 retry++;
                 if (retry > 7) {
@@ -334,7 +326,7 @@ public class FileUtils {
                     throw ex;
                 }
             }
-        }       
+        }
     }
 
     private static BufferedInputStream createInputStream(File file) throws IOException {

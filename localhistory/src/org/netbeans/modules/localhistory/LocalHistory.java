@@ -187,7 +187,7 @@ public class LocalHistory {
                 FileObject fo = group.getRootFolder();
                 VCSFileProxy root = VCSFileProxy.createFileProxy(fo); 
                 if( root == null ) {
-                    LOG.log(Level.WARNING, "source group{0} returned null root folder", group.getDisplayName());
+                    LOG.log(Level.WARNING, "source group {0} returned null root folder", group.getDisplayName());
                 } else {
                     addRootFile(newRoots, FileUtils.getPath(root));    
                 }                

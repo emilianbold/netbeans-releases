@@ -48,14 +48,20 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -66,7 +72,9 @@ public class MagicCache {
     private static final String cacheName = ".rfs_magic"; // NOI18N
     private final RemoteDirectory dir;
     private Map<String, byte[]> cache;
-    
+
+    private static final RequestProcessor RP = new RequestProcessor("ErrorReader");
+
     public MagicCache(RemoteDirectory dir) {
         this.dir = dir;
     }
@@ -185,17 +193,47 @@ public class MagicCache {
         if (path.isEmpty()) {
             path = "/"; // NOI18N
         }
-        ExitStatus result = ProcessUtils.executeInDir(path, dir.getExecutionEnvironment(), "/bin/sh", "-c", command); // NOI18N
-        File od = new File(dir.getCache(),cacheName);
-        OutputStreamWriter os = null;
+        File od = new File(dir.getCache(), cacheName);
+        OutputStream os = null;
+        InputStream is = null;
         try {
-            os = new OutputStreamWriter(new BufferedOutputStream(new FileOutputStream(od)));
-            os.write(result.output);
+            os = new FileOutputStream(od);
+            NativeProcessBuilder processBuilder = NativeProcessBuilder.newProcessBuilder(dir.getExecutionEnvironment());
+            processBuilder.setExecutable("/bin/sh"); //NOI18N
+            processBuilder.setArguments("-c", command); //NOI18N
+            processBuilder.setWorkingDirectory(path);
+            final Process process = processBuilder.call();
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    BufferedReader reader = ProcessUtils.getReader(process.getErrorStream(), true);
+                    try {
+                        while (reader.readLine() != null) {
+                        }
+                    } catch (IOException ex) {
+                    } finally {
+                        try {
+                            reader.close();
+                        } catch (IOException ex) {
+                        }
+                    }
+                }
+            });
+            is = process.getInputStream();
+            FileUtil.copy(is, os);
         } finally {
             if (os != null) {
                 try {
                     os.close();
                 } catch (IOException ex) {
+                    ex.printStackTrace(System.err);
+                }
+            }
+            if (is != null) {
+                try {
+                    is.close();
+                } catch (IOException ex) {
+                    ex.printStackTrace(System.err);
                 }
             }
         }
