@@ -112,7 +112,8 @@ public class JsIndex {
     // or a file has to be reindexed due to an external change
 
     /* GuardedBy(LOCK) */
-    private static final Map <CacheKey, SoftReference<CacheValue>> CACHE_INDEX_RESULT_SMALL = new LinkedHashMap<CacheKey, SoftReference<CacheValue>>(MAX_ENTRIES_CACHE_INDEX_RESULT + 1, 0.75F, true) {
+    private static final Map<CacheKey, SoftReference<CacheValue>> CACHE_INDEX_RESULT_SMALL = new LinkedHashMap<CacheKey, SoftReference<CacheValue>>(
+            MAX_ENTRIES_CACHE_INDEX_RESULT + 1, 0.75F, true) {
         @Override
         public boolean removeEldestEntry(Map.Entry eldest) {
             return size() > MAX_ENTRIES_CACHE_INDEX_RESULT;
@@ -120,11 +121,11 @@ public class JsIndex {
     };
 
     /* GuardedBy(LOCK) */
-    private static final Map <CacheKey, SoftReference<CacheValue>> CACHE_INDEX_RESULT_LARGE = new LinkedHashMap<CacheKey, SoftReference<CacheValue>>(
+    private static final Map<CacheKey, SoftReference<CacheValue>> CACHE_INDEX_RESULT_LARGE = new LinkedHashMap<CacheKey, SoftReference<CacheValue>>(
             (MAX_ENTRIES_CACHE_INDEX_RESULT / 4) + 1, 0.75F, true) {
         @Override
         public boolean removeEldestEntry(Map.Entry eldest) {
-            return size() > (MAX_ENTRIES_CACHE_INDEX_RESULT / 3);
+            return size() > (MAX_ENTRIES_CACHE_INDEX_RESULT / 4);
         }
     };
 
@@ -178,9 +179,9 @@ public class JsIndex {
             if (INDEX_CHANGED.get()) {
                 WRITE_LOCK.lock();
                 try {
-                    LOG.log(Level.FINEST, "Cache cleared");
                     CACHE_INDEX_RESULT_SMALL.clear();
                     CACHE_INDEX_RESULT_LARGE.clear();
+                    LOG.log(Level.FINEST, "Cache cleared");
                 } finally {
                     WRITE_LOCK.unlock();
                 }
@@ -188,38 +189,39 @@ public class JsIndex {
             }
 
             CacheKey key = new CacheKey(this, fieldName, fieldValue, kind);
-            Collection<? extends IndexResult> result;
-
             CacheValue value = getCachedValue(key, fieldsToLoad);
-            if (value != null && value.contains(fieldsToLoad)) {
+
+            if (value != null) {
                 logStats(value.getResult(), true, fieldsToLoad);
                 return value.getResult();
-            } else {
-                result = querySupport.query(fieldName, fieldValue, kind, fieldsToLoad);
-                if (updateCache) {
-                    WRITE_LOCK.lock();
-                    try {
-                        value = getCachedValue(key, fieldsToLoad);
-                        if (value != null && value.contains(fieldsToLoad)) {
-                            logStats(value.getResult(), false, fieldsToLoad);
-                        } else {
-                            value = new CacheValue(fieldsToLoad, result);
-                            if ((result.size() * AVERAGE_BASIC_INFO_SIZE) < MAX_CACHE_VALUE_SIZE) {
-                                CACHE_INDEX_RESULT_SMALL.put(key, new SoftReference(value));
-                            } else {
-                                CACHE_INDEX_RESULT_LARGE.put(key, new SoftReference(value));
-                            }
-                            logStats(result, false, fieldsToLoad);
-                        }
+            }
+
+            Collection<? extends IndexResult> result = querySupport.query(
+                    fieldName, fieldValue, kind, fieldsToLoad);
+            if (updateCache) {
+                WRITE_LOCK.lock();
+                try {
+                    value = getCachedValue(key, fieldsToLoad);
+                    if (value != null) {
+                        logStats(value.getResult(), false, fieldsToLoad);
                         return value.getResult();
-                    } finally {
-                        WRITE_LOCK.unlock();
                     }
-                } else {
+
+                    value = new CacheValue(fieldsToLoad, result);
+                    if ((result.size() * AVERAGE_BASIC_INFO_SIZE) < MAX_CACHE_VALUE_SIZE) {
+                        CACHE_INDEX_RESULT_SMALL.put(key, new SoftReference(value));
+                    } else {
+                        CACHE_INDEX_RESULT_LARGE.put(key, new SoftReference(value));
+                    }
                     logStats(result, false, fieldsToLoad);
-                    return result;
+                    return value.getResult();
+                } finally {
+                    WRITE_LOCK.unlock();
                 }
             }
+
+            logStats(result, false, fieldsToLoad);
+            return result;
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);
         }
@@ -256,8 +258,14 @@ public class JsIndex {
                 if (currentReference != null) {
                     value = currentReference.get();
                 }
+                if (value == null || !value.contains(fieldsToLoad)) {
+                    return null;
+                } else {
+                    return value;
+                }
+            } else {
+                return value;
             }
-            return value;
         } finally {
             READ_LOCK.unlock();
         }
