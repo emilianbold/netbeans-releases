@@ -46,6 +46,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -78,6 +79,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -121,18 +123,18 @@ public final class ImportHelper {
         final List<String> missingNames) {
 
         final AtomicBoolean cancel = new AtomicBoolean();
-        final List<String> singleCandidates = new ArrayList<String>();
-        final Map<String, List<ImportCandidate>> multipleCandidates = new HashMap<String, List<ImportCandidate>>();
+        final List<String> singleCandidates = new ArrayList<>();
+        final Map<String, Set<ImportCandidate>> multipleCandidates = new HashMap<>();
 
         // go over list of missing imports, fix it - if there is only one candidate
         // or populate choosers input list if there is more than one candidate.
 
         for (String name : missingNames) {
-            List<ImportCandidate> importCandidates = getImportCandidate(fo, packageName, name);
+            Set<ImportCandidate> importCandidates = getImportCandidate(fo, packageName, name);
 
             switch (importCandidates.size()) {
                 case 0: continue;
-                case 1: singleCandidates.add(importCandidates.get(0).getFqnName()); break;
+                case 1: singleCandidates.add(importCandidates.iterator().next().getFqnName()); break;
                 default: multipleCandidates.put(name, importCandidates);
             }
         }
@@ -169,18 +171,18 @@ public final class ImportHelper {
      * @param missingClass class name for which we are looking for import candidates
      * @return list of possible import candidates
      */
-    public static List<ImportCandidate> getImportCandidate(FileObject fo, String packageName, String missingClass) {
+    public static Set<ImportCandidate> getImportCandidate(FileObject fo, String packageName, String missingClass) {
         LOG.log(Level.FINEST, "Looking for class: {0}", missingClass);
 
-        List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
+        Set<ImportCandidate> candidates = new HashSet<>();
         candidates.addAll(findGroovyImportCandidates(fo, packageName, missingClass));
         candidates.addAll(findJavaImportCandidates(fo, packageName, missingClass));
 
         return candidates;
     }
 
-    private static List<ImportCandidate> findGroovyImportCandidates(FileObject fo, String packageName, String missingClass) {
-        final List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
+    private static Set<ImportCandidate> findGroovyImportCandidates(FileObject fo, String packageName, String missingClass) {
+        final Set<ImportCandidate> candidates = new HashSet<>();
         final GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
                 Collections.singleton(ClassPath.SOURCE), null, null));
 
@@ -206,8 +208,8 @@ public final class ImportHelper {
         return candidates;
     }
 
-    private static List<ImportCandidate> findJavaImportCandidates(FileObject fo, String packageName, String missingClass) {
-        final List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
+    private static Set<ImportCandidate> findJavaImportCandidates(FileObject fo, String packageName, String missingClass) {
+        final Set<ImportCandidate> candidates = new HashSet<>();
         final ClasspathInfo pathInfo = createClasspathInfo(fo);
 
         Set<ElementHandle<TypeElement>> typeNames = pathInfo.getClassIndex().getDeclaredTypes(
@@ -292,8 +294,8 @@ public final class ImportHelper {
         return missingClass;
     }
 
-    private static List<String> showFixImportChooser(Map<String, List<ImportCandidate>> multipleCandidates) {
-        List<String> result = new ArrayList<String>();
+    private static List<String> showFixImportChooser(Map<String, Set<ImportCandidate>> multipleCandidates) {
+        List<String> result = new ArrayList<>();
         ImportChooserInnerPanel panel = new ImportChooserInnerPanel();
 
         panel.initPanel(multipleCandidates);
@@ -339,11 +341,28 @@ public final class ImportHelper {
             if (importPosition != -1) {
                 LOG.log(Level.FINEST, "Importing here: {0}", importPosition);
 
-                // Last import means one additiona \n
-                if (i == fqNames.size() - 1) {
-                    edits.replace(importPosition, 0, "import " + fqName + "\n\n", false, 0);
+                // We don't want to import anything inside comment --> see #228641
+                Token<GroovyTokenId> token = LexUtilities.getToken(baseDoc, importPosition);
+
+                if (token.id() == GroovyTokenId.BLOCK_COMMENT) {
+                    int packageOffset = getLastPackageStatementOffset(baseDoc);
+                    int lineOffset = 0;
+                    try {
+                        lineOffset = Utilities.getLineOffset(baseDoc, packageOffset) + 1;
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                    int offset = Utilities.getRowStartFromLineOffset(baseDoc, lineOffset);
+
+                    edits.replace(offset - 1, 0, "\n", false, 0);
+                    edits.replace(offset, 0, "import " + fqName + "\n\n", false, 0);
                 } else {
-                    edits.replace(importPosition, 0, "import " + fqName + "\n", false, 0);
+                    // Last import means one additiona \n
+                    if (i == fqNames.size() - 1) {
+                        edits.replace(importPosition, 0, "import " + fqName + "\n\n", false, 0);
+                    } else {
+                        edits.replace(importPosition, 0, "import " + fqName + "\n", false, 0);
+                    }
                 }
             }
         }
@@ -351,23 +370,8 @@ public final class ImportHelper {
     }
 
     private static int getImportPosition(BaseDocument doc) {
-        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
-
-        int importEnd = -1;
-        int packageOffset = -1;
-
-        while (ts.moveNext()) {
-            Token t = ts.token();
-            int offset = ts.offset();
-
-            if (t.id() == GroovyTokenId.LITERAL_import) {
-                LOG.log(Level.FINEST, "GroovyTokenId.LITERAL_import found");
-                importEnd = offset;
-            } else if (t.id() == GroovyTokenId.LITERAL_package) {
-                LOG.log(Level.FINEST, "GroovyTokenId.LITERAL_package found");
-                packageOffset = offset;
-            }
-        }
+        int importEnd = getLastImportStatementOffset(doc);
+        int packageOffset = getLastPackageStatementOffset(doc);
 
         int useOffset = 0;
 
@@ -413,5 +417,47 @@ public final class ImportHelper {
         }
 
         return Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);
+    }
+
+    /**
+     * Returns offset of the package statement or {@literal -1} if no package
+     * statement was found within this in {@link BaseDocument}.
+     *
+     * @param doc document
+     * @return offset of the package statement or {@literal -1} if no package
+     *         statement was found within this in {@link BaseDocument}.
+     */
+    private static int getLastPackageStatementOffset(BaseDocument doc) {
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
+
+        int packageOffset = -1;
+
+        while (ts.moveNext()) {
+            if (ts.token().id() == GroovyTokenId.LITERAL_package) {
+                packageOffset = ts.offset();
+            }
+        }
+        return packageOffset;
+    }
+
+    /**
+     * Returns offset of the last import statement or {@literal -1} if no import
+     * statement was found within this in {@link BaseDocument}.
+     *
+     * @param doc document
+     * @return offset of the last import statement or {@literal -1} if no import
+     *         statement was found within this in {@link BaseDocument}.
+     */
+    private static int getLastImportStatementOffset(BaseDocument doc) {
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
+
+        int importEnd = -1;
+
+        while (ts.moveNext()) {
+            if (ts.token().id() == GroovyTokenId.LITERAL_import) {
+                importEnd = ts.offset();
+            }
+        }
+        return importEnd;
     }
 }
