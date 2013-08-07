@@ -43,7 +43,9 @@ package org.netbeans.modules.mylyn.util.commands;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.EventListener;
 import java.util.HashSet;
 import java.util.List;
@@ -111,9 +113,9 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
                 new Object[] { taskRepository.getUrl(), query.getSummary() });
         }
         
-        final Set<ITask> tasksToSynchronize = new HashSet<ITask>();
+        final Set<ITask> tasksToSynchronize = Collections.synchronizedSet(new HashSet<ITask>());
         // in the end this will contain tasks removed from the query
-        final Set<ITask> archivedQueryTasks = new HashSet<ITask>();
+        final Set<ITask> archivedQueryTasks = Collections.synchronizedSet(new HashSet<ITask>());
         ITaskListChangeListener list = new ITaskListChangeListener() {
             @Override
             public void containersChanged (Set<TaskContainerDelta> deltas) {
@@ -177,20 +179,21 @@ public class SynchronizeQueryCommand extends BugtrackingCommand {
             }
             // at this point caller was notified about modified tasks
             // but not about unchanged tasks
-            for (ITask task : tasksToSynchronize) {
+            for (ITask task : new ArrayList<ITask>(tasksToSynchronize)) {
                 for (CommandProgressListener cmdList : listeners.toArray(new CommandProgressListener[listeners.size()])) {
                     cmdList.taskSynchronized(accessor.toNbTask(task));
                 }
             }
             // now refresh also tasks removed from the query
             if (!monitor.isCanceled() && !archivedQueryTasks.isEmpty()) {
+                HashSet<ITask> tasks = new HashSet<ITask>(archivedQueryTasks);
                 SynchronizeTasksJob syncTasksJob = new SynchronizeTasksJob(taskList,
                     taskDataManager,
                     repositoryModel,
                     repositoryConnector,
                     taskRepository,
-                    new HashSet<ITask>(archivedQueryTasks));
-                for (ITask t : archivedQueryTasks) {
+                    tasks);
+                for (ITask t : tasks) {
                     if (t instanceof AbstractTask) {
                         ((AbstractTask) t).setSynchronizing(true);
                     }
