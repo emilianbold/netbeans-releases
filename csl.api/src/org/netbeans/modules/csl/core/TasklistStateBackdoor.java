@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.csl.core;
 
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.spi.tasklist.PushTaskScanner;
 import org.netbeans.spi.tasklist.TaskScanningScope;
@@ -66,6 +68,8 @@ class TasklistStateBackdoor extends PushTaskScanner {
     
     private volatile TaskScanningScope scope;
     private volatile Callback callback;
+    private volatile boolean seenByTlIndexer = true;
+    private boolean wasScanning;
     
     TasklistStateBackdoor() {
         super(DN_tlIndexerName(), DESC_tlIndexerName(), null);
@@ -77,11 +81,13 @@ class TasklistStateBackdoor extends PushTaskScanner {
     
     boolean isCurrentEditorScope() {
         Callback c = this.callback;
+        seenByTlIndexer = true;
         return c != null && c.isCurrentEditorScope();
     }
     
     boolean isObserved() {
         Callback c = this.callback;
+        seenByTlIndexer = true;
         return c != null && c.isObserved();
     }
     
@@ -93,13 +99,26 @@ class TasklistStateBackdoor extends PushTaskScanner {
     public void setScope(TaskScanningScope scope, Callback callback) {
         this.callback = callback;
         if (scope == null) {
+            // ignore; for example project switch when ctx menu is displayed
+            // sets scope to null, then back to the project scope to force refresh/reload
             return;
         }
-        this.scope = scope;
-        if (!callback.isObserved() || callback.isCurrentEditorScope()) {
-            return;
+        synchronized (this) {
+            boolean newScanning = !callback.isCurrentEditorScope();
+            if (!callback.isObserved()) {
+                scope = null;
+                newScanning = false;
+            }
+            this.scope = scope;
+            if (!callback.isObserved() || callback.isCurrentEditorScope() || 
+                    !newScanning || wasScanning == newScanning || !seenByTlIndexer) {
+                wasScanning = newScanning;
+                seenByTlIndexer = false;
+                return;
+            }
+            wasScanning = newScanning;
+            seenByTlIndexer = false;
+            IndexingManager.getDefault().refreshAllIndices(TLIndexerFactory.INDEXER_NAME);
         }
-        IndexingManager.getDefault().refreshAllIndices(TLIndexerFactory.INDEXER_NAME);
-        
     }
 }

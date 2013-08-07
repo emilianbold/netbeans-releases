@@ -64,7 +64,7 @@ public class GsfCodeFoldingSideBarFactory implements SideBarFactory{
     }
 
     public javax.swing.JComponent createSideBar(javax.swing.text.JTextComponent target) {
-        return new CodeFoldingSideBar(target);
+        return null;
     }
 
 }
