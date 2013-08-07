@@ -87,10 +87,12 @@ public final class Debugger {
     private static final String COMMAND_SET_BRKP_DOM = "DOMDebugger.setDOMBreakpoint";  // NOI18N
     private static final String COMMAND_SET_BRKP_XHR = "DOMDebugger.setXHRBreakpoint";  // NOI18N
     private static final String COMMAND_SET_BRKP_EVENT = "DOMDebugger.setEventListenerBreakpoint";  // NOI18N
+    private static final String COMMAND_SET_BRKP_INSTR = "DOMDebugger.setInstrumentationBreakpoint";// NOI18N
     private static final String COMMAND_REMOVE_BRKP = "Debugger.removeBreakpoint";      // NOI18N
     private static final String COMMAND_REMOVE_BRKP_DOM = "DOMDebugger.removeDOMBreakpoint";    // NOI18N
     private static final String COMMAND_REMOVE_BRKP_XHR = "DOMDebugger.removeXHRBreakpoint";    // NOI18N
     private static final String COMMAND_REMOVE_BRKP_EVENT = "DOMDebugger.removeEventListenerBreakpoint";    // NOI18N
+    private static final String COMMAND_REMOVE_BRKP_INSTR = "DOMDebugger.removeInstrumentationBreakpoint";  // NOI18N
     private static final String COMMAND_SET_BRKPS_ACTIVE = "Debugger.setBreakpointsActive";     // NOI18N
     
     private static final String RESPONSE_BRKP_RESOLVED = "Debugger.breakpointResolved";         // NOI18N
@@ -498,6 +500,33 @@ public final class Debugger {
         JSONObject params = new JSONObject();
         params.put("eventName", event);
         transport.sendBlockingCommand(new Command(COMMAND_REMOVE_BRKP_EVENT, params));
+    }
+    
+    public Breakpoint addInstrumentationBreakpoint(String event) {
+        JSONObject params = new JSONObject();
+        params.put("eventName", event);
+        Response resp = transport.sendBlockingCommand(new Command(COMMAND_SET_BRKP_INSTR, params));
+        if (resp != null) {
+            if (resp.getException() != null) {
+                // transport is broken
+                return null;
+            }
+            JSONObject result = (JSONObject) resp.getResponse().get("result");
+            if (result != null) {
+                Breakpoint b = APIFactory.createBreakpoint(result, webkit);
+                return b;
+            } else {
+                // What can we do when we have no results?
+                LOG.log(Level.WARNING, "No result in setEventListenerBreakpoint response: {0}", resp);
+            }
+        }
+        return null;
+    }
+    
+    public void removeInstrumentationBreakpoint(String event) {
+        JSONObject params = new JSONObject();
+        params.put("eventName", event);
+        transport.sendBlockingCommand(new Command(COMMAND_REMOVE_BRKP_INSTR, params));
     }
     
     public boolean areBreakpointsActive() {

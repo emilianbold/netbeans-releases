@@ -80,7 +80,7 @@ final class PhpHierarchyTopComponent extends TopComponent implements PropertyCha
 
     private static PhpHierarchyTopComponent instance;
     /* path to the icon used by the component and its open action */
-    static final String ICON_PATH = "org/netbeans/modules/php/editor/nav/resources/subtypehierarchy.gif"; // NOI18N
+    static final String ICON_PATH = "org/netbeans/modules/php/editor/resources/subtypehierarchy.gif"; // NOI18N
     private static final String PREFERRED_ID = "PhpHierarchyTopComponent"; // NOI18N
     private JComponent last = null;
     private RequestProcessor requestProcessor;

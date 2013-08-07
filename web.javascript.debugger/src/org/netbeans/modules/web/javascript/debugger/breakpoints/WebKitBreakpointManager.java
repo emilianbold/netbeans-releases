@@ -600,8 +600,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             Set<String> events = eb.getEvents();
             bps = new HashMap<String, org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint>(events.size());
             for (String event : events) {
-                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
-                        d.addEventBreakpoint(event);
+                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
+                if (eb.isInstrumentationEvent(event)) {
+                    b = d.addInstrumentationBreakpoint(event);
+                } else {
+                    b = d.addEventBreakpoint(event);
+                }
                 if (b != null) {
                     bps.put(event, b);
                 }
@@ -626,7 +630,11 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 if (!removed) {
                     Set<String> events = eb.getEvents();
                     for (String event : events) {
-                        d.removeEventBreakpoint(event);
+                        if (eb.isInstrumentationEvent(event)) {
+                            d.removeInstrumentationBreakpoint(event);
+                        } else {
+                            d.removeEventBreakpoint(event);
+                        }
                     }
                 }
             }
@@ -654,8 +662,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 Object oldValue = event.getOldValue();
                 if (newValue != null) {
                     String newEvent = (String) newValue;
-                    org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
-                            d.addEventBreakpoint(newEvent);
+                    org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
+                    if (eb.isInstrumentationEvent(newEvent)) {
+                        b = d.addInstrumentationBreakpoint(newEvent);
+                    } else {
+                        b = d.addEventBreakpoint(newEvent);
+                    }
                     if (b != null) {
                         bps.put(newEvent, b);
                     }
@@ -664,7 +676,11 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b =
                             bps.remove(oldEvent);
                     if (b != null) {
-                        d.removeEventBreakpoint(oldEvent);
+                        if (eb.isInstrumentationEvent(oldEvent)) {
+                            d.removeInstrumentationBreakpoint(oldEvent);
+                        } else {
+                            d.removeEventBreakpoint(oldEvent);
+                        }
                     }
                 } else { // total refresh
                     remove();
