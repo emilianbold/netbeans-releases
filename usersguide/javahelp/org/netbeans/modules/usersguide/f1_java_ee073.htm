@@ -1,0 +1,76 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Setting Up a Connection Pool on the Tomcat Web Server</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="tomcat_setup_tdcp" name="tomcat_setup_tdcp"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref634" name="sthref634"></a>
+<h1>Setting Up a Connection Pool on the Tomcat Web Server</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>To store, organize, and retrieve data, most applications use relational databases. Java EE applications access relational databases through the JDBC API.</p>
+<p>When accessing a database, the application calls on the following resources:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t60">Element</th>
+<th align="left" valign="bottom" id="r1c2-t60">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t60" headers="r1c1-t60">
+<p>JDBC resource</p>
+</td>
+<td align="left" headers="r2c1-t60 r1c2-t60">
+<p>A JDBC resource (data source) provides applications with a means of connecting to a database. Typically, the administrator creates a JDBC resource for each database accessed by the applications deployed in a domain. (However, more than one JDBC resource can be created for a database.) Each JDBC resource has a unique JNDI name.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t60" headers="r1c1-t60">
+<p>JDBC Connection pool</p>
+</td>
+<td align="left" headers="r3c1-t60 r1c2-t60">
+<p>A JDBC connection pool is a group of reusable connections that the application server maintains for a particular database. When an application closes a connection, the connection is returned to the pool. Connection pooling reduces the transaction time of connecting to a database by means of sharing connection objects providing access to a database source, thus avoiding a new physical connection being created every time a connection is requested.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>At runtime, this is what happens when an application connects to a database:</p>
+<ol>
+<li><b>Lookup JNDI name of JDBC resource</b>. To connect to a database, the application looks up the JNDI name of the JDBC resource (data source) associated with the database. The JNDI API enables the application to locate the JDBC resource.</li>
+<li><b>Locate JDBC connection pool</b>. The JDBC resource specifies which connection pool to use. The pool defines connection attributes such as the database name (URL), user name, and password.</li>
+<li><b>Retrieve connection from connection pool</b>. The application server retrieves a physical connection from the connection pool that corresponds to the database. Now that the application is connected to the database, the application can read, modify, and add data to the database. Applications access the database by making calls to the JDBC API. The JDBC driver translates the application's JDBC calls into the protocol of the database server.</li>
+<li>
+<p><b>Close connection</b>. When it is finished accessing the database, the application closes the connection. The application server returns the connection to the connection pool. Once it is back in the pool, the connection is available for the next application.</p>
+<p><b>Note</b>: JNDI name. Each resource has a unique JNDI name which specifies its name and location. Because all resource JNDI names are in the java:comp/env subcontext, the JNDI name of a JDBC resource is expected in the java:comp/env/jdbc subcontext. For example, for a database name MyDatabase, specify jdbc/MyDatabase.</p>
+</li>
+</ol>
+<hr><p><b>Related Topics</b></p>
+<p>Setting up a Connection Pool on the GlassFish Application Server</p>
+<p>Setting up a JDBC Resource on the GlassFish Application Server</p>
+<p>Setting up a Connection Pool on the JBoss Application Server</p>
+<p>Setting up a Connection Pool on the Tomcat Web Server</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

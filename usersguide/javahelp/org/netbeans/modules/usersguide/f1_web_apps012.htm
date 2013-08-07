@@ -1,0 +1,95 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>web.xml Visual Editor: Resource Environment References</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="dd_multiview_references_resEnvRefsNode" name="dd_multiview_references_resEnvRefsNode"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref475" name="sthref475"></a>
+<h1>web.xml Visual Editor: Resource Environment References</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use the Resource Environment References section to add, remove, and view the web application's resource environment references. Resource environment references contain a declaration of a web application's reference to an administered object associated with a resource in the web application's environment. It consists of an optional description, the resource environment reference name, and an indication of the resource environment reference type expected by the web application code.</p>
+<p>To declare an resource environment reference, you must register it in the <code>web.xml</code> file. When you do this, you provide information needed by the server to use the reference.</p>
+<p>You open the <code>web.xml</code> Visual Editor from the Projects window by expanding the Web Pages node, then the WEB-INF node, and then double-clicking the <code>web.xml</code> file. Click References at the top of the editor to open the References section, then click the Resource Environment References header to open the Resource Environment References section. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1114">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Click Add to define a resource environment reference with the following properties:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t19">Element</th>
+<th align="left" valign="bottom" id="r1c2-t19">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t19" headers="r1c1-t19">
+<p>Resource Name</p>
+</td>
+<td align="left" headers="r2c1-t19 r1c2-t19">
+<p>Specifies the name of a resource environment reference, such as <code>jms/SharePriceQueue</code>. The specified value is the environment entry name used in the web application code. The name is a JNDI name relative to the <code>java:comp/env</code> context and must be unique within a web application.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t19" headers="r1c1-t19">
+<p>Resource Type</p>
+</td>
+<td align="left" headers="r3c1-t19 r1c2-t19">
+<p>Specifies the type of a resource environment reference, either <code>javax.jms.Queue</code> or <code>javax.jms.Topic</code>. It is the fully qualified name of a Java language class or interface.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t19" headers="r1c1-t19">
+<p>Description</p>
+</td>
+<td align="left" headers="r4c1-t19 r1c2-t19">
+<p>Specifies a description, such as <code>Queue for My Share Prices</code>.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, "
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1874">
+<param name="text" value="<html><u>About Deployment Descriptors</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+"</p>
+<p><i>Developing Applications with NetBeans IDE</i>, "
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1111">
+<param name="text" value="<html><u>Configuring a Web Application</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+"</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

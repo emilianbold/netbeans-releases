@@ -1,0 +1,145 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Delete</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI" name="org.netbeans.modules.refactoring.php.delete.PhpDeleteRefactoringUI"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref426" name="sthref426"></a>
+<h1>Delete</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Before you delete a file, you have the option to search your project for all uses of the file.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t20">Element</th>
+<th align="left" valign="bottom" id="r1c2-t20">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t20" headers="r1c1-t20">
+<p>Safely delete (with usage search)</p>
+</td>
+<td align="left" headers="r2c1-t20 r1c2-t20">
+<p>Select this option to search your project for all uses of the file before you delete it.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t20" headers="r1c1-t20">
+<p>OK</p>
+</td>
+<td align="left" headers="r3c1-t20 r1c2-t20">
+<p>Delete file without usage search. This button is enabled only if you do not select Safely delete.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t20" headers="r1c1-t20">
+<p>Preview and Refactor</p>
+</td>
+<td align="left" headers="r4c1-t20 r1c2-t20">
+<p>These buttons appear if you select Safely delete. Both buttons open a list of Warnings and Errors.</p>
+<p>This panel is inherited from Java safe delete, which behaves differently. This is why there are two buttons, Preview and Refactor, that do the same thing.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<!-- infolevel="all" infotype="General" --><a id="sthref427" name="sthref427"></a>
+<h2>Warnings and Errors</h2>
+<p>A list of warnings and errors appears before you can safely delete a file. If the IDE finds any errors, you cannot delete the file until the errors are solved. You can delete the file if there are only warnings.</p>
+<ul>
+<li><b>Show Usages</b>. Opens the Usages window, which shows all usages of the file.</li>
+<li><b>Refactor</b>. Delete the file. Enabled only if no errors are found.</li>
+</ul>
+
+<!-- -->
+<!-- infolevel="all" infotype="General" --><a id="sthref428" name="sthref428"></a>
+<h2>Usages Window</h2>
+<p>If you select Show Usages in the Delete dialog, that dialog closes and the Usages window opens. The Usages window shows all usages of the file you want to delete.</p>
+<p><b>Navigation buttons</b>. On the left side of the Usages window are a series of buttons for navigating through the usages. Hover your cursor over a button to see a tooltip describing its function.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t21">Element</th>
+<th align="left" valign="bottom" id="r1c2-t21">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t21" headers="r1c1-t21"></td>
+<td align="left" headers="r2c1-t21 r1c2-t21">
+<p>Refresh</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t21" headers="r1c1-t21"></td>
+<td align="left" headers="r3c1-t21 r1c2-t21">
+<p>Collapse/expand all nodes in tree</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t21" headers="r1c1-t21"></td>
+<td align="left" headers="r4c1-t21 r1c2-t21">
+<p>Show logical view (organized by syntax)</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t21" headers="r1c1-t21"></td>
+<td align="left" headers="r5c1-t21 r1c2-t21">
+<p>Show physical view (organized by location)</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t21" headers="r1c1-t21"></td>
+<td align="left" headers="r6c1-t21 r1c2-t21">
+<p>Previous occurrance</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t21" headers="r1c1-t21"></td>
+<td align="left" headers="r7c1-t21 r1c2-t21">
+<p>Next occurance</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p><b>Usages</b>. A tree view of all usages of the file that you want to delete. Using the navigation buttons you can view either a logical tree, organized by syntax, or a physical view, organized by location. Double-click a usage in the tree, and the editor focuses on that line in the code. (If the file containing that usage is not open, the IDE opens it.)</p>
+
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1534">
+<param name="text" value="<html><u>&quot;About Developing PHP Applications&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

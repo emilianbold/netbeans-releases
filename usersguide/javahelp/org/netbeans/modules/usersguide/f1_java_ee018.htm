@@ -1,0 +1,83 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Add Message Destination Dialog Box</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationPanel" name="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageDestinationPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref570" name="sthref570"></a>
+<h1>Add Message Destination Dialog Box</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>This dialog box enables you to create a new queue or topic destination in your EJB module project for a message-driven bean. You open the dialog box by selecting a project destination and clicking <b>Add</b> in the New Message-Driven Bean wizard.</p>
+<p>In this dialog you specify the following:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t12">Element</th>
+<th align="left" valign="bottom" id="r1c2-t12">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t12" headers="r1c1-t12">
+<p>Destination Name</p>
+</td>
+<td align="left" headers="r2c1-t12 r1c2-t12">
+<p>Type the name of the destination you want to create.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t12" headers="r1c1-t12">
+<p>Destination Type</p>
+</td>
+<td align="left" headers="r3c1-t12 r1c2-t12">
+<p>Select one of the following destination types.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t12" headers="r1c1-t12">
+<p>Queue</p>
+</td>
+<td align="left" headers="r4c1-t12 r1c2-t12">
+<p>Uses the point-to-point messaging domain and may have at most one consumer.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t12" headers="r1c1-t12">
+<p>Topic</p>
+</td>
+<td align="left" headers="r5c1-t12 r1c2-t12">
+<p>Uses the publish-subscribe messaging domain. A bean with this destination type may have zero, one, or many consumers.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>When you create a new destination, the <code>glassfish-resources.xml</code> (or <code>sun-resources.xml</code>) file is modified with a description of the new resource. The JMS object is created on the server when you deploy your project.</p>
+<p>Once you add the resource, you can use the resource in your project.</p>
+<hr><p><b>Related Topics</b></p>
+<p>About Message-Driven Beans</p>
+<p>Creating an EJB Module Project</p>
+<p>Creating an Enterprise Bean</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

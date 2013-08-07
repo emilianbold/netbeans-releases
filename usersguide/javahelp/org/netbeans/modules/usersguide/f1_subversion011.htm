@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Subversion: Relocate Dialog Box</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.subversion.ui.relocate.RelocateAction" name="org.netbeans.modules.subversion.ui.relocate.RelocateAction"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref138" name="sthref138"></a>
+<h1>Subversion: Relocate Dialog Box</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Subversion Relocate dialog box enables you to modify the path to the Subversion repository which you are registered with. You can use this dialog box to:</p>
+<ul>
+<li>mirror a different location in the current repository</li>
+<li>mirror a different repository</li>
+</ul>
+<p>You access this dialog box by selecting a versioned project or folder (e.g. from the Projects, Files, or Favorites window) and choosing Team &gt; Relocate from the main menu.</p>
+<p>The Relocate dialog box displays the following fields for reference purposes:</p>
+<ul>
+<li><b>Working Copy.</b> The path to the local copy which you are currently working in.</li>
+<li><b>Current URL</b>. The path to the Subversion repository you are currently registered with.</li>
+</ul>
+<p>You can modify the path to the Subversion repository by entering a new protocol type and location in the New URL text field. You can select a type and location from the drop-down list (if previous entries have been made).</p>
+<p>When you click Relocate, the new repository URL is registered in the IDE, and will be applied the next time you attempt to connect to the repository.</p>
+<p>The IDE supports the following Subversion protocol types:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="12%" />
+<col width="42%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t17">Protocol</th>
+<th align="left" valign="bottom" id="r1c2-t17">Access Method</th>
+<th align="left" valign="bottom" id="r1c3-t17">Example</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t17" headers="r1c1-t17">
+<p>file</p>
+</td>
+<td align="left" headers="r2c1-t17 r1c2-t17">
+<p>Direct repository access (on local disk)</p>
+</td>
+<td align="left" headers="r2c1-t17 r1c3-t17">
+<p><code>file:///repository_path[@REV]</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t17" headers="r1c1-t17">
+<p>http</p>
+</td>
+<td align="left" headers="r3c1-t17 r1c2-t17">
+<p>Access via WebDAV protocol to a Subversion-aware server</p>
+</td>
+<td align="left" headers="r3c1-t17 r1c3-t17">
+<p><code>http://hostname/repository_path[@REV]</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t17" headers="r1c1-t17">
+<p>https</p>
+</td>
+<td align="left" headers="r4c1-t17 r1c2-t17">
+<p>Access via HTTP protocol with SSL encryption</p>
+</td>
+<td align="left" headers="r4c1-t17 r1c3-t17">
+<p><code>https://hostname/repository_path[@REV]</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t17" headers="r1c1-t17">
+<p>svn</p>
+</td>
+<td align="left" headers="r5c1-t17 r1c2-t17">
+<p>Access via custom protocol to an svnserve server</p>
+</td>
+<td align="left" headers="r5c1-t17 r1c3-t17">
+<p><code>svn://hostname/repository_path[@REV]</code></p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t17" headers="r1c1-t17">
+<p>svn+ssh</p>
+</td>
+<td align="left" headers="r6c1-t17 r1c2-t17">
+<p>Access via SVN protocol through an external SSH tunnel</p>
+</td>
+<td align="left" headers="r6c1-t17 r1c3-t17">
+<p><code>svn+ssh://hostname/repository_path[@REV]</code></p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG274">
+<param name="text" value="<html><u>&quot;Versioning Applications with Subversion&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

@@ -1,0 +1,63 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Viewing the Tomcat Web Server in the IDE</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="tomcat_top_node" name="tomcat_top_node"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref635" name="sthref635"></a>
+<h1>Viewing the Tomcat Web Server in the IDE</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Servers node in the Services window and its subnodes represent the Tomcat Web Server, its instances, and the contexts that have been deployed by an instance to the server. If you right-click a node and display its popup menu, you see a list of menu items that enable you to work with this node.</p>
+<p>To view the Tomcat Web Server in the IDE:</p>
+<ol>
+<li>Choose Window &gt; Services (Ctrl+5) from the main menu. The Services window appears.</li>
+<li>
+<p>Expand the Servers node to view the Tomcat Web Server nodes.</p>
+<ul>
+<li>The Servers node shows all the servers that are registered in the IDE, such as the bundled Tomcat Web Server.</li>
+<li>Each physical installation of a Tomcat Web Server is represented by a Tomcat Server instance node.</li>
+<li>The Web Applications node lists the web application contexts that have been deployed to the server. It appears under the server's instance node in the Services window. The IDE adds a web application's context node the first time the web application is deployed from the IDE.</li>
+</ul>
+</li>
+</ol>
+<p><b>Note</b>: In the Projects and Files windows, the Tomcat context descriptor node &nbsp; reflects the context.xml file that contains the web application's context element. The Tomcat context descriptor node appears under the web application's META-INF node. When Tomcat is set as the target server, the IDE creates the META-INF directory and the Tomcat context descriptor when you create, open, or import a web application, unless one already exists.</p>
+<p>The context.xml file is used for setting a web application context path and for advanced web application configuration. For simple web applications, you do not need to edit the context.xml file because you use the WEB-INF property sheet to set the context path and the deployment descriptor (web.xml) to configure the web application. The IDE maintains the context element's path attribute automatically when you edit the Context Path in the WEB-INF properties sheet. If you update the context path in one place, the IDE updates the value in the other place.</p>
+<p>You can use the context.xml file to make the following settings:</p>
+<ul>
+<li>Servlet context log files</li>
+<li>JNDI resources and resource parameters (JDBC data source)</li>
+<li>Web application context parameters and environment entries</li>
+</ul>
+<p>The context.xml file represents the server.xml context element. It is recommended that the context information is specified in a standalone context.xml file in the META-INF directory. For more information about the context.xml configuration, see:</p>
+<p><code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://tomcat.apache.org/tomcat-7.0-doc/config/context.html">
+<param name="text" value="<html><u>http://tomcat.apache.org/tomcat-7.0-doc/config/context.html</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code>
+</p>
+<hr><p><b>Related Topics</b></p>
+<p>About the Tomcat Web Server</p>
+<p>Customizing the Tomcat Web Server</p>
+<p>Registering a Tomcat Web Server</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

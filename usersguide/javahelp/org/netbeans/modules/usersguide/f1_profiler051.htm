@@ -1,0 +1,148 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>VM Telemetry Window</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="TelemetryWindow.HelpCtx" name="TelemetryWindow.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref388" name="sthref388"></a>
+<h1>VM Telemetry Window</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use to view high-level data on thread activity and memory heap and garbage collection in the VM. The VM Telemetry window typically opens in the editor area. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG770">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<table summary="Descriptions of VM Telemetry window toolbar commands." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t57">Element</th>
+<th align="left" valign="bottom" id="r1c2-t57">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t57" headers="r1c1-t57">
+<p>Export</p>
+<p><img width="16" height="16" src="images/saveas.png" alt="Export icon." title="Export icon." /></p>
+</td>
+<td align="left" headers="r2c1-t57 r1c2-t57">
+<p>Exports the results as a text file.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t57" headers="r1c1-t57">
+<p>Save Current View</p>
+<p><img width="16" height="16" src="images/saveview.png" alt="Save Current View icon." title="Save Current View icon." /></p>
+</td>
+<td align="left" headers="r3c1-t57 r1c2-t57">
+<p>Saves the results as a <code>.png</code> image file.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t57" headers="r1c1-t57">
+<p>Zoom In</p>
+<p><img width="16" height="16" src="images/zoomin.png" alt="Zoom In icon." title="Zoom In icon." /></p>
+</td>
+<td align="left" headers="r4c1-t57 r1c2-t57">
+<p>Increases the detail of the graph.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t57" headers="r1c1-t57">
+<p>Zoom Out</p>
+<p><img width="16" height="16" src="images/zoomout.png" alt="Zoom Out icon." title="Zoom Out icon." /></p>
+</td>
+<td align="left" headers="r5c1-t57 r1c2-t57">
+<p>Decreases the detail of the graph.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t57" headers="r1c1-t57">
+<p>Scale To Fit</p>
+<p><img width="16" height="16" src="images/scaletofit.png" alt="Scale to Fit icon." title="Scale to Fit icon." /></p>
+</td>
+<td align="left" headers="r6c1-t57 r1c2-t57">
+<p>Toggles between a scalable view and a fixed-scale view.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>The VM Telemetry window contains tabs with graphs displaying data on the following processes:</p>
+
+<table summary="Descriptions of VM Telemetry window tabs." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="34%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t58">Element</th>
+<th align="left" valign="bottom" id="r1c2-t58">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t58" headers="r1c1-t58">
+<p>Threads / Loaded Classes</p>
+</td>
+<td align="left" headers="r2c1-t58 r1c2-t58">
+<p>Displays the total number of threads in the profiled application JVM.</p>
+<p>Place your cursor over the graph to display a tooltip with information about the current and maximum number of threads.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t58" headers="r1c1-t58">
+<p>Memory (Heap)</p>
+</td>
+<td align="left" headers="r3c1-t58 r1c2-t58">
+<p>Displays the total and used size. These are the figures that a Java application can obtain using the <code>java.lang.Runtime.totalMemory()</code> and <code>java.lang.Runtime.freeMemory()</code> calls.</p>
+<p>Place your cursor over the graph to view more detailed information about memory usage at that point in time.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t58" headers="r1c1-t58">
+<p>Memory (GC)</p>
+</td>
+<td align="left" headers="r4c1-t58 r1c2-t58">
+<p>Displays displays the relative time spent in garbage collection and the number of surviving generations.</p>
+<p>Place your cursor over the graph to view more detailed information about garbage collection statistics at that point in time.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG769">
+<param name="text" value="<html><u>&quot;Working with Live Profiling Results&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

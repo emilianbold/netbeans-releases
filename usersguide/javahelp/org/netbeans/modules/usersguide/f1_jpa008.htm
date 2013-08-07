@@ -1,0 +1,160 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>persistence.xml Visual Editor</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="persistence_multiview_design_persistenceUnitNode" name="persistence_multiview_design_persistenceUnitNode"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref655" name="sthref655"></a>
+<h1>persistence.xml Visual Editor</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>You open the persistence.xml Visual Editor from the Projects window by expanding the Configuration Files node and then double-clicking the persistence.xml file. The visual editor displays the persistence units defined in persistence.xml. You can use the visual editor to create, delete, and modify the persistence units. You can also click XML in the visual editor toolbar to access the XML view of persistence.xml.</p>
+<p>In the persistence.xml visual editor, you can perform the following tasks:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t6">Element</th>
+<th align="left" valign="bottom" id="r1c2-t6">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t6" headers="r1c1-t6">
+<p>Create a persistence unit</p>
+</td>
+<td align="left" headers="r2c1-t6 r1c2-t6">
+<p>Click Add in the top right corner of the visual editor.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t6" headers="r1c1-t6">
+<p>Delete a persistence unit</p>
+</td>
+<td align="left" headers="r3c1-t6 r1c2-t6">
+<p>Click Remove next to the name of the persistence unit you want to delete.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t6" headers="r1c1-t6">
+<p>Modify a persistence unit</p>
+</td>
+<td align="left" headers="r4c1-t6 r1c2-t6">
+<p>Click the expand icon to the left of the name of the persistence unit to display the editable properties of the persistence unit.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>The visual editor displays the properties of each persistence unit in persistence.xml. Depending on your project configuration, for each persistence unit, you can modify the following properties:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t7">Element</th>
+<th align="left" valign="bottom" id="r1c2-t7">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t7" headers="r1c1-t7">
+<p>Persistence Unit Name</p>
+</td>
+<td align="left" headers="r2c1-t7 r1c2-t7">
+<p>Each persistence unit in persistence.xml must have a unique name.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t7" headers="r1c1-t7">
+<p>Persistence Provider or Persistence Library</p>
+</td>
+<td align="left" headers="r3c1-t7 r1c2-t7">
+<p>The persistence provider or library determines the entity manager that is used to manage the entities scoped by the persistence unit.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t7" headers="r1c1-t7">
+<p>Data Source or JDBC Connection</p>
+</td>
+<td align="left" headers="r4c1-t7 r1c2-t7">
+<p>This is the JNDI name of the data source or the JDBC connection to the database.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t7" headers="r1c1-t7">
+<p>Use Java Transaction APIs</p>
+</td>
+<td align="left" headers="r5c1-t7 r1c2-t7">
+<p>If selected, the Java EE 5 container manages the lifecycle of entities. If not selected, the entities are managed by the application. (If the target container is not a Java EE 5 container, then this option is not available and the entities must be managed by the application.)</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t7" headers="r1c1-t7">
+<p>Table Generation Strategy</p>
+</td>
+<td align="left" headers="r6c1-t7 r1c2-t7">
+<p>Select the table generation strategy for the data source.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t7" headers="r1c1-t7">
+<p>Validation Strategy</p>
+</td>
+<td align="left" headers="r7c1-t7 r1c2-t7">
+<p>(EclipseLink) Select the validation mode for the persistence unit (default is Auto).</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t7" headers="r1c1-t7">
+<p>Caching Type</p>
+</td>
+<td align="left" headers="r8c1-t7 r1c2-t7">
+<p>(EclipseLink) Select a caching type to explicitly specify if entities and entity-related data is cached.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t7" headers="r1c1-t7">
+<p>Include All Entity Classes in "&lt;project&gt;" Module</p>
+</td>
+<td align="left" headers="r9c1-t7 r1c2-t7">
+<p>If selected, all entity classes in the persistence unit's root are included in the persistence unit. If not selected, only the classes listed in the Include Entity Classes textfield are included in the scope of the persistence unit.</p>
+<p>In Java EE projects, you do not need to explicitly specify which entity classes to include in the scope, because all entity classes in the persistence unit's root are included by default.</p>
+<p>In Java SE projects, the option to include all entity classes is not available. Instead, you need to explicitly specify which classes to include in the scope. Only the classes listed in the Include Entity Classes textfield are included.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t7" headers="r1c1-t7">
+<p>Include Entity Classes</p>
+</td>
+<td align="left" headers="r10c1-t7 r1c2-t7">
+<p>The textfield lists the entity classes explicitly included in the scope of the persistence unit. By default, entity classes in the persistence unit's root are included in the scope and listed in the textfield. You can remove entity classes from the scope by selecting the class name and clicking Remove.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

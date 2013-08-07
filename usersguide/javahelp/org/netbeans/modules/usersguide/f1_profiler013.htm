@@ -1,0 +1,128 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Analyze Memory: Basic Options</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="MemorySettings.Basic.HelpCtx" name="MemorySettings.Basic.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref350" name="sthref350"></a>
+<h1>Analyze Memory: Basic Options</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use to configure basic and advanced options for the profiling session. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG765">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<table summary="Descriptions of basic and advanced options for profiling memory usage." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="33%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t15">Element</th>
+<th align="left" valign="bottom" id="r1c2-t15">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t15" headers="r1c1-t15">
+<p>Quick</p>
+</td>
+<td align="left" headers="r2c1-t15 r1c2-t15">
+<p>Samples the application to provide data that is limited to the live objects. This option only tracks live objects and does not track allocations when instrumenting.</p>
+<p>It is not possible to record stack traces or to use profiling points if you select this option. This option incurs a significantly lower overhead than the <b>Advanced</b> option.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t15" headers="r1c1-t15">
+<p>Advanced</p>
+</td>
+<td align="left" headers="r3c1-t15 r1c2-t15">
+<p>Provides information about the number, type, and location of objects that have been allocated. When this option is selected, all classes that are currently loaded by the target JVM (and each new class as it is loaded) are instrumented to produce information about object allocations.</p>
+<p>You must select this option if you want to use profiling points when analyzing memory usage or if you want to record the call stack. This options incurs a greater profiling overhead than the <b>Quick</b> option.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t15" headers="r1c1-t15">
+<p>Record Full Object Lifestyle</p>
+</td>
+<td align="left" headers="r4c1-t15 r1c2-t15">
+<p>Records all information for each object, including the number of generations survived.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t15" headers="r1c1-t15">
+<p>Record Stack Traces for Allocation</p>
+</td>
+<td align="left" headers="r5c1-t15 r1c2-t15">
+<p>Records the full call stack.</p>
+<p>This option enables you to view the reverse call tree for method calls when viewing a memory snapshot.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t15" headers="r1c1-t15">
+<p>Use defined Profiling Points</p>
+</td>
+<td align="left" headers="r6c1-t15 r1c2-t15">
+<p>Performs any actions that are initiated by enabled profiling points in the project. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG744">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Disabled profiling points are ignored. When deselected, all profiling points in the project are ignored.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>The Overhead bar graph provides you with a rough indication of the overhead that is incurred when you profile the application with the current settings.</p>
+<hr><p><b>Related Topics</b></p>
+<p>Developing Applications with NetBeans IDE, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG765">
+<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Developing Applications with NetBeans IDE, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG689">
+<param name="text" value="<html><u>&quot;Starting a Profiling Session&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Developing Applications with NetBeans IDE, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG744">
+<param name="text" value="<html><u>&quot;Setting Profiling Points&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

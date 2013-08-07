@@ -1,0 +1,122 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Analyze Performance: Basic Options</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="CPUSettings.Basic.HelpCtx" name="CPUSettings.Basic.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref340" name="sthref340"></a>
+<h1>Analyze Performance: Basic Options</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use to configure basic and advanced options for the profiling session. The following basic options are available for analyzing the object lifecycle. If you are configuring a custom configuration, click <b>Advanced Settings</b> to specify advanced options. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG755">
+<param name="text" value="<html><u>How</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+?</p>
+
+<table summary="Descriptions of basic options for performance analysis." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="30%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t4">Element</th>
+<th align="left" valign="bottom" id="r1c2-t4">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t4" headers="r1c1-t4">
+<p>Quick</p>
+</td>
+<td align="left" headers="r2c1-t4 r1c2-t4">
+<p>Samples the application and takes a stack trace periodically. This option is less precise than instrumenting methods, but the overhead is lower. This option can help you locate methods that you might want to instrument.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t4" headers="r1c1-t4">
+<p>Advanced</p>
+</td>
+<td align="left" headers="r3c1-t4 r1c2-t4">
+<p>Instruments all of the methods of the profiled application if you do not specify any root methods.</p>
+<p>When entering a method, threads generate a "method entry" event. Threads generate a corresponding "method exit" event when exiting the method. The timestamps for both of these events are recorded. This data is processed in real time.</p>
+<p>You can limit the part of the application's code that is instrumented by defining root methods. This option can greatly reduce the profiling overhead. Specify a root method using the context menu in the source code or by clicking <b>customize</b> to open the Edit Profiling Roots dialog box. When you specify a root method, profiling data is not collected until one of the application's threads enters the root method.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t4" headers="r1c1-t4">
+<p>Filter</p>
+</td>
+<td align="left" headers="r4c1-t4 r1c2-t4">
+<p>Sets a filter to limit the classes that are profiled and control the overhead. The following default filters are available.</p>
+<ul>
+<li>Profile all classes</li>
+<li>Profile only project classes</li>
+<li>Profile project and subprojects classes</li>
+<li>Quick filter</li>
+<li>Exclude Java Core Classes</li>
+</ul>
+<p>If you select <b>Profile Only Project Classes</b> or P<b>rofile Project and Subprojects Classes</b>, click <b>Show Filter Value</b> to see the classes that are to be profiled.</p>
+<p>If you select <b>Quick Filter</b>, click <b>Edit Filter Value</b> to see and modify the filter criteria.</p>
+<p>Click<b>Edit Filter Sets</b> to create your own filter.</p>
+<p><b>Profile project and subprojects classes</b> is only available if the project contains subprojects.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t4" headers="r1c1-t4">
+<p>Use Defined Profiling Points.</p>
+</td>
+<td align="left" headers="r5c1-t4 r1c2-t4">
+<p>When selected, any actions that are initiated by enabled profiling points in the project are performed. Disabled profiling points are ignored. When deselected, all profiling points in the project are ignored.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>The Overhead bar graph provides you with a rough indication of the overhead that are incurred when you profile the application with the current settings.</p>
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG755">
+<param name="text" value="<html><u>&quot;Analyzing CPU Performance&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG765">
+<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG744">
+<param name="text" value="<html><u>&quot;Setting Profiling Point&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

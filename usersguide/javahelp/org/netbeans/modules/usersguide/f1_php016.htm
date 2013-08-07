@@ -1,0 +1,284 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Remote Synchronization Dialog</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.php.project.connections.sync.SyncPanel" name="org.netbeans.modules.php.project.connections.sync.SyncPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref415" name="sthref415"></a>
+<h1>Remote Synchronization Dialog</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Remote Synchronization is a feature of PHP projects set to run as Remote Web Site, over FTP or SFTP. Remote Synchronization allows you to compare your local version of a project with the version on a server and to diff, upload, or download files so the local and remote versions of the project match. The Remote Synchronization dialog opens from the context menu (right click) of the Source Files folder of a PHP project.</p>
+<!-- infolevel="all" infotype="General" --><a id="sthref416" name="sthref416"></a>
+<h2>Show Planned Operations</h2>
+<p>The IDE can perform one of several operations when synchronizing a file. The table of operations shows which operation the IDE plans to perform during synchronization. In this section you can select which planned operations the table shows.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t13">Element</th>
+<th align="left" valign="bottom" id="r1c2-t13">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t13" headers="r1c1-t13">
+<p>Download</p>
+</td>
+<td align="left" headers="r2c1-t13 r1c2-t13">
+<p>Download the remote version. Overwrite the local version if one exists.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t13" headers="r1c1-t13">
+<p>Upload</p>
+</td>
+<td align="left" headers="r3c1-t13 r1c2-t13">
+<p>Upload the local version to the server. Overwrite the remote version if one exists.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t13" headers="r1c1-t13">
+<p>No Operation</p>
+</td>
+<td align="left" headers="r4c1-t13 r1c2-t13">
+<p>Do not synchronize the file.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t13" headers="r1c1-t13">
+<p>Delete</p>
+</td>
+<td align="left" headers="r5c1-t13 r1c2-t13">
+<p>Delete both local and remote versions of the file.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>Click Check All to show all planned operations. Click Uncheck All to show no planned operations.</p>
+
+<!-- -->
+<!-- infolevel="all" infotype="General" --><a id="sthref417" name="sthref417"></a>
+<h2>Show Problems</h2>
+<p>The table of operations shows warning icons for problems associated with operations. In this section you select which problem icons to display.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t14">Element</th>
+<th align="left" valign="bottom" id="r1c2-t14">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t14" headers="r1c1-t14">
+<p>Warning</p>
+</td>
+<td align="left" headers="r2c1-t14 r1c2-t14">
+<p>Show warning icons. Warnings indicate problems that are not severe enough to prevent synchronization.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t14" headers="r1c1-t14">
+<p>Error</p>
+</td>
+<td align="left" headers="r3c1-t14 r1c2-t14">
+<p>Show error icons. Errors are problems severe enough to prevent synchronization.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t14" headers="r1c1-t14">
+<p>File Conflict</p>
+</td>
+<td align="left" headers="r4c1-t14 r1c2-t14">
+<p>File Conflict icons indicate that both the local and the remote version of the file changed since the last synchronization.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t14" headers="r1c1-t14">
+<p>File vs Directory Collision</p>
+</td>
+<td align="left" headers="r5c1-t14 r1c2-t14">
+<p>The path to a local file is the path to a directory on the server, or the reverse. For example, there's a local file called /my/file but on the server /my/file/ is a directory.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t14" headers="r1c1-t14">
+<p>Symbolic link</p>
+</td>
+<td align="left" headers="r6c1-t14 r1c2-t14">
+<p>File is only a symbolic link pointing to another file.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>Click Check All to show all warnings. Click Uncheck All to show no warnings.</p>
+
+<!-- -->
+<!-- infolevel="all" infotype="General" --><a id="sthref418" name="sthref418"></a>
+<h2>Review Planned Operations on Files Table</h2>
+<p>In this table you can review and change operations that the IDE plans for files, on a per file basis.</p>
+<p>The table contains the following columns, from left to right:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t15">Element</th>
+<th align="left" valign="bottom" id="r1c2-t15">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t15" headers="r1c1-t15">
+<p>Problem icons</p>
+</td>
+<td align="left" headers="r2c1-t15 r1c2-t15">
+<p>An icon appears if the planned operation has a problem of a type selected in the Show Problems section.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t15" headers="r1c1-t15">
+<p>Remote path</p>
+</td>
+<td align="left" headers="r3c1-t15 r1c2-t15">
+<p>The path to the remote copy of the file from the project's root directory.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t15" headers="r1c1-t15">
+<p>Planned operation</p>
+</td>
+<td align="left" headers="r4c1-t15 r1c2-t15">
+<p>The operation planned for the file, if the operation type is selected in the Show Operations section.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t15" headers="r1c1-t15">
+<p>Local path</p>
+</td>
+<td align="left" headers="r5c1-t15 r1c2-t15">
+<p>The path to the local copy of the file from the project's root directory.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>Additional information appears at the bottom of the table for any rows you select. For example, if you select 4 rows, you see a summary of the operations and problems for those rows, such as "3 downloads, 0 uploads, 1 no-op, 0 deletions, 0 errors, 0 warnings." If you select a row and there is an error associated with the operation in that row, details about that error appear, such as "Error (FILE_NAME): Non-existing file cannot be updated."</p>
+
+<!-- -->
+<!-- infolevel="all" infotype="General" --><a id="sthref419" name="sthref419"></a>
+<h2>Diffing File Versions and Changing Operations</h2>
+<p>In this table you can review and change operations that the IDE plans for files, on a per file basis.</p>
+<p>The table contains the following columns, from left to right:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t16">Element</th>
+<th align="left" valign="bottom" id="r1c2-t16">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t16" headers="r1c1-t16">
+<p>Diff</p>
+</td>
+<td align="left" headers="r2c1-t16 r1c2-t16">
+<p>Diff the local and remote versions of the selected file. Results of the diff appear in a new dialog.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t16" headers="r1c1-t16">
+<p>No operation</p>
+</td>
+<td align="left" headers="r3c1-t16 r1c2-t16">
+<p>Change the planned operation to "no-op."</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t16" headers="r1c1-t16">
+<p>Download</p>
+</td>
+<td align="left" headers="r4c1-t16 r1c2-t16">
+<p>Change the planned operation to "Download remote version."</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t16" headers="r1c1-t16">
+<p>Upload</p>
+</td>
+<td align="left" headers="r5c1-t16 r1c2-t16">
+<p>Change the planned operation to "Upload local version."</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t16" headers="r1c1-t16">
+<p>Delete</p>
+</td>
+<td align="left" headers="r6c1-t16 r1c2-t16">
+<p>Change the planned operation to "Delete both local and remote versions."</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t16" headers="r1c1-t16">
+<p>Reset</p>
+</td>
+<td align="left" headers="r7c1-t16 r1c2-t16">
+<p>Reset all changes to the operation.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<!-- -->
+<!-- infolevel="all" infotype="General" --><a id="sthref420" name="sthref420"></a>
+<h2>Show Summary Before Start</h2>
+<p>Tick this box to show a summary of synchronization operations before synchronization starts. Review the operations in the summary dialog. Click OK in the summary and the synchronization progress dialog opens.</p>
+
+<!-- -->
+<!-- infolevel="all" infotype="General" --><a id="sthref421" name="sthref421"></a>
+<h2>Synchronize</h2>
+<p>Press this button to begin synchronization. The button is greyed out if there are any unresolved errors. If the Show Summary Before Start box is ticked, a summary of synchronization operations appears. Otherwise synchronization begins and the synchronization progress dialog opens.</p>
+
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1534">
+<param name="text" value="<html><u>&quot;About Developing PHP Applications&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

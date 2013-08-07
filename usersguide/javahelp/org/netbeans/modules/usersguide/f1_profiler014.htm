@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Analyze Memory: Advanced Options</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="MemorySettings.Advanced.HelpCtx" name="MemorySettings.Advanced.HelpCtx"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref351" name="sthref351"></a>
+<h1>Analyze Memory: Advanced Options</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use to create a custom configuration and set more advanced profiling options. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG765">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<table summary="Descriptions of advanced options for memory profiling." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="33%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t16">Element</th>
+<th align="left" valign="bottom" id="r1c2-t16">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t16" headers="r1c1-t16">
+<p>Settings</p>
+</td>
+<td align="left" headers="r2c1-t16 r1c2-t16">
+<p>Settings options.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t16" headers="r1c1-t16">
+<p>Track every X allocations</p>
+</td>
+<td align="left" headers="r3c1-t16 r1c2-t16">
+<p>Sets the interval /proportion for stack sampling. For example, if set to 10, this means that for each class only every 10th object allocation is recorded completely. (This only applies to stack sampling and tracking the object. The total number of object allocations is recorded separately, and includes all allocations.)</p>
+<p>To record all information for each object, set this number to 1. However, doing this could substantially affect the profiling overhead when profiling allocation-intensive applications.</p>
+<p>For server-side applications under real-life workload conditions, setting this number to 20 or more should be sufficient to minimize the overhead, and still obtain sufficient information for practical purposes</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t16" headers="r1c1-t16">
+<p>Record Stack Trace for Allocations</p>
+</td>
+<td align="left" headers="r4c1-t16 r1c2-t16">
+<p>Records the call stack at the moment object creation is recorded. By default, the full stack depth is recorded.</p>
+<p>This setting can be modified when you select <b>Record Stack Traces for Allocation</b> in the Basic Settings.</p>
+<p>You can limit the maximum depth of the recorded call stack by entering a positive integer (for example, 3) to limit the number of frames from the top of the stack that are recorded. This can substantially reduce the profiling overhead.</p>
+<p>For more about how the call stack is recorded, see the following NetBeans FAQ: <code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://wiki.netbeans.org/FaqProfilerObjectAllocationData">
+<param name="text" value="<html><u>How is object allocation data collected?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code>
+</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t16" headers="r1c1-t16">
+<p>Run garbage collection when getting memory results</p>
+</td>
+<td align="left" headers="r5c1-t16 r1c2-t16">
+<p>Invokes full garbage collection in the target JVM each time you choose <b>Profile</b> &gt; <b>Run GC</b> from the main menu.</p>
+<p>This option might help you obtain a more realistic picture of object liveness, but it also increases overhead. Running garbage collection might help you to obtain a more realistic picture of object liveness because dead objects are garbage collected and thus not reported as live.</p>
+<p>Use caution when selecting this option because full GC can be expensive, especially for large applications (where it might take several seconds).</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t16" headers="r1c1-t16">
+<p>Threads</p>
+</td>
+<td align="left" headers="r6c1-t16 r1c2-t16">
+<p>Thread options.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t16" headers="r1c1-t16">
+<p>Enable Threads Monitoring</p>
+</td>
+<td align="left" headers="r7c1-t16 r1c2-t16">
+<p>Monitors application threads from application startup.</p>
+<p>When deselected (default), thread monitoring does not begin until you click <b>Threads</b> in the Threads window.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t16" headers="r1c1-t16">
+<p>Sample Threads States</p>
+</td>
+<td align="left" headers="r8c1-t16 r1c2-t16">
+<p>Periodically updates thread states.</p>
+<p>This option is selected by default.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t16" headers="r1c1-t16">
+<p>Enable Lock Contention Monitoring</p>
+</td>
+<td align="left" headers="r9c1-t16 r1c2-t16">
+<p>Detects lock contentions.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>The Overhead bar graph provides you with a rough indication of the overhead that is incurred when you profile the application with the current settings.</p>
+<hr><p><b>Related Topics</b></p>
+<p>Developing Applications with NetBeans IDE, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG765">
+<param name="text" value="<html><u>&quot;Analyzing Memory Usage&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Developing Applications with NetBeans IDE, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG689">
+<param name="text" value="<html><u>&quot;Starting a Profiling Session&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Developing Applications with NetBeans IDE, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG744">
+<param name="text" value="<html><u>&quot;Setting Profiling Points&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Developing Applications with NetBeans IDE, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG769">
+<param name="text" value="<html><u>&quot;Working with Live Profiling Results&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

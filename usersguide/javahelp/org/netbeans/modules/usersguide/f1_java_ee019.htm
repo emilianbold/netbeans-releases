@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>New Session Bean Wizard</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardDescriptor" name="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.session.SessionEJBWizardDescriptor"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref571" name="sthref571"></a>
+<h1>New Session Bean Wizard</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>This wizard creates a new session bean in an EJB module. You open the wizard by right-clicking the project node and choosing <b>New</b> &gt; <b>Session Bean</b>. You can also use the wizard to create session beans in Java EE 6 web projects.</p>
+<p>You set the following information in the wizard:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t13">Element</th>
+<th align="left" valign="bottom" id="r1c2-t13">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t13" headers="r1c1-t13">
+<p>EJB Name</p>
+</td>
+<td align="left" headers="r2c1-t13 r1c2-t13">
+<p>Set the name of the session bean. The name is used as the basis for the session bean's class and interface names.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t13" headers="r1c1-t13">
+<p>Location</p>
+</td>
+<td align="left" headers="r3c1-t13 r1c2-t13">
+<p>Select the source folder where you want to create the session bean files.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t13" headers="r1c1-t13">
+<p>Package</p>
+</td>
+<td align="left" headers="r4c1-t13 r1c2-t13">
+<p>Select an existing package or type the name of a new package.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t13" headers="r1c1-t13">
+<p>Session Type</p>
+</td>
+<td align="left" headers="r5c1-t13 r1c2-t13">
+<p>Select one of the following:</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t13" headers="r1c1-t13">
+<p>Stateless</p>
+</td>
+<td align="left" headers="r6c1-t13 r1c2-t13">
+<p>The bean does not save state information during its conversation with the user. These enterprise beans are useful for simple interactions between client and application service, interactions that are complete in a single method invocation.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t13" headers="r1c1-t13">
+<p>Stateful</p>
+</td>
+<td align="left" headers="r7c1-t13 r1c2-t13">
+<p>The bean saves state information during its conversation with the user. These enterprise beans are useful for business processes that require an interaction between client and application service that lasts longer than a single method invocation and requires memory of the state of the interaction.</p>
+<p>An example is an online shopping cart. The end user, through the client program, can order a number of items. The stateful session bean managing the interaction must accumulate items until the end user is ready to review the accumulated order, approve or reject items, and initiate processing of the lot. The stateful session bean has to store the unprocessed items and enable the end user to add more.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t13" headers="r1c1-t13">
+<p>Singleton</p>
+</td>
+<td align="left" headers="r8c1-t13 r1c2-t13">
+<p>(Java EE 6) A singleton session bean is instantiated only once per application and exists for the lifecycle of the application. You can create a singleton bean that the container instantiates when the application starts up by using the @Startup annotation.---An example is a bean that is used to intialize data for an application that can be concurrently accessed by many clients.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t13" headers="r1c1-t13">
+<p>Create Interface</p>
+</td>
+<td align="left" headers="r9c1-t13 r1c2-t13">
+<p>Specify which interfaces to create for the session bean:</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t13" headers="r1c1-t13">
+<p>Local</p>
+</td>
+<td align="left" headers="r10c1-t13 r1c2-t13">
+<p>Allow your session bean to be accessed from clients that are running in the same Java Virtual Machine.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t13" headers="r1c1-t13">
+<p>Remote</p>
+</td>
+<td align="left" headers="r11c1-t13 r1c2-t13">
+<p>Allow your session bean to be accessed from remote clients using remote method calls. This usually means clients that are not running on the session bean's application server. If you select Remote, the IDE can generate a remote interface for the session bean in a Java class library project if the project that you want to contain the interface is open in the IDE. You can choose the project from the dropdown list that lists the open Java class library projects.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p><b>Note</b>: An interface is optional in Java EE 6 applications when the client accessing the bean is a local client.For more information about the using interfaces, see Chapter 22, "Enterprise Beans" in the Java EE Tutorial: <code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://docs.oracle.com/javaee/6/tutorial/doc/gijsz.html">
+<param name="text" value="<html><u>http://docs.oracle.com/javaee/6/tutorial/doc/gijsz.html</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code>
+</p>
+<hr><p><b>Related Topics</b></p>
+<p>About Session Beans</p>
+<p>Creating an EJB Module Project</p>
+<p>Creating an Enterprise Bean</p>
+<p>Defining a Business Method</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

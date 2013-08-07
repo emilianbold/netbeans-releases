@@ -1,0 +1,157 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Variables Modifier Property Editor</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.openide.explorer.propertysheet.editors.ModifierEditor" name="org.openide.explorer.propertysheet.editors.ModifierEditor"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref232" name="sthref232"></a>
+<h1>Variables Modifier Property Editor</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The Modifiers Property Editor enables you to define standard Java language modifiers for a Java element. The items that are available in this property editor depend on the type of Java element being modified.</p>
+<a id="sthref233" name="sthref233"></a>
+<p><b>Access Modifiers</b></p>
+<p>Access modifiers determine where a Java class, method, or field can be accessed.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t7">Element</th>
+<th align="left" valign="bottom" id="r1c2-t7">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t7" headers="r1c1-t7">
+<p>Default</p>
+</td>
+<td align="left" headers="r2c1-t7 r1c2-t7">
+<p>The Java element is accessible to any class in the same package.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t7" headers="r1c1-t7">
+<p>Private</p>
+</td>
+<td align="left" headers="r3c1-t7 r1c2-t7">
+<p>The Java method or field is accessible within the current class.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t7" headers="r1c1-t7">
+<p>Protected</p>
+</td>
+<td align="left" headers="r4c1-t7 r1c2-t7">
+<p>The Java method or field is accessible within the current class and subclasses.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t7" headers="r1c1-t7">
+<p>Public</p>
+</td>
+<td align="left" headers="r5c1-t7 r1c2-t7">
+<p>The Java element is accessible to any class.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<a id="sthref234" name="sthref234"></a>
+<p><b>Other Modifiers</b></p>
+<p>Other modifiers define how a Java element can be used, or how it interacts with other classes.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t8">Element</th>
+<th align="left" valign="bottom" id="r1c2-t8">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t8" headers="r1c1-t8">
+<p>Abstract</p>
+</td>
+<td align="left" headers="r2c1-t8 r1c2-t8">
+<p>An abstract class contains some methods that are not defined and must be implemented in subclasses. An abstract method contains no body and must be overridden in subclasses.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t8" headers="r1c1-t8">
+<p>Static</p>
+</td>
+<td align="left" headers="r3c1-t8 r1c2-t8">
+<p>A static method or field is shared by all instances of the current class.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t8" headers="r1c1-t8">
+<p>Transient</p>
+</td>
+<td align="left" headers="r4c1-t8 r1c2-t8">
+<p>A transient field is not saved if the object is serialized.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t8" headers="r1c1-t8">
+<p>Native</p>
+</td>
+<td align="left" headers="r5c1-t8 r1c2-t8">
+<p>A native method is invoked from a Java application, but written in another "native" language, usually C or C++.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t8" headers="r1c1-t8">
+<p>Final</p>
+</td>
+<td align="left" headers="r6c1-t8 r1c2-t8">
+<p>A final class may not be used as a superclass. A final method may not be overridden by a subclass. A final field's value cannot be changed.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t8" headers="r1c1-t8">
+<p>Synchronized</p>
+</td>
+<td align="left" headers="r7c1-t8 r1c2-t8">
+<p>A synchronized method will seize control of the class while it is running. This is used in a multithreaded environment to make sure two threads do not access an object at the same time.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t8" headers="r1c1-t8">
+<p>Volatile</p>
+</td>
+<td align="left" headers="r8c1-t8 r1c2-t8">
+<p>A volatile field's value can be changed by unsynchronized threads.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><a href="OLINK:NBDAG961"><code>How to Set Events with the Connection Wizard</code></a></p>
+<p><a href="OLINK:NBDAG970"><code>How to Modify GUI Source Code</code></a></p>
+<p><a href="OLINK:NBDAG2192"><code>How to Design GUI Applications</code></a></p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

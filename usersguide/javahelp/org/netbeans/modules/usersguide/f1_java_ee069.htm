@@ -1,0 +1,43 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>About the Tomcat Web Server</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="context_help" name="context_help"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref628" name="sthref628"></a>
+<h1>About the Tomcat Web Server</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>The IDE provides an IDE module that handles integration with Tomcat Web Servers. A Tomcat Web Server is pre-configured to work with the plugin. The Tomcat Web Server that is bundled with the IDE implements the JavaServer Pages 2.2 and Servlet 3.0 specifications and includes many features that are useful in the deployment of web applications.</p>
+<p>Instead of using the bundled Tomcat Web Server, you can a supported Tomcat Web Server with the IDE and then deploy to it. The IDE supports Tomcat 7, Tomcat 6 and Tomcat 5.5.</p>
+<p>To see the Tomcat Web Servers that are registered with the IDE, expand the Servers node in the Services window.</p>
+<p>For more information, see the following web sites:</p>
+<p>When you download and install a version of the IDE that contains Java EE technologies, you can choose to install and register the Tomcat Web Server during the installation process.</p>
+<p>The configuration files for the bundled Tomcat Web Server are in the Tomcat base (Catalina base) directory, located under your IDE user directory. The Tomcat home (Catalina home) directory is under the IDE installation directory. Note that this setup differs from a typical Tomcat installation, where the base directory and home directory coincide. To see the exact locations of the home and base directories, right-click the server's node in the Services tab and choose Properties from the popup menu.</p>
+<p>If the Tomcat base (Catalina base) folder does not exist, it is created the first time the server is started.</p>
+<p>Shared libraries that are used by web applications must be added to the home directory. Do not add shared libraries to the base directory.</p>
+<p>Developers using a common IDE installation need to exercise caution when adding shared libraries to the home directory. Libraries stored in the home directory are shared by all web applications that are deployed on the server, so the potential for version conflicts exists.</p>
+<p>On the UNIX platform, the IDE is sometimes installed in a read-only directory. If this is the case, you cannot add shared libraries to the bundled Tomcat installation. Ask the person responsible for the IDE installation to make writable all directories under the Tomcat home directory. Alternatively, you could add another Tomcat Web Server and configure it to meet your needs.</p>
+<hr><p><b>Related Topics</b></p>
+<p>Viewing the Tomcat Web Server in the IDE</p>
+<p>Customizing the Tomcat Web Server</p>
+<p>Customizing the Tomcat Configuration File</p>
+<p>Registering a Tomcat Web Server</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

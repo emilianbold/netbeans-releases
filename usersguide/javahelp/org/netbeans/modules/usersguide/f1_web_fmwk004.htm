@@ -1,0 +1,118 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Add Navigation Case Dialog Box</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog" name="org.netbeans.modules.web.jsf.dialogs.AddNavigationCaseDialog"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref508" name="sthref508"></a>
+<h1>Add Navigation Case Dialog Box</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>A navigation case describes a particular condition (or set of conditions) that must be met for the navigation rule in which it is nested to be triggered. JSF's <code>NavigationHandler</code> handles outcomes by forwarding requests to the view defined in a navigation case's <code>&lt;to-view-id&gt;</code> tags.</p>
+<p>You arrive at this dialog box by right-clicking in a Faces configuration file (<code>faces-config.xml</code>) and choosing <b>Insert</b> &gt; <b>Navigation Case</b>. The purpose of the dialog is to register a navigation case with the application by adding an entry to the Faces configuration file. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1151">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>JSF 2.0 applications do not require the <code>faces-config.xml</code> file. Navigation cases can be managed <i>implicitly</i>, meaning that navigation rules can be determined by matching outcome values with the names of pages contained in the application's web root.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t4">Element</th>
+<th align="left" valign="bottom" id="r1c2-t4">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t4" headers="r1c1-t4">
+<p>From View</p>
+</td>
+<td align="left" headers="r2c1-t4 r1c2-t4">
+<p>(<code>&lt;from-view-id&gt;</code>) Specifies the view identifier of the view for which the containing navigation rule is relevant. If no value is specified, the rule applies to navigation decisions for all views.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t4" headers="r1c1-t4">
+<p>From Action</p>
+</td>
+<td align="left" headers="r3c1-t4 r1c2-t4">
+<p>(<code>&lt;from-action&gt;</code>) Specifies an action reference expression that must have been executed (by the default <code>ActionListener</code> for handling application level events) in order to select this navigation rule. If not specified, this rule will be relevant no matter which action reference was executed (or if no action reference was executed).</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t4" headers="r1c1-t4">
+<p>From Outcome</p>
+</td>
+<td align="left" headers="r4c1-t4 r1c2-t4">
+<p>(<code>&lt;from-outcome&gt;</code>) Specifies an outcome string returned by the execution of an application action method selected via an <code>actionRef</code> property (or a literal value specified by an <code>action</code> property) of a <code>UICommand</code> component. If specified, this rule is relevant only if the outcome value matches the element's value. If not specified, the rule is relevant no matter what the outcome value was.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t4" headers="r1c1-t4">
+<p>To View</p>
+</td>
+<td align="left" headers="r5c1-t4 r1c2-t4">
+<p>(<code>&lt;to-view-id&gt;</code>) Specifies the identifier of the view that should be displayed if the navigation rule is matched.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t4" headers="r1c1-t4">
+<p>Redirect</p>
+</td>
+<td align="left" headers="r6c1-t4 r1c2-t4">
+<p>(<code>&lt;redirect&gt;</code>) Specifies that navigation to the view id should be accomplished by performing an HTTP redirect rather than the usual <code>ViewHandler</code> mechanisms.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t4" headers="r1c1-t4">
+<p>Rule Description</p>
+</td>
+<td align="left" headers="r7c1-t4 r1c2-t4">
+<p>(<code>&lt;description&gt;</code>) Specifies a textual description of the element it is nested in, optionally flagged with a language code using the <code>xml:lang</code> attribute.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, "
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1212">
+<param name="text" value="<html><u>How to Create a New Project with Grails Framework Support</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+"</p>
+<p><i>Developing Applications with NetBeans IDE</i>, "
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1141">
+<param name="text" value="<html><u>Working with the JavaServer Faces Framework</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+"</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

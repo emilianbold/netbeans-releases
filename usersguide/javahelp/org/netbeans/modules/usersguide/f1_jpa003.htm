@@ -1,0 +1,62 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>New Entity Classes from Database Wizard: Database Tables</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel" name="org.netbeans.modules.j2ee.persistence.wizard.fromdb.DatabaseTablesPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref650" name="sthref650"></a>
+<h1>New Entity Classes from Database Wizard: Database Tables</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>This wizard generates a set of entity classes based on tables from an existing database connection or schema. In this wizard you choose the data source or connection to your database and the tables in that database with the fields that you want to persist. The IDE then generates an entity class for each of these tables and any related tables with persistent fields.</p>
+<p>Use this page of the wizard as follows:</p>
+<ol>
+<li>
+<p>Select one of the following:</p>
+<ul>
+<li>
+<p>Data Source. Select this option if you want to generate the entity classes directly from a database. Select the JNDI name of the data source from the dropdown list. If the data source you want is not listed, choose New Data Source in the dropdown list.</p>
+<ul>
+<li>When choosing a data source, the server must be running and the data source must be registered with the server.</li>
+<li>The dropdown list contains the database connections registered with the IDE if your target server is not a Java EE container or if the target project is a Java SE project.</li>
+</ul>
+</li>
+<li>Database Schema. Select this if you already have a database schema you want to use. The dropdown list displays the database schemas that are found in the src/conf directory of your project.</li>
+</ul>
+</li>
+<li>
+<p>Select any tables in the left panel and click the Add button. If the table references other tables, the referenced tables are automatically added to the Selected Tables list in the right pane. The referenced tables are greyed out to indicate that they are referenced tables. You can place your cursor over the referenced tables to see a tooltip indicating which table references the table. The IDE automatically generates entity classes for each of the tables listed in the right pane.</p>
+<ul>
+<li>If you do not want entity classes created from referenced tables, deselect Include Related Tables.</li>
+<li>You can use the dropdown list to filter the Available Tables.</li>
+</ul>
+</li>
+<li>Click Next to confirm the entity class names and specify where to save the entity classes.</li>
+</ol>
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1351">
+<param name="text" value="<html><u>&quot;About Developing with Java Persistence&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

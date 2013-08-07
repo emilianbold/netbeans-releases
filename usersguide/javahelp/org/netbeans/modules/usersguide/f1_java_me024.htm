@@ -1,0 +1,131 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>MIDP Project Properties: Compiling</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.mobility.project.ui.customizer.CustomizerCompile" name="org.netbeans.modules.mobility.project.ui.customizer.CustomizerCompile"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref686" name="sthref686"></a>
+<h1>MIDP Project Properties: Compiling</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>Use to set compiling options for a project configuration. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1586">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>Choose <b>Build</b> &gt; <b>Compiling</b> from the project properties dialog box to access this page.</p>
+
+<table summary="Descriptions of elements in Compiling page of project properties dialog box." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="33%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t25">Element</th>
+<th align="left" valign="bottom" id="r1c2-t25">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t25" headers="r1c1-t25">
+<p>Use Values from "Default Configuration"</p>
+</td>
+<td align="left" headers="r2c1-t25 r1c2-t25">
+<p>Enables you to customize the properties for a project configuration other than the default configuration if this option is unchecked.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t25" headers="r1c1-t25">
+<p>Generate Debugging Info</p>
+</td>
+<td align="left" headers="r3c1-t25 r1c2-t25">
+<p>Generates line numbers and source files information.</p>
+<p>This is the <code>-g</code> option in javac. If unchecked, no debugging information is generated (the <code>-g:none</code> option in javac).</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t25" headers="r1c1-t25">
+<p>Compile with Optimization</p>
+</td>
+<td align="left" headers="r4c1-t25 r1c2-t25">
+<p>Optimizes the compiled application for execution.</p>
+<p>This is the <code>-O</code> option in javac. Optimizing can slow down compilation, produce larger class files, and make the program difficult to debug.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t25" headers="r1c1-t25">
+<p>Report Uses of Deprecated APIs</p>
+</td>
+<td align="left" headers="r5c1-t25 r1c2-t25">
+<p>Lists each use or override of a deprecated member or class.</p>
+<p>This is the <code>-deprecated</code> option in javac. If unchecked, the compiler shows only the names of source files that use or override deprecated members or classes.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t25" headers="r1c1-t25">
+<p>Encoding</p>
+</td>
+<td align="left" headers="r6c1-t25 r1c2-t25">
+<p>Overrides default encoding used by preprocessor and compiler.</p>
+<p>The default value is the default encoding used by your JVM and IDE.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t25" headers="r1c1-t25">
+<p>Debug Block Level</p>
+</td>
+<td align="left" headers="r7c1-t25 r1c2-t25">
+<p>Sets the debug level for the <code>//#debug</code> and <code>//#mdebug</code> preprocessor directives.</p>
+<p>If you enter a unique value for the level (for example, <code>debug_graphics</code>), the preprocessor allows only debug blocks that exactly match the debug block (for this example, <code>//#debug debug_graphics</code>). All other debug blocks are commented out.</p>
+<p>If you choose a pre-defined level from the drop-down menu, the preprocessor comments out debug blocks on lower levels, as defined by the following hierarchy:</p>
+<ul>
+<li>fatal (most exclusive)</li>
+<li>error</li>
+<li>warn</li>
+<li>info</li>
+<li>debug (most inclusive)</li>
+</ul>
+<p>For example, if you choose warn, all info and debug blocks are commented out.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1585">
+<param name="text" value="<html><u>&quot;Building Java ME Applications&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1623">
+<param name="text" value="<html><u>&quot;Specifying Preprocessor Directives&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>

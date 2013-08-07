@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<title>Manage Remote Connections</title>
+<link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
+</head>
+
+<body>
+<p><a id="org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel" name="org.netbeans.modules.php.project.connections.ui.RemoteConnectionsPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref404" name="sthref404"></a>
+<h1>Manage Remote Connections</h1>
+<a name="BEGIN" id="BEGIN"></a>
+<p>In this panel you create a new FTP/SFTP connection or reconfigure an existing remote connection.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t6">Element</th>
+<th align="left" valign="bottom" id="r1c2-t6">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t6" headers="r1c1-t6">
+<p>Name</p>
+</td>
+<td align="left" headers="r2c1-t6 r1c2-t6">
+<p>The arbitrary name of the connection. Set the name in the Create New Connection panel.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t6" headers="r1c1-t6">
+<p>Host name</p>
+</td>
+<td align="left" headers="r3c1-t6 r1c2-t6">
+<p>The root name of your (S)FTP host, such as <code>http://x10hosting.com</code>.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t6" headers="r1c1-t6">
+<p>Port</p>
+</td>
+<td align="left" headers="r4c1-t6 r1c2-t6">
+<p>Port number of your (S)FTP connection.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t6" headers="r1c1-t6">
+<p>Encryption</p>
+</td>
+<td align="left" headers="r5c1-t6 r1c2-t6">
+<p>(FTP only) Select whether to encrypt your FTP communication over TLS. You can select Pure FTP (no encryption), Explicit FTP (explicit method to invoke client security) or Implicit FTP (implicit method to invoke client security.)</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t6" headers="r1c1-t6">
+<p>Encrypt Only Authentication Process</p>
+</td>
+<td align="left" headers="r6c1-t6 r1c2-t6">
+<p>If you choose to encrypt FTP communication, select this to encrypt only the login process.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t6" headers="r1c1-t6">
+<p>User Name</p>
+</td>
+<td align="left" headers="r7c1-t6 r1c2-t6">
+<p>Your user name on the (S)FTP host.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t6" headers="r1c1-t6">
+<p>Password</p>
+</td>
+<td align="left" headers="r8c1-t6 r1c2-t6">
+<p>Your password on the (S)FTP host. Leave this field blank and the IDE will prompt you for your password.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t6" headers="r1c1-t6">
+<p>Private Key file</p>
+</td>
+<td align="left" headers="r9c1-t6 r1c2-t6">
+<p>(SFTP only) The file with the private key for your SFTP client. You do not need to use public/private key for SFTP--you can use username/password--but it is better practice to use key pair authentication.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t6" headers="r1c1-t6">
+<p>Known Hosts file</p>
+</td>
+<td align="left" headers="r10c1-t6 r1c2-t6">
+<p>(SFTP only) File that stores host names and public keys. If you do not have a known_hosts file, the public key must be resent every time a connection is re-established.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r11c1-t6" headers="r1c1-t6">
+<p>Initial directory</p>
+</td>
+<td align="left" headers="r11c1-t6 r1c2-t6">
+<p>The root directory on your host for all of your projects. By default it is only a slash, meaning that your host name + user name is your root directory.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r12c1-t6" headers="r1c1-t6">
+<p>Timeout(s)</p>
+</td>
+<td align="left" headers="r12c1-t6 r1c2-t6">
+<p>Time in which the client waits for a server response before timing out the connection. Timeout is in seconds.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r13c1-t6" headers="r1c1-t6">
+<p>Keep-alive interval(s)</p>
+</td>
+<td align="left" headers="r13c1-t6 r1c2-t6">
+<p>Sets the connection keep-alive interval. Helps when upload-on-save is selected.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r14c1-t6" headers="r1c1-t6">
+<p>Passive mode</p>
+</td>
+<td align="left" headers="r14c1-t6 r1c2-t6">
+<p>(FTP only) Tick this for the IDE to communicate with the server in passive mode.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r15c1-t6" headers="r1c1-t6">
+<p>Ignore Disconnect Errors</p>
+</td>
+<td align="left" headers="r15c1-t6 r1c2-t6">
+<p>(FTP only) IDE ignores errors during disconnect() and logout() calls. Useful when upload-on-save is enabled, where in some cases every file change otherwise ends with an error dialog.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r16c1-t6" headers="r1c1-t6">
+<p>Add...</p>
+</td>
+<td align="left" headers="r16c1-t6 r1c2-t6">
+<p>Click to add a remote connection. The Create New Connection panel opens.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r17c1-t6" headers="r1c1-t6">
+<p>Remove</p>
+</td>
+<td align="left" headers="r17c1-t6 r1c2-t6">
+<p>Click to remove the selected connection.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r18c1-t6" headers="r1c1-t6">
+<p>Test connection</p>
+</td>
+<td align="left" headers="r18c1-t6 r1c2-t6">
+<p>Click to send a test message to the selected connection. The results appear directly in the Manage Remote Connections panel.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<!-- infolevel="all" infotype="General" --><a id="sthref405" name="sthref405"></a>
+<h2>Create New Connection panel</h2>
+<p>This panel opens when you click the Add... button in the Manage Remote Connections panel.</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t7">Element</th>
+<th align="left" valign="bottom" id="r1c2-t7">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t7" headers="r1c1-t7">
+<p>Connection Name</p>
+</td>
+<td align="left" headers="r2c1-t7 r1c2-t7">
+<p>Arbitrary name for the new connection.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t7" headers="r1c1-t7">
+<p>Connection Type</p>
+</td>
+<td align="left" headers="r3c1-t7 r1c2-t7">
+<p>FTP or SFTP.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<!-- -->
+<hr><p><b>Related Topics</b></p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1534">
+<param name="text" value="<html><u>&quot;About Developing PHP Applications&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+
+<!-- -->
+<!-- Start Footer -->
+
+
+<table summary="" cellspacing="0" cellpadding="0" width="100%">
+<tr>
+<td align="left" width="86%"><a href="legal_notice.htm">
+Copyright&nbsp;&copy;&nbsp;2013,&nbsp;Oracle&nbsp;and/or&nbsp;its&nbsp;affiliates.&nbsp;All&nbsp;rights&nbsp;reserved.</a>
+</td>
+</tr>
+</table>
+<!-- -->
+</body>
+</html>
