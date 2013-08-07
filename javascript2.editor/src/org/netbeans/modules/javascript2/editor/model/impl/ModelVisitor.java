@@ -349,12 +349,14 @@ public class ModelVisitor extends PathNodeVisitor {
                         LiteralNode lNode = (LiteralNode)iNode.getIndex();
                         if (lNode.isString()) {
                             Identifier newPropName = ModelElementFactory.create(parserResult, lNode);
-                            if (lObject.getProperty(lNode.getString()) == null) {
-                                JsObject newProperty = new JsObjectImpl(lObject, newPropName, newPropName.getOffsetRange(), true, parserResult.getSnapshot().getMimeType(), null);
-                                lObject.addProperty(newPropName.getName(), newProperty);
-                                assignmentOffset = lNode.getFinish();
+                            if (newPropName != null) {
+                                if (lObject.getProperty(lNode.getString()) == null) {
+                                    JsObject newProperty = new JsObjectImpl(lObject, newPropName, newPropName.getOffsetRange(), true, parserResult.getSnapshot().getMimeType(), null);
+                                    lObject.addProperty(newPropName.getName(), newProperty);
+                                    assignmentOffset = lNode.getFinish();
+                                }
+                                lObject = processLhs(newPropName, lObject, true);
                             }
-                            lObject = processLhs(newPropName, lObject, true);
                         }
                     }
                 } else if (lhs instanceof IdentNode) {

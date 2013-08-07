@@ -70,6 +70,7 @@ import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
 import org.netbeans.modules.web.common.taginfo.TagAttrMetadata;
 import org.netbeans.modules.web.common.taginfo.TagMetadata;
 import org.netbeans.modules.web.jsf.editor.completion.JsfCompletionItem;
+import org.netbeans.modules.web.jsf.editor.facelets.AbstractFaceletsLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.CompositeComponentLibrary;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibraryMetadata;
 import org.netbeans.modules.web.jsf.editor.hints.HintsRegistry;
@@ -292,7 +293,9 @@ public class JsfHtmlExtension extends HtmlExtension {
     private Collection<CompletionItem> queryLibrary(CompletionContext context, Library lib, String nsPrefix, boolean undeclared, boolean isJsf22Plus) {
         Collection<CompletionItem> items = new ArrayList<CompletionItem>();
         for (LibraryComponent component : lib.getComponents()) {
-            items.add(JsfCompletionItem.createTag(context.getCCItemStartOffset(), component, nsPrefix, undeclared, isJsf22Plus));
+            if (!(component instanceof AbstractFaceletsLibrary.Function)) {
+                items.add(JsfCompletionItem.createTag(context.getCCItemStartOffset(), component, nsPrefix, undeclared, isJsf22Plus));
+            }
         }
 
         return items;
