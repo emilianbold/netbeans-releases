@@ -280,7 +280,11 @@ public final class WatchesModel extends VariablesModel implements TreeModelFilte
             CallFrame frame = getCurrentStack();
             ScopedRemoteObject var = null;
             if (frame != null) {
-                var = evaluateWatch(frame, (Watch)node);
+                synchronized (evaluatedWatches) {
+                    if (frame == evaluatedWatchesFrame) {
+                        var = evaluatedWatches.get((Watch) node);
+                    }
+                }
             }
             if (var == null) {
                 return false;
