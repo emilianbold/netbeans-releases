@@ -121,8 +121,8 @@ public final class ImportHelper {
         final List<String> missingNames) {
 
         final AtomicBoolean cancel = new AtomicBoolean();
-        final List<String> singleCandidates = new ArrayList<String>();
-        final Map<String, List<ImportCandidate>> multipleCandidates = new HashMap<String, List<ImportCandidate>>();
+        final List<String> singleCandidates = new ArrayList<>();
+        final Map<String, List<ImportCandidate>> multipleCandidates = new HashMap<>();
 
         // go over list of missing imports, fix it - if there is only one candidate
         // or populate choosers input list if there is more than one candidate.
@@ -172,7 +172,7 @@ public final class ImportHelper {
     public static List<ImportCandidate> getImportCandidate(FileObject fo, String packageName, String missingClass) {
         LOG.log(Level.FINEST, "Looking for class: {0}", missingClass);
 
-        List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
+        List<ImportCandidate> candidates = new ArrayList<>();
         candidates.addAll(findGroovyImportCandidates(fo, packageName, missingClass));
         candidates.addAll(findJavaImportCandidates(fo, packageName, missingClass));
 
@@ -180,7 +180,7 @@ public final class ImportHelper {
     }
 
     private static List<ImportCandidate> findGroovyImportCandidates(FileObject fo, String packageName, String missingClass) {
-        final List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
+        final List<ImportCandidate> candidates = new ArrayList<>();
         final GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
                 Collections.singleton(ClassPath.SOURCE), null, null));
 
@@ -207,7 +207,7 @@ public final class ImportHelper {
     }
 
     private static List<ImportCandidate> findJavaImportCandidates(FileObject fo, String packageName, String missingClass) {
-        final List<ImportCandidate> candidates = new ArrayList<ImportCandidate>();
+        final List<ImportCandidate> candidates = new ArrayList<>();
         final ClasspathInfo pathInfo = createClasspathInfo(fo);
 
         Set<ElementHandle<TypeElement>> typeNames = pathInfo.getClassIndex().getDeclaredTypes(
@@ -293,7 +293,7 @@ public final class ImportHelper {
     }
 
     private static List<String> showFixImportChooser(Map<String, List<ImportCandidate>> multipleCandidates) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         ImportChooserInnerPanel panel = new ImportChooserInnerPanel();
 
         panel.initPanel(multipleCandidates);
