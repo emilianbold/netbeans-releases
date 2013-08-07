@@ -1,6 +1,6 @@
 Name: validator.nu schemas
 Version: 20130529
-License: MIT
+License: MIT-non-schema
 OSR: -
 Files: non-schema.jar
 Description: Non relax-ng schema checks for the validator

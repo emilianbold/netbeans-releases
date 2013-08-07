@@ -1,7 +1,7 @@
 Name: PostgreSQL JDBC Driver
 Version: 9.2-1002
 Description: Allows Java programs to interact with a PostgreSQL database
-License: BSD
+License: BSD-postgresql
 OSR: 7016
 Origin: http://jdbc.postgresql.org/license.html
 Files: postgresql-9.2-1002.jdbc4.jar

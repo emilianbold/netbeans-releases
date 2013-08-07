@@ -1,9 +1,9 @@
 Name: JavaEE Web API 7.0
 Version: 7.0
-License: CDDL-1.0
+License: CDDL-GPL-2-CP
 OSR: Sun
 Description: JavaEE Web API 7.0
-Origin: http://download.java.net/maven/2/javax/javaee-web-api/7.0/
+Origin: Oracle (http://download.java.net/maven/2/javax/javaee-web-api/7.0/)
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 

@@ -1,6 +1,6 @@
 Name: Validator.nu
 Version: 20130529
-License: MIT
+License: MIT-validator
 OSR: -
 Files: validator.jar
 Description: Html/Generic RelaxNG schema validator service

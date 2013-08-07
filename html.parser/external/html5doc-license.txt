@@ -1,5 +1,5 @@
 Name: HTML 5 Specification
-License: -
+License: HTML5DOC
 OSR: -
 Version: -
 Description: Documentation for the HTML 5 standard

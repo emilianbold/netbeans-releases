@@ -1,5 +1,5 @@
 Name: CSS 3 Specification
-License: W3C
+License: W3C (the original at http://www.w3.org/Style/CSS/current-work)
 OSR: 
 Version: 
 Description: Documentation for the CSS 3 standard

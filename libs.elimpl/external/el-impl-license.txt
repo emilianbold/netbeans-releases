@@ -2,7 +2,7 @@ Name: Expression Language Implementation
 Description: Provides an implementation of the Expression Language (EL).
 Version: 2.2.99 (Implementation version: 3.0-b07)
 License: CDDL-GPL-2-CP
-Origin: http://uel.java.net/
+Origin: Oracle (http://uel.java.net/)
 Source: http://uel.java.net/
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
