@@ -1382,8 +1382,8 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
             Client[] clients = jaxWsModel.getClients();
             for (int i=0;i<clients.length;i++) {
                 if (packageName.equals(clients[i].getPackageName())) {
-                    wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_PackageUsedForClient",clients[i].getName()));
-                    return false;
+                    warningMessage = NbBundle.getMessage(ClientInfo.class, "MSG_PackageUsedForClient",clients[i].getName());
+                    break;
                 }
             }
             

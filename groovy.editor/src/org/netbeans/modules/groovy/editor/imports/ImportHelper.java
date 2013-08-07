@@ -64,7 +64,6 @@ import org.netbeans.api.java.source.ClassIndex.NameKind;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.ui.ElementIcons;
-import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.editor.BaseDocument;
@@ -326,97 +325,71 @@ public final class ImportHelper {
     }
 
     private static void addImportStatements(FileObject fo, List<String> fqNames) {
-        BaseDocument baseDoc = LexUtilities.getDocument(fo, true);
-        if (baseDoc == null) {
+        BaseDocument doc = LexUtilities.getDocument(fo, true);
+        if (doc == null) {
             return;
         }
 
-        EditList edits = new EditList(baseDoc);
+        for (String fqName : fqNames) {
+            EditList edits = new EditList(doc);
+            try {
+                int packageLine = getPackageLineIndex(doc);
+                int afterPackageLine = packageLine + 1;
+                int afterPackageOffset = Utilities.getRowStartFromLineOffset(doc, afterPackageLine);
 
-        // Shitty for-loop because after the last line I want to add additional \n
-        for (int i = 0; i < fqNames.size(); i++) {
-            String fqName = fqNames.get(i);
+                // If the line after the package statement isn't empty, put one empty line there
+                if (!Utilities.isRowWhite(doc, afterPackageOffset)) {
+                    int offset = Utilities.getRowStartFromLineOffset(doc, afterPackageLine);
+                    edits.replace(offset, 0, "\n", false, 0);
+                }
 
-            int importPosition = getImportPosition(baseDoc);
-            if (importPosition != -1) {
-                LOG.log(Level.FINEST, "Importing here: {0}", importPosition);
+                int lastImportLine = getLastImportLineIndex(doc);
+                int afterLastImportLine = lastImportLine + 1;
 
-                // We don't want to import anything inside comment --> see #228641
-                Token<GroovyTokenId> token = LexUtilities.getToken(baseDoc, importPosition);
+                // No import statement in the source code, put the new one after the empty line
+                if (lastImportLine == -1) {
+                    int offset = Utilities.getRowStartFromLineOffset(doc, afterPackageLine + 1);
+                    edits.replace(offset, 0, "import " + fqName + "\n", false, 0);
 
-                if (token.id() == GroovyTokenId.BLOCK_COMMENT) {
-                    int packageOffset = getLastPackageStatementOffset(baseDoc);
-                    int lineOffset = 0;
-                    try {
-                        lineOffset = Utilities.getLineOffset(baseDoc, packageOffset) + 1;
-                    } catch (BadLocationException ex) {
-                        Exceptions.printStackTrace(ex);
+                    // If the line after the last import statement isn't empty, put one empty line there
+                    if (!Utilities.isRowWhite(doc, offset)) {
+                        edits.replace(offset, 0, "\n", false, 0);
                     }
-                    int offset = Utilities.getRowStartFromLineOffset(baseDoc, lineOffset);
-
-                    edits.replace(offset - 1, 0, "\n", false, 0);
-                    edits.replace(offset, 0, "import " + fqName + "\n\n", false, 0);
+                // There are already some imports, put the new one after the last import statement
                 } else {
-                    // Last import means one additiona \n
-                    if (i == fqNames.size() - 1) {
-                        edits.replace(importPosition, 0, "import " + fqName + "\n\n", false, 0);
-                    } else {
-                        edits.replace(importPosition, 0, "import " + fqName + "\n", false, 0);
+                    int offset = Utilities.getRowStartFromLineOffset(doc, afterLastImportLine);
+                    edits.replace(offset, 0, "import " + fqName + "\n", false, 0);
+
+                    // If the line after the last import statement isn't empty, put one empty line there
+                    if (!Utilities.isRowWhite(doc, offset)) {
+                        edits.replace(offset, 0, "\n", false, 0);
                     }
                 }
+            } catch (BadLocationException ex) {
+                Exceptions.printStackTrace(ex);
             }
+            edits.apply();
         }
-        edits.apply();
     }
 
-    private static int getImportPosition(BaseDocument doc) {
-        int importEnd = getLastImportStatementOffset(doc);
-        int packageOffset = getLastPackageStatementOffset(doc);
-
-        int useOffset = 0;
-
-        // sanity check: package *before* import
-        if (importEnd != -1 && packageOffset > importEnd) {
-            LOG.log(Level.FINEST, "packageOffset > importEnd");
-            return -1;
-        }
-
-        int lineOffset = 0;
-
-        // nothing set:
-        if (importEnd == -1 && packageOffset == -1) {
-            // place imports in the first line
-            LOG.log(Level.FINEST, "importEnd == -1 && packageOffset == -1");
-            return 0;
-
-        } else if (importEnd == -1 && packageOffset != -1) {
-            // only package set:
-            // place imports behind package statement
-            LOG.log(Level.FINEST, "importEnd == -1 && packageOffset != -1");
-            useOffset = packageOffset;
-            lineOffset++; // we want to have first import two lines behind package statement
-        } else if (importEnd != -1 && packageOffset == -1) {
-            // only imports set:
-            // place imports after the last import statement
-            LOG.log(Level.FINEST, "importEnd != -1 && packageOffset == -1");
-            useOffset = importEnd;
-        } else if (importEnd != -1 && packageOffset != -1) {
-            // both package & import set:
-            // place imports right after the last import statement
-            LOG.log(Level.FINEST, "importEnd != -1 && packageOffset != -1");
-            useOffset = importEnd;
-
-        }
-
+    /**
+     * Returns line index (line number - 1) of the package statement or {@literal -1}
+     * if no package statement was found within this in {@link BaseDocument}.
+     *
+     * @param doc document
+     * @return line index (line number - 1) of the package statement or {@literal -1}
+     *         if no package statement was found within this {@link BaseDocument}.
+     */
+    private static int getPackageLineIndex(BaseDocument doc) {
         try {
-            lineOffset = lineOffset + Utilities.getLineOffset(doc, useOffset);
+            int lastPackageOffset = getLastPackageStatementOffset(doc);
+            if (lastPackageOffset != -1) {
+                return Utilities.getLineOffset(doc, lastPackageOffset);
+            }
         } catch (BadLocationException ex) {
-            LOG.log(Level.FINEST, "BadLocationException for offset : {0}", useOffset);
-            LOG.log(Level.FINEST, "BadLocationException : {0}", ex.getMessage());
-            return -1;
+            Exceptions.printStackTrace(ex);
         }
-
-        return Utilities.getRowStartFromLineOffset(doc, lineOffset + 1);
+        return -1;
     }
 
     /**
@@ -425,7 +398,7 @@ public final class ImportHelper {
      *
      * @param doc document
      * @return offset of the package statement or {@literal -1} if no package
-     *         statement was found within this in {@link BaseDocument}.
+     *         statement was found within this {@link BaseDocument}.
      */
     private static int getLastPackageStatementOffset(BaseDocument doc) {
         TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
@@ -441,12 +414,32 @@ public final class ImportHelper {
     }
 
     /**
+     * Returns line index (line number - 1) of the last import statement or {@literal -1}
+     * if no import statement was found within this in {@link BaseDocument}.
+     *
+     * @param doc document
+     * @return line index (line number - 1) of the last import statement or {@literal -1}
+     *         if no import statement was found within this {@link BaseDocument}.
+     */
+    private static int getLastImportLineIndex(BaseDocument doc) {
+        try {
+            int lastImportOffset = getLastImportStatementOffset(doc);
+            if (lastImportOffset != -1) {
+                return Utilities.getLineOffset(doc, lastImportOffset);
+            }
+        } catch (BadLocationException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return -1;
+    }
+
+    /**
      * Returns offset of the last import statement or {@literal -1} if no import
      * statement was found within this in {@link BaseDocument}.
      *
      * @param doc document
      * @return offset of the last import statement or {@literal -1} if no import
-     *         statement was found within this in {@link BaseDocument}.
+     *         statement was found within this {@link BaseDocument}.
      */
     private static int getLastImportStatementOffset(BaseDocument doc) {
         TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
