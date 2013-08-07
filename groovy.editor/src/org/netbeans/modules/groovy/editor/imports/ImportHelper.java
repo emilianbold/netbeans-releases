@@ -325,43 +325,43 @@ public final class ImportHelper {
     }
 
     private static void addImportStatements(FileObject fo, List<String> fqNames) {
-        BaseDocument baseDoc = LexUtilities.getDocument(fo, true);
-        if (baseDoc == null) {
+        BaseDocument doc = LexUtilities.getDocument(fo, true);
+        if (doc == null) {
             return;
         }
 
         for (String fqName : fqNames) {
-            EditList edits = new EditList(baseDoc);
+            EditList edits = new EditList(doc);
             try {
-                int packageLine = getPackageLineIndex(baseDoc);
+                int packageLine = getPackageLineIndex(doc);
                 int afterPackageLine = packageLine + 1;
-                int afterPackageOffset = Utilities.getRowStartFromLineOffset(baseDoc, afterPackageLine);
+                int afterPackageOffset = Utilities.getRowStartFromLineOffset(doc, afterPackageLine);
 
                 // If the line after the package statement isn't empty, put one empty line there
-                if (!Utilities.isRowWhite(baseDoc, afterPackageOffset)) {
-                    int offset = Utilities.getRowStartFromLineOffset(baseDoc, afterPackageLine);
+                if (!Utilities.isRowWhite(doc, afterPackageOffset)) {
+                    int offset = Utilities.getRowStartFromLineOffset(doc, afterPackageLine);
                     edits.replace(offset, 0, "\n", false, 0);
                 }
 
-                int lastImportLine = getLastImportLineIndex(baseDoc);
+                int lastImportLine = getLastImportLineIndex(doc);
                 int afterLastImportLine = lastImportLine + 1;
 
                 // No import statement in the source code, put the new one after the empty line
                 if (lastImportLine == -1) {
-                    int offset = Utilities.getRowStartFromLineOffset(baseDoc, afterPackageLine + 1);
+                    int offset = Utilities.getRowStartFromLineOffset(doc, afterPackageLine + 1);
                     edits.replace(offset, 0, "import " + fqName + "\n", false, 0);
 
                     // If the line after the last import statement isn't empty, put one empty line there
-                    if (!Utilities.isRowWhite(baseDoc, offset)) {
+                    if (!Utilities.isRowWhite(doc, offset)) {
                         edits.replace(offset, 0, "\n", false, 0);
                     }
                 // There are already some imports, put the new one after the last import statement
                 } else {
-                    int offset = Utilities.getRowStartFromLineOffset(baseDoc, afterLastImportLine);
+                    int offset = Utilities.getRowStartFromLineOffset(doc, afterLastImportLine);
                     edits.replace(offset, 0, "import " + fqName + "\n", false, 0);
 
                     // If the line after the last import statement isn't empty, put one empty line there
-                    if (!Utilities.isRowWhite(baseDoc, offset)) {
+                    if (!Utilities.isRowWhite(doc, offset)) {
                         edits.replace(offset, 0, "\n", false, 0);
                     }
                 }
