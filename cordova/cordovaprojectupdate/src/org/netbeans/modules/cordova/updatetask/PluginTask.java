@@ -111,6 +111,8 @@ public class PluginTask extends Task {
     private void initCurrent() {
         currentPlugins = new HashSet<CordovaPlugin>();
         
+        log(getCordovaCommand() + " plugins ");
+
         ExecTask exec = (ExecTask) getProject().createTask("exec");
         exec.setExecutable(getCordovaCommand());
         exec.createArg().setValue("plugins");
@@ -133,18 +135,21 @@ public class PluginTask extends Task {
 
     private void installPlugins(Set<CordovaPlugin> pluginsToInstall) {
         for (CordovaPlugin plugin : pluginsToInstall) {
+            log(getCordovaCommand() + " -d plugin add " + plugin.getUrl());
             ExecTask exec = (ExecTask) getProject().createTask("exec");
             exec.setExecutable(getCordovaCommand());
             exec.createArg().setValue("-d");
             exec.createArg().setValue("plugin");
             exec.createArg().setValue("add");
             exec.createArg().setValue(plugin.getUrl());
+            exec.setFailonerror(true);
             exec.execute();
         }
     }
 
     private void uninstallPlugins(Set<CordovaPlugin> pluginsToUninstall) {
         for (CordovaPlugin plugin : pluginsToUninstall) {
+            log(getCordovaCommand() + " -d plugin remove " + plugin.getId());
             ExecTask exec = (ExecTask) getProject().createTask("exec");
             exec.setExecutable(getCordovaCommand());
             exec.createArg().setValue("-d");

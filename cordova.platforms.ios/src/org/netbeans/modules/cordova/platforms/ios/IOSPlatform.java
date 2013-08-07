@@ -224,11 +224,11 @@ public class IOSPlatform implements MobilePlatform {
         if (f.exists() && f.isDirectory()) {
             File[] listFiles = f.listFiles(new FilenameFilter() {
 
-                                   @Override
-                                   public boolean accept(File dir, String name) {
-                                       return name.endsWith(".mobileprovision"); // NOI18N
-                                   }
-                               });
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(".mobileprovision"); // NOI18N
+                }
+            });
             if (listFiles.length > 0) {
                 def = listFiles[0].getAbsolutePath();
             }

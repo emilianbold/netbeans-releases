@@ -108,7 +108,7 @@ public class CordovaPerformer implements BuildPerformer {
     
     private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
 
-    private final int BUILD_SCRIPT_VERSION = 31;
+    private final int BUILD_SCRIPT_VERSION = 32;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
@@ -132,7 +132,11 @@ public class CordovaPerformer implements BuildPerformer {
         "LBL_InstallThroughItunes=Install application using iTunes and tap on it",
         "CTL_InstallAndRun=Install and Run",
         "DSC_Cordova=Cordova Application",
-        "ERR_StartFileNotFound=Start file cannot be found."
+        "ERR_StartFileNotFound=Start file cannot be found.",
+        "ERR_NO_Cordova=NetBeans cannot find cordova or git on your PATH. Please install cordova and git.\n" +
+            "NetBeans might require restart for changes to take effect.\n",
+        "ERR_NO_Provisioning=Provisioning Profile not found.\nPlease use XCode and install valid Provisioning Profile for your device."
+            
     })
     @Override
     public ExecutorTask perform(final String target, final Project project) {
@@ -175,8 +179,18 @@ public class CordovaPerformer implements BuildPerformer {
         }
 
         if (!CordovaPlatform.getDefault().isReady()) {
-            throw new IllegalStateException();
+            throw new IllegalStateException(Bundle.ERR_NO_Cordova());
         }
+        
+        ProjectBrowserProvider provider = project.getLookup().lookup(ProjectBrowserProvider.class);
+        if (provider != null &&
+                "ios_1".equals(provider.getActiveBrowser().getId()) && 
+                (target.equals(BuildPerformer.RUN_IOS) || target.equals(BuildPerformer.BUILD_IOS)) &&
+                PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getProvisioningProfilePath() == null
+                ) {
+            throw new IllegalStateException(Bundle.ERR_NO_Provisioning());
+       }        
+        
         final ExecutorTask runTarget[] = new ExecutorTask[1];
         Runnable run = new Runnable() {
             @Override

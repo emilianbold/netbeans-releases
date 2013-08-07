@@ -75,7 +75,8 @@ made subject to such option by the copyright holder.
     
     <target name="upgrade-to-cordova-project" depends="check-cordova-project,check-cordova-version" unless="cordova.project">
         <move file="www" tofile="www_nb_temp" failonerror="false" quiet="true"/>
-        <exec executable="${cordova.command}">
+        <echo level="info" message="${cordova.command} -d create . com.coolappz.${project.name} ${project.name}" />
+        <exec executable="${cordova.command}" failonerror="true" >
             <arg value="-d"/>
             <arg value="create"/>   
             <arg value="."/>   
@@ -95,7 +96,8 @@ made subject to such option by the copyright holder.
     </target>
 
     <target name="create-hello-world" depends="check-cordova-version">
-        <exec executable="${cordova.command}">
+        <echo level="info" message="${cordova.command} -d create www_nb_temp com.coolappz.${project.name} ${project.name}" />
+        <exec executable="${cordova.command}" failonerror="true">
             <arg value="-d"/>
             <arg value="create"/>   
             <arg value="www_nb_temp"/>   
@@ -136,7 +138,8 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="create-android" depends="check-android-template,check-cordova-version,upgrade-to-cordova-project" unless="android.generated.exists">
-        <exec executable="${cordova.command}">
+        <echo level="info" message="${cordova.command} -d platform add android"/>
+        <exec executable="${cordova.command}" failonerror="true">
             <env key="${cordova.path.key}" path="${cordova.path.value}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
             <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="-d"/>
@@ -147,7 +150,8 @@ made subject to such option by the copyright holder.
     </target>
     
     <target name="create-ios" depends="check-ios-template,check-cordova-version,upgrade-to-cordova-project" unless="ios.generated.exists">
-        <exec executable="${cordova.command}" dir=".">
+        <echo level="info" message="${cordova.command} -d platform add ios"/>
+        <exec executable="${cordova.command}" dir="." failonerror="true">
             <arg value="-d"/>
             <arg value="platform"/>   
             <arg value="add"/>   
@@ -161,7 +165,7 @@ made subject to such option by the copyright holder.
 
     <target name="build-ios-xcodebuild">
         <property name="path" location="platforms/ios/build"/>
-        <exec executable="xcodebuild" dir="platforms/ios">
+        <exec executable="xcodebuild" dir="platforms/ios" failonerror="true">
             <arg value="-project"/>
             <arg value="${project.name}.xcodeproj"/>
             <arg value="-arch"/>   
@@ -174,12 +178,11 @@ made subject to such option by the copyright holder.
             <arg value="${ios.build.sdk}" />
             <arg value="build"/>
             <arg value="CONFIGURATION_BUILD_DIR=${path}"/>
-            <arg value="CODE_SIGN_IDENTITY=${ios.certificate.name}"/>
         </exec>
     </target>
     
     <target name="build-ios-ipa" if="build.for.device">
-        <exec executable="xcrun" dir="platforms/ios/build" >
+        <exec executable="xcrun" dir="platforms/ios/build" failonerror="true">
             <env key="CODESIGN_ALLOCATE" value="/Applications/Xcode.app/Contents/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate" />
             <arg value="-sdk"/>
             <arg value="${ios.build.sdk}" />            
@@ -203,7 +206,7 @@ made subject to such option by the copyright holder.
         <echo>
             Install "${basedir}/platforms/ios/build/${project.name}.ipa" through iTunes and run it. 
         </echo> 
-        <exec executable="open">
+        <exec executable="open" failonerror="true">
             <arg value="${basedir}/platforms/ios/build/${project.name}.ipa"/>
         </exec>
     </target>
@@ -219,6 +222,8 @@ made subject to such option by the copyright holder.
     </target>    
     
     <target name="update-android">
+        <echo level="info" message="${cordova.command} prepare android"/>
+
         <exec executable="${cordova.command}" resolveexecutable="true" failonerror="true">
             <env key="${cordova.path.key}" path="${cordova.path.value}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
             <env key="JAVA_HOME" path="${jdk.home}"/>
@@ -229,6 +234,7 @@ made subject to such option by the copyright holder.
         
                            
     <target name="update-ios">
+        <echo level="info" message="${cordova.command} prepare ios"/>
         <exec executable="${cordova.command}" resolveexecutable="true" failonerror="true">
             <arg value="prepare"/>
             <arg value="ios"/>
@@ -238,7 +244,8 @@ made subject to such option by the copyright holder.
     <target name="rebuild-android" depends="clean-android,build-android"/>      
     
     <target name="build-android" depends="create-android,update-plugins">
-        <exec executable="${cordova.command}">
+        <echo level="info" message="${cordova.command} -d build android"/>
+        <exec executable="${cordova.command}" failonerror="true">
             <env key="${cordova.path.key}" path="${cordova.path.value}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
             <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="-d"/>   
@@ -248,7 +255,8 @@ made subject to such option by the copyright holder.
     </target>    
     
     <target name="sim-android" depends="create-android,update-plugins">
-        <exec executable="${cordova.command}">
+        <echo level="info" message="${cordova.command} -d ${android.target.device.arg} android"/>
+        <exec executable="${cordova.command}" failonerror="true">
             <env key="${cordova.path.key}" path="${cordova.path.value}:${android.sdk.home}/tools:${android.sdk.home}/platform-tools:${jdk.home}/bin:${ant.home}/bin:${jdk.home}/bin"/>
             <env key="JAVA_HOME" path="${jdk.home}"/>
             <arg value="-d"/>
