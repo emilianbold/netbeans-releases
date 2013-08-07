@@ -438,6 +438,7 @@ If you are sure you want to build with JDK 8+ anyway, use: -Dpermit.jdk8.builds=
                     <include name="platform/modules/ext/jhall*.jar"/>
                 </fileset>
             </classpath>
+            <include name="**/*.htm"/>
             <include name="**/*.html"/>
             <exclude name="${javahelp.search}/"/>
             <exclude name="${javahelp.excludes}"/>
