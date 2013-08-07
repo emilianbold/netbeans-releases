@@ -180,6 +180,7 @@ made subject to such option by the copyright holder.
             <file name="1.xsd" url="../../resources/j2se-project.xsd"/>
             <file name="2.xsd" url="../../resources/j2se-project2.xsd"/>
             <file name="3.xsd" url="../../resources/j2se-project3.xsd"/>
+            <file name="jax-rpc.xsd" url="../../resources/jax-rpc.xsd"/>
         </folder>
         <folder name="j2se-project-private">
             <file name="1.xsd" url="../../resources/j2se-project-private.xsd"/>
