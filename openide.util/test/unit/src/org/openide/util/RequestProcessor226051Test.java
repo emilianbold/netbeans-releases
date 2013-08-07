@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2011 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,62 +37,73 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2011 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.versioning.core.filesystems;
+package org.openide.util;
 
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.net.URI;
-import java.net.URISyntaxException;
-import org.netbeans.api.extexecution.ProcessBuilder;
-import org.netbeans.modules.versioning.core.api.VCSFileProxy;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileSystem;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import static junit.framework.Assert.assertTrue;
+import org.junit.Test;
 
 /**
- * Operations available on a file represented by {@link VCSFileProxy}.<br>
- * Filesystem implementors interested in VCSFileProxy should provide for each FileObject
- * an instance available via {@link FileObject#getAttribute(java.lang.String)}.
  *
- * @author Vladimir Voskresensky
+ * @author Tim Boudreau
  */
-public interface VCSFileProxyOperations {
+public class RequestProcessor226051Test {
 
-    public interface Provider {
-        VCSFileProxyOperations getVCSFileProxyOperations(URI uri);
-        VCSFileProxyOperations getVCSFileProxyOperations(FileSystem fs);
+    private static final long DELAY = 2000;
+
+    @Test
+    public void testAwaitTermination() throws InterruptedException {
+        if (true) return;
+        
+        int count = 5;
+        RequestProcessor rp = new RequestProcessor(getClass().getSimpleName(), count+1, false);
+        CountDownLatch latch = new CountDownLatch(count);
+        List<R> rs = new LinkedList<R>();
+        for (int i = 0; i < count; i++) {
+            R r = new R(latch);
+            rs.add(r);
+            rp.post(r);
+        }
+        rp.shutdown();
+        boolean res = rp.awaitTermination(DELAY * (count + 1), TimeUnit.MILLISECONDS);
+        for (R r : rs) {
+            assertTrue(r.ran.get());
+        }
+        assertTrue(res);
     }
 
-    public static final String ATTRIBUTE = "FileProxyOperations";
+    static class R implements Runnable {
 
-    String getName(VCSFileProxy file);
+        private final CountDownLatch exitLatch;
+        private final AtomicBoolean ran = new AtomicBoolean();
 
-    boolean isDirectory(VCSFileProxy file);
+        R(CountDownLatch exitLatch) {
+            this.exitLatch = exitLatch;
+        }
 
-    boolean isFile(VCSFileProxy file);
-
-    boolean canWrite(VCSFileProxy file);
-
-    VCSFileProxy getParentFile(VCSFileProxy file);
-
-    String getAbsolutePath(VCSFileProxy file);
-
-    boolean exists(VCSFileProxy file);
-
-    VCSFileProxy normalize(VCSFileProxy file);
-
-    FileObject toFileObject(VCSFileProxy file);
-
-    VCSFileProxy[] list(VCSFileProxy file);
-
-    ProcessBuilder createProcessBuilder(VCSFileProxy file);
-
-    void refreshFor(VCSFileProxy ... files);
-
-    long lastModified(VCSFileProxy file);
-
-    URI toURI(VCSFileProxy file) throws URISyntaxException;
-
-    InputStream getInputStream(VCSFileProxy file, boolean checkLock) throws FileNotFoundException;
+        @Override
+        public void run() {
+            try {
+                boolean done = false;
+                while (!done) {
+                    try {
+                        Thread.sleep(DELAY);
+                    } catch (InterruptedException ex) {
+                        Exceptions.printStackTrace(ex);
+                    } finally {
+                        done = true;
+                    }
+                }
+            } finally {
+                ran.set(true);
+            }
+            exitLatch.countDown();
+        }
+    }
 }
