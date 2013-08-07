@@ -52,7 +52,7 @@ import org.netbeans.editor.Utilities;
 import org.netbeans.editor.ext.ExtKit;
 import org.netbeans.modules.csl.api.CslActions;
 import static org.netbeans.modules.php.api.util.FileUtils.PHP_MIME_TYPE;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.csl.PHPLanguage;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.util.Exceptions;

@@ -175,7 +175,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         toolBar.setMinimumSize(new java.awt.Dimension(74, 26));
         toolBar.setOpaque(false);
 
-        refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/php/editor/nav/resources/refresh.png"))); // NOI18N
+        refreshButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/php/editor/resources/refresh.png"))); // NOI18N
         refreshButton.setToolTipText(org.openide.util.NbBundle.getMessage(ClassHierarchyPanel.class, "ClassHierarchyPanel.refreshButton.toolTipText")); // NOI18N
         refreshButton.setFocusable(false);
         refreshButton.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
@@ -192,7 +192,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         toolBar.add(jSeparator1);
 
         directionGroup.add(supertypeButton);
-        supertypeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/php/editor/nav/resources/supertypehierarchy.gif"))); // NOI18N
+        supertypeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/php/editor/resources/supertypehierarchy.gif"))); // NOI18N
         supertypeButton.setSelected(true);
         supertypeButton.setToolTipText(org.openide.util.NbBundle.getMessage(ClassHierarchyPanel.class, "ClassHierarchyPanel.supertypeButton.toolTipText")); // NOI18N
         supertypeButton.setFocusable(false);
@@ -209,7 +209,7 @@ public class ClassHierarchyPanel extends JPanel implements HelpCtx.Provider {
         toolBar.add(supertypeButton);
 
         directionGroup.add(subtypeButton);
-        subtypeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/php/editor/nav/resources/subtypehierarchy.gif"))); // NOI18N
+        subtypeButton.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/php/editor/resources/subtypehierarchy.gif"))); // NOI18N
         subtypeButton.setSelected(false);
         subtypeButton.setToolTipText(org.openide.util.NbBundle.getMessage(ClassHierarchyPanel.class, "ClassHierarchyPanel.subtypeButton.toolTipText")); // NOI18N
         subtypeButton.setFocusable(false);
