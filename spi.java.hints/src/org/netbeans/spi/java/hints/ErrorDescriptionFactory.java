@@ -234,7 +234,7 @@ public class ErrorDescriptionFactory {
         String text = info.getText();
 
         for (int i = start + 1; i < text.length(); i++) {
-            if (text.charAt(i) == '\n') return i - 1;
+            if (text.charAt(i) == '\n') return i;
         }
 
         return text.length();
