@@ -1,3 +1,0 @@
-|-MyInterface [17, 101] : ESCAPED{MyInterface}
-|--getName [51, 61] : ESCAPED{getName}ESCAPED{(}ESCAPED{)}
-|--getDescription [82, 99] : ESCAPED{getDescription}ESCAPED{(}ESCAPED{)}
