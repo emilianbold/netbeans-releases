@@ -539,9 +539,13 @@ public final class NavigatorController implements LookupListener, PropertyChange
     private void updateTCTitle (Node[] nodes) {
         String newTitle;
         if (nodes != null && nodes.length > 0) {
-            newTitle = NbBundle.getMessage(
-                    NavigatorTC.class, "FMT_Navigator", nodes[0].getDisplayName()  //NOI18N
-            );
+            Node node = nodes[0];
+            DataObject dObj = obtainNodeDO(node);
+            if (dObj != null && dObj.isValid()) {
+                newTitle = NbBundle.getMessage(NavigatorTC.class, "FMT_Navigator", node.getDisplayName());  //NOI18N
+            } else {
+                newTitle = NbBundle.getMessage(NavigatorTC.class, "LBL_Navigator");  //NOI18N
+            }
         } else {
             newTitle = NbBundle.getMessage(NavigatorTC.class, "LBL_Navigator");  //NOI18N
         }
@@ -592,11 +596,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
         // search based on Node/DataObject's primary file mime type
         List<NavigatorPanel> fileResult = null;
         for (Node node : nodes) {
-            DataObject dObj = node.getLookup().lookup(DataObject.class);
-            // #64871: Follow DataShadows to their original
-            while (dObj instanceof DataShadow) {
-                dObj = ((DataShadow)dObj).getOriginal();
-            }
+            DataObject dObj = obtainNodeDO(node);
             if (dObj == null) {
                 fileResult = null;
                 break;
@@ -651,6 +651,15 @@ public final class NavigatorController implements LookupListener, PropertyChange
         }
     }
 
+    private DataObject obtainNodeDO(Node node) {
+        DataObject dObj = node.getLookup().lookup(DataObject.class);
+        // #64871: Follow DataShadows to their original
+        while (dObj instanceof DataShadow) {
+            dObj = ((DataShadow) dObj).getOriginal();
+        }
+        return dObj;
+    }
+
     /** Installs user actions handling for NavigatorTC top component */
     public void installActions () {
         // ESC key handling - return focus to previous focus owner
@@ -693,7 +702,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
                 Lookup globalContext = Utilities.actionsGlobalContext();
                 NavigatorLookupPanelsPolicy panelsPolicy = globalContext.lookup(NavigatorLookupPanelsPolicy.class);
                 Collection<? extends NavigatorLookupHint> lkpHints = globalContext.lookupAll(NavigatorLookupHint.class);
-                EventQueue.invokeLater(getUpdateRunnable(panelsPolicy, lkpHints));
+                EventQueue.invokeLater(getUpdateRunnable(false, panelsPolicy, lkpHints));
             }
         } else if (NavigatorDisplayer.PROP_PANEL_SELECTION.equals(evt.getPropertyName())) {
             activatePanel((NavigatorPanel) evt.getNewValue());
@@ -709,17 +718,12 @@ public final class NavigatorController implements LookupListener, PropertyChange
 
     public void nodeDestroyed(NodeEvent ev) {
         LOG.fine("Node destroyed reaction...");
-        // #121944: don't react on node destroy when we are active
-        if (navigatorTC.getTopComponent().equals(WindowManager.getDefault().getRegistry().getActivated())) {
-            LOG.fine("NavigatorTC active, skipping node destroyed reaction.");
-            return;
-        }
         LOG.fine("invokeLater on updateContext from node destroyed reaction...");
         // #122257: update content later to fight possible deadlocks
         Lookup globalContext = Utilities.actionsGlobalContext();
         NavigatorLookupPanelsPolicy panelsPolicy = globalContext.lookup(NavigatorLookupPanelsPolicy.class);
         Collection<? extends NavigatorLookupHint> lkpHints = globalContext.lookupAll(NavigatorLookupHint.class);
-        EventQueue.invokeLater(getUpdateRunnable(panelsPolicy, lkpHints));
+        EventQueue.invokeLater(getUpdateRunnable(true, panelsPolicy, lkpHints));
     }
 
     public void childrenAdded(NodeMemberEvent ev) {
@@ -735,11 +739,11 @@ public final class NavigatorController implements LookupListener, PropertyChange
     }
 
     /** Runnable implementation - forces update */
-    public Runnable getUpdateRunnable(final NavigatorLookupPanelsPolicy panelsPolicy, final Collection<? extends NavigatorLookupHint> lkpHints) {
+    public Runnable getUpdateRunnable(final boolean force, final NavigatorLookupPanelsPolicy panelsPolicy, final Collection<? extends NavigatorLookupHint> lkpHints) {
         return new Runnable() {
             @Override
             public void run() {
-                updateContext(false, panelsPolicy, lkpHints);
+                updateContext(force, panelsPolicy, lkpHints);
             }
         };
     }
@@ -927,7 +931,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
             // to save one inner class
             if (RequestProcessor.getDefault().isRequestProcessorThread()) {
                 LOG.fine("invokeLater on updateContext from ActNodeSetter");
-                SwingUtilities.invokeLater(getUpdateRunnable(panelsPolicy, lkpHints));
+                SwingUtilities.invokeLater(getUpdateRunnable(false, panelsPolicy, lkpHints));
             } else {
                 // AWT thread
                 LOG.fine("Calling updateContext from ActNodeSetter");

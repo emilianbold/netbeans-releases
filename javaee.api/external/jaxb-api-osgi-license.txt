@@ -3,7 +3,7 @@ Version: 6.0
 License: CDDL-GPL-2-CP
 OSR: Sun
 Description: JavaEE Endorsed API 6.0
-Origin: http://download.java.net/maven/2/javax/javaee-endorsed-api/6.0/
+Origin: Oracle (http://download.java.net/maven/2/javax/javaee-endorsed-api/6.0/)
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 

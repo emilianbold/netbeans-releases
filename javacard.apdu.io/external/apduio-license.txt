@@ -2,7 +2,7 @@ Name:  Java Card APDU I/O Libraries
 Version: 1.0
 License: Sun Technology Evaluation License
 OSR: 11316
-Origin: http://java.sun.com/javacard/
+Origin: Oracle (http://java.sun.com/javacard/)
 Source: http://java.sun.com/javacard/downloads/index.jsp#devkit
 Comment:  JAR from the Java Card Reference Implementation that implements the binary APDU protocol for communicating with Java Card(tm) devices
 

@@ -1,6 +1,6 @@
 Name: JING
 Version: -
-License: BSD
+License: BSD-jing
 OSR: -
 Files: jing.jar
 Description: Jing is an application for validating an XML document against a RELAX NG schema, in either the XML or the compact syntax.
