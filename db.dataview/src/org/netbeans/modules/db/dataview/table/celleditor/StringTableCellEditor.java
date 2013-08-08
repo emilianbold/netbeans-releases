@@ -138,6 +138,8 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
 
     protected void editCell(JTable table, int row, int column) {
         JTextArea textArea = new JTextArea(20, 80);
+        // Work aroung JDK bugs 7027598 (this bug suggests this work-around) #233347
+        textArea.setDropTarget(null);
         TableModel tm = table.getModel();
         int modelRow = table.convertRowIndexToModel(row);
         int modelColumn = table.convertColumnIndexToModel(column);
