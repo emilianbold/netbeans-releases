@@ -171,7 +171,7 @@ public abstract class Group {
         "# {0} - internal group info", "Group.UI.setActiveGroup=Selecting project group: {0}",
         "#NOI18N", "Group.UI.setActiveGroup_ICON_BASE=org/netbeans/modules/project/ui/resources/openProject.png"
     })
-    public static void setActiveGroup(Group nue) {
+    public static void setActiveGroup(Group nue, boolean isNewGroup) {
         LOG.log(Level.FINE, "set active group: {0}", nue);
         Group old = getActiveGroup();
         if (nue != null) {
@@ -188,7 +188,7 @@ public abstract class Group {
             switchingGroup.set(true);
             OpenProjectList.getDefault().fireProjectGroupChanging(old, getActiveGroup());
             try {
-                open(nue, old != null ? old.getName() : null);
+                open(nue, old != null ? old.getName() : null, isNewGroup);
             } finally {
                 switchingGroup.set(false);
                 OpenProjectList.getDefault().fireProjectGroupChanged(old, getActiveGroup());
@@ -554,7 +554,7 @@ public abstract class Group {
         "# {0} - count", "Group.progress_closing=Closing {0} old projects",
         "# {0} - count", "Group.progress_opening=Opening {0} new projects"
     })
-    private static void open(final Group g, String oldGroupName) {
+    private static void open(final Group g, String oldGroupName, boolean isNewGroup) {
         EventQueue.invokeLater(new Runnable() {
             @Override public void run() {
                 ProjectTab.findDefault(ProjectTab.ID_LOGICAL).setGroup(g);
@@ -592,16 +592,18 @@ public abstract class Group {
                 //open the projects with current group
                 opl.open(toOpen.toArray(new Project[toOpen.size()]), false, h, null);
                 
-                //for old and new group project intersection, save the old files list,
-                // compare to the new one and only close the files missing in the new one and open files missing in old one..
-                Map<Project, Set<DataObject>> documents = getOpenedDocuments(stayOpened, false);
-                for (Project p : stayOpened) {
-                    Set<DataObject> oldDocuments = documents.get(p);
-                    persistDocumentsInGroup(p, oldDocuments, oldGroupName);
-                    Set<DataObject> newDocuments = openDocumentsInGroup(p, g);
-                    Set<DataObject> toCloseDocuments = new HashSet<DataObject>(oldDocuments != null ? oldDocuments : Collections.<DataObject>emptySet());
-                    toCloseDocuments.removeAll(newDocuments);
-                    closeDocuments(toCloseDocuments);
+                if(!isNewGroup) {
+                    //for old and new group project intersection, save the old files list,
+                    // compare to the new one and only close the files missing in the new one and open files missing in old one..
+                    Map<Project, Set<DataObject>> documents = getOpenedDocuments(stayOpened, false);
+                    for (Project p : stayOpened) {
+                        Set<DataObject> oldDocuments = documents.get(p);
+                        persistDocumentsInGroup(p, oldDocuments, oldGroupName);
+                        Set<DataObject> newDocuments = openDocumentsInGroup(p, g);
+                        Set<DataObject> toCloseDocuments = new HashSet<DataObject>(oldDocuments != null ? oldDocuments : Collections.<DataObject>emptySet());
+                        toCloseDocuments.removeAll(newDocuments);
+                        closeDocuments(toCloseDocuments);
+                    }
                 }
                 
                 if (g != null) {
@@ -629,7 +631,7 @@ public abstract class Group {
     public void destroy() {
         LOG.log(Level.FINE, "destroying: {0}", id);
         if (equals(getActiveGroup())) {
-            setActiveGroup(null);
+            setActiveGroup(null, false);
         }
         try {
             Preferences p = prefs();

@@ -163,9 +163,6 @@ import org.w3c.dom.Text;
  */
 public final class MakeProject implements Project, MakeProjectListener {
 
-    @Deprecated
-    public static final String REMOTE_MODE = "remote-sources-mode"; // NOI18N
-
     private static final boolean UNIT_TEST_MODE = CndUtils.isUnitTestMode();
     private static final Logger LOGGER = Logger.getLogger("org.netbeans.modules.cnd.makeproject"); // NOI18N
     private static final String HEADER_EXTENSIONS = "header-extensions"; // NOI18N

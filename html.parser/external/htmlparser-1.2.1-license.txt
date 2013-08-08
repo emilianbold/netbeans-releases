@@ -1,8 +1,8 @@
 Name: HTML 5 Parser Patched
 Version: -
-License: BSD, MIT
+License: MIT-html5-parser
 OSR: -
-Files: htmlparser-1.2.1-license
+Files: htmlparser-1.2.1.jar
 Description: HTML4/5 parser patched for editing purposes
 Origin: validator.nu
 

@@ -49,13 +49,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.picklist.PicklistElement;
 import org.netbeans.modules.cnd.api.xml.AttrValuePair;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
@@ -66,7 +64,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CodeAssistanceConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CompileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
@@ -93,7 +90,10 @@ import org.openide.util.Exceptions;
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
- * V89 - NB 8.0
+ * V90 - NB 7.4
+ *    removed "remote-sources-mode" element
+ *    don't write project folder name, just "."
+ * V89 - NB 7.4
  *    support compile command
  * V88 - NB 7.3 (!!!!!!!!!!INVERTED SERIALIZATION!!!!!!!!!!!!)
  *    1) This is the version where serialization of unmanaged projects were inverted
@@ -270,7 +270,7 @@ public abstract class CommonConfigurationXMLCodec
         implements XMLEncoder {
     
     public final static int VERSION_WITH_INVERTED_SERIALIZATION = 88;
-    public final static int CURRENT_VERSION = 89;
+    public final static int CURRENT_VERSION = 90;
     // Generic
     protected final static String PROJECT_DESCRIPTOR_ELEMENT = "projectDescriptor"; // NOI18N
     protected final static String DEBUGGING_ELEMENT = "justfordebugging"; // NOI18N
@@ -1279,9 +1279,7 @@ public abstract class CommonConfigurationXMLCodec
                     res.putAll(environment);
                     environment = res;
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ConnectionManager.CancellationException ex) {
+            } catch (    IOException | ConnectionManager.CancellationException ex) {
                 Exceptions.printStackTrace(ex);
             }
             if (!environment.isEmpty()) {

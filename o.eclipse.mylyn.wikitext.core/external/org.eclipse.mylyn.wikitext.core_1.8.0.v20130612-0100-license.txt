@@ -1,6 +1,6 @@
-Name: %pluginName
-Version: 3.5.200.v20120522-1841
-License: EPL-v10
+Name: %Bundle-Name.0
+Version: 1.8.0.v20130612-0100
+License: EPL-v10 (see also about.html inside this JAR file)
 OSR: 
 Origin: 
 Description: 
