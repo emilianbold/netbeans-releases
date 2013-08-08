@@ -309,99 +309,51 @@
                 <folder name="hints">
                     <attr name="position" intvalue="100"/>
                     <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
-                    <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignmentHint.instance">
-                        <attr name="position" intvalue="100" />
-                    </file>
-                    <file name="org-netbeans-modules-php-editor-verification-AmbiguousComparisonHint.instance">
-                        <attr name="position" intvalue="200" />
-                    </file>
+                    <file name="org-netbeans-modules-php-editor-verification-AccidentalAssignmentHint.instance" />
+                    <file name="org-netbeans-modules-php-editor-verification-AmbiguousComparisonHint.instance" />
                     <folder name="braces">
-                        <attr name="position" intvalue="300" />
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
-                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$DoWhileBracesHint.instance">
-                            <attr name="position" intvalue="100" />
-                        </file>
-                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$ForBracesHint.instance">
-                            <attr name="position" intvalue="200" />
-                        </file>
-                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$ForEachBracesHint.instance">
-                            <attr name="position" intvalue="300" />
-                        </file>
-                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$IfBracesHint.instance">
-                            <attr name="position" intvalue="400" />
-                        </file>
-                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$WhileBracesHint.instance">
-                            <attr name="position" intvalue="500" />
-                        </file>
+                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$DoWhileBracesHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$ForBracesHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$ForEachBracesHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$IfBracesHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-BracesHint$WhileBracesHint.instance" />
                     </folder>
-                    <file name="org-netbeans-modules-php-editor-verification-EmptyStatementHint.instance">
-                        <attr name="position" intvalue="400" />
-                    </file>
-                    <file name="org-netbeans-modules-php-editor-verification-ErrorControlOperatorHint.instance">
-                        <attr name="position" intvalue="500" />
-                    </file>
-                    <file name="org-netbeans-modules-php-editor-verification-ImmutableVariablesHint.instance">
-                        <attr name="position" intvalue="600" />
-                    </file>
-                    <file name="org-netbeans-modules-php-editor-verification-NestedBlocksHint.instance">
-                        <attr name="position" intvalue="700" />
-                    </file>
-                    <file name="org-netbeans-modules-php-editor-verification-ParentConstructorCallHint.instance">
-                        <attr name="position" intvalue="800" />
-                    </file>
-                    <folder name="superglobals">
-                        <attr name="position" intvalue="900" />
+                    <file name="org-netbeans-modules-php-editor-verification-EmptyStatementHint.instance" />
+                    <file name="org-netbeans-modules-php-editor-verification-ErrorControlOperatorHint.instance" />
+                    <file name="org-netbeans-modules-php-editor-verification-ImmutableVariablesHint.instance" />
+                    <file name="org-netbeans-modules-php-editor-verification-NestedBlocksHint.instance" />
+                    <file name="org-netbeans-modules-php-editor-verification-ParentConstructorCallHint.instance" />
+                    <folder name="psr0">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
-                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$GetSuperglobalHint.instance">
-                            <attr name="position" intvalue="100" />
-                        </file>
-                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$PostSuperglobalHint.instance">
-                            <attr name="position" intvalue="200" />
-                        </file>
-                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$CookieSuperglobalHint.instance">
-                            <attr name="position" intvalue="300" />
-                        </file>
-                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$ServerSuperglobalHint.instance">
-                            <attr name="position" intvalue="400" />
-                        </file>
-                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$EnvSuperglobalHint.instance">
-                            <attr name="position" intvalue="500" />
-                        </file>
+                        <file name="org-netbeans-modules-php-editor-verification-PSR0Hint$NamespaceDeclarationHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-PSR0Hint$TypeDeclarationHint.instance" />
+                    </folder>
+                    <folder name="psr1">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
+                        <file name="org-netbeans-modules-php-editor-verification-PSR1Hint$ConstantDeclarationHint.instance" />
+                    </folder>
+                    <folder name="superglobals">
+                        <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
+                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$GetSuperglobalHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$PostSuperglobalHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$CookieSuperglobalHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$ServerSuperglobalHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$EnvSuperglobalHint.instance" />
                     </folder>
                     <folder name="toomanylines">
-                        <attr name="position" intvalue="1000" />
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
-                        <file name="org-netbeans-modules-php-editor-verification-TooManyLinesHint$ClassLinesHint.instance">
-                            <attr name="position" intvalue="100" />
-                        </file>
-                        <file name="org-netbeans-modules-php-editor-verification-TooManyLinesHint$FunctionLinesHint.instance">
-                            <attr name="position" intvalue="200" />
-                        </file>
-                        <file name="org-netbeans-modules-php-editor-verification-TooManyLinesHint$InterfaceLinesHint.instance">
-                            <attr name="position" intvalue="300" />
-                        </file>
-                        <file name="org-netbeans-modules-php-editor-verification-TooManyLinesHint$TraitLinesHint.instance">
-                            <attr name="position" intvalue="400" />
-                        </file>
+                        <file name="org-netbeans-modules-php-editor-verification-TooManyLinesHint$ClassLinesHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-TooManyLinesHint$FunctionLinesHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-TooManyLinesHint$InterfaceLinesHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-TooManyLinesHint$TraitLinesHint.instance" />
                     </folder>
-                    <file name="org-netbeans-modules-php-editor-verification-UninitializedVariableHint.instance">
-                        <attr name="position" intvalue="1100" />
-                    </file>
-                    <file name="org-netbeans-modules-php-editor-verification-UnnecessaryClosingDelimiterHint.instance">
-                        <attr name="position" intvalue="1200"/>
-                    </file>
-                    <file name="org-netbeans-modules-php-editor-verification-UnreachableStatementHint.instance">
-                        <attr name="position" intvalue="1300" />
-                    </file>
-                    <file name="org-netbeans-modules-php-editor-verification-UnusedUsesHint.instance">
-                        <attr name="position" intvalue="1400" />
-                    </file>
-                    <file name="org-netbeans-modules-php-editor-verification-UnusedVariableHint.instance">
-                        <attr name="position" intvalue="1500" />
-                    </file>
-                    <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsHint.instance">
-                        <attr name="position" intvalue="1600" />
-                    </file>
+                    <file name="org-netbeans-modules-php-editor-verification-UninitializedVariableHint.instance" />
+                    <file name="org-netbeans-modules-php-editor-verification-UnnecessaryClosingDelimiterHint.instance" />
+                    <file name="org-netbeans-modules-php-editor-verification-UnreachableStatementHint.instance" />
+                    <file name="org-netbeans-modules-php-editor-verification-UnusedUsesHint.instance" />
+                    <file name="org-netbeans-modules-php-editor-verification-UnusedVariableHint.instance" />
+                    <file name="org-netbeans-modules-php-editor-verification-WrongOrderOfArgsHint.instance" />
                 </folder>
                 <folder name="suggestions">
                     <attr name="position" intvalue="110"/>
@@ -420,6 +372,7 @@
                     <file name="org-netbeans-modules-php-editor-verification-ModifiersCheckHintError.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-PHP53UnhandledError.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-PHP54UnhandledError.instance"/>
+                    <file name="org-netbeans-modules-php-editor-verification-PHP55UnhandledError.instance"/>
                     <file name="org-netbeans-modules-php-editor-verification-TypeRedeclarationHintError.instance"/>
                 </folder>
             </folder>

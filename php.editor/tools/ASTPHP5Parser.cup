@@ -200,9 +200,11 @@ terminal  T_GOTO;
 terminal  T_FUNCTION;
 terminal  T_CONST;
 terminal  T_RETURN;
+terminal  T_YIELD;
 terminal  T_TRY;
 terminal  T_CATCH;
 terminal  T_THROW;
+terminal  T_FINALLY;
 terminal  T_USE;
 terminal  T_GLOBAL;
 terminal  T_VAR;
@@ -294,6 +296,7 @@ non terminal VariableBase unset_variable;
 non terminal Expression use_filename;
 non terminal Expression foreach_optional_arg;
 non terminal Expression foreach_variable;
+non terminal Expression foreach_variable_or_list;
 non terminal Statement for_statement;
 non terminal Statement foreach_statement;
 non terminal Statement declare_statement;
@@ -336,6 +339,8 @@ non terminal possible_comma;
 non terminal List non_empty_static_array_pair_list;
 non terminal Expression expr;
 non terminal Expression expr_without_class_instance;
+non terminal Expression yield_expr;
+non terminal Expression parenthesis_expr;
 non terminal Variable reference_variable;
 non terminal Variable variable_class_name;
 non terminal Variable compound_variable;
@@ -371,6 +376,10 @@ non terminal UseTraitStatementPart use_trait;
 non terminal Quote heredoc;
 non terminal VariableBase field_or_method_access;
 non terminal VariableBase function_call_with_array;
+non terminal Expression expression_array_access;
+non terminal Expression static_array_creation;
+non terminal Expression array_creation;
+non terminal Expression array_creation_with_access;
 
 non terminal VariableBase w_variable;
 non terminal Expression class_name;
@@ -387,6 +396,7 @@ non terminal VariableBase variable;
 non terminal List additional_catches;
 non terminal List non_empty_additional_catches;
 non terminal CatchClause additional_catch;
+non terminal FinallyClause additional_finally;
 non terminal FunctionDeclaration unticked_function_declaration_statement;
 non terminal Statement unticked_class_declaration_statement;
 non terminal ClassDeclaration.Modifier class_entry_type;
@@ -751,6 +761,12 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 	RESULT = new ReturnStatement(tokenleft, endright, expr);
 :}
 
+| yield_expr:expr T_SEMICOLON:end
+{:
+    ExpressionStatement expressionStatement = new ExpressionStatement(exprleft, endright, expr);
+	RESULT = expressionStatement;
+:}
+
 | T_GLOBAL:start global_var_list:list T_SEMICOLON:end
 {:
 	GlobalStatement  global = new GlobalStatement(startleft, endright, list);
@@ -800,7 +816,7 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 	RESULT = expressionStatement;
 :}
 
-| T_FOREACH:token T_OPEN_PARENTHESE variable:expr T_AS foreach_variable:var foreach_optional_arg:arg T_CLOSE_PARENTHESE foreach_statement:statement
+| T_FOREACH:token T_OPEN_PARENTHESE variable:expr T_AS foreach_variable_or_list:var foreach_optional_arg:arg T_CLOSE_PARENTHESE foreach_statement:statement
 {:
 	ForEachStatement forEachStatement = null;
 	if (arg == null) {
@@ -834,13 +850,14 @@ T_CURLY_OPEN:token inner_statement_list:statementList T_CURLY_CLOSE:end
 :}
 
 | T_TRY:start T_CURLY_OPEN:tryBlockStart inner_statement_list:tryList T_CURLY_CLOSE:tryBlockEnd T_CATCH:catch_word T_OPEN_PARENTHESE fully_qualified_class_name:className tracked_variable:var T_CLOSE_PARENTHESE
-T_CURLY_OPEN:catchBlockStart inner_statement_list:catchList T_CURLY_CLOSE:catchBlockEnd additional_catches:catchesList
+T_CURLY_OPEN:catchBlockStart inner_statement_list:catchList T_CURLY_CLOSE:catchBlockEnd additional_catches:catchesList additional_finally:finallyBlock
 {:
 	Block tryBlock = new Block(tryBlockStartleft, tryBlockEndright, tryList);
 	Block catchBlock = new Block(catchBlockStartleft, catchBlockEndright, catchList);
 	CatchClause catchClause = new CatchClause(catch_wordleft, catchBlockEndright, className, var, catchBlock);
 	((LinkedList) catchesList).addFirst(catchClause);
-	TryStatement tryStatement = new TryStatement(startleft, catchesListright, tryBlock, catchesList);
+    int end = finallyBlock == null ? catchesListright : finallyBlockright;
+	TryStatement tryStatement = new TryStatement(startleft, end, tryBlock, catchesList, finallyBlock);
 	RESULT = tryStatement;
 :}
 
@@ -901,6 +918,20 @@ T_CATCH:catch_word T_OPEN_PARENTHESE fully_qualified_class_name:className T_VARI
 	Variable variable = new Variable(varleft, varright, var);
 	CatchClause catchClause = new CatchClause(catch_wordleft, catchBlockEndright, className, variable, catchBlock);
 	RESULT = catchClause;
+:}
+;
+
+additional_finally ::=
+ /* empty */
+{:
+    RESULT = null;
+:}
+
+| T_FINALLY:finally_word T_CURLY_OPEN:finallyBlockStart inner_statement_list:finallyList T_CURLY_CLOSE:finallyBlockEnd
+{:
+    Block finallyBlock = new Block(finallyBlockStartleft, finallyBlockEndright, finallyList);
+	FinallyClause finallyClause = new FinallyClause(finally_wordleft, finallyBlockEndright, finallyBlock);
+	RESULT = finallyClause;
 :}
 ;
 
@@ -1181,6 +1212,19 @@ foreach_optional_arg ::=
 :}
 ;
 
+foreach_variable_or_list ::=
+foreach_variable:foreachVar
+{:
+	RESULT = foreachVar;
+:}
+
+| T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:end
+{:
+	ListVariable vars = new ListVariable(startleft, endright, varList);
+	RESULT = vars;
+:}
+;
+
 foreach_variable ::=
 variable:var
 {:
@@ -1192,7 +1236,6 @@ variable:var
 	Reference reference = new Reference (startleft, varright, var);
 	RESULT = reference;
 :}
-
 ;
 
 for_statement ::=
@@ -2361,10 +2404,9 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 	RESULT = new InstanceOfExpression(exprleft, classNameright, expr , className);
 :}
 
-| T_OPEN_PARENTHESE:start expr_without_class_instance:expr T_CLOSE_PARENTHESE:end
+| parenthesis_expr:expr
 {:
-    ParenthesisExpression parenthesisExpression = new ParenthesisExpression(startleft, endright, expr);
-    RESULT = parenthesisExpression;
+    RESULT = expr;
 :}
 
 | expr:condition T_QUESTION_MARK expr:ifTrue T_NEKUDOTAIM expr:ifFalse
@@ -2440,16 +2482,9 @@ T_LIST:start T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close 
 	RESULT = scalar;
 :}
 
-| T_ARRAY:start T_OPEN_PARENTHESE array_pair_list:list T_CLOSE_PARENTHESE:end
+| array_creation:array
 {:
-	Expression expr = new ArrayCreation(startleft, endright, list);
-	RESULT = expr;
-:}
-
-| T_OPEN_RECT:start array_pair_list:list T_CLOSE_RECT:end
-{:
-    Expression expr = new ArrayCreation(startleft, endright, list);
-	RESULT = expr;
+	RESULT = array;
 :}
 
 | T_BACKQUATE:start encaps_list:list T_BACKQUATE:end
@@ -2484,6 +2519,11 @@ T_CURLY_OPEN:blockStart inner_statement_list:list T_CURLY_CLOSE:blockEnd
 {:
 	RESULT = new LambdaFunctionDeclaration(sleft, blockEndright, paramList, varsList,
 		new Block(blockStartleft, blockEndright, list), isReference.booleanValue(), true);
+:}
+
+| expression_array_access:eaa
+{:
+    RESULT = eaa;
 :}
 ;
 
@@ -2859,16 +2899,9 @@ static_scalar_without_array:scalar
 	RESULT = scalar;
 :}
 
-| T_ARRAY:start T_OPEN_PARENTHESE static_array_pair_list:list T_CLOSE_PARENTHESE:end
+| static_array_creation:arr
 {:
-	ArrayCreation array = new ArrayCreation(startleft, endright, list);
-	RESULT = array;
-:}
-
-| T_OPEN_RECT:start static_array_pair_list:list T_CLOSE_RECT:end
-{:
-	ArrayCreation array = new ArrayCreation(startleft, endright, list);
-	RESULT = array;
+	RESULT = arr;
 :}
 ;
 
@@ -2983,6 +3016,47 @@ non_empty_static_array_pair_list:list T_COMMA static_scalar:key T_DOUBLE_ARROW s
 	ArrayElement element = new ArrayElement(valueleft, valueright, value);
 	list.add(element);
 	RESULT = list;
+:}
+;
+
+parenthesis_expr ::=
+T_OPEN_PARENTHESE:start expr_without_class_instance:expr T_CLOSE_PARENTHESE:end
+{:
+    ParenthesisExpression parenthesisExpression = new ParenthesisExpression(startleft, endright, expr);
+    RESULT = parenthesisExpression;
+:}
+
+| T_OPEN_PARENTHESE:start yield_expr:expr T_CLOSE_PARENTHESE:end
+{:
+    ParenthesisExpression parenthesisExpression = new ParenthesisExpression(startleft, endright, expr);
+    RESULT = parenthesisExpression;
+:}
+;
+
+yield_expr ::=
+T_YIELD:s
+{:
+    RESULT = new YieldExpression(sleft, sright, null);
+:}
+
+| T_YIELD:s expr_without_variable:ewv
+{:
+    RESULT = new YieldExpression(sleft, ewvright, ewv);
+:}
+
+| T_YIELD:s variable:var
+{:
+    RESULT = new YieldExpression(sleft, varright, var);
+:}
+
+| T_YIELD:s expr:e T_DOUBLE_ARROW expr_without_variable:ewv
+{:
+    RESULT = new YieldExpression(sleft, ewvright, e, ewv);
+:}
+
+| T_YIELD:s expr:e T_DOUBLE_ARROW variable:var
+{:
+    RESULT = new YieldExpression(sleft, varright, e, var);
 :}
 ;
 
@@ -3183,6 +3257,68 @@ function_call:var T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 | function_call_with_array:var T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
 {:
     RESULT = new DereferencedArrayAccess(varleft, endright, var, new ArrayDimension(oleft, endright, index));
+:}
+;
+
+expression_array_access ::=
+T_STRING:str T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+    RESULT = new ExpressionArrayAccess(strleft, endright, new Identifier(strleft, strright, str), new ArrayDimension(oleft, endright, index));
+:}
+
+| T_ENCAPSED_AND_WHITESPACE:str T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+    RESULT = new ExpressionArrayAccess(strleft, endright, new Identifier(strleft, strright, str), new ArrayDimension(oleft, endright, index));
+:}
+
+| T_CONSTANT_ENCAPSED_STRING:str T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+    RESULT = new ExpressionArrayAccess(strleft, endright, new Identifier(strleft, strright, str), new ArrayDimension(oleft, endright, index));
+:}
+
+| array_creation_with_access:arr
+{:
+    RESULT = arr;
+:}
+;
+
+array_creation_with_access ::=
+array_creation:arr T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+    RESULT = new ExpressionArrayAccess(arrleft, endright, arr, new ArrayDimension(oleft, endright, index));
+:}
+
+| array_creation_with_access:acc T_OPEN_RECT:o dim_offset:index T_CLOSE_RECT:end
+{:
+    RESULT = new ExpressionArrayAccess(accleft, endright, acc, new ArrayDimension(oleft, endright, index));
+:}
+;
+
+array_creation ::=
+T_ARRAY:start T_OPEN_PARENTHESE array_pair_list:list T_CLOSE_PARENTHESE:end
+{:
+	Expression expr = new ArrayCreation(startleft, endright, list);
+	RESULT = expr;
+:}
+
+| T_OPEN_RECT:start array_pair_list:list T_CLOSE_RECT:end
+{:
+    Expression expr = new ArrayCreation(startleft, endright, list);
+	RESULT = expr;
+:}
+;
+
+static_array_creation ::=
+T_ARRAY:start T_OPEN_PARENTHESE static_array_pair_list:list T_CLOSE_PARENTHESE:end
+{:
+	Expression array = new ArrayCreation(startleft, endright, list);
+	RESULT = array;
+:}
+
+| T_OPEN_RECT:start static_array_pair_list:list T_CLOSE_RECT:end
+{:
+	Expression array = new ArrayCreation(startleft, endright, list);
+	RESULT = array;
 :}
 ;
 

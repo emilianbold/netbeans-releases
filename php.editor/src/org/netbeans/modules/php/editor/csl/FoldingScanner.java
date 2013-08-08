@@ -68,6 +68,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Comment;
 import org.netbeans.modules.php.editor.parser.astnodes.DoStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.EmptyStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Expression;
+import org.netbeans.modules.php.editor.parser.astnodes.FinallyClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.IfStatement;
@@ -316,6 +317,14 @@ public final class FoldingScanner {
 
         @Override
         public void visit(CatchClause node) {
+            super.visit(node);
+            if (node.getBody() != null) {
+                addFold(node.getBody());
+            }
+        }
+
+        @Override
+        public void visit(FinallyClause node) {
             super.visit(node);
             if (node.getBody() != null) {
                 addFold(node.getBody());
