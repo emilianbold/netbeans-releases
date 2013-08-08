@@ -114,17 +114,16 @@ public class HtmlTypingHooksTest extends TestBase {
         ctx.assertDocumentTextEquals("<a id=\"\"|>");
     }
 
-     //XXX fix me - css intercepts here
-//     public void testSkipClosingQuoteInNonEmptyClassAndId() {
-//        Context ctx = new Context(new HtmlKit(), "<a class=\"xx|\">");
-//        ctx.typeChar('"');
-//        ctx.assertDocumentTextEquals("<a class=\"xx\"|>");
-//        
-//        ctx = new Context(new HtmlKit(), "<a id=\"yy|\">");
-//        ctx.typeChar('"');
-//        ctx.assertDocumentTextEquals("<a id=\"yy\"|>");
-//    }
-     
+     public void testSkipClosingQuoteInNonEmptyClassAndId() {
+        Typing ctx = new Typing(new HtmlKit(), "<a class=\"xx|\">");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("<a class=\"xx\"|>");
+        
+        ctx = new Typing(new HtmlKit(), "<a id=\"yy|\">");
+        ctx.typeChar('"');
+        ctx.assertDocumentTextEquals("<a id=\"yy\"|>");
+    }
+          
      //XXX fixme - <div + "> => will autopopup the closing tag, but once completed,
      //the closing tag is not indented properly -- fix in HtmlTypedBreakInterceptor
       
@@ -208,19 +207,13 @@ public class HtmlTypingHooksTest extends TestBase {
         ctx.assertDocumentTextEquals("<a align=\"x\"\"|");
     }
 
-
-    //XXX fix me - css intercepts here
-//    public void testAutocompleteDoubleQuoteOnlyAfterEQInClass() {
-//        Context ctx = new Context(new HtmlKit(), "<a class|");
-//        ctx.typeChar('=');
-//        ctx.assertDocumentTextEquals("<a class=\"|\"");
-//        ctx.typeChar('x');
-//        ctx.assertDocumentTextEquals("<a class=\"x|\"");
-//        ctx.typeChar('"');
-//        ctx.assertDocumentTextEquals("<a class=\"x\"|");
-//        ctx.typeChar('"');
-//        ctx.assertDocumentTextEquals("<a class=\"x\"\"|");
-//    }
+    public void testAutocompleteDoubleQuoteOnlyAfterEQInClass() {
+        Typing ctx = new Typing(new HtmlKit(), "<a class|");
+        ctx.typeChar('=');
+        ctx.assertDocumentTextEquals("<a class=\"|\"");
+        ctx.typeChar('x');
+        ctx.assertDocumentTextEquals("<a class=\"x|\"");
+    }
 
     public void testAutocompleteSingleQuoteOnlyAfterEQ() {
         Typing ctx = new Typing(new HtmlKit(), "<a align|");
@@ -236,20 +229,13 @@ public class HtmlTypingHooksTest extends TestBase {
         ctx.assertDocumentTextEquals("<a align='x''|");
     }
 
-    //XXX fix me - css intercepts here
-//     public void testAutocompleteSingleQuoteOnlyAfterEQInClass() {
-//        Context ctx = new Context(new HtmlKit(), "<a class|");
-//        ctx.typeChar('=');
-//        ctx.assertDocumentTextEquals("<a class=\"|\"");
-//        ctx.typeChar('\'');
-//        ctx.assertDocumentTextEquals("<a class='|'");
-//        ctx.typeChar('x');
-//        ctx.assertDocumentTextEquals("<a class='x|'");
-//        ctx.typeChar('\'');
-//        ctx.assertDocumentTextEquals("<a class='x'|");
-//        ctx.typeChar('\'');
-//        ctx.assertDocumentTextEquals("<a class='x''|");
-//    }
+     public void testSwitchAutocompletedQuoteTypeClass() {
+        Typing ctx = new Typing(new HtmlKit(), "<a class|");
+        ctx.typeChar('=');
+        ctx.assertDocumentTextEquals("<a class=\"|\"");
+        ctx.typeChar('\'');
+        ctx.assertDocumentTextEquals("<a class='|'");
+    }
 
     
     public void testDeleteAutocompletedQuote() {
