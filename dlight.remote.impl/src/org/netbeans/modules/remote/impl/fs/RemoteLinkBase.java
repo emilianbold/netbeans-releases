@@ -161,12 +161,12 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     @Override
-    public InputStream getInputStream() throws FileNotFoundException {
+    public InputStream getInputStream(boolean checkLock) throws FileNotFoundException {
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate == null) {
             throw fileNotFoundException("read"); //NOI18N
         }
-        return delegate.getInputStream();
+        return delegate.getInputStream(checkLock);
     }
 
     @Override

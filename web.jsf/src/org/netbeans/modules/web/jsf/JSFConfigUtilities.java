@@ -80,8 +80,6 @@ import org.netbeans.modules.web.jsf.api.metamodel.Component;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesConverter;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelProvider;
-import org.netbeans.modules.web.jsf.impl.metamodel.JsfModelProviderImpl;
 import org.netbeans.modules.web.jsf.api.metamodel.Renderer;
 import org.netbeans.modules.web.jsf.api.metamodel.Validator;
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
@@ -169,8 +167,7 @@ public class JSFConfigUtilities {
             if (!preferences.get(JSF_PRESENT_PROPERTY, "").equals("true")) {
                 long time = System.currentTimeMillis();
                 try {
-                    JsfModelProvider modelProvider = project.getLookup().lookup(JsfModelProvider.class);
-                    MetadataModel<JsfModel> model = modelProvider.getModel();
+                    MetadataModel<JsfModel> model = JSFUtils.getModel(project);
                     if (model == null) {
                         return false;
                     }

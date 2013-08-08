@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor;
 
+import org.netbeans.modules.php.editor.csl.PHPLanguage;
 import java.util.logging.Filter;
 import java.util.logging.Handler;
 import java.util.logging.LogRecord;

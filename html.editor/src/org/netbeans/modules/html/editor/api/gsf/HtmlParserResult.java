@@ -49,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.lib.api.HtmlParsingResult;
@@ -86,9 +87,9 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
      * Used as a key of a swing document to find a default fallback dtd.
      */
     public static final String FALLBACK_DTD_PROPERTY_NAME = "fallbackDTD";
-    private SyntaxAnalyzerResult result;
+    private final SyntaxAnalyzerResult result;
     private List<Error> errors;
-    private boolean isValid = true;
+    private final AtomicBoolean isValid = new AtomicBoolean(true);
 
     private HtmlParserResult(SyntaxAnalyzerResult result) {
         super(result.getSource().getSnapshot());
@@ -105,7 +106,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
      * @return true for valid result, false otherwise.
      */
     public boolean isValid() {
-        return this.isValid;
+        return isValid.get();
     }
 
     /**
@@ -115,6 +116,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
      * 2) if not present, xhtml file extension
      * 3) if not xhtml extension, present of default XHTML namespace declaration
      *
+     * @return instance of {@link HtmlVersion}
      */
     @Override
     public HtmlVersion getHtmlVersion() {
@@ -152,7 +154,10 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
         return null;
     }
 
-    /** returns a parse tree for non-html content */
+    /** 
+     * @param namespace
+     * @return  a parse tree for non-html content 
+     */
     @Override
     public Node root(String namespace) {
         try {
@@ -165,7 +170,9 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
         return null;
     }
 
-    /** returns a map of all namespaces to astnode roots.*/
+    /** 
+     * @return a map of all namespaces to astnode roots
+     */
     @Override
     public Map<String, Node> roots() {
         Map<String, Node> roots = new HashMap<>();
@@ -182,7 +189,9 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
 
     }
 
-    /**declared uri to prefix map */
+    /**
+     * @return a map of declared uri to prefix map 
+     */
     @Override
     public Map<String, String> getNamespaces() {
         return result.getDeclaredNamespaces();
@@ -244,7 +253,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
 
     @Override
     protected void invalidate() {
-        this.isValid = false;
+        isValid.set(false);
     }
 
     public List<Error> getDiagnostics(Set<Severity> severities) {
@@ -292,7 +301,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
             List<Error> errs = new ArrayList<>();
             int[] positions = maskedAreas.positions();
             int[] lens = maskedAreas.lens();
-            problems: for (ProblemDescription pd : res.getProblems()) {
+            for (ProblemDescription pd : res.getProblems()) {
                 int from = pd.getFrom();
                 int to = pd.getTo();
                 
@@ -305,7 +314,7 @@ public class HtmlParserResult extends ParserResult implements HtmlParsingResult 
                     int pos = positions[idx];
                     if(pos + lens[idx] <= to) {
                         //match - filter out
-                        continue problems;
+                        continue;
                     }
                 }
                 

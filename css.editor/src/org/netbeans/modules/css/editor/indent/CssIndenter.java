@@ -45,6 +45,7 @@ package org.netbeans.modules.css.editor.indent;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Stack;
 import javax.swing.text.BadLocationException;
 import org.netbeans.api.lexer.Token;
@@ -276,6 +277,25 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
                         //  }
                         //
                         item = blockStack.pop();
+                    } else if (item.state == StackItemState.RULE_FINISHED) {
+                        //SASS/LESS: nested rules: 
+                        //div { .clz { ... } }
+                        // if top state is RULE_FINISHED then remove the IN_RULE state
+                        // underneath
+                        // as unlimited number of rules might be nested, we need
+                        // to find the closest IN_RULE item in the stack preceeded
+                        // by RULE_FINISHED items
+                        ListIterator<CssStackItem> listIterator = blockStack.listIterator();
+                        while(listIterator.hasNext()) {
+                            CssStackItem stackItem = listIterator.next();
+                            if(stackItem.state == StackItemState.IN_RULE) {
+                                item = stackItem;
+                                listIterator.remove();
+                                break;
+                            }
+                        }
+                        
+                        blockStack.push(new CssStackItem(StackItemState.RULE_FINISHED));
                     }
                     assert item.state == StackItemState.IN_RULE : item;
                     if (ts.offset() == context.getLineNonWhiteStartOffset()) {

@@ -396,6 +396,263 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         //</editor-fold>
     }
     
+    public void testGenericSuperClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void usage() {\n"
+                + "        ExtendsGeneric e = new ExtendsGeneric();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/ExtendsGeneric.java", "package t;\n"
+                + "public class ExtendsGeneric extends MyGeneric<String>{\n"
+                + "\n"
+                + "}"),
+                new File("t/MyGeneric.java", "package t;\n"
+                + "public class MyGeneric<T> {\n"
+                + "    public T get(T in) {\n"
+                + "        return in;\n"
+                + "    }\n"
+                + "}"));
+        performIntroduceLocalExtension("LocalExt", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "    public void usage() {\n"
+                + "        LocalExt e = new LocalExt();\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/ExtendsGeneric.java", "package t;\n"
+                + "public class ExtendsGeneric extends MyGeneric<String>{\n"
+                + "\n"
+                + "}"),
+                new File("t/MyGeneric.java", "package t;\n"
+                + "public class MyGeneric<T> {\n"
+                + "    public T get(T in) {\n"
+                + "        return in;\n"
+                + "    }\n"
+                + "}"),
+                new File("t/LocalExt.java", "/*\n"
+                + " * Refactoring License\n"
+                + " */\n"
+                + "\n"
+                + "package t;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class LocalExt {\n"
+                + "    private ExtendsGeneric delegate;\n"
+                + "\n"
+                + "    public LocalExt(ExtendsGeneric delegate) {\n"
+                + "        this.delegate = delegate;\n"
+                + "    }\n"
+                + "\n"
+                + "    public LocalExt() {\n"
+                + "        this.delegate = new ExtendsGeneric();\n"
+                + "    }\n"
+                + "\n"
+                + "    public String get(String in) {\n"
+                + "        return delegate.get(in);\n"
+                + "    }\n"
+                + "\n"
+                + "    public boolean equals(Object o) {\n"
+                + "        Object target = o;\n"
+                + "        if (o instanceof LocalExt) {\n"
+                + "            target = ((LocalExt) o).delegate;\n"
+                + "        }\n"
+                + "        return this.delegate.equals(target);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int hashCode() {\n"
+                + "        return this.delegate.hashCode();\n"
+                + "    }\n"
+                + "}\n"));
+    }
+    
+    public void testStaticInnerClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "public class A {\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        Inner e = new Inner();\n"
+                + "    }\n"
+                + "\n"
+                + "    public static class Inner {\n"
+                + "    }\n"
+                + "}\n"));
+        performIntroduceLocalExtension("LocalExt", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+        verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "public class A {\n"
+                + "\n"
+                + "    public void usage() {\n"
+                + "        LocalExt e = new LocalExt();\n"
+                + "    }\n"
+                + "\n"
+                + "    public static class Inner {\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/LocalExt.java", "/*\n"
+                + " * Refactoring License\n"
+                + " */\n"
+                + "\n"
+                + "package t;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class LocalExt {\n"
+                + "    private A.Inner delegate;\n"
+                + "\n"
+                + "    public LocalExt(A.Inner delegate) {\n"
+                + "        this.delegate = delegate;\n"
+                + "    }\n"
+                + "\n"
+                + "    public LocalExt() {\n"
+                + "        this.delegate = new A.Inner();\n"
+                + "    }\n"
+                + "\n"
+                + "    public boolean equals(Object o) {\n"
+                + "        Object target = o;\n"
+                + "        if (o instanceof LocalExt) {\n"
+                + "            target = ((LocalExt) o).delegate;\n"
+                + "        }\n"
+                + "        return this.delegate.equals(target);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int hashCode() {\n"
+                + "        return this.delegate.hashCode();\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"));
+    }
+    
+    public void testGenericClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/Generics.java", "package t;\n"
+                + "\n"
+                + "public class Generics<T> {\n"
+                + "    public T get(T in) {\n"
+                + "        return in;\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        Generics<String> g = new Generics<>();\n"
+                + "        String get = g.get(\"\");\n"
+                + "    }\n"
+                + "}"));
+        performIntroduceLocalExtension("Generics1", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE);
+                verifyContent(src,
+                new File("t/Generics.java", "package t;\n"
+                + "\n"
+                + "public class Generics<T> {\n"
+                + "    public T get(T in) {\n"
+                + "        return in;\n"
+                + "    }\n"
+                + "}\n"),
+                new File("t/A.java", "package t;\n"
+                + "public class A {\n"
+                + "\n"
+                + "    public void foo() {\n"
+                + "        Generics1<String> g = new Generics1<>();\n"
+                + "        String get = g.get(\"\");\n"
+                + "    }\n"
+                + "}"),
+                new File("t/Generics1.java", "/*\n"
+                + " * Refactoring License\n"
+                + " */\n"
+                + "\n"
+                + "package t;\n"
+                + "\n"
+                + "/**\n"
+                + " *\n"
+                + " * @author junit\n"
+                + " */\n"
+                + "public class Generics1<T> {\n"
+                + "    private Generics<T> delegate;\n"
+                + "\n"
+                + "    public Generics1(Generics<T> delegate) {\n"
+                + "        this.delegate = delegate;\n"
+                + "    }\n"
+                + "\n"
+                + "    public Generics1() {\n"
+                + "        this.delegate = new Generics<T>();\n"
+                + "    }\n"
+                + "\n"
+                + "    public T get(T in) {\n"
+                + "        return delegate.get(in);\n"
+                + "    }\n"
+                + "\n"
+                + "    public boolean equals(Object o) {\n"
+                + "        Object target = o;\n"
+                + "        if (o instanceof Generics1) {\n"
+                + "            target = ((Generics1) o).delegate;\n"
+                + "        }\n"
+                + "        return this.delegate.equals(target);\n"
+                + "    }\n"
+                + "\n"
+                + "    public int hashCode() {\n"
+                + "        return this.delegate.hashCode();\n"
+                + "    }\n"
+                + "\n"
+                + "}\n"));
+    }
+    
+    public void testInnerClass() throws Exception {
+        writeFilesAndWaitForScan(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "        LocalExtension le = new LocalExtension();\n"
+                + "        LocalExtension.InnerStatic innerStatic = null;\n"
+                + "        LocalExtension.Inner inner = le.new Inner();\n"
+                + "    }\n"
+                + "\n"
+                + "    private enum En { A, B, C, D, E };\n"
+                + "}"),
+                new File("t/LocalExtension.java", "package t;\n"
+                + "public class LocalExtension {\n"
+                + "\n"
+                + "    static class InnerStatic {\n"
+                + "    }\n"
+                + "\n"
+                + "    class Inner {\n"
+                + "    }\n"
+                + "}"));
+        performIntroduceLocalExtension("EnM", true, true, "t", IntroduceLocalExtensionRefactoring.Equality.DELEGATE, new Problem(true, "ERR_IntroduceLEInnerType"));
+                verifyContent(src,
+                new File("t/A.java", "package t;\n"
+                + "\n"
+                + "public class A {\n"
+                + "    public void foo() {\n"
+                + "        LocalExtension le = new LocalExtension();\n"
+                + "        LocalExtension.InnerStatic innerStatic = null;\n"
+                + "        LocalExtension.Inner inner = le.new Inner();\n"
+                + "    }\n"
+                + "\n"
+                + "    private enum En { A, B, C, D, E };\n"
+                + "}"),
+                new File("t/LocalExtension.java", "package t;\n"
+                + "public class LocalExtension {\n"
+                + "\n"
+                + "    static class InnerStatic {\n"
+                + "    }\n"
+                + "\n"
+                + "    class Inner {\n"
+                + "    }\n"
+                + "}"));
+    }
+    
     public void testEnum() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("t/A.java", "package t;\n"
@@ -485,60 +742,60 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 + "        this.delegate = new Date();\n"
                 + "    }\n"
                 + "\n"
-                + "    public DateExt(long date) {\n"
-                + "        this.delegate = new Date(date);\n"
+                + "    public DateExt(long arg0) {\n"
+                + "        this.delegate = new Date(arg0);\n"
                 + "    }\n"
                 + "\n"
-                + "    public DateExt(int year, int month, int date) {\n"
-                + "        this.delegate = new Date(year, month, date);\n"
+                + "    public DateExt(int arg0, int arg1, int arg2) {\n"
+                + "        this.delegate = new Date(arg0, arg1, arg2);\n"
                 + "    }\n"
                 + "\n"
-                + "    public DateExt(int year, int month, int date, int hrs, int min) {\n"
-                + "        this.delegate = new Date(year, month, date, hrs, min);\n"
+                + "    public DateExt(int arg0, int arg1, int arg2, int arg3, int arg4) {\n"
+                + "        this.delegate = new Date(arg0, arg1, arg2, arg3, arg4);\n"
                 + "    }\n"
                 + "\n"
-                + "    public DateExt(int year, int month, int date, int hrs, int min, int sec) {\n"
-                + "        this.delegate = new Date(year, month, date, hrs, min, sec);\n"
+                + "    public DateExt(int arg0, int arg1, int arg2, int arg3, int arg4, int arg5) {\n"
+                + "        this.delegate = new Date(arg0, arg1, arg2, arg3, arg4, arg5);\n"
                 + "    }\n"
                 + "\n"
-                + "    public DateExt(String s) {\n"
-                + "        this.delegate = new Date(s);\n"
+                + "    public DateExt(String arg0) {\n"
+                + "        this.delegate = new Date(arg0);\n"
                 + "    }\n"
                 + "\n"
                 + "    public Object clone() {\n"
                 + "        return delegate.clone();\n"
                 + "    }\n"
                 + "\n"
-                + "    public static long UTC(int year, int month, int date, int hrs, int min, int sec) {\n"
-                + "        return Date.UTC(year, month, date, hrs, min, sec);\n"
+                + "    public static long UTC(int i, int i1, int i2, int i3, int i4, int i5) {\n"
+                + "        return Date.UTC(i, i1, i2, i3, i4, i5);\n"
                 + "    }\n"
                 + "\n"
-                + "    public static long parse(String s) {\n"
-                + "        return Date.parse(s);\n"
+                + "    public static long parse(String string) {\n"
+                + "        return Date.parse(string);\n"
                 + "    }\n"
                 + "\n"
                 + "    public int getYear() {\n"
                 + "        return delegate.getYear();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setYear(int year) {\n"
-                + "        delegate.setYear(year);\n"
+                + "    public void setYear(int i) {\n"
+                + "        delegate.setYear(i);\n"
                 + "    }\n"
                 + "\n"
                 + "    public int getMonth() {\n"
                 + "        return delegate.getMonth();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setMonth(int month) {\n"
-                + "        delegate.setMonth(month);\n"
+                + "    public void setMonth(int i) {\n"
+                + "        delegate.setMonth(i);\n"
                 + "    }\n"
                 + "\n"
                 + "    public int getDate() {\n"
                 + "        return delegate.getDate();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setDate(int date) {\n"
-                + "        delegate.setDate(date);\n"
+                + "    public void setDate(int i) {\n"
+                + "        delegate.setDate(i);\n"
                 + "    }\n"
                 + "\n"
                 + "    public int getDay() {\n"
@@ -549,44 +806,44 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 + "        return delegate.getHours();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setHours(int hours) {\n"
-                + "        delegate.setHours(hours);\n"
+                + "    public void setHours(int i) {\n"
+                + "        delegate.setHours(i);\n"
                 + "    }\n"
                 + "\n"
                 + "    public int getMinutes() {\n"
                 + "        return delegate.getMinutes();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setMinutes(int minutes) {\n"
-                + "        delegate.setMinutes(minutes);\n"
+                + "    public void setMinutes(int i) {\n"
+                + "        delegate.setMinutes(i);\n"
                 + "    }\n"
                 + "\n"
                 + "    public int getSeconds() {\n"
                 + "        return delegate.getSeconds();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setSeconds(int seconds) {\n"
-                + "        delegate.setSeconds(seconds);\n"
+                + "    public void setSeconds(int i) {\n"
+                + "        delegate.setSeconds(i);\n"
                 + "    }\n"
                 + "\n"
                 + "    public long getTime() {\n"
                 + "        return delegate.getTime();\n"
                 + "    }\n"
                 + "\n"
-                + "    public void setTime(long time) {\n"
-                + "        delegate.setTime(time);\n"
+                + "    public void setTime(long l) {\n"
+                + "        delegate.setTime(l);\n"
                 + "    }\n"
                 + "\n"
-                + "    public boolean before(DateExt when) {\n"
-                + "        return delegate.before(when.delegate);\n"
+                + "    public boolean before(DateExt date) {\n"
+                + "        return delegate.before(date.delegate);\n"
                 + "    }\n"
                 + "\n"
-                + "    public boolean after(DateExt when) {\n"
-                + "        return delegate.after(when.delegate);\n"
+                + "    public boolean after(DateExt date) {\n"
+                + "        return delegate.after(date.delegate);\n"
                 + "    }\n"
                 + "\n"
-                + "    public int compareTo(DateExt anotherDate) {\n"
-                + "        return delegate.compareTo(anotherDate.delegate);\n"
+                + "    public int compareTo(DateExt date) {\n"
+                + "        return delegate.compareTo(date.delegate);\n"
                 + "    }\n"
                 + "\n"
                 + "    public String toString() {\n"
@@ -654,7 +911,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     * Create a new SingleList. This list will hold only one element.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList() {")
-                .append("\n").append("        this.delegate = new SingleList();")
+                .append("\n").append("        this.delegate = new SingleList<E>();")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
@@ -662,7 +919,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     * @param element the element for this list.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList(E element) {")
-                .append("\n").append("        this.delegate = new SingleList(element);")
+                .append("\n").append("        this.delegate = new SingleList<E>(element);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
@@ -679,16 +936,16 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        this.delegate.someMagicNumber = someMagicNumber;")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public boolean containsAll(Collection<?> c) {")
-                .append("\n").append("        return delegate.containsAll(c);")
+                .append("\n").append("    public boolean containsAll(Collection<?> clctn) {")
+                .append("\n").append("        return delegate.containsAll(clctn);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public boolean removeAll(Collection<?> c) {")
-                .append("\n").append("        return delegate.removeAll(c);")
+                .append("\n").append("    public boolean removeAll(Collection<?> clctn) {")
+                .append("\n").append("        return delegate.removeAll(clctn);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public boolean retainAll(Collection<?> c) {")
-                .append("\n").append("        return delegate.retainAll(c);")
+                .append("\n").append("    public boolean retainAll(Collection<?> clctn) {")
+                .append("\n").append("        return delegate.retainAll(clctn);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    public String toString() {")
@@ -703,12 +960,12 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        return delegate.listIterator();")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public ListIterator<E> listIterator(int index) {")
-                .append("\n").append("        return delegate.listIterator(index);")
+                .append("\n").append("    public ListIterator<E> listIterator(int i) {")
+                .append("\n").append("        return delegate.listIterator(i);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public List<E> subList(int fromIndex, int toIndex) {")
-                .append("\n").append("        return delegate.subList(fromIndex, toIndex);")
+                .append("\n").append("    public List<E> subList(int i, int i1) {")
+                .append("\n").append("        return delegate.subList(i, i1);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
@@ -1053,7 +1310,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     * Create a new SingleList. This list will hold only one element.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList() {")
-                .append("\n").append("        this.delegate = new SingleList();")
+                .append("\n").append("        this.delegate = new SingleList<E>();")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
@@ -1061,7 +1318,7 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("     * @param element the element for this list.")
                 .append("\n").append("     */")
                 .append("\n").append("    public MyList(E element) {")
-                .append("\n").append("        this.delegate = new SingleList(element);")
+                .append("\n").append("        this.delegate = new SingleList<E>(element);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("    /**")
                 .append("\n").append("     * @return the someMagicNumber")
@@ -1077,16 +1334,16 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        this.delegate.someMagicNumber = someMagicNumber;")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public boolean containsAll(Collection<?> c) {")
-                .append("\n").append("        return delegate.containsAll(c);")
+                .append("\n").append("    public boolean containsAll(Collection<?> clctn) {")
+                .append("\n").append("        return delegate.containsAll(clctn);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public boolean removeAll(Collection<?> c) {")
-                .append("\n").append("        return delegate.removeAll(c);")
+                .append("\n").append("    public boolean removeAll(Collection<?> clctn) {")
+                .append("\n").append("        return delegate.removeAll(clctn);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public boolean retainAll(Collection<?> c) {")
-                .append("\n").append("        return delegate.retainAll(c);")
+                .append("\n").append("    public boolean retainAll(Collection<?> clctn) {")
+                .append("\n").append("        return delegate.retainAll(clctn);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    public String toString() {")
@@ -1101,12 +1358,12 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
                 .append("\n").append("        return delegate.listIterator();")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public ListIterator<E> listIterator(int index) {")
-                .append("\n").append("        return delegate.listIterator(index);")
+                .append("\n").append("    public ListIterator<E> listIterator(int i) {")
+                .append("\n").append("        return delegate.listIterator(i);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
-                .append("\n").append("    public List<E> subList(int fromIndex, int toIndex) {")
-                .append("\n").append("        return delegate.subList(fromIndex, toIndex);")
+                .append("\n").append("    public List<E> subList(int i, int i1) {")
+                .append("\n").append("        return delegate.subList(i, i1);")
                 .append("\n").append("    }");
                 sb1.append("\n").append("")
                 .append("\n").append("    /**")
@@ -1437,16 +1694,16 @@ public class IntroduceLocalExtensionTest extends RefactoringTestBase {
         .append("\n").append(" */")
         .append("\n").append("public class ArrayList<E> extends java.util.ArrayList<E> {")
         .append("\n").append("")
-        .append("\n").append("    public ArrayList(int initialCapacity) {")
-        .append("\n").append("        super(initialCapacity);")
+        .append("\n").append("    public ArrayList(int arg0) {")
+        .append("\n").append("        super(arg0);")
         .append("\n").append("    }")
         .append("\n").append("")
         .append("\n").append("    public ArrayList() {")
         .append("\n").append("        super();")
         .append("\n").append("    }")
         .append("\n").append("")
-        .append("\n").append("    public ArrayList(Collection<? extends E> c) {")
-        .append("\n").append("        super(c);")
+        .append("\n").append("    public ArrayList(Collection<? extends E> arg0) {")
+        .append("\n").append("        super(arg0);")
         .append("\n").append("    }")
         .append("\n").append("")
         .append("\n").append("}")

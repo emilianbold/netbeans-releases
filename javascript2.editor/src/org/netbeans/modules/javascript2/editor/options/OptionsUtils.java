@@ -62,10 +62,12 @@ public final class OptionsUtils {
 
     private static final Map<Language<JsTokenId>, OptionsUtils> INSTANCES = new WeakHashMap<Language<JsTokenId>, OptionsUtils>();
 
+    public static final String AUTO_COMPLETION_TYPE_RESOLUTION = "codeCompletionTypeResolution"; //NOI18N
     public static final String AUTO_COMPLETION_SMART_QUOTES = "codeCompletionSmartQuotes"; //NOI18N
     public static final String AUTO_STRING_CONCATINATION = "codeCompletionStringAutoConcatination"; //NOI18N
 
     // default values
+    public static final boolean AUTO_COMPLETION_TYPE_RESOLUTION_DEFAULT = true;
     public static final boolean AUTO_COMPLETION_SMART_QUOTES_DEFAULT = true;
     public static final boolean AUTO_STRING_CONCATINATION_DEFAULT = true;
 
@@ -75,6 +77,12 @@ public final class OptionsUtils {
         @Override
         public void preferenceChange(PreferenceChangeEvent evt) {
             String settingName = evt == null ? null : evt.getKey();
+
+            if (settingName == null || AUTO_COMPLETION_TYPE_RESOLUTION.equals(settingName)) {
+                autoCompletionTypeResolution = preferences.getBoolean(
+                        AUTO_COMPLETION_TYPE_RESOLUTION,
+                        AUTO_COMPLETION_TYPE_RESOLUTION_DEFAULT);
+            }
 
             if (settingName == null || AUTO_COMPLETION_SMART_QUOTES.equals(settingName)) {
                 autoCompletionSmartQuotes = preferences.getBoolean(
@@ -94,6 +102,7 @@ public final class OptionsUtils {
 
     private Preferences preferences;
 
+    private Boolean autoCompletionTypeResolution = null;
     private Boolean autoCompletionSmartQuotes = null;
     private Boolean autoStringConcatination = null;
 
@@ -113,6 +122,12 @@ public final class OptionsUtils {
     /**
      * Parameters of methods/functions apre pre-filled by preceeding declared variables.
      */
+    public boolean autoCompletionTypeResolution() {
+        lazyInit();
+        assert autoCompletionTypeResolution != null;
+        return autoCompletionTypeResolution;
+    }
+
     public boolean autoCompletionSmartQuotes() {
         lazyInit();
         assert autoCompletionSmartQuotes != null;

@@ -59,7 +59,6 @@ import javax.swing.text.Document;
 import javax.swing.text.StyledDocument;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.diff.Difference;
-import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.css.lib.api.CssParserResult;
 import org.netbeans.modules.css.lib.api.Node;
@@ -175,7 +174,7 @@ public final class Model implements PropertyChangeListener {
         this(++globalModelSerialNumber);
         Node styleSheetNode = NodeUtil.query(parserResult.getParseTree(), NodeType.styleSheet.name());
 
-        Collection<Object> lookupContent = new ArrayList<Object>();
+        Collection<Object> lookupContent = new ArrayList<>();
         if (styleSheetNode == null) {
             //empty file
             lookupContent.add(getElementFactory().createStyleSheet());
@@ -433,8 +432,8 @@ public final class Model implements PropertyChangeListener {
 
     private void applyChanges_AtomicLock(final Document document, final Difference[] diff, final OffsetConvertor convertor) throws IOException, BadLocationException {
         BaseDocument bdoc = (BaseDocument) document;
-        final AtomicReference<IOException> io_exc_ref = new AtomicReference<IOException>();
-        final AtomicReference<BadLocationException> ble_exc_ref = new AtomicReference<BadLocationException>();
+        final AtomicReference<IOException> io_exc_ref = new AtomicReference<>();
+        final AtomicReference<BadLocationException> ble_exc_ref = new AtomicReference<>();
 
         bdoc.runAtomicAsUser(new Runnable() {
             @Override

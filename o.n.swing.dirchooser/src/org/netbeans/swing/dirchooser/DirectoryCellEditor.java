@@ -50,12 +50,14 @@ import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.event.MouseEvent;
 import java.util.EventObject;
+import javax.swing.BorderFactory;
 import javax.swing.DefaultCellEditor;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JTree;
+import javax.swing.UIManager;
 
 /**
  * A simple tree cell editor helper used to properly display a node while in editing mode.
@@ -89,6 +91,10 @@ class DirectoryCellEditor extends DefaultCellEditor {
         String text = fileChooser.getName(node.getFile());
         textField.setText(text);
         textField.setColumns(text.length());
+        //#232162
+        if( "Nimbus".equals( UIManager.getLookAndFeel().getID() ) ) { //NOI18N
+            textField.setBorder( BorderFactory.createEmptyBorder() );
+        }
         return editorPanel;
     }
     

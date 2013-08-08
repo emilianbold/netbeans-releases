@@ -88,7 +88,9 @@ public final class MethodInference {
         // In case if the method call is directly on a variable
         if (expression instanceof VariableExpression) {
             Variable variable = ((VariableExpression) expression).getAccessedVariable();
-            return variable.getType();
+            if (variable != null) {
+                return variable.getType();
+            }
         }
         return null;
     }

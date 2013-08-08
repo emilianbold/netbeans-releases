@@ -58,6 +58,7 @@ import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
 import javax.swing.text.Document;
 import org.netbeans.api.java.lexer.JavaTokenId;
+import org.netbeans.api.java.source.CodeStyle.InsertionPoint;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
@@ -1793,6 +1794,23 @@ public class IntroduceHintTest extends NbTestCase {
                        5, 2);
     }
 
+    public void testFieldLocation233440() throws Exception {
+        Preferences prefs = CodeStylePreferences.get((FileObject) null, JavacParser.MIME_TYPE).getPreferences();
+        prefs.put("classMemberInsertionPoint", InsertionPoint.CARET_LOCATION.name());
+        IntroduceHint.INSERT_CLASS_MEMBER = new InsertClassMember();
+        performFixTest("package test;\n" +
+                       "public class Test {\n" +
+                       "    String s = \"text\";\n" +
+                       "    public void method() {\n" +
+                       "        String local = |\"text\"|;\n" +
+                       "    }\n" +
+                       "}\n",
+                       "package test; public class Test { private String text = \"text\"; String s = text; public void method() { String local = text; } } ",
+                       new DialogDisplayerImpl2(null, IntroduceFieldPanel.INIT_FIELD, true, EnumSet
+                .<Modifier>of(Modifier.PRIVATE), false, true),
+                       5, 2);
+    }
+    
     public void testIntroduceConstantFix203621() throws Exception {
         performFixTest("package test; public class Test {\n" +
                        "    public void test() {\n" +

@@ -317,6 +317,15 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
 
     @Override
+    public void refresh(FileObject fileObject, boolean recursive) {
+        if (recursive) {
+            fileObject.refresh();
+        } else {
+            ((RemoteFileObject)fileObject).nonRecursiveRefresh();
+        }
+    }
+
+    @Override
     public void scheduleRefresh(FileObject fileObject) {
         if (fileObject instanceof RemoteFileObject) {
             RemoteFileObject fo = (RemoteFileObject) fileObject;

@@ -54,7 +54,7 @@ import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.editor.PHPLanguage;
+import org.netbeans.modules.php.editor.csl.PHPLanguage;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;

@@ -348,6 +348,8 @@ public class HintsInvoker {
             
             Map<String, Collection<TreePath>> occurringPatterns = BulkSearch.getDefault().match(info, cancel, path, bulkPattern, timeLog);
 
+            if (occurringPatterns == null || cancel.get()) return null;
+        
             long bulkEnd = System.currentTimeMillis();
 
             timeLog.put("Bulk Search", bulkEnd - bulkStart);

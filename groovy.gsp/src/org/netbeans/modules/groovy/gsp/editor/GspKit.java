@@ -85,22 +85,14 @@ public class GspKit extends HtmlKit {
     public String getContentType() {
         return GspLanguage.GSP_MIME_TYPE;
     }
-    
-    @Override
-    protected DeleteCharAction createDeletePrevAction() {
-        return new GspDeleteCharAction(deletePrevCharAction, false, super.createDeletePrevAction());
-    }
-    
-    @Override
-    protected ExtDefaultKeyTypedAction createDefaultKeyTypedAction() {
-        return new GspDefaultKeyTypedAction(super.createDefaultKeyTypedAction());
-    }
 
     @Override
     protected Action[] createActions() {
         Action[] superActions = super.createActions();
         
         return TextAction.augmentList(superActions, new Action[] {
+            new GspDeleteCharAction(deletePrevCharAction, false),
+            new GspDefaultKeyTypedAction(),
             CslActions.createSelectCodeElementAction(true),
             CslActions.createSelectCodeElementAction(false),
             CslActions.createCamelCasePositionAction(findAction(superActions, nextWordAction), true),
@@ -236,12 +228,7 @@ public class GspKit extends HtmlKit {
     }
 
     private class GspDefaultKeyTypedAction extends ExtDefaultKeyTypedAction {
-        private ExtDefaultKeyTypedAction htmlAction;
 
-        GspDefaultKeyTypedAction(ExtDefaultKeyTypedAction htmlAction) {
-            this.htmlAction = htmlAction;
-        }
-        
         @Override
         public void actionPerformed(ActionEvent evt, JTextComponent target) {
             Caret caret = target.getCaret();
@@ -254,16 +241,14 @@ public class GspKit extends HtmlKit {
                 }
             }
 
-            htmlAction.actionPerformed(evt, target);
+            super.actionPerformed(evt, target);
         }
     }
     
     private class GspDeleteCharAction extends ExtDeleteCharAction {
-        private DeleteCharAction htmlAction;
 
-        public GspDeleteCharAction(String nm, boolean nextChar, DeleteCharAction htmlAction) {
+        public GspDeleteCharAction(String nm, boolean nextChar) {
             super(nm, nextChar);
-            this.htmlAction = htmlAction;
         }
 
         @Override
@@ -274,8 +259,7 @@ public class GspKit extends HtmlKit {
             if (handleDeletion(doc, dotPos)) {
                 return;
             }
-
-            htmlAction.actionPerformed(evt, target);
+            super.actionPerformed(evt, target);
         }
     }
     

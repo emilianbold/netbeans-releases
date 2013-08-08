@@ -61,7 +61,7 @@ public class ErrorsCache {
      * @param root inside which the given file resides
      * @param i indexable for which the errors are being set
      * @param errors errors to set
-     * @param convertor getter for properties of {@link T}. The methods on the
+     * @param convertor getter for properties of {@code T}. The methods on the
      *                  convertor are not invoked after this method finishes.
      */
     public static <T> void setErrors(URL root, Indexable i, Iterable<? extends T> errors, Convertor<T> convertor) {

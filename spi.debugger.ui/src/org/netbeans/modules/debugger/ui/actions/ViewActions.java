@@ -101,7 +101,7 @@ public class ViewActions extends AbstractAction {
         // When changed, update also mf-layer.xml, where are the properties duplicated because of Actions.alwaysEnabled()
         action.putValue (Action.NAME, "CTL_BreakpointsAction");
         action.putValue ("iconbase",
-                "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoint.gif" // NOI18N
+                "org/netbeans/modules/debugger/resources/breakpointsView/Breakpoints.png" // NOI18N
         );
         return action;
     }

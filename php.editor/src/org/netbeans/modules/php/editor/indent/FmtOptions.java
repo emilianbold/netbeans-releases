@@ -383,7 +383,7 @@ public final class FmtOptions {
 
     }
 
-    protected static Map<String, String> getDefaults() {
+    public static Map<String, String> getDefaults() {
         return defaults;
     }
 

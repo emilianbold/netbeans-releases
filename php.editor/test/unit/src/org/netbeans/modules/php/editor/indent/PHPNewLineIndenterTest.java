@@ -51,7 +51,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
-import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
+import org.netbeans.modules.php.editor.completion.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
 
@@ -91,10 +91,10 @@ public class PHPNewLineIndenterTest extends PHPCodeCompletionTestBase {
     public void testSmartEnter03() throws Exception{
         testIndentInFile("testfiles/indent/smart_enter_03.php");
     }
-
-    public void testHtmlIndentInPHP() throws Exception{
-        testIndentInFile("testfiles/indent/html_indent_in_php.php");
-    }
+//    TODO: Uncomment when issue #234100 will be fixed
+//    public void testHtmlIndentInPHP() throws Exception{
+//        testIndentInFile("testfiles/indent/html_indent_in_php.php");
+//    }
 
     public void testFirstLine01() throws Exception{
         testIndentInFile("testfiles/indent/firstline_01.php");

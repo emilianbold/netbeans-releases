@@ -74,7 +74,10 @@ class RestServiceChildFactory extends ChildFactory<RestServiceDescription> imple
     RestServiceChildFactory(Project project, RestSupport restSupport) {
         this.project = project;
         if (restSupport != null) {
-            restSupport.getRestServicesModel().addPropertyChangeListener(this);
+            RestServicesModel restModel = restSupport.getRestServicesModel();
+            if (restModel != null) {
+                restModel.addPropertyChangeListener(this);
+            }
         }
     }
 

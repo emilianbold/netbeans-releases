@@ -247,6 +247,7 @@ public class RemoteServerList implements ServerListImplementation, ConnectionLis
                 if (r.equals(record)) {
                     RemoteServerRecord old = defaultRecord;
                     defaultRecord = r;
+                    getPreferences().put(DEFAULT_RECORD, ExecutionEnvironmentFactory.toUniqueID(defaultRecord.getExecutionEnvironment()));
                     firePropertyChange(ServerList.PROP_DEFAULT_RECORD, old, r);
                     return;
                 }

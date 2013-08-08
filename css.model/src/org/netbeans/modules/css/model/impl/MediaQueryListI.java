@@ -54,7 +54,7 @@ import org.netbeans.modules.css.model.api.Model;
  */
 public class MediaQueryListI extends ModelElement implements MediaQueryList {
 
-    private List<MediaQuery> mediaQueries = new ArrayList<MediaQuery>();
+    private List<MediaQuery> mediaQueries = new ArrayList<>();
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 
         @Override
