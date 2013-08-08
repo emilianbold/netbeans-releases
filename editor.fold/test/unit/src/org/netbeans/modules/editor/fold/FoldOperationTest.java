@@ -364,6 +364,7 @@ public class FoldOperationTest extends NbTestCase {
                 JPanel outer = new JPanel();
                 // force parent change 
                 outer.add(env.getPane());
+                env.getPane().setEditorKit(null);
             }
         });
         // listener is attached in between these events
