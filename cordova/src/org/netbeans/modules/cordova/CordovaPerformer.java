@@ -203,6 +203,7 @@ public class CordovaPerformer implements BuildPerformer {
                                         return;
                                     }
                                 }
+                                Thread.sleep(1000);
                                 WebKitDebuggingSupport.getDefault().startDebugging(device, project, Lookups.fixed(mapper, BrowserFamilyId.PHONEGAP, getConfig(project).getId()), false);
                             }
                         }
@@ -210,6 +211,8 @@ public class CordovaPerformer implements BuildPerformer {
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
