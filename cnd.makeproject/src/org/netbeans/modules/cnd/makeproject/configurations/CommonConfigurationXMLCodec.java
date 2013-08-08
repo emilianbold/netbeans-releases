@@ -49,13 +49,11 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.modules.cnd.api.picklist.PicklistElement;
 import org.netbeans.modules.cnd.api.xml.AttrValuePair;
 import org.netbeans.modules.cnd.api.xml.XMLDecoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoder;
 import org.netbeans.modules.cnd.api.xml.XMLEncoderStream;
 import org.netbeans.modules.cnd.makeproject.BrokenReferencesSupport;
-import org.netbeans.modules.cnd.makeproject.MakeProject;
 import org.netbeans.modules.cnd.makeproject.api.MakeArtifact;
 import org.netbeans.modules.cnd.makeproject.api.PackagerDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.PackagerFileElement;
@@ -66,7 +64,6 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.AssemblerConfigur
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CCompilerConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.CodeAssistanceConfiguration;
-import org.netbeans.modules.cnd.makeproject.api.configurations.CompileConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationAuxObject;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Configurations;
@@ -1279,9 +1276,7 @@ public abstract class CommonConfigurationXMLCodec
                     res.putAll(environment);
                     environment = res;
                 }
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            } catch (ConnectionManager.CancellationException ex) {
+            } catch (    IOException | ConnectionManager.CancellationException ex) {
                 Exceptions.printStackTrace(ex);
             }
             if (!environment.isEmpty()) {
