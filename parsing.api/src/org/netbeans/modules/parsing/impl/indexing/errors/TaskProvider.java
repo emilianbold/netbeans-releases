@@ -46,6 +46,7 @@ package org.netbeans.modules.parsing.impl.indexing.errors;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -231,7 +232,7 @@ public final class TaskProvider extends PushTaskScanner {
         Set<FileObject> nueFilesWithErrors = new HashSet<FileObject>();
 
         try {
-            for (URL u : TaskCache.getDefault().getAllFilesWithRecord(root.getURL())) {
+            for (URL u : TaskCache.getDefault().getAllFilesWithRecord(root.toURL())) {
                 if (cancelled.get()) {
                     return;
                 }
@@ -269,6 +270,12 @@ public final class TaskProvider extends PushTaskScanner {
         public Work(FileObject fileOrRoot, Callback callback) {
             this.fileOrRoot = fileOrRoot;
             this.callback = callback;
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.log(
+                    Level.FINER,
+                    "Work created by: {0}", //NOI18N
+                    Arrays.toString(Thread.currentThread().getStackTrace()));
+            }
         }
         
         public FileObject getFileOrRoot() {

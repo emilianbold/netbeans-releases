@@ -119,6 +119,7 @@ import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.CompilationInfo;
+import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.JavaSource.Phase;
@@ -528,11 +529,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         }
 
                         Pattern p = Pattern.createPatternWithRemappableVariables(resolved, scanner.usedLocalVariables.keySet(), true);
-                        int duplicatesCount = Matcher.create(info).setCancel(cancel).match(p).size();
+                        Collection<? extends Occurrence> duplicates = Matcher.create(info).setCancel(cancel).match(p);
+                        int duplicatesCount = duplicates.size();
 
                         typeVars.retainAll(scanner.usedTypeVariables);
 
-                        methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars, end);
+                        List<TargetDescription> targets = computeViableTargets(info, resolved.getParentPath(), Collections.singleton(resolved.getLeaf()), duplicates, cancel);
+
+                        methodFix = new IntroduceExpressionBasedMethodFix(info.getJavaSource(), h, params, exceptionHandles, duplicatesCount, typeVars, end, targets);
                     }
                 }
             }
@@ -747,7 +751,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         boolean declareVariableForReturnValue;
 
         Pattern p = Pattern.createPatternWithRemappableVariables(pathsOfStatementsToWrap, scanner.usedLocalVariables.keySet(), true);
-        int duplicatesCount = Matcher.create(info).setCancel(cancel).match(p).size();
+        Collection<? extends Occurrence> duplicates = Matcher.create(info).setCancel(cancel).match(p);
+        int duplicatesCount = duplicates.size();
 
         if (!scanner.usedAfterSelection.isEmpty()) {
             VariableElement result = scanner.usedAfterSelection.keySet().iterator().next();
@@ -781,7 +786,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
         typeVars.retainAll(scanner.usedTypeVariables);
 
-        return new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], duplicatesCount, typeVars, end);
+        List<TargetDescription> targets = computeViableTargets(info, block, statementsToWrap, duplicates, cancel);
+
+        return new IntroduceMethodFix(info.getJavaSource(), h, params, additionaLocalTypes, additionaLocalNames, TypeMirrorHandle.create(returnType), returnAssignTo, declareVariableForReturnValue, exceptionHandles, exits, exitsFromAllBranches, statements[0], statements[1], duplicatesCount, typeVars, end, targets);
     }
 
     private static boolean isInsideSameClass(TreePath one, TreePath two) {
@@ -1129,6 +1136,149 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
         return null;
+    }
+
+    private static List<TargetDescription> computeViableTargets(final CompilationInfo info, TreePath commonParent, Iterable<? extends Tree> toInclude, Iterable<? extends Occurrence> duplicates, AtomicBoolean cancel) {
+        List<TargetDescription> targets = new ArrayList<>();
+
+        TreePath acceptableParent = commonParent;
+
+        while (acceptableParent != null) {
+            if (cancel.get()) return null;
+
+            if (TreeUtilities.CLASS_TREE_KINDS.contains(acceptableParent.getLeaf().getKind())) {
+                boolean duplicatesAcceptable = true;
+
+                DUPLICATES_ACCEPTABLE: for (Occurrence duplicate : duplicates) {
+                    for (Tree t : duplicate.getOccurrenceRoot()) {
+                        if (t == acceptableParent.getLeaf()) continue DUPLICATES_ACCEPTABLE;
+                    }
+
+                    duplicatesAcceptable = false;
+                    break;
+                }
+
+                Element el = info.getTrees().getElement(acceptableParent);
+
+                if (el != null && el.getKind().isClass()) {
+                    targets.add(TargetDescription.create(info, (TypeElement) el, duplicatesAcceptable));
+                }
+            }
+
+            acceptableParent = acceptableParent.getParentPath();
+        }
+
+        Collections.reverse(targets);
+
+        final Set<Element> usedMembers = new HashSet<>();
+        final Set<Element> requiredEnclosing = new HashSet<>();
+
+        for (Tree include : toInclude) {
+            new TreePathScanner<Void, Void>() {
+                @Override public Void visitIdentifier(IdentifierTree node, Void p) {
+                    Element e = info.getTrees().getElement(getCurrentPath());
+
+                    if (e != null && !LOCAL_VARIABLES.contains(e.getKind()) && e.asType() != null && e.asType().getKind() != TypeKind.ERROR) {
+                        switch (e.getKind()) {
+                            case PACKAGE: break;
+                            case CONSTRUCTOR: usedMembers.add(e.getEnclosingElement()); break;
+                            case TYPE_PARAMETER:
+                                if (e.getEnclosingElement().getKind().isClass() || e.getEnclosingElement().getKind().isInterface()) {
+                                    requiredEnclosing.add(e.getEnclosingElement());
+                                }
+                                break;
+                            default: usedMembers.add(e); break;
+                        }
+                    }
+                    return super.visitIdentifier(node, p);
+                }
+                @Override public Void visitMemberSelect(MemberSelectTree node, Void p) {
+                    ExpressionTree site = node.getExpression();
+
+                    if (site.getKind() == Kind.MEMBER_SELECT && ((MemberSelectTree) site).getIdentifier().contentEquals("this")) {
+                        Tree siteSite = ((MemberSelectTree) site).getExpression();
+                        Element siteSiteEl = info.getTrees().getElement(new TreePath(new TreePath(getCurrentPath(), site), siteSite));
+
+                        if (siteSiteEl != null && (siteSiteEl.getKind().isClass() || siteSiteEl.getKind().isInterface())) {
+                            requiredEnclosing.add(siteSiteEl);
+                        }
+                    }
+
+                    return super.visitMemberSelect(node, p);
+                }
+                @Override public Void visitClass(ClassTree node, Void p) {
+                    super.visitClass(node, p);
+
+                    Element el = info.getTrees().getElement(getCurrentPath());
+
+                    if (el != null) {
+                        usedMembers.removeAll(el.getEnclosedElements());
+                        requiredEnclosing.remove(el);
+                    }
+
+                    return null;
+                }
+
+            }.scan(new TreePath(commonParent, include), null);
+        }
+
+        Scope s = info.getTrees().getScope(new TreePath(info.getCompilationUnit()));
+
+        while (s != null) {
+            for (Element l : s.getLocalElements()) {
+                usedMembers.remove(l);
+            }
+
+            s = s.getEnclosingScope();
+        }
+
+        for (Iterator<TargetDescription> it = targets.iterator(); it.hasNext() && (!usedMembers.isEmpty() || !requiredEnclosing.isEmpty()); ) {
+            TargetDescription td = it.next();
+            TypeElement type = td.type.resolve(info);
+
+            usedMembers.removeAll(info.getElements().getAllMembers(type));
+
+            requiredEnclosing.remove(type);
+
+            if (!usedMembers.isEmpty() || !requiredEnclosing.isEmpty()) {
+                it.remove();
+            }
+        }
+
+        if (targets.isEmpty()) {
+            //failsafe
+            TreePath clazz = findClass(commonParent);
+            Element el = info.getTrees().getElement(clazz);
+
+            if (el == null || (!el.getKind().isClass() && !el.getKind().isInterface())) {
+                return null;
+            }
+
+            targets.add(TargetDescription.create(info, (TypeElement) el, true));
+        }
+
+        return targets;
+    }
+
+    private static boolean needsStaticRelativeTo(CompilationInfo info, TreePath targetClass, TreePath occurrence) {
+        while (targetClass.getLeaf() != occurrence.getLeaf() && occurrence != null) {
+            switch (occurrence.getLeaf().getKind()) {
+                case METHOD:
+                    if (((MethodTree) occurrence.getLeaf()).getModifiers().getFlags().contains(Modifier.STATIC)) {
+                        return true;
+                    }
+                    break;
+                case BLOCK:
+                    if (((BlockTree) occurrence.getLeaf()).isStatic()) {
+                        return true;
+                    }
+                    break;
+            }
+
+            occurrence = occurrence.getParentPath();
+        }
+
+        return false;
     }
 
     private static final class ScanStatement extends TreePathScanner<Void, Void> {
@@ -2071,8 +2221,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private final int duplicatesCount;
         private final List<TreePathHandle> typeVars;
         private final int offset;
+        private final List<TargetDescription> targets;
 
-        public IntroduceMethodFix(JavaSource js, TreePathHandle parentBlock, List<TreePathHandle> parameters, List<TypeMirrorHandle> additionalLocalTypes, List<String> additionalLocalNames, TypeMirrorHandle returnType, TreePathHandle returnAssignTo, boolean declareVariableForReturnValue, Set<TypeMirrorHandle> thrownTypes, List<TreePathHandle> exists, boolean exitsFromAllBranches, int from, int to, int duplicatesCount, List<TreePathHandle> typeVars, int offset) {
+        public IntroduceMethodFix(JavaSource js, TreePathHandle parentBlock, List<TreePathHandle> parameters, List<TypeMirrorHandle> additionalLocalTypes, List<String> additionalLocalNames, TypeMirrorHandle returnType, TreePathHandle returnAssignTo, boolean declareVariableForReturnValue, Set<TypeMirrorHandle> thrownTypes, List<TreePathHandle> exists, boolean exitsFromAllBranches, int from, int to, int duplicatesCount, List<TreePathHandle> typeVars, int offset, List<TargetDescription> targets) {
             this.js = js;
             this.parentBlock = parentBlock;
             this.parameters = parameters;
@@ -2089,6 +2240,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             this.duplicatesCount = duplicatesCount;
             this.typeVars = typeVars;
             this.offset = offset;
+            this.targets = targets;
         }
 
         public String getText() {
@@ -2102,7 +2254,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         public ChangeInfo implement() throws Exception {
             JButton btnOk = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Ok" ) );
             JButton btnCancel = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Cancel" ) );
-            IntroduceMethodPanel panel = new IntroduceMethodPanel("", duplicatesCount); //NOI18N
+            IntroduceMethodPanel panel = new IntroduceMethodPanel("", duplicatesCount, targets); //NOI18N
             panel.setOkButton( btnOk );
             String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceMethod");
             DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[] {btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -2112,6 +2264,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             final String name = panel.getMethodName();
             final Set<Modifier> access = panel.getAccess();
             final boolean replaceOther = panel.getReplaceOther();
+            final TargetDescription target = panel.getSelectedTarget();
 
             js.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy copy) throws Exception {
@@ -2126,8 +2279,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     GeneratorUtilities.get(copy).importComments(firstStatement.getParentPath().getLeaf(), copy.getCompilationUnit());
                     
-                    Scope s = copy.getTrees().getScope(firstStatement);
-                    boolean isStatic = copy.getTreeUtilities().isStaticContext(s);
                     List<? extends StatementTree> statements = getStatements(firstStatement);
                     List<StatementTree> nueStatements = new LinkedList<StatementTree>();
 
@@ -2272,6 +2423,15 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
 
                     doReplaceInBlockCatchSingleStatement(copy, rewritten, firstStatement, nueStatements);
                     
+                    TypeElement targetType = target.type.resolve(copy);
+                    TreePath pathToClass = targetType != null ? copy.getTrees().getPath(targetType) : null;
+
+                    if (pathToClass == null) pathToClass = findClass(firstStatement);
+
+                    assert pathToClass != null;
+
+                    boolean isStatic = needsStaticRelativeTo(copy, pathToClass, firstStatement);
+
                     if (replaceOther) {
                         //handle duplicates
                         Document doc = copy.getDocument();
@@ -2333,6 +2493,8 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             newStatements.addAll(parentStatements.subList(dupeStart + statementsPaths.size(), parentStatements.size()));
 
                             doReplaceInBlockCatchSingleStatement(copy, rewritten, firstLeaf, newStatements);
+
+                            isStatic |= needsStaticRelativeTo(copy, pathToClass, firstLeaf);
                         }
 
                         introduceBag(doc).clear();
@@ -2367,12 +2529,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     }
 
                     MethodTree method = make.Method(mods, name, returnTypeTree, typeVars, formalArguments, thrown, make.Block(methodStatements, false), null);
-
-                    TreePath pathToClass = findClass(firstStatement);
-
-                    assert pathToClass != null;
-                    
-                    Tree parent = findMethod(firstStatement).getLeaf();
                     ClassTree nueClass = INSERT_CLASS_MEMBER.insertClassMember(copy, (ClassTree)pathToClass.getLeaf(), method, offset);
 
                     copy.rewrite(pathToClass.getLeaf(), nueClass);
@@ -2428,8 +2584,9 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         private final int duplicatesCount;
         private final List<TreePathHandle> typeVars;
         private final int offset;
+        private final List<TargetDescription> targets;
 
-        public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TreePathHandle> parameters, Set<TypeMirrorHandle> thrownTypes, int duplicatesCount, List<TreePathHandle> typeVars, int offset) {
+        public IntroduceExpressionBasedMethodFix(JavaSource js, TreePathHandle expression, List<TreePathHandle> parameters, Set<TypeMirrorHandle> thrownTypes, int duplicatesCount, List<TreePathHandle> typeVars, int offset, List<TargetDescription> targets) {
             this.js = js;
             this.expression = expression;
             this.parameters = parameters;
@@ -2437,6 +2594,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             this.duplicatesCount = duplicatesCount;
             this.typeVars = typeVars;
             this.offset = offset;
+            this.targets = targets;
         }
 
         public String getText() {
@@ -2450,7 +2608,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         public ChangeInfo implement() throws Exception {
             JButton btnOk = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Ok" ) );
             JButton btnCancel = new JButton( NbBundle.getMessage( IntroduceHint.class, "LBL_Cancel" ) );
-            IntroduceMethodPanel panel = new IntroduceMethodPanel("", duplicatesCount); //NOI18N
+            IntroduceMethodPanel panel = new IntroduceMethodPanel("", duplicatesCount, targets); //NOI18N
             panel.setOkButton( btnOk );
             String caption = NbBundle.getMessage(IntroduceHint.class, "CAP_IntroduceMethod");
             DialogDescriptor dd = new DialogDescriptor(panel, caption, true, new Object[] {btnOk, btnCancel}, btnOk, DialogDescriptor.DEFAULT_ALIGN, null, null);
@@ -2460,6 +2618,7 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
             final String name = panel.getMethodName();
             final Set<Modifier> access = panel.getAccess();
             final boolean replaceOther = panel.getReplaceOther();
+            final TargetDescription target = panel.getSelectedTarget();
 
             js.runModificationTask(new Task<WorkingCopy>() {
                 public void run(WorkingCopy copy) throws Exception {
@@ -2480,19 +2639,6 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                     List<ExpressionTree> realArguments = realArguments(make, parameters);
 
                     ExpressionTree invocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), realArguments);
-
-                    Scope s = copy.getTrees().getScope(expression);
-                    boolean isStatic = copy.getTreeUtilities().isStaticContext(s);
-
-                    Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
-
-                    if (isStatic) {
-                        modifiers.add(Modifier.STATIC);
-                    }
-
-                    modifiers.addAll(access);
-
-                    ModifiersTree mods = make.Modifiers(modifiers);
                     List<VariableTree> formalArguments = createVariables(copy, parameters);
 
                     if (formalArguments == null) {
@@ -2515,15 +2661,14 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                         typeVars.add((TypeParameterTree) tph.resolve(copy).getLeaf());
                     }
 
-                    MethodTree method = make.Method(mods, name, returnTypeTree, typeVars, formalArguments, thrown, make.Block(methodStatements, false), null);
-                    TreePath pathToClass = findClass(expression);
+                    TypeElement targetType = target.type.resolve(copy);
+                    TreePath pathToClass = targetType != null ? copy.getTrees().getPath(targetType) : null;
+
+                    if (pathToClass == null) pathToClass = findClass(expression);
 
                     assert pathToClass != null;
 
-                    Tree parent = findMethod(expression).getLeaf();
-                    ClassTree nueClass = INSERT_CLASS_MEMBER.insertClassMember(copy, (ClassTree)pathToClass.getLeaf(), method, offset);
-                    
-                    copy.rewrite(pathToClass.getLeaf(), nueClass);
+                    boolean isStatic = needsStaticRelativeTo(copy, pathToClass, expression);
 
                     Tree parentTree = expression.getParentPath().getLeaf();
                     Tree nueParent = copy.getTreeUtilities().translate(parentTree, Collections.singletonMap(expression.getLeaf(), invocation));
@@ -2556,11 +2701,27 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
                             ExpressionTree dupeInvocation = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.Identifier(name), dupeRealArguments);
 
                             copy.rewrite(firstLeaf.getLeaf(), dupeInvocation);
+
+                            isStatic |= needsStaticRelativeTo(copy, pathToClass, firstLeaf);
                         }
 
                         introduceBag(doc).clear();
                         //handle duplicates end
                     }
+
+                    Set<Modifier> modifiers = EnumSet.noneOf(Modifier.class);
+
+                    if (isStatic) {
+                        modifiers.add(Modifier.STATIC);
+                    }
+
+                    modifiers.addAll(access);
+
+                    ModifiersTree mods = make.Modifiers(modifiers);
+                    MethodTree method = make.Method(mods, name, returnTypeTree, typeVars, formalArguments, thrown, make.Block(methodStatements, false), null);
+                    ClassTree nueClass = INSERT_CLASS_MEMBER.insertClassMember(copy, (ClassTree)pathToClass.getLeaf(), method, offset);
+
+                    copy.rewrite(pathToClass.getLeaf(), nueClass);
                 }
             }).commit();
 
@@ -2568,7 +2729,29 @@ public class IntroduceHint implements CancellableTask<CompilationInfo> {
         }
 
     }
-    
+
+    public static final class TargetDescription {
+        public final String displayName;
+        public final ElementHandle<TypeElement> type;
+        public final boolean allowForDuplicates;
+        public final boolean anonymous;
+
+        private TargetDescription(String displayName, ElementHandle<TypeElement> type, boolean allowForDuplicates, boolean anonymous) {
+            this.displayName = displayName;
+            this.type = type;
+            this.allowForDuplicates = allowForDuplicates;
+            this.anonymous = anonymous;
+        }
+
+        public static TargetDescription create(CompilationInfo info, TypeElement type, boolean allowForDuplicates) {
+            return new TargetDescription(Utilities.target2String(type), ElementHandle.create(type), allowForDuplicates, type.getSimpleName().length() == 0);
+        }
+
+        public String toDebugString() {
+            return type.getBinaryName() + ":" + (allowForDuplicates ? "D" : "") + (anonymous ? "A" : "");
+        }
+    }
+
     private static boolean shouldReplaceDuplicate(final Document doc, final int startOff, final int endOff) {
         introduceBag(doc).clear();
         introduceBag(doc).addHighlight(startOff, endOff, DUPE);

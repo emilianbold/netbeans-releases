@@ -48,6 +48,8 @@ import java.awt.Toolkit;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.lang.model.element.TypeElement;
 import javax.swing.Icon;
 import org.netbeans.api.annotations.common.NonNull;
@@ -75,7 +77,9 @@ import org.openide.util.Utilities;
  *
  * @author Petr Hrebejk
  */
-public class JavaTypeDescription extends TypeDescriptor {        
+public class JavaTypeDescription extends TypeDescriptor {
+
+    private static final Logger LOG = Logger.getLogger(JavaTypeDescription.class.getName());
 
     private Icon icon;
     
@@ -178,11 +182,21 @@ public class JavaTypeDescription extends TypeDescriptor {
             final URI uri = cacheItem.getRootURI();
             assert uri != null : "Root null for created entry";    //NOI18N
             try {
-                final File rootFile = Utilities.toFile(uri);
-                final ClassIndexImpl ci = cacheItem.getClassIndex();
-                assert ci != null : "ClassIndexImpl null for created entry";    //NOI18N
+                final File rootFile = Utilities.toFile(uri);                
                 final String binaryName = handle.getBinaryName();
-                String relativePath = ci.getSourceName(binaryName);
+                String relativePath;
+                final ClassIndexImpl ci = cacheItem.getClassIndex();
+                if (ci == null) {
+                    LOG.log (
+                        Level.WARNING,
+                        "No ClassIndex for {0} in {1}", //NOI18N
+                        new Object[]{
+                            binaryName,
+                            uri});
+                    relativePath = null;
+                } else {
+                    relativePath = ci.getSourceName(binaryName);
+                }
                 if (relativePath == null) {
                     relativePath = binaryName;
                     int lastDot = relativePath.lastIndexOf('.');    //NOI18N

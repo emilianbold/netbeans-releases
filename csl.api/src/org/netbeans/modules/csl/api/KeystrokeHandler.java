@@ -61,8 +61,6 @@ import org.netbeans.spi.editor.typinghooks.TypedTextInterceptor;
  * editing.
  *
  * @author Tor Norbye
- * @deprecated use interceptors {@link CamelCaseInterceptor} {@link DeletedTextInterceptor} {@link TypedTextInterceptor} {@link TypedBreakInterceptor} instead.
- * When all interceptors are implemented and registrated through annotations, keystrokehandler should be set to null in language registration. 
  */
 public interface KeystrokeHandler {
     /**
@@ -78,11 +76,14 @@ public interface KeystrokeHandler {
      * should not further insert anything)
      *
      * XXX Fix javadoc.
+     * @deprecated  {@link DeletedTextInterceptor} {@link TypedTextInterceptor} {@link TypedBreakInterceptor} instead.
      */
     boolean beforeCharInserted(@NonNull Document doc, int caretOffset, @NonNull JTextComponent target, char ch)
         throws BadLocationException;
 
-    /** @todo Rip out the boolean return value? What does it mean? */
+    /** @todo Rip out the boolean return value? What does it mean? 
+     * @deprecated  {@link DeletedTextInterceptor} {@link TypedTextInterceptor} {@link TypedBreakInterceptor} instead.
+     */
     boolean afterCharInserted(@NonNull Document doc, int caretOffset, @NonNull JTextComponent target, char ch)
         throws BadLocationException;
 
@@ -94,6 +95,7 @@ public interface KeystrokeHandler {
      * appropriate.
      * @todo Document why both caretOffset and caret is passed in!
      * Return the new offset, or -1
+     * @deprecated  {@link DeletedTextInterceptor} {@link TypedTextInterceptor} {@link TypedBreakInterceptor} instead.
      */
 
     /** @todo Split into before and after? */
@@ -108,6 +110,7 @@ public interface KeystrokeHandler {
      *
      * @todo rip out return value
      * @todo Document why both caretOffset and caret is passed in!
+     * @deprecated  {@link DeletedTextInterceptor} {@link TypedTextInterceptor} {@link TypedBreakInterceptor} instead.
      */
     int beforeBreak(@NonNull Document doc, int caretOffset, @NonNull JTextComponent target)
         throws BadLocationException;
@@ -115,6 +118,7 @@ public interface KeystrokeHandler {
     /**
      * Compute a range matching the caret position. If no eligible range
      * is found, return {@link OffsetRange#NONE}.
+     * @deprecated  {@link DeletedTextInterceptor} {@link TypedTextInterceptor} {@link TypedBreakInterceptor} instead.
      */
     @NonNull
     OffsetRange findMatching(@NonNull Document doc, int caretOffset);
@@ -135,6 +139,7 @@ public interface KeystrokeHandler {
      * @param reverse If true, move forwards, otherwise move backwards (e.g. "previous" word)
      * @return The next word boundary offset in the given direction, or -1 if this
      *   implementation doesn't want to compute word boundaries (the default will be used)
+     * @deprecated use interceptor {@link CamelCaseInterceptor} instead
      */
     @CheckForNull
     int getNextWordOffset(Document doc, int caretOffset, boolean reverse);
