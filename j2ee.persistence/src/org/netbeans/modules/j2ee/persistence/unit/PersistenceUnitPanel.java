@@ -357,11 +357,14 @@ public class PersistenceUnitPanel extends SectionInnerPanel {
     }
     
     private Provider getSelectedProvider(){
+        Provider provider = null;
         if (isContainerManaged){
-            return (Provider) providerCombo.getSelectedItem();
+            Object selectedItem = providerCombo.getSelectedItem();
+            provider =  (Provider) (selectedItem instanceof Provider ? selectedItem : null);
+        } else {
+            Object selectedItem = libraryComboBox.getSelectedItem();
+            provider = (Provider) (selectedItem instanceof Provider ? selectedItem : null);
         }
-        Object selectedItem = libraryComboBox.getSelectedItem();
-        Provider provider = (Provider) (selectedItem instanceof Provider ? selectedItem : null);
         if (provider != null) {
             return  provider;
         }
