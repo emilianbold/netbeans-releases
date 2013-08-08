@@ -169,8 +169,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
                         Exceptions.printStackTrace(ex);
                     }
                     CordovaPerformer.createScript(project, "plugins.properties", "nbproject/plugins.properties", true);
-                    CordovaPerformer.getDefault().createPlatforms(project).waitFinished();
-                    panel = null;
+                   panel = null;
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);

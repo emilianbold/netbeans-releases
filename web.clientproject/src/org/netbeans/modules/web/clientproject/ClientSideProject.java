@@ -786,13 +786,6 @@ public class ClientSideProject implements Project {
                 return getProjectProperties().getWebRoot();
             }
             
-            @Override
-            public void setSiteRoot(String name) {
-                final ClientSideProjectProperties projectProperties = getProjectProperties();
-                projectProperties.setSiteRootFolder(name);
-                projectProperties.save();
-            }
-
             private ClientSideProjectProperties getProjectProperties() {
                 return new ClientSideProjectProperties(project);
             }

@@ -75,15 +75,13 @@ import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
-import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.common.api.ServerURLMapping;
 import org.netbeans.spi.project.ui.CustomizerProvider2;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileChangeAdapter;
-import org.openide.filesystems.FileEvent;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -116,16 +114,7 @@ public class CordovaPerformer implements BuildPerformer {
     
     
     public Task createPlatforms(final Project project) {
-        return RP.post(new Runnable() {
-
-            @Override
-            public void run() {
-                perform("upgrade-to-cordova-project", project).result();
-                ClientSideModule clientSideModule = project.getLookup().lookup(ClientSideModule.class);
-                clientSideModule.getProperties().setSiteRoot("www");
-            }
-        });
-        
+        return perform("upgrade-to-cordova-project", project);      
     }
     
     @NbBundle.Messages({
@@ -135,7 +124,8 @@ public class CordovaPerformer implements BuildPerformer {
         "ERR_StartFileNotFound=Start file cannot be found.",
         "ERR_NO_Cordova=NetBeans cannot find cordova or git on your PATH. Please install cordova and git.\n" +
             "NetBeans might require restart for changes to take effect.\n",
-        "ERR_NO_Provisioning=Provisioning Profile not found.\nPlease use XCode and install valid Provisioning Profile for your device."
+        "ERR_NO_Provisioning=Provisioning Profile not found.\nPlease use XCode and install valid Provisioning Profile for your device.",
+        "ERR_NOT_Cordova=Create Cordova Resources and rename site root to 'www'?"
             
     })
     @Override
@@ -152,10 +142,8 @@ public class CordovaPerformer implements BuildPerformer {
         
         if (((target.startsWith("build") || target.startsWith("sim")) // NOI18N
                 && !CordovaPlatform.isCordovaProject(project))) { // NOI18N
-            String message = NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaCustomizerPanel.createConfigsLabel.text") + "\n"
-                    + NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaPanel.createConfigs.text") + "?";
             NotifyDescriptor desc = new NotifyDescriptor(
-                    message,
+                    Bundle.ERR_NOT_Cordova(),
                     NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaPanel.createConfigs.text"),
                     NotifyDescriptor.OK_CANCEL_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE,
@@ -165,18 +153,7 @@ public class CordovaPerformer implements BuildPerformer {
             if (desc.getValue() != NotifyDescriptor.OK_OPTION) {
                 return null;
             }
-            final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(project);
-            siteRoot.addFileChangeListener(new FileChangeAdapter() {
-                @Override
-                public void fileDeleted(FileEvent fe) {
-                    if (fe.getFile().equals(siteRoot)) {
-                        ClientSideModule clientSideModule = project.getLookup().lookup(ClientSideModule.class);
-                        clientSideModule.getProperties().setSiteRoot("www");
-                    }
-                }
-                
-            });
-        }
+       }
 
         if (!CordovaPlatform.getDefault().isReady()) {
             throw new IllegalStateException(Bundle.ERR_NO_Cordova());
@@ -190,12 +167,19 @@ public class CordovaPerformer implements BuildPerformer {
                 ) {
             throw new IllegalStateException(Bundle.ERR_NO_Provisioning());
        }        
+
         
         final ExecutorTask runTarget[] = new ExecutorTask[1];
         Runnable run = new Runnable() {
             @Override
             public void run() {
-                generateBuildScripts(project);
+                try {
+                    FileObject siteRoot = ClientProjectUtilities.getSiteRoot(project);
+                    DataObject.find(siteRoot).rename("www");
+                } catch (IOException iOException) {
+                    Exceptions.printStackTrace(iOException);
+                }
+               generateBuildScripts(project);
                 FileObject buildFo = project.getProjectDirectory().getFileObject(PATH_BUILD_XML);//NOI18N
                 try {
                     runTarget[0] = ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));

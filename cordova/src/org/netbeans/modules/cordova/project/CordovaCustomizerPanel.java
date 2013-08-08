@@ -285,10 +285,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         } catch (IOException iOException) {
             Exceptions.printStackTrace(iOException);
         }
-        if (cordovaPanel.isPanelEnabled()) {
-            CordovaPerformer.getDefault().createPlatforms(project);
-        }
-    }
+   }
 
     public void setVisibility() {
         boolean platformsReady = CordovaPlatform.getDefault().isReady();
