@@ -95,7 +95,7 @@ import org.openide.util.RequestProcessor;
 public final class AddModulePanel extends JPanel {
     
     private static final String FILTER_DESCRIPTION = getMessage("LBL_FilterDescription");
-    private static final RequestProcessor RP = new RequestProcessor(AddModulePanel.class.getName(), 1, true);
+    private static final RequestProcessor RP = new RequestProcessor(AddModulePanel.class.getName(), 2, true);
     private static Rectangle lastSize;
     
     private CustomizerComponentFactory.DependencyListModel universeModules;
@@ -172,7 +172,7 @@ public final class AddModulePanel extends JPanel {
                 final ModuleDependency[] deps = getSelectedDependencies();
                 if (deps.length == 1) {
                     final NbPlatform platform = props.getActivePlatform();
-                    ModuleProperties.RP.post(new Runnable() {
+                    RP.post(new Runnable() {
                         @Override
                         public void run() {
                             SwingUtilities.invokeLater(new Runnable() {

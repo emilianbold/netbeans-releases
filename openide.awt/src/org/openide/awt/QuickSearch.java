@@ -778,6 +778,7 @@ public class QuickSearch {
                                 @Override
                                 public void run() {
                                     createDataContentHandler(maxPrefix);
+                                    searchTextField.transferFocus();
                                 }
                             });
                             return null;
