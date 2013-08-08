@@ -86,9 +86,6 @@ class RestServiceChildFactory extends ChildFactory<RestServiceDescription> imple
      */
     @Override
     protected boolean createKeys( final List<RestServiceDescription> keys ) {
-        if (Thread.interrupted()) {
-            return true;
-        }
         try {
             RestServicesModel model = getModel();
             if (model != null) {
@@ -115,7 +112,8 @@ class RestServiceChildFactory extends ChildFactory<RestServiceDescription> imple
                     }
                 });
             } else {
-                return false;
+                LOG.log(Level.INFO, "RestServicesModel is null"); //NOI18N
+                return true;
             }
         }
         catch (IOException ex) {
