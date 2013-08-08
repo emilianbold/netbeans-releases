@@ -74,6 +74,7 @@ import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.HelpCtx;
 import org.openide.util.Lookup;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 /**
@@ -365,7 +366,7 @@ public final class FormattingPanelController extends OptionsPanelController {
         // CustomizerSelector.PreferencesFactory implementation
         // ------------------------------------------------------------------------
 
-        public Preferences getPreferences(String mimeType) {
+        public Preferences getPreferences(final String mimeType) {
             ProxyPreferences pp = mimeTypePreferences.get(mimeType);
             try {
                 // clean up the cached ProxyPreferences instance that has been removed in the meantime
@@ -379,6 +380,20 @@ public final class FormattingPanelController extends OptionsPanelController {
             if (pp == null) {
                 Preferences p = MimeLookup.getLookup(mimeType).lookup(Preferences.class);
                 pp = ProxyPreferences.getProxyPreferences(this, p);
+                if (mimeType.length() > 0) {
+                    final ProxyPreferences finalPP = pp;
+                    RequestProcessor.getDefault().post(new Runnable() {
+                        public void run() {
+                            boolean overriden = isKeyOverridenForMimeType(SimpleValueNames.EXPAND_TABS, mimeType)
+                                    || isKeyOverridenForMimeType(SimpleValueNames.INDENT_SHIFT_WIDTH, mimeType)
+                                    || isKeyOverridenForMimeType(SimpleValueNames.SPACES_PER_TAB, mimeType)
+                                    || isKeyOverridenForMimeType(SimpleValueNames.TAB_SIZE, mimeType)
+                                    || isKeyOverridenForMimeType(SimpleValueNames.TEXT_LIMIT_WIDTH, mimeType)
+                                    || isKeyOverridenForMimeType(SimpleValueNames.TEXT_LINE_WRAP, mimeType);
+                            finalPP.putBoolean(OVERRIDE_GLOBAL_FORMATTING_OPTIONS, overriden);
+                        }
+                    }, 1000);
+                }               
                 pp.addPreferenceChangeListener(weakPrefL);
                 pp.addNodeChangeListener(weakNodeL);
                 mimeTypePreferences.put(mimeType, pp);
