@@ -89,10 +89,10 @@ public abstract class SemanticHighlightingTestBase  extends ProjectBasedTestCase
         });
         int i = 1;
         for (CsmOffsetable b : sorted) {
-            ref( "Block " + (i++) + ": Lines " +  // NOI18N
-                    file.getLineColumn(b.getStartOffset())[0] + "-" + file.getLineColumn(b.getEndOffset())[0] + // NOI18N
-                    "\tOffsets " + // NOI18N
-                    b.getStartOffset() + "-" + b.getEndOffset()); // NOI18N
+            ref( "Block " + (i++) + ": Position: " +  // NOI18N
+                    file.getLineColumn(b.getStartOffset())[0] + ":" +file.getLineColumn(b.getStartOffset())[1] + "-" + 
+                    file.getLineColumn(b.getEndOffset())[0] + ":" + file.getLineColumn(b.getEndOffset())[1]// NOI18N
+            );    
         }
         compareReferenceFiles();
     }

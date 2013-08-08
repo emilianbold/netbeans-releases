@@ -1,3 +1,5 @@
+#include "newfile1.cpp"
+
 #define MOO 3
 
 class Foo {
@@ -23,9 +25,6 @@ void Foo::doFoo(int moo) {
     ::bar = ::bar + bar + 1;
     func(::bar);
 }
-
-int bar = 1;
-void func(int bar) {}
 
 #ifdef MOO
 
@@ -83,7 +82,7 @@ int main() {
 void stringsTest() {
     char* ss = "string literal";    
 
-    return 'char literal';
+    'char literal';
 }
 
 #define STR "string literal"
@@ -91,9 +90,9 @@ void stringsTest() {
 #define CMD 'char literal'
 
 void charTest() {
-    char* ss = 'char literal';    
+    char* ss = (char*) 'char literal';    
 
-    return "string literal";
+    "string literal";
 }
 
 struct NameId {
@@ -135,10 +134,10 @@ NameId NameTable::AddSymbol(const std::string &s, const std::vector<std::string>
 }
 
 void NameTable::AddTable (const NameTable &other) {
-    NameId oneParam = other.AddSymbol("Default");
-    NameId empty = other.AddSymbol();
-    NameId twoParams = other.AddSymbol("Default", vector<std::string>());
-    NameId moreParams = other.AddSymbol("Default", "second", 1, 3, "tree");
+    NameId oneParam = this->AddSymbol(std::string("Default"));
+    NameId empty = this->AddSymbol();
+    NameId twoParams = this->AddSymbol(std::string("Default"), std::vector<std::string>());
+    NameId moreParams = this->AddSymbol(std::string("Default"), std::string("second"), 1, 3, std::string("tree"));
 
 }
 
@@ -158,6 +157,8 @@ void checkDifferentScopes() {
     }
 
 }
+
+typedef int int8_t, int32_t;
 
 typedef struct {
 
