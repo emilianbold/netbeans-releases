@@ -90,7 +90,10 @@ import org.openide.util.Exceptions;
  * Common subclass to ConfigurationXMLCodec and AuxConfigurationXMLCodec.
  * 
  * Change History:
- * V89 - NB 8.0
+ * V90 - NB 7.4
+ *    removed "remote-sources-mode" element
+ *    don't write project folder name, just "."
+ * V89 - NB 7.4
  *    support compile command
  * V88 - NB 7.3 (!!!!!!!!!!INVERTED SERIALIZATION!!!!!!!!!!!!)
  *    1) This is the version where serialization of unmanaged projects were inverted
