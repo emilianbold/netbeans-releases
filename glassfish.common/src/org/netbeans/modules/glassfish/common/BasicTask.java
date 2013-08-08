@@ -85,6 +85,9 @@ public abstract class BasicTask<V> implements Callable<V> {
         /** Is server starting in profiling mode? */
         private final boolean profile;
 
+        /** GlassFish process being started. */
+        private volatile Process process;
+
         /**
          * Constructs an instance of state check results notification.
          * <p/>
@@ -94,6 +97,16 @@ public abstract class BasicTask<V> implements Callable<V> {
         protected StartStateListener(final boolean profile) {
             super();
             this.profile = profile;
+            this.process = null;
+        }
+
+        /**
+         * Set GlassFish process being started.
+         * <p/>
+         * @param process GlassFish process being started.
+         */
+        void setProcess(final Process process) {
+            this.process = process;
         }
 
         /**
@@ -111,11 +124,10 @@ public abstract class BasicTask<V> implements Callable<V> {
         public void currentState(final GlassFishServer server,
                 final GlassFishStatus status, final GlassFishStatusTask task) {
             switch(status) {
-                // Consider server as ready when administrator port is active
-                // in profiling mode.
+                // Consider server as ready when at least process exists
+                // when running in profiling mode.
                 case OFFLINE: case STARTUP:
-                    if (profile && task.getStatus()
-                            == GlassFishStatusCheckResult.SUCCESS) {
+                    if (profile && process != null) {
                         wakeUp();
                     }
                     break;
