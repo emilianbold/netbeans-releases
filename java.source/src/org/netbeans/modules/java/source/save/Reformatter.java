@@ -3122,7 +3122,7 @@ public class Reformatter implements ReformatTask {
             if (bof) {
                 maxCount = minCount;
             }
-            int count = Math.min(minCount, maxCount);
+            int count = maxCount > 0 ? Math.min(minCount, maxCount) : minCount;
             if (lastBlankLinesTokenIndex < 0) {
                 lastBlankLines = count;
                 lastBlankLinesTokenIndex = tokens.index();

@@ -956,7 +956,7 @@ public final class EncapsulateFieldRefactoringPlugin extends JavaRefactoringPlug
                     staticMod ? cs.getStaticFieldNamePrefix() : cs.getFieldNamePrefix(),
                     staticMod ? cs.getStaticFieldNameSuffix() : cs.getFieldNameSuffix());
             
-            String longName = (staticMod ? "" : "this.") + fieldName;//NOI18N
+            String longName = (staticMod ? "" : "this.") + field.getSimpleName();//NOI18N
             String oldName = "old" + CodeStyleUtils.getCapitalizedName(fieldName);//NOI18N
             String parName = staticMod ? "a" + CodeStyleUtils.getCapitalizedName(fieldName) : fieldName; //NOI18N
             String getterBody = "{return " + field.getSimpleName() + ";}"; //NOI18N
