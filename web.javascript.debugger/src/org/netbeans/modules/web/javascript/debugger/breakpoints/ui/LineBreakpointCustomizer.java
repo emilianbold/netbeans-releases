@@ -43,6 +43,8 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints.ui;
 
 import java.beans.PropertyChangeListener;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URI;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.modules.web.javascript.debugger.MiscEditorUtil;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.BreakpointRuntimeSetter;
@@ -169,12 +171,29 @@ public class LineBreakpointCustomizer extends javax.swing.JPanel implements Cont
         return new org.openide.util.HelpCtx("NetbeansDebuggerLineBreakpointJavaScript"); // NOI18N
     }
     
+    private static String toURL(String filePath) {
+        URI uri = null;
+        try {
+            uri = URI.create(filePath);
+        } catch (Exception ex) {
+        }
+        if (uri == null) {
+            File f = new File(filePath);
+            uri = f.toURI();
+        }
+        try {
+            return uri.toURL().toExternalForm();
+        } catch (MalformedURLException ex) {
+        }
+        return filePath;
+    }
+    
     private class CustomizerController implements Controller {
 
         @Override
         public boolean ok() {
             LineBreakpoint lb = LineBreakpointCustomizer.this.lb;
-            String fileStr = fileTextField.getText();
+            String fileStr = toURL(fileTextField.getText());
             int lineNumber;
             try {
                 lineNumber = Integer.parseInt(lineTextField.getText());
