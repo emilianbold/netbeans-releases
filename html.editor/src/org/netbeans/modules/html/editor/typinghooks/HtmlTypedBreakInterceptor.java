@@ -42,13 +42,17 @@
 package org.netbeans.modules.html.editor.typinghooks;
 
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Position;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.editor.Utilities;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -56,6 +60,8 @@ import org.netbeans.spi.editor.typinghooks.TypedBreakInterceptor;
  */
 public class HtmlTypedBreakInterceptor implements TypedBreakInterceptor {
 
+    private Position[] reformat;
+    
     @Override
     public boolean beforeInsert(Context context) throws BadLocationException {
         return false;
@@ -65,13 +71,13 @@ public class HtmlTypedBreakInterceptor implements TypedBreakInterceptor {
     @Override
     public void insert(MutableContext context) throws BadLocationException {
         BaseDocument doc = (BaseDocument) context.getDocument();
-        int caretOffset = context.getCaretOffset();
+        int offset = context.getBreakInsertOffset();
         
-        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HTMLTokenId.language());
+        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, offset, HTMLTokenId.language());
         if (ts == null) {
             return;
         }
-        ts.move(caretOffset);
+        ts.move(offset);
         String closingTagName = null;
         int end = -1;
         if (ts.moveNext() && ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
@@ -99,13 +105,40 @@ public class HtmlTypedBreakInterceptor implements TypedBreakInterceptor {
             }
         }
         if (foundOpening) {
-            context.setText("\n\n", 1, 1, 0, 2);
+            context.setText("\n\n", 1, 1);
+            //reformat workaround -- the preferred 
+            //context.setText("\n\n", 1, 1, 0, 2);
+            //won't work as the reformatter will not reformat the line with the closing tag
+            int from = Utilities.getRowStart(doc, offset);
+            int to = Utilities.getRowEnd(doc, offset);
+            reformat = new Position[]{doc.createPosition(from), doc.createPosition(to)};
         }
     }
 
     @Override
     public void afterInsert(Context context) throws BadLocationException {
-        //no-op
+        if(reformat != null) {
+            final Position[] range = reformat;
+            reformat = null;
+            BaseDocument doc = (BaseDocument)context.getDocument();
+            final Indent indent = Indent.get(doc);
+            indent.lock();
+            try {
+            doc.runAtomic(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        indent.reindent(range[0].getOffset(), range[1].getOffset());
+                    } catch (BadLocationException ex) {
+                        Exceptions.printStackTrace(ex);
+                    }
+                }
+                
+            });
+            } finally {
+                indent.unlock();
+            }
+        }
     }
 
     @Override

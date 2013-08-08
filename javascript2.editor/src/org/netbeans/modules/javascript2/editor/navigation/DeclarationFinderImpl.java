@@ -173,15 +173,27 @@ public class DeclarationFinderImpl implements DeclarationFinder {
     }
     
     @Override
-    public OffsetRange getReferenceSpan(Document doc, int caretOffset) {
-        OffsetRange result;
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(doc, caretOffset, language);
-        if (ts != null) {
-            ts.move(caretOffset);
-            if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
-                return new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
+    public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
+        final OffsetRange[] value = new OffsetRange[1];
+
+        doc.render(new Runnable() {
+
+            @Override
+            public void run() {
+                TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(doc, caretOffset, language);
+                if (ts != null) {
+                    ts.move(caretOffset);
+                    if (ts.moveNext() && ts.token().id() == JsTokenId.IDENTIFIER) {
+                        value[0] = new OffsetRange(ts.offset(), ts.offset() + ts.token().length());
+                    }
+                }
             }
+        });
+        if (value[0] != null) {
+            return value[0];
         }
+
+        OffsetRange result;
         for (DeclarationFinder finder : EditorExtender.getDefault().getDeclarationFinders()) {
             result = finder.getReferenceSpan(doc, caretOffset);
             if (result != null && result != OffsetRange.NONE) {

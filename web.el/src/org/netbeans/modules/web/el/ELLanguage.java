@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.web.el;
 
+import org.netbeans.modules.web.el.base.ELCommentHandler;
 import org.netbeans.modules.web.el.navigation.ELDeclarationFinder;
 import org.netbeans.modules.web.el.completion.ELCodeCompletionHandler;
 import org.netbeans.api.lexer.Language;
@@ -49,6 +50,7 @@ import org.netbeans.modules.csl.api.CodeCompletionHandler;
 import org.netbeans.modules.csl.api.DeclarationFinder;
 import org.netbeans.modules.csl.api.HintsProvider;
 import org.netbeans.modules.csl.api.OccurrencesFinder;
+import org.netbeans.modules.csl.spi.CommentHandler;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 import org.netbeans.modules.el.lexer.api.ELTokenId;
@@ -116,6 +118,12 @@ public class ELLanguage extends DefaultLanguageConfig {
     @Override
     public DeclarationFinder getDeclarationFinder() {
         return new ELDeclarationFinder();
+    }
+
+    @Override
+    public CommentHandler getCommentHandler() {
+        // Expression Language doesn't supports any comments. Instead of that the code is commented out as the XHTML code.
+        return new ELCommentHandler();
     }
 
 }
