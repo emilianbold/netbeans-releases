@@ -46,7 +46,7 @@ made subject to such option by the copyright holder.
 <!--
     Generated file; DO NOT EDIT.
 -->
-<project name="NetBeansCordovaBuild" basedir="..">
+<project name="__PROJECT_NAME__" basedir="..">
     <property file="nbproject/configs/${config}.properties" />
 
     <scriptdef name="checkVersion" language="javascript">

@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
@@ -68,6 +70,7 @@ import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
 import org.netbeans.modules.cordova.wizard.CordovaProjectExtender;
 import org.netbeans.modules.cordova.platforms.spi.SDK;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
+import org.netbeans.modules.cordova.project.ConfigUtils;
 import org.netbeans.modules.cordova.project.CordovaCustomizerPanel;
 import org.netbeans.modules.cordova.project.CordovaBrowserFactory;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
@@ -106,7 +109,7 @@ public class CordovaPerformer implements BuildPerformer {
     
     private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
 
-    private final int BUILD_SCRIPT_VERSION = 32;
+    private final int BUILD_SCRIPT_VERSION = 33;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
@@ -309,6 +312,9 @@ public class CordovaPerformer implements BuildPerformer {
             }
             if (fresh) {
                 preferences.putInt(PROP_BUILD_SCRIPT_VERSION, BUILD_SCRIPT_VERSION);
+                Map<String, String> map = new HashMap<String, String>();
+                map.put("__PROJECT_NAME__", ProjectUtils.getInformation(project).getName());// NOI18N
+                ConfigUtils.replaceToken(project.getProjectDirectory().getFileObject(PATH_BUILD_XML), map);
                 createScript(project, "empty.properties", PATH_PLUGINS_PROPERTIES, false);
             }
 
@@ -346,6 +352,15 @@ public class CordovaPerformer implements BuildPerformer {
         }
     }
 
+    /**
+     * 
+     * @param project
+     * @param source
+     * @param target
+     * @param overwrite
+     * @return true if script was created. False if script was already there
+     * @throws IOException 
+     */
     public static boolean createScript(Project project, String source, String target, boolean overwrite) throws IOException {
         FileObject build = null;
         if (!overwrite) {
