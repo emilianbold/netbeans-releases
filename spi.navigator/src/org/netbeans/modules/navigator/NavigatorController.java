@@ -541,7 +541,7 @@ public final class NavigatorController implements LookupListener, PropertyChange
         if (nodes != null && nodes.length > 0) {
             Node node = nodes[0];
             DataObject dObj = obtainNodeDO(node);
-            if (dObj != null && dObj.isValid()) {
+            if (dObj != null && dObj.isValid() || updateWhenNotShown) { // updateWhenNotShown is used because of tests - test nodes does not have DO
                 newTitle = NbBundle.getMessage(NavigatorTC.class, "FMT_Navigator", node.getDisplayName());  //NOI18N
             } else {
                 newTitle = NbBundle.getMessage(NavigatorTC.class, "LBL_Navigator");  //NOI18N
