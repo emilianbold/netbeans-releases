@@ -3,7 +3,7 @@ Name: Javac Compiler Implementation
 License: GPL-2-CP
 Description: Javac Compiler Implementation
 OSR: 6273
-Origin: http://hg.openjdk.java.net/
+Origin: Oracle (http://hg.openjdk.java.net/)
 Source: http://hg.netbeans.org/main/nb-javac/
 
 The GNU General Public License (GPL)

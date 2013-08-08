@@ -2,7 +2,7 @@ Name:  Java Card 3.0.2 Reference Implementation
 Version: 1.0
 License: License Agreement for Java Card Development Kit 3.0.2 Revenue Release
 OSR: 11316
-Origin: http://java.sun.com/javacard/
+Origin: Oracle (http://java.sun.com/javacard/)
 Files: javacard_ri.zip
 Source: http://java.sun.com/javacard/downloads/index.jsp#devkit
 Comment:  Bundles Java Card RI;  module installs it as a Java Card Platform

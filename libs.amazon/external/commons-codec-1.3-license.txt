@@ -1,11 +1,4 @@
-Name: Apache Lucene
-Version: 3.6.1
-Description: Java-based indexing and search technology
 License: Apache-2.0
-Origin: http://lucene.apache.org/
-Files: lucene-highlighter-3.6.1.jar
-Source: http://svn.apache.org/repos/asf/lucene/java/trunk
-OSR: 6381
 
                                  Apache License
                            Version 2.0, January 2004
