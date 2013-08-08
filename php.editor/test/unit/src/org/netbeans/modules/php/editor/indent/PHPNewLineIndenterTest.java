@@ -93,10 +93,10 @@ public class PHPNewLineIndenterTest extends PHPCodeCompletionTestBase {
     public void testSmartEnter03() throws Exception{
         testIndentInFile("testfiles/indent/smart_enter_03.php");
     }
-//    TODO: Uncomment when issue #234100 will be fixed
-//    public void testHtmlIndentInPHP() throws Exception{
-//        testIndentInFile("testfiles/indent/html_indent_in_php.php");
-//    }
+    
+    public void testHtmlIndentInPHP() throws Exception{
+        testIndentInFile("testfiles/indent/html_indent_in_php.php");
+    }
 
     public void testFirstLine01() throws Exception{
         testIndentInFile("testfiles/indent/firstline_01.php");

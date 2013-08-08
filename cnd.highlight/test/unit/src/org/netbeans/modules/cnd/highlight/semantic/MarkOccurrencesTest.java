@@ -79,65 +79,59 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
     }
     
     public void testMacro() throws Exception {
-        // FOO 
-        performTest(SOURCE, 214);
+        // MOO 
+        performTest(SOURCE, 22, 15);
     }
 
     public void testLocalVariable() throws Exception {
-        performTest(SOURCE, 236);
+        performTest(SOURCE, 23, 18);
     }
 
     public void testGlobalVariable() throws Exception {
         // int bar
-        performTest(SOURCE, 264);
+         performTest(SOURCE, 25, 8);
     }
 
     public void testField() throws Exception {
         //boo 
-        performTest(SOURCE, 122);
+        performTest(SOURCE, 14, 14);
     }
 
     public void testCtor() throws Exception {
         // Foo() 
-        performTest(SOURCE, 115);
+        performTest(SOURCE, 14, 7);
     }
 
     public void testCtor2() throws Exception {
         // Foo(int) 
-        performTest(SOURCE, 138);
+        performTest(SOURCE, 17, 6);
     }
 
     public void testClassName() throws Exception {
         // class Foo 
-        performTest(SOURCE, 110);
+        performTest(SOURCE, 14, 2);
     }
 
     public void testPreproc1() throws Exception {
-        performTest(SOURCE, 30, 1);
-    }
-
-    public void testPreproc2() throws Exception {
-        performTest(SOURCE, 32, 3);
-    }
-
-    public void testPreproc3() throws Exception {
-        performTest(SOURCE, 38, 3);
-    }
-
-    public void testPreproc4() throws Exception {
-        performTest(SOURCE, 44, 7);
+        performTest(SOURCE, 29, 1);
+        clearWorkDir();
+        performTest(SOURCE, 31, 3);
+        clearWorkDir();
+        performTest(SOURCE, 37, 3);
+        clearWorkDir();
+        performTest(SOURCE, 43, 7);
     }
 
     public void testPreproc5() throws Exception {
-        performTest(SOURCE, 34, 3);
+        performTest(SOURCE, 33, 3);
     }
 
     public void testPreproc6() throws Exception {
-        performTest(SOURCE, 42, 5);
+        performTest(SOURCE, 41, 5);
     }
 
     public void testSeveralDeclarations() throws Exception {
-        performTest(SOURCE, 48, 10);
+        performTest(SOURCE, 47, 10);
     }
 
     public void testConstAndNonConstMethods() throws Exception {
@@ -146,85 +140,85 @@ public class MarkOccurrencesTest extends SemanticHighlightingTestBase {
 
     public void testIZ175700() throws Exception {
         // IZ#175700 : [code model] Parser does not recognized inline initialization in constructor
-        performTest(SOURCE, 80, 5);
+        performTest(SOURCE, 79, 5);
     }
     
     public void testStringLiterals() throws Exception {
-        performTest(SOURCE, 84, 16);
+        performTest(SOURCE, 83, 16);
     }
     
     public void testCharLiterals() throws Exception {
-        performTest(SOURCE, 94, 22);
+        performTest(SOURCE, 93, 30);
     }
 
     public void testAddSymbolZeroParams() throws Exception {
-        performTest(SOURCE, 107, 15);
+        performTest(SOURCE, 106, 15);
         clearWorkDir();
-        performTest(SOURCE, 116, 25);
+        performTest(SOURCE, 115, 25);
         clearWorkDir();
-        performTest(SOURCE, 139, 35);
+        performTest(SOURCE, 138, 34);
     }
     
     public void testAddSymbolOneParam() throws Exception {
-        performTest(SOURCE, 108, 15);
+        performTest(SOURCE, 107, 15);
         clearWorkDir();
-        performTest(SOURCE, 121, 25);
+        performTest(SOURCE, 120, 25);
         clearWorkDir();
-        performTest(SOURCE, 138, 35);
+        performTest(SOURCE, 137, 34);
     }
     
     public void testAddSymbolTwoParams() throws Exception {
-        performTest(SOURCE, 109, 15);
+        performTest(SOURCE, 108, 15);
         clearWorkDir();
-        performTest(SOURCE, 126, 25);
+        performTest(SOURCE, 125, 25);
         clearWorkDir();
-        performTest(SOURCE, 141, 35);
+        performTest(SOURCE, 140, 35);
         clearWorkDir();
     }
     
     public void test206416_1() throws Exception {
         if (!Utilities.isWindows()) { // somehow it is failing on windows due to not removed file
             // #206416 - Renaming a local variable in C/C++ code changes the name of other variables with the same name in other scopes
-            performTest(SOURCE, 148, 14);
+            performTest(SOURCE, 147, 14);
             clearWorkDir();
-            performTest(SOURCE, 152, 10);
+            performTest(SOURCE, 151, 10);
         }
     }
     
     public void test206416_2() throws Exception {
         // #206416 - Renaming a local variable in C/C++ code changes the name of other variables with the same name in other scopes
-        performTest(SOURCE, 149, 19);
+        performTest(SOURCE, 148, 19);
         clearWorkDir();
-        performTest(SOURCE, 150, 20);
+        performTest(SOURCE, 149, 20);
     }
     
     public void test206416_3() throws Exception {
         // #206416 - Renaming a local variable in C/C++ code changes the name of other variables with the same name in other scopes
-        performTest(SOURCE, 155, 14);
+        performTest(SOURCE, 154, 14);
         clearWorkDir();
-        performTest(SOURCE, 156, 10);
+        performTest(SOURCE, 155, 10);
         clearWorkDir();
     }
     
     public void testAddSymbolMoreParams() throws Exception {
-        performTest(SOURCE, 111, 15);
+        performTest(SOURCE, 110, 15);
         clearWorkDir();
-        performTest(SOURCE, 132, 25);
+        performTest(SOURCE, 131, 25);
         clearWorkDir();
-        performTest(SOURCE, 140, 35);
+        performTest(SOURCE, 139, 35);
         clearWorkDir();
     }
     
     public void test231272_1() throws Exception {
-        performTest(SOURCE, 164, 15);
+        performTest(SOURCE, 165, 15);
         clearWorkDir();
-        performTest(SOURCE, 181, 20);
+        performTest(SOURCE, 182, 20);
     }
     
     public void test231272_2() throws Exception {
-        performTest(SOURCE, 171, 15);
+        performTest(SOURCE, 172, 15);
         clearWorkDir();
-        performTest(SOURCE, 181, 10);
+        performTest(SOURCE, 182, 10);
     }
 
     @Override

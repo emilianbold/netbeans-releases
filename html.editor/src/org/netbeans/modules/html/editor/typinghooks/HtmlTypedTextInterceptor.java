@@ -50,6 +50,7 @@ import javax.swing.text.Position;
 import org.netbeans.api.editor.completion.Completion;
 import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -453,18 +454,28 @@ public class HtmlTypedTextInterceptor implements TypedTextInterceptor {
         }
     }
 
-    /**
-     * typing hook for text/xhtml language.
-     * 
-     * Once we autocomplete the closing EL expression delimiter: #{"}" - 
-     * see {@link #addClosingELDelimiter(org.netbeans.spi.editor.typinghooks.TypedTextInterceptor.MutableContext) },
-     * the the content of the expression changes to {@link XhtmlElTokenId.EL} and the HtmlTypedTextInterceptor won't
-     * be triggered for the content anymore. The "insert ignore" code won't run and if the user types the closing
-     * curly bracket it won't be skipped and s/he ends up with #{}}|.
-     * So we need to register a special hook for the text/xhtml content type
-     * and do the key event ignore check here. 
+    /*
+     typing hook for text/xhtml and text/css languages.
+     
+     EL:
+     Once we autocomplete the closing EL expression delimiter: #{"}" - 
+     see {@link #addClosingELDelimiter(org.netbeans.spi.editor.typinghooks.TypedTextInterceptor.MutableContext) },
+     the the content of the expression changes to {@link XhtmlElTokenId.EL} and the HtmlTypedTextInterceptor won't
+     be triggered for the content anymore. The "insert ignore" code won't run and if the user types the closing
+     curly bracket it won't be skipped and s/he ends up with #{}}|.
+     So we need to register a special hook for the text/xhtml content type
+     and do the key event ignore check here. 
+     
+     CSS:
+     Similar to EL - once use type <div class=, the quote pair is added automatically.
+     However as the lexer language changes to text/css inside the attribute value, 
+     the default HtmlTypedTextInterceptor is not called anymore and if the user subsequently
+     types the quote, it will not skip the generated one, but create a new one.
+     To resolve this, we need to register a TypedTextInterceptor also to the text/css
+     to handle the "inser ignores".
+    
      */
-    private static class XhtmlTypedTextInterceptor implements TypedTextInterceptor {
+    private static class InsertIgnoreSupportTypedTextInterceptor extends TypedTextInterceptorAdapter {
 
         @Override
         public boolean beforeInsert(Context context) throws BadLocationException {
@@ -487,19 +498,43 @@ public class HtmlTypedTextInterceptor implements TypedTextInterceptor {
             return false;
         }
 
+    }
+
+    private static class CssTypedTextInterceptor extends TypedTextInterceptorAdapter {
+
+        @Override
+        public boolean beforeInsert(Context context) throws BadLocationException {
+            char ch = context.getText().charAt(0);
+            switch (ch) {
+                case '\'':
+                case '"':
+                    boolean result = skipExistingQuote(context);
+                    if (!result) {
+                        result = changeQuotesType(context);
+                    }
+                    return result;
+            }
+            return false;
+        }
+    }
+
+    private static class TypedTextInterceptorAdapter implements TypedTextInterceptor {
+
+        @Override
+        public boolean beforeInsert(Context context) throws BadLocationException {
+            return false;
+        }
+
         @Override
         public void insert(MutableContext context) throws BadLocationException {
-            //no-op
         }
 
         @Override
         public void afterInsert(Context context) throws BadLocationException {
-            //no-op
         }
 
         @Override
         public void cancelled(Context context) {
-            //no-op
         }
 
     }
@@ -514,13 +549,28 @@ public class HtmlTypedTextInterceptor implements TypedTextInterceptor {
 
     }
 
-    //workaround for insert ignore in #{|} -- see the {@liXhtmlTypedTextInterceptor documentation
-    @MimeRegistration(mimeType = "text/xhtml", service = TypedTextInterceptor.Factory.class)
-    public static final class XhtmlFactory implements TypedTextInterceptor.Factory {
+    @MimeRegistration(mimeType = "text/css", service = TypedTextInterceptor.Factory.class)
+    public static final class CssFactory implements TypedTextInterceptor.Factory {
 
         @Override
         public TypedTextInterceptor createTypedTextInterceptor(MimePath mimePath) {
-            return new XhtmlTypedTextInterceptor();
+            return new CssTypedTextInterceptor();
+        }
+
+    }
+
+    //workaround for insert ignore in <div class="|" -- see 
+    //the InsertIgnoreSupportTypedTextInterceptor documentation
+    //workaround for insert ignore in #{|} -- see the {@liXhtmlTypedTextInterceptor} documentation
+    @MimeRegistrations({
+        @MimeRegistration(mimeType = "text/css", service = TypedTextInterceptor.Factory.class),
+        @MimeRegistration(mimeType = "text/xhtml", service = TypedTextInterceptor.Factory.class)
+    })
+    public static final class InsertIgnoreFactory implements TypedTextInterceptor.Factory {
+
+        @Override
+        public TypedTextInterceptor createTypedTextInterceptor(MimePath mimePath) {
+            return new InsertIgnoreSupportTypedTextInterceptor();
         }
 
     }

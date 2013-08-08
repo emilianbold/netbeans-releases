@@ -42,6 +42,8 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.awt.Color;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.Document;
@@ -65,32 +67,81 @@ import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.completion.AttrValuesCompletion;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.web.common.api.ValueCompletion;
+import org.netbeans.modules.web.common.api.WebPageMetadata;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 
 /**
- * just CSL to HtmlExtension bridge
+ * csl.api to HtmlExtension bridge
  *
  * @author marekfukala
  */
 public class HtmlDeclarationFinder implements DeclarationFinder {
 
+    private static final RequestProcessor RP = new RequestProcessor(HtmlDeclarationFinder.class);
+
     /**
-     * Find the declaration for the program element that is under the caretOffset
-     * Return a Set of regions that should be renamed if the element under the caret offset is
-     * renamed.
-     *
-     * Return {@link DeclarationLocation#NONE} if the declaration can not be found, otherwise return
-     *   a valid DeclarationLocation.
+     * Cache of the {@link Document} to mimeType obtained from {@link WebPageMetadata#getMetadata(org.openide.util.Lookup)
+     * }. The cache is updated by tasks triggered from {@link #getReferenceSpan(javax.swing.text.Document, int)
+     * }.
      */
+    private static final Map<Document, String> DOC_TO_WEB_MIMETYPE_CACHE
+            = new WeakHashMap<>();
+    
+    /**
+     * {@link Document} to {@link RequestProcessor.Task} map.
+     */
+    private static final Map<Document, Reference<Task>> DOC_TO_UPDATE_TASK_MAP
+            = new WeakHashMap<>();
+
+    /**
+     * Task which updates the {@link #DOC_TO_WEB_MIMETYPE_CACHE} cache.
+     */
+    private static final class DocumentMimeTypeCacheUpdateTask implements Runnable {
+
+        private final Document document;
+
+        public DocumentMimeTypeCacheUpdateTask(Document document) {
+            this.document = document;
+        }
+
+        @Override
+        public void run() {
+            try {
+                ParserManager.parse(Collections.singleton(Source.create(document)), new UserTask() {
+                    @Override
+                    public void run(ResultIterator resultIterator) throws Exception {
+                        ResultIterator htmlRi = WebUtils.getResultIterator(resultIterator, "text/html");
+                        if (htmlRi != null) {
+                            HtmlParserResult result = (HtmlParserResult) htmlRi.getParserResult();
+                            String sourceMimetype = Utils.getWebPageMimeType(result.getSyntaxAnalyzerResult());
+                            DOC_TO_WEB_MIMETYPE_CACHE.put(document, sourceMimetype);
+                        }
+                    }
+                });
+            } catch (ParseException ex) {
+                Exceptions.printStackTrace(ex);
+            }
+        }
+
+    };
+
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {
-        HtmlParserResult result = (HtmlParserResult)info;
+        HtmlParserResult result = (HtmlParserResult) info;
         DeclarationLocation loc = findCoreHtmlDeclaration(info, caretOffset);
         if (loc != null) {
             return loc;
@@ -105,20 +156,6 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
         return DeclarationLocation.NONE;
     }
 
-    /**
-     * Check the caret offset in the document and determine if it is over a span
-     * of text that should be hyperlinkable ("Go To Declaration" - in other words,
-     * locate the reference and return it. When the user drags the mouse with a modifier
-     * key held this will be hyperlinked, and so on.
-     * <p>
-     * Remember that when looking up tokens in the token hierarchy, you will get the token
-     * to the right of the caret offset, so check for these conditions
-     * {@code (sequence.move(offset); sequence.offset() == offset)} and check both
-     * sides such that placing the caret between two tokens will match either side.
-     *
-     * @return {@link OffsetRange#NONE} if the caret is not over a valid reference span,
-     *   otherwise return the character range for the given hyperlink tokens
-     */
     @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
         final AtomicReference<OffsetRange> result_ref = new AtomicReference<>(OffsetRange.NONE);
@@ -128,16 +165,45 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                 OffsetRange range = getCoreHtmlReferenceSpan(doc, caretOffset);
                 if (range != null) {
                     result_ref.set(range);
-                    return ;
+                    return;
                 }
+                //Issue 233671>>>
+                //Wrong HtmlExtension triggered for facelets files
+                //
+                //We need to obtain the document's mimetype from WebPageMetadata, 
+                //but we need it quickly as we are in EDT. No parsing task running
+                //is allowed either.
+                Reference<Task> taskReference = DOC_TO_UPDATE_TASK_MAP.get(doc);
+                Task task = taskReference == null ? null : taskReference.get();
+                if(task == null) {
+                    task = RP.create(new DocumentMimeTypeCacheUpdateTask(doc));
+                    DOC_TO_UPDATE_TASK_MAP.put(doc, new WeakReference(task));
+                }
+                
+                String mimeType = DOC_TO_WEB_MIMETYPE_CACHE.get(doc);
+                if (mimeType == null) {
+                    //no cached result -- we need to update the cache,
+                    //but lazily.
+                    task.schedule(0);
+
+                    //well for a while, until the task finishes and updates the cache,
+                    //we will be malfunctioning, but noone except Vlada will notice :-)
+                    mimeType = NbEditorUtilities.getMimeType(doc);
+                } else {
+                    //ok, we obtained the result from the cache, but what if the 
+                    //mimetype from the WebPageMetadata has changed and the cache entry
+                    //won't be GCed? 
+                    //=>post the update task with some longer delay
+                    task.schedule(5000); //5 seconds -- will reschedule if called more times in row
+                }
+                //<<<Issue 233671
 
                 //html extensions
-                String mimeType = NbEditorUtilities.getMimeType(doc);
                 for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(mimeType)) {
                     range = ext.getReferenceSpan(doc, caretOffset);
                     if (range != null && range != OffsetRange.NONE) {
                         result_ref.set(range);
-                        return ;
+                        return;
                     }
                 }
             }
@@ -277,11 +343,11 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                     }
                 }
             });
-                            
-            if(unquotedValue.get() == null || type.get() == null) {
+
+            if (unquotedValue.get() == null || type.get() == null) {
                 return null;
             }
-                            
+
             Map<FileObject, Collection<EntryHandle>> occurances = CssRefactoring.findAllOccurances(unquotedValue.get(), type.get(), file, true); //non virtual element only - this means only css declarations, not usages in html code
             if (occurances == null) {
                 return null;
@@ -313,7 +379,6 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
 
         }
 
-
         return null;
     }
 
@@ -340,10 +405,10 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             //find attribute name
             int quotesDiff = WebUtils.isValueQuoted(ts.token().text().toString()) ? 1 : 0;
             unquotedValue = WebUtils.unquotedValue(ts.token().text().toString());
-            
+
             Token<HTMLTokenId> token = ts.token();
             List<? extends Token<HTMLTokenId>> tokenParts = token.joinedParts();
-            if(tokenParts == null) {
+            if (tokenParts == null) {
                 //continuos token
                 valueRange = new OffsetRange(ts.offset() + quotesDiff, ts.offset() + ts.token().length() - quotesDiff);
             } else {
@@ -351,11 +416,10 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                 //the range is first token part start to last token part end
                 Token<HTMLTokenId> first = tokenParts.get(0);
                 Token<HTMLTokenId> last = tokenParts.get(tokenParts.size() - 1);
-                
+
                 valueRange = new OffsetRange(first.offset(hi), last.offset(hi) + last.length());
             }
-            
-            
+
             while (ts.movePrevious()) {
                 HTMLTokenId id = ts.token().id();
                 if (id == HTMLTokenId.ARGUMENT && attrName == null) {
@@ -372,11 +436,12 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
 
     private static class AlternativeLocationImpl implements AlternativeLocation {
 
-        private DeclarationLocation location;
-        private EntryHandle entryHandle;
-        private RefactoringElementType type;
-        private static final int SELECTOR_TEXT_MAX_LENGTH = 50;
+        private final DeclarationLocation location;
+        private final EntryHandle entryHandle;
+        private final RefactoringElementType type;
         
+        private static final int SELECTOR_TEXT_MAX_LENGTH = 50;
+
         private static final Color SELECTOR_COLOR = new Color(0x00, 0x7c, 0x00);
 
         public AlternativeLocationImpl(DeclarationLocation location, EntryHandle entry, RefactoringElementType type) {
@@ -394,7 +459,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             Color tweakedToLookAndFeel = LFCustoms.shiftColor(c);
             return Integer.toHexString(tweakedToLookAndFeel.getRGB()).substring(2);
         }
-        
+
         @Override
         public String getDisplayHtml(HtmlFormatter formatter) {
             StringBuilder b = new StringBuilder();
@@ -402,7 +467,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
             //find out if there's the opening curly bracket
             String lineText = entryHandle.entry().getLineText().toString();
             assert lineText != null;
-            
+
             //split the text to three parts: the element text itself, its prefix and postfix
             //then render the element test in bold
             String elementTextPrefix;
@@ -417,32 +482,32 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                     elementTextPrefix = "";
             }
             String elementText = elementTextPrefix + entryHandle.entry().getName();
-            
+
             String prefix = "";
             String postfix = "";
             //strip the line to the body start
             int elementIndex = lineText.indexOf(elementText);
-            if(elementIndex >= 0) {
+            if (elementIndex >= 0) {
                 //find the closest opening curly bracket or NL forward
                 int to;
-                for(to = elementIndex; to < lineText.length(); to++) {
+                for (to = elementIndex; to < lineText.length(); to++) {
                     char c = lineText.charAt(to);
-                    if(c == '{' || c == '\n') {
+                    if (c == '{' || c == '\n') {
                         break;
                     }
                 }
                 //now find nearest closing curly bracket or newline backward
                 int from;
-                for(from = elementIndex; from >= 0; from--) {
+                for (from = elementIndex; from >= 0; from--) {
                     char ch = lineText.charAt(from);
-                    if(ch == '}' || ch == '\n') {
+                    if (ch == '}' || ch == '\n') {
                         break;
                     }
                 }
-                
+
                 prefix = lineText.substring(from + 1, elementIndex).trim();
                 postfix = lineText.substring(elementIndex + elementText.length(), to).trim();
-                
+
                 //now strip the prefix and postfix so the whole text is not longer than SELECTOR_TEXT_MAX_LENGTH
                 int overlap = (prefix.length() + elementText.length() + postfix.length()) - SELECTOR_TEXT_MAX_LENGTH;
                 if (overlap > 0) {
@@ -453,7 +518,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                     postfix = postfix.substring(0, postfix.length() - stripFromPostfix) + "..";
                 }
             }
-            
+
             b.append("<font color=");//NOI18N
             b.append(hexColorCode(SELECTOR_COLOR));
             b.append(">");
@@ -472,25 +537,27 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
 
             String path = null;
             String resolveTo = null;
-            if (pathRoot != null) {
-                path = FileUtil.getRelativePath(pathRoot, file); //this may also return null
-            }
-            if (path == null) {
-                //the file cannot be resolved relatively to the webroot or no webroot found
-                //try to resolve relative path to the project's root folder
-                Project project = FileOwnerQuery.getOwner(file);
-                if (project != null) {
-                    pathRoot = project.getProjectDirectory();
+            if (file != null) {
+                if (pathRoot != null) {
                     path = FileUtil.getRelativePath(pathRoot, file); //this may also return null
-                    if (path != null) {
-                        resolveTo = "${project.home}/"; //NOI18N
+                }
+                if (path == null) {
+                    //the file cannot be resolved relatively to the webroot or no webroot found
+                    //try to resolve relative path to the project's root folder
+                    Project project = FileOwnerQuery.getOwner(file);
+                    if (project != null) {
+                        pathRoot = project.getProjectDirectory();
+                        path = FileUtil.getRelativePath(pathRoot, file); //this may also return null
+                        if (path != null) {
+                            resolveTo = "${project.home}/"; //NOI18N
+                        }
                     }
                 }
-            }
 
-            if (path == null) {
-                //if everything fails, just use the absolute path
-                path = file.getPath();
+                if (path == null) {
+                    //if everything fails, just use the absolute path
+                    path = file.getPath();
+                }
             }
 
             if (resolveTo != null) {
@@ -498,7 +565,7 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                 b.append(resolveTo);
                 b.append("</i>"); //NOI18N
             }
-            b.append(path);
+            b.append(path == null ? "???" : path); //NOI18N
             int lineOffset = entryHandle.entry().getLineOffset();
             if (lineOffset != -1) {
                 b.append(":"); //NOI18N
@@ -524,13 +591,14 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
         }
 
         private static String getComparableString(AlternativeLocation loc) {
+            FileObject file = loc.getLocation().getFileObject();
             return new StringBuilder().append(loc.getLocation().getOffset()) //offset
-                    .append(loc.getLocation().getFileObject().getPath()).toString(); //filename
+                    .append(file == null ? "???" : file.getPath()).toString(); //filename //NOI18N
         }
     }
     //useless class just because we need to put something into the AlternativeLocation to be
     //able to get some icon from it
-    private static CssSelectorElementHandle CSS_SELECTOR_ELEMENT_HANDLE_SINGLETON = new CssSelectorElementHandle();
+    private static final CssSelectorElementHandle CSS_SELECTOR_ELEMENT_HANDLE_SINGLETON = new CssSelectorElementHandle();
 
     private static class CssSelectorElementHandle implements ElementHandle {
 
