@@ -1,9 +1,9 @@
 Name: JSP Standard Tag Library (implementation)
 Version: 1.2.2
-License: CDDL and GNU Public License v.2 w/Classpath Exception
+License: CDDL-GPL-2-CP
 OSR: 2473
 Description: JavaServer Pages Standard Tag Library (implementation)
-Origin: https://jstl.java.net/download.html
+Origin: Oracle (https://jstl.java.net/download.html)
 
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0

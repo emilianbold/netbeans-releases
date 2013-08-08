@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.options.ui;
 
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
+import java.io.Serializable;
 import java.util.prefs.Preferences;
 import javax.swing.GroupLayout;
 import javax.swing.GroupLayout.Alignment;
@@ -182,7 +183,7 @@ public class CodeCompletionPanel extends JPanel {
     private JCheckBox autoStringConcatenationCheckBox;
     // End of variables declaration//GEN-END:variables
 
-    private final class DefaultCheckBoxListener implements ItemListener {
+    private final class DefaultCheckBoxListener implements ItemListener, Serializable {
         @Override
         public void itemStateChanged(ItemEvent e) {
             validateData();

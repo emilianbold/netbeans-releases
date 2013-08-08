@@ -1,9 +1,9 @@
 Name: JAX-WS
 Version: 2.2.6
 Description: JAX-WS Reference Implementation
-License: CDDL-1.1, GPLv2
+License: CDDL-GPL-2-CP
 OSR: 4116
-Origin: http://jax-ws.java.net/
+Origin: Oracle (http://jax-ws.java.net/)
 Files: jaxws-2.2.6.zip, jaxws-api-doc.zip
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.1 

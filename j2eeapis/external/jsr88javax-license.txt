@@ -3,7 +3,7 @@ License: CDDL-1.0
 OSR: 136590
 Description: J2EE Deployment APIs 1.1
 Version: 88
-Origin: http://jcp.org/aboutJava/communityprocess/mrel/jsr088/index.html
+Origin: Oracle (http://jcp.org/aboutJava/communityprocess/mrel/jsr088/index.html)
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 

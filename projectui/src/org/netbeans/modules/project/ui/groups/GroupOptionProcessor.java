@@ -86,13 +86,13 @@ public class GroupOptionProcessor implements ArgsProcessor {
             for (Group g : Group.allGroups()) {
                 if (g.id.equals(openOption) || g.getName().equals(openOption)) {
                     supressWinsysLazyLoading();
-                    Group.setActiveGroup(g);
+                    Group.setActiveGroup(g, false);
                     return;
                 }
             }
             throw new CommandException(2, GroupOptionProcessor_no_such_group(openOption));
         } else if (closeOption) {
-            Group.setActiveGroup(null);
+            Group.setActiveGroup(null, false);
         } else if (listOption) {
             int max_size = GroupOptionProcessor_column_id().length();
             for (Group g : Group.allGroups()) {
