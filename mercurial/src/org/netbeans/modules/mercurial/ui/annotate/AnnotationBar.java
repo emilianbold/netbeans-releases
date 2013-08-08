@@ -709,6 +709,10 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         return refreshAnnotationsTask;
     }
 
+    boolean isAnnotated() {
+        return annotated;
+    }
+
     /**
      * Class for running a code after the previous revision is determined, which may take some time
      */
