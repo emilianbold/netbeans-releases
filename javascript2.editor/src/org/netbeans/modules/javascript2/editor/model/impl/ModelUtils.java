@@ -812,18 +812,20 @@ public class ModelUtils {
                             }
 
                             boolean checkProperty = (indexResults == null || indexResults.isEmpty()) && !"@mtd".equals(kind);
-                            for (IndexResult indexResult : indexResults) {
-                                // go through the resul from index and add appropriate types to the new resolved
-                                JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
-                                if ("@mtd".equals(kind) && jsKind.isFunction()) {
-                                    //Collection<TypeUsage> resolved = resolveTypeFromSemiType(model, ModelUtils.findJsObject(model, offset), IndexedElement.getReturnTypes(indexResult));
-                                    Collection<TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
-                                    ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
-                                } else if ("@arr".equals(kind)) { // NOI18N
-                                    Collection<TypeUsage> resolvedTypes = IndexedElement.getArrayTypes(indexResult);
-                                    ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
-                                } else {
-                                    checkProperty = true;
+                            if (indexResults != null) {
+                                for (IndexResult indexResult : indexResults) {
+                                    // go through the resul from index and add appropriate types to the new resolved
+                                    JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
+                                    if ("@mtd".equals(kind) && jsKind.isFunction()) {
+                                        //Collection<TypeUsage> resolved = resolveTypeFromSemiType(model, ModelUtils.findJsObject(model, offset), IndexedElement.getReturnTypes(indexResult));
+                                        Collection<TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
+                                        ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
+                                    } else if ("@arr".equals(kind)) { // NOI18N
+                                        Collection<TypeUsage> resolvedTypes = IndexedElement.getArrayTypes(indexResult);
+                                        ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
+                                    } else {
+                                        checkProperty = true;
+                                    }
                                 }
                             }
                             if (checkProperty) {
