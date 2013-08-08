@@ -1,7 +1,7 @@
 Name: Template for Jenkins Jobs for PHP Projects
 Version: 4f37f781e487dc957ff09359d8a5cb51e6588ff9
 Description: Job configuration file for Hudson for PHP projects.
-License: BSD
+License: BSD-php-jenkins-template
 OSR: 6909
 Origin: https://github.com/sebastianbergmann/php-jenkins-template
 Files: config-4f37f781e487dc957ff09359d8a5cb51e6588ff9.xml

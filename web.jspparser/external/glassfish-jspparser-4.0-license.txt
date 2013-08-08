@@ -2,7 +2,7 @@ Name: GlassFish JSP Parser
 License: CDDL-GPL-2-CP
 OSR: 4101
 Description: GlassFish JSP Parser
-Origin: https://glassfish.dev.java.net/
+Origin: Oracle (https://glassfish.dev.java.net/)
 Source: https://glassfish.dev.java.net/
 Version: 4.0.b81 (GF version)
 
