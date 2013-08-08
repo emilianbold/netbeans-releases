@@ -178,6 +178,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         setName(org.openide.util.NbBundle.getMessage(SetUpRemotePlatform.class, "TXT_SetUpRemotePlatform")); // NOI18N
         setLayout(new java.awt.GridBagLayout());
 
+        hostLabel.setLabelFor(host);
         org.openide.awt.Mnemonics.setLocalizedText(hostLabel, NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.hostLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -193,6 +194,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(host, gridBagConstraints);
 
+        portLabel.setLabelFor(port);
         org.openide.awt.Mnemonics.setLocalizedText(portLabel, NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.portLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 2;
@@ -212,6 +214,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(port, gridBagConstraints);
 
+        usernameLabel.setLabelFor(username);
         org.openide.awt.Mnemonics.setLocalizedText(usernameLabel, NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.usernameLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -239,6 +242,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(radioButtonPassword, gridBagConstraints);
 
+        passwordLabel.setLabelFor(password);
         org.openide.awt.Mnemonics.setLocalizedText(passwordLabel, NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.passwordLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -266,6 +270,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(11, 0, 0, 0);
         add(radioButtonKey, gridBagConstraints);
 
+        keyFileLabel.setLabelFor(keyFilePath);
         org.openide.awt.Mnemonics.setLocalizedText(keyFileLabel, NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.keyFileLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -295,6 +300,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(buttonBrowse, gridBagConstraints);
 
+        passphraseLabel.setLabelFor(passphrase);
         org.openide.awt.Mnemonics.setLocalizedText(passphraseLabel, NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.passphraseLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -317,6 +323,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 0);
         add(jSeparator1, gridBagConstraints);
 
+        jreLocationLabel.setLabelFor(jreLocation);
         org.openide.awt.Mnemonics.setLocalizedText(jreLocationLabel, org.openide.util.NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.jreLocationLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -350,6 +357,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 5, 0);
         add(buttonTest, gridBagConstraints);
 
+        workingDirLabel.setLabelFor(workingDir);
         org.openide.awt.Mnemonics.setLocalizedText(workingDirLabel, org.openide.util.NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.workingDirLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -374,6 +382,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(10, 0, 10, 0);
         add(jSeparator2, gridBagConstraints);
 
+        displayNameLabel.setLabelFor(displayName);
         org.openide.awt.Mnemonics.setLocalizedText(displayNameLabel, org.openide.util.NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.displayNameLabel.text")); // NOI18N
         displayNameLabel.setToolTipText(org.openide.util.NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.displayNameLabel.toolTipText")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
