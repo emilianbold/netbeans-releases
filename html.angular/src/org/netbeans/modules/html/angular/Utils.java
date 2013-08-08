@@ -116,13 +116,16 @@ public class Utils {
     
     public static String getFileContent(File file) throws IOException {
         Reader r = new FileReader(file);
-        char[] buf = new char[2048];
-        int read;
         StringBuilder sb = new StringBuilder();
-        while ((read = r.read(buf)) != -1) {
-            sb.append(buf, 0, read);
+        try {
+            char[] buf = new char[2048];
+            int read;
+            while ((read = r.read(buf)) != -1) {
+                sb.append(buf, 0, read);
+            }
+        } finally {
+            r.close();
         }
-        r.close();
         return sb.toString();
     }
     
