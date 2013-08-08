@@ -330,22 +330,22 @@ public class ClassPathUtils {
         if (list == null) {
             return false;
         }
-
-        Iterator it = list.iterator();
-        while (it.hasNext()) {
-            ClassPattern cp = (ClassPattern) it.next();
+        for (ClassPattern cp : list) {
             switch (cp.type) {
                 case (ClassPattern.CLASS):
-                    if (className.equals(cp.name))
-                        return true;
+                    if (className.equals(cp.name)) {
+                        return !cp.exclude;
+                    }
                     break;
                 case (ClassPattern.PACKAGE):
-                    if (className.startsWith(cp.name) && (className.lastIndexOf('.') <= cp.name.length()))
-                        return true;
+                    if (className.startsWith(cp.name) && (className.lastIndexOf('.') <= cp.name.length())) {
+                        return !cp.exclude;
+                    }
                     break;
                 case (ClassPattern.PACKAGE_AND_SUBPACKAGES):
-                    if (className.startsWith(cp.name))
-                        return true;
+                    if (className.startsWith(cp.name)) {
+                        return !cp.exclude;
+                    }
                     break;
             }
         }
@@ -446,8 +446,13 @@ public class ClassPathUtils {
         static final int PACKAGE_AND_SUBPACKAGES = 2;
         String name;
         int type;
+        boolean exclude;
         
         ClassPattern(String name, int type) {
+            if (name.startsWith("-")) { // NOI18N
+                exclude = true;
+                name = name.substring(1);
+            }
             this.name = name;
             this.type = type;
         }
