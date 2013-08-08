@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import org.netbeans.api.html.lexer.HTMLTokenId;
@@ -83,7 +84,7 @@ public abstract class PHPFormatterTestBase extends PHPCodeCompletionTestBase {
         HtmlVersion.DEFAULT_VERSION_UNIT_TESTS_OVERRIDE = HtmlVersion.HTML41_TRANSATIONAL;
     }
 
-    protected void reformatFileContents(String file, IndentPrefs preferences, int initialIndent) throws Exception {
+    protected void reformatFileContents(String file, IndentPrefs indentPrefs, int initialIndent) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
         BaseDocument doc = getDocument(fo);
@@ -102,14 +103,31 @@ public abstract class PHPFormatterTestBase extends PHPCodeCompletionTestBase {
             }
         }
 
-        Formatter formatter = getFormatter(preferences);
-        //assertNotNull("getFormatter must be implemented", formatter);
+        Formatter formatter = getFormatter(indentPrefs);
 
-        setupDocumentIndentation(doc, preferences);
+        setupDocumentIndentation(doc, indentPrefs);
 
+        Map<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, initialIndent);
+        if (indentPrefs != null) {
+            options.put(FmtOptions.INDENT_SIZE, indentPrefs.getIndentation());
+        }
+        options.put(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
-        prefs.putInt(FmtOptions.INITIAL_INDENT, initialIndent);
-        prefs.putInt(FmtOptions.CONTINUATION_INDENT_SIZE, 4);
+        for (String option : options.keySet()) {
+            Object value = options.get(option);
+            if (value instanceof Integer) {
+                prefs.putInt(option, ((Integer) value).intValue());
+            } else if (value instanceof String) {
+                prefs.put(option, (String) value);
+            } else if (value instanceof Boolean) {
+                prefs.put(option, ((Boolean) value).toString());
+            } else if (value instanceof CodeStyle.BracePlacement) {
+                prefs.put(option, ((CodeStyle.BracePlacement) value).name());
+            } else if (value instanceof CodeStyle.WrapStyle) {
+                prefs.put(option, ((CodeStyle.WrapStyle) value).name());
+            }
+        }
 
         format(doc, formatter, formatStart, formatEnd, false);
 
