@@ -3,7 +3,7 @@ Version: 3.4
 Description: ANother Tool for Language Recognition, 
 is a language tool that provides a framework for constructing recognizers, 
 interpreters, compilers, and translators from grammatical descriptions.
-License: BSD License
+License: BSD-antlr-runtime
 OSR: 13311
 Origin: http://www.antlr.org
 

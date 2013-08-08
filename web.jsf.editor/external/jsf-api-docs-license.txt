@@ -3,7 +3,7 @@ Version: 2.0.3-FCS
 License: CDDL-1.0
 OSR: Sun
 Description: Java Server Faces API documentation
-Origin: http://java.sun.com/javaee/javaserverfaces/download.html
+Origin: Oracle (http://java.sun.com/javaee/javaserverfaces/download.html)
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0
 

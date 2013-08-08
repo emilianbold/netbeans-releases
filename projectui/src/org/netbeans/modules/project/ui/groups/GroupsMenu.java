@@ -169,7 +169,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                         RP.post(new Runnable() {
                             @Override
                             public void run() {
-                                Group.setActiveGroup(g);
+                                Group.setActiveGroup(g, false);
                             }
                         });
                     }
@@ -211,7 +211,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                                     RP.post(new Runnable() {
                                         @Override
                                         public void run() {
-                                            Group.setActiveGroup((Group)o);
+                                            Group.setActiveGroup((Group)o, false);
                                         }
                                     });
                                 }
@@ -239,7 +239,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                     RP.post(new Runnable() {
                         @Override
                         public void run() {
-                            Group.setActiveGroup(null);
+                            Group.setActiveGroup(null, false);
                         }
                     });
                 }
@@ -335,7 +335,7 @@ public class GroupsMenu extends AbstractAction implements Presenter.Menu, Presen
                 @Override
                 public void run() {
                     Group g = NewGroupPanel.create(type, name, autoSync, useOpen, masterProject, directory);
-                    Group.setActiveGroup(g);
+                    Group.setActiveGroup(g, true);
                 }
             });
         }

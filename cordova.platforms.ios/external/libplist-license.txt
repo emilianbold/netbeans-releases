@@ -1,7 +1,7 @@
 Name: plist
 Version: 1.10
 Description: A library to handle Apple Property List format in binary or XML
-License: LGPL 2.1
+License: LGPL-2.1
 Origin: http://cgit.sukimashita.com/libplist.git/
 Files: libplist.1.dylib
 
