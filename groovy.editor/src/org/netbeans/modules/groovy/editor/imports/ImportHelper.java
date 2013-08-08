@@ -50,6 +50,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -336,40 +337,114 @@ public final class ImportHelper {
                 int packageLine = getPackageLineIndex(doc);
                 int afterPackageLine = packageLine + 1;
                 int afterPackageOffset = Utilities.getRowStartFromLineOffset(doc, afterPackageLine);
-
+                int importLine = getAppropriateLine(doc, fqName);
+                
                 // If the line after the package statement isn't empty, put one empty line there
                 if (!Utilities.isRowWhite(doc, afterPackageOffset)) {
-                    int offset = Utilities.getRowStartFromLineOffset(doc, afterPackageLine);
-                    edits.replace(offset, 0, "\n", false, 0);
+                    edits.replace(afterPackageOffset, 0, "\n", false, 0);
+                } else {
+                    if (collectImports(doc).isEmpty()) {
+                        importLine++;
+                    }
                 }
 
-                int lastImportLine = getLastImportLineIndex(doc);
-                int afterLastImportLine = lastImportLine + 1;
+                // Find appropriate place to import and put it there
+                int importOffset = Utilities.getRowStartFromLineOffset(doc, importLine);
+                edits.replace(importOffset, 0, "import " + fqName + "\n", false, 0);
 
-                // No import statement in the source code, put the new one after the empty line
-                if (lastImportLine == -1) {
-                    int offset = Utilities.getRowStartFromLineOffset(doc, afterPackageLine + 1);
-                    edits.replace(offset, 0, "import " + fqName + "\n", false, 0);
-
-                    // If the line after the last import statement isn't empty, put one empty line there
-                    if (!Utilities.isRowWhite(doc, offset)) {
-                        edits.replace(offset, 0, "\n", false, 0);
-                    }
-                // There are already some imports, put the new one after the last import statement
-                } else {
-                    int offset = Utilities.getRowStartFromLineOffset(doc, afterLastImportLine);
-                    edits.replace(offset, 0, "import " + fqName + "\n", false, 0);
-
-                    // If the line after the last import statement isn't empty, put one empty line there
-                    if (!Utilities.isRowWhite(doc, offset)) {
-                        edits.replace(offset, 0, "\n", false, 0);
-                    }
+                // If it's the last import and if the line after the last import
+                // statement isn't empty, put one empty line there
+                int afterImportsOffset = Utilities.getRowStartFromLineOffset(doc, importLine);
+                
+                if (!Utilities.isRowWhite(doc, afterImportsOffset) && isLastImport(doc, fqName)) {
+                    edits.replace(afterImportsOffset, 0, "\n", false, 0);
                 }
             } catch (BadLocationException ex) {
                 Exceptions.printStackTrace(ex);
             }
             edits.apply();
         }
+    }
+
+    private static int getAppropriateLine(BaseDocument doc, String fqName) throws BadLocationException {
+        Map<String, Integer> imports = collectImports(doc);
+        if (imports.isEmpty()) {
+            // No imports in the source code yet, put the first one two lines behind package statement
+            return getPackageLineIndex(doc) + 1;
+        }
+
+        imports.put(fqName, -1);
+
+        String lastImportName = null;
+        for (String importName : imports.keySet()) {
+            if (fqName.equals(importName)) {
+                break;
+            }
+
+            // Save import name for the next iteration --> If we find fqName then
+            // we want to put new import statement after the last saved import name
+            lastImportName = importName;
+        }
+
+        // It should be added as the first import statement
+        if (lastImportName == null) {
+            for (Integer importLine : imports.values()) {
+
+                // Just find the first import with line set
+                if (importLine > 0) {
+                    return importLine;
+                }
+            }
+        }
+
+        return imports.get(lastImportName) + 1;
+    }
+
+    private static boolean isLastImport(BaseDocument doc, String fqName) throws BadLocationException {
+        Map<String, Integer> imports = collectImports(doc);
+        if (imports.isEmpty()) {
+            return true;
+        }
+
+        String lastImportName = null;
+        for (String importName : imports.keySet()) {
+            lastImportName = importName;
+        }
+
+        // lastImportName is null if there is no other import statement yet
+        if (lastImportName != null && fqName.compareTo(lastImportName) > 0) {
+            return true;
+        }
+        return false;
+    }
+
+    private static Map<String, Integer> collectImports(BaseDocument doc) throws BadLocationException {
+        TokenSequence<GroovyTokenId> ts = LexUtilities.getGroovyTokenSequence(doc, 1);
+
+        Map<String, Integer> result = new TreeMap<>();
+        while (ts.moveNext()) {
+            if (ts.token().id() == GroovyTokenId.LITERAL_import) {
+                StringBuilder sb = new StringBuilder();
+
+                IMPORT_COUNTER:
+                while (ts.moveNext()) {
+                    GroovyTokenId tokenID = ts.token().id();
+                    switch (tokenID) {
+                        case IDENTIFIER:
+                        case DOT:
+                            sb.append(ts.token().text());
+                            break;
+                        case WHITESPACE:
+                            // Probably space between 'import' and identifier --> Do nothing
+                            break;
+                        default:
+                            break IMPORT_COUNTER;
+                    }
+                }
+                result.put(sb.toString(), Utilities.getLineOffset(doc, ts.offset()));
+            }
+        }
+        return result;
     }
 
     /**
