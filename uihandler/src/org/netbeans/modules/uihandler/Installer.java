@@ -1317,6 +1317,14 @@ public class Installer extends ModuleInstall implements Runnable {
         Matcher m = null;
         if (!fileProtocol) {
             LOG.log(Level.FINE, "uploadLogs, reading reply"); // NOI18N
+            if (conn instanceof HttpURLConnection) {
+                int responseCode = ((HttpURLConnection) conn).getResponseCode();
+                String responseMessage = ((HttpURLConnection) conn).getResponseMessage();
+                LOG.log(Level.FINE, "upload logs: Response Code = {0}, message = {1}", new Object[]{responseCode, responseMessage});
+                if (responseCode != HttpURLConnection.HTTP_OK) {
+                    throw new ResponseException(responseMessage);
+                }
+            }
             InputStream is = conn.getInputStream();
             redir = new StringBuffer();
             for (;;) {
@@ -2109,10 +2117,22 @@ public class Installer extends ModuleInstall implements Runnable {
                     } else {
                         logFile = NbBundle.getMessage(Installer.class, "LOG_FILE");
                     }
+                    String responseMessage = null;
+                    if (ex instanceof ResponseException) {
+                        responseMessage = ex.getLocalizedMessage();
+                    }
                     if (!report) {
-                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm(), logFile);
+                        if (responseMessage != null) {
+                            txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedWithResponse", u.getHost(), u.toExternalForm(), logFile, responseMessage);
+                        } else {
+                            txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailed", u.getHost(), u.toExternalForm(), logFile);
+                        }
                     } else {
-                        txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm(), logFile);
+                        if (responseMessage != null) {
+                            txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReportWithResponse", u.getHost(), u.toExternalForm(), logFile, responseMessage);
+                        } else {
+                            txt = NbBundle.getMessage(Installer.class, "MSG_ConnetionFailedReport", u.getHost(), u.toExternalForm(), logFile);
+                        }
                     }
                     Object dlg = ConnectionErrorDlg.get(txt);
                     NotifyDescriptor nd = new NotifyDescriptor.Message(dlg, NotifyDescriptor.ERROR_MESSAGE);
@@ -2820,6 +2840,13 @@ public class Installer extends ModuleInstall implements Runnable {
             } catch( Exception ex ) {
                 throw new IOException( ex );
             }
+        }
+    }
+
+    private static class ResponseException extends IOException {
+        
+        public ResponseException(String responseMessage) {
+            super(responseMessage);
         }
     }
 }
