@@ -125,6 +125,10 @@ public final class NimbusLFCustoms extends LFCustoms {
             "NbSlideBar.RestoreButton.Gap", 8,
             //#212453
             "Nb.EmptyEditorArea.border", BorderFactory.createEtchedBorder( EtchedBorder.LOWERED ),
+
+            //browser picker
+            "Nb.browser.picker.background.light", new Color(249,249,249),
+            "Nb.browser.picker.foreground.light", new Color(130,130,130),
         };
         /*Object[] result = {
             DESKTOP_BORDER, new EmptyBorder(1, 1, 1, 1),

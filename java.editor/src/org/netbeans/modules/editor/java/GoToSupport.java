@@ -347,6 +347,11 @@ public class GoToSupport {
                                 }
                             }
                         }
+                    } else if (el != null && el.getKind() == ElementKind.ENUM_CONSTANT && path.getLeaf().getKind() == Kind.VARIABLE) {
+                        Element e = controller.getTrees().getElement(new TreePath(path, ((VariableTree)path.getLeaf()).getInitializer()));
+                        if (!controller.getElementUtilities().isSynthetic(e)) {
+                            el = e;
+                        }
                     }
                 }
             } else {

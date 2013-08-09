@@ -45,11 +45,11 @@ import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.Expression;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.Prio;
 import org.netbeans.modules.css.model.api.Property;
+import org.netbeans.modules.css.model.api.PropertyDeclaration;
 import org.netbeans.modules.css.model.api.PropertyValue;
 import org.openide.filesystems.FileObject;
 

@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.groovy.editor.imports;
 
+import java.util.Objects;
 import javax.swing.Icon;
 
 /**
@@ -92,5 +93,35 @@ public class ImportCandidate {
 
     public void setImportantsLevel(int importantsLevel) {
         this.importantsLevel = importantsLevel;
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 79 * hash + Objects.hashCode(this.name);
+        hash = 79 * hash + Objects.hashCode(this.fqnName);
+        hash = 79 * hash + this.importantsLevel;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final ImportCandidate other = (ImportCandidate) obj;
+        if (!Objects.equals(this.name, other.name)) {
+            return false;
+        }
+        if (!Objects.equals(this.fqnName, other.fqnName)) {
+            return false;
+        }
+        if (this.importantsLevel != other.importantsLevel) {
+            return false;
+        }
+        return true;
     }
 }

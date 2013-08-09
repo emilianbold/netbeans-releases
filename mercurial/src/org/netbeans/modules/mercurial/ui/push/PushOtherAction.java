@@ -60,6 +60,8 @@ import org.netbeans.modules.mercurial.ui.actions.ContextAction;
 import org.netbeans.modules.mercurial.ui.wizards.CloneRepositoryWizardPanel;
 import org.netbeans.modules.mercurial.util.HgProjectUtils;
 import org.netbeans.modules.mercurial.util.HgUtils;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -74,7 +76,15 @@ import org.openide.util.HelpCtx;
 @NbBundle.Messages({
     "CTL_MenuItem_PushOther=Pus&h..."
 })
+@ActionID(id = "org.netbeans.modules.mercurial.ui.push.PushOtherAction", category = "Mercurial")
+@ActionRegistration(lazy = false, displayName = "#CTL_MenuItem_PushOther")
 public class PushOtherAction extends ContextAction {
+    
+    public static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/push-setting.png"; //NOI18N
+    
+    public PushOtherAction () {
+        super(ICON_RESOURCE);
+    }
     
     @Override
     protected boolean enable(Node[] nodes) {
@@ -87,6 +97,11 @@ public class PushOtherAction extends ContextAction {
 
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_PushOther";                                //NOI18N
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
     }
 
     @Override

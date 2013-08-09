@@ -1,5 +1,5 @@
 Name: CSS 2.1 Specification
-License: W3C
+License: W3C (the original at http://www.w3.org/TR/CSS21/)
 OSR: 9248
 Version: 2.1
 Description: Documentation for the CSS 2.1 standard

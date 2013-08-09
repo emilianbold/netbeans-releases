@@ -48,6 +48,8 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -73,7 +75,6 @@ import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.problems.ProjectPropertiesProblemProvider;
-import org.netbeans.modules.web.clientproject.remote.RemoteFiles;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserImplementation;
 import org.netbeans.modules.web.clientproject.spi.platform.ClientProjectEnhancedBrowserProvider;
 import org.netbeans.modules.web.clientproject.spi.platform.RefreshOnSaveListener;
@@ -110,8 +111,12 @@ import org.openide.filesystems.FileUtil;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.Lookups;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -137,7 +142,6 @@ public class ClientSideProject implements Project {
     volatile String name;
     private RefreshOnSaveListener refreshOnSaveListener;
     private ClassPath sourcePath;
-    private RemoteFiles remoteFiles;
     private ClientProjectEnhancedBrowserImplementation projectEnhancedBrowserImpl;
     private WebBrowser projectWebBrowser;
     private ClientSideProjectBrowserProvider projectBrowserProvider;
@@ -164,6 +168,32 @@ public class ClientSideProject implements Project {
         }
     };
 
+    // #233052
+    private final WindowSystemListener windowSystemListener = new WindowSystemListener() {
+
+        @Override
+        public void beforeLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void afterLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void beforeSave(WindowSystemEvent event) {
+            // browser
+            ClientProjectEnhancedBrowserImplementation enhancedBrowserImpl = getEnhancedBrowserImpl();
+            if (enhancedBrowserImpl != null) {
+                enhancedBrowserImpl.close();
+            }
+        }
+
+        @Override
+        public void afterSave(WindowSystemEvent event) {
+        }
+
+    };
+
 
     public ClientSideProject(AntProjectHelper helper) {
         this.projectHelper = helper;
@@ -176,7 +206,6 @@ public class ClientSideProject implements Project {
         if (ebi != null) {
             lookup.setConfigurationProvider(ebi.getProjectConfigurationProvider());
         }
-        remoteFiles = new RemoteFiles(this);
         eval.addPropertyChangeListener(new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
@@ -202,6 +231,8 @@ public class ClientSideProject implements Project {
                 }
             }
         });
+        WindowManager windowManager = WindowManager.getDefault();
+        windowManager.addWindowSystemListener(WeakListeners.create(WindowSystemListener.class, windowSystemListener, windowManager));
     }
 
     public synchronized ClientProjectEnhancedBrowserImplementation getEnhancedBrowserImpl() {
@@ -298,10 +329,6 @@ public class ClientSideProject implements Project {
             ctx = "/" + ctx; //NOI18N
         }
         return ctx;
-    }
-
-    public RemoteFiles getRemoteFiles() {
-        return remoteFiles;
     }
 
     public AntProjectHelper getProjectHelper() {
@@ -677,6 +704,16 @@ public class ClientSideProject implements Project {
             }
             return null;
         }
+
+        @Override
+        public Collection<FileObject> getWebRoots() {
+            FileObject siteRoot = getSiteRootFolder();
+            if (siteRoot == null) {
+                return Collections.emptyList();
+            }
+            return Collections.singleton(siteRoot);
+        }
+
     }
 
     private static final class ProjectSearchInfo extends SearchInfoDefinition {

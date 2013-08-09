@@ -1,7 +1,7 @@
 Name: jvyamlb
 Version: 0.2.3
 Description: A pure Java YAML 1.1 loader and dumper.
-License: MIT
+License: MIT-jvyamlb
 Origin: https://github.com/olabini/jvyamlb
 Source: https://github.com/olabini/jvyamlb
 

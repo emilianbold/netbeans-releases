@@ -44,6 +44,7 @@
 
 package org.netbeans.spi.jumpto.type;
 
+import java.util.Collection;
 import java.util.List;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.project.Project;
@@ -142,7 +143,7 @@ public interface TypeProvider {
                 @Override
                 @NonNull
                 public Result createResult(
-                        @NonNull final List<? super TypeDescriptor> result,
+                        @NonNull final Collection<? super TypeDescriptor> result,
                         @NonNull final String[] message,
                         @NonNull final Context context) {
                     return new Result(result, message, context);
@@ -199,7 +200,7 @@ public interface TypeProvider {
      */
     public static final class Result extends Object {
         
-        private List<? super TypeDescriptor> result;
+        private Collection<? super TypeDescriptor> result;
         private String[] message;
         private int retry;
         private String highlightText;
@@ -207,7 +208,7 @@ public interface TypeProvider {
         private boolean modified;
 
         Result(
-                @NonNull final List<? super TypeDescriptor> result,
+                @NonNull final Collection<? super TypeDescriptor> result,
                 @NonNull final String[] message,
                 @NonNull final Context context) {
             Parameters.notNull("result", result);   //NOI18N

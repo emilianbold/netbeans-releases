@@ -53,6 +53,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.IssueImpl;
@@ -319,11 +320,5 @@ public class DashboardUtils {
             }
         }
         return null;
-    }
-
-    public static void setAsSeen(boolean seen, List<IssueImpl> tasks) {
-        for (IssueImpl task : tasks) {
-            task.setSeen(seen);
-        }
     }
 }

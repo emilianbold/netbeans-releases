@@ -75,6 +75,7 @@ import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.comp.Attr;
 import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Todo;
 import com.sun.tools.javac.main.JavaCompiler;
@@ -629,6 +630,8 @@ public class Utilities {
         };
         NBResolve resolve = NBResolve.instance(jti.getContext());
         resolve.disableAccessibilityChecks();
+        Enter enter = Enter.instance(jti.getContext());
+        enter.shadowTypeEnvs(true);
         try {
             Attr attr = Attr.instance(jti.getContext());
             Env<AttrContext> env = ((JavacScope) scope).getEnv();
@@ -639,6 +642,7 @@ public class Utilities {
             log.useSource(prev);
             log.popDiagnosticHandler(discardHandler);
             resolve.restoreAccessbilityChecks();
+            enter.shadowTypeEnvs(false);
         }
     }
 

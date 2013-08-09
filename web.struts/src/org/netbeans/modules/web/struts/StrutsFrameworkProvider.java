@@ -47,22 +47,18 @@ package org.netbeans.modules.web.struts;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
-import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
-import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.j2ee.dd.api.common.CreateCapability;
@@ -71,7 +67,6 @@ import org.netbeans.modules.j2ee.dd.api.common.VersionNotSupportedException;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.JspConfig;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
-import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.Taglib;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.web.api.webmodule.ExtenderController;
@@ -85,10 +80,9 @@ import org.openide.filesystems.FileLock;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.libraries.Library;
-import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.api.queries.FileEncodingQuery;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 
 import org.netbeans.modules.web.spi.webmodule.WebFrameworkProvider;
@@ -344,9 +338,9 @@ public class StrutsFrameworkProvider extends WebFrameworkProvider {
                     servlet.addInitParam(param);
                     servlet.setLoadOnStartup(new BigInteger("2"));//NOI18N
 
-                    ServletMapping mapping = (ServletMapping)ddRoot.createBean("ServletMapping"); //NOI18N
+                    ServletMapping25 mapping = (ServletMapping25)ddRoot.createBean("ServletMapping"); //NOI18N
                     mapping.setServletName(panel.getServletName());//NOI18N
-                    mapping.setUrlPattern(panel.getURLPattern());//NOI18N
+                    mapping.addUrlPattern(panel.getURLPattern());//NOI18N
 
                     ddRoot.addServletMapping(mapping);
                     

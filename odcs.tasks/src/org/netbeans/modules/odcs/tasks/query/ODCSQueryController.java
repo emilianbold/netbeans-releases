@@ -729,7 +729,7 @@ public class ODCSQueryController extends QueryController implements ItemListener
         rp.post(new Runnable() {
             @Override
             public void run() {
-                if(query.isSaved() && parameters.parametersChanged()) {
+                if (modifiable && query.isSaved() && parameters.parametersChanged()) {
                     NotifyDescriptor desc = new NotifyDescriptor.Confirmation(
                         Bundle.MSG_Changed(), NotifyDescriptor.YES_NO_CANCEL_OPTION
                     );

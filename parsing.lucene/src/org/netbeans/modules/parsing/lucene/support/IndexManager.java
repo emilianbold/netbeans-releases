@@ -46,6 +46,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,8 +67,11 @@ import org.netbeans.modules.parsing.lucene.SupportAccessor;
 import org.netbeans.modules.parsing.lucene.spi.ScanSuspendImplementation;
 import org.netbeans.modules.parsing.lucene.support.Index.WithTermFrequencies.TermFreq;
 import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.Parameters;
 import org.openide.util.Utilities;
+import org.openide.util.WeakListeners;
 
 /**
  * The {@link IndexManager} controls access to {@link Index} instances and acts
@@ -78,11 +83,19 @@ public final class IndexManager {
 
     private static final ReentrantReadWriteLock lock  = new ReentrantReadWriteLock();
     private static final Lookup.Result<? extends ScanSuspendImplementation> res = Lookup.getDefault().lookupResult(ScanSuspendImplementation.class);
+    private static final LookupListener lookupListener = new LookupListener() {
+        @Override
+        public void resultChanged(LookupEvent ev) {
+            scanSuspendImpls = null;
+        }
+    };
+    private static volatile Collection<? extends ScanSuspendImplementation> scanSuspendImpls;
 
     static IndexFactory factory = new LuceneIndexFactory();    //Unit tests overrides the factory
     
     static {
         SupportAccessor.setInstance(new SupportAccessorImpl());
+        res.addLookupListener(WeakListeners.create(LookupListener.class, lookupListener, res));
     }
     
     private IndexManager() {}
@@ -462,15 +475,24 @@ public final class IndexManager {
     }
 
     private static void suspend() {
-        for (ScanSuspendImplementation impl : res.allInstances()) {
+        for (ScanSuspendImplementation impl : getScanSuspendImpls()) {
             impl.suspend();
         }
     }
 
     private static void resume() {
-        for (ScanSuspendImplementation impl : res.allInstances()) {
+        for (ScanSuspendImplementation impl : getScanSuspendImpls()) {
             impl.resume();
         }
+    }
+
+    @NonNull
+    private static Collection<? extends ScanSuspendImplementation> getScanSuspendImpls() {
+        Collection<? extends ScanSuspendImplementation> result = scanSuspendImpls;
+        if (result == null) {
+            scanSuspendImpls = result = new ArrayList<>(res.allInstances());
+        }
+        return result;
     }
     
     private static class SupportAccessorImpl extends SupportAccessor {

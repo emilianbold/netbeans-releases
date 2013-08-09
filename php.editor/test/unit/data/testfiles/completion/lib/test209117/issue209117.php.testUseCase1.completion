@@ -1,7 +1,7 @@
 Code completion result for source line:
 | //CC_HERE
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
-METHOD     baseClassfunctionName() - gene  [PROTECTE  \FrontSpace\BaseClass
+METHOD     baseClassfunctionName() - over  [PROTECTE  \FrontSpace\BaseClass
 ------------------------------------
 METHOD     __call($name, $arguments) - ge  [PUBLIC]   Magic Method
 METHOD     __callStatic($name, $arguments  [STATIC]   Magic Method

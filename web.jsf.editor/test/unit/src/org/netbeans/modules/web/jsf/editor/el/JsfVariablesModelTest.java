@@ -82,13 +82,13 @@ public class JsfVariablesModelTest extends TestBaseForTestProject {
         return model[0];
     }
 
-    public void testCreateModel() throws ParseException {
+    public void testCreateModel() throws Exception {
         ParseResultInfo result = parse(getTestFilePath());
         JsfVariablesModel model = getModel(result);
         assertNotNull(model);
     }
 
-    public void testModel() throws ParseException {
+    public void testModel() throws Exception {
         ParseResultInfo result = parse(getTestFilePath());
         JsfVariablesModel model = getModel(result);
         assertNotNull(model);
@@ -142,7 +142,7 @@ public class JsfVariablesModelTest extends TestBaseForTestProject {
         assertNull(model.getContainingContext(1384));
     }
 
-    public void testGetAncestors() throws ParseException {
+    public void testGetAncestors() throws Exception {
         ParseResultInfo result = parse(getTestFilePath());
         JsfVariablesModel model = getModel(result);
         assertNotNull(model);
@@ -174,7 +174,7 @@ public class JsfVariablesModelTest extends TestBaseForTestProject {
 //        assertEquals(0, ancestors.size());
     }
 
-    public void testResolveProperties() throws ParseException {
+    public void testResolveProperties() throws Exception {
         ParseResultInfo result = parse(getTestFilePath());
         JsfVariablesModel model = getModel(result);
         assertNotNull(model);

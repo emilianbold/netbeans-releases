@@ -154,7 +154,6 @@ parse_args "$@"
 
 if [ -z "$jdkhome" ] ; then
     # try to find JDK
-
     case "`uname`" in
         Darwin*)
         # read Java Preferences
@@ -164,6 +163,11 @@ if [ -z "$jdkhome" ] ; then
         # JDK1.7 Update 10 as a fallback
         elif [ -f "/Library/Java/JavaVirtualMachines/jdk1.7.0_10.jdk/Contents/Home/bin/java" ] ; then
             jdkhome="/Library/Java/JavaVirtualMachines/jdk1.7.0_10.jdk/Contents/Home"
+        fi         
+   
+        # JRE fallback
+        if [ ! -x "${jdkhome}/bin/java" -a -f "/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home/bin/java" ] ; then
+            jdkhome="/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home"
         fi
         ;;
         *) javac=`which javac`

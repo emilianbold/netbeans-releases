@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.team.ide.spi;
 
+import javax.swing.Action;
 import javax.swing.JComponent;
 
 /**
@@ -90,4 +91,11 @@ public interface TeamDashboardComponentProvider {
         public String getDisplayName();
     }
     
+    /**
+     * Creates a component which is shown in case there is no project selected in the dashboard.
+     * 
+     * @param newServerAction provided in case there should be some UI to create a new server instance. Otherwise <code>null</code>.
+     * @return the no project selected component
+     */
+    public JComponent createNoProjectComponent(Action newServerAction);
 }

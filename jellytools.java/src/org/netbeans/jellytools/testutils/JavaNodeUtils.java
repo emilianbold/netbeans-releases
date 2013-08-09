@@ -59,7 +59,7 @@ public class JavaNodeUtils extends NodeUtils {
     {
         String safeDeleteTitle = Bundle.getString("org.netbeans.modules.refactoring.java.ui.Bundle",
                 "LBL_SafeDel_Delete"); // NOI18N
-        new JDialogOperator(safeDeleteTitle).close();
+        new JDialogOperator(safeDeleteTitle).requestClose();
     }
 
     public static void performSafeDelete(Node node) {

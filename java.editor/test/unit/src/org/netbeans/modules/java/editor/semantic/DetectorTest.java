@@ -65,6 +65,7 @@ import org.netbeans.junit.RandomlyFails;
 import org.netbeans.modules.java.editor.semantic.ColoringAttributes.Coloring;
 import org.netbeans.modules.java.editor.semantic.SemanticHighlighter.ErrorDescriptionSetter;
 import org.netbeans.modules.java.editor.semantic.TestBase.Performer;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 import org.netbeans.spi.editor.highlighting.support.OffsetsBag;
 import org.netbeans.spi.editor.hints.ErrorDescription;
 import org.netbeans.spi.editor.hints.Fix;
@@ -450,4 +451,7 @@ public class DetectorTest extends TestBase {
     
     private FileObject testSourceFO;
     
+    static {
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
+    }
 }

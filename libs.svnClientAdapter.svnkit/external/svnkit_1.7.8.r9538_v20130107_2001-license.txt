@@ -1,7 +1,7 @@
 Name: SvnKit
 Version: 1.7.8
 Description: SvnKit Subversion client
-License: TMate http://svnkit.com/licensing.html
+License: TMate
 Origin: http://svnkit.com
 
 

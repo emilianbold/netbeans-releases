@@ -71,7 +71,11 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -88,12 +92,9 @@ import javax.swing.JViewport;
 import javax.swing.ListModel;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.jumpto.type.TypeBrowser;
+import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ui.OpenProjects;
 import org.netbeans.editor.JumpList;
 import org.netbeans.modules.jumpto.EntitiesListCellRenderer;
@@ -127,7 +128,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
     
     static final Logger LOGGER = Logger.getLogger(GoToTypeAction.class.getName()); // Used from the panel as well
     
-    private SearchType nameKind;
+    private Collection<? extends SearchType> nameKinds;
     private static ListModel EMPTY_LIST_MODEL = new DefaultListModel();
     private static final RequestProcessor rp = new RequestProcessor ("GoToTypeAction-RequestProcessor",1);      //NOI18N
     private static final RequestProcessor PROFILE_RP = new RequestProcessor("GoToTypeAction-Profile",1);        //NOI18N
@@ -287,16 +288,27 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         int wildcard = containsWildCard(text);
                 
         if (exact) {
-            nameKind = panel.isCaseSensitive() ? SearchType.EXACT_NAME : SearchType.CASE_INSENSITIVE_EXACT_NAME;
-        }
-        else if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
-            nameKind = SearchType.CAMEL_CASE;
-        }
-        else if (wildcard != -1) {
-            nameKind = panel.isCaseSensitive() ? SearchType.REGEXP : SearchType.CASE_INSENSITIVE_REGEXP;                
-        }
-        else {            
-            nameKind = panel.isCaseSensitive() ? SearchType.PREFIX : SearchType.CASE_INSENSITIVE_PREFIX;
+            nameKinds = Collections.singleton(
+                panel.isCaseSensitive() ?
+                    SearchType.EXACT_NAME :
+                    SearchType.CASE_INSENSITIVE_EXACT_NAME);
+        } else if ((isAllUpper(text) && text.length() > 1) || isCamelCase(text)) {
+            nameKinds = Arrays.asList(
+                new SearchType[] {
+                    SearchType.CAMEL_CASE,
+                    panel.isCaseSensitive() ?
+                        SearchType.PREFIX :
+                        SearchType.CASE_INSENSITIVE_PREFIX});
+        } else if (wildcard != -1) {
+            nameKinds = Collections.singleton(
+                panel.isCaseSensitive() ?
+                    SearchType.REGEXP :
+                    SearchType.CASE_INSENSITIVE_REGEXP);
+        } else {
+            nameKinds = Collections.singleton(
+                panel.isCaseSensitive() ?
+                    SearchType.PREFIX :
+                    SearchType.CASE_INSENSITIVE_PREFIX);
         }
         
         // Compute in other thread        
@@ -472,7 +484,30 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         }
 
         @Override
-        public void run() {
+        public void run() {            
+            final Future<?> f = OpenProjects.getDefault().openProjects();
+            if (!f.isDone()) {
+                try {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            panel.updateMessage(NbBundle.getMessage(GoToTypeAction.class, "TXT_LoadingProjects"));
+                        }
+                    });
+                    f.get();
+                } catch (InterruptedException ex) {
+                    LOGGER.fine(ex.getMessage());
+                } catch (ExecutionException ex) {
+                    LOGGER.fine(ex.getMessage());
+                } finally {
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            panel.updateMessage(NbBundle.getMessage(GoToTypeAction.class, "TXT_Searching"));
+                        }
+                    });
+                }
+            }
             for (;;) {
                 final int[] retry = new int[1];
 
@@ -572,9 +607,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
         @SuppressWarnings("unchecked")
         private List<? extends TypeDescriptor> getTypeNames(String text, int[] retry) {
             // TODO: Search twice, first for current project, then for all projects
-            final List<TypeDescriptor> items = new ArrayList<TypeDescriptor>(128);
+            final Set<TypeDescriptor> items = new HashSet<TypeDescriptor>();
             final String[] message = new String[1];
-            TypeProvider.Context context = TypeProviderAccessor.DEFAULT.createContext(null, text, nameKind);            
+            final Collection<TypeProvider.Context> contexts = new HashSet<TypeProvider.Context>(2);
+            for (SearchType nameKind : nameKinds) {
+                contexts.add(TypeProviderAccessor.DEFAULT.createContext(null, text, nameKind));
+            }
+            assert !contexts.isEmpty();
             assert rp.isRequestProcessorThread();
             if (typeProviders == null) {
                 typeProviders = implicitTypeProviders != null ? implicitTypeProviders : Lookup.getDefault().lookupAll(TypeProvider.class);
@@ -584,11 +623,13 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                     return null;
                 }
                 current = provider;
-                final TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message, context);
+                final TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message, contexts.iterator().next());
                 long start = System.currentTimeMillis();
                 try {
                     LOGGER.log(Level.FINE, "Calling TypeProvider: {0}", provider);  //NOI18N
-                    provider.computeTypeNames(context, result);
+                    for (TypeProvider.Context context : contexts) {
+                        provider.computeTypeNames(context, result);
+                    }
                 } finally {
                     current = null;
                 }
@@ -602,13 +643,11 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                     retry[0],
                     TypeProviderAccessor.DEFAULT.getRetry(result));
             }
-            if ( !isCanceled ) {   
-                //time = System.currentTimeMillis();
-                Collections.sort(items, new TypeComparator(caseSensitive));
-                panel.setWarning(message[0]);
-                //sort += System.currentTimeMillis() - time;
-                //LOGGER.fine("PERF - " + " GSS:  " + gss + " GSB " + gsb + " CP: " + cp + " SFB: " + sfb + " GTN: " + gtn + "  ADD: " + add + "  SORT: " + sort );
-                return items;
+            if ( !isCanceled ) {
+                final ArrayList<TypeDescriptor> result = new ArrayList<TypeDescriptor>(items);
+                Collections.sort(result, new TypeComparator(caseSensitive));
+                panel.setWarning(message[0]);                
+                return result;
             }
             else {
                 return null;

@@ -122,9 +122,8 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         txtUrl.getDocument().addDocumentListener(this);
     }
 
-    public void setObject(Object bean) {
-        this.bean = bean;
-    }
+    @Override
+    public void setObject(Object bean) { }
 
     public String getDisplayName() {
         return txtDisplayName.getText();
@@ -135,13 +134,13 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
     }
     
     public void setDisplayName(String name) {
-        txtDisplayName.setText(name);
         originalName = name;
+        txtDisplayName.setText(name);
     }
 
     public void setUrl(String url) {
-        txtUrl.setText(url);
         originalUrl = url;
+        txtUrl.setText(url);
     }
 
     public TeamServerProvider getProvider () {
@@ -282,7 +281,6 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         e = urlValid(getUrl());
         if (e!=null) {
             showError(e);
-            return;
         }
     }
 
@@ -347,14 +345,17 @@ public class TeamServerInstanceCustomizer extends javax.swing.JPanel implements 
         return null;
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         validateInput();
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         validateInput();
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         validateInput();
     }

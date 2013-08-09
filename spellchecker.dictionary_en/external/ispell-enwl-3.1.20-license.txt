@@ -1,6 +1,6 @@
 Name: Ispell word list
 Version: 3.1.20
-License: BSD
+License: BSD-ispell-enwl
 Description: English dictionary word list
 Origin: http://wordlist.sourceforge.net/
 OSR: Oracle-2411

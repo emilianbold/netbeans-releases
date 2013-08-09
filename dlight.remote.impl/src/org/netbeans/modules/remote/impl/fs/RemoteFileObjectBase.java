@@ -120,7 +120,7 @@ public abstract class RemoteFileObjectBase {
     public abstract boolean isData();
     public abstract RemoteFileObject getFileObject(String name, String ext, @NonNull Set<String> antiLoop);
     public abstract RemoteFileObject getFileObject(String relativePath, @NonNull Set<String> antiLoop);
-    public abstract InputStream getInputStream() throws FileNotFoundException;
+    public abstract InputStream getInputStream(boolean checkLock) throws FileNotFoundException;
     public abstract RemoteFileObject[] getChildren();
     public abstract FileType getType();
 

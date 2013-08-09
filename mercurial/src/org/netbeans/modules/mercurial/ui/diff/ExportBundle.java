@@ -271,7 +271,7 @@ class ExportBundle extends ExportDiffSupport implements ActionListener, Property
                 new Object[]{selectButton, DialogDescriptor.CANCEL_OPTION},
                 selectButton,
                 DialogDescriptor.DEFAULT_ALIGN,
-                new HelpCtx(this.getClass()),
+                new HelpCtx("org.netbeans.modules.mercurial.ui.repository.ChangesetPickerPanel"), //NOI18N
                 null);
         selectButton.setEnabled(changesetPickerPanel.getSelectedRevision() != null);
         changesetPickerPanel.addPropertyChangeListener(this);

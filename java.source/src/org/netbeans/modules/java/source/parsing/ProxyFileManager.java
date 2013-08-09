@@ -511,7 +511,7 @@ public final class ProxyFileManager implements JavaFileManager {
                 null :
                 processorGeneratedFiles.canWrite() || !siblings.getProvider().hasSibling() ?
                     result :
-                    (T) FileManagerTransaction.nullFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
+                    (T) FileObjects.nullWriteFileObject((InferableJavaFileObject)result);    //safe - NullFileObject subclass of both JFO and FO.
     }
 
     private JavaFileManager[] getFileManagers (final Location location) {

@@ -1,7 +1,7 @@
 Name: imobiledevice
 Version: 1.1.5
 Description: A protocol library to access an iOS Devices
-License: LGPL
+License: LGPL-2.1
 Origin: http://cgit.sukimashita.com/libimobiledevice.git/
 Files: libimobiledevice.4.dylib
 

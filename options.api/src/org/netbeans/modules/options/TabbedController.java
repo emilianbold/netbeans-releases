@@ -222,6 +222,8 @@ public class TabbedController extends OptionsPanelController {
                 scroll.setBorder(BorderFactory.createEmptyBorder());
                 scroll.setOpaque(false);
                 scroll.getViewport().setOpaque(false);
+                scroll.getVerticalScrollBar().setUnitIncrement(Utils.ScrollBarUnitIncrement);
+                scroll.getHorizontalScrollBar().setUnitIncrement(Utils.ScrollBarUnitIncrement);
                 pane.setComponentAt(selectedIndex, scroll);
                 controller.update();
 		controller.isValid();

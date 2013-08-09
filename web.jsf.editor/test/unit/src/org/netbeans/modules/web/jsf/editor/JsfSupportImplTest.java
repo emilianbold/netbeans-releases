@@ -69,15 +69,15 @@ public class JsfSupportImplTest extends TestBaseForTestProject {
         assertTrue(instance instanceof JsfSupportProviderImpl);
     }
 
-    public void testGetJsfSupportInstance() {
-        FileObject file = getTestFile("testWebProject/web/index.xhtml");
+    public void testGetJsfSupportInstance() throws Exception {
+        FileObject file = getWorkFile("testWebProject/web/index.xhtml");
         assertNotNull(file);
         JsfSupportImpl instance = JsfSupportImpl.findFor(file);
         assertNotNull(instance);
     }
 
-    public void testIsTheJsfSupportInstanceCached() {
-        FileObject file = getTestFile("testWebProject/web/index.xhtml");
+    public void testIsTheJsfSupportInstanceCached() throws Exception{
+        FileObject file = getWorkFile("testWebProject/web/index.xhtml");
         assertNotNull(file);
         JsfSupportImpl instance1 = JsfSupportImpl.findFor(file);
         assertNotNull(instance1);

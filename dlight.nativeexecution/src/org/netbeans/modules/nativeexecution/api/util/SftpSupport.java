@@ -348,8 +348,8 @@ class SftpSupport {
                 if (parameters.dstFileToRename != null) {
                     time = System.currentTimeMillis();
                     ProcessUtils.ExitStatus rc = ProcessUtils.execute(execEnv,
-                            "/bin/sh", "-c", "cp " + parameters.dstFileName + ' ' + parameters.dstFileToRename + // NOI18N
-                            " && rm " + parameters.dstFileName); // NOI18N
+                            "/bin/sh", "-c", "cp \"" + parameters.dstFileName + "\" \"" + parameters.dstFileToRename + // NOI18N
+                            "\" && rm \"" + parameters.dstFileName + '"'); // NOI18N
                     if (!rc.isOK()) {
                         throw new ExecutionException(rc.error, null);
                     }

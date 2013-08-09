@@ -48,7 +48,6 @@
 
 package org.netbeans.modules.websvc.rest.support;
 
-import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -56,7 +55,6 @@ import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import javax.swing.JFileChooser;
 
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -64,13 +62,9 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.websvc.rest.client.RESTExplorerPanel;
-import org.netbeans.modules.websvc.rest.client.RESTResourcesView;
 import org.netbeans.modules.websvc.rest.client.RESTExplorerPanel.ProjectNodeFactory;
-import org.netbeans.modules.websvc.rest.client.RESTResourcesPanel;
 import org.netbeans.modules.websvc.rest.spi.RestSupport;
-import org.netbeans.modules.websvc.rest.wizard.ClientStubsSetupPanelVisual;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
-import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;

@@ -125,4 +125,14 @@ public final class NBMessager extends Messager {
         return uri == null ? null : notInProfiles.remove(uri);
     }
 
+    @Override
+    protected int getDefaultMaxWarnings() {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    protected int getDefaultMaxErrors() {
+        return Integer.MAX_VALUE;
+    }
+
 }

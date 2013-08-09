@@ -528,8 +528,10 @@ public final class UEIEmulatorConfiguratorImpl {
         final File[] files = directory.listFiles();
         if (files != null) for (int a = 0; a < files.length; a ++) {
             final File file = files[a];
-            if (file.isFile()  &&  "index.html".equals(file.getName().toLowerCase())) { //NOI18N
+            if (file.isFile() && "index.html".equals(file.getName().toLowerCase())) { //NOI18N
                 outputList.add(directory);
+            } else if (file.isFile() && file.getName().endsWith(".zip") && file.getParentFile().getName().equalsIgnoreCase("api")) { //NOI18N
+                outputList.add(file);
             } else if (depth > 0 && file.isDirectory()) {
                 findDocRoots(outputList, file, depth - 1);
             }

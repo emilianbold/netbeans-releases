@@ -105,6 +105,7 @@ public class WikiEditPanel extends WikiPanel {
         UIUtils.issue163946Hack(scrollCode);
 
         Spellchecker.register(textCode);
+        textPreview.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
 
         setEditing(editing);
     }

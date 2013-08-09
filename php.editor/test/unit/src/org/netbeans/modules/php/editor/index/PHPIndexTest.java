@@ -65,7 +65,7 @@ import org.netbeans.modules.php.editor.api.elements.ParameterElement;
 import org.netbeans.modules.php.editor.api.elements.PhpElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
 import org.netbeans.modules.php.editor.api.elements.TypeResolver;
-import org.netbeans.modules.php.editor.nav.PHPNavTestBase;
+import org.netbeans.modules.php.editor.csl.PHPNavTestBase;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 

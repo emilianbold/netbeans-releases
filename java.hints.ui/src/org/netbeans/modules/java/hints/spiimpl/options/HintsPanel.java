@@ -122,6 +122,7 @@ import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.Hint.Kind;
+import org.netbeans.spi.options.OptionsPanelController.Keywords;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -132,10 +133,12 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 
+@Keywords(location="Editor", tabTitle="#CTL_Hints_DisplayName2", keywords={"#CTL_DepScanning", "#CTL_Scope_Desc", "#CTL_Scope_Label"})
 public final class HintsPanel extends javax.swing.JPanel   {
     
     private static final String DELETE = "delete";
     private static final String DECLARATIVE_HINT_TEMPLATE_LOCATION = "org-netbeans-modules-java-hints/templates/Inspection.hint";
+            static final String[] EXTRA_NODE_KEYWORDS = new String[] {"CTL_DepScanning", "CTL_Scope_Desc", "CTL_Scope_Label"};
 
     private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
 
@@ -1332,6 +1335,16 @@ public final class HintsPanel extends javax.swing.JPanel   {
             if (filterText.isEmpty()) return true;
             
             expandTask.schedule(100);
+            
+            if (originalTreeNode == extraNode) {
+                for (String key : EXTRA_NODE_KEYWORDS) {
+                    if (NbBundle.getMessage(HintsPanel.class, key).toLowerCase().contains(filterText)) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            }
             
             DefaultMutableTreeNode n = (DefaultMutableTreeNode) originalTreeNode;
             Object uo = n.getUserObject();

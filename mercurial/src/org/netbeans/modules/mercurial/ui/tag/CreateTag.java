@@ -84,7 +84,8 @@ class CreateTag implements ActionListener {
         final JButton okButton = new JButton();
         Mnemonics.setLocalizedText(okButton, NbBundle.getMessage(CreateTag.class, "CTL_CreateTag.ok.text")); //NOI18N
         DialogDescriptor dd = new DialogDescriptor(panel, NbBundle.getMessage(CreateTag.class, "LBL_CreateTagPanel.title"), //NOI18N
-                true, new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN, new HelpCtx(CreateTagPanel.class), null);
+                true, new Object[] { okButton, DialogDescriptor.CANCEL_OPTION }, okButton, DialogDescriptor.DEFAULT_ALIGN,
+                new HelpCtx("org.netbeans.modules.mercurial.ui.tag.CreateTagPanel"), null); //NOI18N
         Dialog dialog = DialogDisplayer.getDefault().createDialog(dd);
         okButton.setEnabled(false);
         panel.txtTagName.getDocument().addDocumentListener(new DocumentListener() {

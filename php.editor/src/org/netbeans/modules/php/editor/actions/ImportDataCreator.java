@@ -59,6 +59,7 @@ import org.netbeans.modules.php.editor.api.QualifiedName;
 import org.netbeans.modules.php.editor.api.elements.ClassElement;
 import org.netbeans.modules.php.editor.api.elements.InterfaceElement;
 import org.netbeans.modules.php.editor.api.elements.TypeElement;
+import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.openide.util.NbBundle;
 
 /**
@@ -108,7 +109,9 @@ public class ImportDataCreator {
             possibleItems.add(new EmptyItem(typeName));
         } else {
             Collection<TypeElement> filteredTypeElements = filterTypesFromCurrentNamespace(filteredExactUnqualifiedNames);
-            if (!filteredTypeElements.isEmpty()) {
+            if (filteredTypeElements.isEmpty()) {
+                possibleItems.add(new ReplaceItem(typeName, filteredExactUnqualifiedNames));
+            } else {
                 possibleItems.add(new ValidItem(
                         typeName,
                         filteredTypeElements,
@@ -201,6 +204,27 @@ public class ImportDataCreator {
             data.add(new DataItem(typeName, Arrays.asList(new ItemVariant[] {itemVariant}), itemVariant));
         }
 
+    }
+
+    private final class ReplaceItem implements PossibleItem {
+        private final String typeName;
+        private final Collection<TypeElement> filteredExactUnqualifiedNames;
+
+        public ReplaceItem(String typeName, Collection<TypeElement> filteredExactUnqualifiedNames) {
+            this.typeName = typeName;
+            this.filteredExactUnqualifiedNames = filteredExactUnqualifiedNames;
+        }
+
+        @Override
+        public void insertData(ImportData data) {
+            TypeElement typeElement = ModelUtils.getFirst(filteredExactUnqualifiedNames);
+            assert typeElement != null;
+            String itemVariantReplaceName = options.preferFullyQualifiedNames()
+                    ? typeElement.getFullyQualifiedName().toString()
+                    : typeElement.getName();
+            ItemVariant replaceItemVariant = new ItemVariant(itemVariantReplaceName, ItemVariant.UsagePolicy.CAN_BE_USED);
+            data.addJustToReplace(new DataItem(typeName, Collections.singletonList(replaceItemVariant), replaceItemVariant, usedNames.get(typeName)));
+        }
     }
 
     private final class ValidItem implements PossibleItem {

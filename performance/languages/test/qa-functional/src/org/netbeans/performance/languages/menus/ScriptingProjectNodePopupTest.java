@@ -41,46 +41,39 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.menus;
 
+import junit.framework.Test;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-
 import org.netbeans.jellytools.ProjectsTabOperator;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
 import org.netbeans.jemmy.operators.JPopupMenuOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
  * @author mkhramov@netbeans.org
  */
-public class ScriptingProjectNodePopupTest extends  PerformanceTestCase {
+public class ScriptingProjectNodePopupTest extends PerformanceTestCase {
 
     protected static Node dataObjectNode;
     protected static ProjectsTabOperator projectsTab = null;
-    
-    public ScriptingProjectNodePopupTest(String testName)
-    {
+
+    public ScriptingProjectNodePopupTest(String testName) {
         super(testName);
         expectedTime = 100;
     }
-    public ScriptingProjectNodePopupTest(String testName, String performanceDataName)
-    {
-        super(testName,performanceDataName);     
+
+    public ScriptingProjectNodePopupTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
         expectedTime = 100;
     }
-    
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(ScriptingProjectNodePopupTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(ScriptingProjectNodePopupTest.class).suite();
     }
 
     /**
@@ -89,35 +82,38 @@ public class ScriptingProjectNodePopupTest extends  PerformanceTestCase {
     public void prepare() {
         dataObjectNode.select();
     }
-    
+
     /**
-     * Directly sends mouse events causing popup menu displaying to the selected node.
-     * <p>Using Jemmy/Jelly to call popup can cause reselecting of node and more events
-     * than is desirable for this case.
+     * Directly sends mouse events causing popup menu displaying to the selected
+     * node.
+     * <p>
+     * Using Jemmy/Jelly to call popup can cause reselecting of node and more
+     * events than is desirable for this case.
+     *
+     * @return JPopupMenuOperator instance
      */
-    public ComponentOperator open(){
+    public ComponentOperator open() {
         /* it stopped to work after a while, see issue 58790
-        java.awt.Point p = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
-        JPopupMenu menu = callPopup(dataObjectNode.tree(), p.x, p.y, java.awt.event.InputEvent.BUTTON3_MASK);
-        return new JPopupMenuOperator(menu);
+         java.awt.Point p = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
+         JPopupMenu menu = callPopup(dataObjectNode.tree(), p.x, p.y, java.awt.event.InputEvent.BUTTON3_MASK);
+         return new JPopupMenuOperator(menu);
          */
-        
         java.awt.Point point = dataObjectNode.tree().getPointToClick(dataObjectNode.getTreePath());
-        int button = dataObjectNode.tree().getPopupMouseButton();
-        dataObjectNode.tree().clickMouse(point.x, point.y, 1, button);
+        dataObjectNode.tree().clickForPopup(point.x, point.y);
         return new JPopupMenuOperator();
     }
+
     /**
      * Closes the popup by sending ESC key event.
      */
     @Override
-    public void close(){
+    public void close() {
         //testedComponentOperator.pressKey(java.awt.event.KeyEvent.VK_ESCAPE);
         // Above sometimes fails in QUEUE mode waiting to menu become visible.
         // This pushes Escape on underlying JTree which should be always visible
         dataObjectNode.tree().pushKey(java.awt.event.KeyEvent.VK_ESCAPE);
     }
-    
+
     public void testPHPProjectNodePopupMenu() {
         testNode(getProjectNode(Projects.PHP_PROJECT));
     }
@@ -126,15 +122,15 @@ public class ScriptingProjectNodePopupTest extends  PerformanceTestCase {
         testNode(getProjectNode(Projects.SCRIPTING_PROJECT));
     }
 
-    public void testNode(Node node){
+    public void testNode(Node node) {
         dataObjectNode = node;
         doMeasurement();
     }
-    
+
     protected Node getProjectNode(String projectName) {
-        if(projectsTab==null)
+        if (projectsTab == null) {
             projectsTab = new ProjectsTabOperator();
-        
+        }
         return projectsTab.getProjectRootNode(projectName);
     }
 }

@@ -46,6 +46,8 @@ package org.netbeans.modules.web.javascript.debugger.watches;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
@@ -72,6 +74,8 @@ public final class WatchesModel extends VariablesModel implements TreeModelFilte
     private static final Logger LOG = Logger.getLogger( 
             WatchesModel.class.getCanonicalName());
     
+    private final Map<Watch, ScopedRemoteObject> evaluatedWatches = new HashMap<Watch, ScopedRemoteObject>();
+    private CallFrame evaluatedWatchesFrame;
     private WatchesListener listener;
     
     public WatchesModel(final ContextProvider contextProvider) {
@@ -108,11 +112,28 @@ public final class WatchesModel extends VariablesModel implements TreeModelFilte
     
     private void evaluateWatches(CallFrame frame) throws UnknownTypeException {
         if (frame == null) {
+            synchronized (evaluatedWatches) {
+                evaluatedWatches.clear();
+            }
             return;
         }
-        for (Watch w : DebuggerManager.getDebuggerManager().getWatches()) {
-            // this triggers call to WebKit engine and outcome is cached:
-            ScopedRemoteObject sro = evaluateWatch(frame, w);
+        Map<Watch, ScopedRemoteObject> watchesMap = null;
+        Watch[] watches;
+        if (frame != null &&
+            (watches = DebuggerManager.getDebuggerManager().getWatches()).length > 0) {
+            watchesMap = new HashMap<Watch, ScopedRemoteObject>();
+            for (Watch w : watches) {
+                // this triggers call to WebKit engine and outcome is cached:
+                ScopedRemoteObject sro = evaluateWatch(frame, w);
+                watchesMap.put(w, sro);
+            }
+        }
+        synchronized (evaluatedWatches) {
+            evaluatedWatches.clear();
+            if (watchesMap != null) {
+                evaluatedWatches.putAll(watchesMap);
+            }
+            evaluatedWatchesFrame = frame;
         }
     }
     
@@ -132,7 +153,12 @@ public final class WatchesModel extends VariablesModel implements TreeModelFilte
             if (frame == null) {
                 return true;
             }
-            ScopedRemoteObject sro = evaluateWatch(frame, (Watch)node);
+            ScopedRemoteObject sro = null;
+            synchronized (evaluatedWatches) {
+                if (frame == evaluatedWatchesFrame) {
+                    sro = evaluatedWatches.get((Watch) node);
+                }
+            }
             if (sro != null) {
                 RemoteObject var = sro.getRemoteObject();
                 if (var.getType() == RemoteObject.Type.OBJECT) {
@@ -254,7 +280,11 @@ public final class WatchesModel extends VariablesModel implements TreeModelFilte
             CallFrame frame = getCurrentStack();
             ScopedRemoteObject var = null;
             if (frame != null) {
-                var = evaluateWatch(frame, (Watch)node);
+                synchronized (evaluatedWatches) {
+                    if (frame == evaluatedWatchesFrame) {
+                        var = evaluatedWatches.get((Watch) node);
+                    }
+                }
             }
             if (var == null) {
                 return false;

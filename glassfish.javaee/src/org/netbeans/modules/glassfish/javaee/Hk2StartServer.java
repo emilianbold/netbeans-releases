@@ -215,10 +215,6 @@ public class Hk2StartServer extends StartServer implements ProgressObject {
     public boolean supportsStartDebugging(Target target) {
         GlassfishModule commonSupport = getCommonServerSupport();
         assert null != commonSupport : "commonSupport is null?"; // NOI18N
-        if (null == commonSupport) {
-            Logger.getLogger("glassfish-javaee").log(Level.WARNING, "commonSupport is null??"); // NOI18N
-            return false;
-        }
         boolean retVal = supportsStartDeploymentManager() && !isClusterOrInstance(commonSupport);
         return retVal;
     }

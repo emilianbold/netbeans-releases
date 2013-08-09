@@ -164,6 +164,7 @@ public final class FontAndColorsPanelController extends OptionsPanelController {
     
     private synchronized FontAndColorsPanel getFontAndColorsPanel() {
         if (component == null && SwingUtilities.isEventDispatchThread()) {
+            assert !delegates.isEmpty() : "Font and Colors Panel is empty."; //NOI18N
             component = new FontAndColorsPanel(delegates);
         }
         return component;

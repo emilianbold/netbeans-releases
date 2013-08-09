@@ -41,32 +41,18 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import jdk.nashorn.internal.ir.AccessNode;
-import jdk.nashorn.internal.ir.BinaryNode;
-import jdk.nashorn.internal.ir.CallNode;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.IdentNode;
-import jdk.nashorn.internal.ir.IndexNode;
-import jdk.nashorn.internal.ir.LiteralNode;
 import jdk.nashorn.internal.ir.Node;
-import jdk.nashorn.internal.ir.ObjectNode;
-import jdk.nashorn.internal.ir.ReferenceNode;
-import jdk.nashorn.internal.ir.UnaryNode;
-import jdk.nashorn.internal.parser.Lexer;
-import jdk.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import jdk.nashorn.internal.ir.TernaryNode;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
@@ -444,12 +430,17 @@ public class ModelUtils {
                         String newVarType;
                         if (!variable.getAssignments().isEmpty()) {
                              newVarType= SemiTypeResolverVisitor.ST_EXP + variable.getFullyQualifiedName().replace(".", SemiTypeResolverVisitor.ST_PRO);
+                             result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
+                             resolved = true;
+                             break;
                         } else {
-                            newVarType = variable.getFullyQualifiedName();
+                            if (variable.getJSKind() != JsElement.Kind.PARAMETER) {
+                                newVarType = variable.getFullyQualifiedName();
+                                result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
+                                resolved = true;
+                                break;
+                            }
                         }
-                        result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
-                        resolved = true;
-                        break;
                     }
                 }
                 if (!resolved) {
@@ -634,7 +625,7 @@ public class ModelUtils {
         return result;
     }
     
-    public static Collection<TypeUsage> resolveTypeFromExpression (Model model, JsIndex jsIndex, List<String> exp, int offset) {
+    public static Collection<TypeUsage> resolveTypeFromExpression (Model model, @NullAllowed JsIndex jsIndex, List<String> exp, int offset) {
         List<JsObject> localObjects = new ArrayList<JsObject>();
         List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
         List<TypeUsage> lastResolvedTypes = new ArrayList<TypeUsage>();
@@ -689,9 +680,11 @@ public class ModelUtils {
                                 }
                             }
                         }
-                        TypeUsage windowProperty = tryResolveWindowProperty(jsIndex, name);
-                        if (windowProperty != null) {
-                            lastResolvedTypes.add(windowProperty);
+                        if (jsIndex != null) {
+                            TypeUsage windowProperty = tryResolveWindowProperty(jsIndex, name);
+                            if (windowProperty != null) {
+                                lastResolvedTypes.add(windowProperty);
+                            }
                         }
                     }
                     if(localObject == null || (localObject.getJSKind() != JsElement.Kind.PARAMETER
@@ -715,7 +708,7 @@ public class ModelUtils {
 //                                resolveAssignments(jsIndex, type.getType(), fromAssignments);
 //                            }
 //                        } else {
-                        if ("@pro".equals(kind)) { //NOI18N
+                        if ("@pro".equals(kind) && jsIndex != null) { //NOI18N
                             resolveAssignments(model, jsIndex, name, fromAssignments);
                         } 
 //                        }
@@ -795,46 +788,55 @@ public class ModelUtils {
                     
                     
                     for (TypeUsage typeUsage : lastResolvedTypes) {
-                        // for the type build the prototype chain. 
-                        Collection<String> prototypeChain = new ArrayList<String>();
-                        prototypeChain.add(typeUsage.getType());
-                        prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
-                        
-                        Collection<? extends IndexResult> indexResults = null;        
-                        for (String fqn : prototypeChain) {
-                            // at first look at the properties of the object
-                            indexResults = jsIndex.findByFqn(fqn + "." + name, JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES); //NOI18N
-                            if (indexResults.isEmpty()) {
-                                // if the property was not found, try to look at the prototype of the object
-                                indexResults = jsIndex.findByFqn(fqn + ".prototype." + name, JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES); //NOI18N
+                        if (jsIndex != null) {
+                            // for the type build the prototype chain.
+                            Collection<String> prototypeChain = new ArrayList<String>();
+                            prototypeChain.add(typeUsage.getType());
+                            prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+
+                            Collection<? extends IndexResult> indexResults = null;
+                            for (String fqn : prototypeChain) {
+                                // at first look at the properties of the object
+                                indexResults = jsIndex.findByFqn(fqn + "." + name,
+                                        JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES, JsIndex.FIELD_ARRAY_TYPES); //NOI18N
+                                if (indexResults.isEmpty()) {
+                                    // if the property was not found, try to look at the prototype of the object
+                                    indexResults = jsIndex.findByFqn(fqn + ".prototype." + name,
+                                            JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES, JsIndex.FIELD_ARRAY_TYPES); //NOI18N
+                                }
+                                if(!indexResults.isEmpty()) {
+                                    // if the property / method was already found, we don't need to continue.
+                                    // in the runtime is also used the first one that is found in the prototype chain
+                                    break;
+                                }
                             }
-                            if(!indexResults.isEmpty()) {
-                                // if the property / method was already found, we don't need to continue. 
-                                // in the runtime is also used the first one that is found in the prototype chain
-                                break;
+
+                            boolean checkProperty = (indexResults == null || indexResults.isEmpty()) && !"@mtd".equals(kind);
+                            if (indexResults != null) {
+                                for (IndexResult indexResult : indexResults) {
+                                    // go through the resul from index and add appropriate types to the new resolved
+                                    JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
+                                    if ("@mtd".equals(kind) && jsKind.isFunction()) {
+                                        //Collection<TypeUsage> resolved = resolveTypeFromSemiType(model, ModelUtils.findJsObject(model, offset), IndexedElement.getReturnTypes(indexResult));
+                                        Collection<TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
+                                        ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
+                                    } else if ("@arr".equals(kind)) { // NOI18N
+                                        Collection<TypeUsage> resolvedTypes = IndexedElement.getArrayTypes(indexResult);
+                                        ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
+                                    } else {
+                                        checkProperty = true;
+                                    }
+                                }
                             }
-                        }
-                        
-                        boolean checkProperty = indexResults.isEmpty() && !"@mtd".equals(kind);
-                        for (IndexResult indexResult : indexResults) {
-                            // go through the resul from index and add appropriate types to the new resolved
-                            JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
-                            if ("@mtd".equals(kind) && jsKind.isFunction()) {
-                                //Collection<TypeUsage> resolved = resolveTypeFromSemiType(model, ModelUtils.findJsObject(model, offset), IndexedElement.getReturnTypes(indexResult));
-                                Collection<TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
-                                ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
-                            } else {
-                                checkProperty = true;
-                            }
-                        }
-                        if (checkProperty) {
-                            String propertyFQN = typeUsage.getType() + "." + name;
-                            List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
-                            resolveAssignments(model, jsIndex, propertyFQN, fromAssignment);
-                            if (fromAssignment.isEmpty()) {
-                                ModelUtils.addUniqueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
-                            } else {
-                                ModelUtils.addUniqueType(newResolvedTypes, fromAssignment);
+                            if (checkProperty) {
+                                String propertyFQN = typeUsage.getType() + "." + name;
+                                List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
+                                resolveAssignments(model, jsIndex, propertyFQN, fromAssignment);
+                                if (fromAssignment.isEmpty()) {
+                                    ModelUtils.addUniqueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
+                                } else {
+                                    ModelUtils.addUniqueType(newResolvedTypes, fromAssignment);
+                                }
                             }
                         }
                         // from libraries look for top level types
@@ -903,12 +905,13 @@ public class ModelUtils {
         }
     }
     
-    public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult) {
+    public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult, boolean useIndex) {
+        //assert !SwingUtilities.isEventDispatchThread() : "Type resolution may block AWT due to index search";
         Collection<TypeUsage> types = new ArrayList<TypeUsage>(unresolved);
         Set<String> original = null;
         Model model = parserResult.getModel();
         FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-        JsIndex jsIndex = JsIndex.get(fo);
+        JsIndex jsIndex = useIndex ? JsIndex.get(fo) : null;
         int cycle = 0;
         boolean resolvedAll = false;
         while (!resolvedAll && cycle < 10) {

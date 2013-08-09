@@ -148,6 +148,10 @@ public final class WindowsLFCustoms extends LFCustoms {
             "NbSlideBar.GroupSeparator.Gap.Before", 9,
             "NbSlideBar.GroupSeparator.Gap.After", 1,
             "NbSlideBar.RestoreButton.Gap", 1,
+            
+            //browser picker
+            "Nb.browser.picker.background.light", new Color(255,255,255),
+            "Nb.browser.picker.foreground.light", new Color(130,130,130),
         }; //NOI18N
 
         //#108517 - turn off ctrl+page_up and ctrl+page_down mapping
