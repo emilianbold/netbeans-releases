@@ -135,11 +135,9 @@ public class IOSPlatform implements MobilePlatform {
     @Override
     public Collection<? extends Device> getConnectedDevices() throws IOException {
         final WebInspectorJNIBinding inspector = WebInspectorJNIBinding.getDefault();
-        try {
-            inspector.start();
-            inspector.stop();
+        if (inspector.isDeviceConnected()) {
             return Collections.singleton(IOSDevice.CONNECTED);
-        } catch (IllegalStateException ex) {
+        } else {
             return Collections.emptyList();
         }
     }
