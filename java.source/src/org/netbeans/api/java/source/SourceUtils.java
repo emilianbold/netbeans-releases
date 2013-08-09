@@ -502,13 +502,18 @@ public class SourceUtils {
                     return folders.isEmpty() ? pair.first() : folders.get(0);
                 } else {               
                     final boolean caseSensitive = isCaseSensitive ();
-                    final String sourceFileName = getSourceFileName (className);
-                    final Match matchSet = caseSensitive ? new CaseSensitiveMatch(sourceFileName) : new CaseInsensitiveMatch(sourceFileName);
+                    final Object fnames = getSourceFileNames (className);
                     folders.addFirst(pair.first());
-                    for (FileObject folder : folders) {
-                        for (FileObject child : folder.getChildren()) {
-                            if (matchSet.apply(child)) {
-                                return child;
+                    if (fnames instanceof String) {
+                        FileObject match = findMatchingChild((String)fnames, folders, caseSensitive);
+                        if (match != null) {
+                            return match;
+                        }
+                    } else {
+                        for (String candidate : (List<String>)fnames) {
+                            FileObject match = findMatchingChild(candidate, folders, caseSensitive);
+                            if (match != null) {
+                                return match;
                             }
                         }
                     }
@@ -528,6 +533,18 @@ public class SourceUtils {
             Exceptions.printStackTrace(e);
         }
         return null;        
+    }
+    
+    private static FileObject findMatchingChild(String sourceFileName, Collection<FileObject> folders, boolean caseSensitive) {
+        final Match matchSet = caseSensitive ? new CaseSensitiveMatch(sourceFileName) : new CaseInsensitiveMatch(sourceFileName);
+        for (FileObject folder : folders) {
+            for (FileObject child : folder.getChildren()) {
+                if (matchSet.apply(child)) {
+                    return child;
+                }
+            }
+        }
+        return null;
     }
     
     @NonNull
@@ -951,9 +968,27 @@ public class SourceUtils {
         return ! new File ("a").equals (new File ("A"));    //NOI18N
     }
     
-    private static String getSourceFileName (String classFileName) {
-        int index = classFileName.indexOf('$'); //NOI18N
-        return index == -1 ? classFileName : classFileName.substring(0,index);
+    /**
+     * Returns candidate filenames given a classname. The return value is either 
+     * a String (top-level class, no $) or List&lt;String> as the JLS permits $ in
+     * class names. 
+     */
+    private static Object getSourceFileNames (String classFileName) {
+        int max = classFileName.length() - 1;
+        int index = classFileName.indexOf('$');
+        if (index == -1) {
+            return classFileName;
+        }
+        List<String> ll = new ArrayList<String>(3);
+        do {
+            ll.add(classFileName.substring(0, index));
+            if (index >= max) {
+                break;
+            }
+            index = classFileName.indexOf('$', index + 1);
+        } while (index >= 0);
+        ll.add(classFileName);
+        return ll;
     }
         
     /**
