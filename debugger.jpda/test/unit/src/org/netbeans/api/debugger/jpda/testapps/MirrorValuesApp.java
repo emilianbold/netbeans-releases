@@ -45,11 +45,15 @@ import java.awt.Color;
 import java.awt.Point;
 import java.beans.FeatureDescriptor;
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.EventObject;
 import java.util.LinkedList;
 import java.util.List;
+import sun.reflect.ReflectionFactory;
 
 /**
  * A test application for mirror values.
@@ -84,6 +88,8 @@ public class MirrorValuesApp {
         Color color = Color.RED;
         Point point = new Point(10, 10);
         File file = new File("/tmp/Foo.txt");
+        URL url = createURL("http://netbeans.org");
+        URL url2 = createPristineURL();
         
         Color[][] colors = new Color[][] { { Color.WHITE, Color.BLACK }, { Color.YELLOW, Color.GRAY } };
         
@@ -102,7 +108,9 @@ public class MirrorValuesApp {
                              date.equals(new Date(3333333333l)) &&
                              color.equals(Color.GREEN) &&
                              point.equals(new Point(-100, -100)) &&
-                             file.equals(new File("/tmp/Test.java"));
+                             file.equals(new File("/tmp/Test.java")) &&
+                             url.equals(createURL("http://debugger.netbeans.org")) &&
+                             url2 == null;
         
         System.currentTimeMillis();             // LBREAKPOINT
     }
@@ -118,5 +126,30 @@ public class MirrorValuesApp {
         EventObject eo = new EventObject(fd);
         fd.setValue("event", eo);
         return eo;
+    }
+    
+    private static URL createURL(String urlStr) {
+        URL url;
+        try {
+            url = new URL(urlStr);
+        } catch (MalformedURLException ex) {
+            ex.printStackTrace();
+            url = null;
+        }
+        return url;
+    }
+    
+    private static URL createPristineURL() {
+        // Creates a pristine, incomplete URL object, that gets created when we
+        // step into new URL(), for instance.
+        ReflectionFactory rf = ReflectionFactory.getReflectionFactory();
+        try {
+            Constructor constructor = rf.newConstructorForSerialization(URL.class, Object.class.getDeclaredConstructor());
+            Object newInstance = constructor.newInstance();
+            return (URL) newInstance;
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            return null;
+        }
     }
 }

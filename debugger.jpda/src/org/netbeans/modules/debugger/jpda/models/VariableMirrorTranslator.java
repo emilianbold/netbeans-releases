@@ -341,6 +341,18 @@ class VariableMirrorTranslator {
                 logger.log(Level.INFO, "Creating AttributeMap", ex);            // NOI18N
                 return NO_MIRROR;
             }
+        } else if (java.net.URL.class.isAssignableFrom(clazz)) {
+            Value[] fieldValues = getFieldValues(value, type, "handler");  // NOI18N
+            if (fieldValues == null) {
+                return NO_MIRROR;
+            }
+            // No URL without handler
+            for (Value v : fieldValues) {
+                if (v == null) {
+                    return NO_MIRROR;
+                }
+            }
+            return null;
         } else {
             return null;
         }

@@ -45,6 +45,8 @@ import java.awt.Color;
 import java.awt.Point;
 import java.beans.FeatureDescriptor;
 import java.io.File;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.EventObject;
@@ -56,6 +58,7 @@ import java.util.Map;
 import junit.framework.Test;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.junit.NbTestCase;
+import org.openide.util.Exceptions;
 
 /**
  * Tests {@link Variable#createMirrorObject()} and {@link MutableVariable#setFromMirrorObject(java.lang.Object)}.
@@ -72,19 +75,21 @@ public class MirrorValuesTest extends NbTestCase {
           "iarr",
           "darr",
           "str", "integer", "date", "color",
-          "point", "file" };
+          "point", "file", "url", "url2" };
     private static Object[] mirrors =
         { true, (byte) 5, 'c', (short) 512, 10000, Long.MAX_VALUE, 12.12f, 1e150,
           new int[] { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 },
           new double[][] { { 0.1, 0.2, 0.3 }, { 1.1, 1.2, 1.3 }, { 2.1, 2.2, 2.3 } },
           "A String", Integer.MIN_VALUE, new Date(1000000000l), Color.RED,
-          new Point(10, 10), new File("/tmp/Foo.txt") };
+          new Point(10, 10), new File("/tmp/Foo.txt"), createURL("http://netbeans.org"),
+          null/*pristine URL*/ };
     private static Object[] newMirrors =
         { false, (byte) 255, 'Z', (short) -1024, -1, 123456789101112l, 2e-2f, -3e250,
           new int[] { 9, 7, 5, 3, 1 },
           new double[][] { { 1e100, 2e200 }, { 1.1e100, 2.1e200 }, { 1.2e100, 2.2e200 }, { 1.3e100, 2.3e200 } },
           "An alternate sTRING", -1048576, new Date(3333333333l), Color.GREEN,
-          new Point(-100, -100), new File("/tmp/Test.java") };
+          new Point(-100, -100), new File("/tmp/Test.java"), createURL("http://debugger.netbeans.org"),
+          null };
         
     private JPDASupport     support;
     private DebuggerManager dm = DebuggerManager.getDebuggerManager ();
@@ -123,8 +128,13 @@ public class MirrorValuesTest extends NbTestCase {
                 v = variablesByName.get(name);
                 System.err.println("Creating a mirror of "+name);
                 m = v.createMirrorObject();
-                assertNotNull(name, m);
                 Object mm = mirrorsByName.get(name);
+                if (mm == null) {
+                    assertNull(name, m);
+                    continue;
+                }
+                assertNotNull(name, m);
+                m.toString(); // Test that the mirror can process toString()
                 if (mm.getClass().isArray()) {
                     assertTrue(name+" is array", m.getClass().isArray());
                     assertTrue(name+" array "+arrayToString(mm)+
@@ -249,5 +259,16 @@ public class MirrorValuesTest extends NbTestCase {
             map.put(names[i], mirrors[i]);
         }
         return map;
+    }
+    
+    private static URL createURL(String urlStr) {
+        URL url;
+        try {
+            url = new URL(urlStr);
+        } catch (MalformedURLException ex) {
+            Exceptions.printStackTrace(ex);
+            url = null;
+        }
+        return url;
     }
 }
