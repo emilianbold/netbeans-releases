@@ -44,9 +44,9 @@ package org.netbeans.modules.javascript2.editor.extdoc.model;
 import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifierImpl;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 
 /**
@@ -186,7 +186,7 @@ public class ExtDocElementUtils {
             }
         }
         typeInfo.setOptional(optional);
-        typeInfo.setName(new DocIdentifierImpl(nameText, nameOffset));
+        typeInfo.setName(new IdentifierImpl(nameText, nameOffset));
     }
 
     private static class TypeInformation {
@@ -194,10 +194,10 @@ public class ExtDocElementUtils {
         private List<Type> type = Collections.<Type>emptyList();
         private String description = "";
         private String defaultValue = null;
-        private DocIdentifier name = null;
+        private Identifier name = null;
         private boolean optional = false;
 
-        public void setName(DocIdentifier name) {
+        public void setName(Identifier name) {
             this.name = name;
         }
 
@@ -221,7 +221,7 @@ public class ExtDocElementUtils {
             this.defaultValue = defaultValue;
         }
 
-        public DocIdentifier getName() {
+        public Identifier getName() {
             return name;
         }
 

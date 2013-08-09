@@ -49,7 +49,7 @@ import org.netbeans.modules.javascript2.editor.model.Identifier;
  * @author Petr Pisl
  */
 public class IdentifierImpl implements Identifier {
-    
+
     private String name;
     private OffsetRange offsetRange;
 
@@ -57,8 +57,11 @@ public class IdentifierImpl implements Identifier {
         this.name = name;
         this.offsetRange = offsetRange;
     }
-    
-    
+
+    public IdentifierImpl(String name, int startOffset) {
+        this(name, startOffset >= 0 ? new OffsetRange(startOffset, startOffset + name.length()) : OffsetRange.NONE);
+    }
+
     @Override
     public String getName() {
         return name;
@@ -73,4 +76,29 @@ public class IdentifierImpl implements Identifier {
     public String toString() {
         return "IdentifierImpl{" + "name=" + name + ", offsetRange=" + offsetRange + '}';
     }
+
+    @Override
+    public int hashCode() {
+        int hash = 3;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final IdentifierImpl other = (IdentifierImpl) obj;
+        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
+            return false;
+        }
+        if (this.offsetRange != other.offsetRange && (this.offsetRange == null || !this.offsetRange.equals(other.offsetRange))) {
+            return false;
+        }
+        return true;
+    }
+
 }

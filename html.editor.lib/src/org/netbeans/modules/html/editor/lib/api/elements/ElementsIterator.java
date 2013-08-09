@@ -69,7 +69,7 @@ public class ElementsIterator implements Iterator<Element> {
         CharSequence source = snapshot.getText();
         TokenSequence<HTMLTokenId> tokenSequence = snapshot.getTokenHierarchy().tokenSequence(HTMLTokenId.language());
         
-        this.wrapped = new ElementsParser(source, tokenSequence, 0);
+        this.wrapped = ElementsParser.forTokenIndex(source, tokenSequence, 0);
         
     }
 
@@ -85,7 +85,7 @@ public class ElementsIterator implements Iterator<Element> {
         }
         TokenSequence<HTMLTokenId> tokenSequence = hi.tokenSequence(HTMLTokenId.language());
         
-        this.wrapped = new ElementsParser(sourceCode, tokenSequence, 0);
+        this.wrapped = ElementsParser.forTokenIndex(sourceCode, tokenSequence, 0);
         
     }
     

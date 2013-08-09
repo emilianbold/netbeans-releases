@@ -74,7 +74,6 @@ import jdk.nashorn.internal.ir.WithNode;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.javascript2.editor.doc.DocumentationUtils;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
@@ -762,7 +761,7 @@ public class ModelVisitor extends PathNodeVisitor {
 
             List<DocParameter> docParams = docHolder.getParameters(functionNode);
             for (DocParameter docParameter : docParams) {
-                DocIdentifier paramName = docParameter.getParamName();
+                Identifier paramName = docParameter.getParamName();
                 if (paramName != null) {
                     String sParamName = paramName.getName();
                     if(sParamName != null && !sParamName.isEmpty()) {
@@ -1594,10 +1593,10 @@ public class ModelVisitor extends PathNodeVisitor {
         JsComment comment = holder.getCommentForOffset(jsObject.getOffset(), holder.getCommentBlocks());
         if (comment != null) {
             for (DocParameter docParameter : comment.getParameters()) {
-                DocIdentifier paramName = docParameter.getParamName();
+                Identifier paramName = docParameter.getParamName();
                 String name = (docParameter.getParamName() == null) ? "" : docParameter.getParamName().getName(); //NOI18N
                 if (name.equals(jsObject.getName())) {
-                    jsObject.addOccurrence(DocumentationUtils.getOffsetRange(paramName));
+                    jsObject.addOccurrence(paramName.getOffsetRange());
                 }
             }
         }

@@ -100,6 +100,19 @@ public class PhpDeletedTextInterceptor implements DeletedTextInterceptor {
             case '\"':
             case '\'':
                 if (OptionsUtils.autoCompletionSmartQuotes()) {
+                    TokenSequence<? extends PHPTokenId> tokenSequence = LexUtilities.getPHPTokenSequence(doc, dotPos);
+                    if (tokenSequence != null) {
+                        tokenSequence.move(dotPos);
+                        if ((tokenSequence.moveNext() || tokenSequence.movePrevious())
+                                && (tokenSequence.token().id() == PHPTokenId.PHP_ENCAPSED_AND_WHITESPACE
+                                    || tokenSequence.token().id() == PHPTokenId.PHP_CONSTANT_ENCAPSED_STRING)) {
+                            char[] precedingChars = doc.getChars(dotPos - 1, 1);
+                            if (precedingChars.length > 0 && precedingChars[0] == '\\') {
+                                doc.remove(dotPos - 1, 1);
+                                break;
+                            }
+                        }
+                    }
                     char[] match = doc.getChars(dotPos, 1);
                     if ((match != null) && (match[0] == ch)) {
                         doc.remove(dotPos, 1);

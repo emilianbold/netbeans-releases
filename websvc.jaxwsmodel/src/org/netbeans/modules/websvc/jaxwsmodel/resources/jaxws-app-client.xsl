@@ -108,7 +108,7 @@ made subject to such option by the copyright holder.
                                     <xsl:when test="jaxws:jaxboption">
                                         <xjcarg>
                                             <xsl:variable name="wsoption">
-                                                <xsl:text><xsl:value-of select="$wsoptionname"/></xsl:text>
+                                                <xsl:value-of select="$wsoptionname"/>
                                             </xsl:variable>
                                             <xsl:attribute name="{$wsoption}">
                                                 <xsl:value-of select="$wsoptionvalue"/>
@@ -117,7 +117,7 @@ made subject to such option by the copyright holder.
                                     </xsl:when>
                                     <xsl:otherwise>
                                         <xsl:variable name="wsoption">
-                                            <xsl:text><xsl:value-of select="$wsoptionname"/></xsl:text>
+                                            <xsl:value-of select="$wsoptionname"/>
                                         </xsl:variable>
                                         <xsl:attribute name="{$wsoption}">
                                             <xsl:value-of select="$wsoptionvalue"/>
@@ -139,7 +139,7 @@ made subject to such option by the copyright holder.
                         <xsl:for-each select="jaxws:jvmarg">
                             <jvmarg>
                                 <xsl:attribute name="value">
-                                    <xsl:text><xsl:value-of select="."/></xsl:text>
+                                    <xsl:value-of select="."/>
                                 </xsl:attribute>
                             </jvmarg>   
                         </xsl:for-each>
