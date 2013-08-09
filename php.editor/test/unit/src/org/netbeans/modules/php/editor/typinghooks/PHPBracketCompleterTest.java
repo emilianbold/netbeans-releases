@@ -1348,4 +1348,10 @@ public class PHPBracketCompleterTest extends PHPCodeCompletionTestBase {
         insertBreak(original, expected);
     }
 
+    public void testIssue234188() throws Exception {
+        String original = "<?php\necho \"foo\\\"^\";\n}";
+        String expected = "<?php\necho \"foo^\";\n}";
+        deleteChar(original, expected);
+    }
+
 }
