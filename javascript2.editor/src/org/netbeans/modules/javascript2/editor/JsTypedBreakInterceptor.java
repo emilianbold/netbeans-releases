@@ -596,6 +596,9 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         if (ts == null) {
             return false;
         }
+        if (ts.offset() == caretOffset && !ts.movePrevious()) {
+            return false;
+        }
         boolean first = true;
         do {
             if (ts.offset() < caretRowStartOffset) {
@@ -616,7 +619,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                 case BRACKET_LEFT_CURLY:
                     return !balancedAfter;
                 default:
-                    break;
+                    return false;
             }
             first = false;
         } while (ts.movePrevious());
