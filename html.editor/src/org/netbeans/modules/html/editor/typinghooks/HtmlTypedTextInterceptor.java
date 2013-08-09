@@ -215,20 +215,23 @@ public class HtmlTypedTextInterceptor implements TypedTextInterceptor {
             return; //no token
         }
 
-        if (null != LexerUtils.followsToken(ts, HTMLTokenId.TAG_OPEN, true, false,
-                HTMLTokenId.ARGUMENT,
-                HTMLTokenId.VALUE,
-                HTMLTokenId.VALUE_CSS,
-                HTMLTokenId.VALUE_JAVASCRIPT,
-                HTMLTokenId.OPERATOR,
-                HTMLTokenId.WS,
-                HTMLTokenId.EL_CLOSE_DELIMITER,
-                HTMLTokenId.EL_CONTENT,
-                HTMLTokenId.EL_OPEN_DELIMITER)) {
-            //we are in an open tag
-            context.setText("/>", 2);
-            //ignore subsequent '>' if typed
-            insertIgnore = new DocumentInsertIgnore(context.getOffset() + 2, '>', -1); // NOI18N
+        HTMLTokenId tid = ts.token().id();
+        if (tid == HTMLTokenId.WS) {
+            if (null != LexerUtils.followsToken(ts, HTMLTokenId.TAG_OPEN, true, false,
+                    HTMLTokenId.ARGUMENT,
+                    HTMLTokenId.VALUE,
+                    HTMLTokenId.VALUE_CSS,
+                    HTMLTokenId.VALUE_JAVASCRIPT,
+                    HTMLTokenId.OPERATOR,
+                    HTMLTokenId.WS,
+                    HTMLTokenId.EL_CLOSE_DELIMITER,
+                    HTMLTokenId.EL_CONTENT,
+                    HTMLTokenId.EL_OPEN_DELIMITER)) {
+                //we are in an open tag
+                context.setText("/>", 2);
+                //ignore subsequent '>' if typed
+                insertIgnore = new DocumentInsertIgnore(context.getOffset() + 2, '>', -1); // NOI18N
+            }
         }
 
     }

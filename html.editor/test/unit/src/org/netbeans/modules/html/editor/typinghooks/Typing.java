@@ -85,7 +85,7 @@ public class Typing {
                 }
             });
         } catch (InterruptedException | InvocationTargetException e) {
-            throw new IllegalStateException(e);
+            throw new RuntimeException(e.getCause());
         }
     }
 
