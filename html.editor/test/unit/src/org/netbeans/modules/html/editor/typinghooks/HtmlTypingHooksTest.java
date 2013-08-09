@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.html.editor.typinghooks;
 
+import javax.swing.text.html.HTMLEditorKit;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.test.TestBase;
 
@@ -59,272 +60,283 @@ public class HtmlTypingHooksTest extends TestBase {
         super.setUp();
         HtmlTypedTextInterceptor.adjust_quote_type_after_eq = false;
     }
+    
+    protected Typing typing(String code) {
+        return new Typing(new HtmlKit(), code);
+    }
 
     public void testHandleEmptyTagCloseSymbol()  {
-       Typing ctx = new Typing(new HtmlKit(), "<div|");
-       ctx.typeChar('/');
-       ctx.assertDocumentTextEquals("<div/>|");
-       ctx.typeChar('>');
-       ctx.assertDocumentTextEquals("<div/>|");
+       Typing t = typing("<div|");
+       t.typeChar('/');
+       t.assertDocumentTextEquals("<div/>|");
+       t.typeChar('>');
+       t.assertDocumentTextEquals("<div/>|");
     }
     
     public void testHandleEmptyTagCloseSymbolAfterWS()  {
-       Typing ctx = new Typing(new HtmlKit(), "<div |");
-       ctx.typeChar('/');
-       ctx.assertDocumentTextEquals("<div />|");
-       ctx.typeChar('>');
-       ctx.assertDocumentTextEquals("<div />|");
+       Typing t = typing("<div |");
+       t.typeChar('/');
+       t.assertDocumentTextEquals("<div />|");
+       t.typeChar('>');
+       t.assertDocumentTextEquals("<div />|");
     }
     
     public void testHandleEmptyTagCloseSymbolAfterAttribute()  {
-       Typing ctx = new Typing(new HtmlKit(), "<div align='center'|");
-       ctx.typeChar('/');
-       ctx.assertDocumentTextEquals("<div align='center'/>|");
-       ctx.typeChar('>');
-       ctx.assertDocumentTextEquals("<div align='center'/>|");
+       Typing t = typing("<div align='center'|");
+       t.typeChar('/');
+       t.assertDocumentTextEquals("<div align='center'/>|");
+       t.typeChar('>');
+       t.assertDocumentTextEquals("<div align='center'/>|");
+    }
+    
+    //Bug 234153 - automatic tag close attempted inside attribute value
+    public void testCloseTagSymbolAutocomplete() {
+        Typing t = typing("<applet code=\"com|example/MyApplet.class\"/>");
+        t.typeChar('/');
+        t.assertDocumentTextEquals("<applet code=\"com/|example/MyApplet.class\"/>");
     }
     
     public void testQuoteAutocompletionInHtmlAttribute() {
-        Typing ctx = new Typing(new HtmlKit(), "<a href=\"javascript:bigpic(|)\">");
-        ctx.typeChar('"');
-        ctx.assertDocumentTextEquals("<a href=\"javascript:bigpic(\"|)\">");
-        ctx.typeChar('"');
-        ctx.assertDocumentTextEquals("<a href=\"javascript:bigpic(\"\"|)\">");
+        Typing t = typing("<a href=\"javascript:bigpic(|)\">");
+        t.typeChar('"');
+        t.assertDocumentTextEquals("<a href=\"javascript:bigpic(\"|)\">");
+        t.typeChar('"');
+        t.assertDocumentTextEquals("<a href=\"javascript:bigpic(\"\"|)\">");
     }
 
     public void testSkipClosingQuoteInEmptyAttr() {
-        Typing ctx = new Typing(new HtmlKit(), "<a href=\"|\">");
-        ctx.typeChar('"');
-        ctx.assertDocumentTextEquals("<a href=\"\"|>");
+        Typing t = typing("<a href=\"|\">");
+        t.typeChar('"');
+        t.assertDocumentTextEquals("<a href=\"\"|>");
     }
 
      public void testSkipClosingQuoteInNonEmpty() {
-        Typing ctx = new Typing(new HtmlKit(), "<a href=\"x|\">");
-        ctx.typeChar('"');
-        ctx.assertDocumentTextEquals("<a href=\"x\"|>");
+        Typing t = typing("<a href=\"x|\">");
+        t.typeChar('"');
+        t.assertDocumentTextEquals("<a href=\"x\"|>");
     }
      
      public void testSkipClosingQuoteInEmptyClassAndId() {
-        Typing ctx = new Typing(new HtmlKit(), "<a class=\"|\">");
-        ctx.typeChar('"');
-        ctx.assertDocumentTextEquals("<a class=\"\"|>");
+        Typing t = typing("<a class=\"|\">");
+        t.typeChar('"');
+        t.assertDocumentTextEquals("<a class=\"\"|>");
         
-        ctx = new Typing(new HtmlKit(), "<a id=\"|\">");
-        ctx.typeChar('"');
-        ctx.assertDocumentTextEquals("<a id=\"\"|>");
+        t = typing("<a id=\"|\">");
+        t.typeChar('"');
+        t.assertDocumentTextEquals("<a id=\"\"|>");
     }
 
      public void testSkipClosingQuoteInNonEmptyClassAndId() {
-        Typing ctx = new Typing(new HtmlKit(), "<a class=\"xx|\">");
-        ctx.typeChar('"');
-        ctx.assertDocumentTextEquals("<a class=\"xx\"|>");
+        Typing t = typing("<a class=\"xx|\">");
+        t.typeChar('"');
+        t.assertDocumentTextEquals("<a class=\"xx\"|>");
         
-        ctx = new Typing(new HtmlKit(), "<a id=\"yy|\">");
-        ctx.typeChar('"');
-        ctx.assertDocumentTextEquals("<a id=\"yy\"|>");
+        t = typing("<a id=\"yy|\">");
+        t.typeChar('"');
+        t.assertDocumentTextEquals("<a id=\"yy\"|>");
     }
           
      //XXX fixme - <div + "> => will autopopup the closing tag, but once completed,
      //the closing tag is not indented properly -- fix in HtmlTypedBreakInterceptor
       
     public void testDoubleQuoteAutocompleteAfterEQ() {
-        Typing ctx = new Typing(new HtmlKit(), "<a href|");
-        ctx.typeChar('=');
-        ctx.assertDocumentTextEquals("<a href=\"|\"");
-        ctx.typeChar('v');
-        ctx.typeChar('a');
-        ctx.typeChar('l');
-        ctx.assertDocumentTextEquals("<a href=\"val|\"");
+        Typing t = typing("<a href|");
+        t.typeChar('=');
+        t.assertDocumentTextEquals("<a href=\"|\"");
+        t.typeChar('v');
+        t.typeChar('a');
+        t.typeChar('l');
+        t.assertDocumentTextEquals("<a href=\"val|\"");
     }
 
     public void testDoubleQuoteAutocompleteAfterEQInCSSAttribute() {
-        Typing ctx = new Typing(new HtmlKit(), "<a class|");
-        ctx.typeChar('=');
-        ctx.assertDocumentTextEquals("<a class=\"|\"");
-        ctx.typeChar('v');
-        ctx.typeChar('a');
-        ctx.typeChar('l');
-        ctx.assertDocumentTextEquals("<a class=\"val|\"");
+        Typing t = typing("<a class|");
+        t.typeChar('=');
+        t.assertDocumentTextEquals("<a class=\"|\"");
+        t.typeChar('v');
+        t.typeChar('a');
+        t.typeChar('l');
+        t.assertDocumentTextEquals("<a class=\"val|\"");
     }
 
     public void testDoubleQuoteAfterQuotedClassAttribute() {
-        Typing ctx = new Typing(new HtmlKit(), "<a class=\"val|");
-        ctx.typeChar('"');
-        ctx.assertDocumentTextEquals("<a class=\"val\"|");
+        Typing t = typing("<a class=\"val|");
+        t.typeChar('"');
+        t.assertDocumentTextEquals("<a class=\"val\"|");
     }
 
     public void testDoubleQuoteAfterUnquotedClassAttribute() {
-        Typing ctx = new Typing(new HtmlKit(), "<a class=val|");
-        ctx.typeChar('"');
-        ctx.assertDocumentTextEquals("<a class=val\"|");
+        Typing t = typing("<a class=val|");
+        t.typeChar('"');
+        t.assertDocumentTextEquals("<a class=val\"|");
     }
 
     public void testSingleQuoteAutocompleteAfterEQ() {
-        Typing ctx = new Typing(new HtmlKit(), "<a href=|");
-        ctx.typeChar('\'');
-        ctx.assertDocumentTextEquals("<a href='|'");
-        ctx.typeChar('v');
-        ctx.typeChar('a');
-        ctx.typeChar('l');
-        ctx.assertDocumentTextEquals("<a href='val|'");
-        ctx.typeChar('\'');
-        ctx.assertDocumentTextEquals("<a href='val'|");
+        Typing t = typing("<a href=|");
+        t.typeChar('\'');
+        t.assertDocumentTextEquals("<a href='|'");
+        t.typeChar('v');
+        t.typeChar('a');
+        t.typeChar('l');
+        t.assertDocumentTextEquals("<a href='val|'");
+        t.typeChar('\'');
+        t.assertDocumentTextEquals("<a href='val'|");
     }
 
     public void testQuoteChange() {
-        Typing ctx = new Typing(new HtmlKit(), "<a href|");
-        ctx.typeChar('=');
-        ctx.assertDocumentTextEquals("<a href=\"|\"");
-        ctx.typeChar('\'');
-        ctx.assertDocumentTextEquals("<a href='|'");
-        ctx.typeChar('v');
-        ctx.typeChar('a');
-        ctx.typeChar('l');
-        ctx.assertDocumentTextEquals("<a href='val|'");
-        ctx.typeChar('\'');
-        ctx.assertDocumentTextEquals("<a href='val'|");
+        Typing t = typing("<a href|");
+        t.typeChar('=');
+        t.assertDocumentTextEquals("<a href=\"|\"");
+        t.typeChar('\'');
+        t.assertDocumentTextEquals("<a href='|'");
+        t.typeChar('v');
+        t.typeChar('a');
+        t.typeChar('l');
+        t.assertDocumentTextEquals("<a href='val|'");
+        t.typeChar('\'');
+        t.assertDocumentTextEquals("<a href='val'|");
     }
 
     public void testTypeSingleQuoteInUnquoteClassAttr() {
-        Typing ctx = new Typing(new HtmlKit(), "<a class=|");
-        ctx.typeChar('v');
-        ctx.typeChar('a');
-        ctx.typeChar('l');
-        ctx.assertDocumentTextEquals("<a class=val|");
-        ctx.typeChar('\'');
-        ctx.assertDocumentTextEquals("<a class=val'|");
+        Typing t = typing("<a class=|");
+        t.typeChar('v');
+        t.typeChar('a');
+        t.typeChar('l');
+        t.assertDocumentTextEquals("<a class=val|");
+        t.typeChar('\'');
+        t.assertDocumentTextEquals("<a class=val'|");
     }
     
     public void testAutocompleteDoubleQuoteOnlyAfterEQ() {
-        Typing ctx = new Typing(new HtmlKit(), "<a align|");
-        ctx.typeChar('=');
-        ctx.assertDocumentTextEquals("<a align=\"|\"");
-        ctx.typeChar('x');
-        ctx.assertDocumentTextEquals("<a align=\"x|\"");
-        ctx.typeChar('"');
-        ctx.assertDocumentTextEquals("<a align=\"x\"|");
-        ctx.typeChar('"');
-        ctx.assertDocumentTextEquals("<a align=\"x\"\"|");
+        Typing t = typing("<a align|");
+        t.typeChar('=');
+        t.assertDocumentTextEquals("<a align=\"|\"");
+        t.typeChar('x');
+        t.assertDocumentTextEquals("<a align=\"x|\"");
+        t.typeChar('"');
+        t.assertDocumentTextEquals("<a align=\"x\"|");
+        t.typeChar('"');
+        t.assertDocumentTextEquals("<a align=\"x\"\"|");
     }
 
     public void testAutocompleteDoubleQuoteOnlyAfterEQInClass() {
-        Typing ctx = new Typing(new HtmlKit(), "<a class|");
-        ctx.typeChar('=');
-        ctx.assertDocumentTextEquals("<a class=\"|\"");
-        ctx.typeChar('x');
-        ctx.assertDocumentTextEquals("<a class=\"x|\"");
+        Typing t = typing("<a class|");
+        t.typeChar('=');
+        t.assertDocumentTextEquals("<a class=\"|\"");
+        t.typeChar('x');
+        t.assertDocumentTextEquals("<a class=\"x|\"");
     }
 
     public void testAutocompleteSingleQuoteOnlyAfterEQ() {
-        Typing ctx = new Typing(new HtmlKit(), "<a align|");
-        ctx.typeChar('=');
-        ctx.assertDocumentTextEquals("<a align=\"|\"");
-        ctx.typeChar('\'');
-        ctx.assertDocumentTextEquals("<a align='|'");
-        ctx.typeChar('x');
-        ctx.assertDocumentTextEquals("<a align='x|'");
-        ctx.typeChar('\'');
-        ctx.assertDocumentTextEquals("<a align='x'|");
-        ctx.typeChar('\'');
-        ctx.assertDocumentTextEquals("<a align='x''|");
+        Typing t = typing("<a align|");
+        t.typeChar('=');
+        t.assertDocumentTextEquals("<a align=\"|\"");
+        t.typeChar('\'');
+        t.assertDocumentTextEquals("<a align='|'");
+        t.typeChar('x');
+        t.assertDocumentTextEquals("<a align='x|'");
+        t.typeChar('\'');
+        t.assertDocumentTextEquals("<a align='x'|");
+        t.typeChar('\'');
+        t.assertDocumentTextEquals("<a align='x''|");
     }
 
      public void testSwitchAutocompletedQuoteTypeClass() {
-        Typing ctx = new Typing(new HtmlKit(), "<a class|");
-        ctx.typeChar('=');
-        ctx.assertDocumentTextEquals("<a class=\"|\"");
-        ctx.typeChar('\'');
-        ctx.assertDocumentTextEquals("<a class='|'");
+        Typing t = typing("<a class|");
+        t.typeChar('=');
+        t.assertDocumentTextEquals("<a class=\"|\"");
+        t.typeChar('\'');
+        t.assertDocumentTextEquals("<a class='|'");
     }
 
     
     public void testDeleteAutocompletedQuote() {
-        Typing ctx = new Typing(new HtmlKit(), "<a class|");
-        ctx.typeChar('=');
-        ctx.assertDocumentTextEquals("<a class=\"|\"");
-        ctx.typeChar('\b');
-        ctx.assertDocumentTextEquals("<a class=");
+        Typing t = typing("<a class|");
+        t.typeChar('=');
+        t.assertDocumentTextEquals("<a class=\"|\"");
+        t.typeChar('\b');
+        t.assertDocumentTextEquals("<a class=");
     }
 
     public void testDeleteQuote() {
-        Typing ctx = new Typing(new HtmlKit(), "<a class=\"|\"");
-        ctx.typeChar('\b');
-        ctx.assertDocumentTextEquals("<a class=");
+        Typing t = typing("<a class=\"|\"");
+        t.typeChar('\b');
+        t.assertDocumentTextEquals("<a class=");
     }
 
     public void testDeleteQuoteWithWSAfter() {
-        Typing ctx = new Typing(new HtmlKit(), "<a class=\"|\" ");
-        ctx.typeChar('\b');
-        ctx.assertDocumentTextEquals("<a class= ");
+        Typing t = typing("<a class=\"|\" ");
+        t.typeChar('\b');
+        t.assertDocumentTextEquals("<a class= ");
     }
 
     public void testDeleteSingleQuote() {
-        Typing ctx = new Typing(new HtmlKit(), "<a class='|'");
-        ctx.typeChar('\b');
-        ctx.assertDocumentTextEquals("<a class=");
+        Typing t = typing("<a class='|'");
+        t.typeChar('\b');
+        t.assertDocumentTextEquals("<a class=");
 
         //but do not delete if there's a text after the caret
-        ctx = new Typing(new HtmlKit(), "<a class='|x'");
-        ctx.typeChar('\b');
-        ctx.assertDocumentTextEquals("<a class=x'");
+        t = typing("<a class='|x'");
+        t.typeChar('\b');
+        t.assertDocumentTextEquals("<a class=x'");
 
     }
 
     public void testDoNotAutocompleteQuoteInValue() {
-        Typing ctx = new Typing(new HtmlKit(), "<a x=\"|test\"");
-        ctx.typeChar('\b');
-        ctx.assertDocumentTextEquals("<a x=|test\"");
-        ctx.typeChar('"');
+        Typing t = typing("<a x=\"|test\"");
+        t.typeChar('\b');
+        t.assertDocumentTextEquals("<a x=|test\"");
+        t.typeChar('"');
 
         //do not autocomplete in this case
-        ctx.assertDocumentTextEquals("<a x=\"|test\"");
+        t.assertDocumentTextEquals("<a x=\"|test\"");
 
         //different quotes
-        ctx = new Typing(new HtmlKit(), "<a x=\"|test\"");
-        ctx.typeChar('\b');
-        ctx.assertDocumentTextEquals("<a x=|test\"");
-        ctx.typeChar('\'');
+        t = typing("<a x=\"|test\"");
+        t.typeChar('\b');
+        t.assertDocumentTextEquals("<a x=|test\"");
+        t.typeChar('\'');
 
         //do not autocomplete in this case
-        ctx.assertDocumentTextEquals("<a x=\'|test\"");
+        t.assertDocumentTextEquals("<a x=\'|test\"");
 
         //no closing quote
-        ctx = new Typing(new HtmlKit(), "<a x=\"|test");
-        ctx.typeChar('\b');
-        ctx.assertDocumentTextEquals("<a x=|test");
-        ctx.typeChar('\'');
+        t = typing("<a x=\"|test");
+        t.typeChar('\b');
+        t.assertDocumentTextEquals("<a x=|test");
+        t.typeChar('\'');
 
         //do not autocomplete in this case
-        ctx.assertDocumentTextEquals("<a x=\'|test");
+        t.assertDocumentTextEquals("<a x=\'|test");
 
     }
 
     public void testInClassDoNotAutocompleteQuoteInValue() {
-        Typing ctx = new Typing(new HtmlKit(), "<a class=\"|test\"");
-        ctx.typeChar('\b');
-        ctx.assertDocumentTextEquals("<a class=|test\"");
-        ctx.typeChar('"');
+        Typing t = typing("<a class=\"|test\"");
+        t.typeChar('\b');
+        t.assertDocumentTextEquals("<a class=|test\"");
+        t.typeChar('"');
 
         //do not autocomplete in this case
-        ctx.assertDocumentTextEquals("<a class=\"|test\"");
+        t.assertDocumentTextEquals("<a class=\"|test\"");
 
         //different quotes
-        ctx = new Typing(new HtmlKit(), "<a class=\"|test\"");
-        ctx.typeChar('\b');
-        ctx.assertDocumentTextEquals("<a class=|test\"");
-        ctx.typeChar('\'');
+        t = typing("<a class=\"|test\"");
+        t.typeChar('\b');
+        t.assertDocumentTextEquals("<a class=|test\"");
+        t.typeChar('\'');
 
         //do not autocomplete in this case
-        ctx.assertDocumentTextEquals("<a class=\'|test\"");
+        t.assertDocumentTextEquals("<a class=\'|test\"");
 
         //no closing quote
-        ctx = new Typing(new HtmlKit(), "<a class=\"|test");
-        ctx.typeChar('\b');
-        ctx.assertDocumentTextEquals("<a class=|test");
-        ctx.typeChar('\'');
+        t = typing("<a class=\"|test");
+        t.typeChar('\b');
+        t.assertDocumentTextEquals("<a class=|test");
+        t.typeChar('\'');
 
         //do not autocomplete in this case
-        ctx.assertDocumentTextEquals("<a class=\'|test");
+        t.assertDocumentTextEquals("<a class=\'|test");
 
     }
 
@@ -334,18 +346,18 @@ public class HtmlTypingHooksTest extends TestBase {
             //default type
             assertEquals('"', HtmlTypedTextInterceptor.default_quote_char_after_eq);
 
-            Typing ctx = new Typing(new HtmlKit(), "<a class|");
-            ctx.typeChar('=');
-            ctx.assertDocumentTextEquals("<a class=\"|\"");
-            ctx.typeChar('\'');
+            Typing t = typing("<a class|");
+            t.typeChar('=');
+            t.assertDocumentTextEquals("<a class=\"|\"");
+            t.typeChar('\'');
 
             //now should be switched to single quote type
             assertEquals('\'', HtmlTypedTextInterceptor.default_quote_char_after_eq);
 
-            ctx = new Typing(new HtmlKit(), "<a class|");
-            ctx.typeChar('=');
-            ctx.assertDocumentTextEquals("<a class='|'");
-            ctx.typeChar('"');
+            t = typing("<a class|");
+            t.typeChar('=');
+            t.assertDocumentTextEquals("<a class='|'");
+            t.typeChar('"');
             
             //now should be switched back to the default double quote type
             assertEquals('"', HtmlTypedTextInterceptor.default_quote_char_after_eq);
@@ -354,4 +366,5 @@ public class HtmlTypingHooksTest extends TestBase {
             HtmlTypedTextInterceptor.adjust_quote_type_after_eq = false;
         }
     }
+    
 }
