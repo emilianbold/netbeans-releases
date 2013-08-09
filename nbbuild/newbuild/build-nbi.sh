@@ -59,6 +59,7 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
 #       mv $MAC_PATH/installer/mac/newbuild/dist/* $MAC_PATH/dist_ml 
 #   fi
    ssh $NATIVE_MAC_MACHINE $MAC_PATH/installer/mac/newbuild/build.sh $MAC_PATH $BASENAME_PREFIX $BUILDNUMBER $RUNJAVAFX $ML_BUILD $LOCALES > $MAC_LOG_NEW 2>&1 &
+   REMOTE_MAC_PID=$!
 
 fi
 
@@ -77,15 +78,17 @@ if [ ! -z $NATIVE_MAC_MACHINE ] && [ ! -z $MAC_PATH ]; then
     TAIL_PID=$!
 
     set +x
-    RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
+    RUNNING_JOBS_COUNT=`ps --pid $REMOTE_MAC_PID | wc -l | tr " " "\n" | grep -v '^$'`
+    echo "Entering loop with count of running jobs: " $RUNNING_JOBS_COUNT
     #Wait for the end of native mac build
     while [ $RUNNING_JOBS_COUNT -ge 2 ]; do
         #1 or more jobs
         sleep 10
-        jobs > /dev/null
-        RUNNING_JOBS_COUNT=`jobs | wc -l | tr " " "\n" | grep -v '^$'`
+        RUNNING_JOBS_COUNT=`ps --pid $REMOTE_MAC_PID | wc -l | tr " " "\n" | grep -v '^$'`
+        echo "----> count of running jobs: " $RUNNING_JOBS_COUNT
     done
     set -x
+    echo "Will kill "  $TAIL_PID
     kill -s 9 $TAIL_PID
 fi
 
