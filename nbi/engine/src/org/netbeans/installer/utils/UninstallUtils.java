@@ -49,6 +49,7 @@ import java.util.Set;
 import org.netbeans.installer.product.Registry;
 import org.netbeans.installer.product.components.Product;
 import org.netbeans.installer.utils.exceptions.XMLException;
+import org.netbeans.installer.utils.helper.Version;
 import org.w3c.dom.Element;
 
 /**
@@ -68,6 +69,7 @@ public class UninstallUtils {
     private static List<File> emptyFolders;
     private static Set<File> updatedFiles;    
     private static Set<File> clustersRoots;
+    private static Set<File> filesToDelete;
 
     /**
      * Returns all files that should be deleted, but not listed in registry
@@ -76,21 +78,23 @@ public class UninstallUtils {
      * @return all files that should be deleted, but not listed in registry
      */
     public static Set<File> getFilesToDeteleAfterUninstallation() {
-        Set<File> filesToDelete = new HashSet<File>();
+        if (filesToDelete == null) {
+            filesToDelete = new HashSet<File>();
 
-        filesToDelete.addAll(getUpdatedFiles());
+            filesToDelete.addAll(getUpdatedFiles());
 
-        for (File clusterRoot : getClustersRoots()) {
-            File updateTrackingFolder = new File(clusterRoot, UPDATE_TRACKING_LOCATION);
-            filesToDelete.addAll(getAllDescendantsRecursively(updateTrackingFolder));
+            for (File clusterRoot : getClustersRoots()) {
+                File updateTrackingFolder = new File(clusterRoot, UPDATE_TRACKING_LOCATION);
+                filesToDelete.addAll(getAllDescendantsRecursively(updateTrackingFolder));
 
-            File lastModifiedFile = new File(clusterRoot, ".lastModified");
-            if (lastModifiedFile.exists()) {
-                filesToDelete.add(lastModifiedFile);
+                File lastModifiedFile = new File(clusterRoot, ".lastModified");
+                if (lastModifiedFile.exists()) {
+                    filesToDelete.add(lastModifiedFile);
+                }
+
+                File updateBackupFolder = new File(clusterRoot, UPDATE_BACKUP_LOCATION);
+                filesToDelete.addAll(getAllDescendantsRecursively(updateBackupFolder));
             }
-
-            File updateBackupFolder = new File(clusterRoot, UPDATE_BACKUP_LOCATION);
-            filesToDelete.addAll(getAllDescendantsRecursively(updateBackupFolder));
         }
 
         return filesToDelete;
@@ -118,14 +122,14 @@ public class UninstallUtils {
      *
      * @return list of files installed via IDE
      */
-    private static Set<File> getUpdatedFiles() {
-        Set<File> clustersRootsList = getClustersRoots();
-
-        if (clustersRootsList == null || clustersRootsList.isEmpty()) {
-            return Collections.EMPTY_SET;
-        }
-
+    private static Set<File> getUpdatedFiles() {        
         if (updatedFiles == null) {
+            Set<File> clustersRootsList = getClustersRoots();
+
+            if (clustersRootsList == null || clustersRootsList.isEmpty()) {
+                return Collections.EMPTY_SET;
+            }
+            
             FileFilter onlyXmlFilter = new FileFilter() {
                 @Override
                 public boolean accept(File file) {
@@ -218,8 +222,12 @@ public class UninstallUtils {
         if (installationLocation == null) {
             String target = System.getProperty(Registry.TARGET_COMPONENT_UID_PROPERTY);
             Registry registry = Registry.getInstance();
-            Product pr = registry.getProduct(target, null);
-            installationLocation = pr.getInstallationLocation();
+
+            for (Product product : registry.getProductsToUninstall()) {
+                if (product.getUid().equals(target)) {
+                    installationLocation = product.getInstallationLocation();
+                }
+            }
         }
 
         return installationLocation;
