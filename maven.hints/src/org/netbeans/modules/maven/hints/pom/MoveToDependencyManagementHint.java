@@ -98,7 +98,7 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
 
     @Override
     public List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj,
-            int selectionStart, int selectionEnd) {
+            int selectionStart, int selectionEnd, int caretPosition) {
         List<ErrorDescription> err = new ArrayList<ErrorDescription>();
         if (prj == null) {
             return err;
@@ -112,7 +112,7 @@ public class MoveToDependencyManagementHint implements SelectionPOMFixProvider {
         List<Dependency> deps = getSelectedDependencies(model, selectionStart, selectionEnd);
         if (deps != null && !deps.isEmpty()) { //NOI18N
             try {
-                Line line = NbEditorUtilities.getLine(model.getBaseDocument(), selectionEnd, false);
+                Line line = NbEditorUtilities.getLine(model.getBaseDocument(), caretPosition, false);
                 err.add(ErrorDescriptionFactory.createErrorDescription(
                         Severity.HINT,
                         NbBundle.getMessage(MoveToDependencyManagementHint.class, "TEXT_MoveToDependencyManagementHint"),
