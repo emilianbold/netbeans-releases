@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
@@ -79,7 +79,7 @@ public class SDocTypeDescribedElement extends SDocTypeSimpleElement {
     }
 
     @Override
-    public DocIdentifier getParamName() {
+    public Identifier getParamName() {
         return null;
     }
 

@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript2.editor.sdoc.elements;
 
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
@@ -54,11 +54,11 @@ import org.netbeans.modules.javascript2.editor.model.Type;
  */
 public class SDocTypeNamedElement extends SDocTypeDescribedElement {
 
-    private final DocIdentifier typeName;
+    private final Identifier typeName;
     private final boolean optional;
 
     private SDocTypeNamedElement(SDocElementType type, List<Type> declaredTypes, String description,
-            DocIdentifier typeName, boolean optional) {
+            Identifier typeName, boolean optional) {
         super(type, declaredTypes, description);
         this.typeName = typeName;
         this.optional = optional;
@@ -73,7 +73,7 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * @param paramDescription description of the parameter
      * @param paramName name of the parameter
      */
-    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description, DocIdentifier typeName) {
+    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description, Identifier typeName) {
         return new SDocTypeNamedElement(type, declaredTypes, description, typeName, false);
     }
 
@@ -87,16 +87,16 @@ public class SDocTypeNamedElement extends SDocTypeDescribedElement {
      * @param paramName name of the parameter
      * @param optional flag if the parameter is optional
      */
-    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description, DocIdentifier typeName, boolean optional) {
+    public static SDocTypeNamedElement create(SDocElementType type, List<Type> declaredTypes, String description, Identifier typeName, boolean optional) {
         return new SDocTypeNamedElement(type, declaredTypes, description, typeName, optional);
     }
 
-    public DocIdentifier getTypeName() {
+    public Identifier getTypeName() {
         return typeName;
     }
 
     @Override
-    public DocIdentifier getParamName() {
+    public Identifier getParamName() {
         return typeName;
     }
 
