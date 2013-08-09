@@ -44,7 +44,6 @@
 
 package org.netbeans.modules.form;
 
-import java.beans.Beans;
 import org.openide.modules.ModuleInstall;
 
 /**
@@ -54,8 +53,6 @@ public class FormEditorModule extends ModuleInstall {
 
     @Override
     public void restored() {
-        Beans.setDesignTime(true);
-
         // TODO historically registered here, but it should be better just on search
         // path (i.e. in editors2 package)
         FormPropertyEditorManager.registerEditor(

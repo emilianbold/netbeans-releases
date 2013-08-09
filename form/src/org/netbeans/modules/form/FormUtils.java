@@ -1990,6 +1990,7 @@ public class FormUtils
                 if (e.getSource() != detailsBtn) {
                     return;
                 }
+                final Rectangle screenBounds = Utilities.getUsableScreenBounds();
                 if (excDetail == null) {
                     output = new JTextPane();
                     output.setEditable(false);
@@ -2004,7 +2005,6 @@ public class FormUtils
                     }
                     output.setText(sw.toString());
                     output.getCaret().setDot(0);
-                    final Rectangle screenBounds = Utilities.getUsableScreenBounds();
                     // hack to avoid NbPresenter to add a scrollpane over everything
                     excDetail = new javax.swing.JScrollPane(output) {
                         @Override
@@ -2037,7 +2037,17 @@ public class FormUtils
                     } else {
                         newBounds.x = baseBounds.x - (newBounds.width - baseBounds.width)/2;
                     }
+                    if (newBounds.x < screenBounds.x) {
+                        newBounds.x = screenBounds.x;
+                    } else if (newBounds.x + newBounds.width > screenBounds.x + screenBounds.width) {
+                        newBounds.x = screenBounds.x + screenBounds.width - newBounds.width;
+                    }
                     newBounds.y = baseBounds.y - (newBounds.height - baseBounds.height)/2;
+                    if (newBounds.y < screenBounds.y) {
+                        newBounds.y = screenBounds.y;
+                    } else if (newBounds.y + newBounds.height > screenBounds.y + screenBounds.height) {
+                        newBounds.y = screenBounds.y + screenBounds.height - newBounds.height;
+                    }
                     w.setBounds(newBounds);
                 } else { // show original message
                     dd.setMessage(message);

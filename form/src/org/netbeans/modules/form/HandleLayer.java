@@ -338,7 +338,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
             if (selectionDragger != null) {
                 Stroke oldStroke = g2.getStroke();
-                g2.setStroke(getPaintStroke());
+                g2.setStroke(getPaintSelectionStroke());
                 selectionDragger.paintDragFeedback(g2);
                 g2.setStroke(oldStroke);
             }
@@ -378,7 +378,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             int width = selRect.width + correction;
             int height = selRect.height + correction;
             Stroke oldStroke = g.getStroke();
-            g.setStroke(getPaintStroke());
+            g.setStroke(getPaintSelectionStroke());
             g.drawRect(x, y, width, height);
             g.setStroke(oldStroke);
             if (inLayout) {
@@ -422,7 +422,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 g.translate(convertPoint.x, convertPoint.y);
                 Color oldColor = g.getColor();
                 g.setColor(formSettings.getGuidingLineColor());
+                Stroke oldStroke = g.getStroke();
+                g.setStroke(getPaintLayoutStroke());
                 layoutDesigner.paintSelection(g);
+                g.setStroke(oldStroke);
                 g.setColor(oldColor);
                 g.translate(-convertPoint.x, -convertPoint.y);
             }
@@ -731,20 +734,28 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         return resizeHandle;
     }
 
-    // paint stroke cached
+    // paint strokes cached
     private static int lastPaintWidth = -1;
-    private Stroke paintStroke;
+    private Stroke paintSelectionStroke;
+    private Stroke paintLayoutStroke;
 
-    private Stroke getPaintStroke() {
+    private Stroke getPaintSelectionStroke() {
         int width = formSettings.getSelectionBorderSize();
         if (lastPaintWidth != width) {
-            paintStroke = null;
+            paintSelectionStroke = null;
         }
-        if (paintStroke == null) {
-            paintStroke = new BasicStroke(width);
+        if (paintSelectionStroke == null) {
+            paintSelectionStroke = new BasicStroke(width);
             lastPaintWidth = width;
         }
-        return paintStroke;
+        return paintSelectionStroke;
+    }
+
+    private Stroke getPaintLayoutStroke() {
+        if (paintLayoutStroke == null) {
+            paintLayoutStroke = new BasicStroke(1);
+        }
+        return paintLayoutStroke;
     }
 
     void maskDraggingComponents() {
@@ -2688,7 +2699,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     // paint the layout designer feedback
                     g.translate(convertPoint.x, convertPoint.y);
                     g.setColor(formSettings.getGuidingLineColor());
+                    Stroke oldStroke = g.getStroke();
+                    g.setStroke(getPaintLayoutStroke());
                     formDesigner.getLayoutDesigner().paintMoveFeedback(g);
+                    g.setStroke(oldStroke);
                     g.translate(-convertPoint.x, -convertPoint.y);
                 }
                 else if (oldDrag && isDraggableLayoutComponent()
@@ -3541,14 +3555,15 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             Container contDel = targetContainer.getContainerDelegate(cont);
             Point contPos = convertPointFromComponent(0, 0, contDel);
             g.setColor(formSettings.getSelectionBorderColor());
-            g.setStroke(ComponentDragger.dashedStroke1);
             g.translate(contPos.x, contPos.y);
+            Stroke oldStroke = g.getStroke();
+            g.setStroke(ComponentDragger.dashedStroke1);
             laysup.paintDragFeedback(cont, contDel,
                                      showingComponents[0],
                                      constraints, this.index,
                                      g);
+            g.setStroke(oldStroke);
             g.translate(-contPos.x, -contPos.y);
-//                    g.setStroke(stroke);
             paintDraggedComponent(showingComponents[0], gg);
         }
     }

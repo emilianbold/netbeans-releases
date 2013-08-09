@@ -755,7 +755,7 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     public int removeTaskFilter(DashboardFilter<TaskNode> taskFilter, boolean refresh) {
         appliedTaskFilters.removeFilter(taskFilter);
-        return manageRemoveFilter(refresh, !taskFilter.expandNodes());
+        return manageRemoveFilter(refresh, taskFilter.expandNodes());
     }
 
     public int applyCategoryFilter(DashboardFilter<CategoryNode> categoryFilter, boolean refresh) {
@@ -765,7 +765,7 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     public int removeCategoryFilter(DashboardFilter<CategoryNode> categoryFilter, boolean refresh) {
         appliedCategoryFilters.removeFilter(categoryFilter);
-        return manageRemoveFilter(refresh, !categoryFilter.expandNodes());
+        return manageRemoveFilter(refresh, categoryFilter.expandNodes());
     }
 
     public int applyRepositoryFilter(DashboardFilter<RepositoryNode> repositoryFilter, boolean refresh) {
@@ -775,7 +775,7 @@ public final class DashboardViewer implements PropertyChangeListener {
 
     public int removeRepositoryFilter(DashboardFilter<RepositoryNode> repositoryFilter, boolean refresh) {
         appliedRepositoryFilters.removeFilter(repositoryFilter);
-        return manageRemoveFilter(refresh, !repositoryFilter.expandNodes());
+        return manageRemoveFilter(refresh, repositoryFilter.expandNodes());
     }
 
     public void clearFilters() {
@@ -818,7 +818,7 @@ public final class DashboardViewer implements PropertyChangeListener {
         if (expandNodes()) {
             return true;
         }
-        return expandedNodes.contains(node);
+        return expandedNodes.remove(node);
     }
 
     public List<TreeListNode> getSelectedNodes() {
@@ -1082,8 +1082,8 @@ public final class DashboardViewer implements PropertyChangeListener {
     }
 
     private void addRootToModel(final int index, final TreeListNode node) {
-        if (expandNodes() || expandedNodes.remove(node)) {
-            node.setExpanded(true);
+        if (!(node instanceof RepositoryNode) && node.isExpandable()) {
+            node.setExpanded(expandNodes() || expandedNodes.remove(node));
         }
         model.addRoot(index, node);
     }
@@ -1091,8 +1091,17 @@ public final class DashboardViewer implements PropertyChangeListener {
     private void removeRootFromModel(final TreeListNode node) {
         if (persistExpanded) {
             expandedNodes.remove(node);
-            if (node.isExpanded() && !(node instanceof RepositoryNode)) {
-                expandedNodes.add(node);
+            if (node.isExpanded()) {
+                if (node instanceof RepositoryNode) {
+                    List<TreeListNode> children = node.getChildren();
+                    for (TreeListNode query : children) {
+                        if (query.isExpanded()) {
+                            expandedNodes.add(query);
+                        }
+                    }
+                } else {
+                    expandedNodes.add(node);
+                }
             }
         }
         model.removeRoot(node);

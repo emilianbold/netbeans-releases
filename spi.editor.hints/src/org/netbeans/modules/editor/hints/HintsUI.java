@@ -659,18 +659,26 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
                     refresh(doc, comp.getCaretPosition());
                 }
 
-                Rectangle carretRectangle = comp.modelToView(comp.getCaretPosition());
-                int line = Utilities.getLineOffset((BaseDocument) doc, comp.getCaretPosition());
+                int position = comp.getCaretPosition();
+                Rectangle carretRectangle = comp.modelToView(position);
+                int line = Utilities.getLineOffset((BaseDocument) doc, position);
                 AnnotationDesc activeAnnotation = ((BaseDocument) doc).getAnnotations().getActiveAnnotation(line);
                 if (activeAnnotation == null) {
-                    return false;
+                    //try to get active annotation on the opposite side of caret in the selected area
+                    carretRectangle = comp.modelToView(position = comp.getCaretPosition()!=comp.getSelectionStart()?
+                            comp.getSelectionStart():comp.getSelectionEnd());
+                    line = Utilities.getLineOffset((BaseDocument) doc, position);
+                    activeAnnotation = ((BaseDocument) doc).getAnnotations().getActiveAnnotation(line);
+                    if (activeAnnotation == null) {
+                        return false;
+                    }
                 }
                 String type = activeAnnotation.getAnnotationType();
                 if (!fixableAnnotations.contains(type) && onlyActive) {
                     return false;
                 }
                 if (onlyActive) {
-                    refresh(doc, comp.getCaretPosition());
+                    refresh(doc, position);
                 }
                 Annotations annotations = ((BaseDocument) doc).getAnnotations();
                 AnnotationDesc desc = annotations.getAnnotation(line, type);
