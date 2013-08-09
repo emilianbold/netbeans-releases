@@ -481,4 +481,44 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
                 + "    };\n"
                 + "});");
     }
+
+    public void testIssue234177() throws Exception {
+        insertBreak("Game = function(name, priority)\n"
+                + "{\n"
+                + "	var self = this;\n"
+                + "	this.name;\n"
+                + "	this.priority;\n"
+                + "};\n"
+                + "\n"
+                + "MyGameListViewModel = function(games)\n"
+                + "{\n"
+                + "	var self = this;\n"
+                + "	self.gamesToPlay = ko.observableArray(games);\n"
+                + "	self.gamesCount = ko.computed(function()\n"
+                + "	{\n"
+                + "		return self.gamesToPlay().length + \" games found.\";\n"
+                + "	});\n"
+                + "};\n"
+                + "\n"
+                + "ko.applyBindings(new MyGameListViewModel([{name: \"Skyrim\", priority: 1}, {name: \"Max Payne 3\", priority: 2}]));^",
+                "Game = function(name, priority)\n"
+                + "{\n"
+                + "	var self = this;\n"
+                + "	this.name;\n"
+                + "	this.priority;\n"
+                + "};\n"
+                + "\n"
+                + "MyGameListViewModel = function(games)\n"
+                + "{\n"
+                + "	var self = this;\n"
+                + "	self.gamesToPlay = ko.observableArray(games);\n"
+                + "	self.gamesCount = ko.computed(function()\n"
+                + "	{\n"
+                + "		return self.gamesToPlay().length + \" games found.\";\n"
+                + "	});\n"
+                + "};\n"
+                + "\n"
+                + "ko.applyBindings(new MyGameListViewModel([{name: \"Skyrim\", priority: 1}, {name: \"Max Payne 3\", priority: 2}]));\n"
+                + "^");
+    }
 }
