@@ -54,16 +54,16 @@ import java.util.regex.Pattern;
 import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.Constants;
 import org.netbeans.modules.web.common.api.WebUtils;
 
 /**
  * Creates CSS virtual source for html sources.
- * 
+ *
  * @author Marek Fukala
  */
 public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
@@ -76,9 +76,9 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
     private static final Pattern CLASSES_LIST_PATTERN = Pattern.compile("[^\\s,]*"); //splits by whitespaces and comma //NOI18N
     static final Pattern CDATA_FILTER_PATTERN = Pattern.compile(".*<!\\[CDATA\\[\\s*(\\*/)?\\s*(<!--)?(.*?)(-->)?\\s*(/\\*)?\\s*]]>.*", Pattern.DOTALL | Pattern.MULTILINE);
     static final int CDATA_BODY_GROUP_INDEX = 3; //                                                  ^^^^
-    
+
     static final Pattern ILLEGAL_CHARS_IN_SELECTOR = Pattern.compile("[{}\\.:\\[\\]]");
- 
+
     @Override
     public List<Embedding> getEmbeddings(Snapshot snapshot) {
         TokenHierarchy th = snapshot.getTokenHierarchy();
@@ -102,11 +102,13 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
     private static final String HREF_ATTR_REL = "rel"; //NOI18N
     private static final String HREF_ATTR_TYPE = "type"; //NOI18N
 
-    /** @param ts An HTML token sequence always positioned at the beginning. */
+    /**
+     * @param ts An HTML token sequence always positioned at the beginning.
+     */
     protected void extractCssFromHTML(Snapshot snapshot, TokenSequence<HTMLTokenId> ts, HashMap<String, Object> state, List<Embedding> embeddings) {
         while (ts.moveNext()) {
             Token<HTMLTokenId> htmlToken = ts.token();
-            TokenId htmlId = htmlToken.id();
+            HTMLTokenId htmlId = htmlToken.id();
             if (htmlId == HTMLTokenId.STYLE) {
                 state.put(IN_STYLE, Boolean.TRUE);
                 //jumped into style
@@ -123,7 +125,6 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                 //      ]]></style>
                 //    </head><body/>
                 //  </html>
-
                 Matcher matcher = CDATA_FILTER_PATTERN.matcher(htmlToken.text());
                 if (matcher.matches()) {
                     sourceStart += matcher.start(CDATA_BODY_GROUP_INDEX);
@@ -136,35 +137,32 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                 state.remove(IN_STYLE);
 
                 if (state.get(IN_INLINED_STYLE) != null) {
-                    if (htmlId == HTMLTokenId.VALUE_CSS) {
-                        //continuation of the html style attribute value after templating
-                        int sourceStart = ts.offset();
-                        CharSequence text = htmlToken.text();
-                        int tokenLength = htmlToken.length();
-                        if (CharSequenceUtilities.endsWith(text, "\"") || CharSequenceUtilities.endsWith(text, "'")) {
-                            tokenLength--;
-                        }
-                        embeddings.add(snapshot.create(sourceStart, tokenLength, CSS_MIME_TYPE));
-
-                    } else {
-                        state.remove(IN_INLINED_STYLE);
-
-
-                        //xxx check if the following code has still meaning
-                        //using the new embeddings
-
-                        //generate the end of the virtual selector
-                        int sourceStart = ts.offset();
-
-                        if (state.get(QUTE_CUT) != null) {
-                            sourceStart--;
-                        }
-                        // <<< eof xxx
-
-                        state.remove(QUTE_CUT);
-                        embeddings.add(snapshot.create(";\n}\n", CSS_MIME_TYPE));
-
+                    switch (htmlId) {
+                        case VALUE_CSS:
+                            //continuation of the html style attribute value after templating
+                            int sourceStart = ts.offset();
+                            CharSequence text = htmlToken.text();
+                            int tokenLength = htmlToken.length();
+                            if (CharSequenceUtilities.endsWith(text, "\"") || CharSequenceUtilities.endsWith(text, "'")) {
+                                tokenLength--;
+                            }
+                            embeddings.add(snapshot.create(sourceStart, tokenLength, CSS_MIME_TYPE));
+                            break;
+                        case EL_OPEN_DELIMITER:
+                        case EL_CLOSE_DELIMITER:
+                            //ignore
+                            break;
+                        case EL_CONTENT:
+                            //generate templating mark
+                            embeddings.add(snapshot.create(Constants.LANGUAGE_SNIPPET_SEPARATOR, CSS_MIME_TYPE));
+                            break;
+                        default:
+                            //out of the css value -- close the virtual selector
+                            state.remove(IN_INLINED_STYLE);
+                            state.remove(QUTE_CUT);
+                            embeddings.add(snapshot.create(";\n}\n", CSS_MIME_TYPE));
                     }
+                    continue; //process next token
                 }
 
                 if (htmlId == HTMLTokenId.TAG_OPEN) {
@@ -216,11 +214,11 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                     //determine the inlined css type
                     String valueCssType = (String) htmlToken.getProperty(HTMLTokenId.VALUE_CSS_TOKEN_TYPE_PROPERTY);
                     if (valueCssType != null) {
+                        //in ID or CLASS html attributes
+
                         //XXX we do not support templating code in the value!
                         //class or id attribute value - generate fake selector with # or . prefix
-
                         //#180576 - filter out "illegal" characters from the selector name
-                        
                         if (!ILLEGAL_CHARS_IN_SELECTOR.matcher(text).find()) {
                             embeddings.add(snapshot.create("\n ", CSS_MIME_TYPE)); //NOI18N
 
@@ -229,10 +227,10 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                             Matcher matcher = CLASSES_LIST_PATTERN.matcher(text);
                             boolean elementExists = false;
                             int last_class_name_end_offset = -1;
-                            while(matcher.find()) {
+                            while (matcher.find()) {
                                 int start = matcher.start();
                                 int end = matcher.end();
-                                if(start != end) {
+                                if (start != end) {
                                     embeddings.add(snapshot.create(prefix, CSS_MIME_TYPE)); //NOI18N
 
 //                                    //escape slash char if present - Bug 216489 - Attribute 'id' shows an error with forward slash in it
@@ -259,9 +257,9 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                                     last_class_name_end_offset = start_in_document + length;
                                 }
                             }
-                            
-                            if(elementExists) {
-                                if(isClassElement) {
+
+                            if (elementExists) {
+                                if (isClassElement) {
                                     //check if there's a whitespace after the last class and if so, add it to the virtual
                                     //source so completion can work at <div class="foo |"/>
                                     //HOWEVER this fix will only work of the caret is exactly one char after the last
@@ -269,7 +267,7 @@ public class CssHtmlTranslator implements CssEmbeddingProvider.Translator {
                                     //To fix this I'd likely need to completely redone the class/id completion so it doesn't
                                     //use the normal css completion but some special html based completion taking the items
                                     //from css index.
-                                    if(last_class_name_end_offset < sourceEnd) {
+                                    if (last_class_name_end_offset < sourceEnd) {
                                         embeddings.add(snapshot.create(prefix, CSS_MIME_TYPE)); //NOI18N
                                         embeddings.add(snapshot.create(last_class_name_end_offset + 1, 0, CSS_MIME_TYPE));
                                     }
