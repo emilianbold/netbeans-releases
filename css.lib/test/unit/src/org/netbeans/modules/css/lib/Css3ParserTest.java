@@ -212,7 +212,6 @@ public class Css3ParserTest extends CssTestBase {
 
         res = assertResultOK(TestUtil.parse("*|h1 { color: red; }"));
 
-
         assertNotNull(NodeUtil.query(res.getParseTree(),
                 TestUtil.bodysetPath + typeSelectorPath + "namespacePrefix/*"));
         assertNotNull(NodeUtil.query(res.getParseTree(),
@@ -327,7 +326,6 @@ public class Css3ParserTest extends CssTestBase {
         //nodes not having first token set properly by the NbParseTreeBuilder
         NodeUtil.dumpTree(res.getParseTree(), new PrintWriter(new StringWriter()));
 
-
 //        NodeUtil.dumpTree(res.getParseTree());
     }
 
@@ -337,7 +335,6 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult res = TestUtil.parse(code);
 
 //        NodeUtil.dumpTree(res.getParseTree());
-
         assertResult(res, 0);
 
     }
@@ -370,7 +367,6 @@ public class Css3ParserTest extends CssTestBase {
         assertFalse(recoveryNodeFound.get());
 
         //this doesn't work actually, the resyncing to ident doesn't work naturally
-
     }
 
     //issue #160780
@@ -467,7 +463,6 @@ public class Css3ParserTest extends CssTestBase {
         assertEquals("'#bdb1a0'", attrVal.image().toString());
 
         assertResult(result, 0);
-
 
     }
 
@@ -655,7 +650,6 @@ public class Css3ParserTest extends CssTestBase {
         Node media_expression = NodeUtil.query(media_query, "mediaExpression");
         assertNotNull(media_expression);
 
-
         Node media_feature = NodeUtil.query(media_expression, "mediaFeature");
         assertNotNull(media_feature);
 
@@ -733,8 +727,6 @@ public class Css3ParserTest extends CssTestBase {
         assertEquals("@top-right", margin_sym2.image().toString());
 
         assertNotNull(NodeUtil.query(margin2, "declarations/declaration/propertyDeclaration"));
-
-
 
     }
 
@@ -829,7 +821,6 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(code);
 
 //        NodeUtil.dumpTree(result.getParseTree());
-
         assertNoTokenNodeLost(result);
     }
 
@@ -880,8 +871,8 @@ public class Css3ParserTest extends CssTestBase {
 //
 //    }
     public void testMSExpression() throws BadLocationException, ParseException {
-        String code =
-                "div {"
+        String code
+                = "div {"
                 + "zoom:expression(runtimeStyle.zoom = 1, insertAdjacentHTML('beforeEnd', '<u class=\"after\"></u>'));"
                 + "}";
 
@@ -1038,13 +1029,11 @@ public class Css3ParserTest extends CssTestBase {
         CssParserResult result = TestUtil.parse(code);
 
 //        TestUtil.dumpResult(result);
-
         //the unexpected colon error is in fact a bug as normally the sass/less constructs as nested rules
         //should not be allowed in plain css. But so far I haven't found any way how to combine semantic and syntactic predicates 
         //(see the (rule)=>rule { declarationType = DeclarationType.BLOCK; } rule in the css3.g
         //it's ought to be {isCPSource()?} (rule)=>rule { declarationType = DeclarationType.BLOCK; } which doesn't seem to work
         assertResult(result, 1);
-
 
         //check if the color: red; is properly parsed, e.g. whether the error recover works
         //in the preceding erroneous declaration
@@ -1059,7 +1048,6 @@ public class Css3ParserTest extends CssTestBase {
                 + "rule/selectorsGroup/selector/simpleSelectorSequence/elementSubsequent/cssId");
         assertNotNull(node);
 
-
     }
 
     public void testGenericAtRule() {
@@ -1069,7 +1057,6 @@ public class Css3ParserTest extends CssTestBase {
         assertResultOK(result);
 
 //        TestUtil.dumpResult(result);
-
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/at_rule/vendorAtRule/generic_at_rule");
 
@@ -1108,7 +1095,6 @@ public class Css3ParserTest extends CssTestBase {
         assertResultOK(result);
 
 //        TestUtil.dumpResult(result);
-
         Node wkf = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/at_rule/vendorAtRule/webkitKeyframes");
 
@@ -1139,7 +1125,6 @@ public class Css3ParserTest extends CssTestBase {
         assertNotNull(declarations);
         assertNotNull(NodeUtil.query(declarations, "declaration/propertyDeclaration/property"));
         assertNotNull(NodeUtil.query(declarations, "declaration/propertyDeclaration/propertyValue"));
-
 
     }
 
@@ -1322,7 +1307,7 @@ public class Css3ParserTest extends CssTestBase {
         assertParses("@keyframes glow\n"
                 + "{}");
     }
-    
+
     public void testTemplatingMarksInDeclarations() throws ParseException, BadLocationException {
         assertParses(".clz { @@@ }");
         assertParses(".clz { @@@ @@@; @@@ @@@ @@@; @@@}");
@@ -1330,14 +1315,13 @@ public class Css3ParserTest extends CssTestBase {
         assertParses(".clz { @@@; color: red; @@@ }");
         assertParses(".clz { color: red; @@@ @@@ }");
     }
-    
+
 //    public void testTemplatingMarksInBody() throws ParseException, BadLocationException {
 //        assertParses(" @@@ ");
 //        assertParses(" @@@ .clz {  } @@@ ");
 //        assertParses(" @@@ @@@ @@@ ");
 //        assertParses(" @@@ @@@ .clz {  } ");
 //    }
-    
     //https://netbeans.org/bugzilla/show_bug.cgi?id=230042#c1
 //    public void testIEExpressionHack_fails() throws ParseException, BadLocationException {
 //        assertParses("div {\n"
