@@ -8,37 +8,46 @@
 
 <body>
 <p><a id="org.netbeans.modules.j2ee.common.DatasourceCustomizer" name="org.netbeans.modules.j2ee.common.DatasourceCustomizer"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref614" name="sthref614"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref626" name="sthref626"></a>
 <h1>Create Data Source Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
+<p>This dialog box enables you to create a data source (JDBC resource) which provides applications with a means of connecting to a database. To connect to a database, the JNDI name of the data source is used to locate the associated database. Typically, the administrator creates a data source for each database accessed by the applications deployed in a domain. (However, more than one data source can be created for a database.)</p>
+<p>To create a data source to use in your application, you need to supply the following:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t44">Element</th>
-<th align="left" valign="bottom" id="r1c2-t44">Description</th>
+<th align="left" valign="bottom" id="r1c1-t41">Element</th>
+<th align="left" valign="bottom" id="r1c2-t41">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t44" headers="r1c1-t44"></td>
-<td align="left" headers="r2c1-t44 r1c2-t44"></td>
+<td align="left" id="r2c1-t41" headers="r1c1-t41">
+<p>JNDI Name</p>
+</td>
+<td align="left" headers="r2c1-t41 r1c2-t41">
+<p>The JNDI name is the unique name for the data source. The JNDI name of the data source must also be registered on the target server.</p>
+<p><b>Note</b>: Because the data source is a JDBC resource, the JNDI name is expected in the java:comp/env/jdbc subcontext. For example, for a database name MyDatabase, specify jdbc/MyDatabase as the JNDI name.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t44" headers="r1c1-t44"></td>
-<td align="left" headers="r3c1-t44 r1c2-t44"></td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t44" headers="r1c1-t44"></td>
-<td align="left" headers="r4c1-t44 r1c2-t44"></td>
+<td align="left" id="r3c1-t41" headers="r1c1-t41">
+<p>Database Connection</p>
+</td>
+<td align="left" headers="r3c1-t41 r1c2-t41">
+<p>Choose the database connection to your database from the drop-down menu. The data source refers to a specific database connection. The drop-down menu contains the database connections listed under the Databases node in the Services window. Choose New Database Connection to create a new database connection.</p>
+</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<p>When you create a new data source for your application, the data source description is added to glassfish-resources.xml under the Server Resources node of your project in the Projects window. If you are deploying to the GlassFish server, the data source is registered with the server upon deployment.</p>
 <hr><p><b>Related Topics</b></p>
+<p>Connecting to a Database</p>
 
 <!-- -->
 <!-- Start Footer -->

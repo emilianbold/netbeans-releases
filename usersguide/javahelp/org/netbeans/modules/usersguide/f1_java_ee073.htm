@@ -8,7 +8,7 @@
 
 <body>
 <p><a id="tomcat_setup_tdcp" name="tomcat_setup_tdcp"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref634" name="sthref634"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref646" name="sthref646"></a>
 <h1>Setting Up a Connection Pool on the Tomcat Web Server</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>To store, organize, and retrieve data, most applications use relational databases. Java EE applications access relational databases through the JDBC API.</p>
@@ -19,24 +19,24 @@
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t60">Element</th>
-<th align="left" valign="bottom" id="r1c2-t60">Description</th>
+<th align="left" valign="bottom" id="r1c1-t57">Element</th>
+<th align="left" valign="bottom" id="r1c2-t57">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t60" headers="r1c1-t60">
+<td align="left" id="r2c1-t57" headers="r1c1-t57">
 <p>JDBC resource</p>
 </td>
-<td align="left" headers="r2c1-t60 r1c2-t60">
+<td align="left" headers="r2c1-t57 r1c2-t57">
 <p>A JDBC resource (data source) provides applications with a means of connecting to a database. Typically, the administrator creates a JDBC resource for each database accessed by the applications deployed in a domain. (However, more than one JDBC resource can be created for a database.) Each JDBC resource has a unique JNDI name.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t60" headers="r1c1-t60">
+<td align="left" id="r3c1-t57" headers="r1c1-t57">
 <p>JDBC Connection pool</p>
 </td>
-<td align="left" headers="r3c1-t60 r1c2-t60">
+<td align="left" headers="r3c1-t57 r1c2-t57">
 <p>A JDBC connection pool is a group of reusable connections that the application server maintains for a particular database. When an application closes a connection, the connection is returned to the pool. Connection pooling reduces the transaction time of connecting to a database by means of sharing connection objects providing access to a database source, thus avoiding a new physical connection being created every time a connection is requested.</p>
 </td>
 </tr>

@@ -7,38 +7,72 @@
 </head>
 
 <body>
-<p><a id="send_jms" name="send_jms"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref612" name="sthref612"></a>
+<p><a id="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendJMSMessageCodeGenerator" name="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SendJMSMessageCodeGenerator"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref624" name="sthref624"></a>
 <h1>Send JMS Message Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
+<p>You use this dialog box to send a Java Message Service (JMS) message to a message destination. A JMS message is an object that communicates information between JMS clients. The message is sent from one client to a second client that listens for messages through a JMS destination on an application server.</p>
+<p>You open the dialog box by right-clicking a Java file in the Source Editor and choosing Insert Code &gt; Send JMS Message. The file must be in an EJB module project or a standard web application project. You cannot generate lookup code in a free-form web application project.</p>
+<p>You use the dialog box as follows:</p>
+<ol>
+<li>
+<p>Select the destination for the JMS message by selecting one of the following:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t42">Element</th>
-<th align="left" valign="bottom" id="r1c2-t42">Description</th>
+<th align="left" valign="bottom" id="r1c1-t40">Element</th>
+<th align="left" valign="bottom" id="r1c2-t40">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t42" headers="r1c1-t42"></td>
-<td align="left" headers="r2c1-t42 r1c2-t42"></td>
+<td align="left" id="r2c1-t40" headers="r1c1-t40">
+<p>Project Destinations</p>
+</td>
+<td align="left" headers="r2c1-t40 r1c2-t40">
+<p>Choose from the list of available destinations in your project. If no destination is available in the drop-down list, you can click Add to create a new destination.</p>
+<p>Alternatively, you can create a JMS destination by opening the New File wizard and choosing JMS Resource in the GlassFish category.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t42" headers="r1c1-t42"></td>
-<td align="left" headers="r3c1-t42 r1c2-t42"></td>
+<td align="left" id="r3c1-t40" headers="r1c1-t40">
+<p>Server Destinations.</p>
+</td>
+<td align="left" headers="r3c1-t40 r1c2-t40">
+<p>Choose from the list of available destinations that exist on the server.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t42" headers="r1c1-t42"></td>
-<td align="left" headers="r4c1-t42 r1c2-t42"></td>
+<td align="left" id="r4c1-t40" headers="r1c1-t40">
+<p>Message Driven Bean</p>
+</td>
+<td align="left" headers="r4c1-t40 r1c2-t40">
+<p>Choose a message-driven bean from the drop-down list. The drop-down list displays the message-driven beans in the same project and fills the Destination field with the name of the destination resource found in the bean.</p>
+</td>
 </tr>
 </tbody>
 </table>
 <br />
-<!-- -->
+<!-- --></li>
+<li>Specify a Service Locator Strategy by choosing to generate an inline lookup code or use an existing service locator. You can click the Browse to search for the service locator class name.</li>
+<li>
+<p>Click OK.</p>
+<p>The IDE creates two methods:</p>
+<ul>
+<li><code>createJMSMessageForNewMessageDestination</code>. The method that creates the message that is sent. You should implement your business logic in this method.</li>
+<li><code>sendJMSMessageToNewMessageDestination</code>. The method that handles the message you created in the method above. You should not modify this message.</li>
+</ul>
+<p>The IDE also registers the resource reference and message destination reference in your module's general deployment descriptor.</p>
+</li>
+</ol>
+<p><b>Note</b>: If your project's target server is the GlassFish server, the IDE automatically configures a destination and connection factory for the message-driven bean when you create the bean. If you are deploying to a different application server, you have to configure the server-specific deployment descriptors and the server resources yourself.</p>
 <hr><p><b>Related Topics</b></p>
+<p>About Message-Driven Beans</p>
+<p>Using a Service Locator</p>
+<p>Setting up a JMS Resource on the GlassFish Application Server</p>
 
 <!-- -->
 <!-- Start Footer -->

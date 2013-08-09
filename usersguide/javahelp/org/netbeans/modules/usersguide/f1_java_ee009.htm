@@ -7,8 +7,8 @@
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.j2ee.commonproject.ui.ProjectImportLocationWizardPanel" name="org.netbeans.modules.j2ee.commonproject.ui.ProjectImportLocationWizardPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref561" name="sthref561"></a>
+<p><a id="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectImportLocationWizardPanel_APPCLIENT" name="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectImportLocationWizardPanel_APPCLIENT"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref573" name="sthref573"></a>
 <h1>New Enterprise Application Client with Existing Sources Wizard: Name and Location</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>This wizard creates a new standard project containing an enterprise application client.</p>
@@ -17,7 +17,7 @@
 <p>In the Name and Location page, you must set the following properties:</p>
 
 <table summary="Name and Location features" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="27%" />
+<col width="22%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
@@ -28,50 +28,20 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t5" headers="r1c1-t5">
-<p>Location</p>
+<p>Configuration Files Folder</p>
 </td>
 <td align="left" headers="r2c1-t5 r1c2-t5">
-<p>Specifies the parent folder that contains the existing EJB module. Typically, this is the folder that contains the configuration files folder, the libraries folder, and the primary source folder. The IDE scans this folder and tries to suggest locations for the <b>Configuration Files and Libraries</b> fields.</p>
+<p>Specifies the location of your deployment descriptors and other configuration files. You must have at least a valid application-client.xml deployment descriptor to complete the wizard.</p>
+<p><b>Note</b>: The IDE does not convert deployment descriptors for unsupported application servers to Sun Java System Application Server deployment descriptors. You must use an external tool for this purpose.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t5" headers="r1c1-t5">
-<p>Project Name</p>
-</td>
-<td align="left" headers="r3c1-t5 r1c2-t5">
-<p>Specifies the display name of the project.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t5" headers="r1c1-t5">
-<p>Project Folder</p>
-</td>
-<td align="left" headers="r4c1-t5 r1c2-t5">
-<p>Specifies the location where the module's project folder is created. The project folder contains project metadata like the project's Ant build script. You can place the project folder in the same location as your sources or in a separate location.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t5" headers="r1c1-t5">
-<p>Use Dedicated Folder for Storing Libraries</p>
-</td>
-<td align="left" headers="r5c1-t5 r1c2-t5">
-<p>When the box is checked you can specify a Libraries Folder where required compilation libraries are stored.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t5" headers="r1c1-t5">
 <p>Libraries Folder</p>
 </td>
-<td align="left" headers="r6c1-t5 r1c2-t5">
-<p>Specifies the location of the folder containing shared libraries. Click <b>Browse</b> to specify a location other than the default. <code>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG455">
-<param name="text" value="<html><u>How?</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</code>
-</p>
+<td align="left" headers="r3c1-t5 r1c2-t5">
+<p>Specifies the location of the class libraries on which the application client depends. All JAR files in this folder are added to the enterprise application project's classpath and packaged with the module for deployment.</p>
+<p><b>Note</b>: The IDE only scans this folder once when you create the project. After the project is created, adding JAR files to this folder outside the IDE does not add them to the module's classpath. You have to add them manually through the Libraries tab of the module's Project Properties dialog box.</p>
 </td>
 </tr>
 </tbody>

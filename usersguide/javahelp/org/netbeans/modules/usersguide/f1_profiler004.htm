@@ -8,7 +8,7 @@
 
 <body>
 <p><a id="CPUSettings.Advanced.HelpCtx" name="CPUSettings.Advanced.HelpCtx"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref341" name="sthref341"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref353" name="sthref353"></a>
 <h1>Analyze Performance: Advanced Options</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>Use to create a custom configuration and set more advanced profiling options. 
@@ -43,7 +43,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t5" headers="r1c1-t5">
-<p>Sampling Frequency.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Sampling Frequency.</p>
 </td>
 <td align="left" headers="r3c1-t5 r1c2-t5">
 <p>Specifies how often the application is sampled.</p>
@@ -59,7 +59,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t5" headers="r1c1-t5">
-<p>Enable Threads Monitoring.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Enable Threads Monitoring.</p>
 </td>
 <td align="left" headers="r5c1-t5 r1c2-t5">
 <p>Monitors application threads from application startup.</p>
@@ -68,7 +68,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t5" headers="r1c1-t5">
-<p>Sample Threads States</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Sample Threads States</p>
 </td>
 <td align="left" headers="r6c1-t5 r1c2-t5">
 <p>Periodically updates thread states.</p>
@@ -101,7 +101,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t6" headers="r1c1-t6">
-<p>Methods Tracking</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Methods Tracking</p>
 </td>
 <td align="left" headers="r3c1-t6 r1c2-t6">
 <p>Injects a "method entry" call at the beginning of each profiled method and a "method exit" call before each return when tracking methods.</p>
@@ -110,7 +110,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t6" headers="r1c1-t6">
-<p>Exact Call Tree and Timing</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exact Call Tree and Timing</p>
 </td>
 <td align="left" headers="r4c1-t6 r1c2-t6">
 <p>Calculates the time spent in the method as the difference between the timestamp that is generated for each "method entry" and corresponding "method exit".</p>
@@ -118,7 +118,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t6" headers="r1c1-t6">
-<p>Exact Call Tree, Sampled Timing</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Exact Call Tree, Sampled Timing</p>
 </td>
 <td align="left" headers="r5c1-t6 r1c2-t6">
 <p>Calculates the time spent in the method as the difference between the timestamp that is generated for the "method entry" and corresponding "method exit" that fall approximately at the end of each sampling interval.</p>
@@ -137,7 +137,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t6" headers="r1c1-t6">
-<p>Exclude time spent in Thread.sleep() and Object.wait()</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Exclude time spent in Thread.sleep() and Object.wait()</p>
 </td>
 <td align="left" headers="r6c1-t6 r1c2-t6">
 <p>Does not profile these methods.</p>
@@ -145,7 +145,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t6" headers="r1c1-t6">
-<p>Profile underlying framework setup</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Profile underlying framework setup</p>
 </td>
 <td align="left" headers="r7c1-t6 r1c2-t6">
 <p>Profiles the startup of the application's target JVM.</p>
@@ -153,7 +153,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r8c1-t6" headers="r1c1-t6">
-<p>Profile new Threads/Runnables</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Profile new Threads/Runnables</p>
 </td>
 <td align="left" headers="r8c1-t6 r1c2-t6">
 <p>Instruments the code for any thread or runnable started after the application enters the root instrumentation method.</p>
@@ -162,7 +162,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r9c1-t6" headers="r1c1-t6">
-<p>Limit number of profile threads.</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Limit number of profile threads.</p>
 </td>
 <td align="left" headers="r9c1-t6 r1c2-t6">
 <p>When selected, every time a thread that has not been previously registered enters the instrumented code, this counter is decremented. When it reaches zero, registration of new threads is stopped. Profiling data is collected only for the registered threads.</p>
@@ -180,7 +180,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r10c1-t6" headers="r1c1-t6">
-<p>Use thread CPU timer (Solaris only)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Use thread CPU timer (Solaris only)</p>
 </td>
 <td align="left" headers="r10c1-t6 r1c2-t6">
 <p>Profiles the time spent executing the specified thread.</p>
@@ -197,7 +197,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r11c1-t6" headers="r1c1-t6">
-<p>Instrumentation Scheme</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Instrumentation Scheme</p>
 </td>
 <td align="left" headers="r11c1-t6 r1c2-t6">
 <p>Uses an instrumentation scheme to limit the number of instrumented methods. (Usually, it is best if the number of instrumented methods and the number of methods actually called by the application when it is profiled are the same or very close.)</p>
@@ -205,7 +205,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r12c1-t6" headers="r1c1-t6">
-<p>Total</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Total</p>
 </td>
 <td align="left" headers="r12c1-t6 r1c2-t6">
 <p>Use this scheme to profile application startup, or an entire application such as a short-running command line utility With this scheme, all methods in a class are instrumented as soon as the class is loaded.</p>
@@ -214,7 +214,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r13c1-t6" headers="r1c1-t6">
-<p>"Lazy"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"Lazy"</p>
 </td>
 <td align="left" headers="r13c1-t6 r1c2-t6">
 <p>Use this scheme to profile a long running application as it has a low instrumentation overhead. For instance, use to profile a subset of the application code (where, for example, just one or more servlets running on top of an application server). Results in the smallest number of methods being instrumented.</p>
@@ -223,7 +223,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r14c1-t6" headers="r1c1-t6">
-<p>Eager</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Eager</p>
 </td>
 <td align="left" headers="r14c1-t6 r1c2-t6">
 <p>Use this scheme as a compromise between the Total and Lazy schemes. This scheme is not recommended for long-running applications.</p>
@@ -240,7 +240,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r15c1-t6" headers="r1c1-t6">
-<p>Instrument</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Instrument</p>
 </td>
 <td align="left" headers="r15c1-t6 r1c2-t6">
 <p>Instruments <code>Method.invoke()</code>, <code>Getter/setter</code> methods, and empty methods. By default, these types of methods are not instrumented.</p>
@@ -265,7 +265,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r17c1-t6" headers="r1c1-t6">
-<p>Enable Threads Monitoring</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Enable Threads Monitoring</p>
 </td>
 <td align="left" headers="r17c1-t6 r1c2-t6">
 <p>Monitors application threads from application startup.</p>
@@ -274,7 +274,7 @@
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r18c1-t6" headers="r1c1-t6">
-<p>Sample Threads States</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Sample Threads States</p>
 </td>
 <td align="left" headers="r18c1-t6 r1c2-t6">
 <p>Periodically updates thread states.</p>

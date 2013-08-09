@@ -8,16 +8,16 @@
 
 <body>
 <p><a id="tomcat_websvc" name="tomcat_websvc"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref636" name="sthref636"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref648" name="sthref648"></a>
 <h1>Writing Ant Targets for Web Services on the Tomcat Web Server</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>When working with web services on the Tomcat Web Server, you are recommended to use the However, the JWSDP-compliant Tomcat Web Server is based on Tomcat Web Server 5.0.19. Therefore, if you want to use a version of the Tomcat Web Server that is higher than 5.0.19, you cannot use JWSDP 1.6. Instead, you need to write Ant targets in the IDE, as described below.</p>
-<a id="sthref637" name="sthref637"></a>
+<a id="sthref649" name="sthref649"></a>
 <p><b>To prepare to use Ant targets to deploy a web service on the Tomcat Web Server:</b></p>
 <p>Copy all JAR files from $NB_HOME/ide/modules/ext/jaxrpc16 to $NB_HOME/enterprise/apache-tomcat-5.5.17/common/lib.</p>
 <p>Make sure that the GlassFish server is registered in the IDE.</p>
 <p>In the Services window (Ctrl-5), expand the Servers node, right-click the Tomcat Web Server node, and choose Start. Doing this creates the full_path_to_$NB_USER_DIR/5.0/apache-tomcat-5.5.17_base folder. In this folder, enable the Tomcat Web Server's auto deploy functionality by switching autoDeploy="false" to autoDeploy="true" in the conf/server.xml folder. Right-click the Tomcat Web Server node and choose restart so that the server can load your change.</p>
-<a id="sthref638" name="sthref638"></a>
+<a id="sthref650" name="sthref650"></a>
 <p><b>To create the web service or client files:</b></p>
 <ol>
 <li>Create a web application project. Set the GlassFish server as your target server.</li>
@@ -35,7 +35,7 @@
 </ul>
 </li>
 </ol>
-<a id="sthref639" name="sthref639"></a>
+<a id="sthref651" name="sthref651"></a>
 <p><b>To write Ant targets to deploy a web service on the Tomcat Web Server:</b></p>
 <ol>
 <li>
@@ -97,7 +97,7 @@ The apache-tomcat-5.5.17_base folder is created only once the Tomcat Web Server 
 <p>Now right-click the project node, choose Properties, select the Run pane, and type MyTomcatWS in Relative URL.</p>
 </li>
 </ol>
-<a id="sthref640" name="sthref640"></a>
+<a id="sthref652" name="sthref652"></a>
 <p><b>To deploy a web service or web service client on the Tomcat Web Server:</b></p>
 <ol>
 <li>Right-click the project node, choose Properties, select the Run pane, and select the Tomcat Web Server from the Server drop-down list.</li>

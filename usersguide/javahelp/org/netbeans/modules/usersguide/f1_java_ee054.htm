@@ -7,38 +7,24 @@
 </head>
 
 <body>
-<p><a id="use_db" name="use_db"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref613" name="sthref613"></a>
+<p><a id="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SelectDatabasePanel" name="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.SelectDatabasePanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref625" name="sthref625"></a>
 <h1>Choose Database Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t43">Element</th>
-<th align="left" valign="bottom" id="r1c2-t43">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t43" headers="r1c1-t43"></td>
-<td align="left" headers="r2c1-t43 r1c2-t43"></td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t43" headers="r1c1-t43"></td>
-<td align="left" headers="r3c1-t43 r1c2-t43"></td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t43" headers="r1c1-t43"></td>
-<td align="left" headers="r4c1-t43 r1c2-t43"></td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
+<p>You use this dialog box to add code to a Java class file that looks up a networked database. You can choose to specify an existing class containing the lookup code or the IDE can generate the lookup code for you. The lookup code uses a reference name that refers to the JNDI name of your data resource. If there is no reference name associated with your data resource, you can create a new reference name in the dialog box.</p>
+<p>You can only insert database look-up code in Java classes that are located in an EJB module project or web application project. You open the dialog box by right-clicking the class in the Source Editor and choosing Insert Code &gt; Use Database.</p>
+<p>You use the dialog box as follows:</p>
+<ol>
+<li>Select the name of the resource reference from the drop-down list. The resource reference refers to the JNDI name of the data source you want to use. If no resource reference to your data source is available in the drop-down list, click Add to create a new reference name.</li>
+<li>Under Service Locator Strategy, specify whether to generate inline lookup code or use an existing You can click the Browse to search for the service locator class name.</li>
+<li>Click OK.</li>
+</ol>
+<p><b>Note</b>: When you create a new reference name for a data source you need to choose a data source in your project or on the server. If the data source does not exist, you must create the data source by specifying the JNDI name and database connection for the data source.</p>
 <hr><p><b>Related Topics</b></p>
+<p>About Connection Pools</p>
+<p>Using a Service Locator</p>
+<p>Connecting to a Database</p>
+<p>Adding a New JDBC Driver</p>
 
 <!-- -->
 <!-- Start Footer -->

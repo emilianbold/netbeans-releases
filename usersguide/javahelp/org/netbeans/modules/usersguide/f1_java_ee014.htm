@@ -7,8 +7,8 @@
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.CallEjbPanel" name="org.netbeans.modules.j2ee.ejbcore.ui.logicalview.entries.CallEjbPanel"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref566" name="sthref566"></a>
+<p><a id="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.DatabaseTablesPanel" name="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.cmp.DatabaseTablesPanel"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref578" name="sthref578"></a>
 <h1>New CMP Entity Beans from Database Wizard: Database Tables</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>This wizard generates a set of container-managed persistence (CMP) entity beans from an existing database connection or schema. The IDE generates a CMP bean for each related table with CMP fields for each of the columns in the database tables. You can also automatically generate finder methods for each of the CMP fields.</p>
@@ -17,9 +17,7 @@
 <ol>
 <li>
 <p>Specify whether to generate the beans from a connection to a database or from a database schema. When you select <b>data source</b>, the datasources for your project are listed. You can add a new data source by selecting <b>New Data Source</b> from the drop-down list and creating a data source from any of the database connections registered in the Services window. When you generate entity beans from a data source, the IDE also creates a database schema for the database and saves it in your <code>src/conf</code> folder.</p>
-<ul>
-<li>Many database servers can only connect to one database at a time. Make sure that your database server is not connected to any database other than the one from which you want to generate the beans.</li>
-</ul>
+<p><b>Note</b>: Many database servers can only connect to one database at a time. Make sure that your database server is not connected to any database other than the one from which you want to generate the beans.</p>
 </li>
 <li>Select any tables in the left pane and click the <b>Add</b> button. Any tables related to selected tables are automatically added to the list in the right pane. The IDE will also generate beans for each of the linked tables.</li>
 <li>Click <b>Next</b>.</li>

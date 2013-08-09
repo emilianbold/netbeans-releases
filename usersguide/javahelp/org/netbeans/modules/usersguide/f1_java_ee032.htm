@@ -8,37 +8,69 @@
 
 <body>
 <p><a id="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSClientHost" name="org.netbeans.modules.j2ee.ejbjarproject.ui.customizer.CustomizerWSClientHost"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref586" name="sthref586"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref598" name="sthref598"></a>
 <h1>ejb-jar.xml Visual Editor: Enterprise Bean Implementation and Interfaces</h1>
 <a name="BEGIN" id="BEGIN"></a>
-
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t25">Element</th>
-<th align="left" valign="bottom" id="r1c2-t25">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t25" headers="r1c1-t25"></td>
-<td align="left" headers="r2c1-t25 r1c2-t25"></td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t25" headers="r1c1-t25"></td>
-<td align="left" headers="r3c1-t25 r1c2-t25"></td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t25" headers="r1c1-t25"></td>
-<td align="left" headers="r4c1-t25 r1c2-t25"></td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
+<p>The <code>ejb-jar.xml</code> visual editor lets you edit the general for an EJB module. You open the editor by expanding the project's Configuration Files node in the Projects window and double-clicking <code>ejb-jar.xml</code>. The Enterprise Beans section of the General tab contains a section for each of your EJB module's enterprise beans.</p>
+<p>Each enterprise bean has a Bean Environment section, which lets you specify the following information:</p>
+<p><a href="#BABJCIAJ">Enterprise Bean References</a></p>
+<p><a href="#BABJDJJH">Environment Entries</a></p>
+<p><a href="#BABGFDHF">Resource References</a></p>
+<p><a href="#BABEHEGC">Resource Environment References</a></p>
+<p><a href="#BABDEIDG">Security Role References</a></p>
+<a id="BABJCIAJ" name="BABJCIAJ"></a>
+<p><b>Enterprise Bean References</b></p>
+<p>Lists all of the enterprise beans that a particular bean references. When you add a bean reference through the <code>ejb-jar.xml</code> visual editor, the IDE adds a reference to the bean in the deployment descriptorand creates lookup code for the referenced bean in the bean implementation class of the enterprise bean.</p>
+<p>You can also add enterprise bean references by right-clicking in the bean class for an enterprise bean and choosing Insert Code &gt; Call Enterprise Bean.</p>
+<a id="BABJDJJH" name="BABJDJJH"></a>
+<p><b>Environment Entries</b></p>
+<p>In the Environment Entries section, you can define properties in the deployment descriptor that you can then access in the code of your EJB module. For example, an entry name of a enterprise bean that calculates money exchanges might be <code>PoundToDollar</code> and the value for this entry might be 1.55, which indicates the pound-to-dollar exchange rate.</p>
+<p>The environment entry values can be one of the following Java types: <code>String</code>, <code>Character</code>, <code>Integer</code>, <code>Boolean</code>, <code>Double</code>, <code>Byte</code>, <code>Short</code>, <code>Long</code>, and <code>Float</code>. Make sure that each entry's value matches its type. Also make sure that the name for each entry is unique in each enterprise bean.</p>
+<a id="BABGFDHF" name="BABGFDHF"></a>
+<p><b>Resource References</b></p>
+<p>In the Resource References section, you can define references that your bean needs to access server resources. These resources can include the following:</p>
+<ul>
+<li>JMS data sources</li>
+<li>JDBC data sources</li>
+<li>Connectors to enterprise information systems</li>
+<li>Connectors to message queues</li>
+<li>JavaMail resources</li>
+</ul>
+<p>JMS data sources and JDBC data sources are registered automatically when you use the Send JMS Message and Use Database commands.</p>
+<p>For each resource reference, you need to do the following:</p>
+<ul>
+<li>Type the name of the resource, prepended with either jdbc/, mail/, jms/, env/ or url/, in the Name column.</li>
+<li>Select Application or Container in the Authentication column to indicate whether you want the authentication of resource users to be managed by the enterprise bean or the container.</li>
+<li>
+<p>Type one of the following resource types in the Resource Type column:</p>
+<ul>
+<li><code>javax.sql.DataSource</code>. Represents a data store like a database.</li>
+<li>
+<p><code>javax.mail.Session</code>. One of the following:</p>
+<p>- A mail store, where mail messages are stored in folders</p>
+<p>- A mail transport used to send a mail message</p>
+</li>
+<li><code>java.net.URL</code>. Represents a file resource.</li>
+<li><code>javax.jms.QueueConnectionFactory</code>. Represents a connection factory for connecting to a Queue destination.</li>
+<li><code>javax.jms.TopicConnectionFactory</code>. Represents a connection factory for connecting to a Topic destination.</li>
+<li><code>javax.jms.ConnectionFactory</code>. Represents a connection factory for connecting to a JMS provider.</li>
+<li><code>javax.resource.cci.ConnectionFactory</code>. Represents a connection factory for connecting to an EIS.</li>
+<li><code>javax.xml.registry.ConnectionFactory</code>. Represents a connection factory for connecting to a JAXR registry.</li>
+</ul>
+</li>
+<li>(Optional) Select <code>Shareable</code> or <code>Unshareable</code> in the Shareable column to specify whether connections obtained through the given resource manager connection factory reference can be shared.</li>
+<li>(Optional) Type a description of the resource reference in the description column.</li>
+</ul>
+<a id="BABEHEGC" name="BABEHEGC"></a>
+<p><b>Resource Environment References</b></p>
+<p>Resource environment references are another type of environment entries. They allow you to refer to administered objects that are associated with resources (for example, JMS Destinations), by using logical names. You can type the name, resource type, and optionally a description for each resource environment reference.</p>
+<a id="BABDEIDG" name="BABDEIDG"></a>
+<p><b>Security Role References</b></p>
+<p>In the Security Role References section, you can link a reference name used in your code to a security role defined on the application server. The value in the Reference Name column must be the security role name that is used as a parameter to the isCallerInRole(String roleName) method in your enterprise bean.</p>
+<p>All enterprise beans also have the following sections in the ejb-jar.xml visual editor:</p>
 <hr><p><b>Related Topics</b></p>
+<p>About Configuring EJBModules</p>
+<p>Verifying an Enterprise Application</p>
 
 <!-- -->
 <!-- Start Footer -->

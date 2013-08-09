@@ -7,37 +7,58 @@
 </head>
 
 <body>
-<!-- infolevel="all" infotype="General" --><a id="sthref611" name="sthref611"></a>
+<p><a id="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection" name="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref623" name="sthref623"></a>
 <h1>Specify Mail Resource Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
+<p>You use this dialog box to automatically generate code that sends an e-mail from a Java file. You open the dialog box by right-clicking a Java file in the Source Editor and choosing Insert Code &gt; Send E-mail. The file must be in an EJB module project or a standard web application project. You cannot generate e-mail code in a free-form web application project.</p>
+<p>You use the dialog box as follows:</p>
+<ol>
+<li>Specify the JNDI name of the resource.</li>
+<li>Under Service Locator Strategy, specify whether to generate inline lookup code or use an existing service locator. You can click Browse to search for the service locator class name.</li>
+<li>
+<p>Click OK.</p>
+<p>The IDE creates two methods:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t41">Element</th>
-<th align="left" valign="bottom" id="r1c2-t41">Description</th>
+<th align="left" valign="bottom" id="r1c1-t39">Element</th>
+<th align="left" valign="bottom" id="r1c2-t39">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t41" headers="r1c1-t41"></td>
-<td align="left" headers="r2c1-t41 r1c2-t41"></td>
+<td align="left" id="r2c1-t39" headers="r1c1-t39">
+<p>getSession</p>
+</td>
+<td align="left" headers="r2c1-t39 r1c2-t39">
+<p>Looks up the mail resource and creates a mail session.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t41" headers="r1c1-t41"></td>
-<td align="left" headers="r3c1-t41 r1c2-t41"></td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t41" headers="r1c1-t41"></td>
-<td align="left" headers="r4c1-t41 r1c2-t41"></td>
+<td align="left" id="r3c1-t39" headers="r1c1-t39">
+<p>sendMail</p>
+</td>
+<td align="left" headers="r3c1-t39 r1c2-t39">
+<p>Constructs and send the e-mail.</p>
+</td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
+<p>The IDE also registers the resource reference in your module's general deployment descriptor.</p>
+</li>
+<li>
+<p>In your code, call the sendMail method and pass the e-mail address, subject, and body as parameters.</p>
+<p><b>Note</b>: You have to configure the mail resource on the application server yourself. If your project's target server is the GlassFish server, the IDE automatically configures the resource reference in the application-specific deployment descriptor. If you are deploying to a different application server, you have to configure the server-specific deployment descriptors yourself.</p>
+</li>
+</ol>
 <hr><p><b>Related Topics</b></p>
+<p>Using a Service Locator</p>
 
 <!-- -->
 <!-- Start Footer -->
