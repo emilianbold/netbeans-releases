@@ -276,9 +276,17 @@ class AssignComments extends TreeScanner<Void, Void> {
     private void lookWithinEmptyBlock(TokenSequence<JavaTokenId> seq, BlockTree tree) {
         // moving into opening brace.
         if (moveTo(seq, JavaTokenId.LBRACE, true)) {
+            int idx = -1;
             if (seq.moveNext()) {
-                CommentsCollection cc = getCommentsCollection(seq, Integer.MAX_VALUE);
-                attachComments(tree, cc, CommentSet.RelativePosition.INNER);
+                JavaTokenId id = seq.token().id();
+                idx = seq.index();
+                if (id == JavaTokenId.WHITESPACE || isComment(id)) {
+                    CommentsCollection cc = getCommentsCollection(seq, Integer.MAX_VALUE);
+                    attachComments(tree, cc, CommentSet.RelativePosition.INNER);
+                }
+            }
+            if (tokenIndexAlreadyAdded < idx) {
+                tokenIndexAlreadyAdded = idx;
             }
         } else {
             int end = (int) positions.getEndPosition(unit, tree);
@@ -400,6 +408,10 @@ class AssignComments extends TreeScanner<Void, Void> {
         return count;
     }
 
+    /**
+     * Note - Because of {@link Comment.Style#WHITESPACE}, whitespaces are also
+     * recorded
+     */
     private CommentsCollection getCommentsCollection(TokenSequence<JavaTokenId> ts, int maxTension) {
         CommentsCollection result = new CommentsCollection();
         Token<JavaTokenId> t = ts.token();
