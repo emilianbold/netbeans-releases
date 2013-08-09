@@ -48,7 +48,6 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -60,14 +59,11 @@ import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
-import java.util.Set;
 import java.util.StringTokenizer;
-import java.util.jar.Attributes;
 import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -106,7 +102,7 @@ import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Mutex;
 import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
-import org.openide.util.RequestProcessor;
+import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 
 
@@ -333,7 +329,7 @@ public class WSUtils {
         try {
             DataObject dObj = DataObject.find(f);
             if (dObj != null) {
-                SaveCookie save = dObj.getCookie(SaveCookie.class);
+                SaveCookie save = dObj.getLookup().lookup(SaveCookie.class);
                 if (save!=null) save.save();
             }
             lock = f.lock();
@@ -528,6 +524,7 @@ public class WSUtils {
         throws IOException {        
         try {
             ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
                 public Void run() throws IOException {                                             
                     FileObject propertiesFo = prj.getProjectDirectory().getFileObject(propertiesPath);
                     if (propertiesFo!=null) {
@@ -827,7 +824,7 @@ public class WSUtils {
                     isBroken = true;
                     break;
                 }
-                File file = new File(url.toURI());
+                File file = Utilities.toFile(url.toURI());
                 file = FileUtil.normalizeFile(file);
                 if ( file == null ){
                     isBroken = true;
