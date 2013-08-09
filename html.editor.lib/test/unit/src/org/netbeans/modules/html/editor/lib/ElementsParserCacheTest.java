@@ -201,6 +201,9 @@ public class ElementsParserCacheTest extends CslTestBase {
         assertEquals(0, block1.getStartOffset());
         assertEquals(11, block1.getEndOffset());
         
+        assertEquals(0, block1.getFirstTokenIndex());
+        assertEquals(5, block1.getLastTokenIndex());
+        
         //block read
         assertEquals(1, block1.blockReads); 
 
@@ -236,6 +239,9 @@ public class ElementsParserCacheTest extends CslTestBase {
         assertEquals(11, block2.getStartOffset());
         assertEquals(18, block2.getEndOffset());
         
+        assertEquals(6, block2.getFirstTokenIndex());
+        assertEquals(11, block2.getLastTokenIndex());
+        
         //read already
         assertEquals(1, block2.blockReads); 
         
@@ -266,8 +272,8 @@ public class ElementsParserCacheTest extends CslTestBase {
         assertEquals(4, block3.getStartIndex());
         assertEquals(4, block3.getEndIndex());
         
-        assertEquals(18, block3.getStartOffset());
-        assertEquals(18, block3.getEndOffset());
+        assertEquals(-1, block3.getStartOffset());
+        assertEquals(-1, block3.getEndOffset());
     }
     
     //Bug 230170 - AssertionError at org.netbeans.modules.html.editor.lib.ElementsParserCache$1.getCacheBlock 
