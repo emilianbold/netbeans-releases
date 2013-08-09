@@ -181,8 +181,7 @@ public class JsIndex {
                 try {
                     CACHE_INDEX_RESULT_SMALL.clear();
                     CACHE_INDEX_RESULT_LARGE.clear();
-                    System.err.println("Cache cleared");
-                    System.err.flush();
+                    LOG.log(Level.INFO, "Cache cleared");
                     LOG.log(Level.FINEST, "Cache cleared");
                 } finally {
                     WRITE_LOCK.unlock();
@@ -195,8 +194,7 @@ public class JsIndex {
 
             if (value != null) {
                 logStats(value.getResult(), true, fieldsToLoad);
-                System.err.println("Cache hit " + key + ": " + value.getResult().hashCode() + " " + value.getResult().size());
-                System.err.flush();
+                LOG.log(Level.INFO,"Cache hit " + key + ": " + value.getResult().hashCode() + " " + value.getResult().size());
                 return value.getResult();
             }
 
@@ -208,8 +206,7 @@ public class JsIndex {
                     value = getCachedValue(key, fieldsToLoad);
                     if (value != null) {
                         logStats(value.getResult(), false, fieldsToLoad);
-                        System.err.println("Lazy cache hit " + key + ": " + value.getResult().hashCode() + " " + value.getResult().size());
-                        System.err.flush();
+                        LOG.log(Level.INFO,"Lazy cache hit " + key + ": " + value.getResult().hashCode() + " " + value.getResult().size());
                         return value.getResult();
                     }
 
@@ -220,8 +217,7 @@ public class JsIndex {
                         CACHE_INDEX_RESULT_LARGE.put(key, new SoftReference(value));
                     }
                     logStats(result, false, fieldsToLoad);
-                    System.err.println("Cache update " + key + ": " + value.getResult().hashCode() + " " + value.getResult().size());
-                    System.err.flush();
+                    LOG.log(Level.INFO,"Cache update " + key + ": " + value.getResult().hashCode() + " " + value.getResult().size());
                     return value.getResult();
                 } finally {
                     WRITE_LOCK.unlock();
@@ -229,8 +225,7 @@ public class JsIndex {
             }
 
             logStats(result, false, fieldsToLoad);
-            System.err.println("No cache " + key + ": " + result.hashCode() + " " + result.size());
-            System.err.flush();
+            LOG.log(Level.INFO,"No cache " + key + ": " + result.hashCode() + " " + result.size());
             return result;
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);
