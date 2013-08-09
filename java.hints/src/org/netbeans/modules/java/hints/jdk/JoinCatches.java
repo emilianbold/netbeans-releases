@@ -109,7 +109,7 @@ public class JoinCatches {
         if (catches.size() <= 1) return null;
 
         for (int i = 0; i < catches.size(); i++) {
-            CatchTree toTest = catches.get(0);
+            CatchTree toTest = catches.get(i);
             TreePath toTestPath = new TreePath(ctx.getPath(), toTest);
             TreePath mainVar = new TreePath(toTestPath, toTest.getParameter());
             VariableElement excVar = (VariableElement) ctx.getInfo().getTrees().getElement(mainVar);
