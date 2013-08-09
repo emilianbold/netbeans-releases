@@ -89,9 +89,7 @@ public class JavaPackageCompletor extends Completor {
             return;
         }
 
-        if (typedChars.contains(".") || typedChars.equals("")) {
-            doPackageCompletion(js, typedChars, context.getCurrentToken().getOffset() + 1);
-        }
+        doPackageCompletion(js, typedChars, context.getCurrentToken().getOffset() + 1);
     }
 
     private void doPackageCompletion(JavaSource js, final String typedPrefix, final int substitutionOffset) throws IOException {

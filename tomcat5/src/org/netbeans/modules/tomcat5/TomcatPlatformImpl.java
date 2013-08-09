@@ -168,30 +168,35 @@ public class TomcatPlatformImpl extends J2eePlatformImpl2 {
     private String displayName;
     private TomcatProperties tp;
     private TomcatManager manager;
-    
-    private List/*<LibraryImpl>*/ libraries  = new ArrayList();
+
+    /* GuardedBy("this") */
+    private LibraryImplementation[] libraries;
     
     /** Creates a new instance of TomcatInstallation */
     public TomcatPlatformImpl(TomcatManager manager) {
         this.manager = manager;
         this.tp = manager.getTomcatProperties();
         displayName = tp.getDisplayName();
-        
-        J2eeLibraryTypeProvider libProvider = new J2eeLibraryTypeProvider();
-        LibraryImplementation lib = libProvider.createLibrary();
-        lib.setName(NbBundle.getMessage(TomcatPlatformImpl.class, "LBL_lib_name", displayName));
-        loadLibraries(lib);
-        libraries.add(lib);
     }
     
     public void notifyLibrariesChanged() {
-        LibraryImplementation lib = (LibraryImplementation)libraries.get(0);
-        loadLibraries(lib);
-        firePropertyChange(PROP_LIBRARIES, null, libraries);
+        synchronized (this) {
+            libraries = null;
+        }
+        firePropertyChange(PROP_LIBRARIES, null, getLibraries());
     }
     
-    public LibraryImplementation[] getLibraries() {
-       return (LibraryImplementation[])libraries.toArray(new LibraryImplementation[libraries.size()]);
+    @Override
+    public synchronized LibraryImplementation[] getLibraries() {
+        if (libraries == null) {
+            J2eeLibraryTypeProvider libProvider = new J2eeLibraryTypeProvider();
+            LibraryImplementation lib = libProvider.createLibrary();
+            lib.setName(NbBundle.getMessage(TomcatPlatformImpl.class, "LBL_lib_name", displayName));
+            loadLibraries(lib);
+            libraries = new LibraryImplementation[1];
+            libraries[0] = lib;
+        }
+        return libraries;
     }
     
     public String getDisplayName() {
