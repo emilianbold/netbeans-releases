@@ -71,7 +71,7 @@ public class ElementsParserTest extends CslTestBase {
         TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
         TokenSequence ts = th.tokenSequence(HTMLTokenId.language());
 
-        ElementsParser parser = new ElementsParser(code, ts, 0);
+        ElementsParser parser = ElementsParser.forTokenIndex(code, ts, 0);
         assertTrue(parser.hasNext());
 
         Element e = parser.next();
@@ -98,7 +98,7 @@ public class ElementsParserTest extends CslTestBase {
         TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
         TokenSequence ts = th.tokenSequence(HTMLTokenId.language());
 
-        ElementsParser parser = new ElementsParser(code, ts, 5);
+        ElementsParser parser = ElementsParser.forOffset(code, ts, 5);
         assertTrue(parser.hasNext());
 
         Element e = parser.next();
@@ -118,7 +118,7 @@ public class ElementsParserTest extends CslTestBase {
 
         //the parser must be always started at token beginning!
         try {
-            new ElementsParser(code, ts, 6);
+            ElementsParser.forOffset(code, ts, 6);
             assertTrue(false);
         } catch (IllegalArgumentException e) {
             //correct, the exception should be thrown
@@ -132,7 +132,7 @@ public class ElementsParserTest extends CslTestBase {
         TokenSequence ts = th.tokenSequence(HTMLTokenId.language());
 
         try {
-            new ElementsParser(code, ts, -1);
+            ElementsParser.forOffset(code, ts, -1);
             assertTrue(false);
         } catch (IllegalArgumentException e) {
             //correct, the exception should be thrown
@@ -145,7 +145,7 @@ public class ElementsParserTest extends CslTestBase {
         TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
         TokenSequence ts = th.tokenSequence(HTMLTokenId.language());
 
-        ElementsParser parser = new ElementsParser(code, ts, 11);
+        ElementsParser parser = ElementsParser.forOffset(code, ts, 11);
         assertFalse(parser.hasNext());
 
     }
@@ -155,7 +155,7 @@ public class ElementsParserTest extends CslTestBase {
         String content = file.asText();
 
         TokenHierarchy hi = TokenHierarchy.create(content, HTMLTokenId.language());
-        ElementsParser parser = new ElementsParser(content, hi.tokenSequence(HTMLTokenId.language()), 0);
+        ElementsParser parser = ElementsParser.forTokenIndex(content, hi.tokenSequence(HTMLTokenId.language()), 0);
 
         long start = System.currentTimeMillis();
         while (parser.hasNext()) {
@@ -170,7 +170,7 @@ public class ElementsParserTest extends CslTestBase {
 
         //second attempt
 
-        parser = new ElementsParser(content, hi.tokenSequence(HTMLTokenId.language()), 0);
+        parser = ElementsParser.forTokenIndex(content, hi.tokenSequence(HTMLTokenId.language()), 0);
         start = System.currentTimeMillis();
         while (parser.hasNext()) {
             parser.next();
@@ -193,7 +193,7 @@ public class ElementsParserTest extends CslTestBase {
         TokenHierarchy th = TokenHierarchy.create(code, HTMLTokenId.language());
         TokenSequence ts = th.tokenSequence(HTMLTokenId.language());
 
-        ElementsParser parser = new ElementsParser(code, ts, 0);
+        ElementsParser parser = ElementsParser.forTokenIndex(code, ts, 0);
         assertTrue(parser.hasNext());
         Element element = parser.next();
         assertEquals(ElementType.OPEN_TAG, element.type());
