@@ -58,6 +58,7 @@ import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressUtils;
 import org.openide.WizardDescriptor;
+import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.ChangeSupport;
@@ -613,8 +614,9 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
             }
 
             final String resourcesPath = "org/netbeans/modules/java/j2seembedded/resources/validateconnection.xml"; //NOI18N
+            File tmpFile = null;
+            ExecutorTask executorTask  = null;
             try {
-                File tmpFile;
                 try (InputStream inputStream = SetUpRemotePlatform.class.getClassLoader().getResourceAsStream(resourcesPath)) {
                     tmpFile = File.createTempFile("antScript", ".xml"); //NOI18N
                     try (OutputStream outputStream = new FileOutputStream(tmpFile)) {
@@ -626,7 +628,8 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                     }
                 }
                 final FileObject antScript = FileUtil.createData(FileUtil.normalizeFile(tmpFile));
-                final int antResult = ActionUtils.runTarget(antScript, antTargets, prop).result();
+                executorTask = ActionUtils.runTarget(antScript, antTargets, prop);               
+                final int antResult = executorTask.result();
                 if (antResult == 0) {
                     SwingUtilities.invokeLater(new Runnable() {
                         @Override
@@ -652,6 +655,13 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                 }
             } catch (IllegalArgumentException | IOException ex) {
                 Exceptions.printStackTrace(ex);
+            } finally {
+                if (executorTask != null) {
+                    executorTask.getInputOutput().closeInputOutput();
+                }
+                if (tmpFile != null) {
+                    tmpFile.delete();
+                }                
             }
         }
     }
