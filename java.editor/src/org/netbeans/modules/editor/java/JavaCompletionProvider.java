@@ -4477,7 +4477,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             TypeMirror type = et.getReturnType();
             if (site.getKind() == TypeKind.DECLARED) {
                 if ("getClass".contentEquals(el.getSimpleName()) && et.getParameterTypes().isEmpty() //NOI18N
-                        && type.getKind() == TypeKind.DECLARED && JAVA_LANG_CLASS.contentEquals(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName())) {
+                        && type.getKind() == TypeKind.DECLARED
+                        && JAVA_LANG_CLASS.contentEquals(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName())
+                        && ((TypeElement)((DeclaredType)type).asElement()).getTypeParameters().size() == 1) {
                     Types types = env.getController().getTypes();
                     type = types.getDeclaredType((TypeElement)((DeclaredType)type).asElement(), types.getWildcardType(site, null));
                 }
