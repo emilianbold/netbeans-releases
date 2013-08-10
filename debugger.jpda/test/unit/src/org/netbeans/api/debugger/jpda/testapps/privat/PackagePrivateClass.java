@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,65 +37,91 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor.doc.spi;
-
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+package org.netbeans.api.debugger.jpda.testapps.privat;
 
 /**
- *
- * @author Martin Fousek <marfous@netbeans.org>
+ * Test of accessing private classes/methods/fields by debugger evaluator.
+ * 
+ * @author Martin Entlicher
  */
-public class DocIdentifierImpl implements DocIdentifier {
-
-    private final String name;
-    private final int offset;
-
-    public DocIdentifierImpl(String name, int offset) {
-        this.name = name;
-        this.offset = offset;
+class PackagePrivateClass {
+    
+    public static int publicStaticField = 123;
+    static int staticField = 321;
+    private static int privateStaticField = 111;
+    
+    public int publicField = 987123;
+    int field = 987321;
+    private int privateField = 987111;
+    
+    public PackagePrivateClass() {
+        // public constructor
     }
     
-    @Override
-    public String getName() {
-        return name;
+    PackagePrivateClass(boolean b) {
+        // package private constructor
     }
-
-    @Override
-    public int getOffset() {
-        return offset;
+    
+    private PackagePrivateClass(int i) {
+        // private constructor
     }
-
-    @Override
-    public boolean equals(Object obj) {
-        if (obj == null) {
-            return false;
-        }
-        if (getClass() != obj.getClass()) {
-            return false;
-        }
-        final DocIdentifierImpl other = (DocIdentifierImpl) obj;
-        if ((this.name == null) ? (other.name != null) : !this.name.equals(other.name)) {
-            return false;
-        }
-        if (this.offset != other.offset) {
-            return false;
-        }
-        return true;
+    
+    public static String getPublicInfo() {
+        return "PublicStaticFromPackagePrivateClass";
     }
-
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 97 * hash + (this.name != null ? this.name.hashCode() : 0);
-        hash = 97 * hash + this.offset;
-        return hash;
+    
+    static String getPPInfo() {
+        return "StaticFromPackagePrivateClass";
     }
-
-    @Override
-    public String toString() {
-        return "DocIdentifierImpl[name=" + name + ",offset=" + offset + "]";
+    
+    private static String getPrivateInfo() {
+        return "PrivateStaticFromPackagePrivateClass";
+    }
+    
+    
+    public long getPublicId() {
+        return 123456789l;
+    }
+    
+    long getPPId() {
+        return 1234567890l;
+    }
+    
+    private long getPrivateId() {
+        return 1234567890123456789l;
+    }
+    
+    private static class PrivateStaticEmptyClass {
+        
+    }
+    
+    private static class PrivateStaticClass2 {
+        private PrivateStaticClass2() {}
+    }
+    
+    private static class PrivateStaticClass {
+        
+        private static PrivateStaticClass INSTANCE = new PrivateStaticClass();
+        
+        private static int privateStaticField = 111111;
+        private int privateField = 222222;
+        
+        private static PrivateStaticClass getDefault() {
+            return INSTANCE;
+        }
+        
+        private String privateString() {
+            return "secret";
+        }
+    }
+    
+    private class PrivateEmptyClass {
+        
+    }
+    
+    private class PrivateClass {
+        private PrivateClass() {}
     }
 }
-

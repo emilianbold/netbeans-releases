@@ -178,8 +178,8 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
             DashboardViewer dashboard = DashboardViewer.getInstance();
             if (!filteredQueryNodes.isEmpty()) {
                 List<QueryNode> children = filteredQueryNodes;
-                boolean expand = dashboard.expandNodes();
                 for (QueryNode queryNode : children) {
+                    boolean expand = dashboard.isNodeExpanded(queryNode);
                     queryNode.setExpanded(expand);
                 }
                 Collections.sort(children);

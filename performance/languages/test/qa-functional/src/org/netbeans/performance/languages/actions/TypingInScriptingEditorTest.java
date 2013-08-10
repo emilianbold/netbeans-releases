@@ -67,6 +67,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     protected String testProject;
     protected String fileName;
     protected String nodePath;
+    protected String afterTextStartTyping;
     private EditorOperator editorOperator;
     protected static ProjectsTabOperator projectsTab = null;
 
@@ -92,12 +93,12 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
         fileToBeOpened = new Node(getProjectNode(testProject), path);
         new OpenAction().performAPI(fileToBeOpened);
         editorOperator = EditorWindowOperator.getEditor(fileName);
-        waitNoEvent(5000);
+        waitNoEvent(1000);
     }
 
     @Override
     public void prepare() {
-        editorOperator.setCaretPosition(8, 1);
+        editorOperator.setCaretPosition(afterTextStartTyping, false);
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
     }
 
@@ -127,20 +128,25 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     public void test_JScript_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "javascript20kb.js";
+        afterTextStartTyping = "headers[0] = 'ID";
         nodePath = "Web Pages";
+        expectedTime = 200;
         doMeasurement();
     }
 
     public void test_JScript_EditorTypingBig() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "javascript_200kb.js";
+        afterTextStartTyping = "if(browser.klient=='op";
         nodePath = "Web Pages";
+        expectedTime = 200;
         doMeasurement();
     }
 
     public void test_PHP_EditorTyping() {
         testProject = Projects.PHP_PROJECT;
         fileName = "php20kb.php";
+        afterTextStartTyping = "include(\"";
         nodePath = "Source Files";
         doMeasurement();
     }
@@ -148,6 +154,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     public void test_JSON_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "json20kB.json";
+        afterTextStartTyping = "\"firstName0\": \"";
         nodePath = "Web Pages";
         doMeasurement();
     }
@@ -155,6 +162,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     public void test_CSS_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "css20kB.css";
+        afterTextStartTyping = "font: small-caps 40px/40px \"";
         nodePath = "Web Pages";
         doMeasurement();
     }
@@ -162,6 +170,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     public void test_BAT_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "bat20kB.bat";
+        afterTextStartTyping = "cd ..";
         nodePath = "Web Pages";
         doMeasurement();
     }
@@ -169,6 +178,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     public void test_DIFF_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "diff20kB.diff";
+        afterTextStartTyping = "LinkageError";
         nodePath = "Web Pages";
         doMeasurement();
     }
@@ -176,6 +186,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     public void test_MANIFEST_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "manifest20kB.mf";
+        afterTextStartTyping = "OpenIDE-Module-Implementation-Version-1: 1";
         nodePath = "Web Pages";
         doMeasurement();
     }
@@ -183,6 +194,7 @@ public class TypingInScriptingEditorTest extends PerformanceTestCase {
     public void test_SH_EditorTyping() {
         testProject = Projects.SCRIPTING_PROJECT;
         fileName = "sh20kB.sh";
+        afterTextStartTyping = "echo \"";
         nodePath = "Web Pages";
         doMeasurement();
     }

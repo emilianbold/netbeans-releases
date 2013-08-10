@@ -58,8 +58,9 @@ public interface SelectionPOMFixProvider extends POMErrorFixBase {
      * @param prj can be null
      * @param selectionStart
      * @param selectionEnd
+     * @param caretPosition 
      * @return 
      */
     List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj,
-            int selectionStart, int selectionEnd);
+            int selectionStart, int selectionEnd, int caretPosition);
 }

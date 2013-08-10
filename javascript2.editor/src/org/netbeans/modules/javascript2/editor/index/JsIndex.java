@@ -181,6 +181,7 @@ public class JsIndex {
                 try {
                     CACHE_INDEX_RESULT_SMALL.clear();
                     CACHE_INDEX_RESULT_LARGE.clear();
+                    System.out.println("Cache cleared");
                     LOG.log(Level.FINEST, "Cache cleared");
                 } finally {
                     WRITE_LOCK.unlock();
@@ -193,6 +194,7 @@ public class JsIndex {
 
             if (value != null) {
                 logStats(value.getResult(), true, fieldsToLoad);
+                System.out.println("Cache hit " + key + ": " + value.getResult().getClass().getName() + " " + value.getResult().size());
                 return value.getResult();
             }
 
@@ -204,6 +206,7 @@ public class JsIndex {
                     value = getCachedValue(key, fieldsToLoad);
                     if (value != null) {
                         logStats(value.getResult(), false, fieldsToLoad);
+                        System.out.println("Lazy cache hit " + key + ": " + value.getResult().getClass().getName() + " " + value.getResult().size());
                         return value.getResult();
                     }
 
@@ -214,6 +217,7 @@ public class JsIndex {
                         CACHE_INDEX_RESULT_LARGE.put(key, new SoftReference(value));
                     }
                     logStats(result, false, fieldsToLoad);
+                    System.out.println("Cache update " + key + ": " + value.getResult().getClass().getName() + " " + value.getResult().size());
                     return value.getResult();
                 } finally {
                     WRITE_LOCK.unlock();
@@ -221,6 +225,7 @@ public class JsIndex {
             }
 
             logStats(result, false, fieldsToLoad);
+            System.out.println("No cache " + key + ": " + result.getClass().getName() + " " + result.size());
             return result;
         } catch (IOException ioe) {
             LOG.log(Level.WARNING, null, ioe);

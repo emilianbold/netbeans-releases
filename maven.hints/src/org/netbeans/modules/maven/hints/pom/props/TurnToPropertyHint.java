@@ -92,7 +92,7 @@ public class TurnToPropertyHint implements SelectionPOMFixProvider {
 
     @Override
     public List<ErrorDescription> getErrorsForDocument(POMModel model, Project prj,
-            int selectionStart, int selectionEnd) {
+            int selectionStart, int selectionEnd, int caretPosition) {
         List<ErrorDescription> err = new ArrayList<ErrorDescription>();
         if (prj == null) {
             return err;

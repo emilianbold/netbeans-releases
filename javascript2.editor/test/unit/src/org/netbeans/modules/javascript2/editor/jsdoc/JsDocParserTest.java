@@ -140,7 +140,7 @@ public class JsDocParserTest extends JsTestBase {
         assertEquals("function(department,calls)", namedParameter.getParamTypes().get(0).getType());
         assertEquals(15, namedParameter.getParamTypes().get(0).getOffset());
         assertEquals("onSuccess", namedParameter.getParamName().getName());
-        assertEquals(44, namedParameter.getParamName().getOffset());
+        assertEquals(44, namedParameter.getParamName().getOffsetRange().getStart());
     }
 
     public void testIssue224265() throws Exception {
@@ -153,7 +153,7 @@ public class JsDocParserTest extends JsTestBase {
         assertEquals("uri:user", namedParameter.getParamTypes().get(0).getType());
         assertEquals(15, namedParameter.getParamTypes().get(0).getOffset());
         assertEquals("user", namedParameter.getParamName().getName());
-        assertEquals(25, namedParameter.getParamName().getOffset());
+        assertEquals(25, namedParameter.getParamName().getOffsetRange().getStart());
         assertEquals("the user", namedParameter.getParamDescription());
     }
 

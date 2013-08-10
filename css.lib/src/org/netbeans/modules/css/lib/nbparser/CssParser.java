@@ -63,6 +63,7 @@ import org.netbeans.modules.parsing.api.Task;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.SourceModificationEvent;
+import org.netbeans.modules.web.common.api.Constants;
 import org.openide.filesystems.FileObject;
 import org.openide.util.CharSequences;
 
@@ -72,9 +73,8 @@ import org.openide.util.CharSequences;
  */
 public class CssParser extends Parser {
 
-    private static final CharSequence TEMPLATING_MARK = "@@@"; //NOI18N
     private static final Logger LOG = Logger.getLogger(CssParser.class.getSimpleName());
-    
+
     private final AtomicBoolean cancelled = new AtomicBoolean();
     private final String topLevelSnapshotMimetype;
 
@@ -86,7 +86,7 @@ public class CssParser extends Parser {
     public CssParser() {
         topLevelSnapshotMimetype = null;
     }
-    
+
     /* test */ public CssParser(String topLevelSnapshotMimetype) {
         this.topLevelSnapshotMimetype = topLevelSnapshotMimetype;
     }
@@ -110,16 +110,16 @@ public class CssParser extends Parser {
             TokenStream tokenstream = new CommonTokenStream(lexer);
             NbParseTreeBuilder builder = new NbParseTreeBuilder(source);
             ExtCss3Parser parser = new ExtCss3Parser(tokenstream, builder, mimeType);
-            
-            if(cancelled.get()) {
-                return ;
+
+            if (cancelled.get()) {
+                return;
             }
             parser.styleSheet();
 
-            if(cancelled.get()) {
-                return ;
+            if (cancelled.get()) {
+                return;
             }
-            
+
             AbstractParseTreeNode tree_local = builder.getTree();
             List<ProblemDescription> problems_local = new ArrayList<>();
             //add lexer issues
@@ -130,13 +130,13 @@ public class CssParser extends Parser {
             filterProblemsInVirtualCode(snapshot, problems_local);
             filterTemplatingProblems(snapshot, problems_local);
 
-            if(cancelled.get()) {
-                return ;
+            if (cancelled.get()) {
+                return;
             }
-            
+
             this.tree = tree_local;
             this.problems = problems_local;
-            
+
         } catch (RecognitionException ex) {
             throw new ParseException(String.format("Error parsing %s snapshot.", snapshot), ex); //NOI18N
         } finally {
@@ -170,7 +170,7 @@ public class CssParser extends Parser {
     public void removeChangeListener(ChangeListener changeListener) {
         //no-op
     }
-   
+
     private static void filterProblemsInVirtualCode(Snapshot snapshot, List<ProblemDescription> problems) {
         ListIterator<ProblemDescription> listIterator = problems.listIterator();
         while (listIterator.hasNext()) {
@@ -186,16 +186,11 @@ public class CssParser extends Parser {
     //filtering out problems caused by templating languages
     private static void filterTemplatingProblems(Snapshot snapshot, List<ProblemDescription> problems) {
         MimePath mimePath = snapshot.getMimePath();
-        CharSequence text = snapshot.getText();
-        if (mimePath.size() <= 2 || mimePath.size() == 3 && mimePath.getMimeType(0).equals("text/xhtml")) { //NOI18N
-            //text/css
-            //or
-            //text/html/text/css
-            //or
-            //hack for the fake text/xhtml language:
-            //for .xhtml files the mime is text/xhtml/text/html/text/css
-        } else {
-            //typically text/php/text/html/text/css
+        if (mimePath.size() > 1) {
+            //once the css code is embedde, we need to assume there might be sg. generated.
+            //now also for plain html code as there are the html extenstions like Angular or Knockout,
+            //which might contain expressions like <div style="width: {{model.getWidth()}}%">...</div>
+            CharSequence text = snapshot.getText();
             ListIterator<ProblemDescription> listIterator = problems.listIterator();
             while (listIterator.hasNext()) {
                 ProblemDescription p = listIterator.next();
@@ -229,11 +224,11 @@ public class CssParser extends Parser {
                 }
                 //check if there's the templating mark (@@@) in the context
                 CharSequence img = snapshot.getText().subSequence(from, to);
-                if (CharSequences.indexOf(img, TEMPLATING_MARK) != -1) {
+                if (CharSequences.indexOf(img, Constants.LANGUAGE_SNIPPET_SEPARATOR) != -1) {
                     listIterator.remove();
                 }
             }
         }
     }
-    
+
 }

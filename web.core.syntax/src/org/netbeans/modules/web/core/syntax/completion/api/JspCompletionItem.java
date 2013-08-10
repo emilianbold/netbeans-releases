@@ -78,6 +78,7 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.JarFileSystem;
@@ -92,6 +93,12 @@ import org.openide.xml.XMLUtil;
  * @author  Dusan Balek, Marek Fukala
  */
 public class JspCompletionItem implements CompletionItem {
+
+    private static final Color COLOR_BASE_COMPLETION = new Color(0, 0, 255);
+    private static final Color COLOR_ATTRIBUTE_REQUIRED = new Color(255, 0, 0);
+    private static final Color COLOR_ATTRIBUTE_NOT_REQUIRED = new Color(0, 170, 0);
+    private static final Color COLOR_HELP_HEADER_BG = new Color(204, 204, 255);
+    private static final Color COLOR_HELP_HEADER_FG = new Color(0, 0, 0);
 
     private static final int DEFAULT_SORT_PRIORITY = 10;
     private static final Logger logger = Logger.getLogger(JspCompletionItem.class.getName());
@@ -516,7 +523,7 @@ public class JspCompletionItem implements CompletionItem {
 
         @Override
         protected String getLeftHtmlText() {
-            return "<b>&lt;<font color=#0000ff><b>" + getItemText() + "</font>" +
+            return "<b>&lt;<font color=#" + hexColorCode(COLOR_BASE_COMPLETION) + "><b>" + getItemText() + "</font>" +
                     (isEmpty ? "/&gt;" : "&gt;</b>");
         }
     }
@@ -576,7 +583,7 @@ public class JspCompletionItem implements CompletionItem {
 
         @Override
         protected String getLeftHtmlText() {
-            return "<b>&lt;<font color=#0000ff>" + getItemText() + "</font>&gt;</b>";
+            return "<b>&lt;<font color=#" + hexColorCode(COLOR_BASE_COMPLETION) + ">" + getItemText() + "</font>&gt;</b>";
         }
 
         @Override
@@ -654,7 +661,7 @@ public class JspCompletionItem implements CompletionItem {
 
         @Override
         protected String getLeftHtmlText() {
-            return "<b>&lt;%@<font color=#0000ff>" +
+            return "<b>&lt;%@<font color=#" + hexColorCode(COLOR_BASE_COMPLETION) + ">" +
                     getItemText() + "</font>%&gt;</b>";
         }
         
@@ -691,7 +698,8 @@ public class JspCompletionItem implements CompletionItem {
 
         @Override
         protected String getLeftHtmlText() {
-            return "<font color=#" + (required ? "ff0000" : "00aa00") + ">" + getItemText() + "</font>";
+            return "<font color=#" + (required ? hexColorCode(COLOR_ATTRIBUTE_REQUIRED) :
+                    hexColorCode(COLOR_ATTRIBUTE_NOT_REQUIRED)) + ">" + getItemText() + "</font>";
         }
 
         @Override
@@ -881,7 +889,12 @@ public class JspCompletionItem implements CompletionItem {
         }                 // NOI18N
 
         sb.append("<table width=\"100%\" cellspacing=\"0\" cellpadding=\"3\" border=\"1\">");// NOI18N
-        sb.append("<tr bgcolor=\"#CCCCFF\"><td colspan=\"2\"><font size=\"+2\"><b>");// NOI18N
+        sb.append("<tr bgcolor=\"#");// NOI18N
+        sb.append(hexColorCode(COLOR_HELP_HEADER_BG));
+        sb.append("\"><td colspan=\"2\"><font color=\"#");// NOI18N
+        sb.append(hexColorCode(COLOR_HELP_HEADER_FG));// NOI18N
+        sb.append("\" ");// NOI18N
+        sb.append("size=\"+2\"><b>");// NOI18N
         sb.append("Tag Information</b></font></td></tr>");// NOI18N
         sb.append("<tr><td>Tag Class</td><td>");// NOI18N
         if (tagInfo.getTagClassName() != null && !tagInfo.getClass().equals("")) {
@@ -900,7 +913,12 @@ public class JspCompletionItem implements CompletionItem {
         sb.append("</td></tr></table><br>");// NOI18N
 
         sb.append("<table width=\"100%\" cellspacing=\"0\" cellpadding=\"3\" border=\"1\">");// NOI18N
-        sb.append("<tr bgcolor=\"#CCCCFF\"><td colspan=\"3\"><font size=\"+2\"><b>Attributes</b></font></td></tr>");// NOI18N
+        sb.append("<tr bgcolor=\"#");
+        sb.append(hexColorCode(COLOR_HELP_HEADER_BG));
+        sb.append("\"><td colspan=\"3\"><font color=\"#");// NOI18N
+        sb.append(hexColorCode(COLOR_HELP_HEADER_FG));// NOI18N
+        sb.append("\" ");// NOI18N
+        sb.append("size=\"+2\"><b>Attributes</b></font></td></tr>");// NOI18N
 
         TagAttributeInfo[] attrs = tagInfo.getAttributes();
         if (attrs != null && attrs.length > 0) {
@@ -919,7 +937,12 @@ public class JspCompletionItem implements CompletionItem {
         }
         sb.append("</table><br>");// NOI18N
         sb.append("<table width=\"100%\" cellspacing=\"0\" cellpadding=\"3\" border=\"1\">");// NOI18N
-        sb.append("<tr bgcolor=\"#CCCCFF\"><td colspan=\"4\"><font size=\"+2\"><b>Variables</b></font></td></tr>");// NOI18N
+        sb.append("<tr bgcolor=\"#");
+        sb.append(hexColorCode(COLOR_HELP_HEADER_BG));
+        sb.append("\"><td colspan=\"4\"><font color=\"#");// NOI18N
+        sb.append(hexColorCode(COLOR_HELP_HEADER_FG));// NOI18N
+        sb.append("\" ");// NOI18N
+        sb.append("size=\"+2\"><b>Variables</b></font></td></tr>");// NOI18N
         TagVariableInfo[] variables = tagInfo.getTagVariableInfos();
         if (variables != null && variables.length > 0) {
             sb.append("<tr><td><b>Name</b></td><td><b>Type</b></td><td><b>Declare</b></td><td><b>Scope</b></td></tr>");// NOI18N
@@ -971,8 +994,9 @@ public class JspCompletionItem implements CompletionItem {
         return NbBundle.getMessage(JspCompletionItem.class, key);
     }
 
-    public static final String hexColorCode(Color c) {
-        return Integer.toHexString(c.getRGB()).substring(2);
+    public static String hexColorCode(Color c) {
+        Color lookAndFeelTweakedColor = LFCustoms.shiftColor(c);
+        return Integer.toHexString(lookAndFeelTweakedColor.getRGB()).substring(2);
     }
 
     private static String escape(String s) {

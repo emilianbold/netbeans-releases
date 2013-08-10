@@ -492,7 +492,6 @@ public class StartTask extends BasicTask<TaskState> {
                     @Override
                     public void run() {
                         support.refresh();
-
                     }
                 });
             }
@@ -534,13 +533,16 @@ public class StartTask extends BasicTask<TaskState> {
             }
             // We should be listening for reaching ONLINE state before process
             // is started.
-            listener = prepareStartMonitoring(jvmArgs != null);
+            listener = prepareStartMonitoring(
+                    instance.getJvmMode() == GlassFishJvmMode.PROFILE);
             if (listener == null) {
                 return fireOperationStateChanged(TaskState.FAILED,
                         TaskEvent.CMD_FAILED,
                         "StartTask.startDAS.startupMonitoring", instanceName);                
             }
-            instance.setProcess(createProcess());
+            Process process = createProcess();
+            instance.setProcess(process);
+            listener.setProcess(process);
         } catch (ProcessCreationException ex) {
             Logger.getLogger("glassfish").log(Level.INFO,
                     "Could not start process for " + instanceName, ex);
@@ -555,7 +557,6 @@ public class StartTask extends BasicTask<TaskState> {
         // can observe the progress
         LogViewMgr logger = LogViewMgr.getInstance(instance.getProperty(
                 GlassfishModule.URL_ATTR));
-        String debugPort = instance.getProperty(GlassfishModule.DEBUG_PORT);
         logger.readInputStreams(recognizers, false, null,
                 new FetchLogSimple(instance.getProcess().getInputStream()),
                 new FetchLogSimple(instance.getProcess().getErrorStream()));

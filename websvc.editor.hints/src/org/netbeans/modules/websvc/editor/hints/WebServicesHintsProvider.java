@@ -96,6 +96,8 @@ public class WebServicesHintsProvider {
     private Service service;
     private ComponentListener changeListener;
     
+    private static final RequestProcessor WS_HINTS_RP = new RequestProcessor(WebServicesHintsProvider.class);
+    
     public WebServicesHintsProvider(FileObject file) {
         this.file = file;
     }
@@ -224,33 +226,37 @@ public class WebServicesHintsProvider {
         }
     }
 
-    private abstract class RescanTrigger{
+    private abstract class RescanTrigger implements Runnable {
         private FileObject file;
+        private JavaSource javaSrc;
+        
+        private final RequestProcessor.Task wsHintsTask = WS_HINTS_RP.create(this);
         
         RescanTrigger(FileObject file){
             this.file = file;
         }
         
         void rescan(){
-            final JavaSource javaSrc = JavaSource.forFileObject(file);
-            
+            if (javaSrc == null) {
+                javaSrc = JavaSource.forFileObject(file);
+            }
             if (javaSrc != null){
                 try{
                     if(EventQueue.isDispatchThread()) {
-                        RequestProcessor.getDefault().post(new Runnable() {
-                            public void run() {
-                                try{
-                                    javaSrc.runUserActionTask(new ProblemFinderCompControl(file), true);
-                                } catch (IOException e){
-                                }
-                            }
-                        });
+                        wsHintsTask.schedule(100);
                     } else {
                         javaSrc.runUserActionTask(new ProblemFinderCompControl(file), true);
                     }
                 } catch (IOException e){
                 }
             }
+        }
+        
+        @Override
+        public void run() {
+            try {
+                javaSrc.runUserActionTask(new ProblemFinderCompControl(file), true);
+            } catch (IOException e){}
         }
     }
     

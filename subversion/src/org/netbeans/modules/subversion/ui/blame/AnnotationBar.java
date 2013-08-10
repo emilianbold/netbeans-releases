@@ -1286,4 +1286,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
         this.referencedFile = FileUtil.normalizeFile(file);
         this.referencedFileObject = FileUtil.toFileObject(file);
     }
+
+    boolean isAnnotated() {
+        return annotated;
+    }
 }

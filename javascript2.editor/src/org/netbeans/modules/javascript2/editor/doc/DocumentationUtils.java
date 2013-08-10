@@ -42,7 +42,6 @@
 package org.netbeans.modules.javascript2.editor.doc;
 
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
@@ -50,11 +49,6 @@ import org.netbeans.modules.javascript2.editor.model.Type;
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class DocumentationUtils {
-
-    public static OffsetRange getOffsetRange(DocIdentifier identifier) {
-        int startOffset = identifier.getOffset();
-        return new OffsetRange(startOffset, startOffset + identifier.getName().length());
-    }
 
     public static OffsetRange getOffsetRange(Type type) {
         int startOffset = type.getOffset();

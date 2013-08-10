@@ -176,7 +176,7 @@ public final class CompletorRegistry {
     }
     
     private Completor getAttributeValueCompletor(CompletionContext context) {
-        String tagName = context.getTag().getNodeName();
+        String tagName = extractVanilaTagName(context.getTag().getNodeName());
         TokenItem attrib = ContextUtilities.getAttributeToken(context.getCurrentToken());
         String attribName = attrib != null ? attrib.getImage() : null;
         CompletorFactory completorFactory = locateCompletorFactory(tagName, attribName);
@@ -189,12 +189,17 @@ public final class CompletorRegistry {
     }
     
     private Completor getAttributeCompletor(final CompletionContext context) {
-        String tagName = context.getTag().getNodeName();
+        String tagName = extractVanilaTagName(context.getTag().getNodeName());
         if(tagName.equals(BeansElements.BEAN) && ContextUtilities.isPNamespaceAdded(context.getDocumentContext())) {
             return new PNamespaceCompletor(context.getCaretOffset());
         }
         
         return null;
+    }
+
+    private static String extractVanilaTagName(String tagNameWithNs) {
+        int offset = tagNameWithNs.indexOf(":"); //NOI18N
+        return offset == -1 ? tagNameWithNs : tagNameWithNs.substring(offset + 1, tagNameWithNs.length());
     }
 
     private Completor getElementCompletor(CompletionContext context) {

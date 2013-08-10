@@ -4463,7 +4463,7 @@ public abstract class CslTestBase extends NbTestCase {
             try {
                 latch.await(60000, TimeUnit.MILLISECONDS);
                 if (latch.getCount() > 0) {
-                    //fail("Waiting for classpath scanning to finish timed out");
+                    fail("Waiting for classpath scanning to finish timed out");
                 }
             } catch (InterruptedException ex) {
                 fail("Waiting for classpath scanning to finish was interrupted");
@@ -4474,6 +4474,7 @@ public abstract class CslTestBase extends NbTestCase {
         public void publish(LogRecord record) {
             String msg = record.getMessage();
             if ("scanSources".equals(msg)) {
+                System.out.println("Released scan latch");
                 latch.countDown();
             }
         }

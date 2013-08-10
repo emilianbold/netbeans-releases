@@ -115,7 +115,10 @@ public class PropertyUtils {
      * @param property
      */
     public static String getDeclarationId(Rule rule, PropertyDeclaration declaration) {
-        assert rule.getModel() == declaration.getModel();
+        assert rule.getModel() == declaration.getModel() 
+                : String.format("The 'rule' and 'declaration' arguments are not elements "
+                + "of the same model instance! %s.getModel()=%s, %s.getModel()=%s", 
+                rule, rule.getModel(), declaration, declaration.getModel()); //NOI18N
 
         CharSequence searched = declaration.getProperty().getContent();
         Collection<PropertyDeclaration> declarations = getPropertyDeclarations(rule);

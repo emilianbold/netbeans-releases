@@ -450,7 +450,9 @@ mediaFeature
 bodyItem
     : 
         (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
-        | (cp_mixin_call)=>cp_mixin_call
+        //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
+        | {isLessSource()}? (cp_mixin_call ws? SEMI)=>cp_mixin_call
+        | {isScssSource()}? (cp_mixin_call)=>cp_mixin_call
     	| rule
         | at_rule
         | {isCssPreprocessorSource()}? cp_variable_declaration
