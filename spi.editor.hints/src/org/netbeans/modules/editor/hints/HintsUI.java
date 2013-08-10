@@ -136,6 +136,7 @@ import org.openide.text.Annotation;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
@@ -655,51 +656,45 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
         
         if (doc instanceof BaseDocument) {
             try {
-                if (!onlyActive) {
-                    refresh(doc, comp.getCaretPosition());
-                }
-
                 Rectangle carretRectangle = comp.modelToView(comp.getCaretPosition());
                 int line = Utilities.getLineOffset((BaseDocument) doc, comp.getCaretPosition());
-                AnnotationDesc activeAnnotation = ((BaseDocument) doc).getAnnotations().getActiveAnnotation(line);
-                if (activeAnnotation == null) {
-                    return false;
-                }
-                String type = activeAnnotation.getAnnotationType();
-                if (!fixableAnnotations.contains(type) && onlyActive) {
-                    return false;
-                }
-                if (onlyActive) {
+                FixData fixes;
+                String description;
+
+                if (!onlyActive) {
                     refresh(doc, comp.getCaretPosition());
-                }
-                Annotations annotations = ((BaseDocument) doc).getAnnotations();
-                AnnotationDesc desc = annotations.getAnnotation(line, type);
-                ParseErrorAnnotation annotation = null;
-                if (desc != null) {
-                    annotations.frontAnnotation(desc);
-                    annotation = findAnnotation(doc, desc, line);
-                }
+                    Pair<FixData, String> fixData = getAnnotationHolder(doc).buildUpFixDataForLine(line);
 
-                if (annotation == null) {
+                    if (fixData == null) return false;
+
+                    fixes = fixData.first();
+                    description = fixData.second();
+                } else {
+                    AnnotationDesc activeAnnotation = ((BaseDocument) doc).getAnnotations().getActiveAnnotation(line);
+                    if (activeAnnotation == null) {
+                        return false;
+                    }
+                    String type = activeAnnotation.getAnnotationType();
+                    if (!fixableAnnotations.contains(type) && onlyActive) {
+                        return false;
+                    }
                     if (onlyActive) {
-                        return false;
+                        refresh(doc, comp.getCaretPosition());
                     }
-
-                    AnnotationDesc[] pas = annotations.getPasiveAnnotations(line);
-
-                    if (pas == null) {
-                        return false;
-                    }
-
-                    for (AnnotationDesc ad : pas) {
-                        if ((annotation = findAnnotation(doc, ad, line)) != null) {
-                            break;
-                        }
+                    Annotations annotations = ((BaseDocument) doc).getAnnotations();
+                    AnnotationDesc desc = annotations.getAnnotation(line, type);
+                    ParseErrorAnnotation annotation = null;
+                    if (desc != null) {
+                        annotations.frontAnnotation(desc);
+                        annotation = findAnnotation(doc, desc, line);
                     }
 
                     if (annotation == null) {
                         return false;
                     }
+                    
+                    fixes = annotation.getFixes();
+                    description = annotation.getDescription();
                 }
 
                 Point p = comp.modelToView(Utilities.getRowStartFromLineOffset((BaseDocument) doc, line)).getLocation();
@@ -708,7 +703,7 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
                     p.x += ((JViewport)comp.getParent()).getViewPosition().x;
                 }
 
-                showPopup(annotation.getFixes(), annotation.getDescription(), comp, p);
+                showPopup(fixes, description, comp, p);
 
                 return true;
             } catch (BadLocationException ex) {

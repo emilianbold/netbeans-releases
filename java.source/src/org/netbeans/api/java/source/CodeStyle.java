@@ -1185,34 +1185,34 @@ public final class CodeStyle {
          * @since 0.96
          */
         public int getGroupId(Tree tree) {
+            ElementKind kind = ElementKind.OTHER;
+            Set<Modifier> modifiers = null;
+            switch (tree.getKind()) {
+                case ANNOTATION_TYPE:
+                case CLASS:
+                case ENUM:
+                case INTERFACE:
+                    kind = ElementKind.CLASS;
+                    modifiers = ((ClassTree)tree).getModifiers().getFlags();
+                    break;
+                case METHOD:
+                    MethodTree mt = (MethodTree)tree;
+                    if (mt.getName().contentEquals("<init>")) { //NOI18N
+                        kind = ElementKind.CONSTRUCTOR;
+                    } else {
+                        kind = ElementKind.METHOD;
+                    }
+                    modifiers = mt.getModifiers().getFlags();
+                    break;
+                case VARIABLE:
+                    kind = ElementKind.FIELD;
+                    modifiers = ((VariableTree)tree).getModifiers().getFlags();
+                    break;
+                case BLOCK:
+                    kind = ((BlockTree)tree).isStatic() ? ElementKind.STATIC_INIT : ElementKind.INSTANCE_INIT;
+                    break;
+            }
             for (Info info : infos) {
-                ElementKind kind = ElementKind.OTHER;
-                Set<Modifier> modifiers = null;
-                switch (tree.getKind()) {
-                    case ANNOTATION_TYPE:
-                    case CLASS:
-                    case ENUM:
-                    case INTERFACE:
-                        kind = ElementKind.CLASS;
-                        modifiers = ((ClassTree)tree).getModifiers().getFlags();
-                        break;
-                    case METHOD:
-                        MethodTree mt = (MethodTree)tree;
-                        if (mt.getName().contentEquals("<init>")) { //NOI18N
-                            kind = ElementKind.CONSTRUCTOR;
-                        } else {
-                            kind = ElementKind.METHOD;
-                        }
-                        modifiers = mt.getModifiers().getFlags();
-                        break;
-                    case VARIABLE:
-                        kind = ElementKind.FIELD;
-                        modifiers = ((VariableTree)tree).getModifiers().getFlags();
-                        break;
-                    case BLOCK:
-                        kind = ((BlockTree)tree).isStatic() ? ElementKind.STATIC_INIT : ElementKind.INSTANCE_INIT;
-                        break;
-                }
                 if (info.check(kind, modifiers))
                     return info.groupId;
             }
@@ -1256,10 +1256,10 @@ public final class CodeStyle {
                     return mods.isEmpty();
                 if (!modifiers.containsAll(this.mods))
                     return false;
-                if (ignoreVisibility)
-                    return true;
                 EnumSet<Modifier> copy = EnumSet.copyOf(modifiers);
-                copy.retainAll(EnumSet.of(Modifier.PUBLIC, Modifier.PRIVATE, Modifier.PROTECTED)); 
+                copy.removeAll(this.mods);
+                copy.retainAll(ignoreVisibility? EnumSet.of(Modifier.STATIC)
+                        : EnumSet.of(Modifier.STATIC, Modifier.PUBLIC, Modifier.PRIVATE, Modifier.PROTECTED)); 
                 return copy.isEmpty();
             }
         }

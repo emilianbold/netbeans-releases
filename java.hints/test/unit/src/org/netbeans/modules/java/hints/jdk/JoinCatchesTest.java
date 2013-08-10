@@ -243,4 +243,38 @@ public class JoinCatchesTest extends NbTestCase {
                 .run(JoinCatches.class)
                 .assertWarnings();
     }
+
+    public void test234085() throws Exception {
+        HintTest.create()
+                .input("package test;\n" +
+                       "import java.util.concurrent.*;\n" +
+                       "public class Test {\n" +
+                       "    public void taragui() {\n" +
+                       "        try {\n" +
+                       "            Class.forName(\"Object\").newInstance();\n" +
+                       "        } catch (IllegalAccessException ex) {\n" +
+                       "            System.out.println(\"\");\n" +
+                       "        } catch (ClassNotFoundException ex) {\n" +
+                       "        } catch (InstantiationException ex) {\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n", false)
+                .sourceLevel("1.7")
+                .run(JoinCatches.class)
+                .findWarning("8:17-8:39:verifier:ERR_JoinCatches")
+                .applyFix()
+                .assertCompilable()
+                .assertOutput("package test;\n" +
+                              "import java.util.concurrent.*;\n" +
+                              "public class Test {\n" +
+                              "    public void taragui() {\n" +
+                              "        try {\n" +
+                              "            Class.forName(\"Object\").newInstance();\n" +
+                              "        } catch (IllegalAccessException ex) {\n" +
+                              "            System.out.println(\"\");\n" +
+                              "        } catch (ClassNotFoundException | InstantiationException ex) {\n" +
+                              "        }\n" +
+                              "    }\n" +
+                              "}\n");
+    }
 }

@@ -44,19 +44,25 @@ package org.netbeans.modules.java.hints.jdk;
 
 import com.sun.source.tree.ArrayAccessTree;
 import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.BlockTree;
+import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompoundAssignmentTree;
 import com.sun.source.tree.EnhancedForLoopTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.ForLoopTree;
 import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.Tree.Kind;
+import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import com.sun.source.util.TreePathScanner;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.Modifier;
 import javax.lang.model.element.TypeElement;
@@ -124,11 +130,13 @@ public class IteratorToFor {
                 JavaFixUtilities.rewriteFix(ctx, Bundle.FIX_IteratorToFor(), ctx.getPath(), "for ($type $elem : $coll) {$rest$;}"));
     }
     
-    @TriggerPattern(value="for (int $index = 0; $index < $arr.length; $index++) $statement", constraints=@ConstraintVariableType(variable="$arr", type="Object[]"))
+    @TriggerPattern(value="for (int $index = 0; $index < $arr.length; $index++) $statement;", constraints=@ConstraintVariableType(variable="$arr", type="Object[]"))
     public static ErrorDescription forIndexedArray(final HintContext ctx) {
         final List<TreePath> toReplace = new ArrayList<>();
         final boolean[] unsuitable = new boolean[1];
+        final Set<String> definedVariables = new HashSet<>();
         new CancellableTreePathScanner<Void, Void>() {
+            private boolean insideClass;
             @Override public Void visitArrayAccess(ArrayAccessTree node, Void p) {
                 TreePath path = getCurrentPath();
                 if (MatcherUtilities.matches(ctx, path, "$arr[$index]")) {
@@ -159,6 +167,21 @@ public class IteratorToFor {
                 }
                 return super.visitIdentifier(node, p);
             }
+            @Override public Void visitVariable(VariableTree node, Void p) {
+                if (!insideClass) {
+                    definedVariables.add(node.getName().toString());
+                }
+                return super.visitVariable(node, p);
+            }
+            @Override public Void visitClass(ClassTree node, Void p) {
+                boolean origInsideClass = insideClass;
+                try {
+                    insideClass = true;
+                    return super.visitClass(node, p);
+                } finally {
+                    insideClass = origInsideClass;
+                }
+            }
             @Override protected boolean isCanceled() {
                 return ctx.isCanceled() || super.isCanceled();
             }
@@ -166,7 +189,7 @@ public class IteratorToFor {
         
         if (unsuitable[0]) return null;
         
-        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_IteratorToForArray(), new ReplaceIndexedForEachLoop(ctx.getInfo(), ctx.getPath(), ctx.getVariables().get("$arr"), toReplace).toEditorFix());
+        return ErrorDescriptionFactory.forName(ctx, ctx.getPath(), Bundle.ERR_IteratorToForArray(), new ReplaceIndexedForEachLoop(ctx.getInfo(), ctx.getPath(), ctx.getVariables().get("$arr"), toReplace, definedVariables).toEditorFix());
     }
 
     // adapted from org.netbeans.modules.java.hints.declarative.conditionapi.Matcher.referencedIn
@@ -215,8 +238,9 @@ public class IteratorToFor {
 
         private final TreePathHandle arr;
         private final List<TreePathHandle> toReplace;
+        private final Set<String> definedVariables;
         
-        public ReplaceIndexedForEachLoop(CompilationInfo info, TreePath tp, TreePath arr, List<TreePath> toReplace) {
+        public ReplaceIndexedForEachLoop(CompilationInfo info, TreePath tp, TreePath arr, List<TreePath> toReplace, Set<String> definedVariables) {
             super(info, tp);
             this.arr = TreePathHandle.create(arr, info);
             this.toReplace = new ArrayList<>();
@@ -224,11 +248,35 @@ public class IteratorToFor {
             for (TreePath tr : toReplace) {
                 this.toReplace.add(TreePathHandle.create(tr, info));
             }
+            this.definedVariables = definedVariables;
         }
 
         @Override
         protected String getText() {
             return Bundle.FIX_IteratorToFor();
+        }
+
+        private String assignedToVariable(TransformationContext ctx, TypeMirror variableType, TreePath forStatement, List<TreePath> toReplace) {
+            if (forStatement.getLeaf().getKind() != Kind.BLOCK) return null;
+
+            BlockTree block = (BlockTree) forStatement.getLeaf();
+
+            if (block.getStatements().isEmpty()) return null;
+
+            StatementTree first = block.getStatements().get(0);
+
+            if (first.getKind() != Kind.VARIABLE) return null;
+
+            VariableTree var = (VariableTree) first;
+            TypeMirror varType = ctx.getWorkingCopy().getTrees().getTypeMirror(new TreePath(forStatement, var.getType()));
+
+            if (varType == null || !ctx.getWorkingCopy().getTypes().isSameType(variableType, varType)) return null;
+
+            for (TreePath tp : toReplace) {
+                if (tp.getLeaf() == var.getInitializer()) return var.getName().toString();
+            }
+
+            return null;
         }
 
         @Override
@@ -247,28 +295,46 @@ public class IteratorToFor {
                 //TODO: can happen?
                 return ;
             }
-            
-            String treeName = Utilities.getName($arr.getLeaf());
-            String variableName = treeName;
-            
-            if (variableName != null && variableName.endsWith("s")) variableName = variableName.substring(0, variableName.length() - 1);
-            if (variableName == null || variableName.isEmpty()) variableName = "item";
-            
-            CodeStyle cs = CodeStyle.getDefault(ctx.getWorkingCopy().getFileObject());
-            
-            if (variableName.equals(treeName) && cs.getLocalVarNamePrefix() == null && cs.getLocalVarNameSuffix() == null) {
-                if(Character.isAlphabetic(variableName.charAt(0))) {
-                    StringBuilder nameSb = new StringBuilder(variableName);
-                    nameSb.setCharAt(0, Character.toUpperCase(nameSb.charAt(0)));
-                    nameSb.indexOf("a");
-                    variableName = nameSb.toString();
-                }
+
+            TypeMirror variableType = ((ArrayType) arrType).getComponentType();
+            StatementTree statement = ((ForLoopTree) ctx.getPath().getLeaf()).getStatement();
+            List<TreePath> convertedToReplace = new ArrayList<>();
+
+            for (TreePathHandle tr : toReplace) {
+                TreePath tp = tr.resolve(ctx.getWorkingCopy());
+
+                convertedToReplace.add(tp);
             }
-            
-            variableName = Utilities.makeNameUnique(ctx.getWorkingCopy(), ctx.getWorkingCopy().getTrees().getScope(ctx.getPath()), variableName, cs.getLocalVarNamePrefix(), cs.getLocalVarNameSuffix());
-            
+
             TreeMaker make = ctx.getWorkingCopy().getTreeMaker();
-            EnhancedForLoopTree newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(((ArrayType) arrType).getComponentType()), null), (ExpressionTree) $arr.getLeaf(), ((ForLoopTree) ctx.getPath().getLeaf()).getStatement());
+            String variableName = assignedToVariable(ctx, variableType, new TreePath(ctx.getPath(), statement), convertedToReplace);
+            EnhancedForLoopTree newLoop;
+
+            if (variableName != null) {
+                BlockTree block = (BlockTree) statement;
+                newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(variableType), null), (ExpressionTree) $arr.getLeaf(), make.Block(block.getStatements().subList(1, block.getStatements().size()), false));
+            } else {
+                String treeName = Utilities.getName($arr.getLeaf());
+                variableName = treeName;
+
+                if (variableName != null && variableName.endsWith("s")) variableName = variableName.substring(0, variableName.length() - 1);
+                if (variableName == null || variableName.isEmpty()) variableName = "item";
+
+                CodeStyle cs = CodeStyle.getDefault(ctx.getWorkingCopy().getFileObject());
+
+                if (variableName.equals(treeName) && cs.getLocalVarNamePrefix() == null && cs.getLocalVarNameSuffix() == null) {
+                    if(Character.isAlphabetic(variableName.charAt(0))) {
+                        StringBuilder nameSb = new StringBuilder(variableName);
+                        nameSb.setCharAt(0, Character.toUpperCase(nameSb.charAt(0)));
+                        nameSb.indexOf("a");
+                        variableName = nameSb.toString();
+                    }
+                }
+
+                variableName = Utilities.makeNameUnique(ctx.getWorkingCopy(), ctx.getWorkingCopy().getTrees().getScope(ctx.getPath()), variableName, definedVariables, cs.getLocalVarNamePrefix(), cs.getLocalVarNameSuffix());
+
+                newLoop = make.EnhancedForLoop(make.Variable(make.Modifiers(EnumSet.noneOf(Modifier.class)), variableName, make.Type(variableType), null), (ExpressionTree) $arr.getLeaf(), statement);
+            }
             
             ctx.getWorkingCopy().rewrite(loop, newLoop);
             
