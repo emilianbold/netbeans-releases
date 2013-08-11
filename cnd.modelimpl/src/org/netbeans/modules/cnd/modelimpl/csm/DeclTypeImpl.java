@@ -84,8 +84,23 @@ public class DeclTypeImpl extends TypeImpl {
 
     @Override
     protected CsmClassifier _getClassifier() {
-        CsmType type = CsmTypeResolver.resolveType(typeExpression);
-        return type != null ? type.getClassifier() : null;
+        CsmClassifier classifier = super._getClassifier();
+        if (classifier == null) {
+            synchronized (this) {
+                if (!isClassifierInitialized()) {
+                    CsmType type = CsmTypeResolver.resolveType(typeExpression);
+                    classifier = type != null ? type.getClassifier() : null;
+                    if (classifier == null) {
+                        classifier = BuiltinTypes.getBuiltIn(DECLTYPE); // Unresolved?
+                    }
+                    initClassifier(classifier);
+                } else {
+                    classifier = super._getClassifier();
+                    assert (classifier != null);
+                }
+            }
+        }
+        return classifier;
     }
 
     ////////////////////////////////////////////////////////////////////////////

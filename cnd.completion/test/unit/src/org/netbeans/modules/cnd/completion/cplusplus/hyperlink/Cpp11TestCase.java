@@ -190,6 +190,11 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
 //        performTest("decltypes1.cpp", 25, 61, "decltypes1.cpp", 11, 5); // TODO: it fails now!
     }
     
+    public void testDecltypes2() throws Exception {
+        // Static asserts for decltypes 
+        performTest("decltypes2.cpp", 14, 56, "decltypes2.cpp", 9, 9);      
+    }    
+    
     public void testBug224399() throws Exception {
         // Bug 224399 - Error parsing decltype in function arguments 
         performTest("bug224399.cpp", 14, 9, "bug224399.cpp", 4, 5);      
