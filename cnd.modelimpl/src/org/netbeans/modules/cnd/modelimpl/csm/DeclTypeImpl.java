@@ -88,14 +88,12 @@ public class DeclTypeImpl extends TypeImpl {
         if (classifier == null) {
             synchronized (this) {
                 if (!isClassifierInitialized()) {
+                    CsmType type = CsmTypeResolver.resolveType(typeExpression);
+                    classifier = type != null ? type.getClassifier() : null;
                     if (classifier == null) {
-                        CsmType type = CsmTypeResolver.resolveType(typeExpression);
-                        classifier = type != null ? type.getClassifier() : null;
-                        if (classifier == null) {
-                            classifier = BuiltinTypes.getBuiltIn(DECLTYPE); // Unresolved?
-                        }
-                        initClassifier(classifier);
+                        classifier = BuiltinTypes.getBuiltIn(DECLTYPE); // Unresolved?
                     }
+                    initClassifier(classifier);
                 } else {
                     classifier = super._getClassifier();
                     assert (classifier != null);
