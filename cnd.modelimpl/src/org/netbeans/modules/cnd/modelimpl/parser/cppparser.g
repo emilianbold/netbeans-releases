@@ -4085,10 +4085,11 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
         ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => (GREATERTHAN)+ lazy_expression[false, false, templateLevel])?)?
     ;
 
-protected
-isGreaterthanInTheRestOfExpression[int templateLevel]
+// Lazy expression including assignement expressions (like a = b = c;)
+protected 
+lazy_assignment_expression[boolean inTemplateParams, boolean searchingGreaterthen, int templateLevel]
     :
-        (lazy_expression[true, true, templateLevel])?
+        lazy_expression[inTemplateParams, searchingGreaterthen, templateLevel]
         (options {greedy=true;}:	
             ( ASSIGNEQUAL              
             | TIMESEQUAL
@@ -4102,27 +4103,17 @@ isGreaterthanInTheRestOfExpression[int templateLevel]
             | BITWISEXOREQUAL
             | BITWISEOREQUAL
             )
-            (lazy_expression[true, true, templateLevel]
+            (lazy_expression[inTemplateParams, searchingGreaterthen, templateLevel]
             | array_initializer)
         )*
+    ;
+
+protected
+isGreaterthanInTheRestOfExpression[int templateLevel]
+    :
+        (lazy_assignment_expression[true, true, templateLevel])?
         (   COMMA 
-            lazy_expression[true, true, templateLevel]
-            (options {greedy=true;}:	
-                ( ASSIGNEQUAL              
-                | TIMESEQUAL
-                | DIVIDEEQUAL
-                | MINUSEQUAL
-                | PLUSEQUAL
-                | MODEQUAL
-                | SHIFTLEFTEQUAL
-                | SHIFTRIGHTEQUAL
-                | BITWISEANDEQUAL
-                | BITWISEXOREQUAL
-                | BITWISEOREQUAL
-                )
-                (lazy_expression[true, true, templateLevel]
-                | array_initializer)
-            )*
+            lazy_assignment_expression[true, true, templateLevel]
         )*
         GREATERTHAN
     ;
@@ -4448,7 +4439,10 @@ scope_override_part[int level] returns [String s = ""]
 // works faster then type_decltype.
 lazy_type_decltype[int templateLevel]
     :
-        literal_decltype LPAREN lazy_expression[false, false, templateLevel] RPAREN
+        literal_decltype 
+        LPAREN 
+        lazy_assignment_expression[false, false, templateLevel] 
+        RPAREN
     ;
 
 type_decltype 
