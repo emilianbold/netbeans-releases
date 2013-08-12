@@ -68,9 +68,9 @@ public final class OperationContainerImpl<Support> {
     private boolean upToDate = false;
     private OperationContainerImpl () {}
     public static final Logger LOGGER = Logger.getLogger (OperationContainerImpl.class.getName ());    
-    private List<OperationInfo<Support>> operations = new CopyOnWriteArrayList<OperationInfo<Support>>();
+    private final List<OperationInfo<Support>> operations = new CopyOnWriteArrayList<OperationInfo<Support>>();
     private Throwable lastModified;
-    private Collection<OperationInfo<Support>> affectedEagers = new HashSet<OperationInfo<Support>> ();
+    private final Collection<OperationInfo<Support>> affectedEagers = new HashSet<OperationInfo<Support>> ();
     public static OperationContainerImpl<InstallSupport> createForInstall () {
         return new OperationContainerImpl<InstallSupport> (OperationType.INSTALL);
     }
