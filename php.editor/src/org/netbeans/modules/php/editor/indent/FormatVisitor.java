@@ -129,7 +129,6 @@ public class FormatVisitor extends DefaultVisitor {
     private boolean isMethodInvocationShifted; // is continual indentation already included ?
     private boolean isFirstUseStatementPart;
     private boolean isFirstUseTraitStatementPart;
-    private final CodeStyle codeStyle;
 
     public FormatVisitor(BaseDocument document, final int caretOffset, final int startOffset, final int endOffset) {
         this.document = document;
@@ -144,7 +143,6 @@ public class FormatVisitor extends DefaultVisitor {
         formatTokens.add(new FormatToken.InitToken());
         isMethodInvocationShifted = false;
         groupAlignmentTokenHolders = new Stack<>();
-        codeStyle = CodeStyle.get(document);
     }
 
     public List<FormatToken> getFormatTokens() {
