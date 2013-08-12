@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -54,7 +54,6 @@ import java.util.LinkedList;
 import java.util.Set;
 import java.util.StringTokenizer;
 import java.util.prefs.Preferences;
-import javax.swing.SwingUtilities;
 import org.netbeans.api.autoupdate.InstallSupport;
 import org.netbeans.api.autoupdate.OperationContainer;
 import org.netbeans.api.autoupdate.OperationSupport;
@@ -257,7 +256,7 @@ public final class FindComponentModules {
                     Set<UpdateElement> reqs = inf.getRequiredElements ();
                     for (UpdateElement ue : reqs) {
                         if (ocForEnable.canBeAdded(el.getUpdateUnit(), ue)) {
-                            ocForEnable.add(ue);
+                            ocForEnable.add(el.getUpdateUnit(), ue);
                         }
                     }
 //                    Set<String> breaks = inf.getBrokenDependencies ();
