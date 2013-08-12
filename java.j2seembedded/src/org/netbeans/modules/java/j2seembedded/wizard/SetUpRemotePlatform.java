@@ -459,8 +459,11 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         private final ChangeSupport changeSupport;
         private SetUpRemotePlatform ui;
         private boolean valid = false;
-        private boolean wasEmptyWorkingDir = true;
         private WizardDescriptor wizardDescriptor;
+        
+        //Following fields are used for panel validation (info messages updates)
+        private boolean wasEmptyWorkingDir = false;
+        private int usernameLength = 0;
 
         public Panel() {
             changeSupport = new ChangeSupport(this);
@@ -561,22 +564,22 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
 
         private boolean checkPanelValidity() {
             ui.buttonTest.setEnabled(false);
-            if (ui.displayName.getText().length() == 0) {
+            if (ui.displayName.getText().isEmpty()) {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_DisplayName")); // NOI18N
                 return false;
             }
-            if (ui.host.getText().length() == 0) {
+            if (ui.host.getText().isEmpty()) {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_Host")); // NOI18N
                 return false;
             }
-            if (ui.username.getText().length() == 0) {
+            if (ui.username.getText().isEmpty()) {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_Username")); // NOI18N
                 return false;
             }
             if (ui.radioButtonPassword.isSelected() && ui.password.getPassword().length == 0) {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_Password")); // NOI18N
                 return false;
-            } else if (ui.radioButtonKey.isSelected() && ui.keyFilePath.getText().length() == 0) {
+            } else if (ui.radioButtonKey.isSelected() && ui.keyFilePath.getText().isEmpty()) {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_KeyFile")); // NOI18N
                 return false;
             }
@@ -585,10 +588,14 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                 return false;
             }
 
-            if ((!valid || !wasEmptyWorkingDir) && ui.workingDir.getText().length() == 0) {
+            if ((!valid || !wasEmptyWorkingDir || usernameLength != ui.username.getText().length()) && ui.workingDir.getText().isEmpty()) {
+                //Workdir has been changed from specified to empty => show info message
+                //or username has been modified => update message
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "MSG_Empty_WorkingDir", ui.username.getText())); // NOI18N
                 wasEmptyWorkingDir = true;
-            } else if ((!valid || wasEmptyWorkingDir) && ui.workingDir.getText().length() != 0) {
+                usernameLength = ui.username.getText().length();
+            } else if ((!valid || wasEmptyWorkingDir) && !ui.workingDir.getText().isEmpty()) {
+                //Workdir has been changed changed from empty to specified => hide info message
                 displayNotification(""); // NOI18N
                 wasEmptyWorkingDir = false;
             }
@@ -596,7 +603,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
             return true;
         }
 
-        public void displayNotification(final String message) {
+        private void displayNotification(final String message) {
             if (wizardDescriptor != null) {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, message); // NOI18N
             }
