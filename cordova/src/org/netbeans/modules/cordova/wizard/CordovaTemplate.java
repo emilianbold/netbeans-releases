@@ -181,6 +181,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         @Override
         public void initialize(WizardDescriptor wizardDescriptor) {
             wizardDescriptor.putProperty("SITE_TEMPLATE", Lookup.getDefault().lookup(CordovaTemplate.class)); // NOI18N
+            wizardDescriptor.putProperty("SITE_ROOT", "www"); // NOI18N
         }
 
         public static void setPhoneGapBrowser(final Project project) throws IOException, IllegalArgumentException {
