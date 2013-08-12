@@ -341,7 +341,7 @@ public class AnalyzerImpl implements Analyzer {
                     FindBugsPanel result = context.getPreviousComponent();
 
                     if (result == null) {
-                        result = new FindBugsPanel(null, context);
+                        result = new FindBugsPanel(null, null, context);
                     }
 
                     result.setSettings(context.getSettings());
