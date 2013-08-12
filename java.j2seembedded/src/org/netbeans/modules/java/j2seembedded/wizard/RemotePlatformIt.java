@@ -164,7 +164,8 @@ class RemotePlatformIt implements WizardDescriptor.InstantiatingIterator<WizardD
             passphrase = (String) wizard.getProperty(PROP_PASSPHRASE);
         }
         String jrePath = (String) wizard.getProperty(PROP_JREPATH);
-        String workingDir = (String) wizard.getProperty(PROP_WORKINGDIR);
+        String workingDir = wizard.getProperty(PROP_WORKINGDIR) != null && ((String) wizard.getProperty(PROP_WORKINGDIR)).length() > 0
+                ? (String) wizard.getProperty(PROP_WORKINGDIR) : "/home/" + username + "/NetBeansProjects/"; //NOI18N
 
         final Map<String,String> props = Collections.<String,String>singletonMap(RemotePlatformProvider.PLAT_PROP_ANT_NAME, antName);
         final Map<String,String> sysProps = Collections.<String,String>emptyMap();

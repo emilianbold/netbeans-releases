@@ -175,6 +175,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         jSeparator2 = new javax.swing.JSeparator();
         displayNameLabel = new javax.swing.JLabel();
         displayName = new javax.swing.JTextField();
+        fillerBottomVertical = new javax.swing.Box.Filler(new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 0), new java.awt.Dimension(0, 32767));
 
         setName(org.openide.util.NbBundle.getMessage(SetUpRemotePlatform.class, "TXT_SetUpRemotePlatform")); // NOI18N
         setLayout(new java.awt.GridBagLayout());
@@ -400,6 +401,12 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         gridBagConstraints.weightx = 1.0;
         gridBagConstraints.insets = new java.awt.Insets(0, 5, 0, 0);
         add(displayName, gridBagConstraints);
+        gridBagConstraints = new java.awt.GridBagConstraints();
+        gridBagConstraints.gridx = 0;
+        gridBagConstraints.gridy = 13;
+        gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
+        gridBagConstraints.weighty = 1.0;
+        add(fillerBottomVertical, gridBagConstraints);
     }// </editor-fold>//GEN-END:initComponents
 
     private void buttonBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonBrowseActionPerformed
@@ -424,6 +431,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
     private javax.swing.JButton buttonTest;
     private javax.swing.JTextField displayName;
     private javax.swing.JLabel displayNameLabel;
+    private javax.swing.Box.Filler fillerBottomVertical;
     private javax.swing.JTextField host;
     private javax.swing.JLabel hostLabel;
     private javax.swing.JSeparator jSeparator1;
@@ -451,6 +459,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         private final ChangeSupport changeSupport;
         private SetUpRemotePlatform ui;
         private boolean valid = false;
+        private boolean wasEmptyWorkingDir = true;
         private WizardDescriptor wizardDescriptor;
 
         public Panel() {
@@ -575,12 +584,13 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_JRE")); // NOI18N
                 return false;
             }
-            if (ui.workingDir.getText().length() == 0) {
-                displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_WorkingDir")); // NOI18N
-                return false;
-            }
-            if (!valid) {
-                displayNotification("");
+
+            if ((!valid || !wasEmptyWorkingDir) && ui.workingDir.getText().length() == 0) {
+                displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "MSG_Empty_WorkingDir", ui.username.getText())); // NOI18N
+                wasEmptyWorkingDir = true;
+            } else if ((!valid || wasEmptyWorkingDir) && ui.workingDir.getText().length() != 0) {
+                displayNotification(""); // NOI18N
+                wasEmptyWorkingDir = false;
             }
             ui.buttonTest.setEnabled(true);
             return true;
@@ -602,8 +612,8 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
             prop.setProperty("host", host.getText()); //NOI18N
             prop.setProperty("port", String.valueOf(port.getValue())); //NOI18N
             prop.setProperty("username", username.getText()); //NOI18N
-            prop.setProperty("jrePath", jreLocation.getText()); //NOI18N
-            prop.setProperty("workingDir", workingDir.getText()); //NOI18N
+            prop.setProperty("jrePath", jreLocation.getText()); //NOI18N            
+            prop.setProperty("workingDir", workingDir.getText().length() > 0 ? workingDir.getText() : "/home/" + username.getText() + "/NetBeansProjects/"); //NOI18N
             if (radioButtonPassword.isSelected()) {
                 antTargets = new String[]{"connect-ssh-password"}; //NOI18N
                 prop.setProperty("password", String.valueOf(password.getPassword())); //NOI18N
@@ -615,7 +625,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
 
             final String resourcesPath = "org/netbeans/modules/java/j2seembedded/resources/validateconnection.xml"; //NOI18N
             File tmpFile = null;
-            ExecutorTask executorTask  = null;
+            ExecutorTask executorTask = null;
             try {
                 try (InputStream inputStream = SetUpRemotePlatform.class.getClassLoader().getResourceAsStream(resourcesPath)) {
                     tmpFile = File.createTempFile("antScript", ".xml"); //NOI18N
@@ -628,7 +638,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                     }
                 }
                 final FileObject antScript = FileUtil.createData(FileUtil.normalizeFile(tmpFile));
-                executorTask = ActionUtils.runTarget(antScript, antTargets, prop);               
+                executorTask = ActionUtils.runTarget(antScript, antTargets, prop);
                 final int antResult = executorTask.result();
                 if (antResult == 0) {
                     SwingUtilities.invokeLater(new Runnable() {
@@ -661,7 +671,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                 }
                 if (tmpFile != null) {
                     tmpFile.delete();
-                }                
+                }
             }
         }
     }

@@ -45,11 +45,11 @@ Portions Copyrighted 2013 Sun Microsystems, Inc.
     <description>Validates remote Java SE Platform.</description>
     <target name="connect-ssh-password">
         <sshexec host="${host}" port="${port}" username="${username}" password="${password}" trust="true"        
-                 command="cd ${workingDir}" />
+                 command="if [ -d &quot;${workingDir}&quot; ]; then cd ${workingDir} ; else mkdir ${workingDir} ; fi" />
     </target>
     
     <target name="connect-ssh-keyfile">
         <sshexec host="${host}" port="${port}" username="${username}" keyfile="${keyfile}" passphrase="${passphrase}" trust="true"        
-                 command="cd ${workingDir}" />
+                 command="if [ -d &quot;${workingDir}&quot; ]; then cd ${workingDir} ; else mkdir ${workingDir} ; fi" />
     </target>
 </project>
