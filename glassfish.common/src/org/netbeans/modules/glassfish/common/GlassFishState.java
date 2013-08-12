@@ -139,15 +139,16 @@ public class GlassFishState {
         if (status == null) {
             MonitoringInitStateListener listener
                     = new MonitoringInitStateListener();
-            added = GlassFishStatus.add(instance, listener, true,
-                    GlassFishStatus.ONLINE, GlassFishStatus.SHUTDOWN,
-                    GlassFishStatus.STARTUP);
+            // All state change events except UNKNOWN.
+            added = GlassFishStatus.add(instance, listener, false,
+                    GlassFishStatus.OFFLINE, GlassFishStatus.STARTUP,
+                    GlassFishStatus.ONLINE, GlassFishStatus.SHUTDOWN);
             if (added) {
-                if (instance.getVersion() != null
-                        && instance.getVersion().ordinal()
-                        >= GlassFishVersion.GF_4.ordinal()) {
+                if (instance.getVersion() != null) {
                    AuthFailureStateListener authListener
-                           =  new AuthFailureStateListener();
+                           =  new AuthFailureStateListener(
+                           instance.getVersion().ordinal()
+                           >= GlassFishVersion.GF_4.ordinal());
                    GlassFishStatus.addChangeListener(
                            instance, authListener, GlassFishStatus.STARTUP);
                     GlassFishStatus.addErrorListener(instance, authListener);
@@ -177,7 +178,79 @@ public class GlassFishState {
     }
 
     /**
+     * Wait for status monitoring to resolve <code>UNKNOWN</code> state.
+     * <p/>
+     * Status monitoring listener will be removed when finished.
+     * <p/>
+     * @param instance GlassFish server instance.
+     * @param listener Already active status monitoring listener waiting
+     *                 for leaving <code>UNKNOWN</code> state.
+     * @param timeout  How log to wait for <code>UNKNOWN</code> state
+     *                 to be resolved in ms.
+     */
+    private static void waitForKnownState(final GlassFishServer instance,
+            final MonitoringInitStateListener listener, final long timeout) {
+        try {
+            long startTime = System.currentTimeMillis();
+            long waitTime = timeout;
+            synchronized (listener) {
+                // Guard against spurious wakeup.
+                while (!listener.isWakeUp() && waitTime > 0) {
+                    listener.wait(waitTime);
+                    waitTime = timeout
+                            + startTime - System.currentTimeMillis();
+                }
+            }
+        } catch (InterruptedException ie) {
+            LOGGER.log(Level.FINE,
+                    "Interrupted while waiting on server monitoring");
+        } finally {
+            GlassFishStatus.removeListener(instance, listener);
+        }
+
+    }
+
+    /**
      * Retrieve GlassFish server status object from status monitoring.
+     * <p/>
+     * Can block up to <code>timeout</code> ms when server monitoring
+     * was suspended to wait for new status check to finish. Do not use
+     * with non zero <code>timeout</code> in AWT event queue thread.
+     * <p/>
+     * @param instance GlassFish server instance.
+     * @param timeout  How log to wait for <code>UNKNOWN</code> state
+     *                 to be resolved. Value of <code>0</code> turns blocking
+     *                 off.
+     * @return GlassFish server status object.
+     * @throws IllegalStateException when status object is null even after 
+     *         monitoring of this instance was explicitely started.
+     */
+    public static GlassFishServerStatus getStatus(
+            final GlassFishServer instance, final long timeout) {       
+        MonitoringInitStateListener listener = timeout > 0
+               ? new MonitoringInitStateListener() : null;
+        GlassFishServerStatus status = GlassFishStatus.get(instance, listener);
+        if (status == null) {
+            monitor(instance);
+            status = GlassFishStatus.get(instance);
+            if (status == null) {
+                throw new IllegalStateException(NbBundle.getMessage(
+                        GlassFishState.class,
+                        "GlassFishState.getStatus.statusNull"));
+            }
+        } else {
+            if (listener != null && listener.isActive()) {
+                waitForKnownState(instance, listener, timeout);
+            }
+        }
+        return status;
+    }
+
+    /**
+     * Retrieve GlassFish server status object from status monitoring.
+     * <p/>
+     * This call is always non blocking but it will return <code>UNKNOWN</code>
+     * state immediately when server state monitoring is suspended.
      * <p/>
      * @param instance GlassFish server instance.
      * @return GlassFish server status object.
@@ -186,17 +259,7 @@ public class GlassFishState {
      */
     public static GlassFishServerStatus getStatus(
             final GlassFishServer instance) {
-        GlassFishServerStatus status = GlassFishStatus.get(instance);
-        if (status == null) {
-            monitor(instance);
-            status = GlassFishStatus.get(instance);
-        }
-        if (status == null) {
-            throw new IllegalStateException(NbBundle.getMessage(
-                    GlassFishState.class,
-                    "GlassFishState.getStatus.statusNull"));
-        }
-        return status;
+        return getStatus(instance, 0);
     }
 
     /**

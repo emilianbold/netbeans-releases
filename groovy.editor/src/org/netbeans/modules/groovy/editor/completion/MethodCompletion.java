@@ -174,7 +174,7 @@ public class MethodCompletion extends BaseCompletion {
                     @Override
                     public void run(CompilationController info) {
 
-                        List<Element> typelist = new ArrayList<Element>();
+                        List<Element> typelist = new ArrayList<>();
                         for (String importName : getAllImports()) {
                             typelist.addAll(getElementListFor(info.getElements(), importName));
                         }
@@ -197,7 +197,7 @@ public class MethodCompletion extends BaseCompletion {
     }
 
     private List<String> getAllImports() {
-        List<String> imports = new ArrayList<String>();
+        List<String> imports = new ArrayList<>();
         imports.addAll(ImportUtils.getDefaultImportPackages());
         imports.addAll(getImportedTypes());
         imports.addAll(getTypesInSamePackage());
@@ -207,7 +207,7 @@ public class MethodCompletion extends BaseCompletion {
     }
 
     private List<String> getImportedTypes() {
-        List<String> importedTypes = new ArrayList<String>();
+        List<String> importedTypes = new ArrayList<>();
 
         ModuleNode moduleNode = ContextHelper.getSurroundingModuleNode(context);
         if (moduleNode != null) {
@@ -238,7 +238,7 @@ public class MethodCompletion extends BaseCompletion {
     }
 
     private List<String> getTypesInSameFile() {
-        List<String> declaredClassNames = new ArrayList<String>();
+        List<String> declaredClassNames = new ArrayList<>();
         List<ClassNode> declaredClasses = ContextHelper.getDeclaredClasses(context);
 
         for (ClassNode declaredClass : declaredClasses) {
@@ -351,7 +351,7 @@ public class MethodCompletion extends BaseCompletion {
      * @return list of <code>ParameterDescriptor</code>'s
      */
     private List<CompletionItem.ParameterDescriptor> getParameterList(ExecutableElement exe) {
-        List<CompletionItem.ParameterDescriptor> paramList = new ArrayList<CompletionItem.ParameterDescriptor>();
+        List<CompletionItem.ParameterDescriptor> paramList = new ArrayList<>();
 
         if (exe != null) {
             try {
@@ -453,7 +453,7 @@ public class MethodCompletion extends BaseCompletion {
             return Collections.EMPTY_LIST;
         }
 
-        List<ParameterDescriptor> paramDescriptors = new ArrayList<ParameterDescriptor>();
+        List<ParameterDescriptor> paramDescriptors = new ArrayList<>();
         for (Parameter param : parameters) {
             String fullTypeName = param.getType().getName();
             String typeName = param.getType().getNameWithoutPackage();

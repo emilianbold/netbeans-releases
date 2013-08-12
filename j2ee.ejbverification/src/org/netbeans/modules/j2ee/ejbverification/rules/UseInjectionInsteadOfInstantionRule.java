@@ -45,6 +45,7 @@ import com.sun.source.tree.Tree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Iterator;
+import javax.lang.model.element.Element;
 import javax.lang.model.element.TypeElement;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
@@ -104,10 +105,11 @@ public final class UseInjectionInsteadOfInstantionRule {
         }
 
         // is valid class?
-        final TypeElement javaClass = (TypeElement) cpi.getTrees().getElement(clazzTreePath);
-        if (javaClass == null) {
+        Element element = cpi.getTrees().getElement(clazzTreePath);
+        if (!(element instanceof TypeElement)) {
             return null;
         }
+        final TypeElement javaClass = (TypeElement) element;
 
         // is the file source of enterprise app?
         final EjbJar ejbJar = getEjbJarForFileObject(ctx.getInfo().getFileObject());

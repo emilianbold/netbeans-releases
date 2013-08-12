@@ -75,16 +75,14 @@ public class JsIndexer extends EmbeddingIndexer {
 
     private static final Logger LOG = Logger.getLogger(JsIndexer.class.getName());
 
-    private static final Collection<String> INDEXABLE_EXTENSIONS = Arrays.asList("js", "sdoc", "html");
-
     @Override
     protected void index(Indexable indexable, Result result, Context context) {
         LOG.log(Level.FINE, "Indexing: {0}, fullPath: {1}", new Object[]{indexable.getRelativePath(), result.getSnapshot().getSource().getFileObject().getPath()});
-        
+
         if (!(result instanceof JsParserResult)) {
             return;
         }
-        
+
         if (!context.checkForEditorModifications()) {
             JsIndex.changeInIndex();
         }
@@ -100,7 +98,7 @@ public class JsIndexer extends EmbeddingIndexer {
         }
 
         JsObject globalObject = model.getGlobalObject();
-        for(JsObject object : globalObject.getProperties().values()) {
+        for (JsObject object : globalObject.getProperties().values()) {
             if (object.getParent() != null) {
                 storeObject(object, object.getName(), support, indexable);
             }
@@ -141,7 +139,7 @@ public class JsIndexer extends EmbeddingIndexer {
     public static final class Factory extends EmbeddingIndexerFactory {
 
         public static final String NAME = "js"; // NOI18N
-        public static final int VERSION = 10;
+        public static final int VERSION = 11;
 
         private static final ThreadLocal<Collection<Runnable>> postScanTasks = new ThreadLocal<Collection<Runnable>>();
 

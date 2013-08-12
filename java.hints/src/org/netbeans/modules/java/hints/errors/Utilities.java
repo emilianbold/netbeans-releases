@@ -180,6 +180,10 @@ public class Utilities {
     }};
     
     public static String makeNameUnique(CompilationInfo info, Scope s, String name, String prefix, String suffix) {
+        return makeNameUnique(info, s, name, Collections.<String>emptySet(), prefix, suffix);
+    }
+
+    public static String makeNameUnique(CompilationInfo info, Scope s, String name, Set<String> usedVariables, String prefix, String suffix) {
         if(prefix != null && prefix.length() > 0) {
             if(Character.isAlphabetic(prefix.charAt(prefix.length()-1))) {
                 StringBuilder nameSb = new StringBuilder(name);
@@ -200,7 +204,9 @@ public class Utilities {
             
             if (converted != null) {
                 proposedName = converted;
-            } else if (SourceVersion.isKeyword(proposedName)) {
+            }
+            
+            if (SourceVersion.isKeyword(proposedName) || usedVariables.contains(proposedName)) {
                 counter++;
                 cont = true;
                 continue;

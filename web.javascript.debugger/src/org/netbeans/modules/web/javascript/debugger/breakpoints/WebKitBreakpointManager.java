@@ -44,6 +44,7 @@ package org.netbeans.modules.web.javascript.debugger.breakpoints;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -56,9 +57,11 @@ import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.debugger.Breakpoint;
+import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.web.javascript.debugger.breakpoints.DOMNode.PathNotFoundException;
 import org.netbeans.modules.web.javascript.debugger.browser.ProjectContext;
+import org.netbeans.modules.web.webkit.debugging.api.BreakpointException;
 import org.netbeans.modules.web.webkit.debugging.api.Debugger;
 import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
 import org.netbeans.modules.web.webkit.debugging.api.debugger.CallFrame;
@@ -66,6 +69,7 @@ import org.netbeans.modules.web.webkit.debugging.api.dom.Node;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
+import org.openide.text.Line;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
@@ -170,12 +174,28 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             if (curl != null) {
                 String url = lb.getURLString(pc.getProject(), curl);
                 url = reformatFileURL(url);
-                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint br =
-                    d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint br = null;
+                try {
+                    br = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                } catch (BreakpointException bex) {
+                    lb.setInvalid(bex.getLocalizedMessage());
+                }
                 if (br != null) {
                     br.addPropertyChangeListener(this);
                     long brLine = br.getLineNumber();
                     if (brLine >= 0) {
+                        List<Breakpoint> duplicateBreakpoints = checkDuplicateBreakpoints(lb, brLine);
+                        if (duplicateBreakpoints != null) {
+                            // Leave just the first one there:
+                            for (int i = 1; i < duplicateBreakpoints.size(); i++) {
+                                DebuggerManager.getDebuggerManager().removeBreakpoint(duplicateBreakpoints.get(i));
+                            }
+                            synchronized (brkptLock) {
+                                b = br;
+                            }
+                            DebuggerManager.getDebuggerManager().removeBreakpoint(lb);
+                            return ;
+                        }
                         ignoreLineUpdate.set(Boolean.TRUE);
                         try {
                             lb.setLine((int) brLine);
@@ -226,7 +246,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     String url = lb.getURLString(pc.getProject(), curl);
                     url = reformatFileURL(url);
                     resubmitting.set(false);
-                    brkpt = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                    try {
+                        brkpt = d.addLineBreakpoint(url, lb.getLine().getLineNumber(), 0);
+                    } catch (BreakpointException bex) {
+                        brkpt = null;
+                        lb.setInvalid(bex.getLocalizedMessage());
+                    }
                     synchronized (brkptLock) {
                         b = brkpt;
                     }
@@ -279,10 +304,6 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                        LineBreakpoint.PROP_FILE.equals(propertyName)) {
                 lineChanged.set(true);
             } else if (org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint.PROP_LOCATION.equals(propertyName)) {
-                if (resubmitting.get()) {
-                    // Ignore location update 
-                    return ;
-                }
                 org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint brkpt;
                 synchronized (brkptLock) {
                     brkpt = b;
@@ -291,6 +312,19 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     return ;
                 }
                 int lineNumber = (int) brkpt.getLineNumber();
+                List<Breakpoint> duplicateBreakpoints = checkDuplicateBreakpoints(lb, lineNumber);
+                if (duplicateBreakpoints != null) {
+                    // Leave just the first one there:
+                    for (int i = 1; i < duplicateBreakpoints.size(); i++) {
+                        DebuggerManager.getDebuggerManager().removeBreakpoint(duplicateBreakpoints.get(i));
+                    }
+                    DebuggerManager.getDebuggerManager().removeBreakpoint(lb);
+                    return ;
+                }
+                if (resubmitting.get()) {
+                    // Ignore location update 
+                    return ;
+                }
                 ignoreLineUpdate.set(Boolean.TRUE);
                 try {
                     lb.setLine(lineNumber);
@@ -314,6 +348,80 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             resubmit();
         }
         
+    }
+    
+    /**
+     * Check if there are already some existing breakpoints at line <code>lineNumber</code>
+     * whose properties are equal to <code>lb</code>. If there are, delete them,
+     * to get rid of duplicates.
+     * 
+     * @param lb
+     * @param lineNumber
+     */
+    private static List<Breakpoint> checkDuplicateBreakpoints(LineBreakpoint lb, long lineNumber) {
+        FileObject fo = lb.getLine().getLookup().lookup(FileObject.class);
+        if (fo == null) {
+            return null;
+        }
+        List<Breakpoint> breakpointsToRemove = null;
+        for (Breakpoint b : DebuggerManager.getDebuggerManager().getBreakpoints()) {
+            if (b instanceof LineBreakpoint) {
+                if (b == lb) {
+                    continue;
+                }
+                LineBreakpoint tlb = (LineBreakpoint) b;
+                Line tl = tlb.getLine();
+                if (tl == null) {
+                    continue;
+                }
+                if (tl.getLineNumber() != lineNumber) {
+                    continue;
+                }
+                FileObject tfo = tl.getLookup().lookup(FileObject.class);
+                if (!fo.equals(tfo)) {
+                    continue;
+                }
+                if (!compareBreakpointProperties(lb, tlb)) {
+                    continue;
+                }
+                if (breakpointsToRemove == null) {
+                    breakpointsToRemove = new ArrayList<Breakpoint>();
+                }
+                breakpointsToRemove.add(b);
+            }
+        }
+        if (breakpointsToRemove != null) {
+            // Remove all invalid breakpoints right away:
+            for (int i = 0; i < breakpointsToRemove.size(); i++) {
+                Breakpoint b = breakpointsToRemove.get(i);
+                if (Breakpoint.VALIDITY.INVALID == b.getValidity()) {
+                    DebuggerManager.getDebuggerManager().removeBreakpoint(b);
+                    breakpointsToRemove.remove(b);
+                    i--;
+                }
+            }
+            if (breakpointsToRemove.isEmpty()) {
+                breakpointsToRemove = null;
+            }
+        }
+        return breakpointsToRemove;
+    }
+    
+    /**
+     * Compare two line breakpoints but ignore their lines.
+     * @return <code>true</code> when the breakpoints equals, <code>false</code>
+     * otherwise.
+     */
+    private static boolean compareBreakpointProperties(LineBreakpoint lb1, LineBreakpoint lb2) {
+        String gn1 = lb1.getGroupName();
+        String gn2 = lb2.getGroupName();
+        if (gn1 != null && !gn1.equals(gn2) || gn1 == null && gn2 != null ||
+            lb1.getHitCountFilter() != lb2.getHitCountFilter() ||
+            lb1.getHitCountFilteringStyle() != lb2.getHitCountFilteringStyle()) {
+            
+            return false;
+        }
+        return true;
     }
 
     @NbBundle.Messages({
@@ -492,8 +600,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
             Set<String> events = eb.getEvents();
             bps = new HashMap<String, org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint>(events.size());
             for (String event : events) {
-                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
-                        d.addEventBreakpoint(event);
+                org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
+                if (eb.isInstrumentationEvent(event)) {
+                    b = d.addInstrumentationBreakpoint(event);
+                } else {
+                    b = d.addEventBreakpoint(event);
+                }
                 if (b != null) {
                     bps.put(event, b);
                 }
@@ -518,7 +630,11 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 if (!removed) {
                     Set<String> events = eb.getEvents();
                     for (String event : events) {
-                        d.removeEventBreakpoint(event);
+                        if (eb.isInstrumentationEvent(event)) {
+                            d.removeInstrumentationBreakpoint(event);
+                        } else {
+                            d.removeEventBreakpoint(event);
+                        }
                     }
                 }
             }
@@ -546,8 +662,12 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                 Object oldValue = event.getOldValue();
                 if (newValue != null) {
                     String newEvent = (String) newValue;
-                    org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b = 
-                            d.addEventBreakpoint(newEvent);
+                    org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b;
+                    if (eb.isInstrumentationEvent(newEvent)) {
+                        b = d.addInstrumentationBreakpoint(newEvent);
+                    } else {
+                        b = d.addEventBreakpoint(newEvent);
+                    }
                     if (b != null) {
                         bps.put(newEvent, b);
                     }
@@ -556,7 +676,11 @@ abstract class WebKitBreakpointManager implements PropertyChangeListener {
                     org.netbeans.modules.web.webkit.debugging.api.debugger.Breakpoint b =
                             bps.remove(oldEvent);
                     if (b != null) {
-                        d.removeEventBreakpoint(oldEvent);
+                        if (eb.isInstrumentationEvent(oldEvent)) {
+                            d.removeInstrumentationBreakpoint(oldEvent);
+                        } else {
+                            d.removeEventBreakpoint(oldEvent);
+                        }
                     }
                 } else { // total refresh
                     remove();

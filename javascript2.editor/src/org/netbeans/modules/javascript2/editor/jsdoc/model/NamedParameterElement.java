@@ -42,10 +42,10 @@
 package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifierImpl;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 
 /**
  * Represents named parameter element.
@@ -56,11 +56,11 @@ import org.netbeans.modules.javascript2.editor.model.Type;
  */
 public class NamedParameterElement extends ParameterElement implements DocParameter {
 
-    private final DocIdentifier paramName;
+    private final Identifier paramName;
     private final boolean optional;
     private final String defaultValue;
 
-    private NamedParameterElement(JsDocElementType type, DocIdentifier paramName,
+    private NamedParameterElement(JsDocElementType type, Identifier paramName,
             List<Type> paramTypes, String paramDescription,
             boolean optional, String defaultValue) {
         super(type, paramTypes, paramDescription);
@@ -78,7 +78,7 @@ public class NamedParameterElement extends ParameterElement implements DocParame
      * @param optional flag if the parameter is optional
      * @param defaultValue default value of the parameter
      */
-    public static NamedParameterElement create(JsDocElementType type, DocIdentifier paramName,
+    public static NamedParameterElement create(JsDocElementType type, Identifier paramName,
             List<Type> paramTypes, String paramDescription,
             boolean optional, String defaultValue) {
         return new NamedParameterElement(type, paramName, paramTypes, paramDescription, optional, defaultValue);
@@ -94,7 +94,7 @@ public class NamedParameterElement extends ParameterElement implements DocParame
      * @param paramDescription description of the parameter
      * @param optional flag if the parameter is optional
      */
-    public static NamedParameterElement create(JsDocElementType type, DocIdentifier paramName,
+    public static NamedParameterElement create(JsDocElementType type, Identifier paramName,
             List<Type> paramTypes, String paramDescription,
             boolean optional) {
         return new NamedParameterElement(type, paramName, paramTypes, paramDescription, optional, null);
@@ -109,7 +109,7 @@ public class NamedParameterElement extends ParameterElement implements DocParame
      * @param paramTypes type of the parameter
      * @param paramDescription description of the parameter
      */
-    public static NamedParameterElement create(JsDocElementType type, DocIdentifier paramName,
+    public static NamedParameterElement create(JsDocElementType type, Identifier paramName,
             List<Type> paramTypes, String paramDescription) {
         return new NamedParameterElement(type, paramName, paramTypes, paramDescription, false, null);
     }
@@ -123,14 +123,14 @@ public class NamedParameterElement extends ParameterElement implements DocParame
      * @param paramTypes type of the parameter
      * @param paramDescription description of the parameter
      */
-    public static NamedParameterElement createWithNameDiagnostics(JsDocElementType type, DocIdentifier paramName,
+    public static NamedParameterElement createWithNameDiagnostics(JsDocElementType type, Identifier paramName,
             List<Type> paramTypes, String paramDescription) {
-        int nameOffset = paramName.getOffset();
+        int nameStartOffset = paramName.getOffsetRange().getStart();
         String name = paramName.getName();
         boolean optional = name.matches("\\[.*\\]"); //NOI18N
         String defaultValue = null;
         if (optional) {
-            nameOffset++;
+            nameStartOffset++;
             name = name.substring(1, name.length() - 1);
             int indexOfEqual = name.indexOf("=");
             if (indexOfEqual != -1) {
@@ -138,7 +138,7 @@ public class NamedParameterElement extends ParameterElement implements DocParame
                 name = name.substring(0, indexOfEqual);
             }
         }
-        return new NamedParameterElement(type, new DocIdentifierImpl(name, nameOffset), paramTypes,
+        return new NamedParameterElement(type, new IdentifierImpl(name, nameStartOffset), paramTypes,
                 paramDescription, optional, defaultValue);
     }
 
@@ -147,7 +147,7 @@ public class NamedParameterElement extends ParameterElement implements DocParame
      * @return parameter name
      */
     @Override
-    public DocIdentifier getParamName() {
+    public Identifier getParamName() {
         return paramName;
     }
 

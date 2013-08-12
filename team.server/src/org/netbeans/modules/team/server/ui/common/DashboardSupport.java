@@ -79,6 +79,8 @@ public final class DashboardSupport<P> {
     public static final String PREF_ALL_PROJECTS = "allProjects"; //NOI18N
     public static final String PREF_COUNT = "count"; //NOI18N
     public static final String PREF_ID = "id"; //NOI18N
+    static final String PREF_SELECTED_PROJECT = "selectedProject"; //NOI18N
+    static final String PREF_SELECTED_SERVER = "selectedServer"; //NOI18N
     
     private final DashboardImpl<P> impl;
     

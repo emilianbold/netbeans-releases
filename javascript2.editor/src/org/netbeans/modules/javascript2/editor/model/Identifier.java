@@ -48,6 +48,16 @@ import org.netbeans.modules.csl.api.OffsetRange;
  * @author Petr Pisl
  */
 public interface Identifier {
-    public String getName();
-    public OffsetRange getOffsetRange();
+
+    /**
+     * Gets name of the identifier.
+     * @return identifier name
+     */
+    String getName();
+
+    /**
+     * Gets the identifier offset range.
+     * @return identifier offset range
+     */
+    OffsetRange getOffsetRange();
 }

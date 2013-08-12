@@ -68,6 +68,8 @@ import org.netbeans.modules.mercurial.ui.queues.QPatch;
 import org.netbeans.modules.mercurial.ui.repository.HgURL;
 import org.openide.DialogDescriptor;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
@@ -91,7 +93,15 @@ import org.openide.util.actions.SystemAction;
     "# {0} - repository folder name",
     "CTL_MenuItem_FetchRoot=&Fetch - {0}"
 })
+@ActionID(id = "org.netbeans.modules.mercurial.ui.pull.FetchAction", category = "Mercurial")
+@ActionRegistration(lazy = false, displayName = "#CTL_MenuItem_FetchLocal")
 public class FetchAction extends ContextAction {
+    
+    public static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/fetch.png"; //NOI18N
+    
+    public FetchAction () {
+        super(ICON_RESOURCE);
+    }
     
     @Override
     protected boolean enable(Node[] nodes) {
@@ -102,6 +112,11 @@ public class FetchAction extends ContextAction {
     @Override
     protected String getBaseName(Node[] nodes) {
         return "CTL_MenuItem_FetchLocal";                               //NOI18N
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
     }
 
     @Override

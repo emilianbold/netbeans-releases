@@ -69,7 +69,8 @@ import org.openide.util.RequestProcessor;
  */
 @NbBundle.Messages({
     "doc.building=Loading Knockout Documentation",
-    "doc.cannot_load=Can't load Knockout documentation from {0}"
+    "# {0} - the documentation URL",
+    "doc.cannotGet=Cannot load Knockout documentation from \"{0}\"."
 })
 public class KODoc {
 
@@ -131,8 +132,8 @@ public class KODoc {
             }
             return KOUtils.getFileContent(cacheFile);
         } catch (URISyntaxException | IOException ex) {
-            LOG.log(Level.INFO, "Can't load doc: {0}", ex.getMessage()); //NOI18N
-            return Bundle.doc_cannot_load(binding.getExternalDocumentationURL());
+            LOG.log(Level.INFO, "Cannot load knockout documentation from \"{0}\".", new Object[]{binding.getExternalDocumentationURL()}); //NOI18N
+            return Bundle.doc_cannotGet(binding.getExternalDocumentationURL());
         }
 
     }

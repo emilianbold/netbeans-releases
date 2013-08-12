@@ -48,15 +48,13 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import javax.tools.Diagnostic;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.netbeans.spi.editor.hints.ErrorDescriptionFactory;
-import org.netbeans.spi.editor.hints.Fix;
+import org.netbeans.spi.java.hints.ErrorDescriptionFactory;
 import org.netbeans.spi.java.hints.Hint;
 import org.netbeans.spi.java.hints.HintContext;
 import org.netbeans.spi.java.hints.JavaFix;
@@ -96,8 +94,7 @@ public class ConvertToLambda {
                 return null;
             }
 
-            List<Fix> fixes = Arrays.asList(fix.toEditorFix());
-            return ErrorDescriptionFactory.createErrorDescription(ctx.getSeverity(), d.getMessage(null), fixes, ctx.getInfo().getFileObject(), (int) d.getStartPosition(), (int) d.getEndPosition());
+            return ErrorDescriptionFactory.forTree(ctx, ((NewClassTree) ctx.getPath().getLeaf()).getIdentifier(), d.getMessage(null), fix.toEditorFix());
         }
         return null;
     }

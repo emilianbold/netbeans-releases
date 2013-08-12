@@ -95,6 +95,17 @@ import org.openide.util.RequestProcessor.Task;
 @NbBundle.Messages({"#PushAction", "LBL_PushAction_Name=Pus&h..."})
 public class PushAction extends SingleRepositoryAction {
     
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/push-setting.png"; //NOI18N
+    
+    public PushAction () {
+        super(ICON_RESOURCE);
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
+    
     private static final Logger LOG = Logger.getLogger(PushAction.class.getName());
 
     @Override

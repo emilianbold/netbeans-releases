@@ -425,20 +425,24 @@ public class JsStructureScanner implements StructureScanner {
     private static  ImageIcon priviligedIcon = null;
     
     private class JsFunctionStructureItem extends JsStructureItem {
-        
+
+        private final List<TypeUsage> resolvedTypes;
+
         public JsFunctionStructureItem(JsFunction elementHandle, List<? extends StructureItem> children, JsParserResult parserResult) {
             super(elementHandle, children, "fn", parserResult); //NOI18N
+            Collection<? extends TypeUsage> returnTypes = getFunctionScope().getReturnTypes();
+            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(returnTypes, parserResult, true));
         }
 
-        public JsFunction getFunctionScope() {
+        public final JsFunction getFunctionScope() {
             return (JsFunction) getModelElement();
         }
 
         @Override
         public String getHtml(HtmlFormatter formatter) {
-                formatter.reset();
-                appendFunctionDescription(getFunctionScope(), formatter);
-                return formatter.getText();
+            formatter.reset();
+            appendFunctionDescription(getFunctionScope(), formatter);
+            return formatter.getText();
         }
         
         protected void appendFunctionDescription(JsFunction function, HtmlFormatter formatter) {
@@ -482,9 +486,7 @@ public class JsStructureScanner implements StructureScanner {
                 formatter.appendText(jsObject.getName());
             }
             formatter.appendText(")");   //NOI18N
-            Collection<? extends TypeUsage> returnTypes = function.getReturnTypes();
-            Collection<TypeUsage> types = ModelUtils.resolveTypes(returnTypes, parserResult);
-            appendTypeInfo(formatter, types);
+            appendTypeInfo(formatter, resolvedTypes);
         }
 
         @Override
@@ -537,11 +539,17 @@ public class JsStructureScanner implements StructureScanner {
     }
     
     private class JsSimpleStructureItem extends JsStructureItem {
+
         private final JsObject object;
+
+        private final List<TypeUsage> resolvedTypes;
         
         public JsSimpleStructureItem(JsObject elementHandle, String sortPrefix, JsParserResult parserResult) {
             super(elementHandle, null, sortPrefix, parserResult);
             this.object = elementHandle;
+
+            Collection<? extends TypeUsage> assignmentForOffset = object.getAssignmentForOffset(object.getDeclarationName().getOffsetRange().getEnd());
+            resolvedTypes = new ArrayList<TypeUsage>(ModelUtils.resolveTypes(assignmentForOffset, parserResult, true));
         }
 
         
@@ -556,10 +564,7 @@ public class JsStructureScanner implements StructureScanner {
             if (isDeprecated) {
                 formatter.deprecated(false);
             }
-            
-            Collection<? extends TypeUsage> assignmentForOffset = object.getAssignmentForOffset(object.getDeclarationName().getOffsetRange().getEnd());
-            Collection<TypeUsage> types = ModelUtils.resolveTypes(assignmentForOffset, parserResult);
-            appendTypeInfo(formatter, types);
+            appendTypeInfo(formatter, resolvedTypes);
             return formatter.getText();
         }
         

@@ -45,9 +45,13 @@ import java.io.File;
 import java.io.IOException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.glassfish.tools.ide.data.GlassFishVersion;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.glassfish.common.GlassFishLogger;
+import org.netbeans.modules.glassfish.common.GlassfishInstance;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 /**
  * GlassFish server utilities.
@@ -63,7 +67,9 @@ public class ServerUtils {
     /** Local logger. */
     private static final Logger LOGGER
             = GlassFishLogger.get(ServerUtils.class);
-    
+    /** Domains folder prefix. */
+    private static final String DOMAINS_FOLDER_PREFIX = "GF_";
+
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
@@ -154,5 +160,51 @@ public class ServerUtils {
         File f = new File(folderName);
         return f.isDirectory() && f.canRead();
     }
-    
+
+    /**
+     * Build domains folder for GlassFish server using GlassFish version.
+     * <p/>
+     * Domains folder name is build using all versions number parts
+     * (<code>major</code>, <code>minor</code>, <code>update</code>
+     * and <code>build</code>). But <code>update</code> and <code>build</code>
+     * <p/>
+     * values are used only when they are not part of zero only sequence.<br/>
+     * Folder names for individual GlassFish server versions will be:<ul>
+     * <li><code>GF_3.0</code> for GlassFish 3</li>
+     * <li><code>GF_3.1</code> for GlassFish 3.1</li>
+     * <li><code>GF_3.0.1</code> for GlassFish 3.0.1</li>
+     * <li><code>GF_3.1.2.2</code> for GlassFish 3.1.2.2</li><ul/>
+     * <p/>
+     * @param instance GlassFish server to build domains folder for.
+     * @return Domains folder.
+     */
+    public static String getDomainsFolder(@NonNull GlassfishInstance instance) {
+        GlassFishVersion version = instance.getVersion();
+        if (version == null) {
+            throw new IllegalStateException(NbBundle.getMessage(
+                    GlassfishInstance.class,
+                    "GlassfishInstance.getDomainsFolder.versionIsNull",
+                    instance.getDisplayName()));
+        }
+        boolean useBuild = version.getBuild() > 0;
+        boolean useUpdate = useBuild || version.getUpdate() > 0;
+        // Allocate 2 characters per version number part and 1 character
+        // per separator.
+        StringBuilder sb = new StringBuilder(DOMAINS_FOLDER_PREFIX.length() + 5
+                + (useUpdate ? (useBuild ? 6 : 3) : 0));
+        sb.append(DOMAINS_FOLDER_PREFIX);
+        sb.append(Short.toString(version.getMajor()));
+        sb.append(GlassFishVersion.SEPARATOR);
+        sb.append(Short.toString(version.getMinor()));
+        if (useUpdate) {
+            sb.append(GlassFishVersion.SEPARATOR);
+            sb.append(Short.toString(version.getUpdate()));
+            if (useBuild) {
+                sb.append(GlassFishVersion.SEPARATOR);
+                sb.append(Short.toString(version.getBuild()));
+            }
+        }
+        return sb.toString();
+    }
+
 }

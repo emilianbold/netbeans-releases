@@ -119,7 +119,7 @@ public class PropertiesNodeTest extends JellyTestCase {
         propertiesNode.addLocale();
         // "New Locale"
         String newLocaleTitle = Bundle.getString("org.netbeans.modules.properties.Bundle", "CTL_NewLocaleTitle");
-        new JDialogOperator(newLocaleTitle).close();
+        new JDialogOperator(newLocaleTitle).requestClose();
     }
 
     /** Test cut */

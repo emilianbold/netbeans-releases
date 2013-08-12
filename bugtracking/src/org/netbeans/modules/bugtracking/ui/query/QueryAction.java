@@ -58,9 +58,6 @@ import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionRegistration;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.nodes.Node;
 import org.openide.util.NbBundle;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
@@ -69,7 +66,7 @@ import org.openide.windows.WindowManager;
  * 
  * @author Maros Sandor
  */
-@ActionID(id = "org.netbeans.modules.bugtracking.ui.query.QueryAction", category = "Versioning")
+@ActionID(id = "org.netbeans.modules.bugtracking.ui.query.QueryAction", category = "Bugtracking")
 @ActionRegistration(lazy = false, displayName = "#CTL_QueryAction")
 @ActionReference(path = "Menu/Versioning", position = 200)
 public class QueryAction extends SystemAction {

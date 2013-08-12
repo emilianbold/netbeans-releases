@@ -42,13 +42,13 @@
 package org.netbeans.modules.html.editor.gsf;
 
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.html.editor.HtmlExtensions;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
-import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.HtmlSource;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzer;
 import org.netbeans.modules.html.editor.lib.api.SyntaxAnalyzerResult;
@@ -64,13 +64,96 @@ import org.netbeans.modules.parsing.spi.SourceModificationEvent;
 
 /**
  *
- * @author marek
+ * @author mfukala@netbeans.org
  */
 public class HtmlGSFParser extends Parser {
 
+    private static final Logger TIMER = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
+    
+    private final AtomicBoolean cancelled = new AtomicBoolean();
+    private SyntaxAnalyzerResult result;
+
+    @Override
+    public void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
+        parse(snapshot, event);
+    }
+
+    @Override
+    public Result getResult(Task task) throws ParseException {
+        return cancelled.get() || (result == null) ? null : HtmlParserResultAccessor.get().createInstance(result);
+    }
+
+    @Override
+    public void cancel(CancelReason reason, SourceModificationEvent event) {
+        if (CancelReason.SOURCE_MODIFICATION_EVENT == reason && event.sourceChanged()) {
+            cancelled.set(true);
+            result = null;
+        }
+    }
+
+    @Override
+    public void addChangeListener(ChangeListener changeListener) {
+        // no-op, we don't support state changes
+    }
+
+    @Override
+    public void removeChangeListener(ChangeListener changeListener) {
+        // no-op, we don't support state changes
+    }
+
+    private void parse(Snapshot snapshot, SourceModificationEvent event) {
+        cancelled.set(false);
+        if (snapshot == null) {
+            //#215101: calling "ParserManager.parseWhenScanFinished("text/html",someTask)" results into null snapshot passed here
+            return;
+        }
+
+        HtmlSource source = new HtmlSource(snapshot);
+        Source snapshotSource = snapshot.getSource();
+        String sourceMimetype = snapshotSource != null ? snapshotSource.getMimeType() : snapshot.getMimeType(); //prefer source mimetype
+
+        Collection<? extends HtmlExtension> exts = HtmlExtensions.getRegisteredExtensions(sourceMimetype);
+        if (cancelled.get()) {
+            return;
+        }
+        Collection<UndeclaredContentResolver> resolvers = new ArrayList<>();
+        for (final HtmlExtension ex : exts) {
+            resolvers.add(new UndeclaredContentResolver() {
+
+                @Override
+                public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
+                    return ex.getUndeclaredNamespaces(source);
+                }
+
+                @Override
+                public boolean isCustomTag(Named element) {
+                    return ex.isCustomTag(element);
+                }
+
+                @Override
+                public boolean isCustomAttribute(Attribute attribute) {
+                    return ex.isCustomAttribute(attribute);
+                }
+
+            });
+        }
+
+        if (cancelled.get()) {
+            return;
+        }
+        result = SyntaxAnalyzer.create(source).analyze(new AggregatedUndeclaredContentResolver(resolvers));
+
+        if (TIMER.isLoggable(Level.FINE)) {
+            LogRecord rec = new LogRecord(Level.FINE, "HTML parse result"); // NOI18N
+            rec.setParameters(new Object[]{result});
+            TIMER.log(rec);
+        }
+
+    }
+
     private static class AggregatedUndeclaredContentResolver implements UndeclaredContentResolver {
 
-        private Collection<UndeclaredContentResolver> resolvers;
+        private final Collection<UndeclaredContentResolver> resolvers;
 
         public AggregatedUndeclaredContentResolver(Collection<UndeclaredContentResolver> resolvers) {
             this.resolvers = resolvers;
@@ -87,8 +170,8 @@ public class HtmlGSFParser extends Parser {
 
         @Override
         public boolean isCustomTag(Named element) {
-            for(UndeclaredContentResolver r : resolvers) {
-                if(r.isCustomTag(element)) {
+            for (UndeclaredContentResolver r : resolvers) {
+                if (r.isCustomTag(element)) {
                     return true;
                 }
             }
@@ -97,94 +180,14 @@ public class HtmlGSFParser extends Parser {
 
         @Override
         public boolean isCustomAttribute(Attribute attr) {
-            for(UndeclaredContentResolver r : resolvers) {
-                if(r.isCustomAttribute(attr)) {
+            for (UndeclaredContentResolver r : resolvers) {
+                if (r.isCustomAttribute(attr)) {
                     return true;
                 }
             }
             return false;
         }
 
-        
-    }
-    private HtmlParserResult lastResult;
-
-    // ------------------------------------------------------------------------
-    // o.n.m.p.spi.Parser implementation
-    // ------------------------------------------------------------------------
-    public @Override
-    void parse(Snapshot snapshot, Task task, SourceModificationEvent event) throws ParseException {
-        lastResult = parse(snapshot, event);
-    }
-
-    public @Override
-    Result getResult(Task task) throws ParseException {
-        return lastResult;
-    }
-
-    public @Override
-    void cancel() {
-        //todo
-    }
-
-    public @Override
-    void addChangeListener(ChangeListener changeListener) {
-        // no-op, we don't support state changes
-    }
-
-    public @Override
-    void removeChangeListener(ChangeListener changeListener) {
-        // no-op, we don't support state changes
-    }
-    /**
-     * logger for timers/counters
-     */
-    private static final Logger TIMERS = Logger.getLogger("TIMER.j2ee.parser"); // NOI18N
-
-    private HtmlParserResult parse(Snapshot snapshot, SourceModificationEvent event) {
-        if(snapshot == null) {
-            //#215101: calling "ParserManager.parseWhenScanFinished("text/html",someTask)" results into null snapshot passed here
-            return null; 
-        }
-        
-        HtmlSource source = new HtmlSource(snapshot);
-
-        Source snapshotSource = snapshot.getSource();
-        String sourceMimetype = snapshotSource != null ? snapshotSource.getMimeType() : snapshot.getMimeType(); //prefer source mimetype
-        
-        Collection<? extends HtmlExtension> exts = HtmlExtensions.getRegisteredExtensions(sourceMimetype);
-        Collection<UndeclaredContentResolver> resolvers = new ArrayList<>();
-        for (final HtmlExtension ex : exts) {
-            resolvers.add(new UndeclaredContentResolver() {
-
-                @Override
-                public Map<String, List<String>> getUndeclaredNamespaces(HtmlSource source) {
-                    return ex.getUndeclaredNamespaces(source); 
-                }
-
-                @Override
-                public boolean isCustomTag(Named element) {
-                    return ex.isCustomTag(element);
-                }
-
-                @Override
-                public boolean isCustomAttribute(Attribute attribute) {
-                    return ex.isCustomAttribute(attribute);
-                }
-                
-            });
-        }
-
-        SyntaxAnalyzerResult spresult = SyntaxAnalyzer.create(source).analyze(new AggregatedUndeclaredContentResolver(resolvers));
-        HtmlParserResult result = HtmlParserResultAccessor.get().createInstance(spresult);
-
-        if (TIMERS.isLoggable(Level.FINE)) {
-            LogRecord rec = new LogRecord(Level.FINE, "HTML parse result"); // NOI18N
-            rec.setParameters(new Object[]{result});
-            TIMERS.log(rec);
-        }
-
-        return result;
     }
 
 }

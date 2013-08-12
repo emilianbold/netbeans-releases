@@ -75,6 +75,7 @@ class DiskMapTurboProvider implements TurboProvider {
 
     private final CacheIndex index = createCacheIndex();
     private final CacheIndex conflictedIndex = createCacheIndex();
+    private final CacheIndex ignoresIndex = createCacheIndex();
 
     DiskMapTurboProvider() {
         initCacheStore();
@@ -83,13 +84,33 @@ class DiskMapTurboProvider implements TurboProvider {
     File[] getIndexValues(File file, int includeStatus) {
         if (includeStatus == FileInformation.STATUS_VERSIONED_CONFLICT) {
             return conflictedIndex.get(file);
+        } else if (includeStatus == FileInformation.STATUS_VERSIONED_CONFLICT) {
+            return ignoresIndex.get(file);
+        } else if ((includeStatus & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) == 0) {
+            File[] files = index.get(file);
+            File[] ignores = ignoresIndex.get(file);
+            return mergeArrays(files, ignores);
         } else {
             return index.get(file);
         }
     }
 
     File[] getAllIndexValues() {
-        return index.getAllValues();
+        File[] files = index.getAllValues();
+        File[] ignores = ignoresIndex.getAllValues();
+        return mergeArrays(files, ignores);
+    }
+
+    private File[] mergeArrays (File[] arr1, File[] arr2) {
+        if (arr1.length == 0) {
+            return arr2;
+        } else if (arr2.length == 0) {
+            return arr1;
+        } else {
+            Set<File> merged = new HashSet<>(Arrays.asList(arr2));
+            merged.addAll(Arrays.asList(arr1));
+            return merged.toArray(new File[merged.size()]);
+        }
     }
 
     public void computeIndex() {
@@ -161,12 +182,19 @@ class DiskMapTurboProvider implements TurboProvider {
                                     conflictedIndex.add(f);
                                 }
                                 if ((info.getStatus() & STATUS_VALUABLE) != 0) {
-                                    index.add(f);
-                                    modifiedFiles++;
-                                    addModifiedFile(modifiedFolders, f);
-                                    if ((info.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
-                                        locallyNewFiles++;
-                                        addLocallyNewFile(locallyNewFolders, info.isDirectory() ? f.getAbsolutePath() : f.getParent());
+                                    if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+                                        ignoresIndex.add(f);
+                                    } else {
+                                        if ((info.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0) {
+                                            ignoresIndex.add(f);
+                                        }
+                                        index.add(f);
+                                        modifiedFiles++;
+                                        addModifiedFile(modifiedFolders, f);
+                                        if ((info.getStatus() & FileInformation.STATUS_NOTVERSIONED_NEWLOCALLY) != 0) {
+                                            locallyNewFiles++;
+                                            addLocallyNewFile(locallyNewFolders, info.isDirectory() ? f.getAbsolutePath() : f.getParent());
+                                        }
                                     }
                                 }
                             }
@@ -391,6 +419,7 @@ class DiskMapTurboProvider implements TurboProvider {
         // all modified files
         Set<File> conflictedSet = new HashSet<File>();
         Set<File> newSet = new HashSet<File>();
+        Set<File> ignoredSet = new HashSet<File>();
         if(set != null) {
             for (Iterator i = set.iterator(); i.hasNext();) {
                 File file = (File) i.next();
@@ -401,13 +430,23 @@ class DiskMapTurboProvider implements TurboProvider {
                     conflictedSet.add(file);
                 }
 
-                // all but uptodate
-                if((info.getStatus() & STATUS_VALUABLE) != 0) {
-                    newSet.add(file);
+                if (info.getStatus() == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
+                    ignoredSet.add(file);
+                } else {
+                    if ((info.getStatus() & FileInformation.STATUS_NOTVERSIONED_EXCLUDED) != 0) {
+                        // this can hardly happen
+                        assert false;
+                        ignoredSet.add(file);
+                    }
+                    // all but uptodate
+                    if((info.getStatus() & STATUS_VALUABLE) != 0) {
+                        newSet.add(file);
+                    }
                 }
             }
         }
         index.add(dir, newSet);
+        ignoresIndex.add(dir, ignoredSet);
         conflictedIndex.add(dir, conflictedSet);
     }
 

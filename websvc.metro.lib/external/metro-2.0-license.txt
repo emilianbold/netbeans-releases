@@ -3,7 +3,7 @@ Version: 2.0
 Description: METRO
 License: CDDL-GPL-2-CP
 OSR: ?
-Origin: https://metro.dev.java.net/
+Origin: Oracle (https://metro.dev.java.net/)
 Files: metro-2.0.zip, metro-1.4-doc.zip
 
 COMMON DEVELOPMENT AND DISTRIBUTION LICENSE (CDDL) Version 1.0

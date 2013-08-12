@@ -303,6 +303,10 @@ public class FormEditor {
      */
     public boolean loadFormData() {
         assert !formLoaded;
+
+        // bug #234032: Beans.setDesignTime is ThreadGroupContext sensitive since JDK 7
+        Beans.setDesignTime(true);
+
         if (persistenceManager == null && !prepareLoading()) {
             return false;
         }

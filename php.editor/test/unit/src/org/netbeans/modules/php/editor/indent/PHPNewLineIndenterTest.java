@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.php.editor.indent;
 
+import java.util.HashMap;
+import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.JEditorPane;
 import javax.swing.text.Caret;
@@ -51,7 +53,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.lib.lexer.test.TestLanguageProvider;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
-import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
+import org.netbeans.modules.php.editor.completion.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.lexer.PHPTokenId;
 import org.openide.filesystems.FileObject;
 
@@ -91,7 +93,7 @@ public class PHPNewLineIndenterTest extends PHPCodeCompletionTestBase {
     public void testSmartEnter03() throws Exception{
         testIndentInFile("testfiles/indent/smart_enter_03.php");
     }
-
+    
     public void testHtmlIndentInPHP() throws Exception{
         testIndentInFile("testfiles/indent/html_indent_in_php.php");
     }
@@ -1018,7 +1020,7 @@ public class PHPNewLineIndenterTest extends PHPCodeCompletionTestBase {
         testIndentInFile(file, null, 0);
     }
 
-    protected void testIndentInFile(String file, IndentPrefs preferences, int initialIndent) throws Exception {
+    protected void testIndentInFile(String file, IndentPrefs indentPrefs, int initialIndent) throws Exception {
         FileObject fo = getTestFile(file);
         assertNotNull(fo);
         String source = readFile(fo);
@@ -1026,7 +1028,7 @@ public class PHPNewLineIndenterTest extends PHPCodeCompletionTestBase {
         int sourcePos = source.indexOf('^');
         assertNotNull(sourcePos);
         String sourceWithoutMarker = source.substring(0, sourcePos) + source.substring(sourcePos+1);
-        Formatter formatter = getFormatter(preferences);
+        Formatter formatter = getFormatter(indentPrefs);
 
         JEditorPane ta = getPane(sourceWithoutMarker);
         Caret caret = ta.getCaret();
@@ -1036,11 +1038,29 @@ public class PHPNewLineIndenterTest extends PHPCodeCompletionTestBase {
             configureIndenters(doc, formatter, true);
         }
 
-        setupDocumentIndentation(doc, preferences);
+        setupDocumentIndentation(doc, indentPrefs);
 
 
+        Map<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.INITIAL_INDENT, initialIndent);
+        if (indentPrefs != null) {
+            options.put(FmtOptions.INDENT_SIZE, indentPrefs.getIndentation());
+        }
         Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
-        prefs.putInt(FmtOptions.INITIAL_INDENT, initialIndent);
+        for (String option : options.keySet()) {
+            Object value = options.get(option);
+            if (value instanceof Integer) {
+                prefs.putInt(option, ((Integer) value).intValue());
+            } else if (value instanceof String) {
+                prefs.put(option, (String) value);
+            } else if (value instanceof Boolean) {
+                prefs.put(option, ((Boolean) value).toString());
+            } else if (value instanceof CodeStyle.BracePlacement) {
+                prefs.put(option, ((CodeStyle.BracePlacement) value).name());
+            } else if (value instanceof CodeStyle.WrapStyle) {
+                prefs.put(option, ((CodeStyle.WrapStyle) value).name());
+            }
+        }
 
         runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
 

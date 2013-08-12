@@ -146,6 +146,12 @@ public class OrganizeMembers {
             if (copy.getTreeUtilities().isSynthetic(new TreePath(path, tree))) continue;
             Tree member;
             switch (tree.getKind()) {
+                case CLASS:
+                case INTERFACE:
+                case ENUM:
+                case ANNOTATION_TYPE:
+                    member = maker.setLabel(tree, ((ClassTree)tree).getSimpleName());
+                    break;
                 case VARIABLE:
                     member = maker.setLabel(tree, ((VariableTree)tree).getName());
                     break;

@@ -345,7 +345,7 @@ public final class ElementUtilities {
             } else {
                 for (Element local : scope.getLocalElements()) {
                     if (!local.getKind().isClass() && !local.getKind().isInterface() &&
-                        (acceptor == null || acceptor.accept(local, local.getEnclosingElement().asType()))) {
+                        (acceptor == null || local.getEnclosingElement() != null && acceptor.accept(local, local.getEnclosingElement().asType()))) {
                         if (!isHidden(local, members, elements, types)) {
                             members.add(local);
                         }

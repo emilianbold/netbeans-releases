@@ -741,6 +741,7 @@ public class ToolTipSupport {
                     if (toolTipText.startsWith(HTML_PREFIX_LOWERCASE) || toolTipText.startsWith(HTML_PREFIX_UPPERCASE)) {
                         JEditorPane jep = createHtmlTextToolTip();
                         jep.setText(toolTipText);
+                        jep.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
                         setToolTip(jep);
                     } else {
 // With the improved algorithm for placing popups we can have all text tooltips to wrap lines.
@@ -798,10 +799,19 @@ public class ToolTipSupport {
             if (toolTip != null) {
                 toolTip.putClientProperty(LAST_TOOLTIP_POSITION, toolTipPosition);
                 if (toolTip.getParent() != null) {
+                    Rectangle blockBounds = null;
+                    try {
+                        int[] offsets = Utilities.getSelectionOrIdentifierBlock(component, pos);
+                        if (offsets != null) {
+                            Rectangle r1 = component.modelToView(offsets[0]);
+                            Rectangle r2 = component.modelToView(offsets[1]);
+                            blockBounds = new Rectangle(r1.x, r1.y, r2.x - r1.x, r1.height);
+                        }
+                    } catch (BadLocationException ble) {}
                     toolTip.putClientProperty(MOUSE_MOVE_IGNORED_AREA, computeMouseMoveIgnoredArea(
                             toolTip.getBounds(),
-                            SwingUtilities.convertRectangle(component, cursorBounds, toolTip.getParent())
-                    ));
+                            blockBounds != null ? SwingUtilities.convertRectangle(component, blockBounds, toolTip.getParent()) : null,
+                            SwingUtilities.convertRectangle(component, cursorBounds, toolTip.getParent())));
                 }
                 toolTip.setVisible(true);
             }
@@ -826,17 +836,21 @@ public class ToolTipSupport {
         return r;
     }
 
-    private Rectangle computeMouseMoveIgnoredArea(Rectangle toolTipBounds, Rectangle cursorBounds) {
+    private Rectangle computeMouseMoveIgnoredArea(Rectangle toolTipBounds, Rectangle blockBounds, Rectangle cursorBounds) {
         Rectangle _toolTipBounds = new Rectangle(toolTipBounds);
         extendBounds(_toolTipBounds);
         
         Rectangle area = new Rectangle();
         Rectangle.union(_toolTipBounds, cursorBounds, area);
+        if (blockBounds != null) {
+            area.x = blockBounds.x;
+            area.width = blockBounds.width;
+        }
         area.x -= cursorBounds.width;
         area.width += 2 * cursorBounds.width;
         
         if (LOG.isLoggable(Level.FINE)) {
-            LOG.log(Level.FINE, "toolTip.bounds={0}, cursorBounds={1}, mouseMoveIgnoredArea={2}", new Object [] { _toolTipBounds, cursorBounds, area });
+            LOG.log(Level.FINE, "toolTip.bounds={0}, blockBounds={1}, cursorBounds={2}, mouseMoveIgnoredArea={3}", new Object [] { _toolTipBounds, blockBounds, cursorBounds, area });
         }
         
         return area;

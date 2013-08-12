@@ -71,6 +71,17 @@ import org.openide.util.RequestProcessor.Task;
 @Messages("LBL_PullFromUpstreamAction_Name=&Pull from Upstream")
 public class PullFromUpstreamAction extends MultipleRepositoryAction {
 
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/pull.png"; //NOI18N
+    
+    public PullFromUpstreamAction () {
+        super(ICON_RESOURCE);
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
+    
     @Override
     protected RequestProcessor.Task performAction (File repository, File[] roots, VCSContext context) {
         return pull(repository);

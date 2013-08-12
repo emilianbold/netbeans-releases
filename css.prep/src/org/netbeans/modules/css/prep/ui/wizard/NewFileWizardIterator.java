@@ -45,7 +45,9 @@ import java.awt.Component;
 import java.awt.EventQueue;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.io.File;
 import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -61,10 +63,13 @@ import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.options.CssPrepOptions;
 import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
 import org.netbeans.modules.css.prep.ui.customizer.OptionsPanel;
+import org.netbeans.modules.css.prep.util.CssPreprocessorUtils;
 import org.netbeans.modules.css.prep.util.ValidationResult;
+import org.netbeans.modules.web.common.spi.ProjectWebRootQuery;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
@@ -178,13 +183,50 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
     private WizardDescriptor.Panel<WizardDescriptor> createWizardPanel() {
         Project project = getProject();
         assert project != null;
+        // #233484
+        ensureProperTargetFolder(project);
         return Templates.buildSimpleTargetChooser(project, getSourceGroups(project))
                 .bottomPanel(getBottomPanel())
                 .create();
     }
 
-    Project getProject() {
+    private Project getProject() {
         return Templates.getProject(wizard);
+    }
+
+    private void ensureProperTargetFolder(Project project) {
+        if (!project.getProjectDirectory().equals(Templates.getTargetFolder(wizard))) {
+            // some folder set
+            return;
+        }
+        FileObject webRoot = findWebRoot(project);
+        if (webRoot == null) {
+            // nothing we can do here
+            return;
+        }
+        // prefer mappings if folder exists
+        List<Pair<String, String>> mappings = type.getPreferences().getMappings(project);
+        if (!mappings.isEmpty()) {
+            File inputFolder = CssPreprocessorUtils.resolveInput(webRoot, mappings.get(0));
+            if (inputFolder.isDirectory()) {
+                FileObject fo = FileUtil.toFileObject(inputFolder);
+                assert fo != null : "FileObject not found for existing directory: " + inputFolder;
+                Templates.setTargetFolder(wizard, fo);
+                return;
+            }
+        }
+        // use web root
+        Templates.setTargetFolder(wizard, webRoot);
+    }
+
+    @CheckForNull
+    private FileObject findWebRoot(Project project) {
+        Collection<FileObject> webRoots = ProjectWebRootQuery.getWebRoots(project);
+        if (webRoots.isEmpty()) {
+            return null;
+        }
+        // simply return the first one
+        return webRoots.iterator().next();
     }
 
     private SourceGroup[] getSourceGroups(Project project) {
@@ -192,7 +234,6 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
         return sources.getSourceGroups(Sources.TYPE_GENERIC);
     }
 
-    @CheckForNull
     private BottomPanel getBottomPanel() {
         if (bottomPanel != null) {
             return bottomPanel;

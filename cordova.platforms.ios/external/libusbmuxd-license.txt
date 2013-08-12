@@ -1,7 +1,7 @@
 Name: usbmuxd
 Version: 1.0.8
 Description: A socket library to multiplex connections from and to an iOS Devices
-License: LGPL 2.1
+License: LGPL-2.1
 Origin: http://cgit.sukimashita.com/usbmuxd.git/
 Files: libusbmuxd.2.dylib
 

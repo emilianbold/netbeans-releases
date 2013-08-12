@@ -263,6 +263,9 @@ public class ODCSUiServer implements TeamServer {
 
     @Override
     public Action[] getTeamMenuActions() {
+        if(getPasswordAuthentication() == null) {
+            return null;
+        }
         return new Action[] {
             new NewProjectAction(getServer()),
             new OpenProjectAction(this),

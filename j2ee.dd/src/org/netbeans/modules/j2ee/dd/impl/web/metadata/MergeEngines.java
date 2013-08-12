@@ -43,6 +43,7 @@
 package org.netbeans.modules.j2ee.dd.impl.web.metadata;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import org.netbeans.modules.j2ee.dd.api.common.EjbLocalRef;
 import org.netbeans.modules.j2ee.dd.api.common.EjbRef;
@@ -57,6 +58,7 @@ import org.netbeans.modules.j2ee.dd.api.web.Filter;
 import org.netbeans.modules.j2ee.dd.api.web.FilterMapping;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebFragment;
 import org.netbeans.modules.j2ee.dd.api.web.model.FilterInfo;
@@ -167,8 +169,8 @@ public class MergeEngines {
             List<String> mpgs = new ArrayList<String>();
             if (mappings != null) {
                 for (ServletMapping sm : mappings) {
-                    if (sm.getServletName().equals(servletName) && sm.getUrlPattern() != null)
-                        mpgs.add(sm.getUrlPattern());
+                    if (sm.getServletName().equals(servletName))
+                        mpgs.addAll(Arrays.asList(((ServletMapping25)sm).getUrlPatterns()));
                 }
             }
             return mpgs;

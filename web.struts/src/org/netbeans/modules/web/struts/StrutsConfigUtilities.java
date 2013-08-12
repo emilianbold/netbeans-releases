@@ -67,6 +67,7 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.api.webmodule.WebProjectConstants;
 import org.netbeans.modules.web.struts.config.model.Action;
@@ -79,7 +80,6 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -313,7 +313,7 @@ public class StrutsConfigUtilities {
                 ServletMapping[] mappings = webApp.getServletMapping();
                 for (int i = 0; i < mappings.length; i++){
                     if (mappings[i].getServletName().equals(servlet.getServletName()))
-                        return mappings[i].getUrlPattern();
+                        return ((ServletMapping25)mappings[i]).getUrlPatterns()[0];
                 }
             } catch (java.io.IOException e) {
                 Logger.getLogger("global").log(Level.INFO, null, e);

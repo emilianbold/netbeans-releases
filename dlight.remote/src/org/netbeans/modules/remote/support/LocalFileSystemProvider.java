@@ -311,6 +311,11 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     }
 
     @Override
+    public void refresh(FileObject fileObject, boolean recursive) {
+        fileObject.refresh();
+    }
+
+    @Override
     public void scheduleRefresh(FileObject fileObject) {
         final File file = FileUtil.toFile(fileObject);
         scheduleRefresh(file);

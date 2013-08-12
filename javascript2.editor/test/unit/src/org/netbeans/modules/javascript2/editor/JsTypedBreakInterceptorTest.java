@@ -72,6 +72,7 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
     protected void setUp() throws Exception {
         super.setUp();
         MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class).clear();
+        JsTypedBreakInterceptor.completeDocumentation = false;
     }
 
     @Override
@@ -390,7 +391,7 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
 
     public void testIssue222475() throws Exception {
         insertBreak("(function () { ^ window.$prom = x || window}{);",
-                "(function () { \n    ^window.$prom = x || window\n}}{);");
+                "(function () { \n    ^window.$prom = x || window}{);");
     }
 
     public void testIssue223285() throws Exception {
@@ -479,5 +480,45 @@ public class JsTypedBreakInterceptorTest extends JsTestBase {
                 + "        }\n"
                 + "    };\n"
                 + "});");
+    }
+
+    public void testIssue234177() throws Exception {
+        insertBreak("Game = function(name, priority)\n"
+                + "{\n"
+                + "	var self = this;\n"
+                + "	this.name;\n"
+                + "	this.priority;\n"
+                + "};\n"
+                + "\n"
+                + "MyGameListViewModel = function(games)\n"
+                + "{\n"
+                + "	var self = this;\n"
+                + "	self.gamesToPlay = ko.observableArray(games);\n"
+                + "	self.gamesCount = ko.computed(function()\n"
+                + "	{\n"
+                + "		return self.gamesToPlay().length + \" games found.\";\n"
+                + "	});\n"
+                + "};\n"
+                + "\n"
+                + "ko.applyBindings(new MyGameListViewModel([{name: \"Skyrim\", priority: 1}, {name: \"Max Payne 3\", priority: 2}]));^",
+                "Game = function(name, priority)\n"
+                + "{\n"
+                + "	var self = this;\n"
+                + "	this.name;\n"
+                + "	this.priority;\n"
+                + "};\n"
+                + "\n"
+                + "MyGameListViewModel = function(games)\n"
+                + "{\n"
+                + "	var self = this;\n"
+                + "	self.gamesToPlay = ko.observableArray(games);\n"
+                + "	self.gamesCount = ko.computed(function()\n"
+                + "	{\n"
+                + "		return self.gamesToPlay().length + \" games found.\";\n"
+                + "	});\n"
+                + "};\n"
+                + "\n"
+                + "ko.applyBindings(new MyGameListViewModel([{name: \"Skyrim\", priority: 1}, {name: \"Max Payne 3\", priority: 2}]));\n"
+                + "^");
     }
 }

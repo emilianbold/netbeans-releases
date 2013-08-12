@@ -59,7 +59,6 @@ import javax.swing.Icon;
 import javax.swing.JFileChooser;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileSystemView;
 import javax.swing.filechooser.FileView;
 import javax.swing.plaf.FileChooserUI;
@@ -356,7 +355,7 @@ public final class FileChooserBuilder {
                 String path = dir.getPath().replace('\\', FileSystemProvider.getFileSeparatorChar(env)); //NOI18N
                 FileObject fo = FileSystemProvider.getFileObject(env, path);
                 if (fo != null) {
-                    dir = new FileObjectBasedFile(env, fo);
+                    dir = getFileSystemView().getFactory().create(env, fo);
                 }
             }
             super.setCurrentDirectory(dir);
@@ -365,7 +364,7 @@ public final class FileChooserBuilder {
         @Override
         public void setCurrentDirectory(FileObject fo) {
             if (fo != null && fo.isFolder()) {
-                File dir = new FileObjectBasedFile(env, fo);
+                File dir = getFileSystemView().getFactory().create(env, fo);
                 super.setCurrentDirectory(dir);
             }
         }

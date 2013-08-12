@@ -82,7 +82,7 @@ public final class DDUtils {
         List<String> maps = new LinkedList<String>();
         for (ServletMapping sm : mapping) {
             if (servlet.getServletName().equals(sm.getServletName())) {
-                maps.addAll(getUrlPatterns(sm));
+                maps.addAll(getUrlPatterns((ServletMapping25)sm));
             }
         }
         String[] urlPatterns = new String[maps.size()];
@@ -124,7 +124,7 @@ public final class DDUtils {
     public static boolean isServletMapping(WebApp webApp, String urlPattern) {
         if (isWebApp25(webApp)) {
             for (ServletMapping mapping : webApp.getServletMapping()) {
-                if (getUrlPatterns(mapping).contains(urlPattern)) {
+                if (getUrlPatterns((ServletMapping25)mapping).contains(urlPattern)) {
                     return true;
                 }
             }
@@ -138,7 +138,7 @@ public final class DDUtils {
         String servletName = servlet.getServletName();
         if (servletName != null) {
             for (ServletMapping sm : maps) {
-                if (!servletName.equals(sm.getServletName()) && getUrlPatterns(sm).contains(urlPattern)) {
+                if (!servletName.equals(sm.getServletName()) && getUrlPatterns((ServletMapping25)sm).contains(urlPattern)) {
                     return true;
                 }
             }
@@ -161,63 +161,15 @@ public final class DDUtils {
     public static void addServletMappings(WebApp webApp, Servlet servlet, String[] urlPatterns) {
         String servletName = servlet.getServletName();
         try {
-            if (isWebApp25(webApp)) {
-                ServletMapping25 mapping = (ServletMapping25) webApp.createBean("ServletMapping"); // NOI18
-                mapping.setServletName(servletName);
-                mapping.setUrlPatterns(urlPatterns);
-                webApp.addServletMapping(mapping);
-            } else {
-                for (int i=0;i<urlPatterns.length;i++) {
-                    ServletMapping map = (ServletMapping)webApp.createBean("ServletMapping"); //NOI18
-                    map.setServletName(servletName);
-                    map.setUrlPattern(urlPatterns[i]);
-                    webApp.addServletMapping(map);
-                }
-            }
+            ServletMapping25 mapping = (ServletMapping25) webApp.createBean("ServletMapping"); // NOI18
+            mapping.setServletName(servletName);
+            mapping.setUrlPatterns(urlPatterns);
+            webApp.addServletMapping(mapping);
         } catch (ClassNotFoundException ex){}
     }
 
     public static void setServletMappings(WebApp webApp, Servlet servlet, String[] urlPatterns) {
-        // tmysik: because i don't understand what's happening below, i will just add a new method for web.xml 2.5
-        if (isWebApp25(webApp)) {
-            setServletMappings25(webApp, servlet, urlPatterns);
-            return;
-        }
-        String servletName = servlet.getServletName();
-        List oldMaps = getServletMappingList(webApp,servlet);
-        List newPatterns = new ArrayList();
-        // looking for old mappings
-        for (int i=0;i<urlPatterns.length;i++) {
-            boolean found =false;
-            for (int j=0;j<oldMaps.size();j++) {
-                ServletMapping oldMap = (ServletMapping)oldMaps.get(j);
-                if (urlPatterns[i].equals(oldMap.getUrlPattern())) {
-                    oldMaps.remove(oldMap);
-                    found=true;
-                    break;
-                }
-            }
-            if (!found) newPatterns.add(urlPatterns[i]);
-        }
-        int min = Math.min(oldMaps.size(), newPatterns.size());
-        // replace old mappings
-        for (int i=0;i<min;i++) {
-            ServletMapping oldMap = (ServletMapping)oldMaps.get(i);
-            oldMap.setUrlPattern((String)newPatterns.get(i));
-        }
-        // add new mappings
-        try {
-            for (int i=min;i<newPatterns.size();i++) {
-                ServletMapping map = (ServletMapping)webApp.createBean("ServletMapping"); //NOI18
-                map.setServletName(servletName);
-                map.setUrlPattern((String)newPatterns.get(i));
-                webApp.addServletMapping(map);
-            }
-        } catch (ClassNotFoundException ex){}
-        // removing old mappings
-        for (int i=min;i<oldMaps.size();i++) {
-            webApp.removeServletMapping((ServletMapping)oldMaps.get(i));
-        }
+        setServletMappings25(webApp, servlet, urlPatterns);
     }
     
     public static ServletMapping[] getServletMappings(WebApp webApp, Servlet servlet) {
@@ -518,22 +470,15 @@ public final class DDUtils {
         return null;
     }
 
-    private static List<String> getUrlPatterns(ServletMapping sm) {
+    private static List<String> getUrlPatterns(ServletMapping25 sm) {
         assert sm != null;
         List<String> urlPatterns = new LinkedList<String>();
-        if (sm instanceof ServletMapping25) {
-            String[] patterns = ((ServletMapping25) sm).getUrlPatterns();
-            if (patterns != null) {
-                for (String p : patterns) {
-                    if (p != null) {
-                        urlPatterns.add(p);
-                    }
+        String[] patterns = sm.getUrlPatterns();
+        if (patterns != null) {
+            for (String p : patterns) {
+                if (p != null) {
+                    urlPatterns.add(p);
                 }
-            }
-        } else {
-            String urlPattern = sm.getUrlPattern();
-            if (urlPattern != null) {
-                urlPatterns.add(urlPattern);
             }
         }
         return urlPatterns;

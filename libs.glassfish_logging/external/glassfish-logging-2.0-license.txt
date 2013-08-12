@@ -2,7 +2,7 @@ Name: GlassFish Logging
 License: CDDL-GPL-2-CP
 OSR: 4101
 Description: GlassFish Logging
-Origin: https://glassfish.dev.java.net/
+Origin: Oracle (https://glassfish.dev.java.net/)
 Source: https://glassfish.dev.java.net/
 Version: 2.0
 

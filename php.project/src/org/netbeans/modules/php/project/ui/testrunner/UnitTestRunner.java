@@ -140,6 +140,10 @@ public final class UnitTestRunner {
         return false;
     }
 
+    @NbBundle.Messages({
+        "# {0} - testing probider",
+        "UnitTestRunner.error.coverage=Testing provider {0} does not support code coverage.",
+    })
     private void handleCodeCoverage(TestSessions sessions) {
         if (!coverageProvider.isEnabled()) {
             // no code coverage at all
@@ -151,6 +155,7 @@ public final class UnitTestRunner {
             PhpTestingProvider testingProvider = session.getTestingProvider();
             if (!testingProvider.isCoverageSupported(phpModule)) {
                 // no coverage supported
+                MANAGER.displayOutput(testSession, Bundle.UnitTestRunner_error_coverage(testingProvider.getDisplayName()), true);
                 continue;
             }
             if (!session.isCoverageSet()) {

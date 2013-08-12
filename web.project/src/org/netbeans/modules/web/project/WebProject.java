@@ -196,7 +196,11 @@ import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 
 /**
  * Represents one plain Web project.
@@ -249,6 +253,28 @@ public final class WebProject implements Project {
 
     // set to true when project customizer is being closed and changes persisted
     private final ThreadLocal<Boolean> projectPropertiesSave;
+
+    // #233052
+    private final WindowSystemListener windowSystemListener = new WindowSystemListener() {
+
+        @Override
+        public void beforeLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void afterLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void beforeSave(WindowSystemEvent event) {
+            easelSupport.close();
+        }
+
+        @Override
+        public void afterSave(WindowSystemEvent event) {
+        }
+
+    };
 
     private class FileWatch implements AntProjectListener, FileChangeListener {
 
@@ -424,6 +450,8 @@ public final class WebProject implements Project {
         webInfFileWatch = new FileWatch(WebProjectProperties.WEBINF_DIR);
         // whitelist updater listens on project properties and pays attention to whitelist changes
         whiteListUpdater = new WhiteListUpdaterImpl(this);
+        WindowManager windowManager = WindowManager.getDefault();
+        windowManager.addWindowSystemListener(WeakListeners.create(WindowSystemListener.class, windowSystemListener, windowManager));
     }
 
     public void setProjectPropertiesSave(boolean value) {
@@ -625,7 +653,7 @@ public final class WebProject implements Project {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(getSourceRoots(), getTestSourceRoots(), helper, eval),
-            new ProjectWebRootProviderImpl(),
+            new ProjectWebRootProviderImpl(this),
             easelSupport,
             CssPreprocessors.getDefault().createProjectProblemsProvider(this),
             new JavaEEProjectSettingsImpl(this),
@@ -2394,6 +2422,14 @@ public final class WebProject implements Project {
 
     private static final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
 
+        private final WebProject project;
+
+
+        private ProjectWebRootProviderImpl(WebProject project) {
+            assert project != null;
+            this.project = project;
+        }
+
         @Override
         public FileObject getWebRoot(FileObject file) {
             WebModule webModule = WebModule.getWebModule(file);
@@ -2406,6 +2442,16 @@ public final class WebProject implements Project {
                     null;
             }
             return null;
+        }
+
+        @Override
+        public Collection<FileObject> getWebRoots() {
+            WebModule webModule = project.getAPIWebModule();
+            FileObject webRoot = webModule != null ? webModule.getDocumentBase() : null;
+            if (webRoot != null) {
+                return Collections.singleton(webRoot);
+            }
+            return Collections.emptyList();
         }
 
     }

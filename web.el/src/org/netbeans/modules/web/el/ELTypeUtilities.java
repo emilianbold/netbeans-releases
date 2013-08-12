@@ -42,10 +42,12 @@
 package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.*;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -132,16 +134,25 @@ public final class ELTypeUtilities {
     public static List<Element> getSuperTypesFor(CompilationContext info, Element element, ELElement elElement, List<Node> rootToNode) {
         final TypeMirror tm = getTypeMirrorFor(info, element, elElement, rootToNode);
         List<Element> types = new ArrayList<Element>();
-        TypeMirror mirror = tm;
-        while (mirror.getKind() == TypeKind.DECLARED) {
-            Element el = info.info().getTypes().asElement(mirror);
-            types.add(el);
 
-            if (el.getKind() == ElementKind.CLASS) {
-                TypeElement tel = (TypeElement) el;
-                mirror = tel.getSuperclass();
-            } else {
-                break;
+        Deque<TypeMirror> deque = new ArrayDeque<TypeMirror>();
+        deque.add(tm);
+        while (!deque.isEmpty()) {
+            TypeMirror mirror = deque.pop();
+            if (mirror.getKind() == TypeKind.DECLARED) {
+                Element el = info.info().getTypes().asElement(mirror);
+                types.add(el);
+
+                if (el.getKind() == ElementKind.CLASS) {
+                    TypeElement tel = (TypeElement) el;
+                    TypeMirror superclass = tel.getSuperclass();
+                    deque.add(superclass);
+                } else if (el.getKind() == ElementKind.INTERFACE) {
+                    TypeElement tel = (TypeElement) el;
+                    for (TypeMirror ifaceMirror : tel.getInterfaces()) {
+                        deque.add(ifaceMirror);
+                    }
+                }
             }
         }
 
@@ -371,12 +382,15 @@ public final class ELTypeUtilities {
 //                    PropertySuffix[attrs]
 //                    PropertySuffix[muj]
 
+        return isImplicitObjectReference(info, target, Arrays.asList(ImplicitObjectType.RAW), directly);
+    }
+
+    public static boolean isImplicitObjectReference(CompilationContext info, Node target, List<ImplicitObjectType> types, boolean directly) {
         int repeation = directly ? 2 : Integer.MAX_VALUE;
         do {
             if (target instanceof AstIdentifier) {
                 for (ImplicitObject each : getImplicitObjects(info)) {
-                    if (each.getType() == ImplicitObjectType.RAW
-                            && each.getName().equals(target.getImage())) {
+                    if (types.contains(each.getType()) && each.getName().equals(target.getImage())) {
                         return true;
                     }
                 }

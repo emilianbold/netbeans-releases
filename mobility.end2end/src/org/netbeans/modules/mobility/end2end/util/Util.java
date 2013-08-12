@@ -69,6 +69,7 @@ import org.netbeans.modules.mobility.end2end.output.OutputLogger;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
@@ -238,9 +239,9 @@ public final class Util {
                 newServlet.setDisplayName("Javon service for  " + servletClassFQN); // NOI18N
                 webApp.addServlet(newServlet);
 
-                final ServletMapping newServletMapping = (ServletMapping) webApp.createBean("ServletMapping"); // NOI18N
+                final ServletMapping25 newServletMapping = (ServletMapping25) webApp.createBean("ServletMapping"); // NOI18N
                 newServletMapping.setServletName(servletName);
-                newServletMapping.setUrlPattern("/servlet/" + servletClassFQN); // NOI18N
+                newServletMapping.addUrlPattern("/servlet/" + servletClassFQN); // NOI18N
                 webApp.addServletMapping(newServletMapping);
 
                 webApp.write(ddFO);

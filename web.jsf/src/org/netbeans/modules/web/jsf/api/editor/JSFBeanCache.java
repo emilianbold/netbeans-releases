@@ -54,9 +54,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelProvider;
 import org.openide.util.Lookup;
 
 /**
@@ -77,8 +77,7 @@ public class JSFBeanCache {
         //<<<
 
         final List<FacesManagedBean> beans = new ArrayList<FacesManagedBean>();
-        JsfModelProvider modelProvider = project.getLookup().lookup(JsfModelProvider.class);
-        MetadataModel<JsfModel> model = modelProvider.getModel();
+        MetadataModel<JsfModel> model = JSFUtils.getModel(project);
         if ( model == null){
             return beans;
         }

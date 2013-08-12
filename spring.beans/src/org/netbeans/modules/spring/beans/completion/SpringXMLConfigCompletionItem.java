@@ -108,6 +108,7 @@ import org.netbeans.spi.editor.completion.CompletionTask;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionQuery;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -117,45 +118,45 @@ import org.openide.util.ImageUtilities;
 import org.openide.xml.XMLUtil;
 
 /**
- * A completion item shown in a valid code completion request 
+ * A completion item shown in a valid code completion request
  * in a Spring XML Configuration file
- * 
+ *
  * @author Rohan Ranade (Rohan.Ranade@Sun.COM)
  */
 public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
 
-    public static SpringXMLConfigCompletionItem createBeanRefItem(int substitutionOffset, String displayName, 
+    public static SpringXMLConfigCompletionItem createBeanRefItem(int substitutionOffset, String displayName,
             SpringBean bean, FileObject containerFO) {
         return new BeanRefItem(substitutionOffset, displayName, bean, containerFO);
     }
-    
-    public static SpringXMLConfigCompletionItem createPackageItem(int substitutionOffset, String packageName, 
+
+    public static SpringXMLConfigCompletionItem createPackageItem(int substitutionOffset, String packageName,
             boolean deprecated) {
         return new PackageItem(substitutionOffset, packageName, deprecated);
     }
-    
-    public static SpringXMLConfigCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, ElementHandle<TypeElement> elemHandle, 
+
+    public static SpringXMLConfigCompletionItem createTypeItem(int substitutionOffset, TypeElement elem, ElementHandle<TypeElement> elemHandle,
                 boolean deprecated, boolean smartItem) {
         return new ClassItem(substitutionOffset, elem, elemHandle, deprecated, smartItem);
     }
-    
-    public static SpringXMLConfigCompletionItem createMethodItem(int substitutionOffset, ExecutableElement element, 
+
+    public static SpringXMLConfigCompletionItem createMethodItem(int substitutionOffset, ExecutableElement element,
             boolean isInherited, boolean isDeprecated) {
         return new MethodItem(substitutionOffset, element, isInherited, isDeprecated);
     }
-    
+
     public static SpringXMLConfigCompletionItem createPropertyItem(int substitutionOffset, Property property) {
         return new PropertyItem(substitutionOffset, property);
     }
-    
+
     public static SpringXMLConfigCompletionItem createAttribValueItem(int substitutionOffset, String displayText, String docText) {
         return new AttribValueItem(substitutionOffset, displayText, docText);
     }
-    
+
     public static SpringXMLConfigCompletionItem createFolderItem(int substitutionOffset, FileObject folder) {
         return new FolderItem(substitutionOffset, folder);
     }
-    
+
     public static SpringXMLConfigCompletionItem createSpringXMLFileItem(int substitutionOffset, FileObject file) {
         return new FileItem(substitutionOffset, file);
     }
@@ -163,17 +164,17 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
     public static SpringXMLConfigCompletionItem createPropertyAttribItem(int substitutionOffset, String text, Property property) {
         return new PropertyAttribItem(substitutionOffset, text, property);
     }
-    
+
     public static SpringXMLConfigCompletionItem createBeanNameItem(int substitutionOffset, String text, int sortPriority) {
         return new BeanNameItem(substitutionOffset, text, sortPriority);
     }
 
     protected int substitutionOffset;
-    
+
     protected SpringXMLConfigCompletionItem(int substitutionOffset) {
         this.substitutionOffset = substitutionOffset;
     }
-    
+
     public void defaultAction(JTextComponent component) {
         if (component != null) {
             Completion.get().hideDocumentation();
@@ -182,7 +183,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             substituteText(component, substitutionOffset, caretOffset - substitutionOffset, null);
         }
     }
-    
+
     protected void substituteText(JTextComponent c, final int offset, final int len, String toAdd) {
         final BaseDocument doc = (BaseDocument) c.getDocument();
         CharSequence prefix = getSubstitutionText();
@@ -205,23 +206,23 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             }
         });
     }
-    
+
     protected CharSequence getSubstitutionText() {
         return getInsertPrefix();
     }
 
     public void processKeyEvent(KeyEvent evt) {
-        
+
     }
 
     public int getPreferredWidth(Graphics g, Font defaultFont) {
-        return CompletionUtilities.getPreferredWidth(getLeftHtmlText(), 
+        return CompletionUtilities.getPreferredWidth(getLeftHtmlText(),
                 getRightHtmlText(), g, defaultFont);
     }
 
-    public void render(Graphics g, Font defaultFont, Color defaultColor, 
+    public void render(Graphics g, Font defaultFont, Color defaultColor,
             Color backgroundColor, int width, int height, boolean selected) {
-        CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(), 
+        CompletionUtilities.renderHtml(getIcon(), getLeftHtmlText(),
                 getRightHtmlText(), g, defaultFont, defaultColor, width, height, selected);
     }
 
@@ -237,23 +238,32 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         defaultAction(component);
         return true;
     }
-    
+
     protected String getLeftHtmlText() {
         return null;
     }
-    
+
     protected String getRightHtmlText() {
         return null;
     }
-    
+
     protected ImageIcon getIcon() {
         return null;
     }
 
+    private static String getHTMLColor(int r, int g, int b) {
+        Color c = LFCustoms.shiftColor(new Color(r, g, b));
+        return "<font color=#" //NOI18N
+                + LFCustoms.getHexString(c.getRed())
+                + LFCustoms.getHexString(c.getGreen())
+                + LFCustoms.getHexString(c.getBlue())
+                + ">"; //NOI18N
+    }
+
     private static class BeanRefItem extends SpringXMLConfigCompletionItem {
 
-        private static final String CLASS_COLOR = "<font color=#808080>"; //NOI18N
-        
+        private static final String CLASS_COLOR = getHTMLColor(128, 128, 128);
+
         private String beanId;
         private String beanClass;
         private List<String> beanNames;
@@ -261,7 +271,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private String beanLocFile;
         private Action goToBeanAction;
         private String leftText;
-        
+
         public BeanRefItem(int substitutionOffset, String displayName, SpringBean bean, FileObject containerFO) {
             super(substitutionOffset);
             this.beanId = bean.getId();
@@ -276,7 +286,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             goToBeanAction = SpringBeansUIs.createGoToBeanAction(bean);
             this.displayName = displayName;
         }
-        
+
         public int getSortPriority() {
             return 100;
         }
@@ -310,7 +320,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         protected String getRightHtmlText() {
             return beanLocFile;
         }
-        
+
         @Override
         protected ImageIcon getIcon() {
             return ImageUtilities.loadImageIcon("org/netbeans/modules/spring/beans/resources/spring-bean.png", false); // NOI18N
@@ -321,32 +331,32 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             return new AsyncCompletionTask(new AsyncCompletionQuery() {
                 @Override
                 protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
-                    CompletionDocumentation docItem = SpringXMLConfigCompletionDoc.createBeanRefDoc(beanId, 
+                    CompletionDocumentation docItem = SpringXMLConfigCompletionDoc.createBeanRefDoc(beanId,
                             beanNames, beanClass, beanLocFile, goToBeanAction);
                     resultSet.setDocumentation(docItem);
                     resultSet.finish();
                 }
             });
-        }        
+        }
     }
-    
+
     public static final String COLOR_END = "</font>"; //NOI18N
     public static final String STRIKE = "<s>"; //NOI18N
     public static final String STRIKE_END = "</s>"; //NOI18N
     public static final String BOLD = "<b>"; //NOI18N
     public static final String BOLD_END = "</b>"; //NOI18N
-    
+
     /**
-     * Represents a class in the completion popup. 
-     * 
+     * Represents a class in the completion popup.
+     *
      * Heavily derived from Java Editor module's JavaCompletionItem class
-     * 
+     *
      */
     private static class ClassItem extends SpringXMLConfigCompletionItem {
         private static final String CLASS = "org/netbeans/modules/editor/resources/completion/class_16.png"; //NOI18N
-        private static final String CLASS_COLOR = "<font color=#560000>"; //NOI18N
-        private static final String PKG_COLOR = "<font color=#808080>"; //NOI18N
-        
+        private static final String CLASS_COLOR = getHTMLColor(86, 0, 0);
+        private static final String PKG_COLOR = getHTMLColor(128, 128, 128);
+
         private ElementHandle<TypeElement> elemHandle;
         private boolean deprecated;
         private String displayName;
@@ -355,7 +365,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private String leftText;
         private boolean smartItem;
 
-        public ClassItem(int substitutionOffset, TypeElement elem, ElementHandle<TypeElement> elemHandle, 
+        public ClassItem(int substitutionOffset, TypeElement elem, ElementHandle<TypeElement> elemHandle,
                 boolean deprecated, boolean smartItem) {
             super(substitutionOffset);
             this.elemHandle = elemHandle;
@@ -365,7 +375,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             this.sortText = this.displayName + getImportanceLevel(this.enclName) + "#" + this.enclName; //NOI18N
             this.smartItem = smartItem;
         }
-        
+
         private String getRelativeName(TypeElement elem) {
             StringBuilder sb = new StringBuilder();
             sb.append(elem.getSimpleName().toString());
@@ -374,10 +384,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 sb.insert(0, parent.getSimpleName().toString() + "$"); // NOI18N
                 parent = parent.getEnclosingElement();
             }
-            
+
             return sb.toString();
         }
-        
+
         public int getSortPriority() {
             return 200;
         }
@@ -389,7 +399,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         public CharSequence getInsertPrefix() {
             return smartItem ? "" : elemHandle.getBinaryName(); // NOI18N
         }
-        
+
         @Override
         protected CharSequence getSubstitutionText() {
             return elemHandle.getBinaryName();
@@ -399,7 +409,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         public boolean instantSubstitution(JTextComponent component) {
             return false;
         }
-        
+
         @Override
         protected String getLeftHtmlText() {
             if (leftText == null) {
@@ -422,7 +432,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             }
             return leftText;
         }
-        
+
         protected String getColor() {
             return CLASS_COLOR;
         }
@@ -437,18 +447,18 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             return new AsyncCompletionTask(new JavaElementDocQuery(elemHandle), EditorRegistry.lastFocusedComponent());
         }
     }
-    
+
     private static class PackageItem extends SpringXMLConfigCompletionItem {
 
         private static final String PACKAGE = "org/netbeans/modules/java/editor/resources/package.gif"; // NOI18N
-        private static final String PACKAGE_COLOR = "<font color=#005600>"; //NOI18N
+        private static final String PACKAGE_COLOR = getHTMLColor(0, 86, 0);
         private static ImageIcon icon;
-        
+
         private boolean deprecated;
         private String simpleName;
         private String sortText;
         private String leftText;
-        
+
         public PackageItem(int substitutionOffset, String packageFQN, boolean deprecated) {
             super(substitutionOffset);
             int idx = packageFQN.lastIndexOf('.'); // NOI18N
@@ -485,13 +495,13 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 }
             }
         }
-        
+
         @Override
         protected ImageIcon getIcon(){
             if (icon == null) icon = ImageUtilities.loadImageIcon(PACKAGE, false);
-            return icon;            
+            return icon;
         }
-        
+
         @Override
         protected String getLeftHtmlText() {
             if (leftText == null) {
@@ -508,21 +518,21 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             return leftText;
         }
     }
-    
+
     private static class MethodItem extends SpringXMLConfigCompletionItem {
-        
+
         private static final String METHOD_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_16.png"; //NOI18N
         private static final String METHOD_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_protected_16.png"; //NOI18N
         private static final String METHOD_PACKAGE = "org/netbeans/modules/editor/resources/completion/method_package_private_16.png"; //NOI18N
-        private static final String METHOD_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_private_16.png"; //NOI18N        
+        private static final String METHOD_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_private_16.png"; //NOI18N
         private static final String METHOD_ST_PUBLIC = "org/netbeans/modules/editor/resources/completion/method_static_16.png"; //NOI18N
         private static final String METHOD_ST_PROTECTED = "org/netbeans/modules/editor/resources/completion/method_static_protected_16.png"; //NOI18N
         private static final String METHOD_ST_PRIVATE = "org/netbeans/modules/editor/resources/completion/method_static_private_16.png"; //NOI18N
         private static final String METHOD_ST_PACKAGE = "org/netbeans/modules/editor/resources/completion/method_static_package_private_16.png"; //NOI18N
-        private static final String METHOD_COLOR = "<font color=#000000>"; //NOI18N
-        private static final String PARAMETER_NAME_COLOR = "<font color=#a06001>"; //NOI18N
+        private static final String METHOD_COLOR = getHTMLColor(0, 0, 0);; //NOI18N
+        private static final String PARAMETER_NAME_COLOR = getHTMLColor(160, 96, 1);
         private static ImageIcon icon[][] = new ImageIcon[2][4];
-        
+
         private ElementHandle<ExecutableElement> elementHandle;
         private boolean isDeprecated;
         private String simpleName;
@@ -534,7 +544,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         private String leftText;
         private boolean isInherited;
         private String rightText;
-        
+
         public MethodItem(int substitutionOffset, ExecutableElement element, boolean isInherited, boolean isDeprecated) {
             super(substitutionOffset);
             this.elementHandle = ElementHandle.create(element);
@@ -550,7 +560,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 this.params.add(new ParamDesc(tm.toString(), getTypeName(tm, false, element.isVarArgs() && !tIt.hasNext()).toString(), it.next().getSimpleName().toString()));
             }
             TypeMirror retType = element.getReturnType();
-            
+
             this.typeName = getTypeName(retType, false).toString();
             this.isPrimitive = retType.getKind().isPrimitive() || retType.getKind() == TypeKind.VOID;
         }
@@ -581,7 +591,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         public CharSequence getInsertPrefix() {
             return simpleName;
         }
-        
+
         @Override
         protected String getLeftHtmlText() {
             if (leftText == null) {
@@ -614,14 +624,14 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             }
             return leftText;
         }
-        
+
         @Override
         protected String getRightHtmlText() {
             if (rightText == null)
                 rightText = escape(typeName);
             return rightText;
         }
-        
+
         @Override
         protected ImageIcon getIcon() {
             int level = getProtectionLevel(modifiers);
@@ -629,8 +639,8 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             ImageIcon cachedIcon = icon[isStatic?1:0][level];
             if (cachedIcon != null)
                 return cachedIcon;
-            
-            String iconPath = METHOD_PUBLIC;            
+
+            String iconPath = METHOD_PUBLIC;
             if (isStatic) {
                 switch (level) {
                     case PRIVATE_LEVEL:
@@ -670,14 +680,14 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             }
             ImageIcon newIcon = ImageUtilities.loadImageIcon(iconPath, false);
             icon[isStatic?1:0][level] = newIcon;
-            return newIcon;            
+            return newIcon;
         }
 
         @Override
         public CompletionTask createDocumentationTask() {
             return new AsyncCompletionTask(new JavaElementDocQuery(elementHandle), EditorRegistry.lastFocusedComponent());
         }
-        
+
         private static final int PUBLIC_LEVEL = 3;
         private static final int PROTECTED_LEVEL = 2;
         private static final int PACKAGE_LEVEL = 1;
@@ -709,12 +719,12 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             }
         }
     }
-    
+
     private static class AttribValueItem extends SpringXMLConfigCompletionItem {
 
         private String displayText;
         private String docText;
-        
+
         public AttribValueItem(int substitutionOffset, String displayText, String docText) {
             super(substitutionOffset);
             this.displayText = displayText;
@@ -750,13 +760,13 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                     resultSet.finish();
                 }
             });
-        }        
+        }
     }
-    
+
     private static class BeanNameItem extends AttribValueItem {
 
         private final int sortPriority;
-        
+
         public BeanNameItem(int substitutionOffset, String displayText, int sortPriority) {
             super(substitutionOffset, displayText, null);
             this.sortPriority = sortPriority;
@@ -767,11 +777,11 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             return sortPriority;
         }
     }
-    
+
     private static class FolderItem extends SpringXMLConfigCompletionItem {
 
         private FileObject folder;
-        
+
         public FolderItem(int substitutionOffset, FileObject folder) {
             super(substitutionOffset);
             this.folder = folder;
@@ -790,7 +800,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 }
             }
         }
-        
+
         public int getSortPriority() {
             return 300;
         }
@@ -807,7 +817,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         public boolean instantSubstitution(JTextComponent component) {
             return false;
         }
-        
+
         @Override
         protected ImageIcon getIcon() {
             return new ImageIcon(getTreeFolderIcon());
@@ -817,10 +827,10 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         protected String getLeftHtmlText() {
             return folder.getName();
         }
-        
+
         private static final String ICON_KEY_UIMANAGER = "Tree.closedIcon"; // NOI18N
         private static final String ICON_KEY_UIMANAGER_NB = "Nb.Explorer.Folder.icon"; // NOI18N
-        
+
         /**
          * Returns default folder icon as {@link java.awt.Image}. Never returns
          * <code>null</code>.Adapted from J2SELogicalViewProvider
@@ -832,34 +842,34 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                 base = ImageUtilities.icon2Image(baseIcon);
             } else {
                 base = (Image) UIManager.get(ICON_KEY_UIMANAGER_NB); // #70263
-                if (base == null) { // fallback to our owns                
+                if (base == null) { // fallback to our owns
                     final Node n = DataFolder.findFolder(FileUtil.getConfigRoot()).getNodeDelegate();
-                    base = n.getIcon(BeanInfo.ICON_COLOR_16x16);                                 
+                    base = n.getIcon(BeanInfo.ICON_COLOR_16x16);
                 }
             }
             assert base != null;
             return base;
         }
     }
-    
+
     private static class PropertyItem extends SpringXMLConfigCompletionItem {
 
         private static final String PROP_RO = "org/netbeans/modules/beans/resources/propertyRO.gif"; // NOI18N
         private static final String PROP_RW = "org/netbeans/modules/beans/resources/propertyRW.gif"; // NOI18N
         private static final String PROP_WO = "org/netbeans/modules/beans/resources/propertyWO.gif"; // NOI18N
-        
+
         private String displayName;
         private PropertyType propertyType;
         private String typeName;
         private static EnumMap<PropertyType, ImageIcon> type2Icon = new EnumMap<PropertyType, ImageIcon>(PropertyType.class);
-        
+
         public PropertyItem(int substitutionOffset, Property property) {
             super(substitutionOffset);
             this.displayName = property.getName();
             this.typeName = escape(getTypeName(property.getImplementationType(), false).toString());
             this.propertyType = property.getType();
         }
-        
+
         public int getSortPriority() {
             return 100;
         }
@@ -881,7 +891,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         protected String getRightHtmlText() {
             return typeName;
         }
-        
+
         @Override
         protected ImageIcon getIcon() {
             ImageIcon cachedIcon = type2Icon.get(propertyType);
@@ -897,18 +907,18 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                         cachedIcon = ImageUtilities.loadImageIcon(PROP_WO, false);
                         break;
                 }
-                
+
                 type2Icon.put(propertyType, cachedIcon);
             }
-            
+
             return cachedIcon;
         }
     }
-    
+
     private static class PropertyAttribItem extends PropertyItem {
 
         private String text;
-        
+
         public PropertyAttribItem(int substitutionOffset, String text, Property property) {
             super(substitutionOffset, property);
             this.text = text;
@@ -951,7 +961,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             return false;
         }
     }
-    
+
     private static class FileItem extends SpringXMLConfigCompletionItem {
 
         private FileObject file;
@@ -960,7 +970,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             super(substitutionOffset);
             this.file = file;
         }
-        
+
         public int getSortPriority() {
             return 100;
         }
@@ -983,15 +993,15 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             return file.getNameExt();
         }
     }
-    
+
     public static CharSequence getElementName(Element el, boolean fqn) {
         if (el == null || el.asType().getKind() == TypeKind.NONE)
             return ""; //NOI18N
         return new ElementNameVisitor().visit(el, fqn);
     }
-    
+
     private static class ElementNameVisitor extends SimpleElementVisitor6<StringBuilder,Boolean> {
-        
+
         private ElementNameVisitor() {
             super(new StringBuilder());
         }
@@ -1004,9 +1014,9 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
 	@Override
         public StringBuilder visitType(TypeElement e, Boolean p) {
             return DEFAULT_VALUE.append((p ? e.getQualifiedName() : e.getSimpleName()).toString());
-        }        
+        }
     }
-    
+
     public static int getImportanceLevel(String fqn) {
         int weight = 50;
         if (fqn.startsWith("java.lang") || fqn.startsWith("java.util")) // NOI18N
@@ -1019,34 +1029,34 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             weight += 30;
         return weight;
     }
-    
+
     public static CharSequence getTypeName(TypeMirror type, boolean fqn) {
         return getTypeName(type, fqn, false);
     }
-    
+
     public static CharSequence getTypeName(TypeMirror type, boolean fqn, boolean varArg) {
 	if (type == null)
             return ""; //NOI18N
         return new TypeNameVisitor(varArg).visit(type, fqn);
     }
-    
+
     private static final String UNKNOWN = "<unknown>"; //NOI18N
     private static final String CAPTURED_WILDCARD = "<captured wildcard>"; //NOI18N
-    
+
     private static class TypeNameVisitor extends SimpleTypeVisitor6<StringBuilder,Boolean> {
-        
+
         private boolean varArg;
-        
+
         private TypeNameVisitor(boolean varArg) {
             super(new StringBuilder());
             this.varArg = varArg;
         }
-        
+
         @Override
         public StringBuilder defaultAction(TypeMirror t, Boolean p) {
             return DEFAULT_VALUE.append(t);
         }
-        
+
         @Override
         public StringBuilder visitDeclared(DeclaredType t, Boolean p) {
             Element e = t.asElement();
@@ -1063,12 +1073,12 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
                     }
                     DEFAULT_VALUE.append(">"); //NOI18N
                 }
-                return DEFAULT_VALUE;                
+                return DEFAULT_VALUE;
             } else {
                 return DEFAULT_VALUE.append(UNKNOWN); //NOI18N
             }
         }
-                        
+
         @Override
         public StringBuilder visitArray(ArrayType t, Boolean p) {
             boolean isVarArg = varArg;
@@ -1137,7 +1147,7 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
             return DEFAULT_VALUE;
         }
     }
-    
+
     private static String escape(String s) {
         if (s != null) {
             try {
@@ -1146,16 +1156,16 @@ public abstract class SpringXMLConfigCompletionItem implements CompletionItem {
         }
         return s;
     }
-    
+
     private static class JavaElementDocQuery extends AsyncCompletionQuery {
 
         private CompletionDocumentation documentation;
         private ElementHandle<?> elemHandle;
-        
+
         public JavaElementDocQuery(ElementHandle<?> elemHandle) {
             this.elemHandle = elemHandle;
         }
-        
+
         @Override
         protected void query(final CompletionResultSet resultSet, Document doc, int caretOffset) {
             try {

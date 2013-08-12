@@ -138,6 +138,7 @@ tokens {
 	CSM_FUNCTION_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_PARAMETER_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TYPE_BUILTIN<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+    CSM_TYPE_DECLTYPE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TYPE_COMPOUND<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	CSM_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -2108,7 +2109,7 @@ builtin_type[/*TypeSpecifier*/int old_ts] returns [/*TypeSpecifier*/int ts = old
         | LITERAL_bit           {ts |= tsBOOL;}
         | LITERAL__BUILT_IN_TYPE__ {ts |= tsOTHER;}
         | LITERAL___builtin_va_list {ts |= tsOTHER;}
-        | literal_decltype LPAREN expression RPAREN {ts |= tsOTHER;}
+//        | literal_decltype LPAREN expression RPAREN {ts |= tsOTHER;}
 
     ;
 
@@ -2122,8 +2123,10 @@ qualified_type
 		// {qualifiedItemIsOneOf(qiType|qiCtor)}?
 
 		s = scope_override
-                id:IDENT
-                {if(s.isEmpty()) {action.simple_type_id(id);} }
+        
+                (IDENT | type_decltype)
+        
+//                {if(s.isEmpty()) {action.simple_type_id(id);} }
 //                {if(s.isEmpty()) {action.id(id);} }
 		(options {warnWhenFollowAmbig = false;}:
 		 LESSTHAN template_argument_list GREATERTHAN
@@ -4033,6 +4036,8 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
 
             |   ts=builtin_type[0] (options {greedy=true;}: balanceSquaresInExpression)* (balanceCurlies)?
 
+            |   lazy_type_decltype[templateLevel] {ts = tsTYPEID;}
+
             |   LITERAL_struct
             |   LITERAL_union
             |   LITERAL_class
@@ -4080,10 +4085,11 @@ lazy_expression[boolean inTemplateParams, boolean searchingGreaterthen, int temp
         ({(!inTemplateParams)}?((GREATERTHAN lazy_expression_predicate) => (GREATERTHAN)+ lazy_expression[false, false, templateLevel])?)?
     ;
 
-protected
-isGreaterthanInTheRestOfExpression[int templateLevel]
+// Lazy expression including assignement expressions (like a = b = c;)
+protected 
+lazy_assignment_expression[boolean inTemplateParams, boolean searchingGreaterthen, int templateLevel]
     :
-        (lazy_expression[true, true, templateLevel])?
+        lazy_expression[inTemplateParams, searchingGreaterthen, templateLevel]
         (options {greedy=true;}:	
             ( ASSIGNEQUAL              
             | TIMESEQUAL
@@ -4097,27 +4103,17 @@ isGreaterthanInTheRestOfExpression[int templateLevel]
             | BITWISEXOREQUAL
             | BITWISEOREQUAL
             )
-            (lazy_expression[true, true, templateLevel]
+            (lazy_expression[inTemplateParams, searchingGreaterthen, templateLevel]
             | array_initializer)
         )*
+    ;
+
+protected
+isGreaterthanInTheRestOfExpression[int templateLevel]
+    :
+        (lazy_assignment_expression[true, true, templateLevel])?
         (   COMMA 
-            lazy_expression[true, true, templateLevel]
-            (options {greedy=true;}:	
-                ( ASSIGNEQUAL              
-                | TIMESEQUAL
-                | DIVIDEEQUAL
-                | MINUSEQUAL
-                | PLUSEQUAL
-                | MODEQUAL
-                | SHIFTLEFTEQUAL
-                | SHIFTRIGHTEQUAL
-                | BITWISEANDEQUAL
-                | BITWISEXOREQUAL
-                | BITWISEOREQUAL
-                )
-                (lazy_expression[true, true, templateLevel]
-                | array_initializer)
-            )*
+            lazy_assignment_expression[true, true, templateLevel]
         )*
         GREATERTHAN
     ;
@@ -4383,7 +4379,16 @@ scope_override returns [String s = ""]
             SCOPE { sitem.append("::");} 
             (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
         )?
-        ((IDENT (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)? SCOPE) => sp = scope_override_part[0])?
+        (
+            (
+                (
+                        (IDENT (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)?) 
+                    |
+                        lazy_type_decltype[0]
+                )
+                SCOPE                        
+            ) => sp = scope_override_part[0]
+        )?
         {
             sitem.append(sp);
             s = sitem.toString();
@@ -4396,19 +4401,54 @@ scope_override_part[int level] returns [String s = ""]
         String sp = "";
     }
     :
-        id:IDENT (LESSTHAN template_argument_list GREATERTHAN)? SCOPE
-        {action.simple_template_id_or_ident(id);}
-        {if(level == 0) {action.id(id);} }
+        (
+                (
+                    id:IDENT (LESSTHAN template_argument_list GREATERTHAN)? SCOPE
+                    {
+                        sitem.append(id.getText());
+                        sitem.append("::");
+                    }
+                )
+            |
+                (
+                    type_decltype SCOPE
+                    {
+                        sitem.append("decltype");
+                        sitem.append("::");
+                    }
+                )
+        )
         (LITERAL_template)? // to support "_Alloc::template rebind<char>::other"
-        {
-            sitem.append(id.getText());
-            sitem.append("::");
-        }
-        ((IDENT (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)? SCOPE) => sp = scope_override_part[level+1])?            
+        (
+            (
+                (
+                        (IDENT (LESSTHAN (lazy_template_argument_list)? GREATERTHAN)?) 
+                    |
+                        lazy_type_decltype[0]
+                )
+                SCOPE                        
+            ) => sp = scope_override_part[level + 1]
+        )?   
         {
             sitem.append(sp);
             s = sitem.toString();
         }        
+    ;
+
+// lazy_type_decltype skips expression and 
+// works faster then type_decltype.
+lazy_type_decltype[int templateLevel]
+    :
+        literal_decltype 
+        LPAREN 
+        lazy_assignment_expression[false, false, templateLevel] 
+        RPAREN
+    ;
+
+type_decltype 
+    :
+        literal_decltype LPAREN expression RPAREN
+        {#type_decltype=#(#[CSM_TYPE_DECLTYPE,"CSM_TYPE_DECLTYPE"], #type_decltype);}
     ;
 
 constant

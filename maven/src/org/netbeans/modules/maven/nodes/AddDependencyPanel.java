@@ -76,6 +76,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
+import javax.swing.tree.TreeSelectionModel;
 import org.apache.lucene.search.BooleanQuery;
 import org.apache.maven.model.Dependency;
 import org.apache.maven.model.DependencyManagement;
@@ -1029,6 +1030,7 @@ public class AddDependencyPanel extends javax.swing.JPanel {
             btv = new BeanTreeView();
             btv.setRootVisible(false);
             btv.setDefaultActionAllowed(true);
+            btv.setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
             manager = new ExplorerManager();
             setLayout(new BorderLayout());
             add(btv, BorderLayout.CENTER);

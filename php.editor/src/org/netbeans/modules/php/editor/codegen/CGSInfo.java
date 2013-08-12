@@ -70,7 +70,8 @@ import org.netbeans.modules.php.editor.elements.TypeNameResolverImpl;
 import org.netbeans.modules.php.editor.model.ModelUtils;
 import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
-import org.netbeans.modules.php.editor.nav.NavUtils;
+import org.netbeans.modules.php.editor.NavUtils;
+import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -199,12 +200,18 @@ public final class CGSInfo {
     }
 
     public TypeNameResolver createTypeNameResolver(MethodElement method) {
-        return method.getParameters().isEmpty()
-                ? TypeNameResolverImpl.forNull()
-                : CodegenUtils.createSmarterTypeNameResolver(
-                        method,
-                        ModelUtils.getModel(Source.create(getComponent().getDocument()), 300),
-                        getComponent().getCaretPosition());
+        TypeNameResolver result;
+        if (method.getParameters().isEmpty()) {
+            result = TypeNameResolverImpl.forNull();
+        } else {
+            Model model = ModelUtils.getModel(Source.create(getComponent().getDocument()), 300);
+            if (model == null) {
+                result = TypeNameResolverImpl.forNull();
+            } else {
+                result = CodegenUtils.createSmarterTypeNameResolver(method, model, getComponent().getCaretPosition());
+            }
+        }
+        return result;
     }
 
     /**

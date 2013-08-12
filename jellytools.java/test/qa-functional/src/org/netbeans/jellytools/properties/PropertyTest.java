@@ -138,7 +138,7 @@ public class PropertyTest extends JellyTestCase {
     /** Test of openEditor method */
     public void testOpenEditor() {
         propertyAllFiles.openEditor();
-        new JDialogOperator(ALL_FILES_LABEL).close();
+        new JDialogOperator(ALL_FILES_LABEL).requestClose();
     }
 
     /** Test of supportsCustomEditor method */

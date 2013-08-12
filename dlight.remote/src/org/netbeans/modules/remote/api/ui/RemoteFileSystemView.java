@@ -78,11 +78,14 @@ import org.openide.util.Exceptions;
     private static final String newFolderNextString  =
             UIManager.getString("FileChooser.other.newFolder.subsequent");//  NOI18N
 
+    private final FileObjectBasedFile.Factory factory;
+
     public RemoteFileSystemView(final String root, final ExecutionEnvironment execEnv) {
         this.env = execEnv;
         fs = FileSystemProvider.getFileSystem(execEnv, root);
         assert (fs != null);
         changeSupport = new PropertyChangeSupport(this);
+        factory = new FileObjectBasedFile.Factory();
     }
 
     public FileObject getFSRoot() {
@@ -95,10 +98,14 @@ import org.openide.util.Exceptions;
         FileObject fo = fs.findResource(path);
         if (fo == null || !fo.isValid()) {
             RemoteLogger.getInstance().log(Level.FINEST, "Null file object for {0}", path);
-            return new FileObjectBasedFile(env, path);
+            return factory.create(env, path);
         } else {
-            return new FileObjectBasedFile(env, fo);
+            return factory.create(env, fo);
         }
+    }
+
+    public FileObjectBasedFile.Factory getFactory() {
+        return factory;
     }
 
     @Override
@@ -117,7 +124,7 @@ import org.openide.util.Exceptions;
 
     @Override
     public File[] getRoots() {
-        return new File[]{new FileObjectBasedFile(env, fs.getRoot())};
+        return new File[]{factory.create(env, fs.getRoot())};
     }
 
     @Override
@@ -127,7 +134,7 @@ import org.openide.util.Exceptions;
 
     @Override
     public File getDefaultDirectory() {
-        return new FileObjectBasedFile(env, fs.getRoot());
+        return factory.create(env, fs.getRoot());
     }
 
     @Override
@@ -138,7 +145,7 @@ import org.openide.util.Exceptions;
                 return getDefaultDirectory();
             }
             HostInfo hostInfo = HostInfoUtils.getHostInfo(env);
-            return new FileObjectBasedFile(env, fs.findResource(hostInfo.getUserDir()));
+            return factory.create(env, fs.findResource(hostInfo.getUserDir()));
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         } catch (CancellationException ex) {
@@ -168,7 +175,7 @@ import org.openide.util.Exceptions;
         changeSupport.firePropertyChange(LOADING_STATUS, null, dir.getAbsolutePath());
         try {
             if (!(dir instanceof FileObjectBasedFile)) {
-                dir = new FileObjectBasedFile(env, fs.findResource(dir.getAbsolutePath()));
+                dir = factory.create(env, fs.findResource(dir.getAbsolutePath()));
             }
             FileObjectBasedFile rdir = (FileObjectBasedFile) dir;
             File[] result = null;
@@ -176,6 +183,7 @@ import org.openide.util.Exceptions;
             if (dir.canRead()) {
                 if (useFileHiding) {
                     result = rdir.listFiles(new FilenameFilter() {
+                        @Override
                         public boolean accept(File dir, String name) {
                             return ! name.startsWith("."); // NOI18N
                         }
@@ -198,7 +206,7 @@ import org.openide.util.Exceptions;
         if (containingDir == null) {
 	    throw new IOException("Containing directory is null:");//  NOI18N
 	}
-	File newFolder = null;
+	File newFolder;
 	// Unix - using OpenWindows' default folder name. Can't find one for Motif/CDE.
 	newFolder = createFileObject(containingDir, newFolderString);
 	int i = 1;
@@ -218,7 +226,7 @@ import org.openide.util.Exceptions;
 
     @Override
     protected File createFileSystemRoot(File f) {
-        return new FileObjectBasedFile(env, fs.getRoot());
+        return factory.create(env, fs.getRoot());
     }
 
     public void addPropertyChangeListener(PropertyChangeListener listener) {

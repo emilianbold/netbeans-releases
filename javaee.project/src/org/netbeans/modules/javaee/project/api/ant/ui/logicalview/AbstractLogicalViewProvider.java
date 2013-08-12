@@ -434,6 +434,9 @@ public abstract class AbstractLogicalViewProvider implements LogicalViewProvider
     
     private final RequestProcessor.Task task = RP.create(new Runnable() {
         public @Override void run() {
+            if (!ProjectManager.getDefault().isValid(project)) {
+                return;
+            }
             boolean old = broken;
             boolean _broken = hasBrokenLinks();
             if (old != _broken) {

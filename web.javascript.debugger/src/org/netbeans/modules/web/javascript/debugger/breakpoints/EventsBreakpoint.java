@@ -70,7 +70,7 @@ public class EventsBreakpoint extends AbstractBreakpoint {
         "LBL_Event_Category_Touch=Touch"
     })
     private static final String[][] EVENTS = new String[][] {
-        { Bundle.LBL_Event_Category_Animation(), "Request Animation Frame", "Cancel Animation Frame", "Animation Frame Fired" },
+        { Bundle.LBL_Event_Category_Animation(), "requestAnimationFrame", "cancelAnimationFrame", "animationFrameFired" },
         { Bundle.LBL_Event_Category_Clipboard(), "copy", "cut", "paste", "beforecopy", "beforecut", "beforepaste" },
         { Bundle.LBL_Event_Category_Control(), "resize", "scroll", "zoom", "focus", "blur", "select", "change", "submit", "reset" },
         { Bundle.LBL_Event_Category_DOM_Mutation(), "DOMActivate", "DOMFocusIn", "DOMFocusOut", "DOMAttrModified", "DOMCharacterDataModified", "DOMNodeInserted", "DOMNodeInsertedIntoDocument", "DOMNodeRemoved", "DOMNodeRemovedFromDocument", "DOMSubtreeModified", "DOMContentLoaded" },
@@ -78,8 +78,12 @@ public class EventsBreakpoint extends AbstractBreakpoint {
         { Bundle.LBL_Event_Category_Keyboard(), "keydown", "keyup", "keypress", "textInput" },
         { Bundle.LBL_Event_Category_Load(), "load", "unload", "abort", "error" },
         { Bundle.LBL_Event_Category_Mouse(), "click", "dblclick", "mousedown", "mouseup", "mouseover", "mousemove", "mouseout", "mousewheel" },
-        { Bundle.LBL_Event_Category_Timer(), "Set Timer", "Clear Timer", "Timer Fired" },
+        { Bundle.LBL_Event_Category_Timer(), "setTimer", "clearTimer", "timerFired" },
         { Bundle.LBL_Event_Category_Touch(), "touchstart", "touchmove", "touchend", "touchcancel" },
+    };
+    /** Tells which events are instrumentation. */
+    private static final boolean[] INSTRUMENTATION = new boolean[] {
+        true, false, false, false, false, false, false, false, true, false
     };
     
     public static final String PROP_EVENTS = "events";     // NOI18N
@@ -87,19 +91,27 @@ public class EventsBreakpoint extends AbstractBreakpoint {
     private static final Set<String> categories;
     private static final Map<String, Set<String>> eventsByCategories;
     private static final Map<String, String> categoryOf;
+    private static final Set<String> instrumentationEvents;
     
     /** The actual breakpoint events. */
     private final Set<String> events = new HashSet<String>();
     
     static {
         int n = EVENTS.length;
+        assert INSTRUMENTATION.length == n;
         Map<String, Set<String>> ebcm = new HashMap<String, Set<String>>(n);
         Map<String, String> catOf = new HashMap<String, String>();
+        Set<String> instrEv = new HashSet<String>();
         for (int i = 0; i < n; i++) {
             Set<String> evts = new LinkedHashSet<String>(EVENTS[i].length - 1);
+            boolean isInstrumentation = INSTRUMENTATION[i];
             for (int j = 1; j < EVENTS[i].length; j++) {
-                evts.add(EVENTS[i][j]);
-                catOf.put(EVENTS[i][j], EVENTS[i][0]);
+                String event = EVENTS[i][j];
+                evts.add(event);
+                catOf.put(event, EVENTS[i][0]);
+                if (isInstrumentation) {
+                    instrEv.add(event);
+                }
             }
             ebcm.put(EVENTS[i][0], evts);
         }
@@ -107,6 +119,7 @@ public class EventsBreakpoint extends AbstractBreakpoint {
         SortedSet<String> categoriesSet = new TreeSet<String>(ebcm.keySet());
         categories = Collections.unmodifiableSortedSet(categoriesSet);
         categoryOf = Collections.unmodifiableMap(catOf);
+        instrumentationEvents = Collections.unmodifiableSet(instrEv);
     }
     
     public static Set<String> getAllEventCategories() {
@@ -128,6 +141,10 @@ public class EventsBreakpoint extends AbstractBreakpoint {
         synchronized (events) {
             return Collections.unmodifiableSet(new HashSet<String>(events));
         }
+    }
+    
+    public boolean isInstrumentationEvent(String event) {
+        return instrumentationEvents.contains(event);
     }
     
     public void addEvent(String event) {

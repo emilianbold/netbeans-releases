@@ -1042,8 +1042,10 @@ public final class NativeDebuggerManager extends DebuggerManagerAdapter {
         NativeDebuggerInfo ndi = makeNativeDebuggerInfo(debugtarget.getEngine());
         ndi.setDebugTarget(debugtarget);
 
-        if (execPath == null || execPath.equals("") || execPath.equals(" ")) { // NOI18N
-            conf.getProfile().setRunDir(System.getenv("PWD")); // NOI18N
+        if (execPath == null || execPath.trim().isEmpty()) { // NOI18N
+            if (debugtarget.getHostName().equals("localhost")) { // NOI18N
+                conf.getProfile().setRunDir(System.getenv("PWD")); // NOI18N
+            }
         }
 
         if (execPath != null) {

@@ -46,12 +46,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationTestBase;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsModifier;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -228,7 +228,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
     public void testGetParametersForOnlyNameParam() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line5(accessLevel)^{}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 348), null, "", false,
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new IdentifierImpl("accessLevel", 348), null, "", false,
                 Collections.<Type>emptyList());
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
@@ -242,7 +242,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
     public void testGetParametersForNameAndTypeParam() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line1(userName)^{}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 23), null, "", false,
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new IdentifierImpl("userName", 23), null, "", false,
                 Arrays.<Type>asList(new TypeUsageImpl("String", 15)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
@@ -250,7 +250,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
     public void testGetParametersForNameAndMoreTypesParam() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line2(product)^{}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("product", 94), null, "", false,
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new IdentifierImpl("product", 94), null, "", false,
                 Arrays.<Type>asList(new TypeUsageImpl("String", 79), new TypeUsageImpl("Number", 86)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
@@ -258,7 +258,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
     public void testGetParametersForFullDocParam() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line6(userName)^{}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 418), null, "name of the user", false,
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new IdentifierImpl("userName", 418), null, "name of the user", false,
                 Arrays.<Type>asList(new TypeUsageImpl("String", 410)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
@@ -266,7 +266,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
     public void testGetParametersForFullDocOptionalParam() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line3(accessLevel)^{}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 157), null, "accessLevel is optional", true,
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new IdentifierImpl("accessLevel", 157), null, "accessLevel is optional", true,
                 Arrays.<Type>asList(new TypeUsageImpl("String", 148)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
@@ -274,7 +274,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
     public void testGetParametersForDefaultValueParam() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line4(accessLevel)^{}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("accessLevel", 253), "\"author\"", "accessLevel is optional", true,
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new IdentifierImpl("accessLevel", 253), "\"author\"", "accessLevel is optional", true,
                 Arrays.<Type>asList(new TypeUsageImpl("String", 244)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
@@ -282,7 +282,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
     public void testGetParametersForNameAndTypeArgument() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line7(userName)^{}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 502), null, "", false,
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new IdentifierImpl("userName", 502), null, "", false,
                 Arrays.<Type>asList(new TypeUsageImpl("String", 494)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
@@ -290,7 +290,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
     public void testGetParametersForDefaultValueArgument() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line8(userName)^{}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 570), "\"Jackie\"", "userName is optional", true,
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new IdentifierImpl("userName", 570), "\"Jackie\"", "userName is optional", true,
                 Arrays.<Type>asList(new TypeUsageImpl("String", 561)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
@@ -298,7 +298,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
     public void testGetParametersForDefaultValueWithSpacesArgument() throws Exception {
         Source testSource = getTestSource(getTestFile(FILE_NAME_PARAMETERS));
         final int caretOffset = getCaretOffset(testSource, "function line9(userName)^{}");
-        FakeDocParameter fakeDocParameter = new FakeDocParameter(new DocIdentifierImpl("userName", 669), "\"for example Jackie Chan\"", "userName is optional", true,
+        FakeDocParameter fakeDocParameter = new FakeDocParameter(new IdentifierImpl("userName", 669), "\"for example Jackie Chan\"", "userName is optional", true,
                 Arrays.<Type>asList(new TypeUsageImpl("String", 660)));
         checkParameter(testSource, caretOffset, fakeDocParameter);
     }
@@ -365,12 +365,12 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
 
     private static class FakeDocParameter implements DocParameter {
 
-        DocIdentifier paramName;
+        Identifier paramName;
         String defaultValue, paramDesc;
         boolean optional;
         List<Type> paramTypes;
 
-        public FakeDocParameter(DocIdentifier paramName, String defaultValue, String paramDesc, boolean optional, List<Type> paramTypes) {
+        public FakeDocParameter(Identifier paramName, String defaultValue, String paramDesc, boolean optional, List<Type> paramTypes) {
             this.paramName = paramName;
             this.defaultValue = defaultValue;
             this.paramDesc = paramDesc;
@@ -378,7 +378,7 @@ public class JsDocDocumentationProviderTest extends JsDocumentationTestBase {
             this.paramTypes = paramTypes;
         }
         @Override
-        public DocIdentifier getParamName() {
+        public Identifier getParamName() {
             return paramName;
         }
 

@@ -41,27 +41,23 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.actions;
 
+import java.awt.event.KeyEvent;
+import javax.swing.KeyStroke;
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.Projects;
 import org.netbeans.performance.languages.ScriptingUtilities;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
 import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
-
-import java.awt.event.KeyEvent;
-
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.EditorWindowOperator;
 import org.netbeans.jellytools.ProjectsTabOperator;
-import org.netbeans.jellytools.actions.Action.Shortcut;
-import org.netbeans.jellytools.actions.ActionNoBlock;
+import org.netbeans.jellytools.actions.Action;
 import org.netbeans.jellytools.actions.OpenAction;
 import org.netbeans.jellytools.nodes.Node;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
 
 /**
  *
@@ -71,70 +67,73 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
 
     private boolean pgup;
     private EditorOperator editorOperator;
-    protected static ProjectsTabOperator projectsTab = null;    
+    protected static ProjectsTabOperator projectsTab = null;
     protected Node fileToBeOpened;
     protected String testProject;
-    protected String fileName; 
-    protected String nodePath;    
-    
+    protected String fileName;
+    protected String nodePath;
+
     public PageUpPageDownScriptingEditorTest(String testName) {
         super(testName);
         expectedTime = UI_RESPONSE;
-        WAIT_AFTER_OPEN = 200;        
+        WAIT_AFTER_OPEN = 200;
     }
 
     public PageUpPageDownScriptingEditorTest(String testName, String performanceDataName) {
         super(testName, performanceDataName);
         expectedTime = UI_RESPONSE;
-        WAIT_AFTER_OPEN = 200;        
+        WAIT_AFTER_OPEN = 200;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(PageUpPageDownScriptingEditorTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(PageUpPageDownScriptingEditorTest.class).suite();
     }
 
     @Override
     public void initialize() {
         EditorOperator.closeDiscardAll();
-        String path = nodePath+"|"+fileName;
-        fileToBeOpened = new Node(getProjectNode(testProject),path);
+        String path = nodePath + "|" + fileName;
+        fileToBeOpened = new Node(getProjectNode(testProject), path);
         new OpenAction().performAPI(fileToBeOpened);
         editorOperator = EditorWindowOperator.getEditor(fileName);
         repaintManager().addRegionFilter(LoggingRepaintManager.EDITOR_FILTER);
     }
-    
+
     protected Node getProjectNode(String projectName) {
-        if(projectsTab==null)
+        if (projectsTab == null) {
             projectsTab = ScriptingUtilities.invokePTO();
+        }
         return projectsTab.getProjectRootNode(projectName);
     }
-    
+
     @Override
     public void prepare() {
-        if (pgup) new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator);
-        else  editorOperator.setCaretPositionToLine(1);
+        if (pgup) {
+            new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_END, KeyEvent.CTRL_MASK)).perform(editorOperator);
+        } else {
+            editorOperator.setCaretPositionToLine(1);
+        }
     }
 
     @Override
     public ComponentOperator open() {
-        if (pgup) new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_PAGE_UP)).perform(editorOperator);
-        else new ActionNoBlock(null, null, new Shortcut(KeyEvent.VK_PAGE_DOWN)).perform(editorOperator);
+        if (pgup) {
+            new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_UP, 0)).perform(editorOperator);
+        } else {
+            new Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_PAGE_DOWN, 0)).perform(editorOperator);
+        }
         return null;
     }
-    
+
     @Override
     public void close() {
     }
-    
+
     @Override
     public void shutdown() {
         super.shutdown();
         repaintManager().resetRegionFilters();
-        EditorOperator.closeDiscardAll();        
+        EditorOperator.closeDiscardAll();
     }
 
     public void testPgUp_In_PHPEditor() {
@@ -152,43 +151,43 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
         pgup = false;
         doMeasurement();
     }
-    
+
     public void testPgUp_In_JSEditor() {
         testProject = Projects.SCRIPTING_PROJECT;
         nodePath = "Web Pages";
-        fileName = "javascript20kb.js";         
+        fileName = "javascript20kb.js";
         pgup = true;
         doMeasurement();
     }
-    
+
     public void testPgDn_In_JSEditor() {
         testProject = Projects.SCRIPTING_PROJECT;
         nodePath = "Web Pages";
-        fileName = "javascript20kb.js";         
-        pgup = false;        
+        fileName = "javascript20kb.js";
+        pgup = false;
         doMeasurement();
     }
-    
+
     public void testPgUp_In_JSEditorBig() {
         testProject = Projects.SCRIPTING_PROJECT;
         nodePath = "Web Pages";
-        fileName = "javascript_200kb.js";         
+        fileName = "javascript_200kb.js";
         pgup = true;
         doMeasurement();
     }
-    
+
     public void testPgDn_In_JSEditorBig() {
         testProject = Projects.SCRIPTING_PROJECT;
         nodePath = "Web Pages";
-        fileName = "javascript_200kb.js";         
-        pgup = false;        
+        fileName = "javascript_200kb.js";
+        pgup = false;
         doMeasurement();
     }
-    
+
     public void testPgUp_In_CSSEditor() {
         testProject = Projects.SCRIPTING_PROJECT;
         nodePath = "Web Pages";
-        fileName = "css20kb.css";        
+        fileName = "css20kb.css";
         pgup = true;
         doMeasurement();
     }
@@ -212,9 +211,9 @@ public class PageUpPageDownScriptingEditorTest extends PerformanceTestCase {
     public void testPgDn_In_CSSEditor() {
         testProject = Projects.SCRIPTING_PROJECT;
         nodePath = "Web Pages";
-        fileName = "css20kb.css";        
-        pgup = false;        
+        fileName = "css20kb.css";
+        pgup = false;
         doMeasurement();
-    }    
+    }
 
 }

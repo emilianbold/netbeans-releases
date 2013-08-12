@@ -1,0 +1,6 @@
+if(bar){
+   ---
+HINT:The global variable "bar" is not declared.
+    if (bar === foo) {
+        ---
+HINT:The global variable "bar" is not declared.
