@@ -80,6 +80,7 @@ public final class ClientSideDevelopmentSupport implements
         PageInspectorCustomizer {
 
     private final Project project;
+    private Project webProject;
     private volatile String projectRootURL;
     private volatile FileObject webDocumentRoot;
     // @GuardedBy("this")
@@ -96,6 +97,19 @@ public final class ClientSideDevelopmentSupport implements
     
     private ClientSideDevelopmentSupport(Project project) {
         this.project = project;
+        this.webProject = project;
+    }
+
+    /**
+     * This method should be called only from EAR project.
+     */
+    public synchronized void setWebProject(Project webProject) {
+        this.webProject = webProject;
+        webDocumentRoot = null;
+    }
+
+    private synchronized Project getWebProject() {
+        return webProject;
     }
 
     @Override
@@ -104,10 +118,15 @@ public final class ClientSideDevelopmentSupport implements
         if (projectRootURL != null && !projectRootURL.contains(".") && !projectRootURL.endsWith("/")) {
             projectRootURL += "/";
         }
+        if (project.getProjectDirectory().equals(context) && webProject != null) {
+            // this is scenario of EAR project executing its Web Project; use
+            // Web Project as context instead of EAR here:
+            context = webProject.getProjectDirectory();
+        }
         // let browser update URL if necessary:
         WebBrowser browser = getWebBrowser();
         if (browser != null) {
-            urlToOpenInBrowser = browser.toBrowserURL(project, context, urlToOpenInBrowser);
+            urlToOpenInBrowser = browser.toBrowserURL(getWebProject(), context, urlToOpenInBrowser);
         }
         BrowserSupport bs = getBrowserSupport();
         if (bs != null) {
@@ -130,7 +149,7 @@ public final class ClientSideDevelopmentSupport implements
             URL u = new URL(projectRootURL + relPath);
             WebBrowser browser = getWebBrowser();
             if (browser != null) {
-                u = browser.toBrowserURL(project, projectFile, u);
+                u = browser.toBrowserURL(getWebProject(), projectFile, u);
             }
             return u;
         } catch (MalformedURLException ex) {
@@ -147,7 +166,7 @@ public final class ClientSideDevelopmentSupport implements
         }
         WebBrowser browser = getWebBrowser();
         if (browser != null) {
-            serverURL = browser.fromBrowserURL(project, serverURL);
+            serverURL = browser.fromBrowserURL(getWebProject(), serverURL);
         }
         String u = WebUtils.urlToString(serverURL);
         if (u.startsWith(projectRootURL)) {
@@ -198,7 +217,10 @@ public final class ClientSideDevelopmentSupport implements
     }
     
     private WebModule getWebModule() {
-        return WebModule.getWebModule(project.getProjectDirectory());
+        if (getWebProject() != null) {
+            return WebModule.getWebModule(getWebProject().getProjectDirectory());
+        }
+        return null;
     }
 
     public boolean canReload() {
@@ -269,6 +291,9 @@ public final class ClientSideDevelopmentSupport implements
         }
         initialized = true;
         final WebModule webModule = getWebModule();
+        if (webModule == null) {
+            return;
+        }
         try {
             webModule.getMetadataModel().runReadAction(new MetadataModelAction<WebAppMetadata, Void>() {
                 

@@ -184,6 +184,17 @@ is divided into following sections:
                 <condition property="do.compile.jsps">
                     <istrue value="${{compile.jsps}}"/>
                 </condition>
+                <condition property="do.display.browser.old">
+                    <and>
+                        <istrue value="${{display.browser}}"/>
+                        <!-- See issue 107504 -->
+                        <isset property="client.module.uri"/>
+                        <not>
+                            <isset property="app.client"/>
+                        </not>
+                        <not><isset property="browser.context"/></not>
+                    </and>
+                </condition>
                 <condition property="do.display.browser">
                     <and>
                         <istrue value="${{display.browser}}"/>
@@ -192,6 +203,7 @@ is divided into following sections:
                         <not>
                             <isset property="app.client"/>
                         </not>
+                        <isset property="browser.context"/>
                     </and>
                 </condition>
                 <available property="has.custom.manifest" file="${{meta.inf}}/MANIFEST.MF"/>
@@ -533,12 +545,23 @@ exists or setup the property manually. For example like this:
     </target>
     
     <target name="run-display-browser">
-        <xsl:attribute name="depends">run-deploy,-init-display-browser,-display-browser-nb,-display-browser-cl</xsl:attribute>
+        <xsl:attribute name="depends">run-deploy,-init-display-browser,-display-browser-nb-old,-display-browser-nb,-display-browser-cl</xsl:attribute>
     </target>
     
     <target name="-init-display-browser" if="do.display.browser">
+        <condition property="do.display.browser.nb.old">
+            <and>
+                <isset property="netbeans.home"/>
+                <not>
+                    <isset property="browser.context"/>
+                </not>
+            </and>
+        </condition>
         <condition property="do.display.browser.nb">
-            <isset property="netbeans.home"/>
+            <and>
+                <isset property="netbeans.home"/>
+                <isset property="browser.context"/>
+            </and>
         </condition>
         <condition property="do.display.browser.cl">
             <and>
@@ -548,8 +571,12 @@ exists or setup the property manually. For example like this:
         </condition>
     </target>
 
-    <target name="-display-browser-nb" if="do.display.browser.nb">
+    <target name="-display-browser-nb-old" if="do.display.browser.nb.old">
         <nbbrowse url="${{client.url}}"/>
+    </target>
+
+    <target name="-display-browser-nb" if="do.display.browser.nb">
+        <nbbrowse url="${{client.url}}" context="${{browser.context}}" urlPath="${{client.urlPart}}"/>
     </target>
 
     <target name="-get-browser" if="do.display.browser.cl" unless="browser">
@@ -722,6 +749,7 @@ exists or setup the property manually. For example like this:
         <xsl:attribute name="unless">app.client</xsl:attribute>
         <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}" clientModuleUri="${{client.module.uri}}"/>
         <antcall target="connect-debugger"/>
+        <antcall target="debug-display-browser-old"/>
         <antcall target="debug-display-browser"/>
     </target>
 
@@ -747,8 +775,11 @@ exists or setup the property manually. For example like this:
         </nbjpdaconnect>
     </target>
     <!-- fix for issue 119066 -->
-    <target name="debug-display-browser" if="do.display.browser">
+    <target name="debug-display-browser-old" if="do.display.browser.old">
         <nbbrowse url="${{client.url}}"/>
+    </target>
+    <target name="debug-display-browser" if="do.display.browser">
+        <nbbrowse url="${{client.url}}" context="${{browser.context}}" urlPath="${{client.urlPart}}"/>
     </target>
 
     <!-- application client debugging -->
