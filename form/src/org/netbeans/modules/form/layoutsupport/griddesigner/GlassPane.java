@@ -50,7 +50,9 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.Point;
 import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
+import java.awt.event.InputEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -110,8 +112,6 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     private Set<Component> selection = new HashSet<Component>();
     /** Focused component, i.e., component recently clicked. */
     private Component focusedComponent;
-    /** Modifiers of the last mouse press. */
-    private int mouseModifiers;
     /** Selected columns. */
     private BitSet selectedColumns = new BitSet();
     /** Selected rows. */
@@ -911,7 +911,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     }
 
     /**
-     * Returns {@code x} grid coordinate that correspons to the given
+     * Returns {@code x} grid coordinate that corresponds to the given
      * pixel coordinate ({@code xComponentPaneCoordinate}).
      *
      * @param xComponentPaneCoordinate pixel coordinate.
@@ -947,7 +947,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
     }
 
     /**
-     * Returns {@code y} grid coordinate that correspons to the given
+     * Returns {@code y} grid coordinate that corresponds to the given
      * pixel coordinate ({@code yComponentPaneCoordinate}).
      *
      * @param yComponentPaneCoordinate pixel coordinate.
@@ -996,6 +996,16 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     continue;
                 }
                 Rectangle rect = fromComponentPane(comp.getBounds());
+                if (rect.contains(innerPanePoint)) {
+                    return comp;
+                }
+            }
+            // no component clicked directly, try to select some based on click in a grid cell
+            for (Component comp : componentPane.getComponents()) {
+                if (GridUtils.isPaddingComponent(comp)) {
+                    continue;
+                }
+                Rectangle rect = fromComponentPane(selectionResizingBounds(comp));
                 if (rect.contains(innerPanePoint)) {
                     return comp;
                 }
@@ -1188,6 +1198,89 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         }
     }
 
+    private static boolean ctrlOrCmdModifier(MouseEvent e) {
+        if (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() == InputEvent.META_MASK) { // on Mac
+            return (e.getModifiers() & InputEvent.META_DOWN_MASK) == InputEvent.META_DOWN_MASK;
+        }
+        return (e.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
+    }
+
+    private void showPopupMenu(Point point) {
+        List<GridAction> actions = null;
+        // Component actions
+        DesignerContext context = currentContext();
+        if (!selection.isEmpty()) {
+            context.setFocusedComponent(focusedComponent);
+            actions = gridManager.designerActions(GridAction.Context.COMPONENT);
+        }
+
+        // Column actions
+        int column = findColumnHeader(point);
+        context.setFocusedColumn(column);
+        if (column != -1) {
+            actions = gridManager.designerActions(GridAction.Context.COLUMN);
+        }
+
+        // Row actions
+        int row = findRowHeader(point);
+        context.setFocusedRow(row);
+        if (row != -1) {
+            actions = gridManager.designerActions(GridAction.Context.ROW);
+        }
+
+        // Grid actions
+        if (column == -1 && row == -1) {
+            Point shift = fromComponentPane(new Point());
+            int x = gridInfo.getX();
+            int y = gridInfo.getY();
+            int width = gridInfo.getWidth();
+            int height = gridInfo.getHeight();
+            Rectangle rect = new Rectangle(x+shift.x, y+shift.y, width, height);
+            if (rect.contains(point)) {
+                focusedCellColumn = gridXLocation(point.x-shift.x, true);
+                focusedCellRow = gridYLocation(point.y-shift.y, true);
+                if( !gridInfo.isGapColumn(focusedCellColumn) && !gridInfo.isGapRow(focusedCellRow) ) {
+                    context.setFocusedColumn(focusedCellColumn);
+                    context.setFocusedRow(focusedCellRow);
+                    List<GridAction> moreActions = gridManager.designerActions(GridAction.Context.CELL);
+                    if (moreActions != null && !moreActions.isEmpty()) {
+                        if (actions == null) {
+                            actions = moreActions;
+                        } else {
+                            List<GridAction> l = new ArrayList<GridAction>(actions.size() + moreActions.size());
+                            l.addAll(actions);
+                            l.addAll(moreActions);
+                            actions = l;
+                        }
+                    }
+                } else {
+                    focusedCellColumn = -1;
+                    focusedCellRow = -1;
+                }
+            }
+        } else {
+            focusedCellColumn = -1;
+            focusedCellRow = -1;
+        }
+
+        if (actions != null) {
+            JPopupMenu menu = new JPopupMenu();
+            for (GridAction action : actions) {
+                JMenuItem menuItem = action.getPopupPresenter(GlassPane.this);
+                if (menuItem == null) {
+                    GridActionWrapper wrapper = new GridActionWrapper(action);
+                    wrapper.setDesignerContext(context);
+                    menu.add(wrapper);
+                } else {
+                    menu.add(menuItem);
+                }
+            }
+            designer.updateContextMenu(context, menu);
+            draggingStart = null;
+            menu.show(GlassPane.this, point.x, point.y);
+        }
+    }
+
     /**
      * Listener for glass-pane user gestures.
      */
@@ -1197,24 +1290,40 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         public void mousePressed(MouseEvent e) {
             Point point = e.getPoint();
             draggingStart = point;
-            mouseModifiers = e.getModifiersEx();
-            if (SwingUtilities.isLeftMouseButton(e)) {
+            boolean leftMousePressed = (e.getButton() == MouseEvent.BUTTON1);
+            boolean rightMousePressed = (e.getButton() == MouseEvent.BUTTON3);
+            if (leftMousePressed) {
                 if (resizingMode == 0) {
                     focusedComponent = findComponent(point);
-                    if (!selection.contains(focusedComponent) && (mouseModifiers & MouseEvent.CTRL_DOWN_MASK) == 0) {
-                        // Component selection
-                        setSelection(focusedComponent);
+                    if (e.isPopupTrigger()) { // Mac
+                        if (!selection.contains(focusedComponent)) {
+                            setSelection(focusedComponent);
+                        }
+                        showPopupMenu(point);
+                    } else  if (!e.isShiftDown()) { // shift adding to selection on mouse release
+                        if (focusedComponent != null && ctrlOrCmdModifier(e)) {
+                            Set<Component> newSelection = new HashSet<Component>();
+                            newSelection.addAll(selection);
+                            if (selection.contains(focusedComponent)) {
+                                newSelection.remove(focusedComponent);
+                            } else {
+                                newSelection.add(focusedComponent);
+                            }
+                            setSelection(newSelection);
+                        } else if (!selection.contains(focusedComponent)) {
+                            setSelection(focusedComponent);
+                        }
                     }
-                    // Column selection
-                    int column = findColumnHeader(point);
-                    if (column != -1) {
-//                        selectedColumns.flip(column);
-                    }
-                    // Row selection
-                    int row = findRowHeader(point);
-                    if (row != -1) {
-//                        selectedRows.flip(row);
-                    }
+//                    // Column selection
+//                    int column = findColumnHeader(point);
+//                    if (column != -1) {
+////                        selectedColumns.flip(column);
+//                    }
+//                    // Row selection
+//                    int row = findRowHeader(point);
+//                    if (row != -1) {
+////                        selectedRows.flip(row);
+//                    }
                 } else {
                     // Resizing (start)
                     resizing = true;
@@ -1226,10 +1335,16 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     newGridWidth = gridInfo.getGridWidth(focusedComponent);
                     initSelFields();
                 }
-            } else if (SwingUtilities.isRightMouseButton(e)) {
-                focusedComponent = findComponent(point);
-                if (!selection.contains(focusedComponent)) {
-                    setSelection(focusedComponent);
+            } else if (rightMousePressed) {
+                if (moving || resizing) {
+                    moving = false;
+                    resizing = false;
+                    draggingStart = null;
+                } else {
+                    focusedComponent = findComponent(point);
+                    if (!selection.contains(focusedComponent)) {
+                        setSelection(focusedComponent);
+                    }
                 }
             }
             repaint();
@@ -1246,11 +1361,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 changeLocation();
             } else if (selecting) {
                 selecting = false;
-                boolean inverse = (mouseModifiers & MouseEvent.CTRL_DOWN_MASK) != 0;
                 Set<Component> newSelection = new HashSet<Component>();
-                if (inverse) {
-                    newSelection.addAll(selection);
-                }
                 Rectangle paneRect = fromComponentPane(new Rectangle(new Point(), componentPane.getSize()));
                 for (Component comp : componentPane.getComponents()) {
                     if (GridUtils.isPaddingComponent(comp)) {
@@ -1259,7 +1370,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     Rectangle rect = fromComponentPane(comp.getBounds());
                     rect = rect.intersection(paneRect);
                     if (draggingRect.intersects(rect)) {
-                        if (inverse && newSelection.contains(comp)) {
+                        if (newSelection.contains(comp)) {
                             newSelection.remove(comp);
                         } else {
                             newSelection.add(comp);
@@ -1267,94 +1378,25 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                     }
                 }
                 setSelection(newSelection);
-            } else {
-                if (SwingUtilities.isLeftMouseButton(e)) {
-                    if ((focusedComponent != null) && (mouseModifiers & MouseEvent.CTRL_DOWN_MASK) != 0) {
+            } else { // no dragging, just a click
+                boolean leftMouseReleased = (e.getButton() == MouseEvent.BUTTON1);
+                focusedComponent = findComponent(point);
+                if (e.isPopupTrigger()) {
+                    if (draggingStart != null) { // i.e. right click did not cancel dragging
+                        if (!selection.contains(focusedComponent)) {
+                            setSelection(focusedComponent);
+                        }
+                        showPopupMenu(point);
+                    }
+                } else if (leftMouseReleased && e.isShiftDown()) {
+                    if (focusedComponent != null && !selection.contains(focusedComponent)) {
                         Set<Component> newSelection = new HashSet<Component>();
                         newSelection.addAll(selection);
-                        if (selection.contains(focusedComponent)) {
-                            newSelection.remove(focusedComponent);
-                        } else {
-                            newSelection.add(focusedComponent);
-                        }
+                        newSelection.add(focusedComponent);
                         setSelection(newSelection);
-                    } else {
-                        setSelection(focusedComponent);
                     }
-                }
-                if (SwingUtilities.isRightMouseButton(e)) {
-                    focusedComponent = findComponent(point);
-                    // Normally, this happens when mouse is pressed.
-                    // Unfortunately, we don't receive mouse press event
-                    // when this mouse press event cancels previously shown
-                    // popup. Hence, we do this check again for mouse release.
-                    if (!selection.contains(focusedComponent) && (focusedComponent != null)) {
-                        setSelection(focusedComponent);
-                    }
-                    List<GridAction> actions = null;
-                    // Component actions
-                    DesignerContext context = currentContext();
-                    if (!selection.isEmpty()) {
-                        context.setFocusedComponent(focusedComponent);
-                        actions = gridManager.designerActions(GridAction.Context.COMPONENT);
-                    }
-
-                    // Column actions
-                    int column = findColumnHeader(point);
-                    context.setFocusedColumn(column);
-                    if (column != -1) {
-                        actions = gridManager.designerActions(GridAction.Context.COLUMN);
-                    }
-
-                    // Row actions
-                    int row = findRowHeader(point);
-                    context.setFocusedRow(row);
-                    if (row != -1) {
-                        actions = gridManager.designerActions(GridAction.Context.ROW);
-                    }
-
-                    // Grid actions
-                    if (selection.isEmpty() && (column == -1) && (row == -1)) {
-                        Point shift = fromComponentPane(new Point());
-                        int x = gridInfo.getX();
-                        int y = gridInfo.getY();
-                        int width = gridInfo.getWidth();
-                        int height = gridInfo.getHeight();
-                        Rectangle rect = new Rectangle(x+shift.x, y+shift.y, width, height);
-                        if (rect.contains(point)) {
-                            focusedCellColumn = gridXLocation(point.x-shift.x, true);
-                            focusedCellRow = gridYLocation(point.y-shift.y, true);
-                            if( !gridInfo.isGapColumn(focusedCellColumn) && !gridInfo.isGapRow(focusedCellRow) ) {
-                                context.setFocusedColumn(focusedCellColumn);
-                                context.setFocusedRow(focusedCellRow);
-                                actions = gridManager.designerActions(GridAction.Context.CELL);
-                            } else {
-                                focusedCellColumn = -1;
-                                focusedCellRow = -1;
-                            }
-                        }
-                    } else {
-                        focusedCellColumn = -1;
-                        focusedCellRow = -1;
-                    }
-
-                    if (actions != null) {
-                        JPopupMenu menu = new JPopupMenu();
-                        for (GridAction action : actions) {
-                            JMenuItem menuItem = action.getPopupPresenter(GlassPane.this);
-                            if (menuItem == null) {
-                                GridActionWrapper wrapper = new GridActionWrapper(action);
-                                wrapper.setDesignerContext(context);
-                                menu.add(wrapper);
-                            } else {
-                                menu.add(menuItem);
-                            }
-                        }
-                        designer.updateContextMenu(context, menu);
-                        draggingStart = null;
-                        menu.show(GlassPane.this, point.x, point.y);
-                    }
-
+                } else if (!ctrlOrCmdModifier(e) && draggingStart != null) { // not releasing after multiselect or canceled dragging
+                    setSelection(focusedComponent); // force single select
                 }
             }
             repaint();
@@ -1376,7 +1418,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
             if (resizing) {
                 draggingRect = calculateResizingRectangle(e.getPoint(), focusedComponent);
                 calculateResizingGridLocation();
-            } else if (focusedComponent == null) {
+            } else if (focusedComponent == null || e.isShiftDown()) {
                 selecting = true;
                 draggingRect = new Rectangle(draggingStart);
                 draggingRect.add(e.getPoint());
@@ -1384,14 +1426,6 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 if (SwingUtilities.isLeftMouseButton(e)) {
                     if (!moving) {
                         // Moving start
-                        if (!selection.contains(focusedComponent)) {
-                            Set<Component> newSelection = new HashSet<Component>();
-                            if ((mouseModifiers & MouseEvent.CTRL_DOWN_MASK) != 0) {
-                                newSelection.addAll(selection);
-                            }
-                            newSelection.add(focusedComponent);
-                            setSelection(newSelection);
-                        }
                         newGridHeight = gridInfo.getGridHeight(focusedComponent);
                         newGridWidth = gridInfo.getGridWidth(focusedComponent);
                         initSelFields();
@@ -1613,6 +1647,5 @@ public class GlassPane extends JPanel implements GridActionPerformer {
         }
 
     }
-
 
 }

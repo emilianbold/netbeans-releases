@@ -194,7 +194,13 @@ public final class FindBugsPanel extends javax.swing.JPanel {
             selectById(cc.getPreselectId().substring(RunFindBugs.PREFIX_FINDBUGS.length()));
             bugsTree.getSelectionModel().addTreeSelectionListener(new TreeSelectionListener() {
                 @Override public void valueChanged(TreeSelectionEvent e) {
-                    DefaultMutableTreeNode node = (DefaultMutableTreeNode) bugsTree.getSelectionPath().getLastPathComponent();
+                    TreePath newPath = bugsTree.getSelectionPath();
+                    DefaultMutableTreeNode node;
+                    if (newPath==null) {
+                        node = (DefaultMutableTreeNode) e.getOldLeadSelectionPath().getLastPathComponent();
+                    } else {
+                        node = (DefaultMutableTreeNode) newPath.getLastPathComponent();
+                    }                    
                     Object user = node.getUserObject();
 
                     if (user instanceof BugPattern) {
