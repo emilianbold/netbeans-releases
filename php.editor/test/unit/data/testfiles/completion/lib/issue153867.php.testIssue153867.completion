@@ -48,7 +48,11 @@ PACKAGE    Test_03                         [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    Trest                           [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
+PACKAGE    a                               [PUBLIC]   null
+PACKAGE    b                               [PUBLIC]   null
 PACKAGE    bar                             [PUBLIC]   null
+PACKAGE    c                               [PUBLIC]   null
+PACKAGE    d                               [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
 PACKAGE    foo                             [PUBLIC]   null
 ------------------------------------
@@ -88,6 +92,7 @@ PACKAGE    f                               [PUBLIC]   Test204925_08_C\d\e
 PACKAGE    lib                             [PUBLIC]   foo
 PACKAGE    url                             [PUBLIC]   foo\lib
 CLASS      A                               [PUBLIC]   Test197084.php
+CLASS      A                               [PUBLIC,   a
 CLASS      A                               [PUBLIC]   classConstructorOptionalParam.php
 CLASS      A                               [PUBLIC]   issue195232.php
 CLASS      A                               [PUBLIC]   test.php
@@ -104,6 +109,7 @@ CLASS      ArraysCc                        [PUBLIC]   arrays.php
 CLASS      Author                          [PUBLIC]   mixedtypes.php
 CLASS      Author_1                        [PUBLIC]   mixedtypes_1.php
 CLASS      B                               [PUBLIC]   Test197084.php
+CLASS      B                               [PUBLIC]   b
 CLASS      B                               [PUBLIC]   issue195232.php
 CLASS      B                               [PUBLIC]   test.php
 CLASS      B135618                         [PUBLIC]   issue135618.php
@@ -129,6 +135,7 @@ CLASS      Book_1                          [PUBLIC]   mixedtypes_1.php
 CLASS      Book_Abstract                   [PUBLIC,   test203332_01.php
 CLASS      Brejla                          [PUBLIC]   test211230.php
 CLASS      Buuu                            [PUBLIC]   ShowMe
+CLASS      C                               [PUBLIC]   c
 CLASS      C                               [PUBLIC]   test.php
 CLASS      CIface1                         [PUBLIC]   First
 CLASS      CIface2                         [PUBLIC]   Second
@@ -161,6 +168,7 @@ CLASS      ComplexObject                   [PUBLIC]   issue159970.php
 CLASS      Control                         [PUBLIC]   Nette\Application\UI
 CLASS      Controller                      [PUBLIC]   Brite\Controller
 CLASS      CultureTable                    [PUBLIC]   test203332_02.php
+CLASS      D                               [PUBLIC]   d
 CLASS      DatabaseRecord                  [PUBLIC]   DatabaseRecord.php
 CLASS      Delme1                          [PUBLIC]   delme
 CLASS      Delme2                          [PUBLIC]   Delme2.php
