@@ -318,14 +318,14 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 is = templatePanel.getLayoutCSS();
                 JSFFrameworkProvider.createFile(cssFile, JSFFrameworkProvider.readResource(is, ENCODING), ENCODING);
             }
-            String layoutPath = JSFUtils.getRelativePath(target, cssFile);
+            String layoutPath = getResourceRelativePath(target, cssFile);
             cssFile = cssTargetFolder.getFileObject("default", CSS_EXT);  //NOI18N
             if (cssFile == null) {
                 cssFile = cssTargetFolder.createData("default", CSS_EXT); //NOI18N
                 is = templatePanel.getDefaultCSS();
                 JSFFrameworkProvider.createFile(cssFile, JSFFrameworkProvider.readResource(is, ENCODING), ENCODING);
             }
-            String defaultPath = JSFUtils.getRelativePath(target, cssFile);
+            String defaultPath = getResourceRelativePath(target, cssFile);
 
             is = templatePanel.getTemplate();
             String content = JSFFrameworkProvider.readResource(is, ENCODING);
@@ -350,6 +350,17 @@ public class TemplateIterator implements TemplateWizard.Iterator {
 
         public FileObject getResult() {
             return result;
+        }
+
+        private static String getResourceRelativePath(FileObject fromFO, FileObject toFO) {
+            String relativePath = JSFUtils.getRelativePath(fromFO, toFO);
+            if (relativePath.contains("resources")) {   //NOI18N
+                // web resource in the resources folder (common Facelet Template)
+                return "./css/" + toFO.getNameExt();    //NOI18N
+            } else {
+                // web resource in the subdir of the Resource Library Contract
+                return relativePath;
+            }
         }
     }
 }
