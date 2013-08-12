@@ -92,4 +92,9 @@ public class Issue233813Test extends HintTestBase {
             ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
         );
     }
+
+    @Override
+    protected boolean classPathContainsBinaries() {
+        return true;
+    }
 }
