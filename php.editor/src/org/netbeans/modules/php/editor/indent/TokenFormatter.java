@@ -50,6 +50,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
@@ -360,13 +361,10 @@ public class TokenFormatter {
         doc.runAtomic(new Runnable() {
             @Override
             public void run() {
-
                 final AtomicLong start = new AtomicLong(System.currentTimeMillis());
-
-                TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, 0);
-
-                final int caretOffset = EditorRegistry.lastFocusedComponent() != null
-                        ? EditorRegistry.lastFocusedComponent().getCaretPosition()
+                JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
+                final int caretOffset = lastFocusedComponent != null
+                        ? lastFocusedComponent.getCaretPosition()
                         : unitTestCarretPosition == -1 ? 0 : unitTestCarretPosition;
                 FormatVisitor fv = new FormatVisitor(doc, caretOffset, formatContext.startOffset(), formatContext.endOffset());
                 phpParseResult.getProgram().accept(fv);
@@ -376,20 +374,18 @@ public class TokenFormatter {
                     long end = System.currentTimeMillis();
                     LOGGER.log(Level.FINE, "Creating formating stream took: {0} ms", (end - start.get()));
                 }
-
-                if (ts == null) { // if PHP is not top language
-                    return;
-                }
                 if (LOGGER.isLoggable(Level.FINE)) {
+                    TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, 0);
+                    if (ts == null) {
+                        return;
+                    }
                     LOGGER.log(Level.FINE, "Tokens in TS: {0}", ts.tokenCount());
                     LOGGER.log(Level.FINE, "Format tokens: {0}", formatTokens.size());
                 }
                 MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
                 try {
                     mti.tokenHierarchyControl().setActive(false);
-
                     start.set(System.currentTimeMillis());
-
                     int delta = 0;
                     // keeps the indentation of the php code. In a file, where is php
                     // mixed together with html it reflects also the "html" shift.
@@ -2313,13 +2309,13 @@ public class TokenFormatter {
 
             private int replaceSimpleString(BaseDocument document, int realOffset, String oldText, String newText, int delta) {
                 try {
+                    int removeLength = 0;
                     if (oldText.length() > 0) {
-                        int removeLength = realOffset + oldText.length() < document.getLength()
+                        removeLength = realOffset + oldText.length() < document.getLength()
                                 ? oldText.length()
                                 : document.getLength() - realOffset;
-                        document.remove(realOffset, removeLength);
                     }
-                    document.insertString(realOffset, newText, null);
+                    document.replace(realOffset, removeLength, newText, null);
                     delta = delta - oldText.length() + newText.length();
                 } catch (BadLocationException ex) {
                     LOGGER.throwing(TokenFormatter.this.getClass().getName(), "replaceSimpleSring", ex); //NOI18N
