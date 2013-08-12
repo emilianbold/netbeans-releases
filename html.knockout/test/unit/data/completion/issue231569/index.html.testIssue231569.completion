@@ -7,14 +7,13 @@ CLASS      $context                        [PRIVATE]  index.html
 CLASS      $parentContext                  [PRIVATE]  index.html
 CLASS      UNKNOWN                         [PUBLIC]   index.html
 CLASS      ko                              [PUBLIC]   Knockout
-FIELD      savedLists                      [PUBLIC]   index.html
-FIELD      userNameToAddIsValid            [PUBLIC]   index.html
 VARIABLE   $data: ko.$bindings             [PRIVATE]  index.html
 VARIABLE   $element                        [PRIVATE]  index.html
 VARIABLE   $parent: undefined              [PRIVATE]  index.html
 VARIABLE   $parents: Array                 [PRIVATE]  index.html
 VARIABLE   $root: ko.$bindings             [PRIVATE]  index.html
 VARIABLE   arguments: Arguments            [PRIVATE]  index.html
+VARIABLE   savedLists                      [PUBLIC]   index.html
 VARIABLE   undefined                       [PUBLIC]   index.html
 VARIABLE   userNameToAdd                   [PUBLIC]   index.html
 KEYWORD    break                                      null

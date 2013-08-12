@@ -44,6 +44,7 @@ package org.netbeans.modules.javascript2.editor.model.impl;
 import java.util.Stack;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.JsWith;
 
 /**
  *
@@ -56,6 +57,7 @@ public final class ModelBuilder {
     private Stack<DeclarationScopeImpl> functionStack;
     private int anonymObjectCount;
     private int withObjectCount;
+    private JsWith currentWith;
     
     ModelBuilder(JsFunctionImpl globalObject) {
         this.globalObject = globalObject;
@@ -64,6 +66,7 @@ public final class ModelBuilder {
         anonymObjectCount = 0;
         withObjectCount = 0;
         setCurrentObject(globalObject);
+        currentWith = null;
     }
     
     
@@ -104,12 +107,19 @@ public final class ModelBuilder {
         if (object instanceof DeclarationScopeImpl) {
             this.functionStack.push((DeclarationScopeImpl)object);
         }
+        if (object instanceof JsWith) {
+            this.currentWith = (JsWith)object;
+        }
     }
     
     void reset() {
         if (!stack.empty()) {
-            if (stack.pop() instanceof DeclarationScopeImpl && !functionStack.empty()) {
+            JsObject object = stack.pop();
+            if (object instanceof DeclarationScopeImpl && !functionStack.empty()) {
                 functionStack.pop();
+            }
+            if (object instanceof JsWith && currentWith != null) {
+                currentWith = currentWith.getOuterWith();
             }
         }
     }
@@ -127,4 +137,7 @@ public final class ModelBuilder {
 //        return functionScope;
 //    }
     
+    public JsWith getCurrentWith() {
+        return currentWith;
+    }
 }

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.Set;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
@@ -68,6 +69,7 @@ public class JsWithObjectImpl extends JsObjectImpl implements JsWith {
     private JsWith outerWith;
     private Collection<JsWith> innerWith = new ArrayList<JsWith>();
     private OffsetRange expressionRange;
+    private Set<JsObject> assignedIn = new HashSet<JsObject>();
     
     public JsWithObjectImpl(JsObject parent, String name, Collection<TypeUsage> withTypes,
             OffsetRange offsetRange, OffsetRange expressionRange, String mimeType, String sourceLabel) {
@@ -114,6 +116,14 @@ public class JsWithObjectImpl extends JsObjectImpl implements JsWith {
         }
     }
 
+    public Collection<JsObject> getObjectWithAssignment() {
+        return this.assignedIn;
+    }
+    
+    public void addObjectWithAssignment(JsObject object) {
+        this.assignedIn.add(object);
+    }
+    
     private boolean resolveWith(JsWithObjectImpl withObject, JsObject property) {
         JsObject global = ModelUtils.getGlobalObject(withObject.getParent());
         for (TypeUsage typeUsage : withObject.getTypes()) {

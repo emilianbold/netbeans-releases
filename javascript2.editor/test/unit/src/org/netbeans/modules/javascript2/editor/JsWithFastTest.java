@@ -201,4 +201,24 @@ public class JsWithFastTest extends JsWithBase {
         checkOccurrences("testfiles/with/inner03.js", "with (hou^se) {", true);
     }
     
+    public void testVarInWith_01() throws Exception {
+        checkSemantic("testfiles/with/varInWith01.js"); 
+        checkStructure("testfiles/with/varInWith01.js");
+    }
+    
+    public void testVarInWith_02() throws Exception {
+        checkOccurrences("testfiles/with/varInWith01.js", "var myDataVarInWith = truhl^ik;", true); 
+    }
+    
+    public void testVarInWith_03() throws Exception {
+        checkOccurrences("testfiles/with/varInWith01.js", "with (MyContext.ok^no) {", true); 
+    }
+    
+    public void testVarInWith_04() throws Exception {
+        checkOccurrences("testfiles/with/varInWith01.js", "with (MyCont^ext.okno) {", true); 
+    }
+    
+    public void testVarInWith_05() throws Exception {
+        checkOccurrences("testfiles/with/varInWith01.js", "console.log(myDataVarI^nWith);", true); 
+    }
 }

@@ -95,6 +95,8 @@ public class ModelUtils {
     
     private static final String GENERATED_ANONYM_PREFIX = "Anonym$"; //NOI18N
     
+    private static final List<String> KNOWN_TYPES = Arrays.asList(Type.ARRAY, Type.STRING, Type.BOOLEAN, Type.NUMBER, Type.UNDEFINED);
+    
     public static JsObjectImpl getJsObject (ModelBuilder builder, List<Identifier> fqName, boolean isLHS) {
         JsObject result = builder.getCurrentObject();
         JsObject tmpObject = null;
@@ -362,11 +364,24 @@ public class ModelUtils {
         return result;
     }
 
-    public static Collection<TypeUsage> resolveSemiTypeOfExpression(JsParserResult parserResult, Node expression) {
+    public static Collection<TypeUsage> resolveSemiTypeOfExpression(ModelBuilder builder, Node expression) {
         Collection<TypeUsage> result = new HashSet<TypeUsage>();
         SemiTypeResolverVisitor visitor = new SemiTypeResolverVisitor();
         if (expression != null) {
             result = visitor.getSemiTypes(expression);
+        }
+        if (builder.getCurrentWith()!= null) {
+            Collection<TypeUsage> withResult = new HashSet<TypeUsage>();
+            String withSemi = SemiTypeResolverVisitor.ST_WITH + builder.getCurrentWith().getFullyQualifiedName();
+            
+            for(TypeUsage type : result) {
+                if (!KNOWN_TYPES.contains(type.getType())) {
+                    withResult.add(new TypeUsageImpl(withSemi + type.getType(), type.getOffset(), type.isResolved()));
+                } else {
+                    withResult.add(type);
+                }
+            }
+            result = withResult;
         }
         return result;
     }
@@ -928,9 +943,9 @@ public class ModelUtils {
     public static List<String> expressionFromType(TypeUsage type) {
         String sexp = type.getType();
         if ((sexp.startsWith("@exp;") || sexp.startsWith("@new;") || sexp.startsWith("@arr;")
-                || sexp.startsWith("@call;")) && (sexp.length() > 5)) {
+                || sexp.startsWith("@call;") || sexp.startsWith(SemiTypeResolverVisitor.ST_WITH)) && (sexp.length() > 5)) {
             
-            int start = sexp.startsWith("@call;") || sexp.startsWith("@arr;") ? 1 : sexp.charAt(5) == '@' ? 6 : 5;
+            int start = sexp.startsWith("@call;") || sexp.startsWith("@arr;") || sexp.startsWith(SemiTypeResolverVisitor.ST_WITH) ? 1 : sexp.charAt(5) == '@' ? 6 : 5;
             sexp = sexp.substring(start);
             List<String> nExp = new ArrayList<String>();
             String[] split = sexp.split("@");
@@ -940,7 +955,9 @@ public class ModelUtils {
                     nExp.add("@arr");
                 } else if (split[i].startsWith("call;")) {
                     nExp.add("@mtd");
-                } else {
+                } else if (split[i].startsWith("with;")) {
+                    nExp.add("@with");
+                }else {
                     nExp.add("@pro");
                 }
             }
@@ -993,15 +1010,33 @@ public class ModelUtils {
     private static void resolveAssignments(Model model, JsObject jsObject, int offset, List<JsObject> resolvedObjects, List<TypeUsage> resolvedTypes) {
         Collection<? extends Type> assignments = jsObject.getAssignmentForOffset(offset);
         for (Type typeName : assignments) {
-            
-            JsObject byOffset = findObjectForOffset(typeName.getType(), offset, model);
-            if (byOffset != null) {
-                if(!jsObject.getName().equals(byOffset.getName())) {
-                    resolvedObjects.add(byOffset);
-                    resolveAssignments(model, byOffset, offset, resolvedObjects, resolvedTypes);
+            String type = typeName.getType();
+            if (type.startsWith(SemiTypeResolverVisitor.ST_WITH)) {
+                List<String> expression = expressionFromType((TypeUsage)typeName);
+                Collection<? extends TypeUsage> typesFromWith = ModelUtils.getTypeFromWith(model, typeName.getOffset());
+                expression.remove(expression.size() - 1);
+                expression.remove(expression.size() - 1);
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = expression.size() - 1; i > 0; i--) {
+                    sb.append(expression.get(i--));
+                    sb.append(";");
+                    sb.append(expression.get(i));
                 }
+                for (TypeUsage typeWith: typesFromWith) {
+                    resolvedTypes.add(new TypeUsageImpl(SemiTypeResolverVisitor.ST_EXP + typeWith.getType() + sb.toString(), typeName.getOffset(), false));
+                }
+                
             } else {
-                resolvedTypes.add((TypeUsage)typeName);
+                JsObject byOffset = findObjectForOffset(typeName.getType(), offset, model);
+                if (byOffset != null) {
+                    if(!jsObject.getName().equals(byOffset.getName())) {
+                        resolvedObjects.add(byOffset);
+                        resolveAssignments(model, byOffset, offset, resolvedObjects, resolvedTypes);
+                    }
+                } else {
+                    resolvedTypes.add((TypeUsage)typeName);
+                }
             }
         }
     }

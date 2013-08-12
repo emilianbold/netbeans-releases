@@ -10,14 +10,13 @@ CLASS      ko                              [PUBLIC]   Knockout
 METHOD     init(): undefined               [PUBLIC]   index.html
 FIELD      age: Number                     [PUBLIC]   index.html
 FIELD      jmeno                           [PUBLIC]   index.html
-FIELD      lidickove: Array                [PUBLIC]   index.html
-FIELD      pepa: Clobrda                   [PUBLIC]   index.html
-VARIABLE   $data: pepa                     [PRIVATE]  index.html
+VARIABLE   $data: ko.$bindings@with;_L104  [PRIVATE]  index.html
 VARIABLE   $element                        [PRIVATE]  index.html
 VARIABLE   $parent: ko.$bindings           [PRIVATE]  index.html
 VARIABLE   $parents: Array                 [PRIVATE]  index.html
 VARIABLE   $root: ko.$bindings             [PRIVATE]  index.html
 VARIABLE   arguments: Arguments            [PRIVATE]  index.html
+VARIABLE   lidickove                       [PUBLIC]   index.html
 VARIABLE   undefined                       [PUBLIC]   index.html
 KEYWORD    break                                      null
 KEYWORD    case                                       null
