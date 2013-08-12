@@ -524,7 +524,7 @@ public class ClientSideProject implements Project {
     private static class OpenHookImpl extends ProjectOpenedHook implements PropertyChangeListener {
 
         private final ClientSideProject project;
-        private final FileChangeListener siteRootChangesListener;
+        private FileChangeListener siteRootChangesListener;
 
         // @GuardedBy("this")
         private File siteRootFolder;
@@ -532,7 +532,6 @@ public class ClientSideProject implements Project {
 
         public OpenHookImpl(ClientSideProject project) {
             this.project = project;
-            siteRootChangesListener = new SiteRootFolderListener(project);
         }
 
         @Override
@@ -577,6 +576,7 @@ public class ClientSideProject implements Project {
                 LOGGER.log(Level.WARNING, "File not found for FileObject: {0}", siteRoot);
                 return;
             }
+            siteRootChangesListener = new SiteRootFolderListener(project);
             FileUtil.addRecursiveListener(siteRootChangesListener, siteRootFolder);
         }
 
@@ -610,9 +610,11 @@ public class ClientSideProject implements Project {
     private static class SiteRootFolderListener implements FileChangeListener {
 
         private final ClientSideProject p;
+        private final FileObject siteRootFolder;;
 
         SiteRootFolderListener(ClientSideProject p) {
             this.p = p;
+            siteRootFolder = p.getSiteRootFolder();
         }
 
         @Override
@@ -647,6 +649,13 @@ public class ClientSideProject implements Project {
         public void fileRenamed(FileRenameEvent fe) {
             // XXX: notify BrowserReload about filename change
             checkPreprocessors(fe.getFile(), fe.getName(), fe.getExt());
+            
+            if (fe.getFile().equals(siteRootFolder)) {
+                final ClientSideProjectProperties projectProperties = new ClientSideProjectProperties(p);
+                projectProperties.setSiteRootFolder(siteRootFolder.getNameExt());
+                projectProperties.save();
+            }
+            
         }
 
         @Override
