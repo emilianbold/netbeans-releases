@@ -109,12 +109,14 @@ public final class FindBugsPanel extends javax.swing.JPanel {
     private final Map<BugCategory, List<BugPattern>> categorizedBugs = new HashMap<BugCategory, List<BugPattern>>();
     private final Map<String, TreePath> bug2Path =  new HashMap<String, TreePath>();
     private DefaultTreeModel treeModel;
+    private final FindBugsOptionsPanelController controller;
     private final OptionsFilter filter;
     private final CustomizerContext<?, ?> cc;
 
     @Messages("LBL_Loading=Loading...")
-    public FindBugsPanel(final @NullAllowed OptionsFilter filter, final @NullAllowed CustomizerContext<?, ?> cc) {
+    public FindBugsPanel(@NullAllowed FindBugsOptionsPanelController controller, final @NullAllowed OptionsFilter filter, final @NullAllowed CustomizerContext<?, ?> cc) {
         defaultsToDisabled = cc != null;
+        this.controller = controller;
         this.filter = filter;
         this.cc = cc;
         reinitialize();
@@ -266,11 +268,13 @@ public final class FindBugsPanel extends javax.swing.JPanel {
             BugPattern bp = (BugPattern)user;
             boolean value = enabled(bp);
             settings.putBoolean(bp.getType(), !value);
+            if (controller != null) controller.changed();
             treeModel.nodeChanged(node);
             treeModel.nodeChanged(node.getParent());
         }
         else if ( user instanceof BugCategory ) {
             boolean newValue = enabled((BugCategory) user) == State.NOT_SELECTED;
+            boolean changed = false;
 
             for ( int i = 0; i < node.getChildCount(); i++ ) {
                 DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);
@@ -280,10 +284,12 @@ public final class FindBugsPanel extends javax.swing.JPanel {
                     boolean cv = enabled(pattern);
                     if ( cv != newValue ) {
                         settings.putBoolean(pattern.getType(), newValue);
+                        changed |= true;
                         treeModel.nodeChanged( ch );
                     }
                 }
             }
+            if (changed && controller != null) controller.changed();
             treeModel.nodeChanged(node);
         }
 

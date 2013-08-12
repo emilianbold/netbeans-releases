@@ -121,7 +121,7 @@ public final class FindBugsOptionsPanelController extends OptionsPanelController
 
     public synchronized FindBugsPanel getComponent(Lookup masterLookup) {
         if (panel == null) {
-            panel = new FindBugsPanel(masterLookup.lookup(OptionsFilter.class), null);
+            panel = new FindBugsPanel(this, masterLookup.lookup(OptionsFilter.class), null);
         }
         return panel;
     }
