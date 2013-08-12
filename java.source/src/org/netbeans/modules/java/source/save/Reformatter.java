@@ -3133,7 +3133,7 @@ public class Reformatter implements ReformatTask {
                 lastBlankLines = count;
                 lastBlankLinesTokenIndex = tokens.index();
                 lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
-            } else if (lastBlankLines < count || lastBlankLines > maxCount) {
+            } else if (lastBlankLines < count) {
                 lastBlankLines = count;
                 rollback(lastBlankLinesTokenIndex, lastBlankLinesTokenIndex, lastBlankLinesDiff);
             } else {

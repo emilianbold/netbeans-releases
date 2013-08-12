@@ -1586,14 +1586,21 @@ public final class VariousUtils {
         if (typeNames != null) {
             if (!typeNames.matches(SPACES_AND_TYPE_DELIMITERS)) { //NOI18N
                 for (String typeName : typeNames.split("\\" + typeSeparator)) { //NOI18N
-                    if (!typeName.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) && !Type.isPrimitive(typeName)) {
-                        QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeName), offset, inScope);
+                    String typeRawPart = typeName;
+                    String typeArrayPart = "";
+                    int indexOfArrayDelim = typeName.indexOf('[');
+                    if (indexOfArrayDelim != -1) {
+                        typeRawPart = typeName.substring(0, indexOfArrayDelim);
+                        typeArrayPart = typeName.substring(indexOfArrayDelim, typeName.length());
+                    }
+                    if (!typeRawPart.startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR) && !Type.isPrimitive(typeRawPart)) {
+                        QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(QualifiedName.create(typeRawPart), offset, inScope);
                         retval.append(fullyQualifiedName.toString().startsWith(NamespaceDeclarationInfo.NAMESPACE_SEPARATOR)
                                 ? ""
                                 : NamespaceDeclarationInfo.NAMESPACE_SEPARATOR); //NOI18N
-                        retval.append(fullyQualifiedName.toString()).append(typeSeparator);
+                        retval.append(fullyQualifiedName.toString()).append(typeArrayPart).append(typeSeparator);
                     } else {
-                        retval.append(typeName).append(typeSeparator);
+                        retval.append(typeRawPart).append(typeArrayPart).append(typeSeparator);
                     }
                 }
                 assert retval.length() - typeSeparator.length() >= 0 : "retval:" + retval + "# typeNames:" + typeNames; //NOI18N

@@ -243,13 +243,14 @@ public class JSFUtils {
         }
         return value;
     }
-    /** Returns relative path from one file to another file
+    /**
+     * Returns relative path from one file to another file.
      */
-    public static String getRelativePath (FileObject fromFO, FileObject toFO){
+    public static String getRelativePath (FileObject fromFO, FileObject toFO) {
         StringBuilder path = new StringBuilder("./"); //NOI18N
         FileObject parent = fromFO.getParent();
         String tmpPath = null;
-        while (parent != null && (tmpPath = FileUtil.getRelativePath(parent, toFO)) == null){
+        while (parent != null && (tmpPath = FileUtil.getRelativePath(parent, toFO)) == null) {
             parent = parent.getParent();
             path.append("../"); //NOI18N
         }

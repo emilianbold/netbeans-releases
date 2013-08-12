@@ -138,7 +138,7 @@ public class CustomizerTesting extends JPanel {
         storeData();
     }
 
-    @NbBundle.Messages("CustomizerTesting.error.none=At least one testing provider must be selected.")
+    @NbBundle.Messages("CustomizerTesting.error.none=For running tests, at least one testing provider must be selected.")
     private void validateData() {
         assert EventQueue.isDispatchThread();
         if (selectedTestingProviders.isEmpty()) {

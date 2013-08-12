@@ -48,7 +48,11 @@ PACKAGE    Test_03                         [PUBLIC]   null
 PACKAGE    Testing                         [PUBLIC]   null
 PACKAGE    Trest                           [PUBLIC]   null
 PACKAGE    XUser                           [PUBLIC]   null
+PACKAGE    a                               [PUBLIC]   null
+PACKAGE    b                               [PUBLIC]   null
 PACKAGE    bar                             [PUBLIC]   null
+PACKAGE    c                               [PUBLIC]   null
+PACKAGE    d                               [PUBLIC]   null
 PACKAGE    delme                           [PUBLIC]   null
 PACKAGE    foo                             [PUBLIC]   null
 ------------------------------------

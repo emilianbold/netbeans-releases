@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -68,9 +68,9 @@ public final class OperationContainerImpl<Support> {
     private boolean upToDate = false;
     private OperationContainerImpl () {}
     public static final Logger LOGGER = Logger.getLogger (OperationContainerImpl.class.getName ());    
-    private List<OperationInfo<Support>> operations = new CopyOnWriteArrayList<OperationInfo<Support>>();
+    private final List<OperationInfo<Support>> operations = new CopyOnWriteArrayList<OperationInfo<Support>>();
     private Throwable lastModified;
-    private Collection<OperationInfo<Support>> affectedEagers = new HashSet<OperationInfo<Support>> ();
+    private final Collection<OperationInfo<Support>> affectedEagers = new HashSet<OperationInfo<Support>> ();
     public static OperationContainerImpl<InstallSupport> createForInstall () {
         return new OperationContainerImpl<InstallSupport> (OperationType.INSTALL);
     }
@@ -121,7 +121,7 @@ public final class OperationContainerImpl<Support> {
             throw new IllegalArgumentException (updateElement + " is scheduled for restart IDE.");
         }
         if (!isValid) {
-            throw new IllegalArgumentException("Invalid " + updateElement.getCodeName() + " for operation " + type);
+            throw new IllegalArgumentException("Invalid " + updateUnit + " for operation " + type);
         }
         if (isValid) {
             switch (type) {

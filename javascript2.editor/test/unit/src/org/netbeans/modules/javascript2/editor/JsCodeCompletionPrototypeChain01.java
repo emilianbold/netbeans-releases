@@ -104,4 +104,9 @@ public class JsCodeCompletionPrototypeChain01 extends JsCodeCompletionBase {
             ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
         );
     }
+
+    @Override
+    protected boolean classPathContainsBinaries() {
+        return true;
+    }
 }

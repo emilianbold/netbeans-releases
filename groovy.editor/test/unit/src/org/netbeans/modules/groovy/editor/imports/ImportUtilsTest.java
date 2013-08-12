@@ -47,7 +47,7 @@ import java.util.Set;
 import static junit.framework.Assert.assertTrue;
 import org.netbeans.modules.groovy.editor.spi.completion.DefaultImportsProvider;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.test.MockLookup;
 
 /**
  *
@@ -58,8 +58,13 @@ public class ImportUtilsTest extends GroovyTestBase {
     public ImportUtilsTest(String testName) {
         super(testName);
     }
-    
-    
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MockLookup.setInstances(new TestImportProvider());
+    }
+
     public void testIsDefaultlyImported_directTypes() {
         assertTrue(ImportUtils.isDefaultlyImported("java.math.BigDecimal"));
         assertTrue(ImportUtils.isDefaultlyImported("java.math.BigInteger"));
@@ -84,7 +89,6 @@ public class ImportUtilsTest extends GroovyTestBase {
         assertTrue(ImportUtils.isDefaultlyImported("qwe.rty.Psst"));
     }
     
-    @ServiceProvider(service = DefaultImportsProvider.class)
     public static class TestImportProvider implements DefaultImportsProvider {
 
         @Override
