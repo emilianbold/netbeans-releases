@@ -55,6 +55,7 @@ import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -362,7 +363,8 @@ public class TokenFormatter {
             @Override
             public void run() {
                 final AtomicLong start = new AtomicLong(System.currentTimeMillis());
-                JTextComponent lastFocusedComponent = EditorRegistry.lastFocusedComponent();
+                final boolean templateEdit = GsfUtilities.isCodeTemplateEditing(doc);
+                JTextComponent lastFocusedComponent = templateEdit ? EditorRegistry.lastFocusedComponent() : null;
                 final int caretOffset = lastFocusedComponent != null
                         ? lastFocusedComponent.getCaretPosition()
                         : unitTestCarretPosition == -1 ? 0 : unitTestCarretPosition;
@@ -394,7 +396,6 @@ public class TokenFormatter {
                     // reflect only the php indentation itself. It's mainly used for
                     // finding position of open php tag in a html code.
                     int lastPHPIndent = 0;
-                    final boolean templateEdit = doc.getProperty(TEMPLATE_HANDLER_PROPERTY) != null; //NOI18N
                     boolean caretInTemplateSolved = false;
                     int htmlIndent = -1;
                     int index = 0;
