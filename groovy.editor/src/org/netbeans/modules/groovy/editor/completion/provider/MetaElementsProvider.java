@@ -210,19 +210,41 @@ public final class MetaElementsProvider implements CompletionProvider {
     }
     
     private boolean isBetterDistance(MetaMethod currentMethod, MetaMethod methodToStore) {
+        String currentClassName = currentMethod.getDeclaringClass().getName();
+        String toStoreClassName = methodToStore.getDeclaringClass().getName();
+
         // In some cases (e.g. #206610) there is the same distance between java.lang.Object and some
         // other interface java.util.Map and in such cases we always want to prefer the interface over
         // the java.lang.Object
-        if ("java.lang.Object".equals(currentMethod.getDeclaringClass().getName())) {
+        if ("java.lang.Object".equals(currentClassName)) {
             return true;
         }
-        if ("java.lang.Object".equals(methodToStore.getDeclaringClass().getName())) {
+        if ("java.lang.Object".equals(toStoreClassName)) {
             return false;
         }
-        
-        
-        if (currentMethod.getDeclaringClass().getSuperClassDistance() <= methodToStore.getDeclaringClass().getSuperClassDistance()) {
+
+        int currentSuperClassDistance = currentMethod.getDeclaringClass().getSuperClassDistance();
+        int toStoreSuperClassDistance = methodToStore.getDeclaringClass().getSuperClassDistance();
+        if (currentSuperClassDistance < toStoreSuperClassDistance) {
             return true;
+        }
+
+        if (currentSuperClassDistance == toStoreSuperClassDistance) {
+            // Always prefer Set methods over the Collection methods
+            if ("java.util.Collection".equals(currentClassName) && "java.util.Set".equals(toStoreClassName)) {
+                return true;
+            }
+            if ("java.util.Collection".equals(toStoreClassName) && "java.util.Set".equals(currentClassName)) {
+                return false;
+            }
+
+            // Always prefer List methods over the Collection methods
+            if ("java.util.Collection".equals(currentClassName) && "java.util.List".equals(toStoreClassName)) {
+                return true;
+            }
+            if ("java.util.Collection".equals(toStoreClassName) && "java.util.List".equals(currentClassName)) {
+                return false;
+            }
         }
         return false;
     }

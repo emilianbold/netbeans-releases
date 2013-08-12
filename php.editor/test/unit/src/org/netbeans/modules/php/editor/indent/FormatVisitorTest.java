@@ -132,7 +132,7 @@ public class FormatVisitorTest extends PHPCodeCompletionTestBase {
                     FormatVisitor formatVisitor = null;
                     doc.readLock();
                     try {
-                        formatVisitor = new FormatVisitor(doc, 0, 0, doc.getLength());
+                        formatVisitor = new FormatVisitor(doc, new TokenFormatter.DocumentOptions(doc), 0, 0, doc.getLength());
                     } finally {
                         doc.readUnlock();
                     }
@@ -177,7 +177,7 @@ public class FormatVisitorTest extends PHPCodeCompletionTestBase {
         FormatVisitor formatVisitor = null;
         doc.readLock();
         try {
-            formatVisitor = new FormatVisitor(doc, 0, 0, doc.getLength());
+            formatVisitor = new FormatVisitor(doc, new TokenFormatter.DocumentOptions(doc), 0, 0, doc.getLength());
         } finally {
             doc.readUnlock();
         }
