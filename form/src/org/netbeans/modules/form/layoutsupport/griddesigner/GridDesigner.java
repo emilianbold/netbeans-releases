@@ -644,16 +644,15 @@ public class GridDesigner extends JPanel {
      * @param menu menu to update.
      */
     void updateContextMenu(DesignerContext context, JPopupMenu menu) {
-        if (metaSelection.isEmpty()) {
-            if ((context.getFocusedColumn() == -1) == (context.getFocusedRow() == -1)) {
-                RADVisualContainer root = (RADVisualContainer)replicator.getTopMetaComponent();
-                RADVisualContainer parent = root.getParentContainer();
-                if (haveIdenticalLayoutDelegate(root, parent)) {
-                    // Design Parent action
-                    menu.add(new DesignContainerAction(this, parent, true));
-                }
+        if ((context.getFocusedColumn() == -1) == (context.getFocusedRow() == -1)) {
+            RADVisualContainer root = (RADVisualContainer)replicator.getTopMetaComponent();
+            RADVisualContainer parent = root.getParentContainer();
+            if (haveIdenticalLayoutDelegate(root, parent)) {
+                // Design Parent action
+                menu.add(new DesignContainerAction(this, parent, true));
             }
-        } else if (metaSelection.size() == 1) {
+        }
+        if (metaSelection.size() == 1) {
             RADVisualContainer root = (RADVisualContainer)replicator.getTopMetaComponent();
             RADVisualComponent comp = metaSelection.iterator().next();
             if (comp instanceof RADVisualContainer) {
