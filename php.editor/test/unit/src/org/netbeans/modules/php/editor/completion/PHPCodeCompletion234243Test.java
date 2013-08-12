@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,60 +37,41 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.javascript2.editor;
+package org.netbeans.modules.php.editor.completion;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.javascript2.editor.classpath.ClasspathProviderImplAccessor;
+import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
 /**
  *
- * @author Petr Pisl
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class JsStructureScannerIssue223602Test extends JsTestBase {
-    
-    public JsStructureScannerIssue223602Test(String testName) {
+public class PHPCodeCompletion234243Test extends PHPCodeCompletionTestBase {
+
+    public PHPCodeCompletion234243Test(String testName) {
         super(testName);
     }
-    
-    @Override
-    protected void assertDescriptionMatches(FileObject fileObject,
-            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
-        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
-    }
-    
-    public void testIssue223602() throws Exception {
-        checkStructure("testfiles/structure/issue223602/issue223602.js");
-    }
 
-    @Override
-    protected boolean cleanCacheDir() {
-        return false;
+    public void testUseCase1() throws Exception {
+        checkCompletion("testfiles/completion/lib/test234243/issue234243.php", "$cur_c->^", false);
     }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
-        List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
-        
-        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/structure/issue223602")));
         return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+            PhpSourcePath.SOURCE_CP,
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/lib/test234243/"))
+            })
         );
     }
 
-    @Override
-    protected boolean classPathContainsBinaries() {
-        return true;
-    }
 }

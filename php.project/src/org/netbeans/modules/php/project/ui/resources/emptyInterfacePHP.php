@@ -15,4 +15,3 @@ namespace ${namespace};
 interface ${name} {
     //put your code here
 }
-?>

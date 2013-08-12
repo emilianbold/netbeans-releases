@@ -71,7 +71,8 @@ public class InitRepositoryCommand extends GitCommand {
     protected boolean prepareCommand () throws GitException {
         boolean repositoryExists = getRepository().getDirectory().exists();
         if (repositoryExists) {
-            String message = MessageFormat.format(Utils.getBundle(InitRepositoryCommand.class).getString("MSG_Error_RepositoryExists"), getRepository().getWorkTree()); //NOI18N
+            String message = MessageFormat.format(Utils.getBundle(InitRepositoryCommand.class).getString("MSG_Error_RepositoryExists"), //NOI18N
+                    getRepository().getWorkTree(), getRepository().getDirectory());
             monitor.preparationsFailed(message);
             throw new GitException(message);
         }

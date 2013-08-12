@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.*;
@@ -74,6 +75,7 @@ public class CppTypeProvider implements TypeProvider {
     private static final Object resultLock = new Object();
     private final Object activeTaskLock = new Object();
     private WorkerTask activeTask;
+    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public CppTypeProvider() {
         if (TRACE) {
@@ -108,12 +110,13 @@ public class CppTypeProvider implements TypeProvider {
             }
 
             if (task == null) {
-                task = new WorkerTask(context, new HashSet<TypeDescriptor>());
+                task = new WorkerTask(context, new HashSet<TypeDescriptor>(), closed);
                 activeTask = task;
                 RP.submit(task);
             }
         }
 
+        boolean cancelled = false;
         while (!task.isDone()) {
             try {
                 task.get(200, TimeUnit.MILLISECONDS);
@@ -122,9 +125,19 @@ public class CppTypeProvider implements TypeProvider {
                     break;
                 }
             } catch (InterruptedException ex) {
-                Thread.interrupted();
+                // do not interrupt thread, 
+                // #234193 - Exception in repository from go to type
+//                Thread.interrupted();
+                cancelled = true;
+                if (TRACE) {
+                    LOG.log(Level.INFO, "InterruptedException"); // NOI18N
+                }                
                 break;
             } catch (CancellationException ex) {
+                cancelled = true;
+                if (TRACE) {
+                    LOG.log(Level.INFO, "CancellationException"); // NOI18N
+                }                
                 break;
             } catch (ExecutionException ex) {
                 if (!(ex.getCause() instanceof CancellationException)) {
@@ -134,14 +147,16 @@ public class CppTypeProvider implements TypeProvider {
             }
         }
 
-        if (!task.isDone()) {
-            res.pendingResult();
-            if (TRACE) {
-                LOG.log(Level.INFO, "Results are not fully available yet at {0} ms.", System.currentTimeMillis()); // NOI18N
+        if (!cancelled) {
+            if (!task.isDone()) {
+                res.pendingResult();
+                if (TRACE) {
+                    LOG.log(Level.INFO, "Results are not fully available yet at {0} ms.", System.currentTimeMillis()); // NOI18N
+                }
             }
-        }
 
-        res.addResult(task.getResult());
+            res.addResult(task.getResult());
+        }
     }
 
     @Override
@@ -165,6 +180,7 @@ public class CppTypeProvider implements TypeProvider {
         if (TRACE) {
             LOG.info("cleanup request"); // NOI18N
         }
+        closed.set(true);
         cancel();
     }
 
@@ -173,8 +189,8 @@ public class CppTypeProvider implements TypeProvider {
         private final Set<TypeDescriptor> result;
         private final Context context;
 
-        public WorkerTask(Context context, Set<TypeDescriptor> result) {
-            super(new Worker(context, result), null);
+        public WorkerTask(Context context, Set<TypeDescriptor> result, AtomicBoolean closed) {
+            super(new Worker(context, result, closed), null);
             this.context = context;
             this.result = result;
         }
@@ -197,14 +213,16 @@ public class CppTypeProvider implements TypeProvider {
         private final Context context;
         private final Set<TypeDescriptor> result;
         private long startTime;
+        private final AtomicBoolean closed;
 
-        private Worker(Context context, Set<TypeDescriptor> result) {
+        private Worker(Context context, Set<TypeDescriptor> result, AtomicBoolean closed) {
             if (TRACE) {
                 LOG.log(Level.INFO, "New Worker for searching \"{0}\", {1} in {2} created.", // NOI18N
                         new Object[]{context.getText(), context.getSearchType().name(), context.getProject()});
             }
             this.context = context;
             this.result = result;
+            this.closed = closed;
         }
 
         @Override
@@ -319,7 +337,7 @@ public class CppTypeProvider implements TypeProvider {
         }
 
         private void checkCancelled() throws CancellationException {
-            if (Thread.interrupted()) {
+            if (closed.get() || Thread.currentThread().isInterrupted()) {
                 throw new CancellationException();
             }
         }

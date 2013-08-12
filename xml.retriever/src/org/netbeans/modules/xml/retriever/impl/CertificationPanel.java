@@ -54,7 +54,6 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.StringTokenizer;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /** CertificationPanel 
@@ -535,7 +534,6 @@ public class CertificationPanel extends javax.swing.JPanel {
         jPanel1.add(jLabel22, gridBagConstraints);
 
         jTextField17.setEditable(false);
-        jTextField17.setBackground(new java.awt.Color(238, 238, 238));
         jTextField17.setBorder(null);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;

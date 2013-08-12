@@ -61,8 +61,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.CharBuffer;
@@ -112,8 +110,6 @@ import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.lucene.support.Index.Status;
-import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -128,7 +124,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
@@ -185,14 +180,10 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.indexing.*;
-import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
-import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl.TestIndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl.TestIndexImpl;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
-import org.netbeans.modules.parsing.lucene.support.IndexDocument;
-import org.netbeans.modules.parsing.lucene.support.Queries;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
@@ -273,7 +264,7 @@ public abstract class CslTestBase extends NbTestCase {
             
             Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests");
             logger.setLevel(Level.FINEST);
-            Waiter w = new Waiter();
+            Waiter w = new Waiter(classPathContainsBinaries());
             logger.addHandler(w);
 
             // initialize classpaths indexing
@@ -292,7 +283,7 @@ public abstract class CslTestBase extends NbTestCase {
         if (classPathsForTest != null && !classPathsForTest.isEmpty()) {
             Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests");
             logger.setLevel(Level.FINEST);
-            Waiter w = new Waiter();
+            Waiter w = new Waiter(classPathContainsBinaries());
             logger.addHandler(w);
 
             for(String cpId : classPathsForTest.keySet()) {
@@ -4408,6 +4399,10 @@ public abstract class CslTestBase extends NbTestCase {
         return null;
     }
 
+    protected boolean classPathContainsBinaries() {
+        return false;
+    }
+
     protected boolean cleanCacheDir() {
         return true;
     }
@@ -4454,9 +4449,13 @@ public abstract class CslTestBase extends NbTestCase {
 
     private static final class Waiter extends Handler {
 
-        private final CountDownLatch latch = new CountDownLatch(1);
+        private final CountDownLatch latch;
+
+        private final boolean binaries;
         
-        public Waiter() {
+        public Waiter(boolean binaries) {
+            latch = new CountDownLatch(binaries ? 2 : 1);
+            this.binaries = binaries;
         }
 
         public void waitForScanToFinish() {
@@ -4473,8 +4472,7 @@ public abstract class CslTestBase extends NbTestCase {
         @Override
         public void publish(LogRecord record) {
             String msg = record.getMessage();
-            if ("scanSources".equals(msg)) {
-                //System.out.println("Released scan latch");
+            if ("scanSources".equals(msg) || (binaries && "scanBinary".equals(msg))) {
                 latch.countDown();
             }
         }

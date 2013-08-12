@@ -69,11 +69,10 @@ public class KOCodeCompletionIssue233004Test extends JsCodeCompletionBase {
     
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
-        List<FileObject> cpRoots = new LinkedList<>(/*ClasspathProviderImplAccessor.getJsStubs()*/);
-        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "completion/issue233004")));
         return Collections.singletonMap(
             JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
+            ClassPathSupport.createClassPath(new FileObject[] {
+                FileUtil.toFileObject(new File(getDataDir(), "completion/issue233004"))})
         );
     }
 }
