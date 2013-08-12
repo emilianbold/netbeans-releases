@@ -158,10 +158,13 @@ public abstract class IOSDebugTransport extends MobileDebugTransport implements 
             if (!replace) {
                 return cmd;
             }
-            return cmd.replace("$tabIdentifier", getBundleIdentifier().equals("com.apple.mobilesafari")?tabs.getActive():"1"); // NOI18N
+            return cmd.replace("$tabIdentifier", getBundleIdentifier().equals("com.apple.mobilesafari") ? tabs.getActive() : "1"); // NOI18N
+        } catch (java.util.NoSuchElementException nse) {
+            LOGGER.log(Level.INFO, nse.getMessage(), nse);
+            throw new IllegalStateException(nse);
         } catch (IOException | InterruptedException ex) {
             throw new RuntimeException(ex);
-        } 
+        }
     }
 
     protected final String createJSONCommand(JSONObject command) throws IOException {
