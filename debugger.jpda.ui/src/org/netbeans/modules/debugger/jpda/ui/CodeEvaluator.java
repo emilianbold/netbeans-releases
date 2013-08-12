@@ -174,9 +174,12 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(evaluateButton))
         );
+        Dimension preferredSize = rightPanel.getPreferredSize();
+        rightPanel.setMinimumSize(preferredSize);
         
         //setupContext();
         editorScrollPane.setViewportView(codePane);
+        invalidate();
         codePane.addKeyListener(this);
         dbgManagerListener = new DbgManagerListener (this);
         DebuggerManager.getDebuggerManager().addDebuggerListener(
@@ -473,14 +476,11 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         separatorPanel.setMinimumSize(new java.awt.Dimension(1, 10));
         separatorPanel.setPreferredSize(new java.awt.Dimension(1, 10));
 
-        rightPanel.setMinimumSize(new java.awt.Dimension(0, 0));
-        rightPanel.setPreferredSize(new java.awt.Dimension(48, 0));
-
         javax.swing.GroupLayout rightPanelLayout = new javax.swing.GroupLayout(rightPanel);
         rightPanel.setLayout(rightPanelLayout);
         rightPanelLayout.setHorizontalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 48, Short.MAX_VALUE)
+            .addGap(0, 10, Short.MAX_VALUE)
         );
         rightPanelLayout.setVerticalGroup(
             rightPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -492,8 +492,10 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(editorScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 450, Short.MAX_VALUE)
+                .addComponent(editorScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 488, Short.MAX_VALUE)
+                .addGap(0, 0, 0)
                 .addComponent(separatorPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(0, 0, 0)
                 .addComponent(rightPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
         layout.setVerticalGroup(

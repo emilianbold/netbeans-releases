@@ -152,13 +152,13 @@ public class SimpleTabDisplayer extends AbstractTabDisplayer implements ListSele
             rect = SwingUtilities.convertRectangle( this, rect, table );
             if( orientation == JTabbedPane.VERTICAL ) {
                 if( location.y <= rect.y + rect.height/2 ) {
-                    res = Math.max( 0, res-1 );
+                    res = Math.max( 0, res );
                 } else {
                     res++;
                 }
             } else {
                 if( location.x <= rect.x + rect.width/2 ) {
-                    res = Math.max( 0, res-1 );
+                    res = Math.max( 0, res );
                 } else {
                     res++;
                 }
@@ -172,6 +172,8 @@ public class SimpleTabDisplayer extends AbstractTabDisplayer implements ListSele
         int tabIndex = dropIndexOfPoint( location );
         if( tabIndex < 0 )
             return null;
+        if( tabIndex == getModel().size() )
+            tabIndex--;
         Rectangle rect = getTabBounds( tabIndex );
         if( orientation == JTabbedPane.VERTICAL ) {
             if( location.y <= rect.y + rect.height/2 ) {

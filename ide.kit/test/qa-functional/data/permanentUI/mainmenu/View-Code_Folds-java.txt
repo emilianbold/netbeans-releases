@@ -3,6 +3,8 @@
                                =======================
                                Collapse All              l
                                Expand All                x
+                               Collapse Fold Tree        O
+                               Expand Fold Tree          F
                                =======================
                                Collapse All Javadoc      J
                                Expand All Javadoc

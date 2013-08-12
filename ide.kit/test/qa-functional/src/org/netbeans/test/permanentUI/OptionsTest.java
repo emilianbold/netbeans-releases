@@ -69,8 +69,7 @@ public class OptionsTest extends JellyTestCase {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
                 OptionsTest.class).clusters(".*").enableModules(".*");
 
-        conf.addTest(
-                "testOptionsCategories");
+        conf.addTest("testOptionsCategories");
         return conf.suite();
     }
 

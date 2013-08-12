@@ -51,9 +51,17 @@ import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.permanentUI.utils.ProjectContext;
 
 public class MainMenuTestJava extends MainMenuTest {
-
+    
     private static boolean init = true;
-
+    public static final String[] TESTS = new String[]{
+        "testFileMenu",
+        "testRefactorMenu",
+        "testDebugMenu",
+        "testRunMenu",
+        "testTeamMenu",
+        "testToolsMenu",
+        "testProfileMenu",
+        "testView_CodeFoldsSubMenu"};
 
     public MainMenuTestJava(String name) {
         super(name);
@@ -61,12 +69,34 @@ public class MainMenuTestJava extends MainMenuTest {
 
     public static Test suite() {
         NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(MainMenuTestJava.class).clusters(".*").enableModules(".*");
-        conf.addTest(ALL_TESTS);
+
+        conf = conf.addTest(TESTS);
+        //conf = conf.addTest("testTeamMenu");
         return conf.suite();
     }
 
+        /**
+     * Setup called before every test case.
+     */
+    @Override
+    public void setUp() {
+        System.out.println("########  " + ProjectContext.JAVA.toString() + " CONTEXT - " + getName() + "  #######");
+        try {
+            clearWorkDir();
+            getWorkDir();
+            if (isInit()) {
+                openDataProjects("SampleProject");
+                setInit(false);
+                initSources();
+            }
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
+    }
+    
     @Override
     protected void initSources() {
+        setContext(); // must be called because of correct golden file name which has contained context in suffix.
         try {
             openDataProjects("SampleProject"); // NOI18N
             EditorOperator.closeDiscardAll();
@@ -92,47 +122,46 @@ public class MainMenuTestJava extends MainMenuTest {
 
     @Override
     public void testFileMenu() {
-        oneMenuTest("File", getProjectContext());
+        oneMenuTest("File");
     }
 
     @Override
     public void testRefactorMenu() {
-        oneMenuTest("Refactor", getProjectContext());
+        oneMenuTest("Refactor");
     }
 
     @Override
     public void testDebugMenu() {
-        oneMenuTest("Debug", getProjectContext());
+        oneMenuTest("Debug");
     }
 
     @Override
     public void testRunMenu() {
-        oneMenuTest("Run", getProjectContext());
+        oneMenuTest("Run");
+    }
+
+    @Override
+    public void testTeamMenu() {
+        oneMenuTest("Team");
     }
 
     @Override
     public void testToolsMenu() {
-        oneMenuTest("Tools", getProjectContext());
+        oneMenuTest("Tools");
     }
 
     @Override
     public void testProfileMenu() {
-        oneMenuTest("Profile", getProjectContext());
-    }
-
-    @Override
-    public void testSource_PreprocessorBlocksSubMenu() {
-        oneSubMenuTest("Source|Preprocessor Blocks", false, getProjectContext());
+        oneMenuTest("Profile");
     }
 
     @Override
     public void testView_CodeFoldsSubMenu() {
-        //TODO fix empty submenu items names due to init
-        //oneSubMenuTest("View|Code Folds", true, getProjectContext());
+        oneSubMenuTest("View|Code Folds", true);
     }
-
+    
     @Override
-    ProjectContext getProjectContext() {
-        return ProjectContext.JAVA;
+    public void setContext() {
+        MainMenuTestJava.context = ProjectContext.JAVA;
     }
 }
