@@ -583,7 +583,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_KeyFile")); // NOI18N
                 return false;
             }
-            if (ui.jreLocation.getText().length() == 0) {
+            if (ui.jreLocation.getText().isEmpty()) {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_JRE")); // NOI18N
                 return false;
             }
