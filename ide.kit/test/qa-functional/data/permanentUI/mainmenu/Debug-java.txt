@@ -20,10 +20,10 @@ Step Into                   I
 Step Into Next Method       N
 Step Out                    O
 Run to Cursor               u
-Step Into Last Function
+Step Into Last Function     u
 =========================
 Apply Code Changes          y
-Take GUI Snapshot
+Take GUI Snapshot           S
 =========================
 Set Current Thread...       h
 Stack                   >   S

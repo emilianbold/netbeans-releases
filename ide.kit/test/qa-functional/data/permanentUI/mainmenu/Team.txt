@@ -1,10 +1,11 @@
 | Team |           m (mnemonics)
 =========
+Shelve Changes       >   S
 Git                  >   G
 Mercurial            >   M
 Subversion           >   S
 ===================
-History              >   H
-Find Issues...
-Report Issue...
-Create Build Job...
+History              >   T
+Find Tasks...            F
+Report Task... 
+Create Build Job...      J

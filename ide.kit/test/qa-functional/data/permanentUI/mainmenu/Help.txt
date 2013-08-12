@@ -3,7 +3,7 @@
 Help Contents              C
 Online Docs and Support    D
 Keyboard Shortcuts Card    K
-Report Issue...
+Report Issue...            R
 ========================
 Javadoc Index Search       S
 Javadoc References     >   J

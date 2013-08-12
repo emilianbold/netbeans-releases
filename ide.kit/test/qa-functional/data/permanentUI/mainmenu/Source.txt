@@ -28,7 +28,7 @@ Make Controller
 Insert Next Matching Word         N
 Insert Previous Matching Word     P
 ===============================
-Preprocessor Blocks           >   B
+Preprocessor Blocks >    B
 ===============================
 Inspect...
 ===============================
