@@ -634,6 +634,16 @@ public final class ProjectEar extends J2eeApplicationProvider
         }
     }
 
+    public J2eeModule getWebModule() {
+        for (J2eeModule mod : getModules()) {
+            if (mod.getType() == J2eeModule.Type.WAR) {
+                return mod;
+            }
+        }
+        return null;
+
+    }
+
     /**
      * This class handle copying of meta-inf resources to appropriate place in build
      * dir. This class is used in true Deploy On Save.
@@ -641,7 +651,7 @@ public final class ProjectEar extends J2eeApplicationProvider
      * Class should not request project lock from FS listener methods
      * (deadlock prone).
      */
-    public class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener {
+    public class CopyOnSaveSupport extends FileChangeAdapter implements PropertyChangeListener, ConfigSupport.DeployOnSaveListener {
 
         private File resources = null;
 
@@ -679,6 +689,10 @@ public final class ProjectEar extends J2eeApplicationProvider
             if (resources != null) {
                 FileUtil.addFileChangeListener(this, resources);
             }
+
+            // Add deployed resources notification listener
+            ProjectEar.this.getConfigSupport().addDeployOnSaveListener(this);
+
         }
 
         public void cleanup() throws FileStateInvalidException {
@@ -688,6 +702,8 @@ public final class ProjectEar extends J2eeApplicationProvider
             }
 
             ProjectEar.this.project.evaluator().removePropertyChangeListener(this);
+            
+            ProjectEar.this.getConfigSupport().removeDeployOnSaveListener(this);
         }
 
         public void propertyChange(PropertyChangeEvent evt) {
@@ -742,6 +758,72 @@ public final class ProjectEar extends J2eeApplicationProvider
                         Artifact.forFile(FileUtil.toFile(fe.getFile())).serverResource()));
             }
         }
+
+        @Override
+        public void deployed(Iterable<Artifact> artifacts) {
+            if (project.getLookup().lookup(WebBrowserProvider.class) == null ||
+                    !project.getEaselSupport().canReload()) {
+                return;
+            }
+            for (Artifact artifact : artifacts) {
+                FileObject fileObject = getReloadFileObject(artifact);
+                if (fileObject != null) {
+                    project.getEaselSupport().reload(fileObject);
+                }
+            }
+        }
+
+        private FileObject getReloadFileObject(Artifact artifact) {
+            File file = artifact.getFile();
+            FileObject fileObject = FileUtil.toFileObject(FileUtil.normalizeFile(file));
+            if (fileObject == null) {
+                return null;
+            }
+            try {
+                return findSourceForBinary(fileObject);
+            } catch (IOException ex) {
+                Exceptions.printStackTrace(ex);
+                return null;
+            }
+        }
+
+        // "Binary" means compiled class file or web root document copied into build directory
+        private FileObject findSourceForBinary(FileObject artifact) throws IOException {
+            WebModule wm = WebModule.getWebModule(artifact);
+            if (wm == null) {
+                return null;
+            }
+            J2eeModule mod = getWebModule();
+            if (mod != null) {
+                FileObject contentDir = mod.getContentDirectory();
+                if (contentDir != null) {
+
+                    // TODO: any chance of doing this properly via an API?
+                    FileObject classesDir = contentDir.getFileObject("WEB-INF/classes"); // NOI18N
+
+                    Project p = FileOwnerQuery.getOwner(artifact);
+                    if (p != null && classesDir != null && FileUtil.isParentOf(classesDir, artifact)) {
+                        String path = FileUtil.getRelativePath(classesDir, artifact).replace(".class", ".java"); // NOI18N
+                        for (SourceGroup sg : ProjectUtils.getSources(p).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                            FileObject fo = sg.getRootFolder().getFileObject(path);
+                            if (fo != null) {
+                                return fo;
+                            }
+                        }
+                        return null;
+                    }
+                    
+                    FileObject docBase = wm.getDocumentBase();
+                    if (docBase != null && FileUtil.isParentOf(contentDir, artifact)) {
+                        String path = FileUtil.getRelativePath(contentDir, artifact);
+                        return docBase.getFileObject(path);
+                    }
+                }
+            }
+
+            return null;
+        }
+
     }
 
     /**

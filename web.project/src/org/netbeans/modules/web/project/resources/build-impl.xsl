@@ -256,10 +256,18 @@ introduced by support for multiple source roots. -jglick
                 <condition property="do.display.browser">
                     <istrue value="${{display.browser}}"/>
                 </condition>
+                <condition property="do.display.browser.debug.old">
+                    <and>
+                        <isset property="do.display.browser"/>
+                        <not><isset property="do.debug.client"/></not>
+                        <not><isset property="browser.context"/></not>
+                    </and>
+                </condition>
                 <condition property="do.display.browser.debug">
                     <and>
                         <isset property="do.display.browser"/>
                         <not><isset property="do.debug.client"/></not>
+                        <isset property="browser.context"/>
                     </and>
                 </condition>
                 <available file="${{conf.dir}}/MANIFEST.MF" property="has.custom.manifest"/>
@@ -2236,6 +2244,7 @@ exists or setup the property manually. For example like this:
                 <nbstartserver debugmode="true"/>
                 <antcall target="connect-debugger"/>
                 <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}" forceRedeploy="true" />
+                <antcall target="debug-display-browser-old"/>
                 <antcall target="debug-display-browser"/>
                 <antcall target="connect-client-debugger"/>
             </target>
@@ -2273,6 +2282,10 @@ exists or setup the property manually. For example like this:
                 </nbjpdaconnect>
             </target>
             
+            <target name="debug-display-browser-old" if="do.display.browser.debug.old">
+                <nbbrowse url="${{client.url}}"/>
+            </target>
+
             <target name="debug-display-browser" if="do.display.browser.debug">
                 <nbbrowse url="${{client.url}}" context="${{browser.context}}" urlPath="${{client.urlPart}}"/>
             </target>
@@ -2442,6 +2455,9 @@ exists or setup the property manually. For example like this:
                 <nbstartserver profilemode="true"/>
                 
                 <nbdeploy profilemode="true" clientUrlPart="${{client.urlPart}}" forceRedeploy="true" />
+                <antcall>
+                    <xsl:attribute name="target">debug-display-browser-old</xsl:attribute>
+                </antcall>
                 <antcall>
                     <xsl:attribute name="target">debug-display-browser</xsl:attribute>
                 </antcall>
