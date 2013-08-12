@@ -140,6 +140,7 @@ public final class RemoteFileSystem extends FileSystem implements ConnectionList
             throw new IOException(NbBundle.getMessage(getClass(), "ERR_CreateDir", cache.getAbsolutePath()));
         }
         this.rootDelegate = new RootFileObject(this.root = new RemoteFileObject(this), this, execEnv, cache); // NOI18N
+        factory.register(rootDelegate);
 
         final WindowFocusListener windowFocusListener = new WindowFocusListener() {
 
