@@ -368,7 +368,7 @@ public class TokenFormatter {
                 final int caretOffset = lastFocusedComponent != null
                         ? lastFocusedComponent.getCaretPosition()
                         : unitTestCarretPosition == -1 ? 0 : unitTestCarretPosition;
-                FormatVisitor fv = new FormatVisitor(doc, caretOffset, formatContext.startOffset(), formatContext.endOffset());
+                FormatVisitor fv = new FormatVisitor(doc, docOptions, caretOffset, formatContext.startOffset(), formatContext.endOffset());
                 phpParseResult.getProgram().accept(fv);
                 final List<FormatToken> formatTokens = fv.getFormatTokens();
 
