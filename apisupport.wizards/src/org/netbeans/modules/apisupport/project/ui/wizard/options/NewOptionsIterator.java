@@ -239,7 +239,7 @@ public final class NewOptionsIterator extends BasicWizardIterator {
                 } else if (isAdvanced()) {
                     return "@OptionsPanelController.SubRegistration(\n" +
                             // XXX could omit if primaryPanel=Advanced
-                            "    location=\"" + getPrimaryPanel() + "\",\n" +
+                            (getPrimaryPanel().equals("Advanced")? "" : "location=\"" + getPrimaryPanel() + "\",\n") +
                             "    displayName=\"#AdvancedOption_DisplayName_" + getClassNamePrefix() + "\",\n" +
                             "    keywords=\"#AdvancedOption_Keywords_" + getClassNamePrefix() + "\",\n" +
                             "    keywordsCategory=\"" + getPrimaryPanel() + "/" + getClassNamePrefix() + "\"\n" +

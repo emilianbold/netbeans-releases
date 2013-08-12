@@ -214,7 +214,7 @@ public class FileSystemChecker {
     private static void usages() {
         System.err.println("Check File System Performance"); // NOI18N
         System.err.println("Usage:"); // NOI18N
-        System.err.println("java -cp org.netbeans.modules.dlight.libs.common.jar org.netbeans.modules.dlight.libs.common.FileSystemChecker -path <path> -depth <depth>"); // NOI18N
+        System.err.println("java -cp org-netbeans-modules-cnd-discovery.jar org.netbeans.modules.cnd.discovery.performance.FileSystemChecker -path <path> -depth <depth>"); // NOI18N
         System.err.println("\t-path <path>\tAbsolute path to source root"); // NOI18N
         System.err.println("\t-depth <depth>\tRestrict traverse subfolders"); // NOI18N
         System.err.println("\t-link\tPrint links that go out of the root"); // NOI18N
