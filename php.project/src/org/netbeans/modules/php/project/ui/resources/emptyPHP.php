@@ -4,4 +4,3 @@
 <#assign licenseLast = " */">
 <#include "${project.licensePath}">
 
-?>
