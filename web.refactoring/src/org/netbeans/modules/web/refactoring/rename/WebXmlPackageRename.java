@@ -79,6 +79,7 @@ public class WebXmlPackageRename extends BaseWebXmlRename{
                 String newName = RefactoringUtil.constructNewName(each, rename);
                 if (newName == null || "".equals(newName)) {
                     result.add(new RenameItem(new Problem(true, NbBundle.getMessage(WebXmlPackageRename.class, "TXT_ErrProblemWhenRenaming", oldName))));
+                    continue;
                 }
 
                 result.add(new RenameItem(newName, oldName));
