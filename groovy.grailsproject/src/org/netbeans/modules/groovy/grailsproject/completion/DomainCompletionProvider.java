@@ -239,21 +239,6 @@ public class DomainCompletionProvider implements CompletionProvider {
         }
         return result;
     }
-    
-    private boolean isInDomain(CompletionContext context) {
-        if (context.getSourceFile() == null) {
-            return false;
-        }
-
-        Project project = FileOwnerQuery.getOwner(context.getSourceFile());
-        if (project != null) {
-
-            if (isDomain(context.getSourceFile(), project)) {
-                return true;
-            }
-        }
-        return false;
-    }
 
     // package access for tests
     Map<MethodSignature, CompletionItem> getOrderMethods(CompletionContext context) {
@@ -494,17 +479,28 @@ public class DomainCompletionProvider implements CompletionProvider {
         }
     }
 
-    private boolean isDomain(FileObject source, Project project) {
-        if (source == null) {
+    private boolean isInDomain(CompletionContext context) {
+        if (context.getSourceFile() == null || context.getTypeName() == null) {
             return false;
         }
 
-        FileObject domainDir = project.getProjectDirectory().getFileObject("grails-app/domain"); // NOI18N
-        if (domainDir == null || !domainDir.isFolder()) {
+        Project project = FileOwnerQuery.getOwner(context.getSourceFile());
+        if (project == null) {
             return false;
         }
 
-        return FileUtil.isParentOf(domainDir, source);
+        FileObject grailsDir = project.getProjectDirectory().getFileObject("grails-app"); // NOI18N
+        if (grailsDir == null || !grailsDir.isFolder()) {
+            return false;
+        }
+
+        String typeName = context.getTypeName().replace('.', '/');
+        FileObject fo = grailsDir.getFileObject("domain/" + typeName + ".groovy"); // NOI18N
+        if (fo != null && fo.isData()) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private String capitalise(String property) {
