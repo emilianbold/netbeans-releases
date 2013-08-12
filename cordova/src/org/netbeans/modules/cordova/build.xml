@@ -196,6 +196,8 @@ made subject to such option by the copyright holder.
             <arg value="--embed"/>
             <arg value="${ios.provisioning.profile}"/>
         </exec>
+        <available file="${basedir}/platforms/ios/build/${project.name}.ipa" property="ipa.found"/>
+        <fail unless="ipa.found" message="PackageApplication failed."/>
     </target>
          
 
