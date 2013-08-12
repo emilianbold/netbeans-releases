@@ -353,9 +353,8 @@ public class TokenFormatter {
         return count;
     }
 
-    public void reformat(Context context, ParserResult info) {
-        final Context formatContext = context;
-        final BaseDocument doc = (BaseDocument) context.document();
+    public void reformat(final Context formatContext, ParserResult info) {
+        final BaseDocument doc = (BaseDocument) formatContext.document();
         final PHPParseResult phpParseResult = ((PHPParseResult) info);
         final DocumentOptions docOptions = new DocumentOptions(doc);
 
