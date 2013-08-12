@@ -171,10 +171,34 @@ public final class ImportClass implements ErrorRule<Void> {
             return CreatorBasedLazyFixList.CANCELLED;
         }
 
-        TreePath imp = path;
+        String replaceSuffix = null;
+        TreePath changePath = null;
 
-        while (imp != null && imp.getLeaf().getKind() != Kind.IMPORT) {
-            imp = imp.getParentPath();
+        if (path.getLeaf().getKind() == Kind.IMPORT) {
+            //for import package.*;, the error points to the import tree:
+            Tree star = ((ImportTree) path.getLeaf()).getQualifiedIdentifier();
+
+            if (star.getKind() == Kind.MEMBER_SELECT) {
+                MemberSelectTree mst = (MemberSelectTree) star;
+                if (mst.getIdentifier().contentEquals("*")) {
+                    replaceSuffix = ".*";
+                    changePath = new TreePath(new TreePath(path, star), mst.getExpression());
+                }
+            }
+        } else {
+            StringBuilder replaceSuffixBuilder = new StringBuilder();
+            TreePath imp = path.getParentPath();
+
+            while (imp != null && imp.getLeaf().getKind() == Kind.MEMBER_SELECT) {
+                replaceSuffixBuilder.append(".");
+                replaceSuffixBuilder.append(((MemberSelectTree) imp.getLeaf()).getIdentifier());
+                imp = imp.getParentPath();
+            }
+
+            if (imp != null && imp.getLeaf().getKind() == Kind.IMPORT) {
+                replaceSuffix = replaceSuffixBuilder.toString();
+                changePath = path;
+            }
         }
 
         List<Element> filtered = candidates.first();
@@ -205,7 +229,7 @@ public final class ImportClass implements ErrorRule<Void> {
                 sort.append('#');
                 sort.append(fqn);
                 
-                fixes.add(new FixImport(file, fqn, ElementHandle.create(element), sort.toString(), prefered, info, imp));
+                fixes.add(new FixImport(file, fqn, ElementHandle.create(element), sort.toString(), prefered, info, changePath, replaceSuffix));
             }
         }
         
@@ -305,24 +329,25 @@ public final class ImportClass implements ErrorRule<Void> {
         private final ElementHandle<Element> toImport;
         private final String sortText;
         private final boolean isValid;
-        private final @NullAllowed TreePathHandle importHandle;
+        private final @NullAllowed TreePathHandle replacePathHandle;
         private final @NullAllowed String suffix;
         private final boolean statik;
         
-        public FixImport(FileObject file, String fqn, ElementHandle<Element> toImport, String sortText, boolean isValid, CompilationInfo info, @NullAllowed TreePath imp) {
+        public FixImport(FileObject file, String fqn, ElementHandle<Element> toImport, String sortText, boolean isValid, CompilationInfo info, @NullAllowed TreePath replacePath, @NullAllowed String replaceSuffix) {
             this.file = file;
             this.fqn = fqn;
             this.toImport = toImport;
             this.sortText = sortText;
             this.isValid = isValid;
-            if (imp != null) {
-                this.importHandle = TreePathHandle.create(imp, info);
-                String suffixLoc = ((ImportTree) imp.getLeaf()).getQualifiedIdentifier().toString();
-                int dot = suffixLoc.indexOf('.');
-                this.suffix = dot > (-1) ? suffixLoc.substring(dot) : suffixLoc;
-                this.statik = ((ImportTree) imp.getLeaf()).isStatic();
+            if (replacePath != null) {
+                this.replacePathHandle = TreePathHandle.create(replacePath, info);
+                this.suffix = replaceSuffix;
+                while (replacePath != null && replacePath.getLeaf().getKind() != Kind.IMPORT) {
+                    replacePath = replacePath.getParentPath();
+                }
+                this.statik = replacePath != null ? ((ImportTree) replacePath.getLeaf()).isStatic() : false;
             } else {
-                this.importHandle = null;
+                this.replacePathHandle = null;
                 this.suffix = null;
                 this.statik = false;
             }
@@ -330,7 +355,7 @@ public final class ImportClass implements ErrorRule<Void> {
 
         @Messages("Change_to_import_X=Change to import {1}{0}")
         public String getText() {
-            String displayName = importHandle == null ? NbBundle.getMessage(ImportClass.class, "Add_import_for_X", new Object[] {fqn}) : Bundle.Change_to_import_X(fqn + suffix, statik ? "static " : "");
+            String displayName = replacePathHandle == null ? NbBundle.getMessage(ImportClass.class, "Add_import_for_X", new Object[] {fqn}) : Bundle.Change_to_import_X(fqn + suffix, statik ? "static " : "");
             if (isValid)
                 return displayName;
             else
@@ -347,26 +372,15 @@ public final class ImportClass implements ErrorRule<Void> {
                            return;
 
                         //XXX:
-                        if (importHandle != null) {
-                            TreePath imp = importHandle.resolve(copy);
+                        if (replacePathHandle != null) {
+                            TreePath replacePath = replacePathHandle.resolve(copy);
 
-                            if (imp == null) {
+                            if (replacePath == null) {
                                 Logger.getAnonymousLogger().warning(String.format("Attempt to change import for FQN: %s, but the import cannot be resolved in the current context", fqn));
                                 return;
                             }
 
-                            Tree mst = ((ImportTree) imp.getLeaf()).getQualifiedIdentifier();
-
-                            while (mst != null && mst.getKind() == Kind.MEMBER_SELECT) {
-                                mst = ((MemberSelectTree) mst).getExpression();
-                            }
-
-                            if (mst == null) {
-                                copy.rewrite(imp.getLeaf(), copy.getTreeMaker().Identifier(fqn + suffix));
-                                return;
-                            }
-
-                            copy.rewrite(mst, copy.getTreeMaker().Identifier(fqn));
+                            copy.rewrite(replacePath.getLeaf(), copy.getTreeMaker().Identifier(fqn));
 
                             return;
                         }
