@@ -4474,7 +4474,7 @@ public abstract class CslTestBase extends NbTestCase {
         public void publish(LogRecord record) {
             String msg = record.getMessage();
             if ("scanSources".equals(msg)) {
-                System.out.println("Released scan latch");
+                //System.out.println("Released scan latch");
                 latch.countDown();
             }
         }
