@@ -1363,7 +1363,7 @@ public abstract class CslTestBase extends NbTestCase {
         });
     }
 
-    private String annotateFinderResult(Snapshot snapshot, Map<OffsetRange, ColoringAttributes> highlights, int caretOffset) throws Exception {
+    protected String annotateFinderResult(Snapshot snapshot, Map<OffsetRange, ColoringAttributes> highlights, int caretOffset) throws Exception {
         Set<OffsetRange> ranges = highlights.keySet();
         StringBuilder sb = new StringBuilder();
         CharSequence text = snapshot.getText();
@@ -1472,7 +1472,7 @@ public abstract class CslTestBase extends NbTestCase {
         });
     }
     
-    private void checkNoOverlaps(Set<OffsetRange> ranges, Document doc) throws BadLocationException {
+    protected void checkNoOverlaps(Set<OffsetRange> ranges, Document doc) throws BadLocationException {
         // Make sure there are no overlapping ranges
         List<OffsetRange> sortedRanges = new ArrayList<OffsetRange>(ranges);
         Collections.sort(sortedRanges);
@@ -1487,7 +1487,7 @@ public abstract class CslTestBase extends NbTestCase {
         }
     }
 
-    private String annotateSemanticResults(Document doc, Map<OffsetRange, Set<ColoringAttributes>> highlights) throws Exception {
+    protected String annotateSemanticResults(Document doc, Map<OffsetRange, Set<ColoringAttributes>> highlights) throws Exception {
         StringBuilder sb = new StringBuilder();
         String text = doc.getText(0, doc.getLength());
         Map<Integer, OffsetRange> starts = new HashMap<Integer, OffsetRange>(100);
