@@ -221,6 +221,11 @@ public class BugzillaQuery {
                         repository.getExecutor().execute(queryCmd, !autoRefresh);
                         ret[0] = queryCmd.hasFailed();
                         if (ret[0]) {
+                            if (isSaved()) {
+                                for (NbTask t : MylynSupport.getInstance().getTasks(runningQuery)) {
+                                    issues.add(t.getTaskId());
+                                }
+                            }
                             return;
                         }
 
