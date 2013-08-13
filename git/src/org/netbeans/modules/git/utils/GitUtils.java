@@ -68,6 +68,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation;
@@ -899,6 +900,35 @@ public final class GitUtils {
             }
         }
         return true;
+    }
+
+    public static GitRemoteConfig prepareConfig(GitRemoteConfig original, String remoteName, String remoteUri, List<String> fetchRefSpecs) {
+        List<String> remoteUris;
+        if (original != null) {
+            remoteUris = new LinkedList<String>(original.getUris());
+            if (!remoteUris.contains(remoteUri)) {
+                remoteUris.add(remoteUri);
+            }
+        } else {
+            remoteUris = Arrays.asList(remoteUri);
+        }
+        List<String> refSpecs;
+        if (original != null) {
+            refSpecs = new LinkedList<String>(original.getFetchRefSpecs());
+            if (!refSpecs.contains(GitUtils.getRefSpec("*", remoteName))) {
+                for (String refSpec : fetchRefSpecs) {
+                    if (!refSpecs.contains(refSpec)) {
+                        refSpecs.add(refSpec);
+                    }
+                }
+            }
+        } else {
+            refSpecs = fetchRefSpecs;
+        }
+        return new GitRemoteConfig(remoteName, remoteUris,
+                original == null ? Collections.<String>emptyList() : original.getPushUris(),
+                refSpecs,
+                original == null ? Collections.<String>emptyList() : original.getPushRefSpecs());
     }
 
     private static class NullProgressMonitor extends ProgressMonitor {

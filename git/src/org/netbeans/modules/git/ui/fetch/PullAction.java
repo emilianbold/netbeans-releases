@@ -179,7 +179,7 @@ public class PullAction extends SingleRepositoryAction {
                     if (isCanceled()) {
                         return;
                     }
-                    config = FetchAction.prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecs);
+                    config = GitUtils.prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecs);
                     client.setRemote(config, getProgressMonitor());
                     if (isCanceled()) {
                         return;

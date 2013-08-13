@@ -44,10 +44,7 @@ package org.netbeans.modules.git.ui.fetch;
 
 import java.awt.EventQueue;
 import java.io.File;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.ListIterator;
 import java.util.Map;
@@ -156,7 +153,7 @@ public class FetchAction extends SingleRepositoryAction {
                             if (isCanceled()) {
                                 return;
                             }
-                            config = prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecs);
+                            config = GitUtils.prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecs);
                             client.setRemote(config, getProgressMonitor());
                             if (isCanceled()) {
                                 return;
@@ -171,36 +168,5 @@ public class FetchAction extends SingleRepositoryAction {
             }
         };
         return supp.start(Git.getInstance().getRequestProcessor(repository), repository, Bundle.LBL_FetchAction_progressName(repository.getName()));
-    }
-    
-    static GitRemoteConfig prepareConfig (GitRemoteConfig original, String remoteName, String remoteUri, List<String> fetchRefSpecs) {
-        List<String> remoteUris;
-        if (original != null) {
-            remoteUris = new LinkedList<String>(original.getUris());
-            if (!remoteUris.contains(remoteUri)) {
-                remoteUris.add(remoteUri);
-            }
-        } else {
-            remoteUris = Arrays.asList(remoteUri);
-        }
-        List<String> refSpecs;
-        if (original != null) {
-            refSpecs = new LinkedList<String>(original.getFetchRefSpecs());
-            if (!refSpecs.contains(GitUtils.getRefSpec("*", remoteName))) {
-                // does not contain global pattern
-                for (String refSpec : fetchRefSpecs) {
-                    if (!refSpecs.contains(refSpec)) {
-                        refSpecs.add(refSpec);
-                    }
-                }
-            }
-        } else {
-            refSpecs = fetchRefSpecs;
-        }
-        return new GitRemoteConfig(remoteName,
-                remoteUris,
-                original == null ? Collections.<String>emptyList() : original.getPushUris(),
-                refSpecs,
-                original == null ? Collections.<String>emptyList() : original.getPushRefSpecs());
     }
 }
