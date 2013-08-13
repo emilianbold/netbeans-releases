@@ -333,6 +333,15 @@ public final class GroovyIndex {
         return methods;
     }
 
+    /**
+     * Gets all fields for the given fully qualified name.
+     *
+     * @param fqName fully qualified name
+     * @return all fields for the given type
+     */
+    public Set<IndexedField> getAllFields(final String fqName) {
+        return getFields(".*", fqName, QuerySupport.Kind.REGEXP); // NOI18N
+    }
 
     public Set<IndexedField> getFields(final String name, final String clz, QuerySupport.Kind kind) {
         boolean inherited = clz == null;

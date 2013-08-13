@@ -367,7 +367,7 @@ public final class ContextHelper {
 
         List<String> result = new ArrayList<String>();
         
-        for (IndexedField indexedField : index.getFields(".*", context.getTypeName(), QuerySupport.Kind.REGEXP)) {
+        for (IndexedField indexedField : index.getAllFields(context.getTypeName())) {
             if (!indexedField.isStatic() && indexedField.isProperty()) {
                 result.add(indexedField.getName());
             }
