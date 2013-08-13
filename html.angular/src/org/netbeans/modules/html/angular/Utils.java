@@ -44,7 +44,7 @@ package org.netbeans.modules.html.angular;
 import java.awt.Color;
 import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileReader;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -115,7 +115,7 @@ public class Utils {
     }
     
     public static String getFileContent(File file) throws IOException {
-        Reader r = new FileReader(file);
+        Reader r = new InputStreamReader(new FileInputStream(file), "UTF-8"); // NOI18N
         StringBuilder sb = new StringBuilder();
         try {
             char[] buf = new char[2048];

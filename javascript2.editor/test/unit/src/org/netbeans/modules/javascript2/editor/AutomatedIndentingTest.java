@@ -44,59 +44,29 @@
 
 package org.netbeans.modules.javascript2.editor;
 
-import java.util.Collections;
-import java.util.Set;
-import org.netbeans.lib.lexer.test.TestLanguageProvider;
-import org.netbeans.modules.csl.api.test.CslTestBase;
-import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
-import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
-
 /**
- * @author Tor Norbye
+ *
+ * @author Petr Hejl
  */
-public abstract class JsTestBase extends CslTestBase {
-    
-    public static String JS_SOURCE_ID = "classpath/js-source"; // NOI18N
-    
-    public JsTestBase(String testName) {
+public class AutomatedIndentingTest extends JsTestBase {
+
+    public AutomatedIndentingTest(String testName) {
         super(testName);
     }
 
-    @Override
-    protected boolean runInEQ() {
-        // Must run in AWT thread (BaseKit.install() checks for that)
-        return true;
+    private void insertChar(String original, char insertText, String expected) throws Exception {
+        insertChar(original, insertText, expected, null);
     }
 
-    @Override
-    protected DefaultLanguageConfig getPreferredLanguage() {
-        return new TestJsLanguage();
-    }
-    
-    @Override
-    protected String getPreferredMimeType() {
-        return JsTokenId.JAVASCRIPT_MIME_TYPE;
-    }
-    
-    public static class TestJsLanguage extends JsLanguage {
-
-        public TestJsLanguage() {
-            super();
-        }
-
-        @Override
-        public Set<String> getSourcePathIds() {
-            return Collections.singleton(JS_SOURCE_ID);
-        }
-        
-        
-        
+    private void insertChar(String original, char insertText, String expected, String selection) throws Exception {
+        insertChar(original, insertText, expected, selection, false);
     }
 
-    @Override
-    protected void setUp() throws Exception {        
-        TestLanguageProvider.register(getPreferredLanguage().getLexerLanguage());
-        super.setUp();
+    public void testIssue234083() throws Exception {
+        insertChar("switch(x){\n    case 1:\n  case^\n}", ' ', "switch(x){\n    case 1:\n    case ^\n}");
     }
 
+    public void testIssue231017() throws Exception {
+        insertChar("$('div')\n^", '.', "$('div')\n        .^");
+    }
 }

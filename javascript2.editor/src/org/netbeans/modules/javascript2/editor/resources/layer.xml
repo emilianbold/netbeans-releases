@@ -82,6 +82,7 @@
                     <attr name="regex3" stringvalue="\s*case\s"/>
                     <attr name="regex4" stringvalue="\s*default[:\s]"/>
                     <!-- <attr name="regex5" stringvalue="\s*else[\s\{]"/> -->
+                    <attr name="regex6" stringvalue="\s*\."/>
                 </file>
             </folder>
             <folder name="x-json">
