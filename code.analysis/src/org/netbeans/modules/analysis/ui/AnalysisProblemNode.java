@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.analysis.ui;
 
+import javax.swing.Action;
 import org.netbeans.modules.analysis.AnalysisProblem;
 import org.netbeans.modules.analysis.DescriptionReader;
 import org.openide.nodes.AbstractNode;
@@ -62,5 +63,9 @@ public class AnalysisProblemNode extends AbstractNode {
         setDisplayName(p.displayName);
         setIconBaseWithExtension("org/netbeans/modules/analysis/ui/resources/warning.gif");
     }
-    
+
+    @Override public Action[] getActions(boolean context) {
+        return new Action[0];
+    }
+
 }
