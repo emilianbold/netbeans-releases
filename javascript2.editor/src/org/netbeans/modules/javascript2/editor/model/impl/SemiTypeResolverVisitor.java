@@ -83,6 +83,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     public static final String ST_NEW = "@new;"; //NOI18N
     public static final String ST_ARR = "@arr;"; //NOI18N
     public static final String ST_ANONYM = "@anonym;"; //NOI18N
+    public static final String ST_WITH = "@with;"; //NOI18N
             
     private static final TypeUsage BOOLEAN_TYPE = new TypeUsageImpl(Type.BOOLEAN, -1, true);
     private static final TypeUsage STRING_TYPE = new TypeUsageImpl(Type.STRING, -1, true);
