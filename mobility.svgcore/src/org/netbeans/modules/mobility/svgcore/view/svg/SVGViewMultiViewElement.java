@@ -132,7 +132,10 @@ public final class SVGViewMultiViewElement extends AbstractMultiViewElement {
             SceneManager.error("Palette could not be created.", e); //NOI18N
         }
 
-        Lookup [] lookup;
+        if (svgView == null) {
+            getVisualRepresentation();
+        }
+        Lookup[] lookup;
         if (palette == null) {
             lookup = new Lookup[] { svgView.getLookup(), dObj.getNodeDelegate().getLookup()}; 
         } else {
