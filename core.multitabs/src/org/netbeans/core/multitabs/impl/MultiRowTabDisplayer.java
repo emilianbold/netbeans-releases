@@ -208,6 +208,12 @@ public class MultiRowTabDisplayer extends AbstractTabDisplayer implements ListSe
         TabData tab = getTabAt( location );
         if( null != tab ) {
             res = getModel().indexOf( tab );
+            if( res == getModel().size()-1 ) {
+                Rectangle rect = getTabBounds( res );
+                if( location.x > rect.x+rect.width/2 ) {
+                    res++;
+                }
+            }
         }
         return res;
     }
@@ -217,8 +223,14 @@ public class MultiRowTabDisplayer extends AbstractTabDisplayer implements ListSe
         int tabIndex = dropIndexOfPoint( location );
         if( tabIndex < 0 )
             return null;
+        if( tabIndex == getModel().size() ) {
+            tabIndex--;
+        }
         Rectangle rect = getTabBounds( tabIndex );
         if( null != rect ) {
+            if( tabIndex == getModel().size()-1 && location.x > rect.x+rect.width/2 )
+            rect.x += rect.width / 4;
+            else
             rect.x -= rect.width / 4;
         }
         return rect;

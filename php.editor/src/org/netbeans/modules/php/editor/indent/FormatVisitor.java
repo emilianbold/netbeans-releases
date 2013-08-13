@@ -129,13 +129,12 @@ public class FormatVisitor extends DefaultVisitor {
     private boolean isMethodInvocationShifted; // is continual indentation already included ?
     private boolean isFirstUseStatementPart;
     private boolean isFirstUseTraitStatementPart;
-    private final CodeStyle codeStyle;
 
-    public FormatVisitor(BaseDocument document, final int caretOffset, final int startOffset, final int endOffset) {
+    public FormatVisitor(BaseDocument document, DocumentOptions documentOptions, final int caretOffset, final int startOffset, final int endOffset) {
         this.document = document;
         ts = LexUtilities.getPHPTokenSequence(document, 0);
         path = new LinkedList<>();
-        options = new DocumentOptions(document);
+        options = documentOptions;
         includeWSBeforePHPDoc = true;
         formatTokens = new ArrayList<>(ts == null ? 1 : ts.tokenCount() * 2);
         this.caretOffset = caretOffset;
@@ -144,7 +143,6 @@ public class FormatVisitor extends DefaultVisitor {
         formatTokens.add(new FormatToken.InitToken());
         isMethodInvocationShifted = false;
         groupAlignmentTokenHolders = new Stack<>();
-        codeStyle = CodeStyle.get(document);
     }
 
     public List<FormatToken> getFormatTokens() {

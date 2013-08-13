@@ -3,25 +3,22 @@
 Projects                    j
 Files                       F
 Classes                     C
-Favorites                   i
+Favorites                   v
 Services                    S
-Action Items
-Palette                     t
-Properties                  r
-Output                  >   O
-Navigating              >   N
+Navigator                   N
+Action Items                A
+Tasks                       k
+Output                      O
+Editor                      E
 Debugging               >   b
 Profiling               >   g
-Versioning              >   V
-Other                   >   h
 Web                     >   W
-Editor                      E
-Processes                   P
+IDE Tools               >   T
 =========================
-Configure Window        >   W
+Configure Window        >   u
 Reset Windows               W
 =========================
-Close Window                C
+Close Window                i
 Close All Documents         A
-Close Other Documents       m
+Close Other Documents       h
 Documents...                D

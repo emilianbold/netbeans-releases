@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.test.permanentUI;
 
 import java.io.File;
@@ -47,15 +46,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.NoSuchElementException;
 import javax.swing.tree.TreeModel;
 import junit.framework.Test;
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.JellyTestCase;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jemmy.operators.JListOperator;
-import org.netbeans.jemmy.operators.JTreeOperator;
 import org.netbeans.junit.Manager;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.test.permanentUI.utils.Utilities;
@@ -65,70 +61,74 @@ import org.openide.util.Exceptions;
  *
  * @author Lukas Hasik, Petr Chytil
  */
-public class NewProjectTest extends JellyTestCase{
-    /** Need to be defined because of JUnit */
+public class NewProjectTest extends JellyTestCase {
+
+    /**
+     * Need to be defined because of JUnit
+     */
     public NewProjectTest(String name) {
         super(name);
     }
 
-        public static Test suite() {
-            NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
-            NewProjectTest.class
-        ).clusters(".*").enableModules(".*");
+    private static final String[] ALL_TESTS = new String[]{
+        "testNewProjectCategories",
+        "testNewProjectsJava",
+        "testNewProjectsJavaWeb",
+        "testNewProjectsJavaEE",
+        "testNewProjectsJavaME",
+        "testNewProjectsCpp",
+        "testNewProjectsNetBeansModules",
+        "testNewProjectsGroovy",
+        "testNewProjectsPHP",
+        "testNewProjectsMaven"};
 
-        conf = conf.addTest("testNewProjectCategories");
-        conf = conf.addTest("testNewProjectsJava");
-        conf = conf.addTest("testNewProjectsJavaWeb");
-        conf = conf.addTest("testNewProjectsJavaEE");
-        conf = conf.addTest("testNewProjectsJavaME");
-        //conf = conf.addTest("testNewProjectsUML"); 30/7/2008 - uml removed from build
-        conf = conf.addTest("testNewProjectsSOA");
-        conf = conf.addTest("testNewProjectsRuby");
-        conf = conf.addTest("testNewProjectsCpp");
-        conf = conf.addTest("testNewProjectsNetBeansModules");
-        conf = conf.addTest("testNewProjectsGroovy");
-        conf = conf.addTest("testNewProjectsPHP");
-        conf = conf.addTest("testNewProjectsMaven");
+    public static Test suite() {
+        NbModuleSuite.Configuration conf = NbModuleSuite.createConfiguration(
+                NewProjectTest.class).clusters(".*").enableModules(".*");
+
+        conf = conf.addTest(ALL_TESTS);
 
         return conf.suite();
+    }
 
-
-     }
-    /** Setup called before every test case. */
+    /**
+     * Setup called before every test case.
+     */
     @Override
     public void setUp() {
-        System.out.println("########  "+getName()+"  #######");
+        System.out.println("########  " + getName() + "  #######");
 
     }
 
-    /** Tear down called after every test case. */
+    /**
+     * Tear down called after every test case.
+     */
     @Override
     public void tearDown() {
     }
 
     private static final String CATEGORIES_GOLDEN_FILE = "newprojects-Categories.txt";
 
-    private class ComparationReturnValues{
+    private class ComparationReturnValues {
+
+        public boolean assertValue;
+        public String assertString;
 
         public ComparationReturnValues(boolean assertValue, String assertString) {
             this.assertString = assertString;
             this.assertValue = assertValue;
         }
-
-        public boolean assertValue;
-        public String assertString;
     }
 
-
-    private ArrayList<String> getChildren(TreeModel tree, Object root, String spaces){
+    private ArrayList<String> getChildren(TreeModel tree, Object root, String spaces) {
         int categoriesCount = tree.getChildCount(root);
         ArrayList<String> returnList = new ArrayList<String>();
 
-        for(int i = 0; i<= categoriesCount-1;i++){
+        for (int i = 0; i <= categoriesCount - 1; i++) {
             Object actualChild = tree.getChild(root, i);
             returnList.add(spaces + actualChild.toString());
 
-            if(!tree.isLeaf(actualChild)){
+            if (!tree.isLeaf(actualChild)) {
 
                 spaces = "+-" + spaces;
                 returnList.addAll(getChildren(tree, actualChild, spaces));
@@ -144,17 +144,17 @@ public class NewProjectTest extends JellyTestCase{
      * http://wiki.netbeans.org/NewProjectWizard
      */
     public void testNewProjectCategories() {
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+        ComparationReturnValues assertResults = new ComparationReturnValues(true, "");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         // select the Java category - workaround for failing test because of slow load of UI
         String standardLabel = Bundle.getStringTrimmed("org.netbeans.modules.java.j2seproject.ui.wizards.Bundle", "Templates/Project/Standard");
         npwo.selectCategory(standardLabel);
 
-        String goldenfile = getDataDir().getPath()+File.separator + "permanentUI" + File.separator+"newproject"+File.separator+CATEGORIES_GOLDEN_FILE;
+        String goldenfile = getDataDir().getPath() + File.separator + "permanentUI" + File.separator + "newproject" + File.separator + CATEGORIES_GOLDEN_FILE;
         ArrayList<String> permanentCategories = Utilities.parseFileByLinesLeaveSpaces(goldenfile);
 
         final String permCategoriesFileName = getWorkDirPath() + File.separator + getName() + "_ide.txt";
-        final String ideCategoriesFileName = getWorkDirPath() + File.separator + getName() +"_golden.txt";
+        final String ideCategoriesFileName = getWorkDirPath() + File.separator + getName() + "_golden.txt";
         final String diffFile = getWorkDirPath() + File.separator + getName() + ".diff";
         String message = null;
         boolean assertValue = true;
@@ -192,44 +192,42 @@ public class NewProjectTest extends JellyTestCase{
 
         assertResults = new ComparationReturnValues(assertValue, message);
         npwo.cancel();
-        assertTrue(assertResults.assertString,assertResults.assertValue);
+        assertTrue(assertResults.assertString, assertResults.assertValue);
     }
 
-
-    public void testNewProjectsJava(){
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+    public void testNewProjectsJava() {
+        ComparationReturnValues assertResults = new ComparationReturnValues(true, "");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         assertResults = oneCategoryTest("Java", npwo);
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue);
     }
 
-    public void testNewProjectsJavaWeb(){
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+    public void testNewProjectsJavaWeb() {
+        ComparationReturnValues assertResults = new ComparationReturnValues(true, "");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         assertResults = oneCategoryTest("Java Web", "Java_Web", npwo);
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue);
     }
 
-    public void testNewProjectsJavaEE(){
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+    public void testNewProjectsJavaEE() {
+        ComparationReturnValues assertResults = new ComparationReturnValues(true, "");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         assertResults = oneCategoryTest("Java EE", "Java_EE", npwo);
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue);
     }
 
-    public void testNewProjectsJavaME(){
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+    public void testNewProjectsJavaME() {
+        ComparationReturnValues assertResults = new ComparationReturnValues(true, "");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         assertResults = oneCategoryTest("Java ME", "Java_ME", npwo);
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue);
     }
 
-
-//UML was removed from daily builds
+//========================UML was removed from daily builds=====================
 //    public void testNewProjectsUML(){
 //        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
 //        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
@@ -237,57 +235,56 @@ public class NewProjectTest extends JellyTestCase{
 //        npwo.cancel();
 //        assertTrue(assertResults.assertString, assertResults.assertValue);
 //    }
-
-    public void testNewProjectsSOA(){
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+//==================SOA and Ruby were removede from the option==================
+//        public void testNewProjectsSOA() {
+//        ComparationReturnValues assertResults = new ComparationReturnValues(true, "");
+//        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+//        assertResults = oneCategoryTest("SOA", npwo);
+//        npwo.cancel();
+//        assertTrue(assertResults.assertString, assertResults.assertValue);
+//    }
+//
+//    public void testNewProjectsRuby() {
+//        ComparationReturnValues assertResults = new ComparationReturnValues(true, "");
+//        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
+//        assertResults = oneCategoryTest("Ruby", npwo);
+//        npwo.cancel();
+//        assertTrue(assertResults.assertString, assertResults.assertValue);
+//    }
+    public void testNewProjectsCpp() {
+        ComparationReturnValues assertResults = new ComparationReturnValues(true, "");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        assertResults = oneCategoryTest("SOA", npwo);
+        assertResults = oneCategoryTest("C/C++", "CPP", npwo);
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue);
     }
 
-    public void testNewProjectsRuby(){
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+    public void testNewProjectsNetBeansModules() {
+        ComparationReturnValues assertResults = new ComparationReturnValues(true, "");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        assertResults = oneCategoryTest("Ruby", npwo);
+        assertResults = oneCategoryTest("NetBeans Modules", "NetBeans_Modules", npwo);
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue);
     }
 
-    public void testNewProjectsCpp(){
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
-        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        assertResults = oneCategoryTest("C/C++","Cpp", npwo);
-        npwo.cancel();
-        assertTrue(assertResults.assertString, assertResults.assertValue);
-    }
-
-    public void testNewProjectsNetBeansModules(){
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
-        NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
-        assertResults = oneCategoryTest("NetBeans Modules","NetBeans_Modules", npwo);
-        npwo.cancel();
-        assertTrue(assertResults.assertString, assertResults.assertValue);
-    }
-
-    public void testNewProjectsGroovy(){
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+    public void testNewProjectsGroovy() {
+        ComparationReturnValues assertResults = new ComparationReturnValues(true, "");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         assertResults = oneCategoryTest("Groovy", npwo);
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue);
     }
 
-    public void testNewProjectsPHP(){
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+    public void testNewProjectsPHP() {
+        ComparationReturnValues assertResults = new ComparationReturnValues(true, "");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         assertResults = oneCategoryTest("PHP", npwo);
         npwo.cancel();
         assertTrue(assertResults.assertString, assertResults.assertValue);
     }
 
-    public void testNewProjectsMaven(){
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+    public void testNewProjectsMaven() {
+        ComparationReturnValues assertResults = new ComparationReturnValues(true, "");
         NewProjectWizardOperator npwo = NewProjectWizardOperator.invoke();
         assertResults = oneCategoryTest("Maven", npwo);
         npwo.cancel();
@@ -295,24 +292,28 @@ public class NewProjectTest extends JellyTestCase{
     }
 
     /**
-     * For categories with simple names, which can be used as filename of the golden file.
+     * For categories with simple names, which can be used as filename of the
+     * golden file.
+     *
      * @param categoryName - name of the category = name of the godlen file
      * @param newProjectOperator
      * @return
      */
-    private ComparationReturnValues oneCategoryTest(String categoryName, NewProjectWizardOperator newProjectOperator){
-        return oneCategoryTest(categoryName,categoryName,newProjectOperator);
+    private ComparationReturnValues oneCategoryTest(String categoryName, NewProjectWizardOperator newProjectOperator) {
+        return oneCategoryTest(categoryName, categoryName, newProjectOperator);
     }
 
     /**
-     * This method should be used when category is too complicated and couldn't be used as golden file's filename.
+     * This method should be used when category is too complicated and couldn't
+     * be used as golden file's filename.
+     *
      * @param categoryName
      * @param goldenFileName
      * @param newProjectOperator
      * @return
      */
     private ComparationReturnValues oneCategoryTest(String categoryName, String goldenFileName, NewProjectWizardOperator newProjectOperator) {
-        ComparationReturnValues assertResults = new ComparationReturnValues(true,"");
+        ComparationReturnValues assertResults = new ComparationReturnValues(true, "");
         boolean assertValue = true;
         String goldenfile = getCategoryGoldenFile(goldenFileName);
         ArrayList<String> permanentProjects = Utilities.parseFileByLines(goldenfile);
@@ -320,7 +321,7 @@ public class NewProjectTest extends JellyTestCase{
         JListOperator jlo = newProjectOperator.lstProjects();
         ArrayList<String> actualProjects = getProjectsList(jlo);
 
-        final String permCategoryFileName = getWorkDirPath() + File.separator + getName() +"_golden.txt";
+        final String permCategoryFileName = getWorkDirPath() + File.separator + getName() + "_golden.txt";
         final String ideCategoryFileName = getWorkDirPath() + File.separator + getName() + "_ide.txt";
         final String diffFile = getWorkDirPath() + File.separator + getName() + ".diff";
         String message = null;
@@ -352,10 +353,10 @@ public class NewProjectTest extends JellyTestCase{
         }
 
         assertResults = new ComparationReturnValues(assertValue, message);
-        return  assertResults;
+        return assertResults;
     }
 
-    private ArrayList<String> getProjectsList(JListOperator projectsListOperator){
+    private ArrayList<String> getProjectsList(JListOperator projectsListOperator) {
         ArrayList<String> projectsList = new ArrayList<String>();
         int catSize = projectsListOperator.getLastVisibleIndex();
         for (int j = 0; j <= catSize; j++) {
@@ -372,9 +373,7 @@ public class NewProjectTest extends JellyTestCase{
         } catch (IOException ex) {
             ex.printStackTrace();
         }
-        return dataDir + File.separator + "permanentUI" + File.separator + "newproject" + File.separator+ categoryName + ".txt";
+        return dataDir + File.separator + "permanentUI" + File.separator + "newproject" + File.separator + categoryName + ".txt";
     }
-
-
 
 }

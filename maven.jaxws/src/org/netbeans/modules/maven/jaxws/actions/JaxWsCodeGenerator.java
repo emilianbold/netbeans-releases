@@ -53,8 +53,6 @@ import com.sun.source.tree.Tree;
 import com.sun.source.tree.VariableTree;
 import com.sun.source.util.TreePath;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.lang.reflect.InvocationTargetException;
 import java.text.MessageFormat;
 import java.util.Arrays;
@@ -82,13 +80,13 @@ import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.maven.jaxws.nodes.OperationNode;
 import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.jaxws.light.api.JaxWsService;
-import org.openide.util.RequestProcessor;
 import static org.netbeans.api.java.source.JavaSource.Phase;
 import static com.sun.source.tree.Tree.Kind.*;
 import org.netbeans.api.java.source.WorkingCopy;
 import org.netbeans.api.java.source.ui.ScanDialog;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.editor.BaseDocument;
 
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.javaee.injection.api.InjectionTargetQuery;
@@ -104,6 +102,7 @@ import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 
@@ -620,38 +619,43 @@ public class JaxWsCodeGenerator {
                 argumentDeclarationPart
             };
             final String invocationBody = getJSPInvocationBody(operation, args);
-            try {
-                if (WsdlOperation.TYPE_ASYNC_CALLBACK == operation.getOperationType()) {
-                    Object[] args1 = new Object[]{
-                        callbackHandlerName,
-                        responseType
-                    };
-                    final String methodBody = MessageFormat.format(JSP_CALLBACK_HANDLER, args1);
-                    // insert 2 parts in one atomic action
-                    NbDocument.runAtomic((StyledDocument) document, new Runnable() {
+            
+            if (WsdlOperation.TYPE_ASYNC_CALLBACK == operation.getOperationType()) {
+                Object[] args1 = new Object[]{
+                    callbackHandlerName,
+                    responseType
+                };
+                final String methodBody = MessageFormat.format(JSP_CALLBACK_HANDLER, args1);
+                // insert 2 parts in one atomic action
+                NbDocument.runAtomic((StyledDocument) document, new Runnable() {
 
+                    @Override
+                    public void run() {
+                        try {
+                            document.insertString(document.getLength(), methodBody, null);
+                            document.insertString(pos, invocationBody, null);
+                        } catch (javax.swing.text.BadLocationException ex) {
+                        }
+                    }
+                });
+            } else {
+                final Indent indent = Indent.get(document);
+                indent.lock();
+                try {
+                    ((BaseDocument)document).runAtomic(new Runnable() {
                         @Override
                         public void run() {
                             try {
-                                document.insertString(document.getLength(), methodBody, null);
                                 document.insertString(pos, invocationBody, null);
-                            } catch (javax.swing.text.BadLocationException ex) {
+                                indent.reindent(pos, pos+invocationBody.length());
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
                             }
                         }
-                    });
-                } else {
-                    document.insertString(pos, invocationBody, null);
-                                Indent indent = Indent.get(document);
-                    indent.lock();
-                    try {
-                        indent.reindent(pos, pos+invocationBody.length());
-                    } finally {
-                        indent.unlock();
-                    }
+                    }); 
+                } finally {
+                    indent.unlock();
                 }
-
-
-            } catch (javax.swing.text.BadLocationException ex) {
             }
 
             return;
@@ -710,14 +714,8 @@ public class JaxWsCodeGenerator {
                             Level.WARNING, null, e );
                 }
             }
-
-            // create & format inserted text
-//            IndentEngine eng = IndentEngine.find(document);
-//            StringWriter textWriter = new StringWriter();
-//            Writer indentWriter = eng.createWriter(document, pos, textWriter);
-
-            // create the inserted text
-            String invocationBody = task.getJavaInvocationBody(
+            // create and format inserted text
+            final String invocationBody = task.getJavaInvocationBody(
                     operation,
                     portJavaName,
                     portGetterMethod,
@@ -725,25 +723,20 @@ public class JaxWsCodeGenerator {
                     operationJavaName,
                     respType);
 
-//            indentWriter.write(invocationBody);
-//            indentWriter.close();
-//            String textToInsert = textWriter.toString();
-
-//            try {
-//                document.insertString(pos, textToInsert, null);
-//            } catch (BadLocationException badLoc) {
-//                document.insertString(pos + 1, textToInsert, null);
-//            }
-            
-            try {
-                document.insertString(pos, invocationBody, null);
-            } catch (BadLocationException badLoc) {
-                document.insertString(pos + 1, invocationBody, null);
-            }            
-            Indent indent = Indent.get(document);
+            final Indent indent = Indent.get(document);
             indent.lock();
             try {
-                indent.reindent(pos, pos+invocationBody.length());
+                ((BaseDocument)document).runAtomic(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            document.insertString(pos, invocationBody, null);
+                            indent.reindent(pos, pos+invocationBody.length());
+                        } catch (BadLocationException badLoc) {
+                            Exceptions.printStackTrace(badLoc);
+                        }
+                    }
+                });
             } finally {
                 indent.unlock();
             }
@@ -754,8 +747,6 @@ public class JaxWsCodeGenerator {
                 InsertTask modificationTask = new InsertTask(serviceJavaName, serviceFName[0], wsdlUrl);
                 targetSource.runModificationTask(modificationTask).commit();
             }
-        } catch (BadLocationException badLoc) {
-            ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, badLoc);
         } catch (IOException ioe) {
             ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, ioe);
         }

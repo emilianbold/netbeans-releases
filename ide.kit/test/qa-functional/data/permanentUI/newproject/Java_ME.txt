@@ -1,5 +1,6 @@
 Java ME
     Mobile Application
+    Embedded Application
     Mobile Class Library
     Mobile Project with Existing MIDP Sources
     Import Wireless Toolkit Project
@@ -7,4 +8,3 @@ Java ME
     CDC Class Library
     Import CDC Pack 5.5 Project
     Import CDC Toolkit Project
-    Mobile Designer Components

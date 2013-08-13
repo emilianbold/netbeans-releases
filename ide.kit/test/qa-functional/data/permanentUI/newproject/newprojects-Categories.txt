@@ -1,26 +1,23 @@
 Java
+JavaFX
 Java Web
 Java EE
+HTML5
+Java Card
 Java ME
 Maven
 PHP
-Ruby
 Groovy
 C/C++
-SOA
 NetBeans Modules
 Samples
     Java
-    Java Web
-    Java Web (Visual JSF)
+    JavaFX
+    HTML5
     Web Services
     Java EE
-    Java ME (MIDP)
-    Java ME (Ricoh SDK/J)
-    Java ME (BD-J)
+    Maven
     PHP
-    Ruby
     Groovy
     C/C++
-    SOA
     NetBeans Modules
