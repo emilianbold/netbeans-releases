@@ -140,6 +140,7 @@ public class TreeModelNode extends AbstractNode {
     private String              shortDescription;
     private final Object        shortDescriptionLock = new Object();
     private final Map<String, Object> properties = new HashMap<String, Object>();
+    private final Map<String, String> columnIDsMap;
     private static final String EVALUATING_STR = NbBundle.getMessage(TreeModelNode.class, "EvaluatingProp");
 
     
@@ -236,6 +237,7 @@ public class TreeModelNode extends AbstractNode {
         // </RAVE>
         
         treeModelRoot.registerNode (object, this);
+        this.columnIDsMap = createColumnIDsMap(columns);
         this.columns = columns;
     }
 
@@ -258,6 +260,23 @@ public class TreeModelNode extends AbstractNode {
         } else {
             return Lookups.fixed(object, cnc);
         }
+    }
+    
+    private static Map<String, String> createColumnIDsMap(ColumnModel[] columns) {
+        Map<String, String> cids = null;
+        for (ColumnModel cm : columns) {
+            if (cm instanceof HyperColumnModel) {
+                if (cids == null) {
+                    cids = new HashMap<String, String>();
+                }
+                HyperColumnModel hcm = (HyperColumnModel) cm;
+                String mainID = cm.getID();
+                for (String id : hcm.getAllIDs()) {
+                    cids.put(id, mainID);
+                }
+            }
+        }
+        return cids;
     }
 
     private boolean areChildrenInitialized() {
@@ -952,6 +971,13 @@ public class TreeModelNode extends AbstractNode {
     }
     
     void refreshColumn(String column, int changeMask) {
+        String visualColumn = column;
+        if (columnIDsMap != null) {
+            String c = columnIDsMap.get(column);
+            if (c != null) {
+                visualColumn = c;
+            }
+        }
         synchronized (properties) {
             if ((ModelEvent.TableValueChanged.VALUE_MASK & changeMask) != 0) {
                 properties.remove(column);
@@ -963,7 +989,8 @@ public class TreeModelNode extends AbstractNode {
                 properties.remove(column + "#canWrite");
             }
         }
-        firePropertyChange(column, null, null);
+        
+        firePropertyChange(visualColumn, null, null);
     }
 
     /**
