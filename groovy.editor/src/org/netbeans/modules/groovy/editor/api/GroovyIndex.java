@@ -52,6 +52,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedField;
@@ -341,6 +342,24 @@ public final class GroovyIndex {
      */
     public Set<IndexedField> getAllFields(final String fqName) {
         return getFields(".*", fqName, QuerySupport.Kind.REGEXP); // NOI18N
+    }
+
+    /**
+     * Gets all static fields for the given fully qualified name.
+     *
+     * @param fqName fully qualified name
+     * @return all static fields for the given type
+     */
+    public Set<IndexedField> getStaticFields(final String fqName) {
+        Set<IndexedField> fields = getFields(".*", fqName, QuerySupport.Kind.REGEXP); // NOI18N
+        Set<IndexedField> staticFields = new HashSet<>();
+
+        for (IndexedField field : fields) {
+            if (field.getModifiers().contains(Modifier.STATIC)) {
+                staticFields.add(field);
+            }
+        }
+        return staticFields;
     }
 
     public Set<IndexedField> getFields(final String name, final String clz, QuerySupport.Kind kind) {
