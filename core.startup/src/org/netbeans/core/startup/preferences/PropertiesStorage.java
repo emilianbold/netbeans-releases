@@ -328,14 +328,12 @@ class PropertiesStorage implements NbPreferences.FileStorage {
 		    retval = FileUtil.createData(SFS_ROOT, filePath());
 		} catch (SyncFailedException sfex) {
 		    // File could not be created as it already exists!!!
-		    retval = toPropertiesFile();
 		    DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-		    LOGGER.log(Level.WARNING, "File {0} seems to already exist."
-			    + "\nCurrent date/time: {1}"
-			    + "\nLast modified: {2}",
+		    LOGGER.log(Level.WARNING, "File {0} seems to already exist in default filesystem {1}."
+			    + "\nCurrent date/time: {2}",
 			    new Object[]{filePath(),
-				dateFormat.format(Calendar.getInstance().getTime()),
-				dateFormat.format(retval.lastModified())});
+                                FileUtil.toFile(SFS_ROOT).getCanonicalPath(),
+				dateFormat.format(Calendar.getInstance().getTime())});
 		}
 	    }
         }
