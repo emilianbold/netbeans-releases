@@ -41,6 +41,9 @@
  */
 package org.netbeans.modules.php.spi.testing.run;
 
+import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.annotations.common.NullAllowed;
@@ -111,14 +114,19 @@ public interface TestCase {
      */
     final class Diff {
 
+        private static final Logger LOGGER = Logger.getLogger(Diff.class.getName());
+
         /**
          * {@link #isValid() Invalid} instance for not known differences.
          * @since 0.2
          */
-        public static final Diff NOT_KNOWN = new Diff(null, null);
+        public static final Diff NOT_KNOWN = new Diff((String) null, (String) null);
 
-        private final String expected;
-        private final String actual;
+        private final Callable<String> expectedTask;
+        private final Callable<String> actualTask;
+
+        private volatile String expected;
+        private volatile String actual;
 
 
         /**
@@ -129,6 +137,19 @@ public interface TestCase {
         public Diff(@NullAllowed String expected, @NullAllowed String actual) {
             this.expected = expected;
             this.actual = actual;
+            expectedTask = null;
+            actualTask = null;
+        }
+
+        /**
+         * Create new difference for the test failure.
+         * @param expectedTask task that returns the expected value (should be thread-safe)
+         * @param actualTask task that returns actual value (should be thread-safe)
+         * @since 0.8
+         */
+        public Diff(@NullAllowed Callable<String> expectedTask, @NullAllowed Callable<String> actualTask) {
+            this.expectedTask = expectedTask;
+            this.actualTask = actualTask;
         }
 
         /**
@@ -137,6 +158,17 @@ public interface TestCase {
          */
         @CheckForNull
         public String getExpected() {
+            if (expected != null) {
+                return expected;
+            }
+            if (expectedTask == null) {
+                return null;
+            }
+            try {
+                expected = expectedTask.call();
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
             return expected;
         }
 
@@ -146,6 +178,17 @@ public interface TestCase {
          */
         @CheckForNull
         public String getActual() {
+            if (actual != null) {
+                return actual;
+            }
+            if (actualTask == null) {
+                return null;
+            }
+            try {
+                actual = actualTask.call();
+            } catch (Exception ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
             return actual;
         }
 
@@ -155,12 +198,12 @@ public interface TestCase {
          * @return {@code true} if expected or actual value contains any characters
          */
         public boolean isValid() {
-            return StringUtils.hasText(expected) || StringUtils.hasText(actual);
+            return StringUtils.hasText(getExpected()) || StringUtils.hasText(getActual());
         }
 
         @Override
         public String toString() {
-            return "Diff{" + "expected=" + expected + ", actual=" + actual + '}'; // NOI18N
+            return "Diff{" + "expected=" + getExpected() + ", actual=" + getActual() + '}'; // NOI18N
         }
 
     }
