@@ -94,6 +94,8 @@ public final class FormatContext {
 
     private int currentLineStart;
 
+    private boolean pendingContinuation;
+
     public FormatContext(Context context, Snapshot snapshot, Language<JsTokenId> language) {
         this.context = context;
         this.snapshot = snapshot;
@@ -195,6 +197,14 @@ public final class FormatContext {
 
     public void decContinuationLevel() {
         this.continuationLevel--;
+    }
+
+    public boolean isPendingContinuation() {
+        return pendingContinuation;
+    }
+
+    public void setPendingContinuation(boolean pendingContinuation) {
+        this.pendingContinuation = pendingContinuation;
     }
 
     public int getOffsetDiff() {
