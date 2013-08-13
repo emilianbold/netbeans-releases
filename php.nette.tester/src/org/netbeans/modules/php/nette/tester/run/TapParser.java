@@ -49,6 +49,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.netbeans.modules.php.spi.testing.run.TestCase;
 
 public final class TapParser {
@@ -62,7 +63,7 @@ public final class TapParser {
     private static final String OK_PREFIX = "ok "; // NOI18N
     private static final String NOT_OK_PREFIX = "not ok "; // NOI18N
     private static final String FAILED_PREFIX = "Failed: "; // NOI18N
-    private static final String SKIP_SUFFIX = " #skip"; // NOI18N
+    private static final String SKIP_MARK = " #skip"; // NOI18N
     private static final String HELLIP = "... "; // NOI18N
     private static final Pattern DIFF_LINE_PATTERN = Pattern.compile("diff \"([^\"]+)\" \"([^\"]+)\""); // NOI18N
 
@@ -95,7 +96,12 @@ public final class TapParser {
             processComments();
             assert state == null : state;
             line = line.substring(OK_PREFIX.length());
-            if (checkSkipped(line)) {
+            if (isSkippedTest(line)) {
+                List<String> parts = StringUtils.explode(line, SKIP_MARK);
+                addSuiteTest(parts.get(0));
+                if (parts.size() > 1) {
+                    testCase.setMessage(parts.get(1).trim());
+                }
                 testCase.setStatus(TestCase.Status.SKIPPED);
                 testCase = null;
             } else {
@@ -114,13 +120,9 @@ public final class TapParser {
         }
     }
 
-    private boolean checkSkipped(String line) {
+    private boolean isSkippedTest(String line) {
         assert state == null : state;
-        if (line.endsWith(SKIP_SUFFIX)) {
-            addSuiteTest(line.substring(0, line.length() - SKIP_SUFFIX.length()));
-            return true;
-        }
-        return false;
+        return line.contains(SKIP_MARK);
     }
 
     private void processComment(String line) {

@@ -72,12 +72,12 @@ public class TapParserTest extends NbTestCase {
         log = log.replace("%DIFF_BASE_DIR%", getWorkDirPath() + File.separator);
         // parse it
         TestSuiteVo suite = new TapParser()
-                .parse(log, 600L);
+                .parse(log, 700L);
         assertEquals("Tests", suite.getName());
         assertEquals(null, suite.getFile());
 
         List<TestCaseVo> testCases = suite.getTestCases();
-        assertEquals(6, testCases.size());
+        assertEquals(7, testCases.size());
 
         TestCaseVo testCase1 = testCases.get(0);
         assertEquals("nette-tester/tests/MyTests.phpt", testCase1.getName());
@@ -156,6 +156,15 @@ public class TapParserTest extends NbTestCase {
         assertEquals("nette-tester/tests/Greeting4.test.phpt", testCase6.getFile());
         assertEquals(15, testCase6.getLine());
         assertEquals(100L, testCase6.getTime());
+
+        TestCaseVo testCase7 = testCases.get(6);
+        assertEquals("nette-tester/tests/VerboseSkippedTests.phpt", testCase7.getName());
+        assertEquals(TestCase.Status.SKIPPED, testCase7.getStatus());
+        assertEquals("My skip message", testCase7.getMessage());
+        assertNull(testCase7.getDiff());
+        assertTrue(testCase1.getStackTrace().isEmpty());
+        assertNull(testCase7.getFile());
+        assertEquals(100L, testCase7.getTime());
     }
 
     private String getFileContent(String filePath) throws IOException {

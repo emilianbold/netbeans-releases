@@ -336,10 +336,17 @@ public final class Tester {
 
         private void mapFailureInfo(TestCaseVo kase, TestCase testCase) {
             if (isPass(kase.getStatus())) {
-                assert kase.getMessage() == null : kase.getMessage();
+                if (kase.getMessage() != null) {
+                    // skipped test with message
+                    mapFailureInfoInternal(kase, testCase);
+                }
                 assert kase.getDiff() == null : kase.getDiff();
                 return;
             }
+            mapFailureInfoInternal(kase, testCase);
+        }
+
+        private void mapFailureInfoInternal(TestCaseVo kase, TestCase testCase) {
             String message = kase.getMessage();
             assert message != null : kase;
             List<String> stackTrace = kase.getStackTrace();

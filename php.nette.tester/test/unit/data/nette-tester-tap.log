@@ -32,4 +32,5 @@ not ok nette-tester/tests/Greeting4.test.phpt
 # in [internal function] {closure}()
 # in Tester/Framework/Assert.php(304) call_user_func()
 # in nette-tester/tests/Greeting4.test.phpt(15) Tester\Assert::error()
-1..6
+ok nette-tester/tests/VerboseSkippedTests.phpt #skip My skip message
+1..7
