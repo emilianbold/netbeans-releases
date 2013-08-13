@@ -191,6 +191,10 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
     protected void componentOpened() {
         super.componentOpened();
         getReference().register(this);
+        CloneableOpenSupport cos = getLookup().lookup(CloneableOpenSupport.class);
+        if (cos != null) {
+            CloneableOpenSupportRedirector.notifyOpened(cos);
+        }
     }
 
     /** Overrides superclass method, adds unregistering from references.
@@ -199,7 +203,14 @@ public abstract class CloneableTopComponent extends TopComponent implements Exte
         super.componentClosed();
 
         if (!isOpened()) {
-            getReference().unregister(this);
+            try {
+                CloneableOpenSupport cos = getLookup().lookup(CloneableOpenSupport.class);
+                if (cos != null) {
+                    CloneableOpenSupportRedirector.notifyClosed(cos);
+                }
+            } finally {
+                getReference().unregister(this);
+            }
         }
     }
 
