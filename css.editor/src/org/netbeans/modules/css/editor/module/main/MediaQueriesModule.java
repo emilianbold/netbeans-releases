@@ -70,7 +70,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = CssEditorModule.class)
 public class MediaQueriesModule extends CssEditorModule {
 
-    private static String[] MEDIA_TYPES 
+    private static final String[] MEDIA_TYPES 
             = new String[]{"all", "aural", "braille", "embossed", "handheld", 
                 "print", "projection", "screen", "tty", "tv"}; //NOI18N
     
@@ -125,13 +125,32 @@ public class MediaQueriesModule extends CssEditorModule {
     @Override
     public List<CompletionProposal> getCompletionProposals(final CompletionContext context) {
         final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
-        Node activeNode = context.getActiveNode();
-        boolean isError = activeNode.type() == NodeType.error;
-        if (isError) {
-            activeNode = activeNode.parent();
+        Node node = context.getActiveNode();
+
+        //switch to first non error node
+        loop:
+        for (;;) {
+            switch (node.type()) {
+                case error:
+                case recovery:
+                    node = node.parent();
+                default:
+                    break loop;
+            }
         }
 
-        switch (activeNode.type()) {
+        switch (node.type()) {
+            case bodyItem:
+                if(context.getActiveTokenId() == CssTokenId.WS) {
+                    //no prefix
+                    if(null != LexerUtils.followsToken(context.getTokenSequence(), 
+                            CssTokenId.MEDIA_SYM, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                        //@media |
+                        proposals.addAll(getMediaTypes(context));
+                    }
+                }
+            break;
+                
             case mediaType:
                 //in media type (screen, print,...)
                 proposals.addAll(getMediaTypes(context));
