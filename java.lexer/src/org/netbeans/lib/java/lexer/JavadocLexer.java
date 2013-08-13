@@ -95,62 +95,22 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
                 state = 1;
                 return token(JavadocTokenId.IDENT, "javadoc-identifier"); //NOI18N
             }
-            state = 1;
-            return token(JavadocTokenId.IDENT);
-        }
-        
-        if ("@<.#".indexOf(ch) == (-1)) {
-            boolean newline = state == null;
-            boolean leftbr = false;
-            while (!Character.isJavaIdentifierStart(ch) && "<.#".indexOf(ch) == (-1) && ch != EOF && (ch != '@' || !newline && !leftbr)) {
-                if (ch == '{') {
-                    leftbr = true;
-                    newline = false;
-                } else if (ch == '\n') {
-                    newline = true;
-                } else if (!Character.isWhitespace(ch) && (!newline || ch != '*')) {
-                    leftbr = false;
-                    newline = false;
-                }
-                ch = input.read();
+            if (state == null) {
+                state = 1;
             }
-            if (newline || leftbr)
-                state = null;
-            
-            if (ch != EOF)
-                input.backup(1);
-            return token(JavadocTokenId.OTHER_TEXT);
+            return token(JavadocTokenId.IDENT);
         }
         
         switch (ch) {
             case '@':
                 if (state != null) {
-                    boolean newline = false;
-                    boolean leftbr = false;
-                    while (!Character.isJavaIdentifierStart(ch) && "<.#".indexOf(ch) == (-1) && ch != EOF && (ch != '@' || !newline && !leftbr)) {
-                        if (ch == '{') {
-                            leftbr = true;
-                            newline = false;
-                        } else if (ch == '\n') {
-                            newline = true;
-                        } else if (!Character.isWhitespace(ch) && (!newline || ch != '*')) {
-                            leftbr = false;
-                            newline = false;
-                        }
-                        ch = input.read();
-                    }
-                    if (newline || leftbr)
-                        state = null;
-
-                    if (ch != EOF)
-                        input.backup(1);
-                    return token(JavadocTokenId.OTHER_TEXT);
+                    return otherText(ch);
                 }
                 String tag = "";
                 while (true) {
                     ch = input.read();
                     if (!Character.isLetter(ch)) {
-                        state = "param".equals(tag) ? 2 : 1; //NOI18N
+                        state = "param".equals(tag) ? 2 : "code".equals(tag) || "literal".equals(tag) ? 3 : 1; //NOI18N
                         input.backup(1);
                         return tokenFactory.createToken(JavadocTokenId.TAG, input.readLength());
                     } else {
@@ -158,6 +118,9 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
                     }
                 }
             case '<':
+                if (state != null && state == 3) {
+                    return otherText(ch);
+                }
                 int backupCounter = 0;
                 boolean newline = false;
                 boolean asterisk = false;
@@ -193,16 +156,81 @@ public class JavadocLexer implements Lexer<JavadocTokenId> {
                     }
                 }
             case '.':
-                state = 1;
+                if (state == null) {
+                    state = 1;
+                }
                 return token(JavadocTokenId.DOT);
             case '#':
-                state = 1;
+                if (state == null) {
+                    state = 1;
+                }
                 return token(JavadocTokenId.HASH);
+            default:
+                return otherText(ch);
         } // end of switch (ch)
-        
-        assert false;
-        
-        return null;
+    }
+
+    private Token<JavadocTokenId> otherText(int ch) {
+        boolean newline = state == null;
+        boolean leftbr = false;
+        while (true) {
+            if (Character.isJavaIdentifierStart(ch)) {
+                if ((newline || leftbr) && state != null && state != 3) {
+                    state = null;
+                }
+                input.backup(1);
+                return token(JavadocTokenId.OTHER_TEXT);
+            }
+            switch (ch) {
+                case '<':
+                    if (state != null && state == 3) {
+                        leftbr = false;
+                        newline = false;
+                        break;
+                    }
+                case '.':
+                case '#':
+                    input.backup(1);
+                case EOF:
+                    return token(JavadocTokenId.OTHER_TEXT);
+                case '@':
+                    if ((newline || leftbr) && (state == null || state != 3)) {
+                        state = null;
+                        input.backup(1);                        
+                        return token(JavadocTokenId.OTHER_TEXT);
+                    }
+                    leftbr = false;
+                    newline = false;
+                    break;
+                case '{':
+                    leftbr = true;
+                    newline = false;
+                    break;
+                case '\n':
+                    newline = true;
+                    break;
+                case '}':
+                    if (state != null && state == 3) {
+                        state = 1;
+                        if (input.readLength() > 1)
+                            input.backup(1);
+                        return token(JavadocTokenId.OTHER_TEXT);
+                    }
+                    leftbr = false;
+                    newline = false;
+                    break;
+                case '*':
+                    if (newline) {
+                        break;
+                    }
+                default:
+                    if (!Character.isWhitespace(ch)) {
+                        leftbr = false;
+                        newline = false;
+                    }
+            }
+            ch = input.read();
+        }
     }
 
     private Token<JavadocTokenId> token(JavadocTokenId id) {

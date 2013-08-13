@@ -19,18 +19,13 @@
                 <friend>org.netbeans.modules.compapp.configextension</friend>
                 <friend>it.imolinfo.jbi4corba.netbeansplugin.libraries</friend>
                 <friend>org.netbeans.modules.soa.palette.java</friend>
-                <friend>org.netbeans.modules.deployment.deviceanywhere</friend>
                 <friend>org.netbeans.modules.jaxb.project</friend>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
                 <friend>org.netbeans.modules.uml</friend>
                 <friend>org.netbeans.modules.uml.drawingarea</friend>
                 <friend>org.netbeans.modules.websvc.jaxws21</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsmodel</friend>
-                <friend>org.netbeans.modules.websvc.manager</friend>
-                <friend>org.netbeans.modules.identity.profile.api</friend>
-                <friend>org.netbeans.modules.xml.jaxb</friend>
                 <friend>org.netbeans.modules.websvc.jaxws21api</friend>
-                <friend>org.netbeans.modules.websvc.metro.model</friend>
                 <package>org.relaxng.datatype</package>
                 <package>com.sun.msv.grammar</package>
                 <package>com.sun.msv.util</package>

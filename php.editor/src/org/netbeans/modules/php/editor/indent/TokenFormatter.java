@@ -50,10 +50,12 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.JTextComponent;
 import org.netbeans.api.editor.EditorRegistry;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
+import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.editor.indent.spi.Context;
 import org.netbeans.modules.php.editor.lexer.LexUtilities;
@@ -67,13 +69,11 @@ import org.openide.util.Exceptions;
  * @author Petr Pisl
  */
 public class TokenFormatter {
-
     protected static final String TEMPLATE_HANDLER_PROPERTY = "code-template-insert-handler";
     private static final String EMPTY_STRING = "";
     private static final Logger LOGGER = Logger.getLogger(TokenFormatter.class.getName());
     // it's for testing
     private static int unitTestCarretPosition = -1;
-
 
     public TokenFormatter() {
     }
@@ -83,7 +83,6 @@ public class TokenFormatter {
     }
 
     protected static class DocumentOptions {
-
         public int continualIndentSize;
         public int initialIndent;
         public int indentSize;
@@ -333,6 +332,7 @@ public class TokenFormatter {
             groupMulitilineArrayInit = codeStyle.groupMulitlineArrayInit();
             groupMulitilineAssignment = codeStyle.groupMulitlineAssignment();
         }
+
     }
 
     /**
@@ -353,25 +353,21 @@ public class TokenFormatter {
         return count;
     }
 
-    public void reformat(Context context, ParserResult info) {
-        final Context formatContext = context;
-        final BaseDocument doc = (BaseDocument) context.document();
+    public void reformat(final Context formatContext, ParserResult info) {
+        final BaseDocument doc = (BaseDocument) formatContext.document();
         final PHPParseResult phpParseResult = ((PHPParseResult) info);
         final DocumentOptions docOptions = new DocumentOptions(doc);
 
         doc.runAtomic(new Runnable() {
-
             @Override
             public void run() {
-
                 final AtomicLong start = new AtomicLong(System.currentTimeMillis());
-
-                TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, 0);
-
-                final int caretOffset = EditorRegistry.lastFocusedComponent() != null
-                            ? EditorRegistry.lastFocusedComponent().getCaretPosition()
-                            : unitTestCarretPosition == -1 ? 0 : unitTestCarretPosition;
-                FormatVisitor fv = new FormatVisitor(doc, caretOffset, formatContext.startOffset(), formatContext.endOffset());
+                final boolean templateEdit = GsfUtilities.isCodeTemplateEditing(doc);
+                JTextComponent lastFocusedComponent = templateEdit ? EditorRegistry.lastFocusedComponent() : null;
+                final int caretOffset = lastFocusedComponent != null
+                        ? lastFocusedComponent.getCaretPosition()
+                        : unitTestCarretPosition == -1 ? 0 : unitTestCarretPosition;
+                FormatVisitor fv = new FormatVisitor(doc, docOptions, caretOffset, formatContext.startOffset(), formatContext.endOffset());
                 phpParseResult.getProgram().accept(fv);
                 final List<FormatToken> formatTokens = fv.getFormatTokens();
 
@@ -379,20 +375,18 @@ public class TokenFormatter {
                     long end = System.currentTimeMillis();
                     LOGGER.log(Level.FINE, "Creating formating stream took: {0} ms", (end - start.get()));
                 }
-
-                if (ts == null) { // if PHP is not top language
-                    return;
-                }
                 if (LOGGER.isLoggable(Level.FINE)) {
+                    TokenSequence<PHPTokenId> ts = LexUtilities.getPHPTokenSequence(doc, 0);
+                    if (ts == null) {
+                        return;
+                    }
                     LOGGER.log(Level.FINE, "Tokens in TS: {0}", ts.tokenCount());
                     LOGGER.log(Level.FINE, "Format tokens: {0}", formatTokens.size());
                 }
                 MutableTextInput mti = (MutableTextInput) doc.getProperty(MutableTextInput.class);
                 try {
                     mti.tokenHierarchyControl().setActive(false);
-
                     start.set(System.currentTimeMillis());
-
                     int delta = 0;
                     // keeps the indentation of the php code. In a file, where is php
                     // mixed together with html it reflects also the "html" shift.
@@ -401,7 +395,6 @@ public class TokenFormatter {
                     // reflect only the php indentation itself. It's mainly used for
                     // finding position of open php tag in a html code.
                     int lastPHPIndent = 0;
-                    final boolean templateEdit = doc.getProperty(TEMPLATE_HANDLER_PROPERTY) != null; //NOI18N
                     boolean caretInTemplateSolved = false;
                     int htmlIndent = -1;
                     int index = 0;
@@ -1069,7 +1062,7 @@ public class TokenFormatter {
                                         switch (docOptions.wrapArrayInit) {
                                             case WRAP_ALWAYS:
                                                 indentRule = true;
-                                                newLines = 1;
+                                                newLines = isEmptyArray(formatTokens, index) ? 0 : 1;
                                                 countSpaces = docOptions.alignMultilineArrayInit ? lastAnchor.getAnchorColumn() : indent;
                                                 break;
                                             case WRAP_NEVER:
@@ -1085,7 +1078,7 @@ public class TokenFormatter {
                                                 if (isAfterLineComment(formatTokens, index)
                                                         || column + 1 + countLengthOfNextSequence(formatTokens, index + 1) > docOptions.margin) {
                                                     indentRule = true;
-                                                    newLines = 1;
+                                                    newLines = isEmptyArray(formatTokens, index) ? 0 : 1;
                                                     countSpaces = docOptions.alignMultilineArrayInit ? lastAnchor.getAnchorColumn() : indent;
                                                 } else {
                                                     newLines = 0;
@@ -1484,7 +1477,7 @@ public class TokenFormatter {
                                     case WHITESPACE_AFTER_CLOSE_PHP_TAG:
                                         break;
                                     default:
-                                        //no-op
+                                    //no-op
                                 }
                                 index++; //index += moveIndex;
                                 if (index < formatTokens.size()) {
@@ -1523,9 +1516,9 @@ public class TokenFormatter {
                                                         && token.getId() != FormatToken.Kind.WHITESPACE_INDENT
                                                         && token.getId() != FormatToken.Kind.WHITESPACE
                                                         && (token.isWhitespace() || token.getId() == FormatToken.Kind.INDENT
-                                                                || token.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_END
-                                                                || (token.getId() == FormatToken.Kind.TEXT
-                                                                    && (")".equals(token.getOldText()) || "]".equals(token.getOldText())))));
+                                                        || token.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_END
+                                                        || (token.getId() == FormatToken.Kind.TEXT
+                                                        && (")".equals(token.getOldText()) || "]".equals(token.getOldText())))));
                                                 if (FormatToken.Kind.TEXT == token.getId() && ";".equals(token.getOldText())) {
                                                     countSpaces = hindent == 0 && bracketsInLine ? lastIndent * -1 : hindent;
                                                     handlingSpecialCases = true;
@@ -1602,9 +1595,9 @@ public class TokenFormatter {
                                     } else {
                                         newText = createWhitespace(docOptions, 1, indent + docOptions.indentSize)
                                                 + createWhitespace(
-                                                        docOptions,
-                                                        1,
-                                                        lastBracePlacement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? indent + docOptions.indentSize : indent);
+                                                docOptions,
+                                                1,
+                                                lastBracePlacement == CodeStyle.BracePlacement.NEW_LINE_INDENTED ? indent + docOptions.indentSize : indent);
                                     }
                                 }
                                 int realOffset = changeOffset + delta;
@@ -1724,7 +1717,7 @@ public class TokenFormatter {
                                     }
                                     break;
                                 default:
-                                    //no-op
+                                //no-op
                             }
                         }
 
@@ -1757,6 +1750,18 @@ public class TokenFormatter {
                     long end = System.currentTimeMillis();
                     LOGGER.log(Level.FINE, "Applaying format stream took: {0} ms", (end - start.get())); // NOI18N
                 }
+            }
+
+            private boolean isEmptyArray(List<FormatToken> formatTokens, int index) {
+                boolean result = false;
+                if (formatTokens.size() >= index + 2) {
+                    FormatToken possibleParenToken = formatTokens.get(index + 1);
+                    if (possibleParenToken.getId() == FormatToken.Kind.WHITESPACE) {
+                        possibleParenToken = formatTokens.get(index + 2);
+                    }
+                    result = possibleParenToken.getId() == FormatToken.Kind.WHITESPACE_BEFORE_ARRAY_DECL_RIGHT_PAREN;
+                }
+                return result;
             }
 
             private int countSpacesForArrayDeclParens(int index, int indent, List<FormatToken> formatTokens) {
@@ -2120,7 +2125,6 @@ public class TokenFormatter {
                 }
                 return sb.toString();
             }
-
             private int startOffset = -1;
             private int endOffset = -1;
             // prviousIndentDelta keeps information, when a template is inserted and
@@ -2295,10 +2299,8 @@ public class TokenFormatter {
                                         delta = replaceSimpleString(document, realOffset + oldText.length(),
                                                 "", sb.toString(), delta);
                                     }
-
                                 }
                             }
-
                         }
                     }
                 }
@@ -2307,15 +2309,13 @@ public class TokenFormatter {
 
             private int replaceSimpleString(BaseDocument document, int realOffset, String oldText, String newText, int delta) {
                 try {
+                    int removeLength = 0;
                     if (oldText.length() > 0) {
-
-                        int removeLength = realOffset + oldText.length() < document.getLength()
+                        removeLength = realOffset + oldText.length() < document.getLength()
                                 ? oldText.length()
                                 : document.getLength() - realOffset;
-                        document.remove(realOffset, removeLength);
-
                     }
-                    document.insertString(realOffset, newText, null);
+                    document.replace(realOffset, removeLength, newText, null);
                     delta = delta - oldText.length() + newText.length();
                 } catch (BadLocationException ex) {
                     LOGGER.throwing(TokenFormatter.this.getClass().getName(), "replaceSimpleSring", ex); //NOI18N
@@ -2329,7 +2329,6 @@ public class TokenFormatter {
                 if (token.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_START) {
                     index++;
                     token = formatTokens.get(index);
-
                     int balance = 0;
                     while (index < formatTokens.size()
                             && !(token.getId() == FormatToken.Kind.UNBREAKABLE_SEQUENCE_END
@@ -2363,7 +2362,6 @@ public class TokenFormatter {
                     token = formatTokens.get(index);
                     index++;
                 }
-
                 value = index < formatTokens.size() && ";".equals(token.getOldText());
                 return value;
             }
@@ -2371,7 +2369,6 @@ public class TokenFormatter {
     }
 
     private static class Whitespace {
-
         int lines;
         int spaces;
 
@@ -2379,6 +2376,7 @@ public class TokenFormatter {
             this.lines = lines;
             this.spaces = spaces;
         }
+
     }
 
     private static int peekLastBracedIndent(final Deque<Integer> lastBracedBlockIndent) {
@@ -2476,7 +2474,6 @@ public class TokenFormatter {
     }
 
     private static final class SpacesCounter {
-
         private final DocumentOptions documentOptions;
 
         private SpacesCounter(final DocumentOptions documentOptions) {
@@ -2549,5 +2546,7 @@ public class TokenFormatter {
             }
             return spaces;
         }
+
     }
+
 }

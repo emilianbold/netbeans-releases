@@ -56,6 +56,7 @@ import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.loaders.DataFolder;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
 import org.openide.nodes.AbstractNode;
@@ -127,7 +128,8 @@ public final class SuiteLogicalView implements LogicalViewProvider {
         
         SuiteRootNode(final SuiteProject suite) {
             super(NodeFactorySupport.createCompositeChildren(suite, "Projects/org-netbeans-modules-apisupport-project-suite/Nodes"), 
-                  Lookups.fixed(new Object[] {suite}));
+                  Lookups.fixed(new Object[] {suite, DataFolder.findFolder( suite.getProjectDirectory() ),
+                    suite.getProjectDirectory()}));
             this.suite = suite;
             info = ProjectUtils.getInformation(suite);
             info.addPropertyChangeListener(WeakListeners.propertyChange(this, info));

@@ -4,7 +4,7 @@
                                [ ] Remote                 O
                                [x] Run                    R
                                [ ] Debug                  D
-                               [x] Memory                 M
+                               [x] Performance            P
                                ========================
                                [ ] Small Toolbar Icons    S
                                ========================

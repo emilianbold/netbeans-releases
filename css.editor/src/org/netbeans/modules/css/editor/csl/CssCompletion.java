@@ -87,12 +87,12 @@ public class CssCompletion implements CodeCompletionHandler {
     private static char firstPrefixChar; //read getPrefix() comment!
     private static final String EMPTY_STRING = ""; //NOI18N
     private static final String UNIVERSAL_SELECTOR = "*"; //NOI18N
-    
+
     /**
      * Units which shouldn't appear in the code completion.
      */
     private static final Collection<String> HIDDEN_UNITS = new HashSet(Arrays.asList(new String[]{"!hash_color_code"}));
-    
+
     //unit testing support
     static String[] TEST_USED_COLORS;
     static String[] TEST_CLASSES;
@@ -146,16 +146,16 @@ public class CssCompletion implements CodeCompletionHandler {
 
         int diff = ts.move(astCaretOffset);
         boolean tokenFound;
-        if(diff == 0) {
-            if(ts.movePrevious()) {
+        if (diff == 0) {
+            if (ts.movePrevious()) {
                 tokenFound = true;
             } else {
                 //no token, try next
                 tokenFound = ts.moveNext();
             }
         } else {
-            if(ts.moveNext()) {
-               tokenFound = true; 
+            if (ts.moveNext()) {
+                tokenFound = true;
             } else {
                 //no token, try next
                 tokenFound = ts.movePrevious();
@@ -177,7 +177,7 @@ public class CssCompletion implements CodeCompletionHandler {
         CssTokenId tokenNodeTokenId = tokenNode.type() == NodeType.token ? NodeUtil.getTokenNodeTokenId(tokenNode) : null;
 
         Node node = NodeUtil.findNonTokenNodeAtOffset(root, astCaretOffset);
-        if(node.type() == NodeType.ws) {
+        if (node.type() == NodeType.ws) {
             node = node.parent();
         }
 //        if (node.type() == NodeType.error) {
@@ -192,10 +192,9 @@ public class CssCompletion implements CodeCompletionHandler {
         //     allow to move the caret somewhere when the completion item is completed. This functionality
         //     is achievable onto the CompletionResult. However this means it is not completion item specific
         //     and as such cannot vary from different items from various css modules.
-
         //css modules
-        CompletionContext completionContext =
-                new CompletionContext(node,
+        CompletionContext completionContext
+                = new CompletionContext(node,
                 tokenNode,
                 info,
                 ts,
@@ -253,8 +252,8 @@ public class CssCompletion implements CodeCompletionHandler {
             boolean extendedItemsOnly) {
 
         //there might be more grammar elements from multiple branches with the same name
-        Map<String, Collection<ValueGrammarElement>> value2GrammarElement =
-                new HashMap<String, Collection<ValueGrammarElement>>();
+        Map<String, Collection<ValueGrammarElement>> value2GrammarElement
+                = new HashMap<String, Collection<ValueGrammarElement>>();
         for (ValueGrammarElement element : props) {
             String elementValue = element.getValue().toString();
             Collection<ValueGrammarElement> col = value2GrammarElement.get(elementValue);
@@ -264,7 +263,6 @@ public class CssCompletion implements CodeCompletionHandler {
             }
             col.add(element);
         }
-
 
         List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
         boolean colorChooserAdded = false;
@@ -278,36 +276,33 @@ public class CssCompletion implements CodeCompletionHandler {
             String origin = element.origin();
             String visibleOrigin = element.getVisibleOrigin();
 
-            if(element instanceof UnitGrammarElement) {
-                UnitGrammarElement unit = (UnitGrammarElement)element;
+            if (element instanceof UnitGrammarElement) {
+                UnitGrammarElement unit = (UnitGrammarElement) element;
                 String unitName = unit.getValue();
-                if(!HIDDEN_UNITS.contains(unitName)) {
-                    if(unit.getFixedValues() != null) {
-                        for(String fixedValue : unit.getFixedValues()) {
+                if (!HIDDEN_UNITS.contains(unitName)) {
+                    if (unit.getFixedValues() != null) {
+                        for (String fixedValue : unit.getFixedValues()) {
                             proposals.add(
-                                CssCompletionItem.createValueCompletionItem(
-                                handle,
-                                fixedValue,
-                                visibleOrigin,
-                                anchor,
-                                addSemicolon,
-                                addSpaceBeforeItem));
+                                    CssCompletionItem.createValueCompletionItem(
+                                    handle,
+                                    fixedValue,
+                                    visibleOrigin,
+                                    anchor,
+                                    addSemicolon,
+                                    addSpaceBeforeItem));
                         }
 
                     } else {
-                        proposals.add(CssCompletionItem.createUnitCompletionItem((UnitGrammarElement)element));
+                        proposals.add(CssCompletionItem.createUnitCompletionItem((UnitGrammarElement) element));
                     }
                 }
-                
+
                 continue;
             }
 
-
-            
             //some hardcoded items filtering
-            
             //1. do not show NAMED operators in the code completion
-            if(origin.endsWith("_operator")) { //NOI18N
+            if (origin.endsWith("_operator")) { //NOI18N
                 continue;
             }
             if ("@colors-list".equals(origin)) { //NOI18N
@@ -398,7 +393,6 @@ public class CssCompletion implements CodeCompletionHandler {
             }
         }
 
-
         return proposals;
     }
 
@@ -461,9 +455,9 @@ public class CssCompletion implements CodeCompletionHandler {
             CssPropertyElement e = (CssPropertyElement) elementHandle;
             PropertyDefinition property = e.getPropertyDescriptor();
             HelpResolver helpResolver = CssModuleSupport.getHelpResolver();
-            if(helpResolver != null) {
+            if (helpResolver != null) {
                 URL url = helpResolver.resolveLink(elementHandle.getFileObject(), property, link);
-                if(url != null) {
+                if (url != null) {
                     return new UrlHandle(url.toExternalForm());
                 }
             }
@@ -473,18 +467,18 @@ public class CssCompletion implements CodeCompletionHandler {
 
     @Override
     public String getPrefix(ParserResult info, final int caretOffset, boolean upToOffset) {
-        CssParserResult result = (CssParserResult)info;
+        CssParserResult result = (CssParserResult) info;
         Snapshot snapshot = info.getSnapshot();
         int embeddedCaretOffset = snapshot.getEmbeddedOffset(caretOffset);
-        
+
         TokenHierarchy hi = snapshot.getTokenHierarchy();
         String prefix = getPrefix(hi.tokenSequence(), embeddedCaretOffset);
-        if(prefix == null) {
+        if (prefix == null) {
             return null;
         }
         Node leaf = NodeUtil.findNonTokenNodeAtOffset(result.getParseTree(), embeddedCaretOffset);
         boolean inPropertyDeclaration = NodeUtil.getAncestorByType(leaf, NodeType.propertyDeclaration) != null;
-        
+
         //really ugly handling of class or id selector prefix:
         //Since the getPrefix() method is parser result based it is supposed
         //to work on top of the snapshot, while GsfCompletionProvider$Task.canFilter()
@@ -498,10 +492,8 @@ public class CssCompletion implements CodeCompletionHandler {
         //this method). After subsequent user's keystrokes the canFilter() method
         //gets text from this anchor to the caret from the edited document! So the
         //prefix contains the attribute quotation and any css items cannot be filtered.
-
         //this is a poor and hacky solution to this issue, some bug may appear for
         //non class or id elements starting with dot or hash?!?!?
-
         //do not apply the hack in property declarations as it breaks the hash colors completion items filtering
         if (!inPropertyDeclaration && (prefix.length() > 0 && (prefix.charAt(0) == '.' || prefix.charAt(0) == '#'))) {
             firstPrefixChar = prefix.charAt(0);
@@ -676,9 +668,9 @@ public class CssCompletion implements CodeCompletionHandler {
                     addSemicolon = false;
                 case WS: //@import |
                     if (addSemicolon) {
-                        Token semicolon = LexerUtils.followsToken(ts, CssTokenId.SEMI, false, true, CssTokenId.S);
-                        addSemicolon = (semicolon == null);
-                    }
+                    Token semicolon = LexerUtils.followsToken(ts, CssTokenId.SEMI, false, true, CssTokenId.S);
+                    addSemicolon = (semicolon == null);
+                }
                     if (null != LexerUtils.followsToken(ts, CssTokenId.IMPORT_SYM, true, false, CssTokenId.S)) {
                         List<CompletionProposal> imports = (List<CompletionProposal>) completeImport(file, caretOffset, "", true, addSemicolon);
                         int moveBack = (addSemicolon ? 1 : 0) + 1; //+1 means the added quotation mark length
@@ -712,87 +704,86 @@ public class CssCompletion implements CodeCompletionHandler {
         int offset = context.getAnchorOffset();
         NodeType nodeType = node.type();
 
-        switch(nodeType) {
+        switch (nodeType) {
             case cssClass:
                 break;
             case error:
             case recovery:
                 //check if the error is in a rule
-                if(NodeUtil.getAncestorByType(node, NodeType.rule) != null) {
-                    //check the prefix
-                    try {
-                        TokenSequence<CssTokenId> tokenSequence = context.getTokenSequence();
-                        switch(tokenSequence.token().id()) {
-                            case DOT:
-                                //.| case
+                if (NodeUtil.getAncestorByType(node, NodeType.rule) != null) {
+                //check the prefix
+                try {
+                    TokenSequence<CssTokenId> tokenSequence = context.getTokenSequence();
+                    switch (tokenSequence.token().id()) {
+                        case DOT:
+                            //.| case
+                            break;
+                        case IDENT:
+                            if (tokenSequence.movePrevious()) {
+                            if (tokenSequence.token().id() == CssTokenId.DOT) {
+                                //.sg| case
                                 break;
-                            case IDENT:
-                                if(tokenSequence.movePrevious()) {
-                                    if(tokenSequence.token().id() == CssTokenId.DOT) {
-                                        //.sg| case
-                                        break;
-                                    }
-                                }
-                            default:
-                                return;
+                            }
                         }
-                    } finally {
-                        context.restoreTokenSequence();
+                        default:
+                            return;
                     }
+                } finally {
+                    context.restoreTokenSequence();
                 }
+            }
                 break;
-                
+
             default:
                 return; //exit
         }
-        
-            //complete class selectors
-            Collection<String> allclasses = new HashSet<String>();
-            Collection<String> refclasses = new HashSet<String>();
-            
-            //adjust prefix - if there's just . before the caret, it is returned
-            //as a prefix. If there are another characters, the dot is ommited
-            if (prefix.length() == 1 && prefix.charAt(0) == '.') {
-                prefix = "";
-                offset++; //offset point to the dot position, we need to skip it
-            }
-            
-            if (file != null) {
-                CssProjectSupport sup = CssProjectSupport.findFor(file);
-                if (sup != null) {
-                    CssIndex index = sup.getIndex();
-                    DependenciesGraph deps = index.getDependencies(file);
-                    Collection<FileObject> refered = deps.getAllReferedFiles();
 
-                    //get map of all fileobject declaring classes with the prefix
-                    Map<FileObject, Collection<String>> search = index.findClassesByPrefix(prefix);
-                    for (FileObject fo : search.keySet()) {
-                        allclasses.addAll(search.get(fo));
-                        //is the file refered by the current file?
-                        if (refered.contains(fo)) {
-                            //yes - add its classes
-                            refclasses.addAll(search.get(fo));
-                        }
+        //complete class selectors
+        Collection<String> allclasses = new HashSet<String>();
+        Collection<String> refclasses = new HashSet<String>();
+
+        //adjust prefix - if there's just . before the caret, it is returned
+        //as a prefix. If there are another characters, the dot is ommited
+        if (prefix.length() == 1 && prefix.charAt(0) == '.') {
+            prefix = "";
+            offset++; //offset point to the dot position, we need to skip it
+        }
+
+        if (file != null) {
+            CssProjectSupport sup = CssProjectSupport.findFor(file);
+            if (sup != null) {
+                CssIndex index = sup.getIndex();
+                DependenciesGraph deps = index.getDependencies(file);
+                Collection<FileObject> refered = deps.getAllReferedFiles();
+
+                //get map of all fileobject declaring classes with the prefix
+                Map<FileObject, Collection<String>> search = index.findClassesByPrefix(prefix);
+                for (FileObject fo : search.keySet()) {
+                    allclasses.addAll(search.get(fo));
+                    //is the file refered by the current file?
+                    if (refered.contains(fo)) {
+                        //yes - add its classes
+                        refclasses.addAll(search.get(fo));
                     }
-
-
                 }
+
             }
-            
-            //unit test support
-            if(TEST_CLASSES != null) {
-                allclasses.addAll(Arrays.asList(TEST_CLASSES));
-            }
-            
-            //lets create the completion items
-            List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(refclasses.size());
-            for (String clazz : allclasses) {
-                proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(context.getFileObject(), clazz),
-                        clazz,
-                        offset,
-                        refclasses.contains(clazz)));
-            }
-            completionProposals.addAll(proposals);
+        }
+
+        //unit test support
+        if (TEST_CLASSES != null) {
+            allclasses.addAll(Arrays.asList(TEST_CLASSES));
+        }
+
+        //lets create the completion items
+        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(refclasses.size());
+        for (String clazz : allclasses) {
+            proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(context.getFileObject(), clazz),
+                    clazz,
+                    offset,
+                    refclasses.contains(clazz)));
+        }
+        completionProposals.addAll(proposals);
     }
 
     private void completeIdSelectors(CompletionContext context, List<CompletionProposal> completionProposals, boolean unmappableClassOrId) {
@@ -810,7 +801,7 @@ public class CssCompletion implements CodeCompletionHandler {
             //complete class selectors
             Collection<String> allids = new HashSet<String>();
             Collection<String> refids = new HashSet<String>();
-            
+
             //adjust prefix - if there's just # before the caret, it is returned as a prefix
             //if there is some text behind the prefix the hash is part of the prefix
             if (prefix.length() == 1 && prefix.charAt(0) == '#') {
@@ -819,7 +810,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 prefix = prefix.substring(1); //cut off the #
             }
             offset++; //offset point to the hash position, we need to skip it
-            
+
             if (file != null) {
                 CssProjectSupport sup = CssProjectSupport.findFor(file);
                 if (sup != null) {
@@ -838,12 +829,12 @@ public class CssCompletion implements CodeCompletionHandler {
                     }
                 }
             }
-            
+
             //unit test support
-            if(TEST_IDS != null) {
+            if (TEST_IDS != null) {
                 allids.addAll(Arrays.asList(TEST_IDS));
             }
-            
+
             //lets create the completion items
             List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(allids.size());
             for (String id : allids) {
@@ -853,30 +844,46 @@ public class CssCompletion implements CodeCompletionHandler {
                         refids.contains(id)));
             }
             completionProposals.addAll(proposals);
-            
+
         }
     }
 
+    /**
+     * Complete at-rules and html selectors if there's no prefix.
+     *
+     * @param context
+     * @param completionProposals
+     */
     private void completeAtRulesAndHtmlSelectors(CompletionContext context, List<CompletionProposal> completionProposals) {
         Node node = context.getActiveNode();
-//        Node node = context.getNodeForNonWhiteTokenBackward();
-        String prefix = context.getPrefix();
-        int offset = context.getAnchorOffset();
-        NodeType nodeType = node.type();
-
-        if (NodeUtil.isOfType(node, NodeType.root, NodeType.styleSheet, NodeType.body, NodeType.moz_document, NodeType.imports, NodeType.namespaces)
-                || nodeType == NodeType.error && NodeUtil.isOfType(node.parent(), NodeType.root, NodeType.styleSheet, NodeType.body, NodeType.moz_document, NodeType.imports, NodeType.namespaces)) {
-            /*
-             * somewhere between rules, in an empty or very broken file, between
-             * rules
-             */
-            List<CompletionProposal> all = new ArrayList<CompletionProposal>();
-            //complete at keywords without prefix
-            all.addAll(Utilities.createRAWCompletionProposals(AT_RULES, ElementKind.FIELD, offset));
-            //complete html selector names
-            all.addAll(completeHtmlSelectors(context, prefix, offset));
-            completionProposals.addAll(all);
-
+        //switch to first non error node
+        loop:
+        for (;;) {
+            switch (node.type()) {
+                case error:
+                case recovery:
+                    node = node.parent();
+                default:
+                    break loop;
+            }
+        }
+        switch (node.type()) {
+            case root:
+            case styleSheet:
+            case body:
+            case moz_document:
+            case imports:
+            case namespaces:
+                /*
+                 * somewhere between rules, in an empty or very broken file, between
+                 * rules
+                 */
+                List<CompletionProposal> all = new ArrayList<>();
+                //complete at keywords without prefix
+                all.addAll(Utilities.createRAWCompletionProposals(AT_RULES, ElementKind.FIELD, context.getAnchorOffset()));
+                //complete html selector names
+                all.addAll(completeHtmlSelectors(context, context.getPrefix(), context.getAnchorOffset()));
+                completionProposals.addAll(all);
         }
     }
 
@@ -886,6 +893,14 @@ public class CssCompletion implements CodeCompletionHandler {
 
         Node node = completionContext.getActiveNode();
         switch (node.type()) {
+            case media:
+                //check if we are in the mediaQuery section and not in the media body
+                if (null == LexerUtils.followsToken(completionContext.getTokenSequence(), CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                //@media | { div {} }
+                break;
+            }
+            //@media xxx { | }
+            //=>fallback to the mediaQuery 
             case mediaBody:
                 completionProposals.addAll(completeHtmlSelectors(completionContext, completionContext.getPrefix(), completionContext.getCaretOffset()));
                 break;
@@ -899,14 +914,14 @@ public class CssCompletion implements CodeCompletionHandler {
                 //complete element name - without a or with a prefix
                 completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                 break;
-                
+
             case selectorsGroup:
             case simpleSelectorSequence:
             case combinator:
             case selector:
             case rule:
                 CssTokenId activeTokenId = completionContext.getActiveTokenId();
-                if(activeTokenId == CssTokenId.WS || activeTokenId == CssTokenId.NL || activeTokenId.getTokenCategory() == CssTokenIdCategory.OPERATORS) {
+                if (activeTokenId == CssTokenId.WS || activeTokenId == CssTokenId.NL || activeTokenId.getTokenCategory() == CssTokenIdCategory.OPERATORS) {
                     //complete selector list without prefix in selector list e.g. BODY, | { ... }
 
                     //filter out situation when the completion is invoked just after the left curly bracket
@@ -914,22 +929,22 @@ public class CssCompletion implements CodeCompletionHandler {
                     //in this case the caret position falls to the rule node as the declarations node
                     //doesn't contain the whitespace before first declaration
                     TokenSequence<CssTokenId> tokenSequence = completionContext.getTokenSequence();
-                    if(null == LexerUtils.followsToken(tokenSequence, CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                    if (null == LexerUtils.followsToken(tokenSequence, CssTokenId.LBRACE, true, true, CssTokenId.WS, CssTokenId.NL)) {
                         completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                     }
                 }
                 break;
             case declarations:
                 //@mixin mymixin() { div {} | }
-                if(NodeUtil.getAncestorByType(node, NodeType.cp_mixin_block) == null) {
-                    break; //do not complete
-                }
-                //fallback to cp_mixin_block
-                
+                if (NodeUtil.getAncestorByType(node, NodeType.cp_mixin_block) == null) {
+                break; //do not complete
+            }
+            //fallback to cp_mixin_block
+
             case cp_mixin_block:
                 completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                 break;
-                
+
             case error:
                 Node parentNode = completionContext.getActiveNode().parent();
                 if (parentNode == null) {
@@ -939,70 +954,85 @@ public class CssCompletion implements CodeCompletionHandler {
                     //completion of selectors after universal selector * | { ... }
                     case WS:
                         switch (parentNode.type()) {
-                            case rule:
-                            case typeSelector:
-                            case selector:
-                            case selectorsGroup:
-                            case simpleSelectorSequence:
-                                //complete selector list in selector list with an error
-                                completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
-                                break;
-                        }
+                        case bodyItem:
+                        case rule:
+                        case typeSelector:
+                        case selector:
+                        case selectorsGroup:
+                        case simpleSelectorSequence:
+                            //complete selector list in selector list with an error
+                            completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
+                            break;
+                    }
                         break;
-                        
+
                     case IDENT:
                         switch (parentNode.type()) {
-                            case declaration:
-                                //@mixin mymixin() { tabl| } 
-                                if(NodeUtil.getAncestorByType(parentNode, NodeType.cp_mixin_block) != null) {
-                                    //declaration in mixin block
-                                    //the prefix may represent either the property name of selector
-                                    completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
-                                }
-                                break;
+                        case declaration:
+                            //@mixin mymixin() { tabl| } 
+                            if (NodeUtil.getAncestorByType(parentNode, NodeType.cp_mixin_block) != null) {
+                            //declaration in mixin block
+                            //the prefix may represent either the property name of selector
+                            completionProposals.addAll(completeHtmlSelectors(completionContext, prefix, caretOffset));
                         }
+                            break;
+                    }
                         break;
-                        
+
                 }
                 break;
         }
 
     }
 
+    /**
+     * Complete at-rules if there's a completion prefix.
+     *
+     * @param completionContext
+     * @param completionProposals
+     * @param tokenFound
+     */
     private void completeKeywords(CompletionContext completionContext, List<CompletionProposal> completionProposals, boolean tokenFound) {
+        if (!tokenFound) {
+            return;
+        }
         Node node = completionContext.getActiveNode();
-//        Node node = completionContext.getNodeForNonWhiteTokenBackward();
-        NodeType nodeType = node.type();
-        if (nodeType == NodeType.imports 
-                || nodeType == NodeType.media 
-                || nodeType == NodeType.page 
-                || nodeType == NodeType.charSet
-                || nodeType == NodeType.generic_at_rule
-                || nodeType == NodeType.bodyItem
-                || nodeType == NodeType.fontFace) {
-            //complete at keywords with prefix - parse tree OK
-            if (tokenFound) {
-                TokenId id = completionContext.getTokenSequence().token().id();
-                if (id == CssTokenId.IMPORT_SYM 
-                        || id == CssTokenId.MEDIA_SYM 
-                        || id == CssTokenId.PAGE_SYM 
-                        || id == CssTokenId.CHARSET_SYM
-                        || id == CssTokenId.AT_IDENT
-                        || id == CssTokenId.FONT_FACE_SYM
-                        || id == CssTokenId.ERROR) {
-                    //we are on the right place in the node
-
+        //switch to first non error node
+        loop:
+        for (;;) {
+            switch (node.type()) {
+                case error:
+                case recovery:
+                    node = node.parent();
+                default:
+                    break loop;
+            }
+        }
+        switch (node.type()) {
+            case imports:
+            case media:
+            case page:
+            case charSet:
+            case generic_at_rule:
+            case bodyItem:
+            case fontFace:
+                switch (completionContext.getTokenSequence().token().id()) {
+                case IMPORTANT_SYM:
+                case MEDIA_SYM:
+                case PAGE_SYM:
+                case CHARSET_SYM:
+                case AT_IDENT:
+                case FONT_FACE_SYM:
+                case ERROR:
                     Collection<String> possibleValues = filterStrings(AT_RULES, completionContext.getPrefix());
                     completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
-                }
             }
-
         }
     }
 
     private void completePropertyName(CompletionContext cc, List<CompletionProposal> completionProposals) {
 //        Node activeNode = cc.getActiveNode();
-        
+
 //        System.out.println("caret =" + cc.getCaretOffset());
 //        Node nonwsnode = cc.getNodeForNonWhiteTokenBackward();
 //        System.out.println("non ws node back= " + nonwsnode);
@@ -1011,17 +1041,17 @@ public class CssCompletion implements CodeCompletionHandler {
 //        CssTokenId tid = cc.getActiveTokenId();
 //        System.out.println("token id= " + tid);
         NodeType nodeType = node.type();
-        
+
         String prefix = cc.getPrefix();
         Collection<PropertyDefinition> defs = Properties.getPropertyDefinitions(cc.getFileObject());
-        
+
         //1. css property name completion with prefix
         if (nodeType == NodeType.property && (prefix.length() > 0 || cc.getEmbeddedCaretOffset() == cc.getActiveNode().from())) {
             Collection<PropertyDefinition> possibleProps = filterProperties(defs, prefix);
             completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getSnapshot().getOriginalOffset(cc.getActiveNode().from())));
         } else if (nodeType == NodeType.elementName) {
             //@mixin mymixin() { co| div { } } 
-            if(NodeUtil.getAncestorByType(node, NodeType.cp_mixin_block) != null) {
+            if (NodeUtil.getAncestorByType(node, NodeType.cp_mixin_block) != null) {
                 //in mixin block
                 Collection<PropertyDefinition> possibleProps = filterProperties(defs, prefix);
                 completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getSnapshot().getOriginalOffset(cc.getActiveNode().from())));
@@ -1031,20 +1061,28 @@ public class CssCompletion implements CodeCompletionHandler {
         //2. in a garbage (may be for example a dash prefix in a ruleset
         if (nodeType == NodeType.recovery || nodeType == NodeType.error) {
             Node parent = cc.getActiveNode().parent();
-            
+
             //recovery can have error as parent
-            if(parent != null && parent.type() == NodeType.error) {
+            if (parent != null && parent.type() == NodeType.error) {
                 parent = parent.parent();
             }
-            
-            if (parent != null && (
-                    parent.type() == NodeType.property
-                    || parent.type() == NodeType.declarations 
+
+            if (parent != null && (parent.type() == NodeType.property
+                    || parent.type() == NodeType.declarations
                     || parent.type() == NodeType.declaration //related to the declarations rule error recovery issue
                     || parent.type() == NodeType.propertyDeclaration //related to the declarations rule error recovery issue
                     || parent.type() == NodeType.cp_mixin_block
                     || parent.type() == NodeType.moz_document)) {
-                
+                //Bug 233584 - Sass: completion for mixin after @include 
+                //do not show properties after @include in sass
+                CssTokenId nonWhiteTokenIdBackward = cc.getNonWhiteTokenIdBackward();
+                if (nonWhiteTokenIdBackward != null) {
+                    switch (nonWhiteTokenIdBackward) {
+                        case SASS_INCLUDE:
+                            return;
+                    }
+                }
+
                 //>>> Bug 204821 - Incorrect completion for vendor specific properties
                 boolean bug204821 = false;
                 if (prefix.length() == 0) {
@@ -1053,23 +1091,23 @@ public class CssCompletion implements CodeCompletionHandler {
                     //prefix the cc.getPrefix() is empty since minus is operator
                     //But particulary in this case the prefix must count
                     if (cc.getActiveTokenId() == CssTokenId.MINUS) {
-                            bug204821 = true;
+                        bug204821 = true;
                     }
                 }
-                if(bug204821) {
+                if (bug204821) {
                     //get all "-" prefixed props
-                    Collection<PropertyDefinition> possibleProps = 
-                            filterProperties(Properties.getPropertyDefinitions(cc.getFileObject()), "-");
+                    Collection<PropertyDefinition> possibleProps
+                            = filterProperties(Properties.getPropertyDefinitions(cc.getFileObject()), "-");
                     //and add them to the result with the "-" prefix stripped
                     completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getCaretOffset(), 1));
                 } else {
-                    Collection<PropertyDefinition> possibleProps = 
-                            filterProperties(defs, prefix);
+                    Collection<PropertyDefinition> possibleProps
+                            = filterProperties(defs, prefix);
                     completionProposals.addAll(Utilities.wrapProperties(possibleProps, cc.getAnchorOffset()));
                 }
             }
         }
-        
+
         //3. in empty rule (NodeType.ruleSet)
         //h1 { | }
         //
@@ -1077,26 +1115,26 @@ public class CssCompletion implements CodeCompletionHandler {
         //h1 { color:red; | font: bold }
         //
         //should be no prefix 
-        switch(nodeType) {
+        switch (nodeType) {
             case declarations:
                 //div { font: bold | } case -- we need to continue offering property values
                 //until the property declaration is not closed by semicolon
                 Node nodeBw = cc.getNodeForNonWhiteTokenBackward();
-                if(NodeUtil.getAncestorByType(nodeBw, NodeType.propertyDeclaration) != null) {
+                if (NodeUtil.getAncestorByType(nodeBw, NodeType.propertyDeclaration) != null) {
                     //the previous non-ws token belongs to a property declaration so 
                     //this means the property declaration is not closed by semicolon as the
                     //semicolon belongs directly to declarations node => do not offer properties here
                     break;
                 }
-                //fall through
+            //fall through
             case rule:
             case moz_document:
             case cp_mixin_block: //XXX should be defined in css.prep module
                 completionProposals.addAll(Utilities.wrapProperties(defs, cc.getCaretOffset()));
                 break;
-                
+
         }
-        
+
     }
 
     private void completePropertyValue(
@@ -1108,7 +1146,7 @@ public class CssCompletion implements CodeCompletionHandler {
 //        Node node = context.getNodeForNonWhiteTokenBackward();
         String prefix = context.getPrefix();
         NodeType nodeType = node.type();
-        
+
         switch (nodeType) {
 
             case declarations:
@@ -1117,26 +1155,26 @@ public class CssCompletion implements CodeCompletionHandler {
                 //However as the propertyDeclaration is not closed by semicolon 
                 //we should go on and offer property values for "color" property
                 //div { color: red | }
-                if(context.getActiveTokenId() == CssTokenId.SEMI 
+                if (context.getActiveTokenId() == CssTokenId.SEMI
                         || LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.SEMI, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
-                    //semicolon found when searching backward - we are not going to
-                    //complete property values
-                    break;
-                }
+                //semicolon found when searching backward - we are not going to
+                //complete property values
+                break;
+            }
                 //find the latest declaration backward
                 Node[] declarations = NodeUtil.getChildrenByType(node, NodeType.declaration);
-                if(declarations.length > 0) {
+                if (declarations.length > 0) {
                     Node declarationNode = declarations[declarations.length - 1];
                     //check for propertyDeclaration subnode
                     Node propertyDeclaration = NodeUtil.getChildByType(declarationNode, NodeType.propertyDeclaration);
-                    if(propertyDeclaration == null) {
+                    if (propertyDeclaration == null) {
                         break; //do not complete property value
                     }
                     //fall through to the next section
                 } else {
                     break; //do not complete property value
                 }
-                
+
             case declaration:
             case propertyDeclaration: {
                 //value cc without prefix
@@ -1147,11 +1185,12 @@ public class CssCompletion implements CodeCompletionHandler {
 
                     @Override
                     public boolean visit(Node node) {
-                        switch(node.type()) {
+                        switch (node.type()) {
                             case property:
                                 result[0] = node;
                                 break;
                             case propertyValue:
+                            case cp_propertyValue:
                                 result[1] = node;
                                 break;
                             case error:
@@ -1167,11 +1206,10 @@ public class CssCompletion implements CodeCompletionHandler {
                 if (property == null) {
                     return;
                 }
-                
+
                 String expressionText = ""; //NOI18N
-                
-                
-                if(result[1] != null) {
+
+                if (result[1] != null) {
                     //issue "231081 - Completion requires semicolon if it's not the last one in rule" workaround
                     //div{
                     //    color: |
@@ -1179,7 +1217,7 @@ public class CssCompletion implements CodeCompletionHandler {
                     //}
                     //
                     //the "font-size" becomes a propertyValue node and the following COLON causes error outside of the propertyValue node (correctly)
-                    if(LexerUtils.followsToken(context.getTokenSequence(), CssTokenId.COLON, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
+                    if (LexerUtils.followsToken(context.getTokenSequence(), EnumSet.of(CssTokenId.COLON), true, true, true, CssTokenId.WS, CssTokenId.NL) != null) {
                         //we are just after the colon
                         expressionText = "";
                     } else {
@@ -1187,7 +1225,7 @@ public class CssCompletion implements CodeCompletionHandler {
                         expressionText = result[1].image().toString();
                     }
                 }
-                
+
                 if (result[2] != null) {
                     //error in the property value
                     //we need to extract the value from the property node image
@@ -1208,10 +1246,10 @@ public class CssCompletion implements CodeCompletionHandler {
                     //completion in place like: background: | ;
                     //or in html code <div style="backgroung:|"/> (virtual source generator adds the semi)
                     int semiIndex = expressionText.lastIndexOf(';');
-                    if(semiIndex > 0) {
+                    if (semiIndex > 0) {
                         expressionText = expressionText.substring(0, semiIndex);
                     }
-                    
+
                     //use just the current line, if the expression spans to multiple
                     //lines it is likely because of parsing error
                     int eolIndex = expressionText.indexOf('\n');
@@ -1256,7 +1294,6 @@ public class CssCompletion implements CodeCompletionHandler {
                             addSpaceBeforeItem,
                             false));
 
-
                 }
             }
             break;
@@ -1272,15 +1309,13 @@ public class CssCompletion implements CodeCompletionHandler {
             case error:
                 Node parentNode = node.parent();
                 NodeType parentType = parentNode.type();
-                
-                if (!(
-                        parentType == NodeType.propertyValue 
-                        || parentType == NodeType.term 
-                        || parentType == NodeType.expression 
+
+                if (!(parentType == NodeType.propertyValue
+                        || parentType == NodeType.term
+                        || parentType == NodeType.expression
                         || parentType == NodeType.operator
                         || parentType == NodeType.propertyDeclaration
-                        || parentType == NodeType.declaration
-                    )) {
+                        || parentType == NodeType.declaration)) {
                     break;
                 }
             //fall through
@@ -1293,21 +1328,21 @@ public class CssCompletion implements CodeCompletionHandler {
             case expression:
             case operator: {
                 parentNode = node.parent();
-                parentType = parentNode.type();                
+                parentType = parentNode.type();
                 Node declarationNode = null;
-                
-                if(parentType != null && parentType == NodeType.declaration) {
+
+                if (parentType != null && parentType == NodeType.declaration) {
                     //fallen through from the error case
                     //this means there's an error in a property value and 
                     //due to some semantic predicates we are not in propertyValue
                     //node but in some of its predecessors.
                     //Lets ry to find the preceeding propertyDeclaration node
                     Node siblingBefore = NodeUtil.getSibling(parentNode, true);
-                    if(siblingBefore != null && siblingBefore.type() == NodeType.declaration) {
+                    if (siblingBefore != null && siblingBefore.type() == NodeType.declaration) {
                         declarationNode = NodeUtil.getChildByType(siblingBefore, NodeType.propertyDeclaration);
                     }
                 }
-                
+
                 //value cc with prefix
                 //a. for term nodes
                 //b. for error skip declaration nodes with declaration parent,
@@ -1315,7 +1350,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 //find property node
                 //1.find declaration node first
                 final Node[] result = new Node[1];
-                if(declarationNode == null) {
+                if (declarationNode == null) {
                     NodeVisitor declarationSearch = new NodeVisitor() {
 
                         @Override
@@ -1325,13 +1360,13 @@ public class CssCompletion implements CodeCompletionHandler {
                             }
                             return false;
                         }
-                        
+
                     };
                     declarationSearch.visitAncestors(node);
                     declarationNode = result[0];
                 }
-                
-                if(declarationNode == null) {
+
+                if (declarationNode == null) {
                     //not in property declaration, give up
                     break;
                 }
@@ -1351,9 +1386,9 @@ public class CssCompletion implements CodeCompletionHandler {
                 propertySearch.visitChildren(declarationNode);
 
                 Node property = result[0];
-                if(property == null) {
+                if (property == null) {
                     //the property part may be replaced by the scss interpolation expression
-                    return ;
+                    return;
                 }
 
                 String propertyName = property.image().toString();
@@ -1363,17 +1398,16 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
 
                 //text from the node start to the embedded anchor offset (=embedded caret offset - prefix length)
-
-                Node expressionNode = NodeUtil.query(declarationNode, "propertyValue/expression"); //NOI18N
-                if(expressionNode == null) {
-                    //no expression node, broken source => try just propertyValue node
-                    expressionNode = NodeUtil.query(declarationNode, "propertyValue"); //NOI18N
-                    if(expressionNode == null) {
-                        return ;
+                Node value = NodeUtil.query(declarationNode, NodeType.propertyValue.name()); //NOI18N
+                if (value == null) {
+                    //no propertyValue node, may be CP expression
+                    value = NodeUtil.query(declarationNode, NodeType.cp_propertyValue.name()); //NOI18N
+                    if (value == null) {
+                        return;
                     }
                 }
                 String expressionText = context.getSnapshot().getText().subSequence(
-                        expressionNode.from(),
+                        value.from(),
                         context.getEmbeddedAnchorOffset()).toString();
 
                 //use just the current line, if the expression spans to multiple
@@ -1384,8 +1418,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 }
 
                 ResolvedProperty propVal = new ResolvedProperty(context.getFileObject(), propertyDefinition, expressionText);
-                
-                
+
                 Collection<ValueGrammarElement> alts = propVal.getAlternatives();
                 Collection<ValueGrammarElement> filteredByPrefix = filterElements(alts, prefix);
 
@@ -1395,8 +1428,8 @@ public class CssCompletion implements CodeCompletionHandler {
                 boolean includePrefixInTheExpression = false;
                 boolean extendedItemsOnly = false;
 
-                
-                block: {
+                block:
+                {
                     //case #1
                     //========
                     //color: #| completion
@@ -1411,7 +1444,7 @@ public class CssCompletion implements CodeCompletionHandler {
                         //do the following heuristics only if the completion is invoked after, not inside a token
                         break block;
                     }
-                    
+
                     //case #2
                     //========
                     //in the situation that there's a prefix, but no alternatives matches
@@ -1443,7 +1476,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 if (includePrefixInTheExpression) {
                     //re-run the property value evaluation with expression including the prefix token
                     expressionText = context.getSnapshot().getText().subSequence(
-                            expressionNode.from(),
+                            value.from(),
                             context.getEmbeddedCaretOffset()).toString();
 
                     //use just the current line, if the expression spans to multiple
@@ -1468,7 +1501,6 @@ public class CssCompletion implements CodeCompletionHandler {
                         false,
                         addSpaceBeforeItem,
                         extendedItemsOnly));
-
 
             } //case
         } //switch

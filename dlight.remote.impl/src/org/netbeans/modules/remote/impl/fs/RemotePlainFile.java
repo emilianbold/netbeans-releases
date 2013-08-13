@@ -299,7 +299,7 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    public InputStream getInputStream() throws FileNotFoundException {
+    public InputStream getInputStream(boolean checkLock) throws FileNotFoundException {
         // TODO: check error processing
         try {
 //            CachedRemoteInputStream stream = fileContentCache.get();
@@ -332,9 +332,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
             RemoteFileSystemUtils.getCanonicalParent(this).ensureChildSync(this);
             InputStream newStream = new FileInputStream(getCache());
 
-            if (rwl.tryReadLock()) {
+            if (!checkLock) {
+                return newStream;
+            } else if (rwl.tryReadLock()) {
                 return new InputStreamWrapper(newStream);
             } else {
+                newStream.close();
                 return new InputStream() {
 
                     @Override
@@ -441,10 +444,9 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
     }
 
-    // Fixing #206726 - If a remote file is saved frequently, "File modified externally" message appears, user changes are lost
     @Override
     protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        if (Boolean.getBoolean("cnd.remote.refresh.plain.file")) { //NOI18N
+        if (Boolean.valueOf(System.getProperty("cnd.remote.refresh.plain.file", "true"))) { //NOI18N
             long time = System.currentTimeMillis();
             getParent().refreshImpl(false, antiLoop, expected);
             RemoteLogger.getInstance().log(Level.FINE, "Refreshing {0} took {1} ms", new Object[] { getPath(), System.currentTimeMillis() - time });

@@ -44,7 +44,12 @@
 
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.prefs.Preferences;
+import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.settings.SimpleValueNames;
 import org.netbeans.modules.csl.api.Formatter;
+import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
+import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
 
 /**
  * @todo Try typing in whole source files and other than tracking missing end and } closure
@@ -62,6 +67,13 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
     public JsTypedTextInterceptorTest(String testName) {
         super(testName);
     }
+
+    @Override
+    protected void setUp() throws Exception {
+        super.setUp();
+        MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class).clear();
+    }
+
 
     @Override
     protected Formatter getFormatter(IndentPrefs preferences) {
@@ -211,15 +223,6 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("x = ((^)", ')', "x = (()^)");
     }
 
-// see issue #217134 - the feature is more confusing than helpful
-//    public void testRegexp1() throws Exception {
-//        insertChar("x = ^", '/', "x = /^/");
-//    }
-//
-//    public void testRegexp2() throws Exception {
-//        insertChar("x = /^/", '/', "x = //^");
-//    }
-
     public void testRegexp3() throws Exception {
         insertChar("x = /^/", 'a', "x = /a^/");
     }
@@ -238,14 +241,6 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
                 "    regexp = /fofo/^\n");
     }
 
-//    public void testRegexp7() throws Exception {
-//        insertChar("x = ^\n", '/', "x = /^/\n");
-//    }
-//
-//    public void testRegexp8() throws Exception {
-//        insertChar("x = /^/\n", '/', "x = //^\n");
-//    }
-
     public void testRegexp9() throws Exception {
         insertChar("x = /^/\n", 'a', "x = /a^/\n");
     }
@@ -261,22 +256,6 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
     public void testNotRegexp1() throws Exception {
         insertChar("x = 10 ^", '/', "x = 10 /^");
     }
-
-//    public void testRegexpToComment1() throws Exception {
-//        insertChar("/^/", '*', "/*^");
-//    }
-//
-//    public void testRegexpToComment2() throws Exception {
-//        insertChar("/^/\n", '*', "/*^\n");
-//    }
-//
-//    public void testRegexpToComment3() throws Exception {
-//        insertChar("x = /^/", '*', "x = /*^");
-//    }
-//
-//    public void testRegexpToComment4() throws Exception {
-//        insertChar("x = /^/\n", '*', "x = /*^\n");
-//    }
 
     public void testNotRegexp2() throws Exception {
         insertChar("x = 3.14 ^", '/', "x = 3.14 /^");
@@ -326,8 +305,52 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
         insertChar("x = foo^", '"', "x = \"^\"", "foo", true);
     }
 
+    public void testEnabledSmartQuotes() throws Exception {
+        insertChar("x = ^", '"', "x = \"^\"");
+    }
+
+    public void testDisabledSmartQuotes() throws Exception {
+        MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class)
+                .putBoolean(OptionsUtils.AUTO_COMPLETION_SMART_QUOTES, false);
+        insertChar("x = ^", '"', "x = \"^");
+    }
+
+    public void testDisabledBrackets1() throws Exception {
+        MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class)
+                .putBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
+        insertChar("x = ^", '(', "x = (^");
+    }
+
+    public void testDisabledBrackets2() throws Exception {
+        MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class)
+                .putBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
+        insertChar("x = ^", '[', "x = [^");
+    }
+
+    public void testDisabledBrackets3() throws Exception {
+        MimeLookup.getLookup(JsTokenId.JAVASCRIPT_MIME_TYPE).lookup(Preferences.class)
+                .putBoolean(SimpleValueNames.COMPLETION_PAIR_CHARACTERS, false);
+        insertChar("x = ^", '{', "x = {^");
+    }
+
     public void testIssue233067() throws Exception {
         insertChar("window.console.log(\"^\")", 'a', "window.console.log(\"a^\")", null, true);
+    }
+
+    public void testIssue233292_1() throws Exception {
+        insertChar("var a = \"test\"^", ';', "var a = \"test\";^");
+    }
+    
+    public void testIssue233292_2() throws Exception {
+        insertChar("a.replace(\"aaa\"^)", ',', "a.replace(\"aaa\",^)");
+    }
+    
+    public void testIssue233292_3() throws Exception {
+        insertChar("test(\"asasa\", {pes:\"1\"^)", '}', "test(\"asasa\", {pes:\"1\"}^)");
+    }
+
+    public void testIssue233292_4() throws Exception {
+        insertChar("var a = {\n    pes: \"1\"^\n}\n", ',', "var a = {\n    pes: \"1\",^\n}\n");
     }
 
     public void testIssue189443() throws Exception {
@@ -345,23 +368,8 @@ public class JsTypedTextInterceptorTest extends JsTestBase {
             + "\n"
             +"}\n");
     }
+    
     public void testIssue195515() throws Exception {
         insertChar("function name() { {^}", '}', "function name() { {}^");
     }
-
-
-//    public void testIssue150103() throws Exception {
-//        //    1. Create a new JS file
-//        //    2. type "/*" (without ") and press enter
-//        //    3. Delete the middle asterisk (press backspace 2x)
-//        //    4. Press Enter
-//        insertChar("^", '/', "/^/");
-//        insertChar("/^/", '*', "/*^");
-//        insertBreak("/*^", "/*\n * ^\n */");
-//        deleteChar("/*\n * ^\n */", "/*\n *^\n */");
-//        deleteChar("/*\n *^\n */", "/*\n ^\n */");
-//
-//        // This is the part that was broken:
-//        insertBreak("/*\n ^\n */", "/*\n \n ^\n */");
-//    }
 }

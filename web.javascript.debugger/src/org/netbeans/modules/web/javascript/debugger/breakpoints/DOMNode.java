@@ -280,6 +280,9 @@ public final class DOMNode {
             }
             return dn;
         }
+        while (pathNames.startsWith("/")) {
+            pathNames = pathNames.substring(1);
+        }
         List<NodeId> path = new LinkedList<NodeId>();
         int i1 = 0;
         do {

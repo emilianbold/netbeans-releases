@@ -866,7 +866,7 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 <YYINITIAL>"<%="|"<?=" {
     String text = yytext();
     if ((text.charAt(1)=='%' && asp_tags)
-        || (text.charAt(1)=='?' && short_tags_allowed)) {
+        || (text.charAt(1)=='?')) {
         yypushback(1);
         yybegin(ST_IN_SHORT_ECHO);
     } else {

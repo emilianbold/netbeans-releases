@@ -134,8 +134,8 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testFunction() {
-        String source =
-                "#header {\n"
+        String source
+                = "#header {\n"
                 + "  color: (@base-color * 3);\n"
                 + "  border-left: @the-border;\n"
                 + "  border-right: (@the-border * 2);\n"
@@ -148,8 +148,8 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testFunction2() {
-        String source =
-                "#footer {\n"
+        String source
+                = "#footer {\n"
                 + "  border-color: desaturate(@red, 10%);\n"
                 + "  color: (@base-color + #003300);\n"
                 + "}";
@@ -162,8 +162,8 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testMixinDeclaration() {
-        String source =
-                ".rounded-corners (@radius: 5px) {\n"
+        String source
+                = ".rounded-corners (@radius: 5px) {\n"
                 + "  -webkit-border-radius: @radius;\n"
                 + "  -moz-border-radius: @radius;\n"
                 + "  -ms-border-radius: @radius;\n"
@@ -179,8 +179,8 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testMixinDeclaration2() {
-        String source =
-                ".box-shadow (@x: 0, @y: 0, @blur: 1px, @color: #000) {\n"
+        String source
+                = ".box-shadow (@x: 0, @y: 0, @blur: 1px, @color: #000) {\n"
                 + "  box-shadow: @arguments;\n"
                 + "  -moz-box-shadow: @arguments;\n"
                 + "  -webkit-box-shadow: @arguments;\n"
@@ -194,8 +194,8 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testMixinDeclarationAdvancedArguments() {
-        String source =
-                ".mixin1 (...) {}"
+        String source
+                = ".mixin1 (...) {}"
                 + ".mixin2 () {}"
                 + ".mixin3 (@a: 1) {}"
                 + ".mixin4 (@a: 1, ...) {}"
@@ -209,8 +209,8 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testGuardedMixins() {
-        String source =
-                ".mixin (@a) when (@a > 10), (@a = -10) {\n"
+        String source
+                = ".mixin (@a) when (@a > 10), (@a = -10) {\n"
                 + "  background-color: black;\n"
                 + "}";
         ;
@@ -222,8 +222,8 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testGuardedMixins2() {
-        String source =
-                ".truth (@a) when (@a) { }\n"
+        String source
+                = ".truth (@a) when (@a) { }\n"
                 + ".truth (@a) when (@a = true) { }\n"
                 + ".mixin (@a) when (@media = mobile) { } \n";
         ;
@@ -235,8 +235,8 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testGuardedMixinIsFunction() {
-        String source =
-                ".mixin (@a, @b: 0) when (isnumber(@b)) { }\n";
+        String source
+                = ".mixin (@a, @b: 0) when (isnumber(@b)) { }\n";
         ;
 
         CssParserResult result = TestUtil.parse(source);
@@ -246,8 +246,8 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testGuardedMixinNotOperator() {
-        String source =
-                ".mixin (@b) when not (@b > 0) { }\n";
+        String source
+                = ".mixin (@b) when not (@b > 0) { }\n";
         ;
 
         CssParserResult result = TestUtil.parse(source);
@@ -257,11 +257,11 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testMixinNesting() {
-        String source =
-                ".class {\n"
+        String source
+                = ".class {\n"
                 + "  .mixin(@switch, #888);\n"
                 + "}";
-        
+
         CssParserResult result = TestUtil.parse(source);
 
         NodeUtil.dumpTree(result.getParseTree());
@@ -269,8 +269,8 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testMixinNesting2() {
-        String source =
-                ".class {\n"
+        String source
+                = ".class {\n"
                 + "  .mixin(@switch, #888);\n"
                 + "}";
 
@@ -281,8 +281,8 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testMixinNesting3() {
-        String source =
-                "#menu a {\n"
+        String source
+                = "#menu a {\n"
                 + "  color: #111;\n"
                 + "  .bordered;\n"
                 + "}";
@@ -439,8 +439,8 @@ public class Css3ParserLessTest extends CssTestBase {
     //there are also some rules regarding the naming convention, but these
     //are covered by semantic analysis, not parsing
     public void testImport() {
-        String source =
-                "@import \"rounded\";\n";
+        String source
+                = "@import \"rounded\";\n";
 
         CssParserResult result = TestUtil.parse(source);
 
@@ -450,8 +450,8 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testLineComment() {
-        String source =
-                ".funky {\n"
+        String source
+                = ".funky {\n"
                 + " //line comment\n"
                 + "}";
 
@@ -463,14 +463,39 @@ public class Css3ParserLessTest extends CssTestBase {
     }
 
     public void testMixinCallInStylesheet() {
-        String source =
-                ".firefox-message(\".header\");\n";
+        String source
+                = ".firefox-message(\".header\");\n";
 
         CssParserResult result = TestUtil.parse(source);
 
         NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
+    }
+
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=231698
+    public void testMixinDeclarationPredicate() {
+        String source
+                = ".mxc(\"param\");\n"
+                + ".next {\n"
+                + "}";
+
+        CssParserResult result = TestUtil.parse(source);
+
+        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+        //verify that .mxc(\"param\") was parsed as mixin call
+        Node mixinCall = NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/cp_mixin_call");
+        assertNotNull(mixinCall);
+
+    }
+
+    public void testX() {
+        assertParses(".a,\n"
+                + ".b {\n"
+                + "    width: 1050px;\n"
+                + "}");
     }
 
 }

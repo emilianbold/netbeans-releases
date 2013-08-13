@@ -82,4 +82,5 @@ public final class BeansAttributes {
     public static final String ID = "id"; // NOI18N
     public static final String PRIMARY = "primary"; // NOI18N
     public static final String ALIAS = "alias"; // NOI18N
+    public static final String BASE_PACKAGE = "base-package"; // NOI18N
 }

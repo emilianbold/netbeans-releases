@@ -348,7 +348,8 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
     private void initCompilerSetsImpl(ArrayList<String> dirlist) {
         Set<CompilerFlavor> flavors = new HashSet<CompilerFlavor>();
         String SunStudioPath = System.getProperty("spro.bin");        // NB: function itself is synchronized!
-
+        final boolean OSS_TOOLCHAIN_ONLY = "true".equals(System.getProperty("oss.toolchain.only")); //NOI18N
+        
         if (SunStudioPath != null) {
             File folder = new File(SunStudioPath);
             if (folder.isDirectory()) {
@@ -374,6 +375,9 @@ public final class CompilerSetManagerImpl extends CompilerSetManager {
                     }
                 }
             }
+        }
+        if (OSS_TOOLCHAIN_ONLY) {
+            return;
         }
         Loop:for(ToolchainDescriptor d : ToolchainManagerImpl.getImpl().getToolchains(getPlatform())) {
             if (d.isAbstract() || !d.isAutoDetected()) {

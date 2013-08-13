@@ -54,8 +54,10 @@ import org.netbeans.spi.project.support.ant.ReferenceHelper;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.ProjectProperties;
+import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
 import org.netbeans.modules.web.project.WebProject;
 import org.netbeans.modules.web.project.ui.customizer.WebProjectProperties;
+import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.openide.util.NbBundle;
 
 /**
@@ -105,6 +107,11 @@ public class WebLogicalViewProvider extends AbstractLogicalViewProvider2 {
     @Override
     protected void setServerInstance(Project project, UpdateHelper helper, String serverInstanceID) {
         WebProjectProperties.setServerInstance((WebProject)project, helper, serverInstanceID);
+    }
+
+    @NodeFactory.Registration(projectType="org-netbeans-modules-web-project",position=149)
+    public static NodeFactory createRemoteFiles() {
+        return RemoteFilesNodeFactory.createRemoteFilesNodeFactory();
     }
 
 }

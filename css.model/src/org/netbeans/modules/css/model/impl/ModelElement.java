@@ -41,21 +41,24 @@
  */
 package org.netbeans.modules.css.model.impl;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.model.api.Media;
-import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.css.model.api.Element;
 import org.netbeans.modules.css.model.api.ElementHandle;
 import org.netbeans.modules.css.model.api.ElementListener;
+import org.netbeans.modules.css.model.api.Media;
 import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelVisitor;
 import org.netbeans.modules.css.model.api.PlainElement;
+import org.netbeans.modules.css.model.api.Rule;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
@@ -65,6 +68,8 @@ import org.netbeans.modules.web.common.api.LexerUtils;
  */
 public abstract class ModelElement implements Element {
 
+    private static final Logger LOG = Logger.getLogger(ModelElement.class.getName());
+    
     private final List<ClassElement> CLASSELEMENTS = new ArrayList<>();
     private Collection<ElementListener> LISTENERS;
     protected final Model model;
@@ -104,7 +109,11 @@ public abstract class ModelElement implements Element {
     public void accept(ModelVisitor modelVisitor) {
         for (int i = 0; i < getElementsCount(); i++) {
             Element child = getElementAt(i);
-            child.accept(modelVisitor);
+            if(child == null) {
+                //null child is allowed for the placeholder class elements created by #addEmptyElement()
+            } else {
+                child.accept(modelVisitor);
+            }
         }
 
         acceptVisitorGeneric(this, modelVisitor);

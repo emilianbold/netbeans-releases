@@ -386,9 +386,10 @@ mediaBody
 
 mediaBodyItem
     :
-    (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN (~LBRACE)* LBRACE))=>cp_mixin_declaration 
+    (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration 
     | (cp_mixin_call)=>cp_mixin_call 
-    |(~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI | sass_declaration_interpolation_expression COLON )=>propertyDeclaration
+    |( ~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI )=>propertyDeclaration
+    |( sass_declaration_interpolation_expression COLON ~(SEMI|LBRACE|RBRACE)+ SEMI )=>propertyDeclaration
     | {isScssSource()}? sass_extend
     | {isScssSource()}? sass_debug
     | {isScssSource()}? sass_control
@@ -425,7 +426,12 @@ mediaExpression
     
 mediaFeatureValue
     :
-    ws? COLON ws? cp_expression
+    ws? COLON ws? 
+    (
+        {isCssPreprocessorSource()}? cp_expression
+        |
+        expression
+    )
     ;
  
 mediaFeature
@@ -443,8 +449,10 @@ mediaFeature
  
 bodyItem
     : 
-        (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN (~LBRACE)* LBRACE))=>cp_mixin_declaration
-        | (cp_mixin_call)=>cp_mixin_call
+        (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
+        //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
+        | {isLessSource()}? (cp_mixin_call ws? SEMI)=>cp_mixin_call
+        | {isScssSource()}? (cp_mixin_call)=>cp_mixin_call
     	| rule
         | at_rule
         | {isCssPreprocessorSource()}? cp_variable_declaration
@@ -631,6 +639,7 @@ declaration
     | {isScssSource()}? sass_content 
     | {isScssSource()}? sass_function_return 
     | {isScssSource()}? importItem 
+    | GEN
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -861,7 +870,15 @@ term
         | hexColor
         | {isCssPreprocessorSource()}? cp_variable
         | {isCssPreprocessorSource()}? sass_interpolation_expression_var
+        | {isCssPreprocessorSource()}? cp_term_symbol //accept any garbage in preprocessors
     )
+    ;
+
+//SASS/LESS expressions workaround
+//Bug 233359 - false error in SASS editor
+//https://netbeans.org/bugzilla/show_bug.cgi?id=233359    
+cp_term_symbol
+    : PERCENTAGE_SYMBOL //what else?
     ;
 
 function
@@ -1593,6 +1610,9 @@ COMMA           : ','       ;
 DOT             : '.'       ;
 TILDE		: '~'       ;
 PIPE            : '|'       ;
+PERCENTAGE_SYMBOL
+                : '%'       ;
+EXCLAMATION_MARK: '!'       ;                
 
 CP_EQ           : '=='       ;
 CP_NOT_EQ       : '!='       ;
@@ -1638,7 +1658,7 @@ IDENT           : '-'? NMSTART NMCHAR*  ;
 HASH_SYMBOL     : '#';
 HASH            : HASH_SYMBOL NAME;
 
-IMPORTANT_SYM   : '!' (WS|COMMENT)* 'IMPORTANT'   ;
+IMPORTANT_SYM   : EXCLAMATION_MARK (WS|COMMENT)* 'IMPORTANT'   ;
 
 IMPORT_SYM          : '@IMPORT';
 PAGE_SYM            : '@PAGE';
@@ -1692,7 +1712,7 @@ SASS_DEFAULT        : '!DEFAULT';
 SASS_OPTIONAL       : '!OPTIONAL';
 
 SASS_EXTEND_ONLY_SELECTOR
-                    : '%' NMCHAR+;
+                    : PERCENTAGE_SYMBOL NMCHAR+;
 
 // ---------
 // Numbers. Numbers can be followed by pre-known units or unknown units
@@ -1773,7 +1793,7 @@ NUMBER
             
             | IDENT         { $type = DIMENSION;    }
             
-            | '%'           { $type = PERCENTAGE;   }
+            | PERCENTAGE_SYMBOL { $type = PERCENTAGE;   }
             
             | // Just a number
         )
@@ -1811,8 +1831,6 @@ MOZ_REGEXP
         ')'
     
         	;
-
-
 
 // -------------
 // Whitespace.  Though the W3 standard shows a Yacc/Lex style parser and lexer

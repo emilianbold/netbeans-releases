@@ -289,7 +289,7 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
     
     private boolean detectIsChanged() {
         for (MemoryPreferences cached : preferences.values()) {
-            if (!cached.isDirty(cached.getPreferences())) {
+            if (cached.isDirty(cached.getPreferences())) {
                 return true;
             }
         }

@@ -42,7 +42,7 @@
 package org.netbeans.modules.javascript2.editor.extdoc.model;
 
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
@@ -54,12 +54,12 @@ import org.netbeans.modules.javascript2.editor.model.Type;
  */
 public class ExtDocTypeNamedElement extends ExtDocTypeDescribedElement {
 
-    private final DocIdentifier typeName;
+    private final Identifier typeName;
     private final boolean optional;
     private final String defaultValue;
 
     private ExtDocTypeNamedElement(ExtDocElementType type, List<Type> declaredTypes, String description,
-            DocIdentifier typeName, boolean optional, String defaultValue) {
+            Identifier typeName, boolean optional, String defaultValue) {
         super(type, declaredTypes, description);
         this.typeName = typeName;
         this.optional = optional;
@@ -75,7 +75,7 @@ public class ExtDocTypeNamedElement extends ExtDocTypeDescribedElement {
      * @param paramDescription description of the parameter
      * @param paramName name of the parameter
      */
-    public static ExtDocTypeNamedElement create(ExtDocElementType type, List<Type> declaredTypes, String description, DocIdentifier typeName) {
+    public static ExtDocTypeNamedElement create(ExtDocElementType type, List<Type> declaredTypes, String description, Identifier typeName) {
         return new ExtDocTypeNamedElement(type, declaredTypes, description, typeName, false, "");
     }
 
@@ -89,7 +89,7 @@ public class ExtDocTypeNamedElement extends ExtDocTypeDescribedElement {
      * @param paramName name of the parameter
      * @param optional flag if the parameter is optional
      */
-    public static ExtDocTypeNamedElement create(ExtDocElementType type, List<Type> declaredTypes, String description, DocIdentifier typeName, boolean optional) {
+    public static ExtDocTypeNamedElement create(ExtDocElementType type, List<Type> declaredTypes, String description, Identifier typeName, boolean optional) {
         return new ExtDocTypeNamedElement(type, declaredTypes, description, typeName, optional, "");
     }
 
@@ -104,16 +104,16 @@ public class ExtDocTypeNamedElement extends ExtDocTypeDescribedElement {
      * @param optional flag if the parameter is optional
      * @param defaultValue default value of the parameter
      */
-    public static ExtDocTypeNamedElement create(ExtDocElementType type, List<Type> declaredTypes, String description, DocIdentifier typeName, boolean optional, String defaultValue) {
+    public static ExtDocTypeNamedElement create(ExtDocElementType type, List<Type> declaredTypes, String description, Identifier typeName, boolean optional, String defaultValue) {
         return new ExtDocTypeNamedElement(type, declaredTypes, description, typeName, optional, defaultValue);
     }
 
-    public DocIdentifier getTypeName() {
+    public Identifier getTypeName() {
         return typeName;
     }
 
     @Override
-    public DocIdentifier getParamName() {
+    public Identifier getParamName() {
         return typeName;
     }
 

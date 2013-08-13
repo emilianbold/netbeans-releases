@@ -45,7 +45,7 @@ import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import java.awt.*;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.team.ui.util.treelist.LinkButton;
+import org.netbeans.modules.team.commons.treelist.LinkButton;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -63,9 +63,9 @@ import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenRepositoryNode
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.CreateQueryAction;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.QuickSearchAction;
 import org.netbeans.modules.bugtracking.tasks.DashboardUtils;
-import org.netbeans.modules.team.ui.util.treelist.AsynchronousNode;
-import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
-import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.netbeans.modules.team.commons.treelist.AsynchronousNode;
+import org.netbeans.modules.team.commons.treelist.TreeLabel;
+import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -178,8 +178,8 @@ public class RepositoryNode extends AsynchronousNode<Collection<QueryImpl>> impl
             DashboardViewer dashboard = DashboardViewer.getInstance();
             if (!filteredQueryNodes.isEmpty()) {
                 List<QueryNode> children = filteredQueryNodes;
-                boolean expand = dashboard.expandNodes();
                 for (QueryNode queryNode : children) {
+                    boolean expand = dashboard.isNodeExpanded(queryNode);
                     queryNode.setExpanded(expand);
                 }
                 Collections.sort(children);

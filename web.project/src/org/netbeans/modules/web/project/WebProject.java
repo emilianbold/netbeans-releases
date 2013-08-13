@@ -68,7 +68,10 @@ import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.ant.AntBuildExtender;
 import org.netbeans.api.queries.FileBuiltQuery.Status;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.JavaClassPathConstants;
+import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.java.project.classpath.ProjectClassPathModifier;
+import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.j2ee.dd.api.ejb.EjbJarMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.java.api.common.Roots;
@@ -196,7 +199,11 @@ import org.openide.modules.Places;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
 import org.openide.util.lookup.ProxyLookup;
+import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 
 /**
  * Represents one plain Web project.
@@ -249,6 +256,28 @@ public final class WebProject implements Project {
 
     // set to true when project customizer is being closed and changes persisted
     private final ThreadLocal<Boolean> projectPropertiesSave;
+
+    // #233052
+    private final WindowSystemListener windowSystemListener = new WindowSystemListener() {
+
+        @Override
+        public void beforeLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void afterLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void beforeSave(WindowSystemEvent event) {
+            easelSupport.close();
+        }
+
+        @Override
+        public void afterSave(WindowSystemEvent event) {
+        }
+
+    };
 
     private class FileWatch implements AntProjectListener, FileChangeListener {
 
@@ -424,6 +453,8 @@ public final class WebProject implements Project {
         webInfFileWatch = new FileWatch(WebProjectProperties.WEBINF_DIR);
         // whitelist updater listens on project properties and pays attention to whitelist changes
         whiteListUpdater = new WhiteListUpdaterImpl(this);
+        WindowManager windowManager = WindowManager.getDefault();
+        windowManager.addWindowSystemListener(WeakListeners.create(WindowSystemListener.class, windowSystemListener, windowManager));
     }
 
     public void setProjectPropertiesSave(boolean value) {
@@ -625,7 +656,7 @@ public final class WebProject implements Project {
             ExtraSourceJavadocSupport.createExtraJavadocQueryImplementation(this, helper, eval),
             LookupMergerSupport.createJFBLookupMerger(),
             QuerySupport.createBinaryForSourceQueryImplementation(getSourceRoots(), getTestSourceRoots(), helper, eval),
-            new ProjectWebRootProviderImpl(),
+            new ProjectWebRootProviderImpl(this),
             easelSupport,
             CssPreprocessors.getDefault().createProjectProblemsProvider(this),
             new JavaEEProjectSettingsImpl(this),
@@ -1589,6 +1620,7 @@ public final class WebProject implements Project {
         private File resources = null;
 
         private String buildWeb = null;
+        private String buildClasses = null;
 
         private final List<ArtifactListener> listeners = new CopyOnWriteArrayList<ArtifactListener>();
 
@@ -1625,6 +1657,7 @@ public final class WebProject implements Project {
             }
             resources = getWebModule().getResourceDirectory();
             buildWeb = evaluator().getProperty(WebProjectProperties.BUILD_WEB_DIR);
+            buildClasses = evaluator().getProperty("build.classes.dir");
 
             if (docBase != null) {
                 docBase.addRecursiveListener(this);
@@ -1999,21 +2032,32 @@ public final class WebProject implements Project {
             if (fileObject == null) {
                 return null;
             }
-            return getWebDocFileObject(fileObject);
+            return findSourceForBinary(fileObject);
         }
 
-        private FileObject getWebDocFileObject(FileObject artifact) {
+        // "Binary" means compiled class file or web root document copied into build directory
+        private FileObject findSourceForBinary(FileObject artifact) {
+            FileObject webClassesBase = buildClasses == null ? null : helper.resolveFileObject(buildClasses);
             FileObject webBuildBase = buildWeb == null ? null : helper.resolveFileObject(buildWeb);
+
+            if (webClassesBase != null && FileUtil.isParentOf(webClassesBase, artifact)) {
+                String path = FileUtil.getRelativePath(webClassesBase, artifact).replace(".class", ".java"); // NOI18N
+                for (SourceGroup sg : ProjectUtils.getSources(WebProject.this).getSourceGroups(JavaProjectConstants.SOURCES_TYPE_JAVA)) {
+                    FileObject fo = sg.getRootFolder().getFileObject(path);
+                    if (fo != null) {
+                        return fo;
+                    }
+                }
+                return null;
+            }
+
             if (docBase != null && webBuildBase != null) {
-                if (!FileUtil.isParentOf(webBuildBase, artifact)) {
-                    return null;
-                } else {
+                if (FileUtil.isParentOf(webBuildBase, artifact)) {
                     String path = FileUtil.getRelativePath(webBuildBase, artifact);
                     return docBase.getFileObject(path);
                 }
-            } else {
-                return null;
             }
+            return null;
         }
     }
 
@@ -2394,6 +2438,14 @@ public final class WebProject implements Project {
 
     private static final class ProjectWebRootProviderImpl implements ProjectWebRootProvider {
 
+        private final WebProject project;
+
+
+        private ProjectWebRootProviderImpl(WebProject project) {
+            assert project != null;
+            this.project = project;
+        }
+
         @Override
         public FileObject getWebRoot(FileObject file) {
             WebModule webModule = WebModule.getWebModule(file);
@@ -2406,6 +2458,16 @@ public final class WebProject implements Project {
                     null;
             }
             return null;
+        }
+
+        @Override
+        public Collection<FileObject> getWebRoots() {
+            WebModule webModule = project.getAPIWebModule();
+            FileObject webRoot = webModule != null ? webModule.getDocumentBase() : null;
+            if (webRoot != null) {
+                return Collections.singleton(webRoot);
+            }
+            return Collections.emptyList();
         }
 
     }

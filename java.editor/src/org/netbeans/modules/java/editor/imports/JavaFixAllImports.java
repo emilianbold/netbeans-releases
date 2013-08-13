@@ -228,6 +228,10 @@ public class JavaFixAllImports {
 
         CompilationUnitTree cut = wc.getCompilationUnit();
 
+        if (!toImport.isEmpty()) {
+            cut = GeneratorUtilities.get(wc).addImports(cut, toImport);
+        }
+        
         boolean someImportsWereRemoved = false;
         
         if (removeUnusedImports) {
@@ -244,10 +248,6 @@ public class JavaFixAllImports {
 
                 cut = wc.getTreeMaker().removeCompUnitImport(cut, (ImportTree) path.getLeaf());
             }
-        }
-
-        if (!toImport.isEmpty()) {
-            cut = GeneratorUtilities.get(wc).addImports(cut, toImport);
         }
 
         wc.rewrite(wc.getCompilationUnit(), cut);

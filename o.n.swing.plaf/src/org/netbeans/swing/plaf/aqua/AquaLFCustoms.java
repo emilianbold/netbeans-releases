@@ -215,6 +215,10 @@ public final class AquaLFCustoms extends LFCustoms {
             "Nb.MenuBar.VerticalAlign", Boolean.FALSE,
 
             "Nb.SplitPaneUI.clean", "org.netbeans.swing.plaf.aqua.CleanSplitPaneUI",
+            
+            //browser picker
+            "Nb.browser.picker.background.light", new Color(233,239,248),
+            "Nb.browser.picker.foreground.light", new Color(130,130,130),
         }; //NOI18N
         return result;
     }

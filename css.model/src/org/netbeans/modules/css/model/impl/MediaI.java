@@ -42,7 +42,12 @@
 package org.netbeans.modules.css.model.impl;
 
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.model.api.Media;
+import org.netbeans.modules.css.model.api.MediaBody;
+import org.netbeans.modules.css.model.api.MediaQueryList;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.css.model.api.PlainElement;
+import org.openide.util.CharSequences;
 
 /**
  *
@@ -112,7 +117,16 @@ public class MediaI extends ModelElement implements Media {
 
     @Override
     public void setMediaBody(MediaBody mediaBody) {
-        setElement(mediaBody);
+        //find the existing curly braces and put the element between them
+        for(int i = getElementsCount() - 1; i >= 0; i--) {
+            PlainElement e = getElementAt(i, PlainElement.class);
+            if(e != null && CharSequences.indexOf(e.getContent(), "}") != -1) {
+                //found the closing curly brace, put the mediaBody before it
+                insertElement(i, mediaBody);
+                return ;
+            }
+        }
+        throw new IllegalStateException("Can't found curly braces in Media element!"); //NOI18N
     }
 
 }

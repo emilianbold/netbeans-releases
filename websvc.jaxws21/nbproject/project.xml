@@ -75,11 +75,9 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.compapp.projects.jbi</friend>
-                <friend>org.netbeans.modules.deployment.deviceanywhere</friend>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsmodel</friend>
                 <friend>org.netbeans.modules.websvc.manager</friend>
-                <friend>org.netbeans.modules.identity.profile.api</friend>
                 <package>com.sun.tools.ws.processor</package>
                 <package>com.sun.tools.ws.processor.generator</package>
                 <package>com.sun.tools.ws.processor.model</package>
@@ -95,7 +93,6 @@ made subject to such option by the copyright holder.
                 <package>com.sun.tools.ws.wsdl.document.soap</package>
                 <package>com.sun.tools.ws.wsdl.parser</package>
                 <package>com.sun.xml.messaging.saaj.soap</package>
-                <package>com.sun.xml.stream</package>
                 <package>com.sun.xml.ws</package>
                 <package>com.sun.xml.ws.api</package>
                 <package>com.sun.xml.ws.api.addressing</package>
@@ -148,9 +145,6 @@ made subject to such option by the copyright holder.
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxws22/streambuffer.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jaxws22/woodstox-core-asl.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

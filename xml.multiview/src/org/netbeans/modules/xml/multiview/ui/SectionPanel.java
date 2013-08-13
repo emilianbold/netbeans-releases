@@ -152,9 +152,10 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         fillerEnd.setForeground(SectionVisualTheme.getFoldLineColor());
         fillerLine.setVisible(false);
         fillerEnd.setVisible(false);
-        setBackground(SectionVisualTheme.getDocumentBackgroundColor());
-        titlePanel.setBackground(SectionVisualTheme.getSectionHeaderColor());
-        actionPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        // issue 233048: the background color issues with dark metal L&F
+        // setBackground(SectionVisualTheme.getDocumentBackgroundColor());
+        // titlePanel.setBackground(SectionVisualTheme.getSectionHeaderColor());
+        // actionPanel.setBackground(SectionVisualTheme.getDocumentBackgroundColor());
         titleButton.setText(title);
         titleButton.setToolTipText(titleButton.getText());
         titleButton.addMouseListener(new org.openide.awt.MouseUtils.PopupMouseAdapter() {
@@ -224,8 +225,9 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
         innerPanel.addFocusListener(sectionFocusListener);
         add(innerPanel, gridBagConstraints);
         Utils.scrollToVisible(this);
-        innerPanel.setBackground(
-                active ? SectionVisualTheme.getSectionActiveBackgroundColor() : SectionVisualTheme.getDocumentBackgroundColor());
+        // issue 233048: the background color issues with dark metal L&F
+        // innerPanel.setBackground(
+        //      active ? SectionVisualTheme.getSectionActiveBackgroundColor() : SectionVisualTheme.getDocumentBackgroundColor());
     }
     
     protected SectionInnerPanel createInnerpanel() {
@@ -277,13 +279,14 @@ public class SectionPanel extends javax.swing.JPanel implements NodeSectionPanel
      * Method from NodeSectionPanel interface
      */
     public void setActive(boolean active) {
-        //System.out.println("setActive = "+active +":"+node.getDisplayName());
-        titlePanel.setBackground(
-                active ? SectionVisualTheme.getSectionHeaderActiveColor() : SectionVisualTheme.getSectionHeaderColor());
-        //headerSeparator.setVisible(!active);
-        if (innerPanel!=null) innerPanel.setBackground(
-                active ? SectionVisualTheme.getSectionActiveBackgroundColor() : SectionVisualTheme.getDocumentBackgroundColor());
+        // issue 233048: the background color issues with dark metal L&F
+        // titlePanel.setBackground(
+        //         active ? SectionVisualTheme.getSectionHeaderActiveColor() : SectionVisualTheme.getSectionHeaderColor());
+        // if (innerPanel!=null) innerPanel.setBackground(
+        //         active ? SectionVisualTheme.getSectionActiveBackgroundColor() : SectionVisualTheme.getDocumentBackgroundColor());
+        
         /* let all the header buttons remain enabled -- see #143118
+        headerSeparator.setVisible(!active);
         if (headerButtons!=null) {
             for (int i=0;i<headerButtons.length;i++) headerButtons[i].setEnabled(active);
         }

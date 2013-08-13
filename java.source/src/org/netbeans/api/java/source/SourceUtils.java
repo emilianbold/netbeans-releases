@@ -167,7 +167,7 @@ public class SourceUtils {
      * @since 0.85
      */
     public static Set<TreePath> computeDuplicates(CompilationInfo info, TreePath searchingFor, TreePath scope, AtomicBoolean cancel) {
-        Set<TreePath> result = new HashSet<TreePath>();
+        Set<TreePath> result = new HashSet<>();
         
         for (Occurrence od : Matcher.create(info).setCancel(cancel).setSearchRoot(scope).match(Pattern.createSimplePattern(searchingFor))) {
             result.add(od.getOccurrenceRoot());
@@ -209,7 +209,7 @@ public class SourceUtils {
      * @since 0.57
      */
     public static List<? extends Completion> getAttributeValueCompletions(CompilationInfo info, Element element, AnnotationMirror annotation, ExecutableElement member, String userText) {
-        List<Completion> completions = new LinkedList<Completion>();
+        List<Completion> completions = new LinkedList<>();
         if (info.getPhase().compareTo(Phase.ELEMENTS_RESOLVED) >= 0) {
             String fqn = ((TypeElement) annotation.getAnnotationType().asElement()).getQualifiedName().toString();
             Iterable<? extends Processor> processors = info.impl.getJavacTask().getProcessors();
@@ -328,6 +328,7 @@ public class SourceUtils {
         boolean clashing = false;
         ElementUtilities eu = info.getElementUtilities();
         ElementUtilities.ElementAcceptor acceptor = new ElementUtilities.ElementAcceptor() {
+            @Override
             public boolean accept(Element e, TypeMirror type) {
                 return (e.getKind().isClass() || e.getKind().isInterface()) && trees.isAccessible(scope, (TypeElement)e);
             }
@@ -335,7 +336,7 @@ public class SourceUtils {
         Element toImport = null;
         while(qName != null && qName.length() > 0) {
             int lastDot = qName.lastIndexOf('.');
-            Element element = null;
+            Element element;
             if ((element = info.getElements().getTypeElement(qName)) != null) {
                 clashing = false;
                 String simple = qName.substring(lastDot < 0 ? 0 : lastDot + 1);
@@ -367,7 +368,6 @@ public class SourceUtils {
                             } else {
                                 clashing = true;
                             }
-                            matchFound = true;
                             break;
                         }
                     }
@@ -393,6 +393,7 @@ public class SourceUtils {
                 ((WorkingCopy)info).rewrite(info.getCompilationUnit(), GeneratorUtilities.get((WorkingCopy)info).addImports(nue, elementsToImport));
             } else {
                 SwingUtilities.invokeLater(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             ModificationResult.runModificationTask(Collections.singletonList(info.getSnapshot().getSource()), new UserTask() {
@@ -496,18 +497,23 @@ public class SourceUtils {
                     continue;
                 FileObject[] sourceRoots = SourceForBinaryQuery.findSourceRoots(root.toURL()).getRoots();                        
                 ClassPath sourcePath = ClassPathSupport.createClassPath(sourceRoots);
-                LinkedList<FileObject> folders = new LinkedList<FileObject>(sourcePath.findAllResources(pkgName));
+                LinkedList<FileObject> folders = new LinkedList<>(sourcePath.findAllResources(pkgName));
                 if (pkg) {
                     return folders.isEmpty() ? pair.first() : folders.get(0);
                 } else {               
                     final boolean caseSensitive = isCaseSensitive ();
-                    final String sourceFileName = getSourceFileName (className);
-                    final Match matchSet = caseSensitive ? new CaseSensitiveMatch(sourceFileName) : new CaseInsensitiveMatch(sourceFileName);
+                    final Object fnames = getSourceFileNames (className);
                     folders.addFirst(pair.first());
-                    for (FileObject folder : folders) {
-                        for (FileObject child : folder.getChildren()) {
-                            if (matchSet.apply(child)) {
-                                return child;
+                    if (fnames instanceof String) {
+                        FileObject match = findMatchingChild((String)fnames, folders, caseSensitive);
+                        if (match != null) {
+                            return match;
+                        }
+                    } else {
+                        for (String candidate : (List<String>)fnames) {
+                            FileObject match = findMatchingChild(candidate, folders, caseSensitive);
+                            if (match != null) {
+                                return match;
                             }
                         }
                     }
@@ -529,11 +535,23 @@ public class SourceUtils {
         return null;        
     }
     
+    private static FileObject findMatchingChild(String sourceFileName, Collection<FileObject> folders, boolean caseSensitive) {
+        final Match matchSet = caseSensitive ? new CaseSensitiveMatch(sourceFileName) : new CaseInsensitiveMatch(sourceFileName);
+        for (FileObject folder : folders) {
+            for (FileObject child : folder.getChildren()) {
+                if (matchSet.apply(child)) {
+                    return child;
+                }
+            }
+        }
+        return null;
+    }
+    
     @NonNull
     private static List<Pair<FileObject, ClassPath>> findAllResources(
             @NonNull final String resourceName,
             @NonNull final ClassPath[] cps) {
-        final List<Pair<FileObject,ClassPath>> result = new ArrayList<Pair<FileObject, ClassPath>>();
+        final List<Pair<FileObject,ClassPath>> result = new ArrayList<>();
         for (ClassPath cp : cps) {
             for (FileObject fo : cp.findAllResources(resourceName)) {
                 result.add(Pair.<FileObject,ClassPath>of(fo, cp));
@@ -546,7 +564,7 @@ public class SourceUtils {
         final ClassIndexManager cim = ClassIndexManager.getDefault();
         try {
             for (FileObject fo : fos) {
-                ClassIndexImpl ci = cim.getUsagesQuery(fo.getURL(), true);
+                ClassIndexImpl ci = cim.getUsagesQuery(fo.toURL(), true);
                 if (ci != null) {
                     String sourceName = ci.getSourceName(binaryName);
                     if (sourceName != null) {
@@ -648,6 +666,7 @@ public class SourceUtils {
                     // no-op
                 }
 
+                @Override
                 public ClasspathInfo getClasspathInfo() {
                     return cpinfo;
                 }
@@ -722,12 +741,12 @@ public class SourceUtils {
             throw new IllegalArgumentException ();
         }
         try {
-            final LinkedHashSet<ElementHandle<TypeElement>> result = new LinkedHashSet<ElementHandle<TypeElement>> ();
+            final LinkedHashSet<ElementHandle<TypeElement>> result = new LinkedHashSet<> ();
             js.runUserActionTask(new Task<CompilationController>() {            
                 @Override
                 public void run(final CompilationController control) throws Exception {
                     if (control.toPhase(JavaSource.Phase.ELEMENTS_RESOLVED).compareTo (JavaSource.Phase.ELEMENTS_RESOLVED)>=0) {
-                        final List<TypeElement>  types = new ArrayList<TypeElement>();
+                        final List<TypeElement>  types = new ArrayList<>();
                         final ElementScanner6<Void,Void> visitor = new ElementScanner6<Void, Void>() {
                             @Override
                             public Void visitType(TypeElement e, Void p) {
@@ -803,11 +822,11 @@ public class SourceUtils {
                             }
                         }
                     } catch (URISyntaxException e) {
-                        LOG.info("Ignoring fast check for file: " + mainClass.toString() + " due to: " + e.getMessage()); //NOI18N
+                        LOG.log(Level.INFO, "Ignoring fast check for file: {0} due to: {1}", new Object[]{mainClass.toString(), e.getMessage()}); //NOI18N
                     }
                 }
             } catch (URISyntaxException e) {
-                LOG.info("Ignoring fast check for root: " + entry.getURL().toString() + " due to: " + e.getMessage()); //NOI18N
+                LOG.log(Level.INFO, "Ignoring fast check for root: {0} due to: {1}", new Object[]{entry.getURL().toString(), e.getMessage()}); //NOI18N
             }
         }
         
@@ -818,6 +837,7 @@ public class SourceUtils {
             try {
                 js.runUserActionTask(new Task<CompilationController>() {
 
+                    @Override
                     public void run(CompilationController control) throws Exception {
                         final JavacElements elms = (JavacElements)control.getElements();
                         TypeElement type = elms.getTypeElementByBinaryName(qualifiedName);
@@ -883,7 +903,7 @@ public class SourceUtils {
      * Currently this method is not optimized and may be slow
      */
     public static Collection<ElementHandle<TypeElement>> getMainClasses (final FileObject[] sourceRoots) {
-        final List<ElementHandle<TypeElement>> result = new LinkedList<ElementHandle<TypeElement>> ();
+        final List<ElementHandle<TypeElement>> result = new LinkedList<> ();
         for (final FileObject root : sourceRoots) {
             try {               
                 final File rootFile = FileUtil.toFile(root);
@@ -893,10 +913,11 @@ public class SourceUtils {
                 ClasspathInfo cpInfo = ClasspathInfo.create(bootPath, compilePath, srcPath);
                 JavaSource js = JavaSource.create(cpInfo);
                 js.runUserActionTask(new Task<CompilationController>() {
+                    @Override
                     public void run(CompilationController control) throws Exception {
-                        final URL rootURL = root.getURL();
+                        final URL rootURL = root.toURL();
                         Iterable<? extends URL> mainClasses = ExecutableFilesIndex.DEFAULT.getMainClasses(rootURL);                        
-                        List<ElementHandle<TypeElement>> classes = new LinkedList<ElementHandle<TypeElement>>();
+                        List<ElementHandle<TypeElement>> classes = new LinkedList<>();
                         for (URL mainClass : mainClasses) {
                             File mainFo = Utilities.toFile(URI.create(mainClass.toExternalForm()));
                             if (mainFo.exists()) {
@@ -947,9 +968,27 @@ public class SourceUtils {
         return ! new File ("a").equals (new File ("A"));    //NOI18N
     }
     
-    private static String getSourceFileName (String classFileName) {
-        int index = classFileName.indexOf('$'); //NOI18N
-        return index == -1 ? classFileName : classFileName.substring(0,index);
+    /**
+     * Returns candidate filenames given a classname. The return value is either 
+     * a String (top-level class, no $) or List&lt;String> as the JLS permits $ in
+     * class names. 
+     */
+    private static Object getSourceFileNames (String classFileName) {
+        int max = classFileName.length() - 1;
+        int index = classFileName.indexOf('$');
+        if (index == -1) {
+            return classFileName;
+        }
+        List<String> ll = new ArrayList<String>(3);
+        do {
+            ll.add(classFileName.substring(0, index));
+            if (index >= max) {
+                break;
+            }
+            index = classFileName.indexOf('$', index + 1);
+        } while (index >= 0);
+        ll.add(classFileName);
+        return ll;
     }
         
     /**
@@ -1129,7 +1168,7 @@ public class SourceUtils {
     /**
      * Vowels in various indo-european-based languages
      */
-    private static char[] VOWELS = new char[] {
+    private static final char[] VOWELS = new char[] {
     //IMPORTANT:  This array is sorted.  If you add to it,
     //add in the correct place or Arrays.binarySearch will break on it
     '\u0061', '\u0065', '\u0069', '\u006f', '\u0075', '\u0079', '\u00e9', '\u00ea',  //NOI18N
@@ -1190,7 +1229,7 @@ public class SourceUtils {
     @NonNull
     private static Set<URL> mapToURLs(
         @NonNull final Collection<? extends FileObject> fos) {
-        final Set<URL> res = new HashSet<URL>(fos.size());
+        final Set<URL> res = new HashSet<>(fos.size());
         for (FileObject fo : fos) {
             res.add(fo.toURL());
         }

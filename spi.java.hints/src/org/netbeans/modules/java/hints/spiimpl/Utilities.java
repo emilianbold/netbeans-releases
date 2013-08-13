@@ -75,6 +75,7 @@ import com.sun.tools.javac.code.Symtab;
 import com.sun.tools.javac.code.Type;
 import com.sun.tools.javac.comp.Attr;
 import com.sun.tools.javac.comp.AttrContext;
+import com.sun.tools.javac.comp.Enter;
 import com.sun.tools.javac.comp.Env;
 import com.sun.tools.javac.comp.Todo;
 import com.sun.tools.javac.main.JavaCompiler;
@@ -86,6 +87,7 @@ import com.sun.tools.javac.parser.Scanner;
 import com.sun.tools.javac.parser.ScannerFactory;
 import com.sun.tools.javac.parser.Tokens.Token;
 import com.sun.tools.javac.parser.Tokens.TokenKind;
+import com.sun.tools.javac.tree.EndPosTable;
 import com.sun.tools.javac.tree.JCTree;
 import com.sun.tools.javac.tree.JCTree.JCCase;
 import com.sun.tools.javac.tree.JCTree.JCCatch;
@@ -513,7 +515,7 @@ public class Utilities {
 
         if (errors != null) {
             for (Diagnostic<? extends JavaFileObject> d : patternTreeErrors) {
-                errors.add(new OffsetDiagnostic<JavaFileObject>(d, -offset));
+                errors.add(new OffsetDiagnostic<JavaFileObject>(d, sourcePositions[0], -offset));
             }
         }
 
@@ -628,6 +630,8 @@ public class Utilities {
         };
         NBResolve resolve = NBResolve.instance(jti.getContext());
         resolve.disableAccessibilityChecks();
+        Enter enter = Enter.instance(jti.getContext());
+        enter.shadowTypeEnvs(true);
         try {
             Attr attr = Attr.instance(jti.getContext());
             Env<AttrContext> env = ((JavacScope) scope).getEnv();
@@ -638,6 +642,7 @@ public class Utilities {
             log.useSource(prev);
             log.popDiagnosticHandler(discardHandler);
             resolve.restoreAccessbilityChecks();
+            enter.shadowTypeEnvs(false);
         }
     }
 
@@ -1490,10 +1495,12 @@ public class Utilities {
 
     private static final class OffsetDiagnostic<S> implements Diagnostic<S> {
         private final Diagnostic<? extends S> delegate;
+        private final SourcePositions sp;
         private final long offset;
 
-        public OffsetDiagnostic(Diagnostic<? extends S> delegate, long offset) {
+        public OffsetDiagnostic(Diagnostic<? extends S> delegate, SourcePositions sp, long offset) {
             this.delegate = delegate;
+            this.sp = sp;
             this.offset = offset;
         }
 
@@ -1514,6 +1521,18 @@ public class Utilities {
         }
 
         public long getEndPosition() {
+            if (delegate instanceof JCDiagnostic) {
+                JCDiagnostic dImpl = (JCDiagnostic) delegate;
+                
+                return dImpl.getDiagnosticPosition().getEndPosition(new EndPosTable() {
+                    @Override public int getEndPos(JCTree tree) {
+                        return (int) sp.getEndPosition(null, tree);
+                    }
+                    @Override public int replaceTree(JCTree oldtree, JCTree newtree) {
+                        throw new UnsupportedOperationException("Not supported yet.");
+                    }
+                }) + offset;
+            }
             return delegate.getEndPosition() + offset;
         }
 

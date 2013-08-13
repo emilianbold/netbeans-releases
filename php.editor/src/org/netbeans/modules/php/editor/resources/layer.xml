@@ -39,7 +39,7 @@
                     <attr name="instanceOf" stringvalue="org.netbeans.api.lexer.Language"/>
                 </file>
                 <folder name="BracesMatchers">
-                    <file name="org-netbeans-modules-php-editor-indent-PHPBracesMatcherFactory.instance">
+                    <file name="org-netbeans-modules-php-editor-PHPBracesMatcherFactory.instance">
                         <attr name="position" intvalue="0"/>
                     </file>
                 </folder>
@@ -119,7 +119,7 @@
                 </folder>
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-php-editor-FSCompletion.instance"/>
+                    <file name="org-netbeans-modules-php-editor-completion-FSCompletion.instance"/>
                     <file name="org-netbeans-modules-php-editor-sql-PHPSQLCompletion.instance"/>
                 </folder>
                 <folder name="FoldManager">
@@ -361,11 +361,14 @@
                         <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$CookieSuperglobalHint.instance">
                             <attr name="position" intvalue="300" />
                         </file>
-                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$ServerSuperglobalHint.instance">
+                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$RequestSuperglobalHint.instance">
                             <attr name="position" intvalue="400" />
                         </file>
-                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$EnvSuperglobalHint.instance">
+                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$ServerSuperglobalHint.instance">
                             <attr name="position" intvalue="500" />
+                        </file>
+                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$EnvSuperglobalHint.instance">
+                            <attr name="position" intvalue="600" />
                         </file>
                     </folder>
                     <folder name="toomanylines">

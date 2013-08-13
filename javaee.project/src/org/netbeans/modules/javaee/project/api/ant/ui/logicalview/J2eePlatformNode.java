@@ -77,6 +77,7 @@ import org.netbeans.spi.java.project.support.ui.PackageView;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -179,26 +180,48 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         //The caller holds ProjectManager.mutex() read lock
         
         if (platformPropName.equals(evt.getPropertyName())) {
-            SwingUtilities.invokeLater(new Runnable() {
-                public void run() {
-                    refresh();
-                }
-            });
+            refresh();
         }
     }
     
     private void refresh() {
-        if (platformCache != null)
-            platformCache.removePropertyChangeListener(weakPlatformListener);
+        if (SwingUtilities.isEventDispatchThread()) {
+            RequestProcessor.getDefault().post(new Runnable() {
 
-        platformCache = null;
+                @Override
+                public void run() {
+                    refresh();
+                }
+            });
+            return;
+        }
 
-        this.fireNameChange(null, null);
-        this.fireDisplayNameChange(null, null);
-        this.fireIconChange();
-        
-        // The caller may hold ProjectManager.mutex() read lock (i.e., the propertyChange() method)
-        postAddNotify();
+        final J2eePlatform originalPlatform;
+        final J2eePlatform platform;
+        synchronized (this) {
+            originalPlatform = platformCache;
+            if (platformCache != null) {
+                platformCache.removePropertyChangeListener(weakPlatformListener);
+                platformCache = null;
+            }
+            platform = getPlatform();
+        }
+
+        if (originalPlatform != platform) {
+            SwingUtilities.invokeLater(new Runnable() {
+
+                @Override
+                public void run() {
+                    J2eePlatformNode.this.fireNameChange(null, null);
+                    J2eePlatformNode.this.fireDisplayNameChange(originalPlatform != null ? originalPlatform.getDisplayName() : null,
+                            platform != null ? platform.getDisplayName() : null);
+                    J2eePlatformNode.this.fireIconChange();
+
+                    // The caller may hold ProjectManager.mutex() read lock (i.e., the propertyChange() method)
+                    postAddNotify();
+                }
+            });
+        }
     }
     
     public void instanceAdded(String serverInstanceID) {
@@ -220,7 +243,7 @@ class J2eePlatformNode extends AbstractNode implements PropertyChangeListener, I
         });
     }
 
-    private J2eePlatform getPlatform () {
+    private synchronized J2eePlatform getPlatform () {
         if (platformCache == null) {
             String j2eePlatformInstanceId = this.evaluator.getProperty(this.platformPropName);
             if (j2eePlatformInstanceId != null) {

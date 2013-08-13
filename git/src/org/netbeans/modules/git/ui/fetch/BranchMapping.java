@@ -44,6 +44,7 @@ package org.netbeans.modules.git.ui.fetch;
 import java.text.MessageFormat;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitRemoteConfig;
+import org.netbeans.modules.git.options.AnnotationColorProvider;
 import org.netbeans.modules.git.ui.selectors.ItemSelector;
 import org.netbeans.modules.git.ui.selectors.ItemSelector.Item;
 import org.netbeans.modules.git.utils.GitUtils;
@@ -62,6 +63,9 @@ public class BranchMapping extends ItemSelector.Item {
     private static final String BRANCH_MAPPING_LABEL = "{0} -> {1}/{0} [{2}]"; //NOI18N
     private static final String BRANCH_DELETE_MAPPING_LABEL = "{0} [{1}]"; //NOI18N
     private static final String BRANCH_MAPPING_LABEL_UPTODATE = "{0} -> {1}/{0}"; //NOI18N
+    private static final String COLOR_NEW = GitUtils.getColorString(AnnotationColorProvider.getInstance().ADDED_FILE.getActualColor());
+    private static final String COLOR_MODIFIED = GitUtils.getColorString(AnnotationColorProvider.getInstance().MODIFIED_FILE.getActualColor());
+    private static final String COLOR_REMOVED = GitUtils.getColorString(AnnotationColorProvider.getInstance().REMOVED_FILE.getActualColor());
 
     public BranchMapping (String remoteBranchName, String remoteBranchId, GitBranch localBranch, GitRemoteConfig remote, boolean preselected) {
         super(preselected);
@@ -70,7 +74,7 @@ public class BranchMapping extends ItemSelector.Item {
         this.remote = remote;
         if (isDeletion()) {
             // to remove
-            label = MessageFormat.format(BRANCH_DELETE_MAPPING_LABEL, localBranch.getName(), "<font color=\"#999999\">R</font>");
+            label = MessageFormat.format(BRANCH_DELETE_MAPPING_LABEL, localBranch.getName(), "<font color=\"" + COLOR_REMOVED + "\">R</font>");
 
             tooltip = NbBundle.getMessage(
                 BranchMapping.class, 
@@ -81,7 +85,7 @@ public class BranchMapping extends ItemSelector.Item {
                 }); //NOI18N
         } else if (localBranch == null) {
             // added
-            label = MessageFormat.format(BRANCH_MAPPING_LABEL, remoteBranchName, remote.getRemoteName(), "<font color=\"#00b400\">A</font>");
+            label = MessageFormat.format(BRANCH_MAPPING_LABEL, remoteBranchName, remote.getRemoteName(), "<font color=\"" + COLOR_NEW + "\">A</font>");
 
             tooltip = NbBundle.getMessage(
                 BranchMapping.class, 
@@ -99,7 +103,7 @@ public class BranchMapping extends ItemSelector.Item {
                 "LBL_FetchBranchesPanel.BranchMapping.Mode.uptodate.description", localBranch.getName()); //NOI18N
         } else {
             // modified
-            label = MessageFormat.format(BRANCH_MAPPING_LABEL, remoteBranchName, remote.getRemoteName(), "<font color=\"#0000FF\">U</font>"); //NOI18N                 
+            label = MessageFormat.format(BRANCH_MAPPING_LABEL, remoteBranchName, remote.getRemoteName(), "<font color=\"" + COLOR_MODIFIED + "\">U</font>"); //NOI18N                 
 
             tooltip = NbBundle.getMessage(
                 BranchMapping.class, 

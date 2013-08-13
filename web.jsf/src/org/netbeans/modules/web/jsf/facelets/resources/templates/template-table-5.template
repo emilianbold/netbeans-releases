@@ -6,8 +6,8 @@
     
     <h:head>
         <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-        <link href="__DEFAULT_CSS_PATH__" rel="stylesheet" type="text/css" />
-        <link href="__LAYOUT_CSS_PATH__" rel="stylesheet" type="text/css" />
+        <h:outputStylesheet name="__DEFAULT_CSS_PATH__"/>
+        <h:outputStylesheet name="__LAYOUT_CSS_PATH__"/>
         <title>Facelets Template</title>
     </h:head>
     

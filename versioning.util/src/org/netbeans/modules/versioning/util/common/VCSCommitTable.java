@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.versioning.util.common;
 
+import java.awt.Color;
 import java.io.File;
 import org.netbeans.modules.versioning.util.FilePathCellRenderer;
 import org.netbeans.modules.versioning.util.SortedTable;
@@ -65,6 +66,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.util.*;
+import javax.swing.plaf.UIResource;
 import javax.swing.table.TableCellRenderer;
 import org.openide.awt.Mnemonics;
 
@@ -491,8 +493,10 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
     }
 
     private class CheckboxCellRenderer extends JCheckBox implements TableCellRenderer {
+        private final DefaultTableCellRenderer renderer;
 
         public CheckboxCellRenderer() {
+            renderer = new DefaultTableCellRenderer();
             setToolTipText(modifier.getMessage(VCSCommitPanelModifier.BundleMessage.FILE_TABLE_HEADER_COMMIT_DESC));
         }
 
@@ -500,7 +504,9 @@ public class VCSCommitTable<F extends VCSFileNode> implements AncestorListener, 
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             setSelected(value == null ? false : (Boolean) value);
             setEnabled(editable);
-            setBackground(hasFocus || isSelected ? table.getSelectionBackground() : table.getBackground());
+            Color c = renderer.getTableCellRendererComponent(table, "value", isSelected, hasFocus, row, column).getBackground();
+            setBackground(new Color(c.getRGB()));
+            setOpaque(true);
             setHorizontalAlignment(SwingConstants.LEFT);
             return this;
         }

@@ -65,6 +65,7 @@ import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.Timer;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
@@ -94,7 +95,7 @@ import org.openide.util.RequestProcessor;
 public final class AddModulePanel extends JPanel {
     
     private static final String FILTER_DESCRIPTION = getMessage("LBL_FilterDescription");
-    private static final RequestProcessor RP = new RequestProcessor(AddModulePanel.class.getName(), 1, true);
+    private static final RequestProcessor RP = new RequestProcessor(AddModulePanel.class.getName(), 2, true);
     private static Rectangle lastSize;
     
     private CustomizerComponentFactory.DependencyListModel universeModules;
@@ -171,7 +172,7 @@ public final class AddModulePanel extends JPanel {
                 final ModuleDependency[] deps = getSelectedDependencies();
                 if (deps.length == 1) {
                     final NbPlatform platform = props.getActivePlatform();
-                    ModuleProperties.RP.post(new Runnable() {
+                    RP.post(new Runnable() {
                         @Override
                         public void run() {
                             SwingUtilities.invokeLater(new Runnable() {
@@ -301,10 +302,11 @@ public final class AddModulePanel extends JPanel {
                 if (filterText.length() > 0) {
                     String filterTextLC = matchCase?filterText:filterText.toLowerCase(Locale.US);
                     Style match = doc.addStyle(null, null);
-                    match.addAttribute(StyleConstants.Background, new Color(246, 248, 139));
+                    match.addAttribute(StyleConstants.Background, UIManager.get("selection.highlight")!=null?
+                            UIManager.get("selection.highlight"):new Color(246, 248, 139));
                     boolean isEven = false;
                     Style even = doc.addStyle(null, null);
-                    even.addAttribute(StyleConstants.Background, new Color(235, 235, 235));
+                    even.addAttribute(StyleConstants.Background, UIManager.get("Panel.background"));
                     if (filterer == null) {
                         return; // #101776
                     }

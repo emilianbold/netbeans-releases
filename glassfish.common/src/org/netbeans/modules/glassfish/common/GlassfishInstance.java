@@ -62,7 +62,6 @@ import org.netbeans.api.keyring.Keyring;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.nodes.Hk2InstanceNode;
 import org.netbeans.modules.glassfish.common.ui.GlassFishPropertiesCustomizer;
-import org.netbeans.modules.glassfish.common.ui.WarnPanel;
 import org.netbeans.modules.glassfish.common.utils.Util;
 import org.netbeans.modules.glassfish.spi.*;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
@@ -83,8 +82,11 @@ import org.openide.util.lookup.ProxyLookup;
 import org.openide.windows.InputOutput;
 
 /**
- *
- * @author Peter Williams
+ * GlassFish server instance.
+ * <p/>
+ * Represents any GlassFish server registered in NetBeans.
+ * <p/>
+ * @author Peter Williams, Vince Kraemer, Tomas Kraus
  */
 public class GlassfishInstance implements ServerInstanceImplementation,
         Lookup.Provider, LookupListener, GlassFishServer {
@@ -258,6 +260,9 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     public static final int DEFAULT_HTTP_PORT = 8080;
     public static final int DEFAULT_HTTPS_PORT = 8181;
     public static final int DEFAULT_ADMIN_PORT = 4848;
+    public static final int DEFAULT_DEBUG_PORT = 9009;
+    static final int LOWEST_USER_PORT
+            = org.openide.util.Utilities.isWindows() ? 1 : 1025;
     public static final String DEFAULT_DOMAINS_FOLDER = "domains"; //NOI18N
     public static final String DEFAULT_DOMAIN_NAME = "domain1"; // NOI18N
 
@@ -614,11 +619,6 @@ public class GlassfishInstance implements ServerInstanceImplementation,
             ip.put(INSTANCE_FO_ATTR, instanceFO.getName());
             fixImportedAttributes(ip, instanceFO);
             instance = create(ip,GlassfishInstanceProvider.getProvider(),false);
-            // Display warning popup message for GlassFish 3.1.2 which is known
-            // to have bug in WS.
-            if (instance.getVersion() == GlassFishVersion.GF_3_1_2) {
-                WarnPanel.gf312WSWarning(instance.getName());
-            }
         } else {
             LOGGER.log(Level.FINER,
                     "GlassFish folder {0} is not a valid install.",
@@ -1160,6 +1160,60 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     }
 
     /**
+     * Return server JVM mode as <code>String</code> value.
+     * <p/>
+     * @return Server JVM mode.
+     */
+    public String getJvmModeAsString() {
+        return properties.get(GlassfishModule.JVM_MODE);
+    }
+
+    /**
+     * Return server JVM mode.
+     * <p/>
+     * @return Server JVM mode.
+     */
+    public GlassFishJvmMode getJvmMode() {
+        return GlassFishJvmMode.toValue(
+                properties.get(GlassfishModule.JVM_MODE));
+    }
+
+    /**
+     * Return server debug port to be used to attach debugger.
+     * <p/>
+     * Value of <code>GlassfishModule.USE_SHARED_MEM_ATTR</code> is changed
+     * to false.
+     * <p/>
+     * @return Server debug port.
+     */
+    public int getDebugPort() {
+        int debugPort;
+        try {
+            debugPort = Integer.parseInt(
+                    getProperty(GlassfishModule.DEBUG_PORT));
+            if (debugPort < LOWEST_USER_PORT || debugPort > 65535) {
+                putProperty(GlassfishModule.DEBUG_PORT,
+                        Integer.toString(DEFAULT_DEBUG_PORT));
+                debugPort = DEFAULT_DEBUG_PORT;
+                LOGGER.log(Level.INFO, "Converted debug port to {0} for {1}",
+                        new String[] {Integer.toString(DEFAULT_DEBUG_PORT),
+                            getDisplayName()});
+            }
+        } catch (NumberFormatException nfe) {
+            putProperty(GlassfishModule.DEBUG_PORT,
+                    Integer.toString(DEFAULT_DEBUG_PORT));
+            debugPort = DEFAULT_DEBUG_PORT;
+            LOGGER.log(Level.INFO, "Converted debug port to {0} for {1}",
+                    new String[]{Integer.toString(DEFAULT_DEBUG_PORT),
+                getDisplayName()});
+        } finally {
+            putProperty(GlassfishModule.USE_SHARED_MEM_ATTR,
+                    Boolean.toString(false));
+        }
+        return debugPort;
+    }
+
+    /**
      * Check if local running server started from IDE is still running.
      * <p/>
      * @returns Value of <code>true</code> when process information is stored
@@ -1210,8 +1264,12 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         }
         return javaPlatform;
     }
-    
 
+    /**
+     * Get domains root folder with write access.
+     * <p/>
+     * @return Domains root folder with write access.
+     */
     public synchronized String getDomainsRoot() {
         String retVal = getDomainsFolder();
         if (null == retVal) {
@@ -1220,7 +1278,10 @@ public class GlassfishInstance implements ServerInstanceImplementation,
         File candidate = new File(retVal);
         if (candidate.exists() && !Utils.canWrite(candidate)) {
             // we need to do some surgury here...
-            String foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3");
+            String domainsFolder = org.netbeans.modules.glassfish.common.utils
+                    .ServerUtils.getDomainsFolder(this);
+            String foldername = FileUtil.findFreeFolderName(
+                    FileUtil.getConfigRoot(), domainsFolder);
             FileObject destdir = null;
             try {
                 destdir = FileUtil.createFolder(FileUtil.getConfigRoot(),foldername);
@@ -1237,7 +1298,8 @@ public class GlassfishInstance implements ServerInstanceImplementation,
                     setDomainsFolder(retVal);
                 } catch (IOException ex) {
                     // need to try again... since the domain is probably unreadable.
-                    foldername = FileUtil.findFreeFolderName(FileUtil.getConfigRoot(), "GF3"); // NOI18N
+                    foldername = FileUtil.findFreeFolderName(
+                            FileUtil.getConfigRoot(), domainsFolder); // NOI18N
                     try {
                         destdir = FileUtil.createFolder(FileUtil.getConfigRoot(), foldername);
                     } catch (IOException ioe) {
@@ -1627,19 +1689,15 @@ public class GlassfishInstance implements ServerInstanceImplementation,
     /**
      * Generate hash code for GlassFish instance data object.
      * <p/>
-     * Hash code is based on server address, port, domain name and domains root
-     * directory.
+     * Hash code is based on name attribute
+     * (<code>GlassfishModule.DISPLAY_NAME_ATTR</code> property) which
+     * is unique.
      * <p/>
      * @return Hash code for GlassFish instance data object.
      */
     @Override
     public int hashCode() {
-        StringBuilder sb = new StringBuilder(
-                getDeployerUri().replace("127.0.0.1", "localhost"));
-        sb.append(getHttpPort());
-        sb.append(getDomainsRoot());
-        sb.append(getDomainName());
-        return sb.toString().hashCode();
+        return getName().hashCode();
     }
 
 }

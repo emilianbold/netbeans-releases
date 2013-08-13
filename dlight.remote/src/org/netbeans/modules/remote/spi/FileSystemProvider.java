@@ -45,6 +45,7 @@ package org.netbeans.modules.remote.spi;
 import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -269,7 +270,18 @@ public final class FileSystemProvider {
         noProvidersWarning(file);
         return FileUtil.toFileObject(file);
     }
-    
+
+    public static FileSystem getFileSystem(URI uri) {
+        Parameters.notNull("file", uri);
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(uri)) {
+                return provider.getFileSystem(uri);
+            }
+        }
+        noProvidersWarning(uri);
+        return null;
+    }
+
     public static FileObject urlToFileObject(String url) {
         for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
             if (provider.isMine(url)) {
@@ -305,6 +317,17 @@ public final class FileSystemProvider {
             Exceptions.printStackTrace(ex);
             return null;
         }
+    }
+
+    public static void refresh(FileObject fileObject, boolean recursive) {
+        Parameters.notNull("fileObject", fileObject); //NOI18N
+        for (FileSystemProviderImplementation provider : ALL_PROVIDERS) {
+            if (provider.isMine(fileObject)) {
+                provider.refresh(fileObject, recursive);
+                return;
+            }
+        }
+        noProvidersWarning(fileObject);
     }
 
     public static void scheduleRefresh(FileObject fileObject) {

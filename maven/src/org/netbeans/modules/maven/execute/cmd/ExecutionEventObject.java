@@ -220,7 +220,9 @@ public class ExecutionEventObject {
         public void finishFold() {
             if (foldHandle != null) {
                 finishInnerOutputFold();
-                foldHandle.finish();
+                if (!foldHandle.isFinished()) {
+                    foldHandle.finish();
+                }
 //                foldHandle = null;
             }
         }
@@ -231,7 +233,7 @@ public class ExecutionEventObject {
          * it will be finished before starting new fold.
          */
         public void startInnerOutputFold(InputOutput io) {
-            if (innerOutputFoldHandle != null) {
+            if (innerOutputFoldHandle != null && !innerOutputFoldHandle.isFinished()) {
                 innerOutputFoldHandle.finish();
             }
             if (foldHandle != null) {
@@ -246,7 +248,9 @@ public class ExecutionEventObject {
          */
         public void finishInnerOutputFold() {
             if (innerOutputFoldHandle != null) {
-                innerOutputFoldHandle.finish();
+                if (!innerOutputFoldHandle.isFinished()) {
+                    innerOutputFoldHandle.finish();
+                }
                 innerOutputFoldHandle = null;
             }
         }

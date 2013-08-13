@@ -54,6 +54,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Action;
 import javax.swing.Icon;
+import javax.swing.ImageIcon;
 import javax.swing.JComponent;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -70,7 +71,7 @@ import org.openide.util.actions.Presenter;
  * @author mkleint
  */
 class DynaMenuModel {
-    private static final Icon BLANK_ICON = ImageUtilities.loadImageIcon("org/openide/loaders/empty.gif", false); // NOI18N
+    private static final Icon BLANK_ICON = new ImageIcon(ImageUtilities.loadImage("org/openide/loaders/empty.gif")); // NOI18N
     
     private List<JComponent> menuItems;
     private HashMap<DynamicMenuContent, JComponent[]> actionToMenuMap;

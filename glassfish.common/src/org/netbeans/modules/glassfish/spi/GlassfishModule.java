@@ -50,6 +50,7 @@ import org.glassfish.tools.ide.admin.ResultString;
 import org.glassfish.tools.ide.admin.TaskState;
 import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.glassfish.tools.ide.data.GlassFishServer;
+import org.netbeans.modules.glassfish.common.GlassFishJvmMode;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
 
 
@@ -88,9 +89,9 @@ public interface GlassfishModule {
     public static final String DEBUG_PORT = "debugPort"; // NOI18N
     public static final String DEBUG_MEM = "debugMem"; // NOI18N
     public static final String JVM_MODE = "jvmMode"; // NOI18N
-    public static final String NORMAL_MODE = "normalMode"; // NOI18N
-    public static final String DEBUG_MODE = "debugMode"; // NOI18N
-    public static final String PROFILE_MODE = "profileMode"; // NOI18N
+    public static final String NORMAL_MODE = GlassFishJvmMode.NORMAL.toString();
+    public static final String DEBUG_MODE = GlassFishJvmMode.DEBUG.toString();
+    public static final String PROFILE_MODE = GlassFishJvmMode.PROFILE.toString();
     
     public static final String COMET_FLAG = "v3.grizzly.cometSupport"; // NOI18N
     

@@ -57,12 +57,12 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.jsf.JSFConfigDataObject;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Converter;
 import org.netbeans.modules.web.jsf.api.editor.JSFEditorUtilities;
 import org.netbeans.modules.web.jsf.api.facesmodel.*;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
@@ -429,7 +429,7 @@ public class Occurrences {
              * @author ads
              * Migrated code .
              */
-            MetadataModel<JsfModel> model = JsfModelFactory.getModel( project );
+            MetadataModel<JsfModel> model = JSFUtils.getModel(project);
             if ( model == null ){
                 return result;
             }
@@ -515,7 +515,7 @@ public class Occurrences {
             /**
              * @author ads
              */
-            MetadataModel<JsfModel> model = JsfModelFactory.getModel( project );
+            MetadataModel<JsfModel> model = JSFUtils.getModel(project);
             if ( model == null ){
                 return result;
             }

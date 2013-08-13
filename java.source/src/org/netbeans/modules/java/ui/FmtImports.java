@@ -53,12 +53,10 @@ import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.TryTree;
-import java.awt.Rectangle;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
-import javax.swing.JEditorPane;
 import javax.swing.JPanel;
 import javax.swing.JTable;
 import javax.swing.event.ListSelectionEvent;
@@ -68,26 +66,15 @@ import javax.swing.table.DefaultTableModel;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
-import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.JavaSource.Phase;
-import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreeMaker;
 import org.netbeans.api.java.source.WorkingCopy;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.modules.editor.indent.api.Reformat;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.openide.filesystems.FileObject;
-import org.openide.loaders.DataObject;
 import org.openide.util.NbBundle;
 import static org.netbeans.modules.java.ui.FmtOptions.*;
 import static org.netbeans.modules.java.ui.FmtOptions.CategorySupport.OPTION_ID;
 import org.netbeans.modules.options.editor.spi.PreferencesCustomizer;
-import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.openide.cookies.SaveCookie;
-import org.openide.filesystems.FileUtil;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -625,10 +612,7 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
         return model;
     }
 
-    private static final class ImportsCategorySupport extends CategorySupport {
-        
-        private Source source = null;
-
+    private static final class ImportsCategorySupport extends DocumentCategorySupport {
         private ImportsCategorySupport(Preferences preferences, JPanel panel) {
             super(preferences, "imports", panel, NbBundle.getMessage(FmtImports.class, "SAMPLE_Imports")); //NOI18N
         }
@@ -664,99 +648,44 @@ public class FmtImports extends javax.swing.JPanel implements Runnable, ListSele
             else
                 node.put(optionID, value);            
         }
-
-        @Override
-        public void refreshPreview() {
-            final JEditorPane jep = (JEditorPane) getPreviewComponent();
-            try {
-                Class.forName(CodeStyle.class.getName(), true, CodeStyle.class.getClassLoader());
-            } catch (ClassNotFoundException cnfe) {
-                // ignore
-            }
-
-            final CodeStyle codeStyle = codeStyleProducer.create(previewPrefs);
-            jep.setIgnoreRepaint(true);
-            try {
-                if (source == null) {
-                    FileObject fo = FileUtil.createMemoryFileSystem().getRoot().createData("org.netbeans.samples.ClassA", "java"); //NOI18N
-                    source = Source.create(fo);
-                }
-                final Document doc = source.getDocument(true);
-                if (doc.getLength() > 0) {
-                    doc.remove(0, doc.getLength());
-                }
-                doc.insertString(0, previewText, null);
-                doc.putProperty(CodeStyle.class, codeStyle);
-                jep.setDocument(doc);
-                ModificationResult result = ModificationResult.runModificationTask(Collections.singleton(source), new UserTask() {
-
-                    @Override
-                    public void run(ResultIterator resultIterator) throws Exception {
-                        WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
-                        copy.toPhase(Phase.RESOLVED);
-                        CompilationUnitTree cut = copy.getCompilationUnit();
-                        ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
-                        MethodTree mt = (MethodTree) ct.getMembers().get(1);
-                        TreeMaker treeMaker = copy.getTreeMaker();
-                        BlockTree bt = mt.getBody();
-                        StatementTree stmt = treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "is", treeMaker.QualIdent("java.io.InputStream"), treeMaker.Literal(null)); //NOI18N
-                        bt = treeMaker.addBlockStatement(bt, stmt);
-                        BlockTree tryBlock = treeMaker.Block(Collections.<StatementTree>emptyList(), false);
-                        ExpressionTree et = treeMaker.NewClass(null, Collections.<ExpressionTree>emptyList(), treeMaker.QualIdent("java.io.File"), Collections.singletonList(treeMaker.Literal("test.txt")), null); //NOI18N
-                        stmt = treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "f", treeMaker.QualIdent("java.io.File"), et); //NOI18N
-                        tryBlock = treeMaker.addBlockStatement(tryBlock, stmt);
-                        et = treeMaker.NewClass(null, Collections.<ExpressionTree>emptyList(), treeMaker.QualIdent("java.io.FileInputStream"), Collections.singletonList(treeMaker.Identifier("f")), null); //NOI18N
-                        et = treeMaker.Assignment(treeMaker.Identifier("is"), et); //NOI18N
-                        tryBlock = treeMaker.addBlockStatement(tryBlock, treeMaker.ExpressionStatement(et));
-                        et = treeMaker.MemberSelect(treeMaker.Identifier("is"), "read"); //NOI18N
-                        et = treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), et, Collections.<ExpressionTree>emptyList());
-                        stmt = treeMaker.Try(treeMaker.Block(Collections.singletonList(treeMaker.ExpressionStatement(et)), false), Collections.<CatchTree>emptyList(), null);
-                        et = treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), treeMaker.MemberSelect(treeMaker.QualIdent("java.util.logging.Logger"), "getLogger"), Collections.<ExpressionTree>emptyList()); //NOI18N
-                        et = treeMaker.addMethodInvocationArgument((MethodInvocationTree) et, treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), treeMaker.MemberSelect(treeMaker.MemberSelect(treeMaker.QualIdent("org.netbeans.samples.ClassA"), "class"), "getName"), Collections.<ExpressionTree>emptyList())); //NOI18N
-                        et = treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), treeMaker.MemberSelect(et, "log"), Collections.<ExpressionTree>emptyList()); //NOI18N
-                        et = treeMaker.addMethodInvocationArgument((MethodInvocationTree) et, treeMaker.MemberSelect(treeMaker.QualIdent("java.util.logging.Logger"), "SEVERE")); //NOI18N
-                        et = treeMaker.addMethodInvocationArgument((MethodInvocationTree) et, treeMaker.Literal(null));
-                        et = treeMaker.addMethodInvocationArgument((MethodInvocationTree) et, treeMaker.Identifier("ex")); //NOI18N
-                        BlockTree catchBlock = treeMaker.Block(Collections.singletonList(treeMaker.ExpressionStatement(et)), false);
-                        stmt = treeMaker.addTryCatch((TryTree) stmt, treeMaker.Catch(treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", treeMaker.QualIdent("java.io.IOException"), null), catchBlock)); //NOI18N
-                        tryBlock = treeMaker.addBlockStatement(tryBlock, stmt);
-                        et = treeMaker.MemberSelect(treeMaker.Identifier("is"), "close"); //NOI18N
-                        et = treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), et, Collections.<ExpressionTree>emptyList());
-                        stmt = treeMaker.Try(treeMaker.Block(Collections.singletonList(treeMaker.ExpressionStatement(et)), false), Collections.<CatchTree>emptyList(), null);
-                        stmt = treeMaker.addTryCatch((TryTree) stmt, treeMaker.Catch(treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", treeMaker.QualIdent("java.io.IOException"), null), catchBlock)); //NOI18N
-                        stmt = treeMaker.Try(tryBlock, Collections.<CatchTree>emptyList(), treeMaker.Block(Collections.singletonList(stmt), false));
-                        stmt = treeMaker.addTryCatch((TryTree) stmt, treeMaker.Catch(treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", treeMaker.QualIdent("java.io.FileNotFoundException"), null), catchBlock)); //NOI18N
-                        bt = treeMaker.addBlockStatement(bt, stmt);
-                        copy.rewrite(mt.getBody(), bt);
-                    }
-                });
-                result.commit();
-                final Reformat reformat = Reformat.get(doc);
-                reformat.lock();
-                try {
-                    if (doc instanceof BaseDocument) {
-                        ((BaseDocument) doc).runAtomicAsUser(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    reformat.reformat(0, doc.getLength());
-                                } catch (BadLocationException ble) {}
-                            }
-                        });
-                    } else {
-                        reformat.reformat(0, doc.getLength());
-                    }
-                } finally {
-                    reformat.unlock();
-                }
-                DataObject dataObject = DataObject.find(source.getFileObject());
-                SaveCookie sc = dataObject.getLookup().lookup(SaveCookie.class);
-                if (sc != null)
-                    sc.save();
-            } catch (Exception ex) {}
-            jep.setIgnoreRepaint(false);
-            jep.scrollRectToVisible(new Rectangle(0, 0, 10, 10));
-            jep.repaint(100);
+        
+        protected void doModification(ResultIterator resultIterator) throws Exception {
+            WorkingCopy copy = WorkingCopy.get(resultIterator.getParserResult());
+            copy.toPhase(Phase.RESOLVED);
+            CompilationUnitTree cut = copy.getCompilationUnit();
+            ClassTree ct = (ClassTree) cut.getTypeDecls().get(0);
+            MethodTree mt = (MethodTree) ct.getMembers().get(1);
+            TreeMaker treeMaker = copy.getTreeMaker();
+            BlockTree bt = mt.getBody();
+            StatementTree stmt = treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "is", treeMaker.QualIdent("java.io.InputStream"), treeMaker.Literal(null)); //NOI18N
+            bt = treeMaker.addBlockStatement(bt, stmt);
+            BlockTree tryBlock = treeMaker.Block(Collections.<StatementTree>emptyList(), false);
+            ExpressionTree et = treeMaker.NewClass(null, Collections.<ExpressionTree>emptyList(), treeMaker.QualIdent("java.io.File"), Collections.singletonList(treeMaker.Literal("test.txt")), null); //NOI18N
+            stmt = treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "f", treeMaker.QualIdent("java.io.File"), et); //NOI18N
+            tryBlock = treeMaker.addBlockStatement(tryBlock, stmt);
+            et = treeMaker.NewClass(null, Collections.<ExpressionTree>emptyList(), treeMaker.QualIdent("java.io.FileInputStream"), Collections.singletonList(treeMaker.Identifier("f")), null); //NOI18N
+            et = treeMaker.Assignment(treeMaker.Identifier("is"), et); //NOI18N
+            tryBlock = treeMaker.addBlockStatement(tryBlock, treeMaker.ExpressionStatement(et));
+            et = treeMaker.MemberSelect(treeMaker.Identifier("is"), "read"); //NOI18N
+            et = treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), et, Collections.<ExpressionTree>emptyList());
+            stmt = treeMaker.Try(treeMaker.Block(Collections.singletonList(treeMaker.ExpressionStatement(et)), false), Collections.<CatchTree>emptyList(), null);
+            et = treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), treeMaker.MemberSelect(treeMaker.QualIdent("java.util.logging.Logger"), "getLogger"), Collections.<ExpressionTree>emptyList()); //NOI18N
+            et = treeMaker.addMethodInvocationArgument((MethodInvocationTree) et, treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), treeMaker.MemberSelect(treeMaker.MemberSelect(treeMaker.QualIdent("org.netbeans.samples.ClassA"), "class"), "getName"), Collections.<ExpressionTree>emptyList())); //NOI18N
+            et = treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), treeMaker.MemberSelect(et, "log"), Collections.<ExpressionTree>emptyList()); //NOI18N
+            et = treeMaker.addMethodInvocationArgument((MethodInvocationTree) et, treeMaker.MemberSelect(treeMaker.QualIdent("java.util.logging.Logger"), "SEVERE")); //NOI18N
+            et = treeMaker.addMethodInvocationArgument((MethodInvocationTree) et, treeMaker.Literal(null));
+            et = treeMaker.addMethodInvocationArgument((MethodInvocationTree) et, treeMaker.Identifier("ex")); //NOI18N
+            BlockTree catchBlock = treeMaker.Block(Collections.singletonList(treeMaker.ExpressionStatement(et)), false);
+            stmt = treeMaker.addTryCatch((TryTree) stmt, treeMaker.Catch(treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", treeMaker.QualIdent("java.io.IOException"), null), catchBlock)); //NOI18N
+            tryBlock = treeMaker.addBlockStatement(tryBlock, stmt);
+            et = treeMaker.MemberSelect(treeMaker.Identifier("is"), "close"); //NOI18N
+            et = treeMaker.MethodInvocation(Collections.<ExpressionTree>emptyList(), et, Collections.<ExpressionTree>emptyList());
+            stmt = treeMaker.Try(treeMaker.Block(Collections.singletonList(treeMaker.ExpressionStatement(et)), false), Collections.<CatchTree>emptyList(), null);
+            stmt = treeMaker.addTryCatch((TryTree) stmt, treeMaker.Catch(treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", treeMaker.QualIdent("java.io.IOException"), null), catchBlock)); //NOI18N
+            stmt = treeMaker.Try(tryBlock, Collections.<CatchTree>emptyList(), treeMaker.Block(Collections.singletonList(stmt), false));
+            stmt = treeMaker.addTryCatch((TryTree) stmt, treeMaker.Catch(treeMaker.Variable(treeMaker.Modifiers(EnumSet.noneOf(Modifier.class)), "ex", treeMaker.QualIdent("java.io.FileNotFoundException"), null), catchBlock)); //NOI18N
+            bt = treeMaker.addBlockStatement(bt, stmt);
+            copy.rewrite(mt.getBody(), bt);
         }
     }
 }

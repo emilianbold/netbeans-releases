@@ -97,6 +97,9 @@ import org.netbeans.modules.mylyn.util.commands.CommandFactory;
 import org.netbeans.modules.mylyn.util.internal.CommandsAccessor;
 import org.netbeans.modules.mylyn.util.internal.TaskListener;
 import org.openide.modules.Places;
+import org.openide.util.Lookup;
+import org.openide.util.LookupEvent;
+import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
@@ -135,6 +138,7 @@ public class MylynSupport {
     private final Map<ITask, List<TaskListener>> taskListeners;
     private final Map<ITask, Reference<NbTask>> tasks = new WeakHashMap<ITask, Reference<NbTask>>();
     private final Map<TaskListener, ITask> taskPerList = new HashMap<TaskListener, ITask>();
+    private Lookup.Result<RepositoryConnectorProvider> result;
 
     public static synchronized MylynSupport getInstance () {
         if (instance == null) {
@@ -189,6 +193,8 @@ public class MylynSupport {
      */
     public Collection<NbTask> getTasks (TaskRepository taskRepository) throws CoreException {
         ensureTaskListLoaded();
+        assert taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind()) != null
+                : "Did you forget to implement RepositoryConnectorProvider?";
         return toNbTasks(taskList.getTasks(taskRepository.getUrl()));
     }
 
@@ -196,6 +202,8 @@ public class MylynSupport {
         assert query instanceof RepositoryQuery;
         if (query instanceof RepositoryQuery) {
             ensureTaskListLoaded();
+            assert taskRepositoryManager.getRepositoryConnector(query.getConnectorKind()) != null
+                : "Did you forget to implement RepositoryConnectorProvider?";
             return toNbTasks(((RepositoryQuery) query).getChildren());
         } else {
             return Collections.<NbTask>emptyList();
@@ -213,6 +221,8 @@ public class MylynSupport {
             cont = unsubmittedTaskContainers.get(taskRepository);
             if (cont == null) {
                 ensureTaskListLoaded();
+                assert taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind()) != null
+                    : "Did you forget to implement RepositoryConnectorProvider?";
                 cont = new UnsubmittedTasksContainer(taskRepository, taskList);
                 unsubmittedTaskContainers.put(taskRepository, cont);
             }
@@ -268,6 +278,8 @@ public class MylynSupport {
 
     public Set<IRepositoryQuery> getRepositoryQueries (TaskRepository taskRepository) throws CoreException {
         ensureTaskListLoaded();
+        assert taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind()) != null
+                : "Did you forget to implement RepositoryConnectorProvider?";
         return new HashSet<IRepositoryQuery>(taskList.getRepositoryQueries(taskRepository.getUrl()));
     }
 
@@ -276,6 +288,8 @@ public class MylynSupport {
             throw new IllegalArgumentException("Query must be instance of RepositoryQuery: " + query);
         }
         ensureTaskListLoaded();
+        assert taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind()) != null
+                : "Did you forget to implement RepositoryConnectorProvider?";
         taskList.addQuery((RepositoryQuery) query);
     }
 
@@ -347,6 +361,8 @@ public class MylynSupport {
 
     public IRepositoryQuery createNewQuery (TaskRepository taskRepository, String queryName) throws CoreException {
         ensureTaskListLoaded();
+        assert taskRepositoryManager.getRepositoryConnector(taskRepository.getConnectorKind()) != null
+                : "Did you forget to implement RepositoryConnectorProvider?";
         IRepositoryQuery query = repositoryModel.createRepositoryQuery(taskRepository);
         assert query instanceof RepositoryQuery;
         query.setSummary(queryName);
@@ -389,6 +405,8 @@ public class MylynSupport {
         String oldUrl = repository.getRepositoryUrl();
         if (!url.equals(oldUrl)) {
             ensureTaskListLoaded();
+            assert taskRepositoryManager.getRepositoryConnector(repository.getConnectorKind()) != null
+                : "Did you forget to implement RepositoryConnectorProvider?";
             for (ITask task : taskList.getAllTasks()) {
                 if (url.equals(task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL))) {
                     taskDataManager.refactorRepositoryUrl(task, task.getRepositoryUrl(), url);
@@ -469,6 +487,17 @@ public class MylynSupport {
 
     private synchronized void ensureTaskListLoaded () throws CoreException {
         if (!taskListInitialized) {
+            if (result == null) {
+                LookupListener lookupListener = new LookupListener() {
+                    @Override
+                    public void resultChanged (LookupEvent ev) {
+                        registerConnectors();
+                    }
+                };
+                result = Lookup.getDefault().lookupResult(RepositoryConnectorProvider.class);
+                result.addLookupListener(lookupListener);
+            }
+            registerConnectors();
             try {
                 if (taskListStorageFile.length() > 0) {
                     taskListWriter.readTaskList(taskList, taskListStorageFile);
@@ -644,7 +673,7 @@ public class MylynSupport {
         for (ITask task : tasks) {
             nbTasks.add(toNbTask(task));
         }
-        return nbTasks;
+        return Collections.unmodifiableSet(nbTasks);
     }
 
     NbTask toNbTask (ITask task) {
@@ -714,6 +743,15 @@ public class MylynSupport {
         } catch (CoreException ex) {
             MylynSupport.LOG.log(Level.INFO, null, ex);
             return null;
+        }
+    }
+
+    private void registerConnectors () {
+        for (RepositoryConnectorProvider provider : result.allInstances()) {
+            AbstractRepositoryConnector connector = provider.getConnector();
+            if (connector != null) {
+                taskRepositoryManager.addRepositoryConnector(connector);
+            }
         }
     }
 }

@@ -57,10 +57,10 @@ import javax.swing.Icon;
 import javax.swing.JComponent;
 import org.netbeans.modules.odcs.api.ODCSServer;
 import org.netbeans.modules.odcs.ui.dashboard.DashboardProviderImpl;
-import org.netbeans.modules.team.ui.common.DashboardSupport;
-import org.netbeans.modules.team.ui.spi.LoginPanelSupport;
-import org.netbeans.modules.team.ui.spi.TeamServer;
-import org.netbeans.modules.team.ui.spi.TeamServerProvider;
+import org.netbeans.modules.team.server.ui.common.DashboardSupport;
+import org.netbeans.modules.team.server.ui.spi.LoginPanelSupport;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
+import org.netbeans.modules.team.server.ui.spi.TeamServerProvider;
 import org.openide.util.WeakListeners;
 import java.util.prefs.Preferences;
 import javax.swing.AbstractAction;
@@ -73,9 +73,9 @@ import org.netbeans.modules.odcs.ui.NewProjectAction;
 import org.netbeans.modules.odcs.ui.OpenProjectAction;
 import org.netbeans.modules.odcs.ui.Utilities;
 import org.netbeans.modules.odcs.ui.spi.VCSAccessor;
-import org.netbeans.modules.team.ui.common.UserNode;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.util.treelist.SelectionList;
+import org.netbeans.modules.team.server.ui.common.UserNode;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.commons.treelist.SelectionList;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
@@ -245,7 +245,7 @@ public class ODCSUiServer implements TeamServer {
             return null;
         }
         NewProjectAction newProjectAction = new NewProjectAction(getImpl(false));
-        newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/new_team_project.png", true));
+        newProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/new_team_project.png", true));
         newProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_NewProject") );
         return newProjectAction;
     }
@@ -256,13 +256,16 @@ public class ODCSUiServer implements TeamServer {
             return null;
         }        
         OpenProjectAction openProjectAction = new OpenProjectAction(ODCSUiServer.this);
-        openProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/ui/resources/open_team_project.png", true));
+        openProjectAction.putValue( Action.SMALL_ICON, ImageUtilities.loadImageIcon("org/netbeans/modules/team/server/resources/open_team_project.png", true));
         openProjectAction.putValue( Action.SHORT_DESCRIPTION, NbBundle.getMessage(UserNode.class, "LBL_OpenProject") );
         return openProjectAction;
     }
 
     @Override
     public Action[] getTeamMenuActions() {
+        if(getPasswordAuthentication() == null) {
+            return null;
+        }
         return new Action[] {
             new NewProjectAction(getServer()),
             new OpenProjectAction(this),

@@ -1,4 +1,4 @@
-token #0 PHP_OPENTAG <?
+token #0 PHP_OPENTAG <?php
 token #1 WHITESPACE \n
 token #2 PHP_VARIABLE $name
 token #3 PHP_TOKEN =
@@ -13,5 +13,5 @@ token #11 WHITESPACE \n
 token #12 PHP_ECHO echo
 token #13 WHITESPACE  
 token #14 PHP_HEREDOC_TAG <<<HEREDOC\n
-token #15 PHP_CONSTANT_ENCAPSED_STRING Name: 
+token #15 PHP_CONSTANT_ENCAPSED_STRING Name:
 token #16 PHP_CONSTANT_ENCAPSED_STRING \n

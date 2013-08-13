@@ -120,7 +120,7 @@ public final class AnnotationBar extends JComponent implements Accessible, Prope
 
     private Color backgroundColor = Color.GRAY.brighter();
     private Color foregroundColor = Color.BLACK;
-    private Color selectedColor = Color.BLUE;
+    private Color selectedColor = Color.GREEN.darker();
 
     /**
      * Revision associated with caret line.

@@ -120,9 +120,12 @@ public class CompletionContext extends EditorFeatureContext {
      * @return the token id or null if no token can be achieved.
      */
     public CssTokenId getActiveTokenId() {
-        TokenSequence<CssTokenId> ts = getTokenSequence();
-        restoreTokenSequence();
-        return ts.token() == null ? null : ts.token().id();
+        try {
+            TokenSequence<CssTokenId> ts = getTokenSequence();
+            return ts.token() == null ? null : ts.token().id();
+        } finally {
+            restoreTokenSequence();
+        }
     }
     
     /**
@@ -159,6 +162,38 @@ public class CompletionContext extends EditorFeatureContext {
         }
     }
 
+    /**
+     * If the current token is WS, then this method scans tokens bacwards until it finds
+     * a non white token. 
+     * 
+     * @since 1.57
+     * @return the non-white token id or null if there isn't any.
+     */
+    public CssTokenId getNonWhiteTokenIdBackward() {
+        TokenSequence<CssTokenId> ts = getTokenSequence();
+        restoreTokenSequence();
+        try {
+            for(;;) {
+                Token<CssTokenId> t = ts.token();
+                if(t == null) {
+                    //empty file
+                    return null;
+                }
+                if(!CssTokenIdCategory.WHITESPACES.name().toLowerCase().equals(t.id().primaryCategory())) {
+                    return t.id();
+                } else {
+                    if(!ts.movePrevious()) {
+                        break;
+                    }
+                }
+            }
+            return null;
+        } finally {
+            //reposition the token sequence back
+            restoreTokenSequence();
+        }
+    }
+    
     /**
      * Restores the {@link TokenSequence} obtained by {@link #getTokenSequence()} to the original state.
      * @since 1.51

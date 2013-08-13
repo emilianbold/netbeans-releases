@@ -55,17 +55,13 @@ import org.netbeans.api.html.lexer.HTMLTokenId;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.html.editor.lib.api.elements.Element;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
 import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
 import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
-import org.netbeans.modules.web.indent.api.LexUtilities;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.html.editor.HtmlAutoCompletion;
 import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.lib.api.elements.Node;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -78,61 +74,21 @@ public class HtmlKeystrokeHandler implements KeystrokeHandler {
 
     @Override
     public boolean beforeCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
-        return HtmlAutoCompletion.beforeCharInserted((BaseDocument)doc, caretOffset, target.getCaret(), ch);
+        return false;
     }
 
     @Override
     public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
-        HtmlAutoCompletion.charInserted((BaseDocument)doc, caretOffset, target.getCaret(), ch);
         return false;
     }
 
     @Override
     public boolean charBackspaced(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
-        return HtmlAutoCompletion.charBackspaced((BaseDocument)doc, caretOffset, target.getCaret(), ch);
+        return false;
     }
 
     @Override
     public int beforeBreak(Document doc, int caretOffset, JTextComponent target) throws BadLocationException {
-        TokenSequence<HTMLTokenId> ts = LexUtilities.getTokenSequence((BaseDocument)doc, caretOffset, HTMLTokenId.language());
-        if (ts == null) {
-            return -1;
-        }
-        ts.move(caretOffset);
-        String closingTagName = null;
-        int end = -1;
-        if (ts.moveNext() && ts.token().id() == HTMLTokenId.TAG_OPEN_SYMBOL &&
-                ts.token().text().toString().equals("</")) {
-            if (ts.moveNext() && ts.token().id() == HTMLTokenId.TAG_CLOSE) {
-                closingTagName = ts.token().text().toString();
-                end = ts.offset()+ts.token().text().length();
-                ts.movePrevious();
-                ts.movePrevious();
-            }
-        }
-        if (closingTagName == null) {
-            return  -1;
-        }
-        boolean foundOpening = false;
-        if (ts.token().id() == HTMLTokenId.TAG_CLOSE_SYMBOL &&
-                ts.token().text().toString().equals(">")) {
-            while (ts.movePrevious()) {
-                if (ts.token().id() == HTMLTokenId.TAG_OPEN) {
-                    if (ts.token().text().toString().equals(closingTagName)) {
-                        foundOpening = true;
-                    }
-                    break;
-                }
-            }
-        }
-        if (foundOpening) {
-            final Indent indent = Indent.get(doc);
-            doc.insertString(caretOffset, "\n", null); //NOI18N
-            //move caret
-            target.getCaret().setDot(caretOffset);
-            //and indent the line
-            indent.reindent(caretOffset + 1, end);
-        }
         return -1;
     }
 

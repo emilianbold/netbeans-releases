@@ -3,7 +3,7 @@ Version: 1.6.0_37
 License: MIT
 Description: jnlp-servlet.jar from JDK's JNLP demo
 OSR: -
-Origin: jdk-6u37-linux-i586-demos.tar.gz
+Origin: Oracle (jdk-6u37-linux-i586-demos.tar.gz)
 
 Copyright (c) 2006, Oracle and/or its affiliates. All rights reserved.
 

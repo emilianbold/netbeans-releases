@@ -266,6 +266,10 @@ public enum CssTokenId implements TokenId {
     
     CP_NOT_EQ(Css3Lexer.CP_NOT_EQ, AT_RULE_SYMBOL),
     
+    PERCENTAGE_SYMBOL(Css3Lexer.PERCENTAGE_SYMBOL, OTHERS ),
+    
+    EXCLAMATION_MARK(Css3Lexer.EXCLAMATION_MARK, OTHERS)
+    
     ;
     
     private static final Map<Integer, CssTokenId> codesMap = new HashMap<>();

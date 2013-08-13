@@ -47,7 +47,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.codehaus.groovy.ast.ModuleNode;
 import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.imports.ImportHelper;
 import org.netbeans.modules.groovy.editor.imports.ImportCandidate;
 import org.netbeans.modules.groovy.editor.compiler.error.CompilerErrorID;
@@ -93,7 +95,7 @@ public class AddImportStatementHint extends GroovyErrorRule {
         // FIXME parsing API
         FileObject fo = context.parserResult.getSnapshot().getSource().getFileObject();
 
-        List<ImportCandidate> importCandidates = ImportHelper.getImportCandidate(fo, missingClassName);
+        Set<ImportCandidate> importCandidates = ImportHelper.getImportCandidate(fo, getPackageName(context), missingClassName);
 
 
         if (importCandidates.isEmpty()) {
@@ -116,6 +118,14 @@ public class AddImportStatementHint extends GroovyErrorRule {
                 result.add(descriptor);
             }
         }
+    }
+
+    private String getPackageName(RuleContext context) {
+        ModuleNode module = ASTUtils.getRoot(context.parserResult);
+        if (module != null) {
+            return module.getPackageName();
+        }
+        return "";
     }
 
     @Override

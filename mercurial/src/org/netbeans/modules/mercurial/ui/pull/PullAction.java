@@ -87,6 +87,8 @@ import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
 import org.netbeans.modules.versioning.util.SystemActionBridge;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileUtil;
 import org.openide.nodes.AbstractNode;
@@ -105,6 +107,8 @@ import org.openide.util.lookup.Lookups;
     "# {0} - repository folder name",
     "CTL_MenuItem_PullRoot=P&ull All Branches - {0}"
 })
+@ActionID(id = "org.netbeans.modules.mercurial.ui.pull.PullAction", category = "Mercurial")
+@ActionRegistration(lazy = false, displayName = "#CTL_MenuItem_PullLocal")
 public class PullAction extends ContextAction {
     private static final String CHANGESET_FILES_PREFIX = "files:"; //NOI18N
 
@@ -416,6 +420,7 @@ public class PullAction extends ContextAction {
                             Bundle.MSG_PullAction_localModifications_text(),
                             Bundle.LBL_PullAction_localModifications_title(), 
                             JOptionPane.YES_NO_OPTION, JOptionPane.QUESTION_MESSAGE);
+                    break;
                 }
             }
         } catch (HgException ex) {

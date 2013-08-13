@@ -46,7 +46,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.MissingResourceException;
 import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.KeyStroke;
@@ -67,7 +66,7 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.TaskContainerNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.Submitable;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
 import org.netbeans.modules.bugtracking.util.BugtrackingUtil;
-import org.netbeans.modules.team.ui.util.treelist.TreeListNode;
+import org.netbeans.modules.team.commons.treelist.TreeListNode;
 import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -80,6 +79,8 @@ public class Actions {
 
     public static final KeyStroke REFRESH_KEY = KeyStroke.getKeyStroke("F5"); //NOI18N
     public static final KeyStroke DELETE_KEY = KeyStroke.getKeyStroke("DELETE"); //NOI18N
+
+    private static final RequestProcessor RP = new RequestProcessor(Actions.class.getName(), 10);
 
     public static List<Action> getDefaultActions(TreeListNode... nodes) {
         List<Action> actions = new ArrayList<Action>();
@@ -131,6 +132,7 @@ public class Actions {
 
         private final boolean setAsSeen;
         private final List<IssueImpl> tasks;
+        private boolean canceled = false;
 
         private MarkSeenAction(boolean setAsSeen, List<IssueImpl> tasks) {
             super(setAsSeen ? NbBundle.getMessage(Actions.class, "CTL_MarkSeen") : NbBundle.getMessage(Actions.class, "CTL_MarkUnseen"));
@@ -140,7 +142,24 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            DashboardUtils.setAsSeen(setAsSeen, tasks);
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    ProgressHandle markProgress = getProgress();
+                    markProgress.start(tasks.size());
+                    int workunits = 0;
+                    for (IssueImpl task : tasks) {
+                        if (canceled) {
+                            break;
+                        }
+                        markProgress.progress(NbBundle.getMessage(Actions.class, "LBL_MarkTaskProgress", task.getDisplayName()));
+                        task.setSeen(setAsSeen);
+                        workunits++;
+                        markProgress.progress(workunits);
+                    }
+                    markProgress.finish();
+                }
+            });
         }
 
         static MarkSeenAction createAction(TreeListNode... nodes) {
@@ -159,6 +178,16 @@ public class Actions {
                 }
             }
             return new MarkSeenAction(setAsSeen, tasks);
+        }
+
+        private ProgressHandle getProgress() {
+            return ProgressHandleFactory.createHandle(NbBundle.getMessage(Actions.class, setAsSeen ? "LBL_MarkSeenAllProgress" : "LBL_MarkUnseenAllProgress"), new Cancellable() {
+                @Override
+                public boolean cancel() {
+                    canceled = true;
+                    return canceled;
+                }
+            });
         }
     }
     //</editor-fold>
@@ -185,7 +214,7 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     Map<String, IssueImpl> tasksMap = new HashMap<String, IssueImpl>();
@@ -661,7 +690,7 @@ public class Actions {
 
         @Override
         public void actionPerformed(ActionEvent e) {
-            RequestProcessor.getDefault().post(new Runnable() {
+            RP.post(new Runnable() {
                 @Override
                 public void run() {
                     DashboardViewer.getInstance().deleteQuery(getQueryNodes());

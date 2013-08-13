@@ -76,9 +76,7 @@ public class BugzillaOptionsPanel extends javax.swing.JPanel {
 
         jScrollPane2 = new javax.swing.JScrollPane();
         jLabel1 = new javax.swing.JLabel();
-        jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
-        jLabel4 = new javax.swing.JLabel();
 
         jScrollPane2.setBorder(null);
 
@@ -91,8 +89,6 @@ public class BugzillaOptionsPanel extends javax.swing.JPanel {
             }
         });
 
-        jLabel2.setText(org.openide.util.NbBundle.getMessage(BugzillaOptionsPanel.class, "BugzillaOptionsPanel.jLabel2.text")); // NOI18N
-
         jLabel3.setText(org.openide.util.NbBundle.getMessage(BugzillaOptionsPanel.class, "BugzillaOptionsPanel.jLabel3.text")); // NOI18N
 
         queriesTextField.setText(org.openide.util.NbBundle.getMessage(BugzillaOptionsPanel.class, "BugzillaOptionsPanel.queriesTextField.text")); // NOI18N
@@ -101,8 +97,6 @@ public class BugzillaOptionsPanel extends javax.swing.JPanel {
                 queriesTextFieldActionPerformed(evt);
             }
         });
-
-        jLabel4.setText(org.openide.util.NbBundle.getMessage(BugzillaOptionsPanel.class, "BugzillaOptionsPanel.jLabel4.text")); // NOI18N
 
         errorLabel.setText(org.openide.util.NbBundle.getMessage(BugzillaOptionsPanel.class, "BugzillaOptionsPanel.errorLabel.text")); // NOI18N
 
@@ -117,33 +111,27 @@ public class BugzillaOptionsPanel extends javax.swing.JPanel {
                         .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 301, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel1)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(issuesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel2))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(issuesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(jLabel3)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(queriesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jLabel4))
+                        .addComponent(queriesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
                         .addContainerGap()
                         .addComponent(errorLabel)))
-                .addContainerGap(127, Short.MAX_VALUE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(issuesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel2))
+                    .addComponent(issuesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel3)
-                    .addComponent(queriesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jLabel4))
+                    .addComponent(queriesTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(221, 221, 221)
                 .addComponent(errorLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -164,9 +152,7 @@ public class BugzillaOptionsPanel extends javax.swing.JPanel {
     final javax.swing.JLabel errorLabel = new javax.swing.JLabel();
     final javax.swing.JTextField issuesTextField = new javax.swing.JTextField();
     private javax.swing.JLabel jLabel1;
-    private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JLabel jLabel4;
     private javax.swing.JScrollPane jScrollPane2;
     final javax.swing.JTextField queriesTextField = new javax.swing.JTextField();
     // End of variables declaration//GEN-END:variables

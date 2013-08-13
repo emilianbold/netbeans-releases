@@ -84,7 +84,7 @@ public final class JsLibUtilities {
      */
     @NbBundle.Messages({
         "# {0} - library name",
-        "JsLibUtilities.msg.downloadingJsLib=Downloading {0}"
+        "JsLibUtilities.msg.addingJsLib=Adding {0}"
     })
     @CheckReturnValue
     public static List<JavaScriptLibrarySelectionPanel.SelectedLibrary> applyJsLibraries(List<JavaScriptLibrarySelectionPanel.SelectedLibrary> selectedLibraries,
@@ -109,7 +109,7 @@ public final class JsLibUtilities {
             assert libraryVersion != null;
             Library library = libraryVersion.getLibrary();
             if (handle != null) {
-                handle.progress(Bundle.JsLibUtilities_msg_downloadingJsLib(library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME)));
+                handle.progress(Bundle.JsLibUtilities_msg_addingJsLib(library.getProperties().get(WebClientLibraryManager.PROPERTY_REAL_DISPLAY_NAME)));
             }
             try {
                 WebClientLibraryManager.getDefault().addLibraries(new Library[]{library}, librariesRoot, libraryVersion.getType());

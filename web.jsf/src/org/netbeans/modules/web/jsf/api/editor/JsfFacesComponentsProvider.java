@@ -53,9 +53,9 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.metamodel.Component;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
 import org.netbeans.modules.web.jsf.impl.metamodel.ComponentImpl;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
 import org.netbeans.modules.web.jsfapi.api.Library;
@@ -84,7 +84,7 @@ public class JsfFacesComponentsProvider {
     public static Collection<? extends Library> getLibraries(Project project) {
         long start = System.currentTimeMillis();
         try {
-            MetadataModel<JsfModel> model = JsfModelFactory.getModel(project);
+            MetadataModel<JsfModel> model = JSFUtils.getModel(project);
             if (model == null) {
                 return Collections.emptyList();
             }

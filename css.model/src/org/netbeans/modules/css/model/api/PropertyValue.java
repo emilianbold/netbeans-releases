@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.css.model.api;
 
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
-
 /**
  *
  * @author marekfukala

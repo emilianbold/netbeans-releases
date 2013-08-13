@@ -165,7 +165,7 @@ public final class CompletionUtilities {
             // so no ImageObserver should be necessary
             g.drawImage(icon.getImage(), BEFORE_ICON_GAP, (height - icon.getIconHeight()) /2, null);
         }
-        int iconWidth = BEFORE_ICON_GAP + ICON_WIDTH + AFTER_ICON_GAP;
+        int iconWidth = BEFORE_ICON_GAP + (icon != null ? icon.getIconWidth() : ICON_WIDTH) + AFTER_ICON_GAP;
         int rightTextX = width - AFTER_RIGHT_TEXT_GAP;
         FontMetrics fm = g.getFontMetrics(defaultFont);
         int textY = (height - fm.getHeight())/2 + fm.getHeight() - fm.getDescent();

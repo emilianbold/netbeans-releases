@@ -954,7 +954,9 @@ public class ConfigurationMakefileWriter {
                         String fromLinker = ""; // NOI18N
                         if (conf.isDynamicLibraryConfiguration()) {
                             if (conf.getLinkerConfiguration().getPICOption().getValue()) {
-                                fromLinker = " " + conf.getLinkerConfiguration().getPICOption(compilerSet); // NOI18N
+                                if (compiler.getKind() != PredefinedToolKind.Assembler) {
+                                    fromLinker = " " + conf.getLinkerConfiguration().getPICOption(compilerSet); // NOI18N
+                                }
                             }
                         }
                         command += compilerConfiguration.getOptions(compiler);
@@ -1216,7 +1218,9 @@ public class ConfigurationMakefileWriter {
                         String fromLinker = ""; // NOI18N
                         if (conf.isDynamicLibraryConfiguration()) {
                             if (conf.getLinkerConfiguration().getPICOption().getValue()) {
-                                fromLinker = " " + conf.getLinkerConfiguration().getPICOption(compilerSet); // NOI18N
+                                if (compiler.getKind() != PredefinedToolKind.Assembler) {
+                                    fromLinker = " " + conf.getLinkerConfiguration().getPICOption(compilerSet); // NOI18N
+                                }
                             }
                         }
                         command += compilerConfiguration.getOptions(compiler);

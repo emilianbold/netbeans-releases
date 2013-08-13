@@ -42,12 +42,14 @@
 
 package org.netbeans.modules.bugzilla.commands;
 
-import org.netbeans.modules.mylyn.util.PerformQueryCommand;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.UnknownHostException;
 import java.text.MessageFormat;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.MissingResourceException;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import org.apache.commons.httpclient.RedirectException;
 import org.eclipse.core.runtime.CoreException;
@@ -67,6 +69,7 @@ import org.netbeans.modules.mylyn.util.commands.SynchronizeQueryCommand;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 
@@ -88,6 +91,8 @@ public class BugzillaExecutor {
 
     private final BugzillaRepository repository;
 
+    private static final Map<String, Callable<Boolean>> handlerCalls = new HashMap<>();
+    
     public BugzillaExecutor(BugzillaRepository repository) {
         this.repository = repository;
     }
@@ -132,11 +137,20 @@ public class BugzillaExecutor {
 
             cmd.setFailed(false);
             cmd.setErrorMessage(null);
-
+            
+            synchronized ( handlerCalls ) {
+                handlerCalls.remove(repository.getUrl());
+            }
+            
         } catch (CoreException ce) {
             Bugzilla.LOG.log(Level.FINE, null, ce);
 
-            ExceptionHandler handler = ExceptionHandler.createHandler(ce, this, repository, reexecute);
+            ExceptionHandler handler;
+            if(cmd instanceof ValidateCommand) {
+                handler = ExceptionHandler.createHandler(ce, this, null, ((ValidateCommand)cmd), reexecute);
+            } else {
+                handler = ExceptionHandler.createHandler(ce, this, repository, null, reexecute);
+            }
             assert handler != null;
 
             String msg = handler.getMessage();
@@ -328,8 +342,8 @@ public class BugzillaExecutor {
             this.repository = repository;
         }
 
-        static ExceptionHandler createHandler(CoreException ce, BugzillaExecutor executor, BugzillaRepository repository, boolean forRexecute) {
-            String errormsg = getLoginError(repository, ce);
+        static ExceptionHandler createHandler(CoreException ce, BugzillaExecutor executor, BugzillaRepository repository, ValidateCommand validateCommand, boolean forRexecute) {
+            String errormsg = getLoginError(repository, validateCommand, ce);
             if(errormsg != null) {
                 return new LoginHandler(ce, errormsg, executor, repository);
             }
@@ -359,7 +373,7 @@ public class BugzillaExecutor {
             return false;
         }
         
-        private static String getLoginError(BugzillaRepository repository, CoreException ce) {
+        private static String getLoginError(BugzillaRepository repository, ValidateCommand validateCommand, CoreException ce) {
             String msg = getMessage(ce);
             if(msg != null) {
                 msg = msg.trim().toLowerCase();
@@ -368,8 +382,19 @@ public class BugzillaExecutor {
                    msg.contains(EMPTY_PASSWORD))
                 {
                     Bugzilla.LOG.log(Level.FINER, "returned error message [{0}]", msg);                     // NOI18N
-                    if(NBBugzillaUtils.isNbRepository(repository.getUrl())) {
-                        String user = repository.getUsername();
+                    String url;
+                    if(validateCommand != null) {
+                        url = validateCommand.getUrl();
+                    } else {
+                        url = repository.getUrl();
+                    }
+                    if(url != null && NBBugzillaUtils.isNbRepository(url)) {
+                        String user;
+                        if(validateCommand != null) {
+                            user = validateCommand.getUser();
+                        } else {
+                            user = repository.getUsername();
+                        }
                         if(user != null && user.contains("@")) {
                             return NbBundle.getMessage(BugzillaExecutor.class, "MSG_INVALID_USERNAME_OR_PASSWORD") + // NOI18N
                                    " " + // NOI18N
@@ -536,11 +561,37 @@ public class BugzillaExecutor {
             }
             @Override
             protected boolean handle() {
-                boolean ret = Bugzilla.getInstance().getBugtrackingFactory().editRepository(BugzillaUtil.getRepository(executor.repository), errroMsg);
-                if(!ret) {
-                    notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
+                Callable<Boolean> c;
+                synchronized ( handlerCalls ) {
+                    final String key = repository.getUrl();
+                    c = handlerCalls.get(key);
+                    if(c == null) {
+                        c = new Callable<Boolean>() {
+                            private boolean alreadyCalled = false;
+                            @Override
+                            public Boolean call() {
+                                if(alreadyCalled) {
+                                    Bugzilla.LOG.log(Level.INFO, key, ce); 
+                                    return false;
+                                }
+                                // do not handle this kind of erorr until flag turned false by a succesfull command
+                                alreadyCalled = true;                                
+                                boolean ret = Bugzilla.getInstance().getBugtrackingFactory().editRepository(BugzillaUtil.getRepository(executor.repository), errroMsg);
+                                if(!ret) {
+                                    notifyErrorMessage(NbBundle.getMessage(BugzillaExecutor.class, "MSG_ActionCanceledByUser")); // NOI18N
+                                }
+                                return ret;
+                            }
+                        };
+                        handlerCalls.put(key, c);
+                    } 
                 }
-                return ret;
+                try {
+                    return c.call();
+                } catch (Exception ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+                return false;
             }
         }
         private static class DefaultHandler extends ExceptionHandler {

@@ -97,7 +97,7 @@ public class AnnotationBarManager implements SideBarFactory {
         if (ab == null) {
             return false;
         }
-        return ab.getPreferredSize().width > 0;
+        return ab.isAnnotated();
     }
 }
 

@@ -155,10 +155,10 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
             if (model == null) {
                 return;
             }
-            HintsController.setErrors(document, LAYER_POM, findHints(model, project, -1, -1));
+            HintsController.setErrors(document, LAYER_POM, findHints(model, project, -1, -1, -1));
         }
 
-        static List<ErrorDescription> findHints(final @NonNull POMModel model, final Project project, final int selectionStart, final int selectionEnd) {
+        static List<ErrorDescription> findHints(final @NonNull POMModel model, final Project project, final int selectionStart, final int selectionEnd, final int caretPosition) {
             final List<ErrorDescription> err = new ArrayList<ErrorDescription>();
             //before checkModelValid because of #216093
             runMavenValidation(model, err);
@@ -186,7 +186,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                                 if (!prov.getConfiguration().isEnabled(prov.getConfiguration().getPreferences())) {
                                     continue;
                                 }
-                                List<ErrorDescription> lst = prov.getErrorsForDocument(model, project, selectionStart, selectionEnd);
+                                List<ErrorDescription> lst = prov.getErrorsForDocument(model, project, selectionStart, selectionEnd, caretPosition);
                                 if (lst != null) {
                                     err.addAll(lst);
                                 }
@@ -260,6 +260,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                             //something means file + selection start + selection end.
                             final int selectionStart = pane.getSelectionStart();
                             final int selectionEnd = pane.getSelectionEnd();
+                            final int caretPosition = pane.getCaretPosition();
                             RP.post(new Runnable() {
                                 @Override
                                 public void run() {
@@ -273,7 +274,7 @@ public final class StatusProvider implements UpToDateStatusProviderFactory {
                                         //the model sync+refresh renders any existing POMComponents people
                                         // might be holding useless
                                         if (!model.isIntransaction()) {
-                                            HintsController.setErrors(document, LAYER_POM_SELECTION, findHints(model, project, selectionStart, selectionEnd));
+                                            HintsController.setErrors(document, LAYER_POM_SELECTION, findHints(model, project, selectionStart, selectionEnd, caretPosition));
                                         } else {
                                             HintsController.setErrors(document, LAYER_POM_SELECTION, Collections.<ErrorDescription>emptyList());
                                         }

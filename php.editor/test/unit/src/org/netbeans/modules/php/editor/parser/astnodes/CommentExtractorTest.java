@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.php.editor.parser.astnodes;
 
-import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
+import org.netbeans.modules.php.editor.completion.PHPCodeCompletionTestBase;
 
 /**
  *

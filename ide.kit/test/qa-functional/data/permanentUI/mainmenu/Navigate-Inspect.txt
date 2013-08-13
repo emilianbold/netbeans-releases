@@ -1,5 +1,5 @@
-Inspect                    > Members
-                             File Members
+Inspect                    > Members          M
+                             File Members     F
                              ===============  
-                             Hierarchy
-                             File Hierarchy
+                             Hierarchy        H
+                             File Hierarchy   i

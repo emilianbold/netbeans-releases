@@ -465,18 +465,21 @@ class ModelGenerator {
             return true;
         }
         
-        PackageElement pack = controller.getElements().getPackageOf(
-                fieldTypeElement);
-        if ( pack.getQualifiedName().contentEquals("java.lang")){      // NOI18N
-            try {
-                if ( controller.getTypes().unboxedType(typeMirror) != null ){
-                    return true;
+        if (fieldTypeElement != null) {
+            PackageElement pack = controller.getElements().getPackageOf(
+                    fieldTypeElement);
+            if ( pack.getQualifiedName().contentEquals("java.lang")){      // NOI18N
+                try {
+                    if ( controller.getTypes().unboxedType(typeMirror) != null ){
+                        return true;
+                    }
+                }
+                catch(IllegalArgumentException e){
+                    // just skip field
                 }
             }
-            catch(IllegalArgumentException e){
-                // just skip field
-            }
         }
+        
         return false;
     }
     

@@ -144,7 +144,7 @@ public class HintsInvokerTest extends TestBase {
                        "         }\n" +
                        "     }\n" +
                        "}\n",
-                       "4:9-7:10:verifier:HINT",
+                       "4:9-4:10:verifier:HINT",
                        "FixImpl",
                        "package test; public class Test { private void test() { { int y = 1; } int z; { int y; z = 1; } } } ");
     }
@@ -252,7 +252,7 @@ public class HintsInvokerTest extends TestBase {
                        "         return i;\n" +
                        "     }\n" +
                        "}\n",
-                       "3:29-10:6:verifier:HINT",
+                       "3:29-3:30:verifier:HINT",
                        "FixImpl",
                        ("package test;\n" +
                        "\n" +
@@ -278,7 +278,7 @@ public class HintsInvokerTest extends TestBase {
                        "         return i;\n" +
                        "     }\n" +
                        "}\n",
-                       "3:29-6:6:verifier:HINT",
+                       "3:29-3:30:verifier:HINT",
                        "FixImpl",
                        ("package test;\n" +
                        "\n" +
@@ -304,7 +304,7 @@ public class HintsInvokerTest extends TestBase {
                        "         return i;\n" +
                        "     }\n" +
                        "}\n",
-                       "3:24-10:6:verifier:HINT",
+                       "3:24-3:25:verifier:HINT",
                        "FixImpl",
                        ("package test;\n" +
                        "\n" +

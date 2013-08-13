@@ -136,8 +136,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testFunction() {
-        String source =
-                "#header {\n"
+        String source
+                = "#header {\n"
                 + "  color: ($base-color * 3);\n"
                 + "  border-left: $the-border;\n"
                 + "  border-right: ($the-border * 2);\n"
@@ -150,8 +150,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testFunction2() {
-        String source =
-                "#footer {\n"
+        String source
+                = "#footer {\n"
                 + "  border-color: desaturate($red, 10%);\n"
                 + "  color: ($base-color + #003300);\n"
                 + "}";
@@ -162,8 +162,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testMixinDeclaration() {
-        String source =
-                "@mixin rounded-corners ($radius: 5px) {\n"
+        String source
+                = "@mixin rounded-corners ($radius: 5px) {\n"
                 + "  -webkit-border-radius: $radius;\n"
                 + "  -moz-border-radius: $radius;\n"
                 + "  -ms-border-radius: $radius;\n"
@@ -177,8 +177,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testMixinDeclaration2() {
-        String source =
-                "@mixin box-shadow ($x: 0, $y: 0, $blur: 1px, $color: #000) {\n"
+        String source
+                = "@mixin box-shadow ($x: 0, $y: 0, $blur: 1px, $color: #000) {\n"
                 + "  box-shadow: $arguments;\n"
                 + "  -moz-box-shadow: $arguments;\n"
                 + "  -webkit-box-shadow: $arguments;\n"
@@ -191,8 +191,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testMixinDeclarationWithoutParams() {
-        String source =
-                "@mixin box-shadow {\n"
+        String source
+                = "@mixin box-shadow {\n"
                 + "  box-shadow: $arguments;\n"
                 + "  -moz-box-shadow: $arguments;\n"
                 + "  -webkit-box-shadow: $arguments;\n"
@@ -262,8 +262,8 @@ public class Css3ParserScssTest extends CssTestBase {
 //
 
     public void testMixinCall() {
-        String source =
-                ".class {\n"
+        String source
+                = ".class {\n"
                 + "  @include mixin($switch, #888);\n"
                 + "}";
 
@@ -274,8 +274,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testMixinCall2() {
-        String source =
-                "#menu a {\n"
+        String source
+                = "#menu a {\n"
                 + "  color: #111;\n"
                 + "  @include bordered;\n"
                 + "}";
@@ -442,8 +442,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testInterpolationInClassSelector() {
-        String source =
-                ".rounded-#{$vert}-#{$horz} {\n"
+        String source
+                = ".rounded-#{$vert}-#{$horz} {\n"
                 + "}";
 
         CssParserResult result = TestUtil.parse(source);
@@ -454,8 +454,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testInterpolationInIdSelector() {
-        String source =
-                ".navb#{$navbar}ar {\n"
+        String source
+                = ".navb#{$navbar}ar {\n"
                 + "  $navbar-width: 800px;"
                 + "}\n";
 
@@ -467,8 +467,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testInterpolationInPropertyName() {
-        String source =
-                ".rounded {\n"
+        String source
+                = ".rounded {\n"
                 + "  border-#{$vert}-#{$horz}-radius: $radius;\n"
                 + "}";
 
@@ -480,8 +480,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testInterpolationExpressionInSelectorWithWS() {
-        String source =
-                ".body.firefox #{$selector}:before {\n"
+        String source
+                = ".body.firefox #{$selector}:before {\n"
                 + "    content: \"Hi, Firefox users!\";\n"
                 + "  }";
 
@@ -493,8 +493,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testInterpolationExpressionInFunctionInTheExpression() {
-        String source =
-                ".body.firefox #{ie-hex-str($green)}:before {\n"
+        String source
+                = ".body.firefox #{ie-hex-str($green)}:before {\n"
                 + "    content: \"Hi, Firefox users!\";\n"
                 + "  }";
 
@@ -506,8 +506,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testInterpolationExpressionInPropertyValue() {
-        String source =
-                "p {\n"
+        String source
+                = "p {\n"
                 + "  $font-size: 12px;\n"
                 + "  $line-height: 30px;\n"
                 + "  font: #{$font-size}/#{$line-height};\n"
@@ -526,8 +526,8 @@ public class Css3ParserScssTest extends CssTestBase {
     //
     //selector is parsed as property declaration - due to the colon presence - FIXME!!!
     public void testInterpolationExpressionComplex() {
-        String source =
-                "@mixin firefox-message($selector) {\n"
+        String source
+                = "@mixin firefox-message($selector) {\n"
                 + "  .body.firefox #{$selector}:before {\n"
                 + "    content: \"Hi, Firefox users!\";\n"
                 + "  }\n"
@@ -541,8 +541,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testMixinsWithArgumentsComplex() {
-        String source =
-                "/* style.scss */\n"
+        String source
+                = "/* style.scss */\n"
                 + "\n"
                 + "@mixin rounded($vert, $horz, $radius: 10px) {\n"
                 + "  border-#{$vert}-#{$horz}-radius: $radius;\n"
@@ -565,8 +565,8 @@ public class Css3ParserScssTest extends CssTestBase {
     //there are also some rules regarding the naming convention, but these
     //are covered by semantic analysis, not parsing
     public void testImport() {
-        String source =
-                "@import \"rounded\";\n";
+        String source
+                = "@import \"rounded\";\n";
 
         CssParserResult result = TestUtil.parse(source);
 
@@ -576,8 +576,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testNestedProperties() {
-        String source =
-                ".funky {\n"
+        String source
+                = ".funky {\n"
                 + "  font: {\n"
                 + "    family: fantasy;\n"
                 + "    size: 30em;\n"
@@ -593,8 +593,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testNestedPropertiesWithValue() {
-        String source =
-                ".funky {\n"
+        String source
+                = ".funky {\n"
                 + "  font: 2px/3px {\n"
                 + "    family: fantasy;\n"
                 + "    size: 30em;\n"
@@ -610,8 +610,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testLineComment() {
-        String source =
-                ".funky {\n"
+        String source
+                = ".funky {\n"
                 + " //line comment\n"
                 + "}";
 
@@ -623,8 +623,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testMixinCallInStylesheet() {
-        String source =
-                "@include firefox-message(\".header\");\n";
+        String source
+                = "@include firefox-message(\".header\");\n";
 
         CssParserResult result = TestUtil.parse(source);
 
@@ -634,8 +634,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testDefaultVariable() {
-        String source =
-                "$content: \"Second content?\" !default;\n";
+        String source
+                = "$content: \"Second content?\" !default;\n";
 
         CssParserResult result = TestUtil.parse(source);
 
@@ -645,8 +645,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testMultipleImport() {
-        String source =
-                "@import \"rounded-corners\", \"text-shadow\";\n";
+        String source
+                = "@import \"rounded-corners\", \"text-shadow\";\n";
 
         CssParserResult result = TestUtil.parse(source);
 
@@ -656,8 +656,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testInterpolationExpressionInImport() {
-        String source =
-                "@import url(\"http://fonts.googleapis.com/css?family=#{$family}\");\n";
+        String source
+                = "@import url(\"http://fonts.googleapis.com/css?family=#{$family}\");\n";
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
@@ -931,8 +931,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testAmpProblem() {
-        String source =
-                ".clazz {\n"
+        String source
+                = ".clazz {\n"
                 + "    &.position#{$i} {\n"
                 + "    left: ($i * -910px); \n"
                 + "}\n"
@@ -954,8 +954,8 @@ public class Css3ParserScssTest extends CssTestBase {
 //        assertResult(result, 0);
 //    }
     public void testLocalVariableDeclaration() {
-        String source =
-                "p {\n"
+        String source
+                = "p {\n"
                 + "  $width: 1000px;\n"
                 + "}";
 
@@ -971,8 +971,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testMixinCallWithWSBeforeFirstArgument() {
-        String source =
-                "@mixin a {\n"
+        String source
+                = "@mixin a {\n"
                 + "  @include b( linear-gradient(\n"
                 + "      lighten($bg-color, 5%),\n"
                 + "      darken($bg-color, 5%)\n"
@@ -988,8 +988,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testUnexpectedANDInMedia() {
-        String source =
-                "@media screen and ($width-name : $target-width) {\n"
+        String source
+                = "@media screen and ($width-name : $target-width) {\n"
                 + "}";
 
         CssParserResult result = TestUtil.parse(source);
@@ -1000,8 +1000,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testIf_Else() {
-        String source =
-                "$type: monster;\n"
+        String source
+                = "$type: monster;\n"
                 + "p {\n"
                 + "  @if $type == ocean {\n"
                 + "    color: blue;\n"
@@ -1020,8 +1020,8 @@ public class Css3ParserScssTest extends CssTestBase {
         assertResultOK(result);
 
         //only 'if' is allowed as the ident after @else keyword
-        source =
-                "p {\n"
+        source
+                = "p {\n"
                 + "  @if $type == ocean {\n"
                 + "    color: blue;\n"
                 + "  } @else Yf $type == matador {\n"
@@ -1037,8 +1037,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testContentDirective() {
-        String source =
-                "@mixin apply-to-ie6-only {\n"
+        String source
+                = "@mixin apply-to-ie6-only {\n"
                 + "  * html {\n"
                 + "    @content;\n"
                 + "  }\n"
@@ -1052,8 +1052,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testContentDirectiveInMedia() {
-        String source =
-                "@mixin respond-to($media) {\n"
+        String source
+                = "@mixin respond-to($media) {\n"
                 + "  @if $media == handhelds {\n"
                 + "    @media only screen and (max-width: $break-small) { @content; }\n"
                 + "  } @else if $media == medium-screens {\n"
@@ -1073,8 +1073,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testMixinCallArgWithPropertyName() {
-        String source =
-                "@mixin border-radius($radius: 5px, $moz: true, $webkit: true, $ms: true) {\n"
+        String source
+                = "@mixin border-radius($radius: 5px, $moz: true, $webkit: true, $ms: true) {\n"
                 + "}\n"
                 + "div{\n"
                 + "    @include border-radius($webkit:false);\n"
@@ -1088,8 +1088,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testMixinCallArgWithValueSeparatedByWS() {
-        String source =
-                "#id {\n"
+        String source
+                = "#id {\n"
                 + "    @include border-radius(5px, -moz -webkit);\n"
                 + "}";
 
@@ -1104,8 +1104,8 @@ public class Css3ParserScssTest extends CssTestBase {
         //the scss_declaration_property_value_interpolation_expression synt. predicate
         //was terminated just by colon so it seen the interpolation expression
         //few lines below and caused bad parsing
-        String source =
-                "#test2 { \n"
+        String source
+                = "#test2 { \n"
                 + "    background-color: cyan\n"
                 + "}\n"
                 + "#test#{$i} { }";
@@ -1117,8 +1117,8 @@ public class Css3ParserScssTest extends CssTestBase {
     }
 
     public void testMultiplicityOperatorInPropertyValueFunction() {
-        String source =
-                ".c {\n"
+        String source
+                = ".c {\n"
                 + "    background-color: darken(orange, $i*5);\n"
                 + "}\n"
                 + "";
@@ -1456,5 +1456,33 @@ public class Css3ParserScssTest extends CssTestBase {
         Node node = NodeUtil.query(result.getParseTree(),
                 "styleSheet/body/bodyItem/cp_mixin_declaration/cp_mixin_block/declarations/declaration/propertyDeclaration/property");
         assertNotNull(node);
+    }
+
+    public void testPercentageInExpression() throws ParseException, BadLocationException {
+        CssParserResult result = TestUtil.parse("$size: 20;\n"
+                + ".clz {\n"
+                + "    font: %/20;\n"
+                + "}");
+
+//        NodeUtil.dumpTree(result.getParseTree());
+        assertResultOK(result);
+
+        //original sample
+        assertParses("@mixin base-type($weight, $line-height, $font-size, $font-family...) {\n"
+                + "    @if $serif-boolean {\n"
+                + "        font: $weight #{$font-size}%/#{$line-height} $font-family;\n"
+                + "    }@else {\n"
+                + "        font: $weight #{$font-size}%/#{$line-height} $font-family-sans;\n"
+                + "    }\n"
+                + "}");
+    }
+
+    public void testSelectorWithInterpolationExpressionInMediaBody() throws ParseException, BadLocationException {
+        assertParses("@media only screen and (min-resolution: 1000) {\n"
+                + "\n"
+                + "      #{$selector}:before {\n"
+                + "        content: $hiResIcon;\n"
+                + "      }\n"
+                + "    }");
     }
 }

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.javascript2.editor.formatter.ui;
 
+import org.netbeans.modules.javascript2.editor.formatter.Utils;
 import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Point;

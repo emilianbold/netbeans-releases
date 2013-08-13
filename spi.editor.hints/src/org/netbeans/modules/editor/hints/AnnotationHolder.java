@@ -114,6 +114,7 @@ import org.openide.util.Lookup;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.NbBundle;
+import org.openide.util.Pair;
 import org.openide.util.RequestProcessor.Task;
 
 /**
@@ -757,7 +758,25 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
     private void updateAnnotationOnLine(Position line, boolean synchronous) throws BadLocationException {
         List<ErrorDescription> errorDescriptions = getErrorsForLine(line, false);
 
-        if (errorDescriptions == null) {
+        if (errorDescriptions == null) errorDescriptions = Collections.emptyList();
+        else errorDescriptions = new ArrayList<>(errorDescriptions);
+
+        Severity mostImportantSeverity = Severity.HINT;
+
+        for (Iterator<ErrorDescription> it = errorDescriptions.iterator(); it.hasNext();) {
+            ErrorDescription ed = it.next();
+            List<Position> positions = errors2Lines.get(ed);
+
+            if (positions == null || positions.isEmpty() || positions.get(0) != line) {
+                it.remove();
+            } else {
+                if (mostImportantSeverity.compareTo(ed.getSeverity()) > 0) {
+                    mostImportantSeverity = ed.getSeverity();
+                }
+            }
+        }
+
+        if (errorDescriptions.isEmpty()) {
             //nothing to do, remove old:
             ParseErrorAnnotation ann = line2Annotations.remove(line);
             if (ann != null) {
@@ -766,11 +785,41 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
             return;
         }
 
-        errorDescriptions = getErrorsForLine(line, true);
+        Pair<FixData, String> fixData = buildUpFixDataForLine(line);
+
+        ParseErrorAnnotation pea = new ParseErrorAnnotation(
+                mostImportantSeverity,
+                fixData.first(),
+                fixData.second(),
+                line,
+                this);
+        ParseErrorAnnotation previous = line2Annotations.put(line, pea);
+
+        if (previous != null) {
+            detachAnnotation(previous, synchronous);
+        }
+
+        attachAnnotation(line, pea, synchronous);   
+    }
+
+    public Pair<FixData, String> buildUpFixDataForLine(int caretLine) {
+        try {
+            Position line = getPosition(caretLine, false);
+            
+            if (line == null) return null;
+
+            return buildUpFixDataForLine(line);
+        } catch (BadLocationException ex) {
+            LOG.log(Level.FINE, null, ex);
+            return null;
+        }
+    }
+
+    private Pair<FixData, String> buildUpFixDataForLine(Position line) {
+        List<ErrorDescription> errorDescriptions = getErrorsForLine(line, true);
 
         List<ErrorDescription> trueErrors = filter(errorDescriptions, true);
         List<ErrorDescription> others = filter(errorDescriptions, false);
-        boolean hasErrors = !trueErrors.isEmpty();
 
         //build up the description of the annotation:
         StringBuffer description = new StringBuffer();
@@ -783,35 +832,7 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
 
         concatDescription(others, description);
 
-        Severity mostImportantSeverity;
-
-        if (hasErrors) {
-            mostImportantSeverity = Severity.ERROR;
-        } else {
-            mostImportantSeverity = Severity.HINT;
-
-            for (ErrorDescription e : others) {
-                if (mostImportantSeverity.compareTo(e.getSeverity()) > 0) {
-                    mostImportantSeverity = e.getSeverity();
-                }
-            }
-        }
-
-        FixData fixes = new FixData(computeFixes(trueErrors), computeFixes(others));
-
-        ParseErrorAnnotation pea = new ParseErrorAnnotation(
-                mostImportantSeverity,
-                fixes,
-                description.toString(),
-                line,
-                this);
-        ParseErrorAnnotation previous = line2Annotations.put(line, pea);
-
-        if (previous != null) {
-            detachAnnotation(previous, synchronous);
-        }
-
-        attachAnnotation(line, pea, synchronous);   
+        return Pair.of(new FixData(computeFixes(trueErrors), computeFixes(others)), description.toString());
     }
 
     void updateHighlightsOnLine(Position line) throws IOException {

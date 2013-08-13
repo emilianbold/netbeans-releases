@@ -43,6 +43,8 @@ package org.netbeans.modules.html.angular;
 
 import java.awt.Color;
 import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -59,7 +61,10 @@ import org.netbeans.modules.parsing.api.Snapshot;
  * @author marekfukala
  */
 public class Utils {
-
+    
+    private static final int URL_CONNECTION_TIMEOUT = 1000; //ms
+    private static final int URL_READ_TIMEOUT = URL_CONNECTION_TIMEOUT * 3; //ms
+     
     /**
      * Gets document range for the given from and to embedded offsets. 
      * 
@@ -97,6 +102,8 @@ public class Utils {
             charset = Charset.defaultCharset();
         }
         URLConnection con = url.openConnection();
+        con.setConnectTimeout(URL_CONNECTION_TIMEOUT); 
+        con.setReadTimeout(URL_READ_TIMEOUT); 
         con.connect();
         Reader r = new InputStreamReader(new BufferedInputStream(con.getInputStream()), charset);
         char[] buf = new char[2048];
@@ -105,7 +112,21 @@ public class Utils {
             writer.write(buf, 0, read);
         }
         r.close();
-        writer.close();
+    }
+    
+    public static String getFileContent(File file) throws IOException {
+        Reader r = new InputStreamReader(new FileInputStream(file), "UTF-8"); // NOI18N
+        StringBuilder sb = new StringBuilder();
+        try {
+            char[] buf = new char[2048];
+            int read;
+            while ((read = r.read(buf)) != -1) {
+                sb.append(buf, 0, read);
+            }
+        } finally {
+            r.close();
+        }
+        return sb.toString();
     }
     
 }

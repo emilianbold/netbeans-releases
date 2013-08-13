@@ -210,13 +210,16 @@ public class CdiUtil {
                 return true;//no beans.xml and ee7 environment, default cdi 1.1 behavior
             }
             WebBeansModel model = WebBeansModelFactory.getInstance().getModel(getModelSource(beans, true));
-            if (model == null) {
-                return false;//???
+            if (model == null || model.getRootComponent() == null) {
+                return false;//empty? as in cdi1.0
             }
 
-            String attribute = model.getRootComponent().getAttribute(BeansAttributes.VERSION);
-            if(attribute == null || attribute.equals("1.0")) {
-                return false;//no version attribute in cdi1.0 or equal to "1.0" in cdi 1.1.
+            String attribute = model.getRootComponent().getAttribute(BeansAttributes.XMLNS);
+            String version = model.getRootComponent().getAttribute(BeansAttributes.VERSION);
+            if(attribute != null && attribute.startsWith("http://java")) {//NOI18N
+                return false;//only cdi1.0 use java.sun.com namespace, also default for future usage is cdi 1.1 (in case of corrupted beans without namespace)
+            } else if ("1.0".equals(version)){//NOI18N
+                return false;//we can fall back with version attribute if exists.
             }
             return true;
         }

@@ -53,6 +53,7 @@ import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.*;
 import org.netbeans.modules.web.el.completion.ELStreamCompletionItem;
+import org.netbeans.modules.web.el.spi.ImplicitObjectType;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 
@@ -109,7 +110,7 @@ public final class Identifiers extends ELRule {
                     } else if (node instanceof AstIdentifier) {
                         if (ELTypeUtilities.resolveElement(info, each, node) == null
                                 // issue #232089 - cc.attrs is marked as an Unknown property
-                                || ELTypeUtilities.isRawObjectReference(info, node)) {
+                                || ELTypeUtilities.isRawObjectReference(info, node, false)) {
                             // currently we can't reliably resolve all identifiers, so 
                             // if we couldn't resolve the base identifier skip checking properties / methods
                             finished = true;
@@ -137,6 +138,12 @@ public final class Identifiers extends ELRule {
         // valid bean's property/method
         Element resolvedElement = ELTypeUtilities.resolveElement(info, element, node);
         if (resolvedElement != null) {
+            return true;
+        }
+
+        // don't show the hint for implicit objects - it's more useless than helpful to show false warnings (since
+        // the implementation class can differ and the many of implicit objects references just some kind of map)
+        if (ELTypeUtilities.isImplicitObjectReference(info, parent, ImplicitObjectType.ALL_TYPES, false)) {
             return true;
         }
 

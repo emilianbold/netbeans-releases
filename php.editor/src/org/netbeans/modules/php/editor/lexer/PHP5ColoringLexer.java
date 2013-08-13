@@ -1851,7 +1851,7 @@ public class PHP5ColoringLexer {
         case 57:
           { String text = yytext();
     if ((text.charAt(1)=='%' && asp_tags)
-        || (text.charAt(1)=='?' && short_tags_allowed)) {
+        || (text.charAt(1)=='?')) {
         //yybegin(ST_PHP_IN_SCRIPTING);
         pushState(ST_PHP_IN_SCRIPTING);
         return PHPTokenId.T_OPEN_TAG_WITH_ECHO;

@@ -46,6 +46,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.Callable;
@@ -147,6 +148,11 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     }
 
     @Override
+    public boolean isMine(URI uri) {
+        return uri.getScheme().equals(RemoteFileURLStreamHandler.PROTOCOL);
+    }
+
+    @Override
     public FileObject getCanonicalFileObject(FileObject fileObject) throws IOException {
         return RemoteFileSystemUtils.getCanonicalFileObject(fileObject);
     }
@@ -197,6 +203,19 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     @Override
     public boolean waitWrites(ExecutionEnvironment env, Collection<FileObject> filesToWait, Collection<String> failedFiles) throws InterruptedException {
         return true;
+    }
+
+    @Override
+    public FileSystem getFileSystem(URI uri) {
+        assert isMine(uri);
+        return getFileSystem(getEnv(uri), ""); //NOI18N
+    }
+
+    private ExecutionEnvironment getEnv(URI uri) {
+        String host = uri.getHost();
+        int port = uri.getPort();
+        String user = uri.getUserInfo();
+        return ExecutionEnvironmentFactory.createNew(user, host, port);
     }
 
     @Override
@@ -295,6 +314,15 @@ public class RemoteFileSystemProvider implements FileSystemProviderImplementatio
     @Override
     public boolean isMine(File file) {
         return file instanceof FileObjectBasedFile;
+    }
+
+    @Override
+    public void refresh(FileObject fileObject, boolean recursive) {
+        if (recursive) {
+            fileObject.refresh();
+        } else {
+            ((RemoteFileObject)fileObject).nonRecursiveRefresh();
+        }
     }
 
     @Override

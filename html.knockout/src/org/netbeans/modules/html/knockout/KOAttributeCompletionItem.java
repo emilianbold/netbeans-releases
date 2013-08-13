@@ -42,16 +42,9 @@
 package org.netbeans.modules.html.knockout;
 
 import java.awt.Color;
-import java.io.IOException;
-import java.lang.ref.WeakReference;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.html.editor.api.completion.HtmlCompletionItem;
 import org.netbeans.modules.html.editor.api.gsf.CustomAttribute;
-import org.netbeans.modules.html.knockout.model.Binding;
 
 /**
  *
@@ -59,22 +52,16 @@ import org.netbeans.modules.html.knockout.model.Binding;
  */
 public class KOAttributeCompletionItem extends HtmlCompletionItem.Attribute {
 
-    private static final String DOC_URL = "http://knockoutjs.com/documentation/binding-syntax.html"; //NOI18N
-    
-    private static WeakReference<String> HELP_CACHE = new WeakReference<>(null);
-    
-    private static final String CANNOT_LOAD_HELP = Bundle.cannot_load_help();
-    
     private final boolean isInKnockoutFile;
-    
+
     public KOAttributeCompletionItem(CustomAttribute ca, int offset, boolean isInKnockoutFile) {
-        super(ca.getName(), offset, false, ca.getHelp());
+        super(ca.getName(), offset, isInKnockoutFile /* not required, but makes them bold */, ca.getHelp());
         this.isInKnockoutFile = isInKnockoutFile;
     }
 
     @Override
     protected ImageIcon getIcon() {
-        return null;
+        return KOUtils.KO_ICON;
     }
 
     @Override
@@ -82,47 +69,4 @@ public class KOAttributeCompletionItem extends HtmlCompletionItem.Attribute {
         return isInKnockoutFile ? KOUtils.KO_COLOR : super.getAttributeColor();
     }
 
-//    //move the ko results to the top of the completion list if the page
-//    //already contains ko stuff
-//    @Override
-//    public int getSortPriority() {
-//        return super.getSortPriority() - (isInKnockoutFile ? 10 : 0);
-//    }
-
-    @Override
-    public boolean hasHelp() {
-        return isInKnockoutFile; //do not show KO's help  for generic data-bind attribute outside KO app
-    }
-    
-       @Override
-    public URL getHelpURL() {
-        try {
-            return new URL(DOC_URL);
-        } catch (MalformedURLException ex) {
-            Logger.getLogger(KOBindingCompletionItem.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return null;
-    }
-
-    @Override
-    public String getHelp() {
-        String helpContent = HELP_CACHE.get();
-        if(helpContent != null) {
-            return helpContent;
-        }
-        try {
-            URL url = getHelpURL();
-            if(url == null) {
-                return CANNOT_LOAD_HELP;
-            } else {
-                helpContent = HelpSupport.getKnockoutDocumentationContent(HelpSupport.loadURLContent(url, Binding.DOC_CHARSET));
-                HELP_CACHE = new WeakReference<>(helpContent);
-                return helpContent;
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(KOBindingCompletionItem.class.getName()).log(Level.SEVERE, null, ex);
-        }
-        return CANNOT_LOAD_HELP;
-    }
-    
 }

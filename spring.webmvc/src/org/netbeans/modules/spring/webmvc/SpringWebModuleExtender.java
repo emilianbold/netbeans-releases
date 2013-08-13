@@ -75,6 +75,7 @@ import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.Listener;
 import org.netbeans.modules.j2ee.dd.api.web.Servlet;
 import org.netbeans.modules.j2ee.dd.api.web.ServletMapping;
+import org.netbeans.modules.j2ee.dd.api.web.ServletMapping25;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WelcomeFileList;
 import org.netbeans.modules.spring.api.SpringUtilities;
@@ -466,9 +467,9 @@ public class SpringWebModuleExtender extends WebModuleExtender implements Change
         }
 
         protected ServletMapping addServletMapping(WebApp webApp, String name, String pattern) throws IOException {
-            ServletMapping mapping = (ServletMapping) createBean(webApp, "ServletMapping"); // NOI18N
+            ServletMapping25 mapping = (ServletMapping25) createBean(webApp, "ServletMapping"); // NOI18N
             mapping.setServletName(name);
-            mapping.setUrlPattern(pattern);
+            mapping.addUrlPattern(pattern);
             webApp.addServletMapping(mapping);
             return mapping;
         }

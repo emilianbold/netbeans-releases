@@ -76,6 +76,8 @@ import org.openide.util.RequestProcessor;
 import org.openide.DialogDisplayer;
 import org.openide.nodes.Node;
 import static org.netbeans.modules.mercurial.util.HgUtils.isNullOrEmpty;
+import org.openide.awt.ActionID;
+import org.openide.awt.ActionRegistration;
 import org.openide.filesystems.FileUtil;
 
 /**
@@ -89,6 +91,8 @@ import org.openide.filesystems.FileUtil;
     "# {0} - repository folder name",
     "CTL_MenuItem_PushRoot=Push &All Branches - {0}"
 })
+@ActionID(id = "org.netbeans.modules.mercurial.ui.push.PushAction", category = "Mercurial")
+@ActionRegistration(lazy = false, displayName = "#CTL_MenuItem_PushLocal")
 public class PushAction extends ContextAction {
 
     @Override

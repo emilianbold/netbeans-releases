@@ -66,6 +66,8 @@ import org.netbeans.modules.debugger.jpda.expr.JDIVariable;
  * @author Martin Entlicher
  */
 public class EvaluatorTest extends NbTestCase {
+    
+    private static final String METHOD_TO_TEST = null;//"testMember7";
 
     private JPDASupport     support;
     private URL             source;
@@ -167,15 +169,23 @@ public class EvaluatorTest extends NbTestCase {
     }
     
     private void checkEval(Method m) {
+        if (METHOD_TO_TEST != null && !METHOD_TO_TEST.equals(m.getName())) {
+            return ;
+        }
+        String expression = null;
         try {
-            Variable eMethod = support.getDebugger ().evaluate (m.getName()+"()");
+            expression = m.getName()+"()";
+            Variable eMethod = support.getDebugger ().evaluate (expression);
             String undo = m.getUndo();
             if (undo != null) {
-                support.getDebugger ().evaluate (undo+"()");
+                expression = undo+"()";
+                support.getDebugger ().evaluate (expression);
             }
-            Variable eVal = support.getDebugger ().evaluate (m.getExpression());
+            expression = m.getExpression();
+            Variable eVal = support.getDebugger ().evaluate (expression);
             if (undo != null) {
-                support.getDebugger ().evaluate (undo+"()");
+                expression = undo+"()";
+                support.getDebugger ().evaluate (expression);
             }
             /*System.err.println("  eMethod = "+eMethod);
             System.err.println("  eVal = "+eVal);
@@ -201,7 +211,7 @@ public class EvaluatorTest extends NbTestCase {
         } catch (InvalidExpressionException e) {
             e.printStackTrace();
             fail (
-                "Evaluation of expression was unsuccessful: " + e
+                "Evaluation of expression '"+expression+"' was unsuccessful: " + e
             );
         }
     }
@@ -216,8 +226,8 @@ public class EvaluatorTest extends NbTestCase {
                 line = line.trim();
                 if (line.startsWith("*")) continue;
                 if (m != null) {
-                    int rt = line.indexOf("return");
-                    if (rt != 0) {
+                    int rt = line.indexOf("return ");
+                    if (rt < 0) {
                         continue;
                     }
                     String expression;

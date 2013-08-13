@@ -186,7 +186,8 @@ public class CssIndex {
                     querySupport.query(CssIndexer.CSS_CONTENT_KEY, "", QuerySupport.Kind.PREFIX, factory.getIndexKeys().toArray(new String[0]));
             
         for(IndexResult result : results) {
-            if(result.getFile().equals(file)) {
+            FileObject resultFile = result.getFile(); //can be null as the file can be removed/moved
+            if(resultFile != null && resultFile.equals(file)) {
                 return factory.loadFromIndex(result);
             }
         }

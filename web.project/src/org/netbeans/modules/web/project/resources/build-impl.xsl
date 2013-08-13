@@ -256,10 +256,18 @@ introduced by support for multiple source roots. -jglick
                 <condition property="do.display.browser">
                     <istrue value="${{display.browser}}"/>
                 </condition>
+                <condition property="do.display.browser.debug.old">
+                    <and>
+                        <isset property="do.display.browser"/>
+                        <not><isset property="do.debug.client"/></not>
+                        <not><isset property="browser.context"/></not>
+                    </and>
+                </condition>
                 <condition property="do.display.browser.debug">
                     <and>
                         <isset property="do.display.browser"/>
                         <not><isset property="do.debug.client"/></not>
+                        <isset property="browser.context"/>
                     </and>
                 </condition>
                 <available file="${{conf.dir}}/MANIFEST.MF" property="has.custom.manifest"/>
@@ -2127,18 +2135,33 @@ exists or setup the property manually. For example like this:
             </target>
             
             <target name="run-display-browser">
-                <xsl:attribute name="depends">run-deploy,-init-display-browser,-display-browser-nb,-display-browser-cl</xsl:attribute>
+                <xsl:attribute name="depends">run-deploy,-init-display-browser,-display-browser-nb-old,-display-browser-nb,-display-browser-cl</xsl:attribute>
             </target>
             
             <target name="-init-display-browser" if="do.display.browser">
+                <condition property="do.display.browser.nb.old">
+                    <and>
+                        <isset property="netbeans.home"/>
+                        <not>
+                            <isset property="browser.context"/>
+                        </not>
+                    </and>
+                </condition>
                 <condition property="do.display.browser.nb">
-                    <isset property="netbeans.home"/>
+                    <and>
+                        <isset property="netbeans.home"/>
+                        <isset property="browser.context"/>
+                    </and>
                 </condition>
                 <condition property="do.display.browser.cl">
                     <isset property="deploy.ant.enabled"/>
                 </condition>
             </target>
             
+            <target name="-display-browser-nb-old" if="do.display.browser.nb.old">
+                <nbbrowse url="${{client.url}}"/>
+            </target>
+
             <target name="-display-browser-nb" if="do.display.browser.nb">
                 <nbbrowse url="${{client.url}}" context="${{browser.context}}" urlPath="${{client.urlPart}}"/>
             </target>
@@ -2221,6 +2244,7 @@ exists or setup the property manually. For example like this:
                 <nbstartserver debugmode="true"/>
                 <antcall target="connect-debugger"/>
                 <nbdeploy debugmode="true" clientUrlPart="${{client.urlPart}}" forceRedeploy="true" />
+                <antcall target="debug-display-browser-old"/>
                 <antcall target="debug-display-browser"/>
                 <antcall target="connect-client-debugger"/>
             </target>
@@ -2258,6 +2282,10 @@ exists or setup the property manually. For example like this:
                 </nbjpdaconnect>
             </target>
             
+            <target name="debug-display-browser-old" if="do.display.browser.debug.old">
+                <nbbrowse url="${{client.url}}"/>
+            </target>
+
             <target name="debug-display-browser" if="do.display.browser.debug">
                 <nbbrowse url="${{client.url}}" context="${{browser.context}}" urlPath="${{client.urlPart}}"/>
             </target>
@@ -2427,6 +2455,9 @@ exists or setup the property manually. For example like this:
                 <nbstartserver profilemode="true"/>
                 
                 <nbdeploy profilemode="true" clientUrlPart="${{client.urlPart}}" forceRedeploy="true" />
+                <antcall>
+                    <xsl:attribute name="target">debug-display-browser-old</xsl:attribute>
+                </antcall>
                 <antcall>
                     <xsl:attribute name="target">debug-display-browser</xsl:attribute>
                 </antcall>

@@ -43,8 +43,9 @@ package org.netbeans.modules.javascript2.editor.jsdoc.model;
 
 import java.util.LinkedList;
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.Type;
+import org.netbeans.modules.javascript2.editor.model.TypeUsage;
+import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 
 /**
@@ -53,6 +54,10 @@ import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
  * @author Martin Fousek <marfous@netbeans.org>
  */
 public class JsDocElementUtils {
+
+    private static final String LOWERCASED_NUMBER = Type.NUMBER.toLowerCase();
+    private static final String LOWERCASED_STRING = Type.STRING.toLowerCase();
+    private static final String LOWERCASED_BOOLEAN = Type.BOOLEAN.toLowerCase();
 
     /** Limit for number of spaces inside the type declaration. */
     public static final int LIMIT_SPACES_IN_TYPE = 10;
@@ -73,7 +78,7 @@ public class JsDocElementUtils {
                         (values.length > 0) ? new NamePath(values[0].trim()) : null,
                         (values.length > 1) ? new NamePath(values[1].trim()) : null);
             case DECLARATION:
-                return DeclarationElement.create(type, new TypeUsageImpl(tagDescription, descStartOffset));
+                return createDeclarationElement(type, tagDescription, descStartOffset);
             case DESCRIPTION:
                 return DescriptionElement.create(type, tagDescription);
             case LINK:
@@ -101,10 +106,32 @@ public class JsDocElementUtils {
         String[] typesArray = textToParse.split("[|]"); //NOI18N
         for (String string : typesArray) {
             if (!string.trim().isEmpty()) {
-                types.add(new TypeUsageImpl(string, offset + textToParse.indexOf(string)));
+                types.add(createTypeUsage(string, offset + textToParse.indexOf(string)));
             }
         }
         return types;
+    }
+
+    private static DeclarationElement createDeclarationElement(JsDocElementType elementType, String elementText, int descStartOffset) {
+        String type = elementText;
+        int typeOffset = descStartOffset + (elementText.indexOf("{") == -1 ? 0 : elementText.indexOf("{") + 1); //NOI18N
+        if (typeOffset > 0 && elementText.endsWith("}")) { //NOI18N
+            type = type.substring(1, type.length() - 1);
+        }
+        return DeclarationElement.create(elementType, createTypeUsage(type, typeOffset));
+    }
+
+    private static TypeUsage createTypeUsage(String type, int offset) {
+        // see issue #233176
+        if (LOWERCASED_STRING.equals(type)) {
+            return new TypeUsageImpl(Type.STRING, offset);
+        } else if (LOWERCASED_NUMBER.equals(type)) {
+            return new TypeUsageImpl(Type.NUMBER, offset);
+        } else if (LOWERCASED_BOOLEAN.equals(type)) {
+            return new TypeUsageImpl(Type.BOOLEAN, offset);
+        } else {
+            return new TypeUsageImpl(type, offset);
+        }
     }
 
     private static ParameterElement createParameterElement(JsDocElementType elementType,
@@ -166,7 +193,7 @@ public class JsDocElementUtils {
 
         if (elementType.getCategory() == JsDocElement.Category.NAMED_PARAMETER) {
             return NamedParameterElement.createWithNameDiagnostics(elementType,
-                    new DocIdentifierImpl(name.toString(), nameOffset), parseTypes(types, typeOffset), desc);
+                    new IdentifierImpl(name.toString(), nameOffset), parseTypes(types, typeOffset), desc);
         } else {
             return UnnamedParameterElement.create(elementType, parseTypes(types, typeOffset), desc);
         }

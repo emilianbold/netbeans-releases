@@ -175,6 +175,8 @@ public class DarkNimbusTheme {
         UIManager.put("nb.dataview.table.altbackground", new RelativeColor(new Color(0,0,0), new Color(30,30,30), "Table.background")); //NOI18N
         UIManager.put("Table.selectionBackground", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "Table[Enabled+Selected].textBackground")); //NOI18N
         UIManager.put("nb.dataview.table.rollOverRowBackground", new RelativeColor(new Color(0,0,0), new Color(30,30,30), "Table[Enabled+Selected].textBackground"));
+        
+        UIManager.put("selection.highlight", new Color(202, 152, 0));
 
         UIManager.put( "nb.laf.postinstall.callable", new Callable<Object>() { //NOI18N
 
@@ -200,9 +202,11 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.bigclose.tab.icon.pressed.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
         UIManager.put( "nb.bigclose.tab.icon.rollover.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
 
-        //#232854 - menu item accelerators are too dark
-        UIManager.put( "MenuItem.acceleratorForeground", new Color(198,198,198) );
-        UIManager.put( "CheckBoxMenuItem.acceleratorForeground", new Color(198,198,198) );
-        UIManager.put( "RadioButtonMenuItem.acceleratorForeground", new Color(198,198,198) );
+        //browser picker
+        UIManager.put( "Nb.browser.picker.background.light", new Color(116,116,116));
+        UIManager.put( "Nb.browser.picker.foreground.light", new Color(192,192,192));
+        //#233622
+        UIManager.put( "List[Selected].textForeground", UIManager.getColor( "nimbusSelectedText" ) );
+
    }
 }

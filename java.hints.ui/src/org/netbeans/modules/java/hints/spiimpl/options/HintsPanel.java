@@ -122,6 +122,7 @@ import org.netbeans.modules.options.editor.spi.OptionsFilter;
 import org.netbeans.modules.options.editor.spi.OptionsFilter.Acceptor;
 import org.netbeans.spi.editor.hints.Severity;
 import org.netbeans.spi.java.hints.Hint.Kind;
+import org.netbeans.spi.options.OptionsPanelController.Keywords;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileUtil;
 import org.openide.loaders.DataFolder;
@@ -132,10 +133,12 @@ import org.openide.util.NbBundle.Messages;
 import org.openide.util.RequestProcessor;
 
 
+@Keywords(location="Editor", tabTitle="#CTL_Hints_DisplayName2", keywords={"#CTL_DepScanning", "#CTL_Scope_Desc", "#CTL_Scope_Label"})
 public final class HintsPanel extends javax.swing.JPanel   {
     
     private static final String DELETE = "delete";
     private static final String DECLARATIVE_HINT_TEMPLATE_LOCATION = "org-netbeans-modules-java-hints/templates/Inspection.hint";
+            static final String[] EXTRA_NODE_KEYWORDS = new String[] {"CTL_DepScanning", "CTL_Scope_Desc", "CTL_Scope_Label"};
 
     private final static RequestProcessor WORKER = new RequestProcessor(HintsPanel.class.getName(), 1, false, false);
 
@@ -182,9 +185,9 @@ public final class HintsPanel extends javax.swing.JPanel   {
                     @Override
                     public void run() {
                         HintsPanel.this.removeAll();
-                        HintsPanel.this.init(filter, false, overlay != null, true, true, true, true);
+                        HintsPanel.this.init(filter, false, overlay != null, true, true, true, true, false);
                         if (overlay != null) {
-                            HintsPanel.this.setOverlayPreferences(overlay);
+                            HintsPanel.this.setOverlayPreferences(overlay, false);
                         }
                         buttonsPanel.setVisible(false);
                         searchPanel.setVisible(false);
@@ -202,14 +205,14 @@ public final class HintsPanel extends javax.swing.JPanel   {
         this.cpBased = cpBased;
         this.queryStatus = QueryStatus.ONLY_ENABLED;
         this.showHeavyInspections = true;
-        init(null, true, false, false, true, true, true);
+        init(null, true, false, false, true, true, true, false);
         configCombo.setSelectedItem(preselected);
     }
     public HintsPanel(HintMetadata preselected, @NullAllowed final CustomizerContext<?, ?> cc, ClassPathBasedHintWrapper cpBased) {
         this.cpBased = cpBased;
         this.queryStatus = cc == null ? QueryStatus.NEVER : QueryStatus.SHOW_QUERIES;
         this.showHeavyInspections = true;
-        init(null, true, false, false, false, cc == null, false);
+        init(null, true, false, false, false, cc == null, false, cc != null);
         select(preselected);
         configurationsPanel.setVisible(false);
         
@@ -226,18 +229,18 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
     }
 
-    public HintsPanel(Preferences configurations, ClassPathBasedHintWrapper cpBased) {
+    public HintsPanel(Preferences configurations, ClassPathBasedHintWrapper cpBased, boolean direct) {
         this.cpBased = cpBased;
         this.queryStatus = QueryStatus.SHOW_QUERIES;
         this.showHeavyInspections = true;
-        init(null, true, false, false, false, false, true);
-        setOverlayPreferences(HintsSettings.createPreferencesBasedHintsSettings(configurations, false, Severity.VERIFIER));
+        init(null, true, false, false, false, false, true, direct);
+        setOverlayPreferences(HintsSettings.createPreferencesBasedHintsSettings(configurations, false, Severity.VERIFIER), direct);
         configurationsPanel.setVisible(false);
     }
     
-    public void setOverlayPreferences(HintsSettings configurations) {
+    public void setOverlayPreferences(HintsSettings configurations, boolean direct) {
         if (logic != null)
-            logic.setOverlayPreferences(configurations);
+            logic.setOverlayPreferences(configurations, direct);
     }
 
     public boolean hasNewHints() {
@@ -254,7 +257,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
     }
     
-    private void init(@NullAllowed OptionsFilter filter, boolean batchOnly, boolean filterSuggestions, boolean ignoreMissingFilter, boolean showSeverityCombo, boolean showOkCancel, boolean showCheckBoxes) {
+    private void init(@NullAllowed OptionsFilter filter, boolean batchOnly, boolean filterSuggestions, boolean ignoreMissingFilter, boolean showSeverityCombo, boolean showOkCancel, boolean showCheckBoxes, boolean direct) {
         initComponents();
         scriptScrollPane.setVisible(false);
         optionsFilter = null;
@@ -333,7 +336,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
 
         initialized.set(true);
-        update();
+        update(direct);
         
         if (toSelect != null) {
             select(toSelect, true);
@@ -868,7 +871,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
         }
         return null;
     }    
-    synchronized void update() {
+    synchronized void update(boolean direct) {
         if (!initialized.get()) return;
         HintsSettings overlay = null;
         if ( logic != null ) {
@@ -876,7 +879,7 @@ public final class HintsPanel extends javax.swing.JPanel   {
             overlay = logic.getOverlayPreferences();
         }
         logic = new HintsPanelLogic();
-        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo, editScriptButton, overlay);
+        logic.connect(errorTree, errorTreeModel, severityLabel, severityComboBox, toProblemCheckBox, customizerPanel, descriptionTextArea, configCombo, editScriptButton, overlay, direct);
     }
     
     void cancel() {
@@ -1332,6 +1335,16 @@ public final class HintsPanel extends javax.swing.JPanel   {
             if (filterText.isEmpty()) return true;
             
             expandTask.schedule(100);
+            
+            if (originalTreeNode == extraNode) {
+                for (String key : EXTRA_NODE_KEYWORDS) {
+                    if (NbBundle.getMessage(HintsPanel.class, key).toLowerCase().contains(filterText)) {
+                        return true;
+                    }
+                }
+                
+                return false;
+            }
             
             DefaultMutableTreeNode n = (DefaultMutableTreeNode) originalTreeNode;
             Object uo = n.getUserObject();

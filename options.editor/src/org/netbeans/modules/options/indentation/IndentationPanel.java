@@ -53,7 +53,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.lang.reflect.Field;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.PreferenceChangeEvent;
@@ -72,6 +71,7 @@ import javax.swing.JSpinner;
 import javax.swing.ListCellRenderer;
 import javax.swing.SpinnerNumberModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -88,8 +88,8 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
-import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 
 
@@ -110,6 +110,29 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
     private final PreviewProvider preview;
     private final boolean showOverrideGlobalOptions;
     
+    private static final int REFRESH_DELAY = 100; /* [ms] */
+    
+    // create our own
+    private static final RequestProcessor REFRESH_PROCESSOR = new RequestProcessor("Indent Preview Formatter"); // NOI18N
+    
+    private final RequestProcessor.Task refreshTask = REFRESH_PROCESSOR.create(new Runnable() {
+        public void run() {
+            if (!SwingUtilities.isEventDispatchThread()) {
+                SwingUtilities.invokeLater(this);
+            } else {
+                // XXX: this is a workaround for the new view hierarchy, normally we
+                // should not catch any exception here and just call refreshPreview().
+                try {
+                    preview.refreshPreview();
+                } catch (ThreadDeath td) {
+                    throw td;
+                } catch (Throwable e) {
+                    // ignore
+                }
+            }
+        }
+    });
+    
     /** 
      * Creates new form IndentationPanel.
      */
@@ -118,7 +141,6 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         this.mimePath = mimePath;
         this.prefsFactory = prefsFactory;
         this.prefs = prefs;
-        this.prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, prefs));
 
         this.allLangPrefs = allLangPrefs;
         if (this.allLangPrefs == null) {
@@ -169,6 +191,9 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
             this.prefs.putBoolean(FormattingPanelController.OVERRIDE_GLOBAL_FORMATTING_OPTIONS, areBasicOptionsOverriden());
         }
         prefsChange(null);
+
+        // will not monitor changes made during initialization
+        this.prefs.addPreferenceChangeListener(WeakListeners.create(PreferenceChangeListener.class, this, prefs));
 
         //listeners
         cbOverrideGlobalOptions.addActionListener(this);
@@ -319,16 +344,12 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         }
 
         if (needsRefresh) {
-            // XXX: this is a workaround for the new view hierarchy, normally we
-            // should not catch any exception here and just call refreshPreview().
-            try {
-                preview.refreshPreview();
-            } catch (ThreadDeath td) {
-                throw td;
-            } catch (Throwable e) {
-                // ignore
-            }
+            scheduleRefresh();
         }
+    }
+    
+    /* package private */ void scheduleRefresh() {
+        refreshTask.schedule(REFRESH_DELAY);
     }
 
     // just copy the values over to prefs
@@ -418,25 +439,25 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
                 .addContainerGap()
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(lNumberOfSpacesPerIndent, javax.swing.GroupLayout.PREFERRED_SIZE, 207, Short.MAX_VALUE)
+                        .addComponent(lNumberOfSpacesPerIndent, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(sNumberOfSpacesPerIndent, javax.swing.GroupLayout.PREFERRED_SIZE, 53, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(lTabSize, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                        .addComponent(lTabSize, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(sTabSize, javax.swing.GroupLayout.PREFERRED_SIZE, 54, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(lRightMargin, javax.swing.GroupLayout.DEFAULT_SIZE, 207, Short.MAX_VALUE)
+                        .addComponent(lRightMargin, javax.swing.GroupLayout.PREFERRED_SIZE, 207, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(sRightMargin, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
-                        .addComponent(lLineWrap, javax.swing.GroupLayout.DEFAULT_SIZE, 117, Short.MAX_VALUE)
+                        .addComponent(lLineWrap, javax.swing.GroupLayout.PREFERRED_SIZE, 117, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cboLineWrap, javax.swing.GroupLayout.PREFERRED_SIZE, 152, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap())
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(20, 20, 20)
-                .addComponent(cbExpandTabsToSpaces, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE)
+                .addComponent(cbExpandTabsToSpaces, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(54, 54, 54))
         );
 
@@ -486,7 +507,7 @@ public class IndentationPanel extends JPanel implements ChangeListener, ActionLi
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(cbOverrideGlobalOptions, javax.swing.GroupLayout.DEFAULT_SIZE, 239, Short.MAX_VALUE)
+                .addComponent(cbOverrideGlobalOptions, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addGap(66, 66, 66))
             .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );

@@ -53,7 +53,7 @@ import org.netbeans.modules.kenai.api.KenaiFeature;
 import org.netbeans.modules.kenai.api.KenaiProject;
 import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
-import org.netbeans.modules.team.ui.spi.QueryHandle;
+import org.netbeans.modules.team.server.ui.spi.QueryHandle;
 
 /**
  *

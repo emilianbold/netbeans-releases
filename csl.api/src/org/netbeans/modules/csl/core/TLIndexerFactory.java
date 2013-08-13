@@ -98,8 +98,6 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
     private static final Map<Indexable, Collection<SimpleError>> errors = new IdentityHashMap<Indexable, Collection<SimpleError>>();
     private static final Map<Indexable, List<Integer>> lineStartOffsetsCache = new IdentityHashMap<Indexable, List<Integer>>();
 
-    private static final Map<URL, Boolean> tlInScope = new WeakHashMap<URL, Boolean>();
-    
     @Override
     public boolean scanStarted(final Context context) {
         return true;
@@ -110,7 +108,6 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
         if (!context.checkForEditorModifications()) {
             commitErrors(context.getRootURI(), errors, lineStartOffsetsCache);
         }
-        tlInScope.remove(context.getRootURI());
     }
 
     private static void commitErrors(URL root, Map<Indexable, Collection<SimpleError>> errors, Map<Indexable, List<Integer>> lineStartOffsetsCache) {
@@ -248,18 +245,8 @@ public final class TLIndexerFactory extends EmbeddingIndexerFactory {
                 if (TasklistStateBackdoor.getInstance().isCurrentEditorScope()) {
                     process = TasklistStateBackdoor.getInstance().getScope().isInScope(indexedFile);
                 } else {
-                    Boolean inScope = tlInScope.get(context.getRootURI());
-                    if (inScope == null) {
-                        // cache the result for the whole run of the embedding scanner.
-                        // the cache will be cleared by parsingFinished on the TLIndexerFactory.
-                        inScope = Boolean.TRUE;
-                        TaskScanningScope scope = TasklistStateBackdoor.getInstance().getScope();
-                        if (scope != null) {
-                            inScope = scope.isInScope(indexedFile);
-                        }
-                        tlInScope.put(context.getRootURI(), inScope);
-                    }
-                    process = inScope;
+                    // index if observable && !editor scope
+                    process = true;
                 }
             }            
             

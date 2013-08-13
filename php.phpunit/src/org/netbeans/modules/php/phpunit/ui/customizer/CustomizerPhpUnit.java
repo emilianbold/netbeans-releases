@@ -68,6 +68,7 @@ import org.netbeans.modules.php.phpunit.preferences.PhpUnitPreferencesValidator;
 import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -264,7 +265,6 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        phpUnitLabel = new JLabel();
         bootstrapLabel = new JLabel();
         bootstrapTextField = new JTextField();
         bootstrapBrowseButton = new JButton();
@@ -288,55 +288,58 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         runTestUsingUnitCheckBox = new JCheckBox();
         askForTestGroupsCheckBox = new JCheckBox();
 
-        phpUnitLabel.setLabelFor(this);
-        org.openide.awt.Mnemonics.setLocalizedText(phpUnitLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.text")); // NOI18N
-
         bootstrapLabel.setLabelFor(bootstrapTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(bootstrapLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(bootstrapLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(bootstrapBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapBrowseButton.text")); // NOI18N
+        bootstrapTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(bootstrapBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapBrowseButton.text")); // NOI18N
         bootstrapBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 bootstrapBrowseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(bootstrapGenerateButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapGenerateButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(bootstrapGenerateButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapGenerateButton.text")); // NOI18N
         bootstrapGenerateButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 bootstrapGenerateButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(bootstrapForCreateTestsCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapForCreateTestsCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(bootstrapForCreateTestsCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapForCreateTestsCheckBox.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(configurationCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(configurationCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationCheckBox.text")); // NOI18N
 
         configurationLabel.setLabelFor(configurationTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(configurationLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(configurationLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(configurationBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationBrowseButton.text")); // NOI18N
+        configurationTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(configurationBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationBrowseButton.text")); // NOI18N
         configurationBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 configurationBrowseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(bootstrapCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(bootstrapCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapCheckBox.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(configurationGenerateButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationGenerateButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(configurationGenerateButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.configurationGenerateButton.text")); // NOI18N
         configurationGenerateButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 configurationGenerateButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(suiteCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(suiteCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteCheckBox.text")); // NOI18N
 
         suiteLabel.setLabelFor(suiteTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(suiteLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(suiteLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(suiteBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.text")); // NOI18N
+        suiteTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(suiteBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteBrowseButton.text")); // NOI18N
         suiteBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 suiteBrowseButtonActionPerformed(evt);
@@ -344,22 +347,24 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         });
 
         suiteInfoLabel.setLabelFor(this);
-        org.openide.awt.Mnemonics.setLocalizedText(suiteInfoLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(suiteInfoLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.suiteInfoLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(scriptCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.scriptCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(scriptCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.scriptCheckBox.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(scriptLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.scriptLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(scriptLabel, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.scriptLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(scriptBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.scriptBrowseButton.text")); // NOI18N
+        scriptTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(scriptBrowseButton, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.scriptBrowseButton.text")); // NOI18N
         scriptBrowseButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 scriptBrowseButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(runTestUsingUnitCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.runTestUsingUnitCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(runTestUsingUnitCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.runTestUsingUnitCheckBox.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(askForTestGroupsCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.askForTestGroupsCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(askForTestGroupsCheckBox, NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.askForTestGroupsCheckBox.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -369,7 +374,6 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(configurationCheckBox)
                     .addComponent(suiteCheckBox)
-                    .addComponent(phpUnitLabel)
                     .addComponent(bootstrapCheckBox)
                     .addComponent(runTestUsingUnitCheckBox)
                     .addComponent(askForTestGroupsCheckBox)
@@ -381,7 +385,7 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(configurationLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(configurationTextField)
+                        .addComponent(configurationTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(configurationBrowseButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
@@ -403,7 +407,7 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(bootstrapLabel)
                         .addPreferredGap(ComponentPlacement.RELATED)
-                        .addComponent(bootstrapTextField)
+                        .addComponent(bootstrapTextField, GroupLayout.PREFERRED_SIZE, 1, Short.MAX_VALUE)
                         .addPreferredGap(ComponentPlacement.RELATED)
                         .addComponent(bootstrapBrowseButton)
                         .addPreferredGap(ComponentPlacement.RELATED)
@@ -421,8 +425,7 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
         layout.setVerticalGroup(
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(phpUnitLabel)
-                .addPreferredGap(ComponentPlacement.RELATED)
+                .addGap(0, 0, 0)
                 .addComponent(bootstrapCheckBox)
                 .addPreferredGap(ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(Alignment.BASELINE)
@@ -459,12 +462,9 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
                 .addGap(18, 18, 18)
                 .addComponent(runTestUsingUnitCheckBox)
                 .addPreferredGap(ComponentPlacement.RELATED)
-                .addComponent(askForTestGroupsCheckBox)
-                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addComponent(askForTestGroupsCheckBox))
         );
 
-        phpUnitLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.AccessibleContext.accessibleName")); // NOI18N
-        phpUnitLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.phpUnitLabel.AccessibleContext.accessibleDescription")); // NOI18N
         bootstrapLabel.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.AccessibleContext.accessibleName")); // NOI18N
         bootstrapLabel.getAccessibleContext().setAccessibleDescription(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapLabel.AccessibleContext.accessibleDescription")); // NOI18N
         bootstrapTextField.getAccessibleContext().setAccessibleName(NbBundle.getMessage(CustomizerPhpUnit.class, "CustomizerPhpUnit.bootstrapTextField.AccessibleContext.accessibleName")); // NOI18N
@@ -585,7 +585,6 @@ public final class CustomizerPhpUnit extends JPanel implements HelpCtx.Provider 
     private JButton configurationGenerateButton;
     private JLabel configurationLabel;
     private JTextField configurationTextField;
-    private JLabel phpUnitLabel;
     private JCheckBox runTestUsingUnitCheckBox;
     private JButton scriptBrowseButton;
     private JCheckBox scriptCheckBox;

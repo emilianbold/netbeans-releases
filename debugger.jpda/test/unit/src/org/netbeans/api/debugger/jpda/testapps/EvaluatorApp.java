@@ -44,6 +44,8 @@
 
 package org.netbeans.api.debugger.jpda.testapps;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -80,6 +82,7 @@ public class EvaluatorApp {
     private static short    sx = 10;
     private static char     cx = 'a';
     private static byte     btx = 127;
+    private static Object   pointObject = new java.awt.Point(2, 3);
     private static enum     e { ONE, TWO, THREE }
     
     private int     ci = 1234;
@@ -826,6 +829,11 @@ public class EvaluatorApp {
         return java.util.Collection.class;
     }
     
+    public static int testMember7() {
+        // return pointObject.x;
+        return ((java.awt.Point) pointObject).x;
+    }
+    
     // Method calls
     
     public static Object testMethod1() {
@@ -1059,6 +1067,31 @@ public class EvaluatorApp {
     }
     
     
+    // Private access
+    
+    // Test public class first
+    public boolean testPrivatePackageClass1() {
+        // return java.beans.Beans.isDesignTime();
+        return java.beans.Beans.isDesignTime();
+    }
+    
+    // Then package private class
+    public String failtestPrivatePackageClass2() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, InvocationTargetException {
+        // return java.beans.ThreadGroupContext.getContext().getClass().getCanonicalName();
+        // Must use introspection to evaluate:
+        Class<?> tgc = Class.forName("java.beans.ThreadGroupContext");
+        Method getContext = tgc.getDeclaredMethod("getContext");
+        getContext.setAccessible(true);
+        return getContext.invoke(null).getClass().getCanonicalName();
+    }
+    
+    public String failtestAccess1() throws ClassNotFoundException, NoSuchMethodException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        // return org.netbeans.api.debugger.jpda.testapps.privat.PackagePrivateClass.getPublicInfo();
+        Class<?> ppc = Class.forName("org.netbeans.api.debugger.jpda.testapps.privat.PackagePrivateClass");
+        Method m = ppc.getDeclaredMethod("getPublicInfo");
+        m.setAccessible(true);
+        return (String) m.invoke(ppc);
+    }
     
     
     

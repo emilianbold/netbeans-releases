@@ -110,7 +110,8 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
                                 Bundle.TXT_Title(),
                                 Bundle.TXT_SourcesFilterName(),
                                 new File[1]),
-                            SourceJavadocAttacherUtil.createDefaultURIConvertor(true));
+                            SourceJavadocAttacherUtil.createDefaultURIConvertor(true),
+                            null);
                     } else if (mode == J2SEPlatformCustomizer.JAVADOC) {
                         selected = SourceJavadocAttacherUtil.selectJavadoc(
                             root,
@@ -119,7 +120,8 @@ public class J2SEPlatformSourceJavadocAttacher implements SourceJavadocAttacherI
                                 Bundle.TXT_Title(),
                                 Bundle.TXT_JavadocFilterName(),
                                 new File[1]),
-                            SourceJavadocAttacherUtil.createDefaultURIConvertor(false));
+                            SourceJavadocAttacherUtil.createDefaultURIConvertor(false),
+                            null);
                     } else {
                         throw new IllegalStateException(Integer.toString(mode));
                     }

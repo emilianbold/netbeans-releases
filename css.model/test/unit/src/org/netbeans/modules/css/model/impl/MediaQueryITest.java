@@ -44,8 +44,23 @@ package org.netbeans.modules.css.model.impl;
 import java.util.Collection;
 import java.util.List;
 import javax.swing.text.BadLocationException;
+import org.netbeans.modules.css.model.api.Body;
+import org.netbeans.modules.css.model.api.ElementFactory;
+import org.netbeans.modules.css.model.api.Expression;
+import org.netbeans.modules.css.model.api.Media;
+import org.netbeans.modules.css.model.api.MediaBody;
+import org.netbeans.modules.css.model.api.MediaExpression;
+import org.netbeans.modules.css.model.api.MediaFeature;
+import org.netbeans.modules.css.model.api.MediaFeatureValue;
+import org.netbeans.modules.css.model.api.MediaQuery;
+import org.netbeans.modules.css.model.api.MediaQueryList;
+import org.netbeans.modules.css.model.api.MediaQueryOperator;
+import org.netbeans.modules.css.model.api.MediaType;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelTestBase;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.model.api.Page;
+import org.netbeans.modules.css.model.api.Rule;
+import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**

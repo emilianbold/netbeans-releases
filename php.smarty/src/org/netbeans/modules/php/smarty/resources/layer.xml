@@ -42,7 +42,7 @@
                 </file>
                 <folder name="CompletionProviders">
                     <file name="org-netbeans-modules-html-editor-completion-HtmlCompletionProvider.instance"/>
-                    <file name="org-netbeans-modules-php-editor-PHPCodeCompletion.instance"/>
+                    <file name="org-netbeans-modules-php-editor-completion-PHPCodeCompletion.instance"/>
                     <file name="org-netbeans-modules-csl-editor-completion-GsfCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-html-editor-completion-HtmlPaletteCompletionProvider.instance"/>
                     <file name="org-netbeans-modules-php-smarty-editor-completion-TplCompletionProvider.instance"/>
@@ -79,6 +79,20 @@
                     <folder name="NetBeans">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-php-smarty-resources-fontsColors.xml" url="fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="CityLights">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-php-smarty-resources-fontsColors-CityLights.xml" url="fontsColors-CityLights.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-php-smarty-resources-fontsColors-BlueTheme.xml" url="fontsColors-BlueTheme.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.smarty.resources.Bundle"/>
                             </file>
                         </folder>
@@ -137,7 +151,7 @@
                 </folder>
 
                 <file name="org-netbeans-modules-csl-editor-semantic-HighlightsLayerFactoryImpl.instance"/>
-                
+
                 <folder name="CodeTemplateProcessorFactories">
                     <file name="org-netbeans-modules-csl-editor-codetemplates-GsfCodeTemplateProcessor$Factory.instance"/>
                 </folder>

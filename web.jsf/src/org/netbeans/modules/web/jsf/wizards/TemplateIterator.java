@@ -89,7 +89,6 @@ public class TemplateIterator implements TemplateWizard.Iterator {
     private static final String XHTML_EXT = "xhtml";    //NOI18N
     private static final String ENCODING = "UTF-8"; //NOI18N
     private static String TEMPLATE_XHTML = "template.xhtml"; //NOI18N
-    private static String TEMPLATE_BASE = "template.template"; //NOI18N
     private static String TEMPLATE_XHTML2 = "template-jsf2.template"; //NOI18N
     private static String TEMPLATE_XHTML22 = "template-jsf22.template"; //NOI18N
     private static String FL_RESOURCE_FOLDER = "org/netbeans/modules/web/jsf/facelets/resources/templates/"; //NOI18N
@@ -113,11 +112,9 @@ public class TemplateIterator implements TemplateWizard.Iterator {
             }
 
             JSFVersion version = JSFVersion.forWebModule(wm);
-            String templateFile = TEMPLATE_BASE;
+            String templateFile = TEMPLATE_XHTML2;
             if (version != null && version.isAtLeast(JSFVersion.JSF_2_2)) {
                 templateFile = TEMPLATE_XHTML22;
-            } else if (version != null && version.isAtLeast(JSFVersion.JSF_2_2)) {
-                templateFile = TEMPLATE_XHTML2;
             }
             String content = JSFFrameworkProvider.readResource(Thread.currentThread().getContextClassLoader().getResourceAsStream(FL_RESOURCE_FOLDER + templateFile), ENCODING);
             result = FileUtil.createData(targetDir, TEMPLATE_XHTML); //NOI18N
@@ -321,14 +318,14 @@ public class TemplateIterator implements TemplateWizard.Iterator {
                 is = templatePanel.getLayoutCSS();
                 JSFFrameworkProvider.createFile(cssFile, JSFFrameworkProvider.readResource(is, ENCODING), ENCODING);
             }
-            String layoutPath = JSFUtils.getRelativePath(target, cssFile);
+            String layoutPath = getResourceRelativePath(target, cssFile);
             cssFile = cssTargetFolder.getFileObject("default", CSS_EXT);  //NOI18N
             if (cssFile == null) {
                 cssFile = cssTargetFolder.createData("default", CSS_EXT); //NOI18N
                 is = templatePanel.getDefaultCSS();
                 JSFFrameworkProvider.createFile(cssFile, JSFFrameworkProvider.readResource(is, ENCODING), ENCODING);
             }
-            String defaultPath = JSFUtils.getRelativePath(target, cssFile);
+            String defaultPath = getResourceRelativePath(target, cssFile);
 
             is = templatePanel.getTemplate();
             String content = JSFFrameworkProvider.readResource(is, ENCODING);
@@ -353,6 +350,17 @@ public class TemplateIterator implements TemplateWizard.Iterator {
 
         public FileObject getResult() {
             return result;
+        }
+
+        private static String getResourceRelativePath(FileObject fromFO, FileObject toFO) {
+            String relativePath = JSFUtils.getRelativePath(fromFO, toFO);
+            if (relativePath.contains("resources")) {   //NOI18N
+                // web resource in the resources folder (common Facelet Template)
+                return "./css/" + toFO.getNameExt();    //NOI18N
+            } else {
+                // web resource in the subdir of the Resource Library Contract
+                return relativePath;
+            }
         }
     }
 }

@@ -51,7 +51,6 @@ import com.sun.source.tree.VariableTree;
 import com.sun.source.util.SourcePositions;
 import com.sun.source.util.TreePathScanner;
 import com.sun.source.util.Trees;
-import java.awt.Color;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -70,15 +69,15 @@ import javax.lang.model.element.VariableElement;
 import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
-import javax.swing.UIManager;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.source.CancellableTask;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
 import org.netbeans.modules.java.navigation.ElementNode.Description;
+import org.openide.util.Parameters;
 
-/** XXX Remove the ElementScanner class from here it should be wenough to
+/** XXX Remove the ElementScanner class from here it should be enough to
  * consult the Elements class. It should also permit for showing inherited members.
  *
  * @author phrebejk
@@ -86,15 +85,11 @@ import org.netbeans.modules.java.navigation.ElementNode.Description;
 public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     
     private static final Logger LOG = Logger.getLogger(ElementScanningTask.class.getName());
-    private ClassMemberPanelUI ui;
-    private final AtomicBoolean canceled = new AtomicBoolean ();
-
-    private static final String INHERITED_COLOR_KEY = "nb.navigator.inherited.color";   //NOI18N
-    private static final String TYPE_COLOR_KEY = "nb.navigator.type.color";    //NOI18N
-    private static final Color DEFAULT_TYPE_COLOR = new Color(0x70,0x70,0x70); //NOI18N
-    private static final Color DEFAULT_INHERITED_COLOR = new Color(0x7D,0x69, 0x4A);    //NOI18N
+    private final ClassMemberPanelUI ui;
+    private final AtomicBoolean canceled = new AtomicBoolean ();        
     
-    public ElementScanningTask( ClassMemberPanelUI ui ) {
+    public ElementScanningTask(@NonNull final ClassMemberPanelUI ui ) {
+        Parameters.notNull("ui", ui);   //NOI18N
         this.ui = ui;
     }
     
@@ -300,7 +295,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             sb.append("<s>"); // NOI18N
         }
         if( isInherited ) {
-            sb.append( "<font color=" + getInheritedColor() + ">" ); // NOI18N
+            sb.append( "<font color=" + ui.getInheritedColor() + ">" ); // NOI18N
         }
         Name name = e.getKind() == ElementKind.CONSTRUCTOR ? e.getEnclosingElement().getSimpleName() : e.getSimpleName();
         sb.append(Utils.escape(name.toString()));        
@@ -313,7 +308,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
         List<? extends VariableElement> params = e.getParameters();
         for( Iterator<? extends VariableElement> it = params.iterator(); it.hasNext(); ) {
             VariableElement param = it.next(); 
-            sb.append( "<font color=" + getTypeColor() + ">" ); // NOI18N
+            sb.append( "<font color=" + ui.getTypeColor() + ">" ); // NOI18N
             final boolean vararg = !it.hasNext() && e.isVarArgs();
             sb.append(printArg(info, param.asType(),vararg, fqn));
             sb.append("</font>"); // NOI18N
@@ -331,7 +326,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             TypeMirror rt = e.getReturnType();
             if ( rt.getKind() != TypeKind.VOID ) {                               
                 sb.append(" : "); // NOI18N     
-                sb.append( "<font color=" + getTypeColor() + ">" ); // NOI18N
+                sb.append( "<font color=" + ui.getTypeColor() + ">" ); // NOI18N
                 sb.append(print(info, e.getReturnType(), fqn));
                 sb.append("</font>"); // NOI18N                    
             }
@@ -348,7 +343,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             sb.append("<s>"); // NOI18N
         }
         if( isInherited ) {
-            sb.append( "<font color=" + getInheritedColor() + ">" ); // NOI18N
+            sb.append( "<font color=" + ui.getInheritedColor() + ">" ); // NOI18N
         }
         sb.append(Utils.escape(e.getSimpleName().toString()));
         if ( isDeprecated ) {
@@ -357,7 +352,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
 
         if ( e.getKind() != ElementKind.ENUM_CONSTANT ) {
             sb.append( " : " ); // NOI18N
-            sb.append( "<font color=" + getTypeColor() + ">" ); // NOI18N
+            sb.append( "<font color=" + ui.getTypeColor() + ">" ); // NOI18N
             sb.append(print(info, e.asType(), fqn));
             sb.append("</font>"); // NOI18N
         }
@@ -372,7 +367,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
             sb.append("<s>"); // NOI18N
         }
         if( isInherited ) {
-            sb.append( "<font color=" + getInheritedColor() + ">" ); // NOI18N
+            sb.append( "<font color=" + ui.getInheritedColor() + ">" ); // NOI18N
         }
         sb.append(Utils.escape(
             fqn?
@@ -430,7 +425,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
               e.getKind() != ElementKind.ANNOTATION_TYPE ) {
             sb.append( " :: " ); // NOI18N
             if (scName != null) {                
-                sb.append( "<font color=" + getTypeColor() + ">" ); // NOI18N
+                sb.append( "<font color=" + ui.getTypeColor() + ">" ); // NOI18N
                 sb.append( scName );
                 sb.append("</font>"); // NOI18N
             }
@@ -440,7 +435,7 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
                 }
                 for (Iterator<? extends TypeMirror> it = ifaces.iterator(); it.hasNext();) {
                     TypeMirror typeMirror = it.next();
-                    sb.append( "<font color=" + getTypeColor() + ">" ); // NOI18N
+                    sb.append( "<font color=" + ui.getTypeColor() + ">" ); // NOI18N
                     sb.append( print(info, typeMirror, fqn) );
                     sb.append("</font>"); // NOI18N
                     if ( it.hasNext() ) {
@@ -492,39 +487,5 @@ public class ElementScanningTask implements CancellableTask<CompilationInfo>{
     private String print(CompilationInfo info, TypeMirror tm, boolean fqn) {
         return Utils.escape(fqn ? info.getTypeUtilities().getTypeName(tm, TypeNameOptions.PRINT_FQN).toString()
                                 : info.getTypeUtilities().getTypeName(tm).toString());
-    }
-
-    @NonNull
-    private static String getInheritedColor() {
-        final Color c = UIManager.getColor(INHERITED_COLOR_KEY);
-        return getHtmlColor(c == null ? DEFAULT_INHERITED_COLOR : c);
-    }
-
-    @NonNull
-    private static String getTypeColor() {
-        final Color c = UIManager.getColor(TYPE_COLOR_KEY);
-        return getHtmlColor(c == null ? DEFAULT_TYPE_COLOR : c);
-    }
-
-    @NonNull
-    private static String getHtmlColor(@NonNull final Color c) {
-        final int r = c.getRed();
-        final int g = c.getGreen();
-        final int b = c.getBlue();
-        final StringBuilder result = new StringBuilder();
-        result.append ("#");        //NOI18N
-        final String rs = Integer.toHexString (r);
-        final String gs = Integer.toHexString (g);
-        final String bs = Integer.toHexString (b);
-        if (r < 0x10)
-            result.append('0');
-        result.append(rs);
-        if (g < 0x10)
-            result.append ('0');
-        result.append(gs);
-        if (b < 0x10)
-            result.append ('0');
-        result.append(bs);
-        return result.toString();
-    }
+    }    
 }

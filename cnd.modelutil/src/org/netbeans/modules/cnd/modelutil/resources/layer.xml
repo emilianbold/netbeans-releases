@@ -65,6 +65,13 @@ Contributor(s):
                             </file>
                         </folder>
                     </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="Norway-CCHL-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.modelutil.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
             <folder name="x-c++">
@@ -90,6 +97,13 @@ Contributor(s):
                             </file>
                         </folder>
                     </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="Norway-CCHL-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.modelutil.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
                 </folder>
             </folder>
             <folder name="x-c">
@@ -111,6 +125,13 @@ Contributor(s):
                     <folder name="CityLights">
                         <folder name="Defaults">
                             <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="CityLights-CCHL-fontsColors.xml">
+                                <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.modelutil.resources.Bundle"/>
+                            </file>
+                        </folder>
+                    </folder>
+                    <folder name="BlueTheme">
+                        <folder name="Defaults">
+                            <file name="org-netbeans-modules-cnd-resources-coloring.xml" url="Norway-CCHL-fontsColors.xml">
                                 <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.cnd.modelutil.resources.Bundle"/>
                             </file>
                         </folder>

@@ -60,6 +60,7 @@ import static org.netbeans.modules.html.editor.HtmlErrorFilter.*;
 import org.netbeans.modules.html.editor.HtmlExtensions;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.ProjectDefaultHtmlSourceVersionController;
+import org.netbeans.modules.html.editor.api.Utils;
 import org.netbeans.modules.html.editor.api.gsf.ErrorBadgingRule;
 import org.netbeans.modules.html.editor.api.gsf.HtmlErrorFilterContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlExtension;
@@ -163,7 +164,9 @@ public class HtmlHintsProvider implements HintsProvider {
     @Override
     public void computeSelectionHints(HintsManager manager, RuleContext context, List<Hint> suggestions, int start, int end) {
         //html extensions
-        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
+        HtmlParserResult result = (HtmlParserResult)context.parserResult;
+        String sourceMimetype = Utils.getWebPageMimeType(result.getSyntaxAnalyzerResult());
+        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
             ext.computeSelectionHints(manager, context, suggestions, start, end);
         }
 
@@ -296,7 +299,8 @@ public class HtmlHintsProvider implements HintsProvider {
         }
 
         //html extensions
-        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(context.parserResult.getSnapshot().getSource().getMimeType())) {
+        String sourceMimetype = Utils.getWebPageMimeType(result.getSyntaxAnalyzerResult());
+        for (HtmlExtension ext : HtmlExtensions.getRegisteredExtensions(sourceMimetype)) {
             ext.computeErrors(manager, context, hints, unhandled);
         }
 
@@ -436,7 +440,7 @@ public class HtmlHintsProvider implements HintsProvider {
     }
 
     private boolean isXmlBasedMimetype(SyntaxAnalyzerResult saresult) {
-        String mimeType = HtmlErrorFilter.getWebPageMimeType(saresult);
+        String mimeType = Utils.getWebPageMimeType(saresult);
         //return true for something like text/xml, text/xhtml or text/facelets+xhtml
         return mimeType.indexOf("xml") != -1 || mimeType.indexOf("xhtml") != -1;
     }
@@ -605,7 +609,7 @@ public class HtmlHintsProvider implements HintsProvider {
         public AbstractErrorChecksForMimetypeFix(SyntaxAnalyzerResult result) {
             this.doc = result.getSource().getSnapshot().getSource().getDocument(false);
             this.file = result.getSource().getSourceFileObject();
-            this.mimeType = HtmlErrorFilter.getWebPageMimeType(result);
+            this.mimeType = Utils.getWebPageMimeType(result);
         }
 
         @Override

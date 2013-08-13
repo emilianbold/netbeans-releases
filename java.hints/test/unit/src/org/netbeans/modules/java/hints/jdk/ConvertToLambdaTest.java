@@ -45,6 +45,7 @@ package org.netbeans.modules.java.hints.jdk;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.java.hints.spiimpl.TestCompilerSettings;
 import org.netbeans.modules.java.hints.test.api.HintTest;
+import org.netbeans.modules.java.source.parsing.JavacParser;
 
 /**
  *
@@ -72,7 +73,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("4:50-6:9:" + lambdaConvWarning)
+                .findWarning("4:39-4:47:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "import javax.swing.SwingUtilities;\n" +
@@ -98,7 +99,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("4:59-6:9:" + lambdaConvWarning)
+                .findWarning("4:38-4:56:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "import java.util.*;\n" +
@@ -134,7 +135,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:36-3:84:" + lambdaConvWarning)
+                .findWarning("3:25-3:33:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -156,7 +157,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:30-5:9:" + lambdaConvWarning)
+                .findWarning("3:19-3:27:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -180,7 +181,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private void passObjectLambda(Object obj) { }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:40-5:9:" + lambdaConvWarning)
+                .findWarning("3:29-3:37:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -204,7 +205,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:34-5:9:" + lambdaConvWarning)
+                .findWarning("3:23-3:31:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -295,7 +296,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface VoidInterface { public void print(); }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:57-5:9:" + lambdaConvWarning)
+                .findWarning("3:41-3:54:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -324,7 +325,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:52-5:9:" + lambdaConvWarning)
+                .findWarning("3:37-3:49:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -356,7 +357,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("4:43-9:9:" + lambdaConvWarning)
+                .findWarning("4:32-4:40:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -387,7 +388,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    public void runRunnable(Runnable runnable) { runnable.run(); }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("4:35-9:9:" + lambdaConvWarning)
+                .findWarning("4:24-4:32:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -420,7 +421,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("4:43-11:9:" + lambdaConvWarning)
+                .findWarning("4:32-4:40:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -452,7 +453,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface PassShadow { public void pass(int z); }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("4:47-8:9:" + lambdaConvWarning)
+                .findWarning("4:34-4:44:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -483,7 +484,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("4:43-10:9:" + lambdaConvWarning)
+                .findWarning("4:32-4:40:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -513,7 +514,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:43-8:9:" + lambdaConvWarning)
+                .findWarning("3:32-3:40:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -542,7 +543,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface AnotherFuncInterface { public void nothing(); }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:41-5:9:" + lambdaConvWarning)
+                .findWarning("3:25-3:38:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -574,7 +575,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface AnotherFuncInterface { public void nothing(); }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:44-5:9:" + lambdaConvWarning)
+                .findWarning("3:28-3:41:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -610,7 +611,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface AnotherFuncInterface { public void nothing(); }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:47-5:9:" + lambdaConvWarning)
+                .findWarning("3:31-3:44:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -645,7 +646,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface AnotherFuncInterface { public void nothing(); }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:44-5:9:" + lambdaConvWarning)
+                .findWarning("3:28-3:41:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -678,7 +679,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface AnotherFuncInterface { public void nothing(); }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:73-5:9:" + lambdaConvWarning)
+                .findWarning("3:57-3:70:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -714,7 +715,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface AnotherFuncInterface { public void nothing(); }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:76-5:9:" + lambdaConvWarning)
+                .findWarning("3:60-3:73:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -749,7 +750,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface AnotherFuncInterface { public void nothing(); }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:79-5:9:" + lambdaConvWarning)
+                .findWarning("3:63-3:76:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -782,7 +783,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("5:53-9:9:" + lambdaConvWarning)
+                .findWarning("5:32-5:50:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "import java.util.*;\n" +
@@ -810,7 +811,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface PrivilegedExceptionAction<T> { T run() throws Exception; }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:52-5:9:" + lambdaConvWarning)
+                .findWarning("3:25-3:49:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -845,7 +846,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface Edge { public boolean isExceptionEdge(); }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:39-10:9:" + lambdaConvWarning)
+                .findWarning("3:25-3:36:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -882,7 +883,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface NestedFuncInterface { public void nothing(); }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("3:53-9:9:" + lambdaConvWarning)
+                .findWarning("3:37-3:50:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -916,7 +917,7 @@ public class ConvertToLambdaTest extends NbTestCase {
                        "    private interface NestedFuncInterface { public void nothing(); }\n" +
                        "}\n")
                 .run(ConvertToLambda.class)
-                .findWarning("5:71-7:17:" + lambdaConvWarning)
+                .findWarning("5:49-5:68:" + lambdaConvWarning)
                 .applyFix()
                 .assertOutput("package test;\n" +
                        "public class Test {\n" +
@@ -937,5 +938,6 @@ public class ConvertToLambdaTest extends NbTestCase {
     
     static {
         TestCompilerSettings.commandLine = "-XDidentifyLambdaCandidate=true -XDfindDiamond";
+        JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
     }
 }

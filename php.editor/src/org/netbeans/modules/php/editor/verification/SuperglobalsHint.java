@@ -178,6 +178,22 @@ public abstract class SuperglobalsHint extends HintRule {
 
     }
 
+    public static final class RequestSuperglobalHint extends SuperglobalsHint {
+        private static final String HINT_ID = "Request.Superglobal.Hint"; //NOI18N
+        private static final String ARRAY_NAME = "$_REQUEST"; //NOI18N
+
+        @Override
+        public String getId() {
+            return HINT_ID;
+        }
+
+        @Override
+        protected String getSuperglobalName() {
+            return ARRAY_NAME;
+        }
+
+    }
+
     private static final class CheckVisitor extends DefaultTreePathVisitor {
         private final SuperglobalsHint superglobalsHint;
         private final FileObject fileObject;

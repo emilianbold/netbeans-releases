@@ -50,6 +50,7 @@ import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
 import javax.security.auth.Refreshable;
 import javax.swing.Action;
+import javax.swing.SwingUtilities;
 
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -71,6 +72,7 @@ import org.netbeans.spi.viewmodel.NodeActionsProviderFilter;
 import org.netbeans.spi.viewmodel.UnknownTypeException;
 
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 import org.openide.windows.WindowManager;
 
@@ -93,11 +95,15 @@ import org.openide.windows.WindowManager;
 public class HeapActionsFilter implements NodeActionsProviderFilter {
     
     private JPDADebugger debugger;
+    private RequestProcessor rp;
     
     /** Creates a new instance of HeapActionsFilter */
     public HeapActionsFilter(ContextProvider contextProvider) {
         debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
-
+        rp = contextProvider.lookupFirst(null, RequestProcessor.class);
+        if (rp == null) {
+            rp = new RequestProcessor(HeapActionsFilter.class);
+        }
     }
     
     public void performDefaultAction(NodeActionsProvider original, Object node) throws UnknownTypeException {
@@ -154,10 +160,24 @@ public class HeapActionsFilter implements NodeActionsProviderFilter {
                             heap = new HeapImpl(debugger);
                             hfw = new DebuggerHeapFragmentWalker(heap);
                         }
-                        ObjectVariable var = varRef.get();
+                        final ObjectVariable var = varRef.get();
+                        final HeapFragmentWalker fhfw = hfw;
                         if (var != null) {
-                            Instance instance = InstanceImpl.createInstance(heap, var);
-                            hfw.getInstancesController().showInstance(instance);
+                            final HeapImpl fheap = heap;
+                            rp.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    final Instance instance = InstanceImpl.createInstance(fheap, var);
+                                    SwingUtilities.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            fhfw.getInstancesController().showInstance(instance);
+                                        }
+                                    });
+                                }
+                            });
+                            //Instance instance = InstanceImpl.createInstance(heap, var);
+                            //hfw.getInstancesController().showInstance(instance);
                         }
                         return hfw;
                     }

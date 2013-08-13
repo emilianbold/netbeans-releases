@@ -47,6 +47,7 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
@@ -78,6 +79,7 @@ import org.openide.util.lookup.ServiceProvider;
  */
 @ServiceProvider(service = org.netbeans.modules.remote.spi.FileSystemProviderImplementation.class, position=100)
 public final class LocalFileSystemProvider implements FileSystemProviderImplementation {
+    private static final String FILE_PROTOCOL = "file"; // NOI18N
     private static final String FILE_PROTOCOL_PREFIX = "file:"; // NOI18N
 
     private FileSystem rootFileSystem = null;
@@ -156,6 +158,12 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
             }
         }
         return null;
+    }
+
+    @Override
+    public FileSystem getFileSystem(URI uri) {
+        assert isMine(uri);
+        return getFileSystem(ExecutionEnvironmentFactory.getLocal(), uri.getPath());
     }
 
     @Override
@@ -295,6 +303,16 @@ public final class LocalFileSystemProvider implements FileSystemProviderImplemen
     @Override
     public boolean isMine(File file) {
         return file.getClass() == java.io.File.class;
+    }
+
+    @Override
+    public boolean isMine(URI uri) {
+        return uri.getScheme().equals(FILE_PROTOCOL);
+    }
+
+    @Override
+    public void refresh(FileObject fileObject, boolean recursive) {
+        fileObject.refresh();
     }
 
     @Override

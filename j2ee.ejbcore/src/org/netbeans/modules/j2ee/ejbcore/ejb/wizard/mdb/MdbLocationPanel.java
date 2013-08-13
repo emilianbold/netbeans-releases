@@ -149,7 +149,7 @@ public class MdbLocationPanel implements WizardDescriptor.FinishablePanel {
 
     @Override
     public org.openide.util.HelpCtx getHelp() {
-        return new HelpCtx(this.getClass());
+        return new HelpCtx("org.netbeans.modules.j2ee.ejbcore.ejb.wizard.mdb.MessageEJBWizardPanel");
     }
 
     @Override

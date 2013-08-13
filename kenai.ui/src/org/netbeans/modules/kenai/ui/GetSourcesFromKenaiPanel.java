@@ -48,7 +48,6 @@
 
 package org.netbeans.modules.kenai.ui;
 
-import org.netbeans.modules.kenai.ui.impl.TeamServerProviderImpl;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
@@ -78,8 +77,6 @@ import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.SwingUtilities;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.kenai.api.Kenai;
 import org.netbeans.modules.kenai.api.KenaiException;
 import org.netbeans.modules.kenai.api.KenaiProject;
@@ -88,9 +85,8 @@ import org.netbeans.modules.kenai.api.KenaiService;
 import org.netbeans.modules.kenai.api.KenaiService.Type;
 import org.netbeans.modules.kenai.ui.KenaiSearchPanel.KenaiProjectSearchInfo;
 import org.netbeans.modules.kenai.ui.SourceAccessorImpl.ProjectAndFeature;
-import org.netbeans.modules.team.ui.common.DashboardSupport;
-import org.netbeans.modules.team.ui.common.AddInstanceAction;
-import org.netbeans.modules.team.ui.spi.TeamUIUtils;
+import org.netbeans.modules.team.server.ui.common.DashboardSupport;
+import org.netbeans.modules.team.server.api.TeamUIUtils;
 import org.netbeans.modules.subversion.api.Subversion;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -102,9 +98,10 @@ import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.WeakListeners;
 import org.netbeans.modules.kenai.ui.api.KenaiServer;
-import org.netbeans.modules.kenai.ui.api.KenaiUIUtils;
-import org.netbeans.modules.team.ui.spi.ProjectHandle;
-import org.netbeans.modules.team.ui.spi.TeamServer;
+import org.netbeans.modules.team.ide.spi.IDEServices;
+import org.netbeans.modules.team.server.ui.spi.ProjectHandle;
+import org.netbeans.modules.team.server.ui.spi.TeamServer;
+import org.openide.util.Lookup;
 
 /**
  *
@@ -140,7 +137,10 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
             serverLabel.setText(this.kenai.getName());
             serverLabel.setIcon(this.kenai.getIcon());
         }
-
+        
+        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
+        proxyConfigButton.setVisible(ide != null && ide.providesProxyConfiguration());
+        
         refreshUsername();
 
         comboModel = new KenaiRepositoriesComboModel();
@@ -425,7 +425,10 @@ public class GetSourcesFromKenaiPanel extends javax.swing.JPanel {
 }//GEN-LAST:event_loginButtonActionPerformed
 
     private void proxyConfigButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_proxyConfigButtonActionPerformed
-        OptionsDisplayer.getDefault().open("General"); // NOI18N
+        IDEServices ide = Lookup.getDefault().lookup(IDEServices.class);
+        if(ide != null && ide.providesProxyConfiguration()) {
+            ide.openProxyConfiguration();
+        }
 }//GEN-LAST:event_proxyConfigButtonActionPerformed
 
     private void browseKenaiButtonActionPerformed(ActionEvent evt) {//GEN-FIRST:event_browseKenaiButtonActionPerformed

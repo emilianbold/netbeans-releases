@@ -59,9 +59,10 @@ import javax.swing.plaf.basic.BasicTableUI;
  */
 final class TabTableUI extends BasicTableUI {
 
+    static final boolean IS_AQUA = "Aqua".equals( UIManager.getLookAndFeel().getID() );
+    
     static Border createTabBorder( JTable table, int tabsLocation ) {
-        String lafId = UIManager.getLookAndFeel().getID();
-        if( "Aqua".equals( lafId ) ) { //NOI18N
+        if( IS_AQUA ) {
             return BorderFactory.createMatteBorder( 1, 0, 0, 0, table.getGridColor());
         } else {
             if( tabsLocation != JTabbedPane.TOP )
@@ -78,7 +79,10 @@ final class TabTableUI extends BasicTableUI {
             Color background = UIManager.getColor( "TabbedPane.background"); //NOI18N
             Color highglightBackground = UIManager.getColor( "TabbedPane.highlight" ); //NOI18N
             if( null != background && null != highglightBackground ) {
-                table.setBackground( background );
+                final int factor = 16;
+                table.setBackground( new Color( Math.max( background.getRed()-factor, 0),
+                        Math.max( background.getGreen()-factor, 0 ),
+                        Math.max( background.getBlue()-factor, 0 ) ) );
                 table.setSelectionBackground( highglightBackground );
                 table.setSelectionForeground( table.getForeground() );
             }

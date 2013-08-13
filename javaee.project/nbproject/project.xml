@@ -40,6 +40,14 @@
                     </run-dependency>
                 </dependency>
                 <dependency>
+                    <code-name-base>org.netbeans.modules.j2ee.api.ejbmodule</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <specification-version>1.32</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.modules.j2ee.common</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
@@ -80,7 +88,7 @@
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
-                        <specification-version>1.40</specification-version>
+                        <specification-version>1.41</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -309,9 +317,11 @@
                 <package>org.netbeans.modules.javaee.project.api.ant.ui.customizer</package>
                 <package>org.netbeans.modules.javaee.project.api.ant.ui.logicalview</package>
                 <package>org.netbeans.modules.javaee.project.api.ant.ui.wizard</package>
+                <package>org.netbeans.modules.javaee.project.api.ear</package>
                 <package>org.netbeans.modules.javaee.project.api.ui</package>
                 <package>org.netbeans.modules.javaee.project.api.ui.utils</package>
                 <package>org.netbeans.modules.javaee.project.spi</package>
+                <package>org.netbeans.modules.javaee.project.spi.ear</package>
             </friend-packages>
         </data>
     </configuration>

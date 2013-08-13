@@ -66,10 +66,11 @@ public class DebuggerOption extends Option {
         else
 	*/
 	follow_choices = new String[] {"parent", "child", "both", "ask"}; // NOI18N
-	if (NativeDebuggerManager.isStandalone())
-	    default_finish = "off"; // NOI18N
-	else
-	    default_finish = "on"; // NOI18N
+	if (NativeDebuggerManager.isStandalone() || NativeDebuggerManager.isPL()) {
+            default_finish = "off"; // NOI18N
+        } else {
+            default_finish = "on"; // NOI18N
+        } 
     }
 
     public DebuggerOption(String inName, String[] inValues,

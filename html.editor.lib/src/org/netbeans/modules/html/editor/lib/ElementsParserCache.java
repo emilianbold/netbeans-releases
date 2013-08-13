@@ -98,11 +98,10 @@ public class ElementsParserCache {
                     if (item == null) {
                         //no data, load
 
-                        //get the pointer to the offset of the block, 0 for the first one, previous
-                        //block end for subsequents
-                        int offset = blockIndex == 0 ? 0 : cacheBlocks.get(blockIndex - 1).getEndOffset();
+                        //first token of the new block - either 0 or last block end token index + 1
+                        int firstTokenIndex = blockIndex == 0 ? 0 : cacheBlocks.get(blockIndex - 1).getLastTokenIndex() + 1;
 
-                        item = new CacheBlock(sourceCode, tokenSequence, index, offset);
+                        item = new CacheBlock(sourceCode, tokenSequence, index, firstTokenIndex);
 
                         assert blockIndex == cacheBlocks.size(); //always last
 
@@ -126,25 +125,29 @@ public class ElementsParserCache {
         
         Reference<CacheBlockContent> blockReference;
         private final int startIndex;
-        private int endIndex;
-        private int startOffset;
-        private int endOffset;
-        private CharSequence code;
-        private TokenSequence<HTMLTokenId> tokenSequence;
+        private final int endIndex;
+        private final int startOffset;
+        private final int endOffset;
+        private final int firstTokenIndex;
+        private final int lastTokenIndex;
+        private final CharSequence code;
+        private final TokenSequence<HTMLTokenId> tokenSequence;
 
-        private CacheBlock(CharSequence code, TokenSequence<HTMLTokenId> tokenSequence, int startIndex, int startOffset) {
+        private CacheBlock(CharSequence code, TokenSequence<HTMLTokenId> tokenSequence, int firstElementIndex, int firstTokenIndex) {
             this.code = code;
             this.tokenSequence = tokenSequence;
 
-            this.startIndex = startIndex;
-            this.startOffset = startOffset;
+            this.startIndex = firstElementIndex;
+            this.firstTokenIndex = firstTokenIndex;
 
-            CacheBlockContent block = new CacheBlockContent(code, tokenSequence, startOffset);
-            
+            CacheBlockContent block = new CacheBlockContent(code, tokenSequence, firstTokenIndex);
             int blockSize = block.getElements().size();
+            this.endIndex = firstElementIndex + blockSize;
             
-            this.endIndex = startIndex + blockSize;
-            this.endOffset = blockSize == 0 ? startOffset : block.getLastElement().to();
+            this.startOffset = blockSize == 0 ? -1 : block.getFirstElement().from();
+            
+            this.endOffset = blockSize == 0 ? -1 : block.getLastElement().to();
+            this.lastTokenIndex = block.getLastTokenIndex();
             
             blockReads++;
 
@@ -167,6 +170,14 @@ public class ElementsParserCache {
             return endOffset;
         }
         
+        public int getFirstTokenIndex() {
+            return firstTokenIndex;
+        }
+        
+        public  int getLastTokenIndex() {
+            return lastTokenIndex;
+        }
+        
         public Element getElementAtIndex(int index) {
             return getElements().get(index - getStartIndex());
         }
@@ -178,7 +189,7 @@ public class ElementsParserCache {
             CacheBlockContent block = blockReference.get();
             if (block == null) {
                 //reload the content
-                block = new CacheBlockContent(code, tokenSequence, startOffset);
+                block = new CacheBlockContent(code, tokenSequence, startIndex);
                 
                 blockReads++;
                 
@@ -196,7 +207,7 @@ public class ElementsParserCache {
                     .append(hashCode())
                     .append(",items=")
                     .append(getElements().size())
-                    .toString();
+                    .toString(); //NOI18N
         }
         
     }
@@ -204,16 +215,20 @@ public class ElementsParserCache {
 
     private static class CacheBlockContent {
 
-        private List<Element> elements;
+        private final List<Element> elements;
+        private final int firstTokenIndex;
+        private final int lastTokenIndex;
 
-        private CacheBlockContent(CharSequence code, TokenSequence<HTMLTokenId> tokenSequence, int startOffset) {
+        private CacheBlockContent(CharSequence code, TokenSequence<HTMLTokenId> tokenSequence, int firstTokenIndex) {
+            this.firstTokenIndex = firstTokenIndex;
             //load the elements
-            ElementsParser parser = new ElementsParser(code, tokenSequence, startOffset);
+            ElementsParser parser = ElementsParser.forTokenIndex(code, tokenSequence, firstTokenIndex);
             elements = new ArrayList<>(CACHE_BLOCK_SIZE);
             int limit = CACHE_BLOCK_SIZE;
-            while (parser.hasNext() && limit-- > 0) {
+            while (limit-- > 0 && parser.hasNext()) {
                 elements.add(parser.next());
             }
+            lastTokenIndex = tokenSequence.index();
 
         }
 
@@ -221,8 +236,20 @@ public class ElementsParserCache {
             return elements;
         }
 
+        Element getFirstElement() {
+            return elements.get(0);
+        }
+        
         Element getLastElement() {
             return elements.get(elements.size() - 1);
+        }
+        
+        int getFirstTokenIndex() {
+            return firstTokenIndex;
+        }
+        
+        int getLastTokenIndex() {
+            return lastTokenIndex;
         }
         
     }

@@ -49,7 +49,6 @@ import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.metal.DefaultMetalTheme;
-import javax.swing.text.Style;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 import org.netbeans.swing.plaf.util.DarkIconFilter;
@@ -176,6 +175,8 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         UIManager.put("nb.dataview.table.background", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "Table.background")); //NOI18N
         UIManager.put("nb.dataview.table.altbackground", new RelativeColor(new Color(0,0,0), new Color(30,30,30), "Table.background")); //NOI18N
         UIManager.put("nb.dataview.table.rollOverRowBackground", new RelativeColor(new Color(0,0,0), new Color(30,30,30), "Table.selectionBackground")); //NOI18N
+        
+        UIManager.put("selection.highlight", new Color(202, 152, 0));
 
         UIManager.put( "nb.laf.postinstall.callable", new Callable<Object>() { //NOI18N
 
@@ -193,6 +194,15 @@ public class DarkMetalTheme extends DefaultMetalTheme {
                 return null;
             }
         });
+
+        //#232854 - menu item accelerators are too dark
+        UIManager.put( "MenuItem.acceleratorForeground", new Color(198,198,198) );
+        UIManager.put( "CheckBoxMenuItem.acceleratorForeground", new Color(198,198,198) );
+        UIManager.put( "RadioButtonMenuItem.acceleratorForeground", new Color(198,198,198) );
+
+        //browser picker
+        UIManager.put( "Nb.browser.picker.background.light", new Color(41, 41, 45));
+        UIManager.put( "Nb.browser.picker.foreground.light", new Color(172,172,172));
     }
 
     @Override

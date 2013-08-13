@@ -49,11 +49,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.net.ConnectException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -62,12 +66,16 @@ import org.netbeans.junit.NbTestSuite;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironmentFactory;
 import org.netbeans.modules.nativeexecution.api.HostInfo.OSFamily;
+import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager.CancellationException;
+import org.netbeans.modules.nativeexecution.api.util.FileInfoProvider;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.PasswordManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
+import org.openide.util.Exceptions;
+import org.openide.util.Parameters;
 
 /**
  *
@@ -76,7 +84,8 @@ import org.netbeans.modules.nativeexecution.test.RcFile.FormatException;
 public class NativeExecutionTestSupport {
 
     private static ExecutionEnvironment defaultTestExecutionEnvironment;
-    private static RcFile rcFile;
+    private static RcFile localRcFile;
+    private static Map<ExecutionEnvironment, RcFile> remoteRcFiles = new HashMap<ExecutionEnvironment, RcFile>();
     private static final Map<String, ExecutionEnvironment> spec2env = new LinkedHashMap<String, ExecutionEnvironment>();
     private static final Map<ExecutionEnvironment, String> env2spec = new LinkedHashMap<ExecutionEnvironment, String>();
 
@@ -84,19 +93,87 @@ public class NativeExecutionTestSupport {
     }
 
     public static synchronized RcFile getRcFile() throws IOException, RcFile.FormatException {
-        if (rcFile == null) {
+        if (localRcFile == null) {
             String rcFileName = System.getProperty("cnd.remote.rcfile"); // NOI18N
             if (rcFileName == null) {
                 String homePath = System.getProperty("user.home");
                 if (homePath != null) {
                     File homeDir = new File(homePath);
-                    rcFile = new RcFile(new File(homeDir, ".cndtestrc"));
+                    localRcFile = RcFile.create(new File(homeDir, ".cndtestrc"));
                 }
             } else {
-                rcFile = new RcFile(new File(rcFileName));
+                localRcFile = RcFile.create(new File(rcFileName));
             }
         }
+        return localRcFile;
+    }
+
+    public static synchronized RcFile getRemoteRcFile(ExecutionEnvironment env)
+            throws IOException, RcFile.FormatException, ConnectException, 
+            CancellationException, InterruptedException, InterruptedException,
+            ExecutionException {
+        if (env == null) {
+            new Exception("WARNING: null ExecutionEnvironment; returning dummy remote rc file").printStackTrace();
+            return RcFile.createDummy();
+        }
+        RcFile rcFile = remoteRcFiles.get(env);
+        if (rcFile == null) {
+            rcFile = createRemoteRcFile(env);
+            remoteRcFiles.put(env, rcFile);
+        }
         return rcFile;
+    }
+
+    private static RcFile createRemoteRcFile(ExecutionEnvironment env)
+            throws IOException, RcFile.FormatException, ConnectException, CancellationException, InterruptedException, ExecutionException {
+        if (!ConnectionManager.getInstance().isConnectedTo(env)) {
+            new Exception("WARNING: getRemoteRcFile changes connection state for " + env).printStackTrace();
+            ConnectionManager.getInstance().connectTo(env);
+        }
+        String envText = ExecutionEnvironmentFactory.toUniqueID(env).replace(':', '-').replace('@', '-');
+        String tmpName = "cnd_remote_test_rc_" + envText;
+        File tmpFile = File.createTempFile(tmpName, "");
+        tmpFile.deleteOnExit();
+        String remoteFilePath = HostInfoUtils.getHostInfo(env).getUserDir() + "/.cnd-remote-test-rc";
+        if (fileExists(env, remoteFilePath)) {
+            int rc = CommonTasksSupport.downloadFile(remoteFilePath, env, tmpFile, new PrintWriter(System.err)).get();
+            if (rc != 0) {
+                throw new IOException("Can't download file " + remoteFilePath + " from " + env);
+            }
+            return RcFile.create(tmpFile);
+        } else {
+            return RcFile.createDummy();
+        }
+    }
+
+    public static boolean fileExists(ExecutionEnvironment env, String remoteFilePath)
+            throws ExecutionException, InterruptedException {
+        try {
+            FileInfoProvider.StatInfo stat = FileInfoProvider.stat(env, remoteFilePath).get();
+        } catch (ExecutionException ex) {
+            if (notExist(ex)) {
+                return false;
+            } else {
+                throw ex;
+            }
+        }
+        return true;
+    }
+
+    private static boolean notExist(ExecutionException e) {
+        Throwable ex = e;
+        while (ex != null) {
+            if (ex instanceof FileInfoProvider.SftpIOException) {
+                switch(((FileInfoProvider.SftpIOException)ex).getId()) {
+                    case FileInfoProvider.SftpIOException.SSH_FX_NO_SUCH_FILE:
+                    case FileInfoProvider.SftpIOException.SSH_FX_PERMISSION_DENIED:
+                    return true;
+                }
+                break;
+            }
+            ex = ex.getCause();
+        }
+        return false;
     }
 
     /**

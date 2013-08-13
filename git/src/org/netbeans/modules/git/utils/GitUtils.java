@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.utils;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
@@ -803,10 +804,15 @@ public final class GitUtils {
     }
     
     private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
+    private static final String REF_SPEC_GLOBAL_PATTERN = "+refs/heads/*:refs/remotes/{0}/*"; //NOI18N
     public static final String REF_SPEC_DEL_PREFIX = ":refs/remotes/"; //NOI18N
     private static final String REF_PUSHSPEC_PATTERN = "refs/heads/{0}:refs/heads/{1}"; //NOI18N
     public static final String REF_PUSHSPEC_DEL_PREFIX = ":refs/heads/"; //NOI18N
     private static final String REF_TAG_PUSHSPEC_PATTERN = "refs/tags/{0}:refs/tags/{0}"; //NOI18N
+
+    public static String getGlobalRefSpec (String remoteName) {
+        return MessageFormat.format(REF_SPEC_GLOBAL_PATTERN, remoteName);
+    }
 
     public static String getRefSpec(GitBranch branch, String remoteName) {
         return MessageFormat.format(REF_SPEC_PATTERN, branch.getName(), remoteName);
@@ -863,6 +869,18 @@ public final class GitUtils {
         } catch (Exception ex) {
             throw new GitException("Cannot run without indexing due to: " + ex.getMessage(), ex); //NOI18N
         }
+    }
+    
+    public static String getColorString (Color c) {
+        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
+    }
+
+    private static String getHex (int i) {
+        String hex = Integer.toHexString(i & 0x000000FF);
+        if (hex.length() == 1) {
+            hex = "0" + hex; //NOI18N
+        }
+        return hex;
     }
 
     private static boolean indexingFilesSubtree (Set<File> recursiveRoots, File[] files) {

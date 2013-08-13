@@ -54,7 +54,7 @@ import org.netbeans.modules.css.model.api.SelectorsGroup;
  */
 public class SelectorsGroupI extends ModelElement implements SelectorsGroup {
 
-    private List<Selector> selectors = new ArrayList<Selector>();
+    private List<Selector> selectors = new ArrayList<>();
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 
         @Override

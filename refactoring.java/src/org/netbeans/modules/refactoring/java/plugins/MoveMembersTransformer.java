@@ -81,6 +81,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
     private Collection<? extends TreePathHandle> allElements;
     private final Visibility visibility;
     private final HashMap<TreePathHandle, Boolean> usageOutsideOfPackage;
+    private final HashMap<TreePathHandle, Boolean> usageOutsideOfType;
     private final TreePathHandle targetHandle;
     private final boolean delegate;
     private final boolean deprecate;
@@ -91,7 +92,8 @@ public class MoveMembersTransformer extends RefactoringVisitor {
         JavaMoveMembersProperties properties = refactoring.getContext().lookup(JavaMoveMembersProperties.class);
         properties = properties == null ? new JavaMoveMembersProperties(allElements.toArray(new TreePathHandle[allElements.size()])) : properties;
         visibility = properties.getVisibility();
-        usageOutsideOfPackage = new HashMap<TreePathHandle, Boolean>();
+        usageOutsideOfPackage = new HashMap<>();
+        usageOutsideOfType = new HashMap<>();
         for (TreePathHandle treePathHandle : allElements) {
             usageOutsideOfPackage.put(treePathHandle, Boolean.FALSE);
         }
@@ -140,6 +142,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             final FileObject folder = targetHandle.getFileObject().getParent();
             final CompilationUnitTree compilationUnit = currentPath.getCompilationUnit();
             checkForUsagesOutsideOfPackage(folder, compilationUnit, elementBeingMoved);
+            checkForUsagesOutsideOfType(target, currentPath, elementBeingMoved);
 
             if (node instanceof MethodInvocationTree) {
                 if (!delegate) {
@@ -503,6 +506,24 @@ public class MoveMembersTransformer extends RefactoringVisitor {
             usageOutsideOfPackage.put(elementBeingMoved, Boolean.TRUE);
         }
     }
+    
+    private void checkForUsagesOutsideOfType(final Element target, TreePath currentPath, TreePathHandle elementBeingMoved) {
+        final Types types = workingCopy.getTypes();
+        TypeMirror targetType = target.asType();
+        TreePath enclosingPath = JavaRefactoringUtils.findEnclosingClass(workingCopy, currentPath, true, true, true, true, false);
+        Element enclosingEl = null;
+        if(enclosingPath != null) {
+            enclosingEl = workingCopy.getTrees().getElement(enclosingPath);
+        }
+        if(enclosingEl != null) {
+            TypeMirror enclosingType = enclosingEl.asType();
+            if(!(enclosedBy(targetType, enclosingType) || enclosedBy(enclosingType, targetType)) && !types.isSameType(enclosingType, targetType)) {
+                usageOutsideOfType.put(elementBeingMoved, Boolean.TRUE);
+            }
+        } else {
+            usageOutsideOfType.put(elementBeingMoved, Boolean.TRUE);
+        }
+    }
 
     private void insertIfMatch(TreePath currentPath, ClassTree node, final Element target) throws IllegalArgumentException {
         Element el = workingCopy.getTrees().getElement(currentPath);
@@ -524,7 +545,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     // Change Modifiers
                     final MethodTree methodTree = (MethodTree) member;
                     ExecutableElement method = (ExecutableElement) resolvedElement;
-                    ModifiersTree modifiers = changeModifiers(methodTree.getModifiers(), usageOutsideOfPackage.get(tph) == Boolean.TRUE);
+                    ModifiersTree modifiers = changeModifiers(methodTree.getModifiers(), usageOutsideOfPackage.get(tph) == Boolean.TRUE, usageOutsideOfType.get(tph) == Boolean.TRUE);
 
                     // Find and remove a usable parameter
                     final List<? extends VariableTree> parameters = methodTree.getParameters();
@@ -535,10 +556,10 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                         for (int i = 0; i < parameters.size(); i++) {
                             VariableTree variableTree = parameters.get(i);
                             TypeMirror type = workingCopy.getTrees().getTypeMirror(TreePath.getPath(resolvedPath, variableTree));
-                            if (removedParameter != null || !workingCopy.getTypes().isSameType(type, target.asType())) {
-                                newParameters.add(variableTree);
-                            } else {
+                            if (removedParameter == null && type != null && workingCopy.getTypes().isSameType(type, target.asType())) {
                                 removedParameter = variableTree;
+                            } else {
+                                newParameters.add(variableTree);
                             }
                         }
                     } else {
@@ -700,7 +721,7 @@ public class MoveMembersTransformer extends RefactoringVisitor {
                     // Make a new Variable (Field) tree
                 } else if (member.getKind() == Tree.Kind.VARIABLE) {
                     VariableTree field = (VariableTree) member;
-                    ModifiersTree modifiers = changeModifiers(field.getModifiers(), usageOutsideOfPackage.get(tph) == Boolean.TRUE);
+                    ModifiersTree modifiers = changeModifiers(field.getModifiers(), usageOutsideOfPackage.get(tph) == Boolean.TRUE, usageOutsideOfType.get(tph) == Boolean.TRUE);
 
                     // Scan the initializer and fix references
                     ExpressionTree initializer = field.getInitializer();
@@ -888,19 +909,21 @@ public class MoveMembersTransformer extends RefactoringVisitor {
         return null;
     }
 
-    private ModifiersTree changeModifiers(ModifiersTree modifiersTree, boolean usageOutsideOfPackage) {
+    private ModifiersTree changeModifiers(ModifiersTree modifiersTree, boolean usageOutsideOfPackage, boolean usageOutsideOfType) {
         final Set<Modifier> flags = modifiersTree.getFlags();
         Set<Modifier> newModifiers = flags.isEmpty() ? EnumSet.noneOf(Modifier.class) : EnumSet.copyOf(flags);
         switch (visibility) {
             case ESCALATE:
                 if (usageOutsideOfPackage) {
-                    if (!flags.contains(Modifier.PUBLIC)) {
+                    if (!flags.contains(Modifier.PUBLIC)) { // TODO: if only subtype, change protected
                         newModifiers.removeAll(ALL_ACCESS_MODIFIERS);
                         newModifiers.add(Modifier.PUBLIC);
                     }
                 } else {
-                    if (flags.contains(Modifier.PRIVATE)) {
-                        newModifiers.removeAll(ALL_ACCESS_MODIFIERS);
+                    if(usageOutsideOfType) {
+                        if (flags.contains(Modifier.PRIVATE)) {
+                            newModifiers.removeAll(ALL_ACCESS_MODIFIERS);
+                        }
                     }
                 }
                 break;
@@ -990,5 +1013,22 @@ public class MoveMembersTransformer extends RefactoringVisitor {
         }
 
         return JavaPluginUtils.makeNameUnique(info, scope, name);
+    }
+
+    private boolean enclosedBy(TypeMirror t1, TypeMirror t2) {
+        if(t1.getKind() == TypeKind.DECLARED) {
+            if(workingCopy.getTypes().isSameType(t1, t2)) {
+                return true;
+            }
+            DeclaredType dt = (DeclaredType) t1;
+            TypeMirror enclosingType = dt.getEnclosingType();
+            if(enclosingType.getKind() == TypeKind.NONE) {
+                return false;
+            } else {
+                return enclosedBy(enclosingType, t2);
+            }
+        } else {
+            return false;
+        }
     }
 }

@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.maven.j2ee.web;
 
+import java.util.Collection;
+import java.util.Collections;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -54,7 +56,15 @@ import org.openide.filesystems.FileObject;
  *
  * @author marekfukala
  */
-@ProjectServiceProvider(service = ProjectWebRootProvider.class, projectType = {"org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR})
+@ProjectServiceProvider(
+    service = {
+        ProjectWebRootProvider.class
+    },
+    projectType = {
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
+        "org-netbeans-modules-maven/" + NbMavenProject.TYPE_JAR // #233476
+    }
+)
 public class MavenWebProjectWebRootProvider implements ProjectWebRootProvider {
 
     private WebModuleProvider webModuleProvider;
@@ -76,6 +86,23 @@ public class MavenWebProjectWebRootProvider implements ProjectWebRootProvider {
         WebModuleProvider provider = getProvider();
         WebModule wm = provider != null ? provider.findWebModule(file) : null;
         return wm != null ? wm.getDocumentBase() : null;
+    }
+
+    @Override
+    public Collection<FileObject> getWebRoots() {
+        WebModuleProvider provider = getProvider();
+        if (provider == null) {
+            return Collections.emptyList();
+        }
+        WebModule webModule = provider.findWebModule(project.getProjectDirectory());
+        if (webModule == null) {
+            return Collections.emptyList();
+        }
+        FileObject documentBase = webModule.getDocumentBase();
+        if (documentBase == null) {
+            return Collections.emptyList();
+        }
+        return Collections.singleton(documentBase);
     }
 
 }

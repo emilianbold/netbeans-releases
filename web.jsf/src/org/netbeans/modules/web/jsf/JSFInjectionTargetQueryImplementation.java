@@ -60,8 +60,6 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Parameters;
 
 /**
@@ -119,7 +117,7 @@ public class JSFInjectionTargetQueryImplementation implements InjectionTargetQue
              * @author ads
              */
             Project project = FileOwnerQuery.getOwner(controller.getFileObject());
-            MetadataModel<JsfModel> model = JsfModelFactory.getModel(project);
+            MetadataModel<JsfModel> model = JSFUtils.getModel(project);
             if ( model != null ){
                 try {
                 return model.runReadAction( new MetadataModelAction<JsfModel, Boolean>() {

@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.remotefs.versioning.spi;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -49,23 +51,34 @@ import java.util.logging.Logger;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.extexecution.ProcessBuilder;
 import org.netbeans.modules.remote.impl.fileoperations.spi.FileOperationsProvider;
+import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.netbeans.modules.versioning.core.api.VCSFileProxy;
 import org.netbeans.modules.versioning.core.filesystems.VCSFileProxyOperations;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
+import org.openide.util.lookup.ServiceProvider;
+import org.openide.util.lookup.ServiceProviders;
 
 /**
  *
  * @author Alexander Simon
  */
-@org.openide.util.lookup.ServiceProvider(service=FileOperationsProvider.class, position = 1000)
-public class FileProxyProviderImpl extends FileOperationsProvider {
-    private final Map<FileSystem, FileOperations> map = new HashMap<FileSystem, FileOperations>();
+@ServiceProviders({
+    @ServiceProvider(service=FileOperationsProvider.class, position = 1000),
+    @ServiceProvider(service=VCSFileProxyOperations.Provider.class, position = 1000)
+})
+
+public class FileProxyProviderImpl extends FileOperationsProvider implements VCSFileProxyOperations.Provider {
+    private final Map<FileSystem, FileOperationsImpl> map = new HashMap<FileSystem, FileOperationsImpl>();
     private static final Logger LOG = Logger.getLogger(FileProxyProviderImpl.class.getName());
 
     @Override
     public synchronized FileOperations getFileOperations(FileSystem fs) {
-        FileOperations fileOperations;
+        return getFileOperationsImpl(fs);
+    }
+
+    private synchronized FileOperationsImpl getFileOperationsImpl(FileSystem fs) {
+        FileOperationsImpl fileOperations;
         synchronized(map) {
             fileOperations = map.get(fs);
             if (fileOperations == null) {
@@ -75,6 +88,18 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
         }
         return fileOperations;
     }
+
+    @Override
+    public VCSFileProxyOperations getVCSFileProxyOperations(URI uri) {
+        FileSystem fs = FileSystemProvider.getFileSystem(uri);
+        return getFileOperationsImpl(fs);
+    }
+
+    @Override
+    public VCSFileProxyOperations getVCSFileProxyOperations(FileSystem fs) {
+        return getFileOperationsImpl(fs);
+    }
+
     
     private static final class FileOperationsImpl extends FileOperations implements VCSFileProxyOperations {
         private boolean assertIt = false;
@@ -202,6 +227,16 @@ public class FileProxyProviderImpl extends FileOperationsProvider {
         public long lastModified(VCSFileProxy file) {
             softEDTAssert();
             return lastModified(toFileProxy(file));
+        }
+
+        @Override
+        public InputStream getInputStream(VCSFileProxy file, boolean checkLock) throws FileNotFoundException {
+            softEDTAssert();
+            FileObject fo = toFileObject(file);
+            if (fo == null) {
+                throw new FileNotFoundException("File not found: " + file.getPath()); //NOI18N
+            }
+            return getInputStream(fo, checkLock);
         }
 
         private static final Set<Integer> alreadyTraced = new HashSet<Integer>();

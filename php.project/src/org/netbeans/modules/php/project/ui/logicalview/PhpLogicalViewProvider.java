@@ -57,8 +57,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectInformation;
@@ -77,8 +75,11 @@ import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
+import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
+import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.LifecycleManager;
 import org.openide.awt.ActionID;
@@ -232,18 +233,21 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
     //~ Inner classes
 
-    private static final class PhpLogicalViewRootNode extends AbstractNode implements ChangeListener, PropertyChangeListener {
+    private static final class PhpLogicalViewRootNode extends AbstractNode implements PropertyChangeListener {
 
         private static final String TOOLTIP = "<img src=\"%s\">&nbsp;%s"; // NOI18N
 
         private final PhpProject project;
         private final ProjectInformation projectInfo;
+        private final ProjectProblemsProvider projectProblemsProvider;
 
 
         private PhpLogicalViewRootNode(PhpProject project) {
             super(createChildren(project), createLookup(project));
             this.project = project;
             projectInfo = ProjectUtils.getInformation(project);
+            projectProblemsProvider = project.getLookup().lookup(ProjectProblemsProvider.class);
+            assert projectProblemsProvider != null : project;
             // ui
             setIconBaseWithExtension(PhpProject.PROJECT_ICON);
             setName(projectInfo.getDisplayName());
@@ -268,6 +272,7 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         private void addListeners() {
             ProjectPropertiesSupport.addWeakProjectPropertyChangeListener(project, this);
             projectInfo.addPropertyChangeListener(WeakListeners.propertyChange(this, projectInfo));
+            projectProblemsProvider.addPropertyChangeListener(WeakListeners.propertyChange(this, projectProblemsProvider));
         }
 
         private static Lookup createLookup(PhpProject project) {
@@ -360,15 +365,16 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         @Override
         public String getHtmlDisplayName() {
+            if (projectProblemsProvider.getProblems().isEmpty()) {
+                return null;
+            }
             String dispName = super.getDisplayName();
             try {
                 dispName = XMLUtil.toElementContent(dispName);
             } catch (CharConversionException ex) {
                 return dispName;
             }
-            return PhpProjectValidator.isBroken(project)
-                    ? "<font color=\"#" + Integer.toHexString(Utils.getErrorForeground().getRGB() & 0xffffff) + "\">" + dispName + "</font>" // NOI18N
-                    : null;
+            return "<font color=\"#" + Integer.toHexString(Utils.getErrorForeground().getRGB() & 0xffffff) + "\">" + dispName + "</font>"; // NOI18N
         }
 
         @Override
@@ -384,10 +390,16 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         private void addCodeCoverageAction(List<Action> actions) {
             boolean coverageSupported = false;
             PhpModule phpModule = project.getPhpModule();
-            for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
-                if (testingProvider.isCoverageSupported(phpModule)) {
-                    coverageSupported = true;
-                    break;
+            List<PhpTestingProvider> testingProviders = project.getTestingProviders();
+            if (testingProviders.isEmpty()) {
+                // no testing provider set yet => show action
+                coverageSupported = true;
+            } else {
+                for (PhpTestingProvider testingProvider : testingProviders) {
+                    if (testingProvider.isCoverageSupported(phpModule)) {
+                        coverageSupported = true;
+                        break;
+                    }
                 }
             }
             if (coverageSupported) {
@@ -451,18 +463,6 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
 
         private static Children createChildren(PhpProject project) {
            return NodeFactorySupport.createCompositeChildren(project, "Projects/org-netbeans-modules-php-project/Nodes"); // NOI18N
-        }
-
-        @Override
-        public void stateChanged(ChangeEvent e) {
-            RP.post(new Runnable() {
-                @Override
-                public void run() {
-                    fireIconChange();
-                    fireOpenedIconChange();
-                    fireDisplayNameChange(null, null);
-                }
-            });
         }
 
         @Override
@@ -717,6 +717,11 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             return item;
         }
 
+    }
+
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 250)
+    public static NodeFactory createRemoteFiles() {
+        return RemoteFilesNodeFactory.createRemoteFilesNodeFactory();
     }
 
 }

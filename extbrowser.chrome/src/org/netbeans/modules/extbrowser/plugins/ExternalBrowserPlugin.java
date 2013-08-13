@@ -53,6 +53,7 @@ import java.util.*;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.SwingUtilities;
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.netbeans.api.debugger.Session;
@@ -101,6 +102,7 @@ public final class ExternalBrowserPlugin {
     private static final ExternalBrowserPlugin INSTANCE = new ExternalBrowserPlugin();
     
     private static final RequestProcessor RP = new RequestProcessor("ExternalBrowserPlugin", 5); // NOI18N
+    private static final RequestProcessor BROWSER_CHANGES = new RequestProcessor("Chrome Browser Changes", 1); // NOI18N
 
     @NbBundle.Messages({"# {0} - port", "ServerStartFailed=Internal WebSocket server failed to start "
             + "and communication with the external Chrome browser will not work. Check the IDE log "
@@ -320,7 +322,7 @@ public final class ExternalBrowserPlugin {
                     handleSaveResizeOptions(msg.getValue());
                     break;
                 case RESOURCE_CHANGED:
-                    handleResourceChanged(msg.getValue());
+                    handleResourceChanged(msg.getValue(), key);
                     break;
                 case READY:
                     break;
@@ -603,15 +605,23 @@ public final class ExternalBrowserPlugin {
             removeKey( key );
         }
 
-        private void handleResourceChanged(JSONObject value) {
+        private void handleResourceChanged(JSONObject value, SelectionKey key) {
             final String content = String.valueOf(value.get("content"));
             JSONObject resource = (JSONObject)value.get("resource");
             final String url = String.valueOf(resource.get("url"));
             final String type = String.valueOf(resource.get("type"));
-            RP.post(new Runnable() {
+            URL mainDocumentUrl = null;
+            for(Iterator<BrowserTabDescriptor> iterator = knownBrowserTabs.iterator() ; iterator.hasNext() ; ) {
+                BrowserTabDescriptor browserTab = iterator.next();
+                if (key.equals(browserTab.keyForFeature(FEATURE_ROS))) {
+                    mainDocumentUrl = browserTab.browserImpl.getURL();
+                }
+            }
+            final URL uu = mainDocumentUrl;
+            BROWSER_CHANGES.post(new Runnable() {
                 @Override
                 public void run() {
-                    ExternalModificationsSupport.handle(url, type, content);
+                    ExternalModificationsSupport.handle(url, type, content, uu);
                 }
             });
         }
@@ -777,6 +787,8 @@ public final class ExternalBrowserPlugin {
             return callback;
         }
 
+        @NbBundle.Messages({"DebuggerEnableFailed=Browser refused to debug this tab.\n"
+                + "Close Chrome Developer Tools (or any other browser debugger) and try again."})
         private void init() {
             if (initialized || !browserImpl.hasEnhancedMode() || doNotInitialize ||
                     browserImpl.getBrowserFeatures() == null ||
@@ -805,7 +817,18 @@ public final class ExternalBrowserPlugin {
             if (browserImpl.getBrowserFeatures().isLiveHTMLEnabled()) {
                 webkitDebugger.getDebugger().enableDebuggerInLiveHTMLMode();
             } else {
-                webkitDebugger.getDebugger().enable();
+                if (!webkitDebugger.getDebugger().enable()) {
+                    initialized = false;
+                    doNotInitialize = true;
+                    SwingUtilities.invokeLater(new Runnable() {
+                        @Override
+                        public void run() {
+                            DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
+                                Bundle.DebuggerEnableFailed(), NotifyDescriptor.Message.ERROR_MESSAGE));
+                        }
+                    });
+                    return;
+                }
             }
             if (browserImpl.getBrowserFeatures().isJsDebuggerEnabled()) {
                 session = WebKitUIManager.getDefault().createDebuggingSession(webkitDebugger, projectContext);

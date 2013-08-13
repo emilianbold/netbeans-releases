@@ -194,7 +194,6 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         jBtnBrowse = new javax.swing.JButton();
         jRbnProject = new javax.swing.JRadioButton();
         jTxtWsdlURL = new javax.swing.JTextField();
-        jBtnProxy = new javax.swing.JButton();
         jTxtLocalFilename = new javax.swing.JTextField();
         jLblPackageDescription = new javax.swing.JLabel();
         jLblProject = new javax.swing.JLabel();
@@ -288,22 +287,6 @@ public final class ClientInfo extends JPanel implements WsdlRetriever.MessageRec
         add(jTxtWsdlURL, gridBagConstraints);
         jTxtWsdlURL.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSN_WsdlSourceUrl")); // NOI18N
         jTxtWsdlURL.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "ACSD_WsdlSourceUrl")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(jBtnProxy, org.openide.util.NbBundle.getMessage(ClientInfo.class, "LBL_ProxySettings")); // NOI18N
-        jBtnProxy.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jBtnProxyActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 2;
-        gridBagConstraints.gridy = 3;
-        gridBagConstraints.gridwidth = java.awt.GridBagConstraints.REMAINDER;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.EAST;
-        gridBagConstraints.insets = new java.awt.Insets(0, 6, 6, 0);
-        add(jBtnProxy, gridBagConstraints);
-        jBtnProxy.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(ClientInfo.class, "A11Y_ProxySettings")); // NOI18N
 
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
@@ -528,12 +511,7 @@ private void jaxwsVersionHandler(java.awt.event.ActionEvent evt) {//GEN-FIRST:ev
         enableWsdlSourceFields();
         descriptorPanel.fireChangeEvent();
     }//GEN-LAST:event_jRbnUrlActionPerformed
-    
-    private void jBtnProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnProxyActionPerformed
-        OptionsDisplayer.getDefault().open("General");//NOI18N
-        wsdlUrlChanged();
-    }//GEN-LAST:event_jBtnProxyActionPerformed
-    
+        
 	private void jBtnBrowseActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnBrowseActionPerformed
             // 		System.out.println("browse for wsdl file...");
             JFileChooser chooser = new JFileChooser(previousDirectory);
@@ -669,7 +647,6 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
     private javax.swing.JCheckBox dispatchCB;
     private javax.swing.JButton jBtnBrowse;
     private javax.swing.JButton jBtnBrowse1;
-    private javax.swing.JButton jBtnProxy;
     private javax.swing.JComboBox jCbxClientType;
     private javax.swing.JComboBox jCbxPackageName;
     private javax.swing.JComboBox jComboBoxJaxVersion;
@@ -1405,8 +1382,8 @@ private void saasBrowse(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saasB
             Client[] clients = jaxWsModel.getClients();
             for (int i=0;i<clients.length;i++) {
                 if (packageName.equals(clients[i].getPackageName())) {
-                    wizardDescriptor.putProperty(PROP_ERROR_MESSAGE, NbBundle.getMessage(ClientInfo.class, "ERR_PackageUsedForClient",clients[i].getName()));
-                    return false;
+                    warningMessage = NbBundle.getMessage(ClientInfo.class, "MSG_PackageUsedForClient",clients[i].getName());
+                    break;
                 }
             }
             

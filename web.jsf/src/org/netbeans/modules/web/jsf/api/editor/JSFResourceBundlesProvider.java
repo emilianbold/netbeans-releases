@@ -55,9 +55,9 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelAction;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModelException;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
+import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.Application;
 import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
-import org.netbeans.modules.web.jsf.api.metamodel.JsfModelFactory;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -69,7 +69,7 @@ public class JSFResourceBundlesProvider {
     private static final Logger LOGGER = Logger.getLogger(JSFResourceBundlesProvider.class.getName());
 
     public static List<ResourceBundle> getResourceBundles(final Project project) {
-       MetadataModel<JsfModel> model = JsfModelFactory.getModel(project);
+        MetadataModel<JsfModel> model = JSFUtils.getModel(project);
         if (model == null) {
             return Collections.emptyList();
         }

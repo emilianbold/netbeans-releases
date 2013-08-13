@@ -86,14 +86,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import static junit.framework.Assert.assertNotNull;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.xml.services.UserCatalog;
+import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean.Scope;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelProvider;
 import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
+import org.netbeans.modules.web.jsf.impl.metamodel.JsfModelProviderImpl;
 import org.netbeans.modules.web.spi.webmodule.WebModuleFactory;
 import org.netbeans.modules.web.spi.webmodule.WebModuleImplementation2;
 import org.netbeans.modules.web.spi.webmodule.WebModuleProvider;
@@ -194,8 +199,8 @@ public class TestBase extends CslTestBase {
         return HtmlKit.HTML_MIME_TYPE;
     }
 
-    public ParseResultInfo parse(String fileName) throws ParseException {
-        FileObject file = getTestFile(fileName);
+    public ParseResultInfo parse(String fileName) throws ParseException, IOException {
+        FileObject file = getWorkFile(fileName);
 
         assertNotNull(file);
 
@@ -218,6 +223,15 @@ public class TestBase extends CslTestBase {
         return _result[0];
     }
 
+    protected FileObject getWorkFile(String path) throws IOException {
+        File wholeInputFile = new File(getWorkDir(), path);
+        if (!wholeInputFile.exists()) {
+            NbTestCase.fail("File " + wholeInputFile + " not found.");
+        }
+        FileObject fo = FileUtil.toFileObject(wholeInputFile);
+        assertNotNull(fo);
+        return fo;
+    }
   
     protected class TestClassPathProvider implements ClassPathProvider {
 
@@ -382,6 +396,7 @@ public class TestBase extends CslTestBase {
             InstanceContent ic = new InstanceContent();
             ic.add(classpathProvider);
             ic.add(sources);
+            ic.add(new JsfModelProviderImpl(this));
 
             this.lookup = new AbstractLookup(ic);
 

@@ -42,15 +42,18 @@
 package org.netbeans.modules.cnd.modelimpl.platform;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmProject;
 import org.netbeans.modules.cnd.debug.CndTraceFlags;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ModelImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectBase;
-import org.netbeans.modules.cnd.modelimpl.csm.core.ProjectImpl;
 import org.netbeans.modules.cnd.modelutil.CsmUtilities;
+import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.CustomIndexer;
@@ -75,16 +78,37 @@ public class CndIndexer extends CustomIndexer {
         }
         FileObject root = context.getRoot();
         for (Indexable idx : files) {
-            FileObject fo = root.getFileObject(idx.getRelativePath());
-            CsmFile file = CsmUtilities.getCsmFile(fo, false, false);
-            if (file != null) {
-                ((ProjectImpl)file.getProject()).onFileImplExternalChange((FileImpl)file);
-            }
+            final FileObject fo = root.getFileObject(idx.getRelativePath());
+            final ModelImpl model = ModelSupport.instance().getModel();
+            model.enqueueModelTask(new Runnable() {
+                @Override
+                public void run() {
+                    CsmFile[] files = model.findFiles(FSPath.toFSPath(fo), false, false);
+                    Set<ProjectBase> handledProjects = new HashSet<>();
+                    for (int i = 0; i < files.length; ++i) {
+                        FileImpl file = (FileImpl) files[i];
+                        ProjectBase project = file.getProjectImpl(true);
+                        if (project != null) {
+                            handledProjects.add(project);
+                            project.onFileImplExternalChange(file);
+                        }
+                    }
+                    Collection<CsmProject> ownerCsmProjects = CsmUtilities.getOwnerCsmProjects(fo);
+                    for (CsmProject prj : ownerCsmProjects) {
+                        if (prj instanceof ProjectBase) {
+                            ProjectBase project = (ProjectBase) prj;
+                            if (!handledProjects.contains(project)) {
+                                project.onFileObjectExternalCreate(fo);
+                            }
+                        }
+                    }
+                }
+            }, "External File Updater"); // NOI18N
         }
     }
-    
+
     public static final String NAME = "cnd"; //NOI18N
-    
+
     @MimeRegistrations({
         @MimeRegistration(mimeType = MIMENames.C_MIME_TYPE, service = CustomIndexerFactory.class),
         @MimeRegistration(mimeType = MIMENames.CPLUSPLUS_MIME_TYPE, service = CustomIndexerFactory.class),
@@ -114,7 +138,7 @@ public class CndIndexer extends CustomIndexer {
                 ModelSupport.instance().getModel().enqueueModelTask(new Runnable() {
                     @Override
                     public void run() {
-                        ((ProjectBase)csmProject).checkForRemoved();
+                        ((ProjectBase) csmProject).checkForRemoved();
                     }
                 }, "External File Updater"); // NOI18N
             }
@@ -122,7 +146,7 @@ public class CndIndexer extends CustomIndexer {
 
         @Override
         public void filesDirty(Iterable<? extends Indexable> dirty, Context context) {
-       }
+        }
 
         @Override
         public String getIndexerName() {

@@ -747,7 +747,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
             renderer.setBackground(isSelected ? list.getSelectionBackground() : list.getBackground());
             renderer.setForeground(isSelected ? list.getSelectionForeground() : list.getForeground());
             renderer.setText(value);
-            renderer.setSelected(selectedContexts.contains(value));
+            renderer.setSelected(selectedContexts != null && selectedContexts.contains(value));
+            renderer.setOpaque(true);
             return renderer;
         }
     }
@@ -782,7 +783,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
 
         private void contextsModified() {
             String value = lContexts.getSelectedValue();
-            if (!selectedContexts.remove(value)) {
+            if (selectedContexts != null && !selectedContexts.remove(value)) {
                 selectedContexts.add(value);
             }
             lContexts.repaint();

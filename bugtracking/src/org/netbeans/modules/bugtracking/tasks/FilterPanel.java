@@ -45,14 +45,11 @@ import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
 import javax.swing.event.DocumentListener;
-import org.netbeans.modules.bugtracking.tasks.actions.DummyAction;
 import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
-import org.netbeans.modules.bugtracking.tasks.filter.OpenedCategoryFilter;
-import org.netbeans.modules.bugtracking.tasks.filter.OpenedRepositoryFilter;
-import org.netbeans.modules.bugtracking.tasks.filter.OpenedTaskFilter;
-import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
-import org.netbeans.modules.team.ui.util.treelist.ColorManager;
-import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.bugtracking.tasks.filter.OpenedCategorizedTaskFilter;
+import org.netbeans.modules.bugtracking.settings.DashboardSettings;
+import org.netbeans.modules.team.commons.treelist.ColorManager;
+import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -70,9 +67,7 @@ public class FilterPanel extends javax.swing.JPanel {
     private final TreeLabel lblCount;
     private final JButton btnFilter;
     //private final JButton btnGroup;
-    private final OpenedTaskFilter openedTaskFilter;
-    private final OpenedCategoryFilter openedCategoryFilter;
-    private final OpenedRepositoryFilter openedRepositoryFilter;
+    private final OpenedCategorizedTaskFilter openedTaskFilter;
     private final DashboardToolbar toolBar;
     private final RequestProcessor REQUEST_PROCESSOR;
 
@@ -80,9 +75,7 @@ public class FilterPanel extends javax.swing.JPanel {
         REQUEST_PROCESSOR = DashboardViewer.getInstance().getRequestProcessor();
         BACKGROUND_COLOR = ColorManager.getDefault().getExpandableRootBackground();
         FOREGROUND_COLOR = ColorManager.getDefault().getExpandableRootForeground();
-        openedTaskFilter = new OpenedTaskFilter();
-        openedCategoryFilter = new OpenedCategoryFilter();
-        openedRepositoryFilter = new OpenedRepositoryFilter();
+        openedTaskFilter = new OpenedCategorizedTaskFilter();
         initComponents();
         setBackground(BACKGROUND_COLOR);
         final JLabel iconLabel = new JLabel(ImageUtilities.loadImageIcon("org/netbeans/modules/bugtracking/tasks/resources/find.png", true)); //NOI18N
@@ -119,7 +112,7 @@ public class FilterPanel extends javax.swing.JPanel {
         });
         textFilter.setMinimumSize(new java.awt.Dimension(150, 20));
         textFilter.setPreferredSize(new java.awt.Dimension(150, 20));
-        add(textFilter, new GridBagConstraints(3, 0, 1, 1, 0, 0.0, GridBagConstraints.WEST, GridBagConstraints.NONE, new Insets(2, 5, 2, 5), 0, 0));
+        add(textFilter, new GridBagConstraints(3, 0, 1, 1, 1, 0.0, GridBagConstraints.WEST, GridBagConstraints.HORIZONTAL, new Insets(2, 5, 2, 5), 0, 0));
 
         lblCount = new TreeLabel("");
         lblCount.setVisible(false);
@@ -208,73 +201,39 @@ public class FilterPanel extends javax.swing.JPanel {
 
     private JPopupMenu createFilterPopup() {
         final JPopupMenu popup = new JPopupMenu();
-        final ButtonGroup groupStatus = new ButtonGroup();
+        final JCheckBoxMenuItem chbShowFinished = new JCheckBoxMenuItem();
+        AbstractAction action = new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_ShowAll")) { //NOI18N
 
-        //<editor-fold defaultstate="collapsed" desc="opened/all entries section">
-        // show all action
-        JRadioButtonMenuItem rbAllStatuses = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_ShowAll")) { //NOI18N
             @Override
             public void actionPerformed(ActionEvent e) {
                 REQUEST_PROCESSOR.post(new Runnable() {
                     @Override
                     public void run() {
-                        DashboardViewer.getInstance().removeCategoryFilter(openedCategoryFilter, false);
-                        DashboardViewer.getInstance().removeRepositoryFilter(openedRepositoryFilter, false);
-                        int hits = DashboardViewer.getInstance().removeTaskFilter(openedTaskFilter, true);
-                        manageHitCount(hits);
-                        DashboardSettings.getInstance().setFinishedTaskFilter(false);
+                        boolean selected = chbShowFinished.isSelected();
+                        if (selected) {
+                            int hits = DashboardViewer.getInstance().removeTaskFilter(openedTaskFilter, true);
+                            manageHitCount(hits);
+                        } else {
+                            int hits = DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, true);
+                            manageHitCount(hits);
+                        }
+                        DashboardSettings.getInstance().setShowFinishedTasks(selected);
                     }
                 });
-                if (e.getSource() instanceof JMenuItem) {
-                    ((JMenuItem) e.getSource()).setSelected(enabled);
-                }
             }
-        });
-
-        groupStatus.add(rbAllStatuses);
-        popup.add(rbAllStatuses);
-
-        // show opened only action
-        JRadioButtonMenuItem rbOpenedStatus = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_ShowOpened")) { //NOI18N
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                REQUEST_PROCESSOR.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        DashboardViewer.getInstance().applyCategoryFilter(openedCategoryFilter, false);
-                        DashboardViewer.getInstance().applyRepositoryFilter(openedRepositoryFilter, false);
-                        int hits = DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, true);
-                        manageHitCount(hits);
-                        DashboardSettings.getInstance().setFinishedTaskFilter(true);
-                    }
-                });
-                if (e.getSource() instanceof JMenuItem) {
-                    ((JMenuItem) e.getSource()).setSelected(enabled);
-                }
-            }
-        });
-        groupStatus.add(rbOpenedStatus);
-        // load saved setting
-        boolean finishedTaskFilter = DashboardSettings.getInstance().isFinishedTaskFilter();
-        rbOpenedStatus.setSelected(finishedTaskFilter);
-        rbAllStatuses.setSelected(!finishedTaskFilter);
-
-        if (rbOpenedStatus.isSelected()) {
-            REQUEST_PROCESSOR.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        DashboardViewer.getInstance().applyCategoryFilter(openedCategoryFilter, false);
-                        DashboardViewer.getInstance().applyRepositoryFilter(openedRepositoryFilter, false);
-                        DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, false);
-                    }
-                });
+        };
+        chbShowFinished.setAction(action);
+        boolean showFinishedTasks = DashboardSettings.getInstance().showFinishedTasks();
+        chbShowFinished.setSelected(showFinishedTasks);
+        if (!showFinishedTasks) {
+            int hits = DashboardViewer.getInstance().applyTaskFilter(openedTaskFilter, true);
+            manageHitCount(hits);
         }
-        popup.add(rbOpenedStatus);
-
-        popup.addSeparator();
-        //</editor-fold>
+        popup.add(chbShowFinished);
 
         //<editor-fold defaultstate="collapsed" desc="schedule filters section">
+        /*
+        popup.addSeparator();
         final ButtonGroup groupDue = new ButtonGroup();
         JRadioButtonMenuItem rbAllDue = new JRadioButtonMenuItem(new AbstractAction(NbBundle.getMessage(FilterPanel.class, "LBL_DueAll")) { //NOI18N
             @Override
@@ -284,7 +243,6 @@ public class FilterPanel extends javax.swing.JPanel {
             }
         });
         rbAllDue.setSelected(true);
-        rbAllDue.setEnabled(false);
         groupDue.add(rbAllDue);
         popup.add(rbAllDue);
 
@@ -295,7 +253,6 @@ public class FilterPanel extends javax.swing.JPanel {
                 new DummyAction().actionPerformed(e);
             }
         });
-        rbTodayDue.setEnabled(false);
         groupDue.add(rbTodayDue);
         popup.add(rbTodayDue);
 
@@ -306,7 +263,6 @@ public class FilterPanel extends javax.swing.JPanel {
                 new DummyAction().actionPerformed(e);
             }
         });
-        rbWeekDue.setEnabled(false);
         groupDue.add(rbWeekDue);
         popup.add(rbWeekDue);
 
@@ -317,9 +273,9 @@ public class FilterPanel extends javax.swing.JPanel {
                 new DummyAction().actionPerformed(e);
             }
         });
-        rbMonthDue.setEnabled(false);
         groupDue.add(rbMonthDue);
         popup.add(rbMonthDue);
+        */
         //</editor-fold>
         return popup;
     }

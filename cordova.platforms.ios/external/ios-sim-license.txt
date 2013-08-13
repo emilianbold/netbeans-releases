@@ -1,7 +1,7 @@
 Name: ios-sim
 Version: 
 Description: Command-line application launcher for the iOS Simulator
-License: MIT
+License: MIT-sim
 Origin: https://github.com/phonegap/ios-sim
 Files: ios-sim
 

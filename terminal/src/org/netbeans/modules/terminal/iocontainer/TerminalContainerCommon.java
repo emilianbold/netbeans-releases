@@ -377,6 +377,11 @@ abstract class TerminalContainerCommon extends TerminalContainer implements IOCo
         fixSize(actionBar);
         add(actionBar, BorderLayout.WEST);
 
+	// Make actionBar initially invisible. setButtons will make it visible
+	// if actions are defined.
+	// This will prevent 'blinking' of the toolbar (see IZ 233206)
+	actionBar.setVisible(false);
+
         findBar = new FindBar(new FindBar.Owner() {
 
 	    @Override

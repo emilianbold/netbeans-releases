@@ -60,6 +60,7 @@ import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.javaee.project.api.ant.DeployOnSaveUtils;
@@ -234,6 +235,14 @@ public class EarActionProvider implements ActionProvider {
      * @return array of targets or null to stop execution; can return empty array
      */
     String[] getTargetNames(String command, Lookup context, Properties p) throws IllegalArgumentException {
+        // set context for advanced nbbrowse task:
+        FileObject browserContextFile = context.lookup(FileObject.class);
+        if (browserContextFile == null) {
+            browserContextFile = project.getProjectDirectory();
+        }
+        String ctx = FileUtil.toFile(browserContextFile).getAbsolutePath();
+        p.setProperty("browser.context", ctx);
+
         String[] targetNames = commands.get(command);
         
         //EXECUTION PART

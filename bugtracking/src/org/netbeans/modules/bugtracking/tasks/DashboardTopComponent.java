@@ -72,7 +72,7 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.RepositoryRegistry;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
-import org.netbeans.modules.bugtracking.tasks.settings.DashboardSettings;
+import org.netbeans.modules.bugtracking.settings.DashboardSettings;
 import org.openide.awt.ActionReferences;
 import org.openide.util.RequestProcessor;
 

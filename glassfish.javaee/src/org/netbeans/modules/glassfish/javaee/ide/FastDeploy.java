@@ -89,6 +89,8 @@ import org.xml.sax.SAXException;
  * @author Peter Williams
  */
 public class FastDeploy extends IncrementalDeployment implements IncrementalDeployment2 {
+    
+    private static volatile long lastDeployHack = System.currentTimeMillis();
 
     private static final String GFDEPLOY = "gfdeploy"; // NOI18N
     
@@ -337,13 +339,28 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
             Logger.getLogger("glassfish-javaee").log(Level.WARNING,"http monitor state",
                     ex);
         }
+        long currentTime = System.currentTimeMillis();
+        long sinceLast = currentTime - lastDeployHack;
         final boolean resourcesChanged = containsFileWithName("glassfish-resources.xml",appChangeDescriptor.getChangedFiles()); // NOI18N
         final boolean hasChanges = appChangeDescriptor.classesChanged() ||
                 appChangeDescriptor.descriptorChanged() ||
                 appChangeDescriptor.ejbsChanged() ||
                 appChangeDescriptor.manifestChanged() ||
                 appChangeDescriptor.serverDescriptorChanged() ||
-                resourcesChanged;
+                resourcesChanged ||
+                // 
+                // this accounts for a feature/bug of Glassfish.
+                //  if a static resource is modified there is a window where later
+                //  modifications might be missed... so old content gets served...
+                // even when new content is available to be served.
+                // That window is about 5 seconds.
+                //
+                // If the user is doing pathological things like adding a character 
+                // and hitting save, the auto-refresh will show the right thing.
+                //
+                sinceLast < 5000;
+
+        lastDeployHack = currentTime;
 
         if(appChangeDescriptor instanceof DeploymentChangeDescriptor) {
             DeploymentChangeDescriptor dcd = (DeploymentChangeDescriptor)appChangeDescriptor;

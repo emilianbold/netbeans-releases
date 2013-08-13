@@ -102,7 +102,7 @@ public class SpecialRemoteFileObject extends RemoteFileObjectBase {
     }
 
     @Override
-    public InputStream getInputStream() throws FileNotFoundException {
+    public InputStream getInputStream(boolean checkLock) throws FileNotFoundException {
         return new ByteArrayInputStream(new byte[] {});
     }
 

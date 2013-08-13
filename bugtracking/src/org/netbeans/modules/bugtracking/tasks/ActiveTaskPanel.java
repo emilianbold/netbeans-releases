@@ -41,7 +41,7 @@
  */
 package org.netbeans.modules.bugtracking.tasks;
 
-import org.netbeans.modules.team.ui.util.treelist.LinkButton;
+import org.netbeans.modules.team.commons.treelist.LinkButton;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -54,8 +54,8 @@ import javax.swing.*;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.ActivateTaskAction;
 import org.netbeans.modules.bugtracking.tasks.actions.Actions.OpenTaskAction;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
-import org.netbeans.modules.team.ui.util.treelist.ColorManager;
-import org.netbeans.modules.team.ui.util.treelist.TreeLabel;
+import org.netbeans.modules.team.commons.treelist.ColorManager;
+import org.netbeans.modules.team.commons.treelist.TreeLabel;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 

@@ -40,27 +40,37 @@ function checkMemsize() {
 
 /* js:pkmk:start */
 function checkJavaVersion() {
+    var JDK_ENABLED = false;
     var result = false;
     var java7u10_or_newer = false;
-    var javaFound = false;
+    var jdkFound = false;
+    var jreFound = false;
     try {
-        if(system.files.fileExistsAtPath('/usr/libexec/java_home')) {
+        if (system.files.fileExistsAtPath('/usr/libexec/java_home')) {
            var res = system.run("/usr/libexec/java_home", "--version", "1.7.0_10+", "--failfast");                       
            java7u10_or_newer = (0 == res);
-           if(!java7u10_or_newer) {
+           if (!java7u10_or_newer) {
                var res = system.run("/usr/libexec/java_home", "--version", "1.5", "--failfast");                       
-               javaFound = (0 == res);
+               jdkFound = (0 == res);
            }
         }
     } catch (e) {}
 
-    if(java7u10_or_newer) {
+    if (system.files.fileExistsAtPath('/Library/Internet Plug-Ins/JavaAppletPlugin.plugin/Contents/Home')) {
+        jreFound = true;
+    }
+
+    if (java7u10_or_newer || JDK_ENABLED &amp;&amp; jreFound) {
         result = true;
     } else {
-        if (javaFound) {
+        if (jdkFound) {
             my.result.type = 'Fatal';
             my.result.title = system.localizedStringWithFormat('ERR_OLDER_JAVA7_TITLE');
             my.result.message = system.localizedStringWithFormat('ERR_OLDER_JAVA7_TITLE');
+        } else if (jreFound) {
+            my.result.type = 'Fatal';
+            my.result.title = system.localizedStringWithFormat('ERR_NO_JDK_TITLE');
+            my.result.message = system.localizedStringWithFormat('ERR_NO_JDK_MSG');            
         } else {
             my.result.type = 'Fatal';
             my.result.title = system.localizedStringWithFormat('ERR_NO_JAVA_TITLE');
