@@ -56,6 +56,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -299,6 +300,11 @@ public class GridDesigner extends JPanel {
         String actionId = ourAction.getClass().getName();
         getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ks, actionId);
         getActionMap().put(actionId, ourAction);
+    }
+
+    public void cleanup() {
+        setSelectedNodes(Collections.EMPTY_LIST);
+        removeFormModelListener();
     }
 
     /**
@@ -587,7 +593,7 @@ public class GridDesigner extends JPanel {
         return new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (!glassPane.isUserActionInProgress()) {
+                if (isShowing() && !glassPane.isUserActionInProgress()) {
                     if (!updateScheduled) {
                         // This method is called several times when a change
                         // is done to some property (in property sheet)
