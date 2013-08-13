@@ -1028,7 +1028,11 @@ public class ModelVisitor extends PathNodeVisitor {
                         alreadyThere = thisIs.getProperty(name.getName());
                     } else {
                         if (isDeclaredInParent) {
-                            alreadyThere = ModelUtils.getJsObjectByName(modelBuilder.getCurrentDeclarationFunction(), name.getName());
+                            if (lastVisited instanceof PropertyNode) {
+                                alreadyThere = modelBuilder.getCurrentObject().getProperty(name.getName());
+                            } else {
+                                alreadyThere = ModelUtils.getJsObjectByName(modelBuilder.getCurrentDeclarationFunction(), name.getName());
+                            }
                         } else {
                             alreadyThere = ModelUtils.getJsObject(modelBuilder, fqName, true);
                         }
