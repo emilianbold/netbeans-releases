@@ -77,18 +77,16 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
     private MethodType methodType = MethodType.METHOD;
     private final String returnType;
     
-    private IndexedMethod(String signature, String returnType, GroovyIndex index,
-            IndexResult result, String clz, String attributes, int flags) {
+    private IndexedMethod(String signature, String returnType, IndexResult result, String clz, String attributes, int flags) {
 
-        super(index, result, clz, attributes, flags);
+        super(result, clz, attributes, flags);
         this.signature = signature;
         this.returnType = returnType;
     }
 
     public static IndexedMethod create(GroovyIndex index, String signature, String returnType,
             String clz, IndexResult result, String attributes, int flags) {
-        IndexedMethod m =
-            new IndexedMethod(signature, returnType, index, result, clz, attributes, flags);
+        IndexedMethod m = new IndexedMethod(signature, returnType, result, clz, attributes, flags);
 
         return m;
     }

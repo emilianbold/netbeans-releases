@@ -49,17 +49,17 @@ public class IndexedField extends IndexedElement {
 
     private boolean smart;
 
-    private IndexedField(String name, String type, GroovyIndex index, IndexResult result, String classFqn,
+    private IndexedField(String name, String type, IndexResult result, String classFqn,
             String attributes, int flags) {
-        super(index, result, classFqn, attributes, flags);
+        super(result, classFqn, attributes, flags);
         this.name = name;
         this.type = type;
     }
 
-    public static IndexedField create(GroovyIndex index, String name, String type, String classFqn,
+    public static IndexedField create(String name, String type, String classFqn,
             IndexResult result, String attributes, int flags) {
         
-        IndexedField m = new IndexedField(name, type, index, result, classFqn, attributes, flags);
+        IndexedField m = new IndexedField(name, type, result, classFqn, attributes, flags);
         return m;
     }
 

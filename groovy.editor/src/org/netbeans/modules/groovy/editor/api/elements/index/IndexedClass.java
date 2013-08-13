@@ -64,14 +64,14 @@ public final class IndexedClass extends IndexedElement implements IClassElement 
 
     private final String simpleName;
 
-    protected IndexedClass(GroovyIndex index, IndexResult result, String fqn, String simpleName, String attributes, int flags) {
-        super(index, result, fqn, attributes, flags);
+    protected IndexedClass(IndexResult result, String fqn, String simpleName, String attributes, int flags) {
+        super(result, fqn, attributes, flags);
         this.simpleName = simpleName;
     }
 
     public static IndexedClass create(GroovyIndex index, String simpleName, String fqn, IndexResult result,
         String attributes, int flags) {
-        IndexedClass c = new IndexedClass(index, result, fqn, simpleName, attributes, flags);
+        IndexedClass c = new IndexedClass(result, fqn, simpleName, attributes, flags);
         return c;
     }
 

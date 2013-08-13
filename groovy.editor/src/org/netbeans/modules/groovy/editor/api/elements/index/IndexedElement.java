@@ -66,16 +66,13 @@ public abstract class IndexedElement extends GroovyElement {
 
     protected IndexResult result;
     protected final String classFqn;
-    protected final GroovyIndex index;
     protected final String attributes;
     protected Set<Modifier> modifiers;
     protected int flags;
     protected int docLength = -1;
     private Document document;
-    //private FileObject fileObject;
 
-    protected IndexedElement(GroovyIndex index, IndexResult result, String classFqn, String attributes, int flags) {
-        this.index = index;
+    protected IndexedElement(IndexResult result, String classFqn, String attributes, int flags) {
         this.result = result;
         this.attributes = attributes;
         this.classFqn = classFqn;
@@ -87,10 +84,6 @@ public abstract class IndexedElement extends GroovyElement {
     @Override
     public String toString() {
         return getSignature();
-    }
-
-    public GroovyIndex getIndex() {
-        return index;
     }
 
     @Override
