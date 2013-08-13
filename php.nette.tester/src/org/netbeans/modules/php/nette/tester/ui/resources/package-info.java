@@ -39,8 +39,9 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-@TemplateRegistration(folder = "Templates/Scripting/Tests",
-        content = "NetteTest.php",
+@TemplateRegistration(folder = "Scripting/Tests",
+        content = "NetteTest.phpt",
+        scriptEngine = "freemarker",
         position = 3000,
         displayName = "#Templates.nette.tester.template.displayName")
 @NbBundle.Messages("Templates.nette.tester.template.displayName=Nette Tester Test")

@@ -12,5 +12,3 @@ $object = new Greeting();
 
 // use an assertion function to test say()
 Assert::same('Hello John', $object->say('John'));
-
-?>
