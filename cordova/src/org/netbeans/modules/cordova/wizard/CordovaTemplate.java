@@ -62,7 +62,6 @@ import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
 import org.netbeans.modules.web.browser.spi.ProjectBrowserProvider;
 import org.netbeans.modules.web.clientproject.api.ClientProjectWizardProvider;
-import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
@@ -101,11 +100,17 @@ public class CordovaTemplate implements SiteTemplateImplementation {
 
     @Override
     public boolean isPrepared() {
-        return true;
+        return CordovaPlatform.getDefault().isReady();
     }
 
+    @NbBundle.Messages(
+        "ERR_NO_Cordova=NetBeans cannot find cordova on your PATH."
+    )
     @Override
     public void prepare() throws IOException {
+        if (!CordovaPlatform.getDefault().isReady()) {
+            throw new IllegalStateException(Bundle.ERR_NO_Cordova(), null);
+        }
     }
 
     @Override
