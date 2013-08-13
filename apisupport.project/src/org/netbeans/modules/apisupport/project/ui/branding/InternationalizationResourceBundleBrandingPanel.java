@@ -50,11 +50,7 @@ import java.awt.event.FocusListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.net.URI;
 import java.net.URL;
@@ -68,7 +64,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
-import java.util.StringTokenizer;
 import java.util.jar.JarEntry;
 import java.util.jar.JarFile;
 import java.util.logging.Level;
@@ -82,9 +77,7 @@ import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.apisupport.project.api.ManifestManager;
 import org.netbeans.modules.apisupport.project.api.UIUtil;
-import org.netbeans.modules.apisupport.project.api.Util;
 import org.netbeans.modules.apisupport.project.spi.PlatformJarProvider;
-import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.EditAction;
@@ -94,7 +87,6 @@ import org.openide.cookies.OpenCookie;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.AbstractNode;
@@ -742,7 +734,7 @@ public class InternationalizationResourceBundleBrandingPanel extends AbstractBra
                 bundleKey.setValue(newValue);
                 getBranding().addModifiedInternationalizedBundleKey(bundleKey);
                 setModified();
-                updateProjectInternationalizationLocales();
+                branding.updateProjectInternationalizationLocales();
                 return true;
             }
         }
@@ -869,61 +861,6 @@ public class InternationalizationResourceBundleBrandingPanel extends AbstractBra
                 
             }
         });
-    }
-    
-    private void updateProjectInternationalizationLocales() {
-        EditableProperties p = null;
-        File projectProperties = null;
-        try {
-            projectProperties = new File(FileUtil.toFile(prj.getProjectDirectory()), "nbproject" + File.separatorChar + "project.properties");
-            p = getEditableProperties(projectProperties);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if(p != null && projectProperties != null) {
-            if(p.getProperty("branding.locales") == null) {
-                p.setProperty("branding.locales", this.locale.toString().toLowerCase());
-            } else {
-                String localizationsStr = p.getProperty("branding.locales");
-                StringTokenizer tokenizer = new StringTokenizer(localizationsStr, ",");
-                boolean containsLocale = false;
-                while (tokenizer.hasMoreElements()) {
-                    if(this.locale.toString().toLowerCase().equals(tokenizer.nextToken())) {
-                        containsLocale = true;
-                        break;
-                    }
-                }
-                if(!containsLocale) {
-                    p.setProperty("branding.locales", p.getProperty("branding.locales") + "," + this.locale.toString().toLowerCase());
-                }
-            }
-            try {
-                storeEditableProperties(p, projectProperties);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-    
-    private static EditableProperties getEditableProperties(final File bundle) throws IOException {
-        EditableProperties p = new EditableProperties(true);
-        InputStream is = new FileInputStream(bundle);
-        try {
-            p.load(is);
-        } finally {
-            is.close();
-        }
-        return p;
-    }
-    
-    private static void storeEditableProperties(final EditableProperties p, final File bundle) throws IOException {
-        FileObject fo = FileUtil.toFileObject(bundle);
-        OutputStream os = null == fo ? new FileOutputStream(bundle) : fo.getOutputStream();
-        try {
-            p.store(os);
-        } finally {
-            os.close();
-        }
     }
     
 }

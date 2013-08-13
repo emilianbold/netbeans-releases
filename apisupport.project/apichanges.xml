@@ -110,6 +110,19 @@ is the proper place.
     <changes>
         <change>
             <api name="apisupport_spi"/>
+            <summary>Extending branding model for internationalization</summary>
+            <version major="1" minor="67"/>
+            <date day="13" month="8" year="2013"/>
+            <author login="mkozeny"/>
+            <compatibility addition="yes"/>
+            <description>
+                <code>BrandingModel</code> were extended by method 
+                <code>updateProjectInternationalizationLocales</code> for updating information about used locales.
+            </description>
+            <class package="org.netbeans.modules.apisupport.project.spi" name="BrandingModel"/>
+        </change>
+        <change>
+            <api name="apisupport_spi"/>
             <summary>New interface for refactoring project's property files</summary>
             <version major="1" minor="65"/>
             <date day="13" month="6" year="2013"/>

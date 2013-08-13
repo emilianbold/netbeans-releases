@@ -132,6 +132,10 @@ class PushWizard  implements ChangeListener {
     List<String> getFetchRefSpecs () {
         return wizardIterator.updateBranchReferencesStep.getSelectedRefSpecs();
     }
+    
+    String getRemoteName () {
+        return wizardIterator.selectUriStep.getRemoteName();
+    }
 
     private class PanelsIterator extends WizardDescriptor.ArrayIterator<WizardDescriptor> {
         private SelectUriStep selectUriStep;
@@ -182,7 +186,7 @@ class PushWizard  implements ChangeListener {
                     pushBranchesStep.fillRemoteBranches(selectUriStep.getSelectedRemote(),
                             remoteBranches, remoteTags == null ? Collections.<String, String>emptyMap() : remoteTags);
                 }
-                pushBranchesStep.setAsLastPanel(!selectUriStep.isConfiguredRemoteSelected());
+                pushBranchesStep.setAsLastPanel(!selectUriStep.isConfiguredRemoteSelected() && selectUriStep.getRemoteName() == null);
                 selectUriStep.storeURI();
             } else if (current() == pushBranchesStep) {
                 Collection<PushMapping> mappings = pushBranchesStep.getSelectedMappings();
@@ -201,7 +205,9 @@ class PushWizard  implements ChangeListener {
 
         @Override
         public boolean hasNext () {
-            return current() == pushBranchesStep ? selectUriStep.isConfiguredRemoteSelected() : super.hasNext();
+            return current() == pushBranchesStep
+                    ? selectUriStep.isConfiguredRemoteSelected() || selectUriStep.getRemoteName() != null
+                    : super.hasNext();
         }
     }
 }

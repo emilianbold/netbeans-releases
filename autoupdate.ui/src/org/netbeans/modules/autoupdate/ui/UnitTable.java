@@ -47,16 +47,15 @@ package org.netbeans.modules.autoupdate.ui;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Rectangle;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.util.List;
+import java.util.Arrays;
 import javax.swing.BorderFactory;
 import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
+import javax.swing.RowSorter;
+import javax.swing.SortOrder;
 import javax.swing.UIManager;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
@@ -88,6 +87,7 @@ public class UnitTable extends JTable {
         }
         //setFillsViewportHeight(true);        
         setIntercellSpacing (new Dimension (0, 0));
+        setAutoCreateRowSorter(true);
         revalidate ();
     }
 
@@ -132,7 +132,8 @@ public class UnitTable extends JTable {
     }
     
     void resortByDefault () {
-        ((MyTableHeader) getTableHeader ()).setDefaultSorting ();
+        RowSorter sorter = getRowSorter();
+        sorter.setSortKeys(Arrays.asList(new RowSorter.SortKey(2, SortOrder.ASCENDING)));
     }
     
     void setColumnsSize () {
@@ -200,9 +201,7 @@ public class UnitTable extends JTable {
         return new MyTableHeader ( columnModel );
     }
     
-    private class MyTableHeader extends JTableHeader {
-        private SortColumnHeaderRenderer sortingRenderer;
-        
+    private class MyTableHeader extends JTableHeader {        
         public MyTableHeader ( TableColumnModel model ) {
             super ( model );
             addMouseListener ( new MouseAdapter () {
@@ -210,39 +209,7 @@ public class UnitTable extends JTable {
                 public void mouseClicked (MouseEvent e) {
                     if( e.getClickCount() != 1 || !UnitTable.this.isEnabled()) {
                         return;
-                    }
-                    int column = columnAtPoint ( e.getPoint () );
-                    if( sortingRenderer != null) {
-                        Unit u = null;
-                        UnitCategoryTableModel model = null;
-                        try {
-                            model = (UnitCategoryTableModel)getModel ();
-                            int row = getSelectedRow ();
-                            if (row > -1) {
-                                u = model.getUnitAtRow (row);
-                            }
-                            Object id = getColumnModel ().getColumn (column).getIdentifier ();
-                            if (model.isSortAllowed (id)) {
-                                sortingRenderer.setSorting (id);
-                                repaint ();
-                            }
-                        } finally {
-                            if (u != null) {
-                                List<Unit> units = model.getVisibleUnits();
-                                int row = (u != null) ? units.indexOf (u) : -1;
-                                if (row > -1) {
-                                    Unit u2 = model.getUnitAtRow (row);
-                                    if (u2 != null) {
-                                        if (u.updateUnit.getCodeName ().equals (u2.updateUnit.getCodeName ())) {
-                                            getSelectionModel ().setSelectionInterval (row, row);
-                                            Rectangle rect = UnitTable.this.getCellRect (row, 0, true);
-                                            UnitTable.this.scrollRectToVisible (rect);
-                                        }
-                                    } 
-                                }
-                            }
-                        }
-                    }
+                    }                   
                 }
             });
             this.setReorderingAllowed ( false );
@@ -253,16 +220,7 @@ public class UnitTable extends JTable {
             if( null != aColumn && aColumn.getModelIndex () == 0 )
                 return; //don't allow the first column to be dragged
             super.setDraggedColumn ( aColumn );
-        }
-        
-        @Override
-        public void setDefaultRenderer (TableCellRenderer defaultRenderer) {
-            if( !(defaultRenderer instanceof SortColumnHeaderRenderer) ) {
-                sortingRenderer = new SortColumnHeaderRenderer ((UnitCategoryTableModel)getModel (), defaultRenderer );
-                defaultRenderer = sortingRenderer;
-            }
-            super.setDefaultRenderer ( defaultRenderer );
-        }
+        }        
         
         @Override
         public void setResizingColumn ( TableColumn col ) {
@@ -271,13 +229,7 @@ public class UnitTable extends JTable {
                 //storeColumnState();
             }
             super.setResizingColumn ( col );
-        }
-        
-        public void setDefaultSorting () {
-            if (sortingRenderer != null) {
-                sortingRenderer.setDefaultSorting ();
-            }
-        }
+        }        
     }        
     
     private class MoreRenderer extends DefaultTableCellRenderer {
