@@ -2624,7 +2624,7 @@ public abstract class CslTestBase extends NbTestCase {
             caretOffset = -1;
         }
 
-        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+        UserTask task = new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = caretOffset == -1 ? resultIterator.getParserResult() : resultIterator.getParserResult(caretOffset);
                 assertTrue(r instanceof ParserResult);
@@ -2746,7 +2746,12 @@ public abstract class CslTestBase extends NbTestCase {
                 String described = describeCompletion(caretLine, pr.getSnapshot().getSource().createSnapshot().getText().toString(), caretOffset, true, caseSensitive, type, proposals, includeModifiers, deprecatedHolder, formatter);
                 assertDescriptionMatches(file, described, true, ".completion");
             }
-        });
+        };
+        if (classPathsForTest == null || classPathsForTest.isEmpty()) {
+            ParserManager.parse(Collections.singleton(testSource), task);
+        } else {
+            ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+        }
     }
 
     public void checkCompletionDocumentation(final String file, final String caretLine, final boolean includeModifiers, final String itemPrefix) throws Exception {
@@ -2764,7 +2769,7 @@ public abstract class CslTestBase extends NbTestCase {
             caretOffset = -1;
         }
 
-        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+        UserTask task = new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
@@ -2772,7 +2777,7 @@ public abstract class CslTestBase extends NbTestCase {
 
                 CodeCompletionHandler cc = getCodeCompleter();
                 assertNotNull("getCodeCompleter must be implemented", cc);
-                
+
                 Document doc = GsfUtilities.getDocument(resultIterator.getSnapshot().getSource().getFileObject(), true);
                 boolean upToOffset = type == QueryType.COMPLETION;
                 String prefix = cc.getPrefix(pr, caretOffset, upToOffset);
@@ -2794,7 +2799,7 @@ public abstract class CslTestBase extends NbTestCase {
                     }
                 }
 
-                
+
                 // resultIterator.getSource().testUpdateIndex();
 
                 final int finalCaretOffset = caretOffset;
@@ -2898,11 +2903,17 @@ public abstract class CslTestBase extends NbTestCase {
                         return sb.toString();
                     }
                 };
-                
+
                 String described = describeCompletionDoc(pr.getSnapshot().getText().toString(), caretOffset, false, caseSensitive, type, match, documentation, includeModifiers, deprecatedHolder, formatter);
                 assertDescriptionMatches(file, described, true, ".html");
             }
-        });
+        };
+
+        if (classPathsForTest == null || classPathsForTest.isEmpty()) {
+            ParserManager.parse(Collections.singleton(testSource), task);
+        } else {
+            ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+        }
     }
     
     private String describeCompletionDoc(String text, int caretOffset, boolean prefixSearch, boolean caseSensitive, QueryType type,
