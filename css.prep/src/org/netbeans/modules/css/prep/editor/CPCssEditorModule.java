@@ -201,6 +201,7 @@ public class CPCssEditorModule extends CssEditorModule {
 
         switch (activeNode.type()) {
             case bodyItem:
+            case mediaBody:
                 switch (tid) {
                 case WS:
                     //in stylesheet main body: @include |
