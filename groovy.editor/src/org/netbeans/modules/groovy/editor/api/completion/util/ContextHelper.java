@@ -66,8 +66,9 @@ import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
 
 /**
- * Utility class which provides various methods related to CompletionContext.
+ * Utility class which provides various methods related to {@link CompletionContext}.
  *
+ * @see CompletionContext
  * @author Martin Janicek
  */
 public final class ContextHelper {
@@ -79,10 +80,10 @@ public final class ContextHelper {
 
 
     /**
-     * Returns all declared <code>ClassNode</code>'s for the given request
+     * Returns all declared {@link ClassNode}'s for the given request.
      *
      * @param request completion request
-     * @return list of declared <code>ClassNode</code>'s
+     * @return list of declared {@link ClassNode}'s
      */
     public static List<ClassNode> getDeclaredClasses(CompletionContext request) {
         if (request.path == null) {
@@ -101,10 +102,10 @@ public final class ContextHelper {
     }
 
     /**
-     * Returns the next enclosing ClassNode for the given request
+     * Returns the next enclosing {@link ClassNode} for the given request.
      *
      * @param request completion request which includes position information
-     * @return the next surrounding ClassNode
+     * @return the next surrounding {@link ClassNode}
      */
     public static ClassNode getSurroundingClassNode(CompletionContext request) {
         if (request.path == null) {
@@ -124,10 +125,10 @@ public final class ContextHelper {
     }
 
     /**
-     * Returns the enclosing ModuleNode for the given request.
+     * Returns the enclosing {@link ModuleNode} for the given request.
      *
      * @param request completion request
-     * @return the surrounding ModuleNode or null if it wasn't found
+     * @return the surrounding {@link ModuleNode} or {@code null} if it wasn't found
      */
     public static ModuleNode getSurroundingModuleNode(CompletionContext request) {
         AstPath path = request.path;
@@ -144,10 +145,10 @@ public final class ContextHelper {
     }
 
     /**
-     * Returns the next enclosing MethodNode for the given request
+     * Returns the next enclosing {@link ModuleNode} for the given request.
      * 
      * @param request completion request which includes position information
-     * @return the next surrounding MethodNode
+     * @return the next surrounding {@link ModuleNode}
      */
     public static ASTNode getSurroundingMethodOrClosure(CompletionContext request) {
         if (request.path == null) {
@@ -179,10 +180,10 @@ public final class ContextHelper {
     }
 
     /**
-     * Finds out if the give CompletionContext is a complete-constructor call.
+     * Finds out if the given {@link CompletionContext} is a complete-constructor call.
      * 
-     * @param request actual completion request
-     * @return true if it's constructor call, false otherwise
+     * @param request completion request
+     * @return {@code true} if it's constructor call, {@code false} otherwise
      */
     public static boolean isConstructorCall(CompletionContext request) {
         if (request.getPrefix().length() > 0) {
@@ -204,7 +205,7 @@ public final class ContextHelper {
     }
 
     /**
-     * Here we test, whether the provided CompletionContext is likely to become
+     * Here we test, whether the provided {@link CompletionContext} is likely to become
      * a variable definition. At this point in time we can not check whether we
      * live in a "DeclarationExpression" since this is not yet created.
      *
@@ -223,8 +224,8 @@ public final class ContextHelper {
      * b) closures
      *
      * todo: figuring out whether the IDENTIFIER is a method or a type.
-     * @param ctx
-     * @return true if we are on variable definition line, false otherwise
+     * @param ctx completion request
+     * @return {@code true} if we are on variable definition line, {@code false} otherwise
      */
     public static boolean isVariableNameDefinition(CompletionContext request) {
         LOG.log(Level.FINEST, "checkForVariableDefinition()"); //NOI18N
@@ -367,7 +368,7 @@ public final class ContextHelper {
 
         List<String> result = new ArrayList<String>();
         
-        for (IndexedField indexedField : index.getFields(".*", context.getTypeName(), QuerySupport.Kind.REGEXP)) {
+        for (IndexedField indexedField : index.getAllFields(context.getTypeName())) {
             if (!indexedField.isStatic() && indexedField.isProperty()) {
                 result.add(indexedField.getName());
             }

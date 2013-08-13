@@ -50,21 +50,21 @@ made subject to such option by the copyright holder.
             <code-name-base>org.netbeans.modules.websvc.metro.model</code-name-base>
             <module-dependencies>
                 <dependency>
+                    <code-name-base>org.netbeans.api.annotations.common</code-name-base>
+                    <build-prerequisite/>
+                    <compile-dependency/>
+                    <run-dependency>
+                        <release-version>1</release-version>
+                        <specification-version>1.21</specification-version>
+                    </run-dependency>
+                </dependency>
+                <dependency>
                     <code-name-base>org.netbeans.api.java.classpath</code-name-base>
                     <build-prerequisite/>
                     <compile-dependency/>
                     <run-dependency>
                         <release-version>1</release-version>
                         <specification-version>1.19</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.libs.jaxb</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.6</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>
@@ -151,15 +151,6 @@ made subject to such option by the copyright holder.
                     <run-dependency>
                         <release-version>2</release-version>
                         <specification-version>1.15</specification-version>
-                    </run-dependency>
-                </dependency>
-                <dependency>
-                    <code-name-base>org.netbeans.modules.xml.jaxb.api</code-name-base>
-                    <build-prerequisite/>
-                    <compile-dependency/>
-                    <run-dependency>
-                        <release-version>1</release-version>
-                        <specification-version>1.0</specification-version>
                     </run-dependency>
                 </dependency>
                 <dependency>

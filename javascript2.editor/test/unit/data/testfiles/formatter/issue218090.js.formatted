@@ -16,7 +16,7 @@ function do_submit() {
         }
     })
             .error(function() {
-        alert('Some problem arises. Pls. try again.');
-    });
+                alert('Some problem arises. Pls. try again.');
+            });
     return false;
 }
