@@ -42,8 +42,9 @@
 package org.netbeans.modules.html.knockout;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.net.MalformedURLException;
@@ -149,7 +150,7 @@ public class KODoc {
             //strip off the proper content
             String knockoutDocumentationContent = KOUtils.getKnockoutDocumentationContent(sw.getBuffer().toString());
             //save to cache file
-            try (Writer writer = new FileWriter(cacheFile)) {
+            try (Writer writer = new OutputStreamWriter(new FileOutputStream(cacheFile), "UTF-8")) { // NOI18N
                 writer.append("<!doctype html><html><head><title>Knockout documentation</title></head><body>"); //NOI18N
                 writer.append(knockoutDocumentationContent);
                 writer.append("</body></html>"); //NOI18N
