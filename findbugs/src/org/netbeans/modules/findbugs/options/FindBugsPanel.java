@@ -73,6 +73,7 @@ import javax.swing.ButtonGroup;
 import javax.swing.ButtonModel;
 import javax.swing.JCheckBox;
 import javax.swing.JLabel;
+import javax.swing.JTextPane;
 import javax.swing.JTree;
 import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeListener;
@@ -106,8 +107,8 @@ public final class FindBugsPanel extends javax.swing.JPanel {
     private Preferences settings;
     private List<String> modifiedPluginsList;
     private final boolean defaultsToDisabled;
-    private final Map<BugCategory, List<BugPattern>> categorizedBugs = new HashMap<BugCategory, List<BugPattern>>();
-    private final Map<String, TreePath> bug2Path =  new HashMap<String, TreePath>();
+    private final Map<BugCategory, List<BugPattern>> categorizedBugs = new HashMap<>();
+    private final Map<String, TreePath> bug2Path =  new HashMap<>();
     private DefaultTreeModel treeModel;
     private final FindBugsOptionsPanelController controller;
     private final OptionsFilter filter;
@@ -326,8 +327,9 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
         jSplitPane1.setLeftComponent(jScrollPane1);
 
-        description.setContentType(org.openide.util.NbBundle.getMessage(FindBugsPanel.class, "FindBugsPanel.description.contentType")); // NOI18N
         description.setEditable(false);
+        description.setContentType(org.openide.util.NbBundle.getMessage(FindBugsPanel.class, "FindBugsPanel.description.contentType")); // NOI18N
+        description.putClientProperty(JTextPane.HONOR_DISPLAY_PROPERTIES, Boolean.TRUE);
         description.addHyperlinkListener(new javax.swing.event.HyperlinkListener() {
             public void hyperlinkUpdate(javax.swing.event.HyperlinkEvent evt) {
                 descriptionHyperlinkUpdate(evt);
@@ -401,7 +403,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
     @Messages("CAP_CustomPlugins=Custom Plugins Selector")
     private void customPluginsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_customPluginsActionPerformed
         if (modifiedPluginsList == null) {
-            modifiedPluginsList = new ArrayList<String>(DetectorCollectionProvider.customPlugins());
+            modifiedPluginsList = new ArrayList<>(DetectorCollectionProvider.customPlugins());
         }
         
         CustomPluginsPanel panel = new CustomPluginsPanel(modifiedPluginsList);
@@ -482,13 +484,13 @@ public final class FindBugsPanel extends javax.swing.JPanel {
             List<BugPattern> bugs = categorizedBugs.get(c);
 
             if (bugs == null) {
-                categorizedBugs.put(c, bugs = new ArrayList<BugPattern>());
+                categorizedBugs.put(c, bugs = new ArrayList<>());
             }
 
             bugs.add(bp);
         }
 
-        Map<BugCategory, List<BugPattern>> sortedCategorizedBugs = new TreeMap<BugCategory, List<BugPattern>>(new Comparator<BugCategory>() {
+        Map<BugCategory, List<BugPattern>> sortedCategorizedBugs = new TreeMap<>(new Comparator<BugCategory>() {
             @Override public int compare(BugCategory o1, BugCategory o2) {
                 return o1.getShortDescription().compareTo(o2.getShortDescription());
             }
@@ -555,8 +557,8 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         return where.contains(what);
     }
 
-    private static String[] c = new String[] {"&", "<", ">", "\n", "\""}; // NOI18N
-    private static String[] tags = new String[] {"&amp;", "&lt;", "&gt;", "<br>", "&quot;"}; // NOI18N
+    private static final String[] c = new String[] {"&", "<", ">", "\n", "\""}; // NOI18N
+    private static final String[] tags = new String[] {"&amp;", "&lt;", "&gt;", "<br>", "&quot;"}; // NOI18N
 
     private String translate(String input) {
         for (int cntr = 0; cntr < c.length; cntr++) {
@@ -566,7 +568,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
         return input;
     }
 
-    private final Map<BugPattern, String> filterText = new IdentityHashMap<BugPattern, String>();
+    private final Map<BugPattern, String> filterText = new IdentityHashMap<>();
 
     private synchronized String getFilterText(BugPattern bp) {
         String seq = filterText.get(bp);
@@ -596,7 +598,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
                 renderer.setState(enabled((BugCategory) user));
             } else if (user instanceof BugPattern) {
                 BugPattern bp = (BugPattern) user;
-                renderer.setText("<html>" + (bp.isDeprecated() ? "<s>" : "") + translate(bp.getShortDescription()));
+                renderer.setText("<html>" + (bp.isDeprecated() ? "<s>" : "") + translate(bp.getShortDescription())); //NOI18N
                 renderer.setSelected(enabled(bp));
             }
 
@@ -761,7 +763,7 @@ public final class FindBugsPanel extends javax.swing.JPanel {
 
     private static class ModifiedPreferences extends AbstractPreferences {
 
-        private Map<String,Object> map = new HashMap<String, Object>();
+        private Map<String,Object> map = new HashMap<>();
 
         public ModifiedPreferences( Preferences node ) {
             super(null, ""); // NOI18N
