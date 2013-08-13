@@ -191,6 +191,14 @@ public class HintsTest extends PHPHintsTestBase {
         checkHints(new SuperglobalsHint.EnvSuperglobalHint(), "testEnvSuperglobalsHint.php");
     }
 
+    public void testSessionSuperglobalsHint() throws Exception {
+        checkHints(new SuperglobalsHint.SessionSuperglobalHint(), "testSessionSuperglobalsHint.php");
+    }
+
+    public void testRequestSuperglobalsHint() throws Exception {
+        checkHints(new SuperglobalsHint.RequestSuperglobalHint(), "testRequestSuperglobalsHint.php");
+    }
+
     public void testEmptyStatementHint() throws Exception {
         checkHints(new EmptyStatementHint(), "testEmptyStatementHint.php");
     }

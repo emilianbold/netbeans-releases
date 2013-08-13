@@ -361,11 +361,17 @@
                         <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$CookieSuperglobalHint.instance">
                             <attr name="position" intvalue="300" />
                         </file>
-                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$ServerSuperglobalHint.instance">
+                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$RequestSuperglobalHint.instance">
                             <attr name="position" intvalue="400" />
                         </file>
-                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$EnvSuperglobalHint.instance">
+                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$ServerSuperglobalHint.instance">
                             <attr name="position" intvalue="500" />
+                        </file>
+                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$SessionSuperglobalHint.instance">
+                            <attr name="position" intvalue="600" />
+                        </file>
+                        <file name="org-netbeans-modules-php-editor-verification-SuperglobalsHint$EnvSuperglobalHint.instance">
+                            <attr name="position" intvalue="700" />
                         </file>
                     </folder>
                     <folder name="toomanylines">
