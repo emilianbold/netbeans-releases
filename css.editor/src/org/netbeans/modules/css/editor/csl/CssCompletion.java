@@ -902,7 +902,14 @@ public class CssCompletion implements CodeCompletionHandler {
             //@media xxx { | }
             //=>fallback to the mediaQuery 
             case mediaBody:
-                completionProposals.addAll(completeHtmlSelectors(completionContext, completionContext.getPrefix(), completionContext.getCaretOffset()));
+                //work only in WS after a semicolon or left or right curly brace
+                //1. @media screen { | }, @media screen { div {} | }
+                //2. @media screen { @include x; | }
+                if(null != LexerUtils.followsToken(completionContext.getTokenSequence(), 
+                        EnumSet.of(CssTokenId.SEMI, CssTokenId.LBRACE, CssTokenId.RBRACE),
+                        true, true, true, CssTokenId.WS, CssTokenId.NL)) {
+                    completionProposals.addAll(completeHtmlSelectors(completionContext, completionContext.getPrefix(), completionContext.getCaretOffset()));
+                }
                 break;
             case elementName:
                 //complete selector's element name - with a prefix
