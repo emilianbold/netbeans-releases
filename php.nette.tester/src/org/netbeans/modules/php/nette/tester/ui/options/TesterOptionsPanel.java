@@ -41,14 +41,23 @@
  */
 package org.netbeans.modules.php.nette.tester.ui.options;
 
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.List;
+import javax.swing.GroupLayout;
+import javax.swing.JButton;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.JTextField;
+import javax.swing.LayoutStyle;
+import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -57,6 +66,7 @@ import org.netbeans.modules.php.api.util.FileUtils;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.nette.tester.commands.Tester;
 import org.openide.awt.HtmlBrowser;
+import org.openide.awt.Mnemonics;
 import org.openide.filesystems.FileChooserBuilder;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
@@ -125,100 +135,106 @@ public class TesterOptionsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        testerPathLabel = new javax.swing.JLabel();
-        testerPathTextField = new javax.swing.JTextField();
-        browseTesterButton = new javax.swing.JButton();
-        searchTesterButton = new javax.swing.JButton();
-        testerPathHintLabel = new javax.swing.JLabel();
-        noteLabel = new javax.swing.JLabel();
-        installLabel = new javax.swing.JLabel();
-        learnMoreLabel = new javax.swing.JLabel();
-        errorLabel = new javax.swing.JLabel();
+        testerPathLabel = new JLabel();
+        testerPathTextField = new JTextField();
+        browseTesterButton = new JButton();
+        searchTesterButton = new JButton();
+        testerPathHintLabel = new JLabel();
+        noteLabel = new JLabel();
+        minVersionLabel = new JLabel();
+        installLabel = new JLabel();
+        learnMoreLabel = new JLabel();
+        errorLabel = new JLabel();
 
         testerPathLabel.setLabelFor(testerPathTextField);
-        org.openide.awt.Mnemonics.setLocalizedText(testerPathLabel, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.testerPathLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(testerPathLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.testerPathLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(browseTesterButton, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.browseTesterButton.text")); // NOI18N
-        browseTesterButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(browseTesterButton, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.browseTesterButton.text")); // NOI18N
+        browseTesterButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 browseTesterButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(searchTesterButton, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.searchTesterButton.text")); // NOI18N
-        searchTesterButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
+        Mnemonics.setLocalizedText(searchTesterButton, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.searchTesterButton.text")); // NOI18N
+        searchTesterButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent evt) {
                 searchTesterButtonActionPerformed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(testerPathHintLabel, "HINT"); // NOI18N
+        Mnemonics.setLocalizedText(testerPathHintLabel, "HINT"); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(noteLabel, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.noteLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(noteLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.noteLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(installLabel, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.installLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(minVersionLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.minVersionLabel.text")); // NOI18N
 
-        org.openide.awt.Mnemonics.setLocalizedText(learnMoreLabel, org.openide.util.NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.learnMoreLabel.text")); // NOI18N
-        learnMoreLabel.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseEntered(java.awt.event.MouseEvent evt) {
+        Mnemonics.setLocalizedText(installLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.installLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(learnMoreLabel, NbBundle.getMessage(TesterOptionsPanel.class, "TesterOptionsPanel.learnMoreLabel.text")); // NOI18N
+        learnMoreLabel.addMouseListener(new MouseAdapter() {
+            public void mouseEntered(MouseEvent evt) {
                 learnMoreLabelMouseEntered(evt);
             }
-            public void mousePressed(java.awt.event.MouseEvent evt) {
+            public void mousePressed(MouseEvent evt) {
                 learnMoreLabelMousePressed(evt);
             }
         });
 
-        org.openide.awt.Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
+        Mnemonics.setLocalizedText(errorLabel, "ERROR"); // NOI18N
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(testerPathLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(testerPathHintLabel)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(testerPathTextField)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(browseTesterButton)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(searchTesterButton))))
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(installLabel)
-                    .addComponent(learnMoreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-            .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(noteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(errorLabel))
                 .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addComponent(installLabel)
+                    .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(minVersionLabel))
+                .addContainerGap(GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
-        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {browseTesterButton, searchTesterButton});
+        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {browseTesterButton, searchTesterButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(testerPathLabel)
-                    .addComponent(testerPathTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(testerPathTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(browseTesterButton)
                     .addComponent(searchTesterButton))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(testerPathHintLabel)
                 .addGap(18, 18, 18)
-                .addComponent(noteLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(minVersionLabel)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(installLabel)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(learnMoreLabel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(learnMoreLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(errorLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
@@ -282,15 +298,16 @@ public class TesterOptionsPanel extends JPanel {
     }//GEN-LAST:event_learnMoreLabelMousePressed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton browseTesterButton;
-    private javax.swing.JLabel errorLabel;
-    private javax.swing.JLabel installLabel;
-    private javax.swing.JLabel learnMoreLabel;
-    private javax.swing.JLabel noteLabel;
-    private javax.swing.JButton searchTesterButton;
-    private javax.swing.JLabel testerPathHintLabel;
-    private javax.swing.JLabel testerPathLabel;
-    private javax.swing.JTextField testerPathTextField;
+    private JButton browseTesterButton;
+    private JLabel errorLabel;
+    private JLabel installLabel;
+    private JLabel learnMoreLabel;
+    private JLabel minVersionLabel;
+    private JLabel noteLabel;
+    private JButton searchTesterButton;
+    private JLabel testerPathHintLabel;
+    private JLabel testerPathLabel;
+    private JTextField testerPathTextField;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes
