@@ -42,7 +42,6 @@
 
 package org.netbeans.modules.websvc.metro.model;
 
-import com.sun.istack.NotNull;
 import com.sun.xml.ws.runtime.config.MetroConfig;
 import com.sun.xml.ws.runtime.config.ObjectFactory;
 import com.sun.xml.ws.runtime.config.TubeFactoryConfig;
@@ -60,6 +59,7 @@ import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
 import javax.xml.stream.XMLInputFactory;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
@@ -235,7 +235,7 @@ public class MetroConfigLoader {
         return null;
     }
 
-    private MetroConfig loadMetroConfig(@NotNull URL resourceUrl) {
+    private MetroConfig loadMetroConfig(@NonNull URL resourceUrl) {
         MetroConfig result = null;
         try {
             Unmarshaller unmarshaller = jaxbContext.createUnmarshaller();
@@ -247,7 +247,7 @@ public class MetroConfigLoader {
         return result;
     }
 
-    public void saveMetroConfig(@NotNull MetroConfig metroConfig, Project project) {
+    public void saveMetroConfig(@NonNull MetroConfig metroConfig, Project project) {
         FileObject cfgFolder = getConfigFolder(project, false);
         if ((cfgFolder != null) && (cfgFolder.isValid())) {
             File outFile = null;
@@ -268,7 +268,7 @@ public class MetroConfigLoader {
         }
     }
 
-    private void saveMetroConfig(@NotNull MetroConfig metroConfig, @NotNull File cfgFile) {
+    private void saveMetroConfig(@NonNull MetroConfig metroConfig, @NonNull File cfgFile) {
         try {
             Marshaller marshaller = jaxbContext.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);

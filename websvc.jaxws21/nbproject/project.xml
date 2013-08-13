@@ -75,11 +75,9 @@ made subject to such option by the copyright holder.
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.compapp.projects.jbi</friend>
-                <friend>org.netbeans.modules.deployment.deviceanywhere</friend>
                 <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
                 <friend>org.netbeans.modules.websvc.jaxwsmodel</friend>
                 <friend>org.netbeans.modules.websvc.manager</friend>
-                <friend>org.netbeans.modules.identity.profile.api</friend>
                 <package>com.sun.tools.ws.processor</package>
                 <package>com.sun.tools.ws.processor.generator</package>
                 <package>com.sun.tools.ws.processor.model</package>
