@@ -1,0 +1,25 @@
+$foo->bar($_SESSION);
+          ---------
+HINT:Do not Access Superglobal $_SESSION Array Directly.
+
+Use some filtering functions instead (e.g. filter_input(), conditions with is_*() functions, etc.).
+echo $_SESSION["foo"];
+     ---------
+HINT:Do not Access Superglobal $_SESSION Array Directly.
+
+Use some filtering functions instead (e.g. filter_input(), conditions with is_*() functions, etc.).
+    echo $_SESSION["foo"];
+         ---------
+HINT:Do not Access Superglobal $_SESSION Array Directly.
+
+Use some filtering functions instead (e.g. filter_input(), conditions with is_*() functions, etc.).
+    ? $_SESSION[""]
+      ---------
+HINT:Do not Access Superglobal $_SESSION Array Directly.
+
+Use some filtering functions instead (e.g. filter_input(), conditions with is_*() functions, etc.).
+    : $_SESSION[""];
+      ---------
+HINT:Do not Access Superglobal $_SESSION Array Directly.
+
+Use some filtering functions instead (e.g. filter_input(), conditions with is_*() functions, etc.).
