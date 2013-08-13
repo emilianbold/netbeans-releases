@@ -22,7 +22,7 @@ fi
 CHANGED_FILES_COUNT=`hg st -mar usersguide/javahelp | wc -l`
 echo CHANGED_FILES_COUNT: $CHANGED_FILES_COUNT
 if [ "$CHANGED_FILES_COUNT" -gt 0 ]; then
-    echo $CHANGED_FILES_COUNT changes found, let's start build and push.
+    echo $CHANGED_FILES_COUNT changes found, let\'s start build and push.
     ant clean build-nozip || exit 2
     echo Build succeed.
     hg pull -u
