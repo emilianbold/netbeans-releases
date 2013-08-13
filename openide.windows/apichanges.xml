@@ -50,6 +50,21 @@ made subject to such option by the copyright holder.
 <apidef name="winsys">Window System API</apidef>
 </apidefs>
 <changes>
+<change id="COS_redirector">
+    <api name="winsys"/>
+    <summary>Abstract class CloneableOpenSupportRedirector added</summary>
+    <version major="6" minor="65"/>
+    <date day="13" month="8" year="2013"/>
+    <author login="igor_nikiforov"/>
+    <compatibility addition="yes" source="compatible" semantic="compatible" deprecation="no" deletion="no" modification="no"/>
+    <description>
+        <p>Version of CloneableEditorSupportRedirector which will be called only during opening of document 
+           when algorith tries to understand if file is in list of already opened TCs or not.
+           SPI implementers to setup filter on specific requests only... This could minimize number of redirect() calls.</p>
+    </description>
+    <class package="org.openide.windows" name="CloneableOpenSupportRedirector"/>
+    <issue number="230126"/>
+</change>
 <change id="topcomponent.SubComponent_lookup_and_showing">
     <api name="winsys"/>
     <summary>Added methods getLookup() and isShowing() in TopComponent.SubComponent.</summary>
