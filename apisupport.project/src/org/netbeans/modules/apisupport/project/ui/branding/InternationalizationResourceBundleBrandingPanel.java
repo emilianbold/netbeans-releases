@@ -742,7 +742,7 @@ public class InternationalizationResourceBundleBrandingPanel extends AbstractBra
                 bundleKey.setValue(newValue);
                 getBranding().addModifiedInternationalizedBundleKey(bundleKey);
                 setModified();
-                updateProjectInternationalizationLocales();
+                branding.updateProjectInternationalizationLocales();
                 return true;
             }
         }
@@ -869,61 +869,6 @@ public class InternationalizationResourceBundleBrandingPanel extends AbstractBra
                 
             }
         });
-    }
-    
-    private void updateProjectInternationalizationLocales() {
-        EditableProperties p = null;
-        File projectProperties = null;
-        try {
-            projectProperties = new File(FileUtil.toFile(prj.getProjectDirectory()), "nbproject" + File.separatorChar + "project.properties");
-            p = getEditableProperties(projectProperties);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if(p != null && projectProperties != null) {
-            if(p.getProperty("branding.locales") == null) {
-                p.setProperty("branding.locales", this.locale.toString().toLowerCase());
-            } else {
-                String localizationsStr = p.getProperty("branding.locales");
-                StringTokenizer tokenizer = new StringTokenizer(localizationsStr, ",");
-                boolean containsLocale = false;
-                while (tokenizer.hasMoreElements()) {
-                    if(this.locale.toString().toLowerCase().equals(tokenizer.nextToken())) {
-                        containsLocale = true;
-                        break;
-                    }
-                }
-                if(!containsLocale) {
-                    p.setProperty("branding.locales", p.getProperty("branding.locales") + "," + this.locale.toString().toLowerCase());
-                }
-            }
-            try {
-                storeEditableProperties(p, projectProperties);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-            }
-        }
-    }
-    
-    private static EditableProperties getEditableProperties(final File bundle) throws IOException {
-        EditableProperties p = new EditableProperties(true);
-        InputStream is = new FileInputStream(bundle);
-        try {
-            p.load(is);
-        } finally {
-            is.close();
-        }
-        return p;
-    }
-    
-    private static void storeEditableProperties(final EditableProperties p, final File bundle) throws IOException {
-        FileObject fo = FileUtil.toFileObject(bundle);
-        OutputStream os = null == fo ? new FileOutputStream(bundle) : fo.getOutputStream();
-        try {
-            p.store(os);
-        } finally {
-            os.close();
-        }
     }
     
 }
