@@ -75,7 +75,6 @@ public class CppTypeProvider implements TypeProvider {
     private static final Object resultLock = new Object();
     private final Object activeTaskLock = new Object();
     private WorkerTask activeTask;
-    private final AtomicBoolean closed = new AtomicBoolean(false);
 
     public CppTypeProvider() {
         if (TRACE) {
@@ -104,19 +103,18 @@ public class CppTypeProvider implements TypeProvider {
         synchronized (activeTaskLock) {
             task = activeTask;
             if (task != null && !sameContext(task.context, context)) {
-                task.cancel(true);
+                task.cancel();
                 task = null;
                 activeTask = null;
             }
 
             if (task == null) {
-                task = new WorkerTask(context, new HashSet<TypeDescriptor>(), closed);
+                task = new WorkerTask(context);
                 activeTask = task;
                 RP.submit(task);
             }
         }
 
-        boolean cancelled = false;
         while (!task.isDone()) {
             try {
                 task.get(200, TimeUnit.MILLISECONDS);
@@ -128,13 +126,11 @@ public class CppTypeProvider implements TypeProvider {
                 // do not interrupt thread, 
                 // #234193 - Exception in repository from go to type
 //                Thread.interrupted();
-                cancelled = true;
                 if (TRACE) {
                     LOG.log(Level.INFO, "InterruptedException"); // NOI18N
                 }                
                 break;
             } catch (CancellationException ex) {
-                cancelled = true;
                 if (TRACE) {
                     LOG.log(Level.INFO, "CancellationException"); // NOI18N
                 }                
@@ -147,16 +143,14 @@ public class CppTypeProvider implements TypeProvider {
             }
         }
 
-        if (!cancelled) {
-            if (!task.isDone()) {
-                res.pendingResult();
-                if (TRACE) {
-                    LOG.log(Level.INFO, "Results are not fully available yet at {0} ms.", System.currentTimeMillis()); // NOI18N
-                }
+        if (!task.isDone()) {
+            res.pendingResult();
+            if (TRACE) {
+                LOG.log(Level.INFO, "Results are not fully available yet at {0} ms.", System.currentTimeMillis()); // NOI18N
             }
-
-            res.addResult(task.getResult());
         }
+
+        res.addResult(task.getResult());
     }
 
     @Override
@@ -170,7 +164,7 @@ public class CppTypeProvider implements TypeProvider {
             activeTask = null;
         }
         if (task != null) {
-            task.cancel(true);
+            task.cancel();
         }
     }
 
@@ -180,7 +174,6 @@ public class CppTypeProvider implements TypeProvider {
         if (TRACE) {
             LOG.info("cleanup request"); // NOI18N
         }
-        closed.set(true);
         cancel();
     }
 
@@ -188,11 +181,17 @@ public class CppTypeProvider implements TypeProvider {
 
         private final Set<TypeDescriptor> result;
         private final Context context;
+        private final AtomicBoolean cancelled;
 
-        public WorkerTask(Context context, Set<TypeDescriptor> result, AtomicBoolean closed) {
-            super(new Worker(context, result, closed), null);
+        public WorkerTask(Context context) {
+            this(context, new HashSet<TypeDescriptor>(), new AtomicBoolean(false));
+        }
+        
+        private WorkerTask(Context context, Set<TypeDescriptor> result, AtomicBoolean cancelled) {
+            super(new Worker(context, result, cancelled), null);
             this.context = context;
             this.result = result;
+            this.cancelled = cancelled;
         }
 
         private List<TypeDescriptor> getResult() {
@@ -206,6 +205,10 @@ public class CppTypeProvider implements TypeProvider {
                 return !result.isEmpty();
             }
         }
+        
+        public void cancel() {
+            cancelled.set(true);
+        }
     }
 
     private static class Worker implements Runnable {
@@ -213,16 +216,16 @@ public class CppTypeProvider implements TypeProvider {
         private final Context context;
         private final Set<TypeDescriptor> result;
         private long startTime;
-        private final AtomicBoolean closed;
+        private final AtomicBoolean cancelled;
 
-        private Worker(Context context, Set<TypeDescriptor> result, AtomicBoolean closed) {
+        private Worker(Context context, Set<TypeDescriptor> result, AtomicBoolean cancelled) {
             if (TRACE) {
                 LOG.log(Level.INFO, "New Worker for searching \"{0}\", {1} in {2} created.", // NOI18N
                         new Object[]{context.getText(), context.getSearchType().name(), context.getProject()});
             }
             this.context = context;
             this.result = result;
-            this.closed = closed;
+            this.cancelled = cancelled;
         }
 
         @Override
@@ -337,7 +340,7 @@ public class CppTypeProvider implements TypeProvider {
         }
 
         private void checkCancelled() throws CancellationException {
-            if (closed.get() || Thread.currentThread().isInterrupted()) {
+            if (cancelled.get()) {
                 throw new CancellationException();
             }
         }

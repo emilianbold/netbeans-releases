@@ -53,66 +53,66 @@ function countBugsDashboardMainE() {
     var iterator = 0;
     $("td[data-id='sum']")
             .each(
-            function() {
-                iterator++;
-                var name = $(this).data('category');
+                    function() {
+                        iterator++;
+                        var name = $(this).data('category');
 
-                if (name === "   ") {
-                    $(this).attr("id", "dummy");
-                }
-
-                var sum = 0;
-                var limit = 0;
-                var it = 0;
-                var color = "";
-                var sumLink = "http://netbeans.org/bugzilla/buglist.cgi?bug_id=";
-                $("td[data-id='" + name + "']").each(function() {
-                    var a = $(this).parent().children()[1];
-
-                    if ($(a).text() !== "Plugin Portal UC" && $(a).text() !== "Certified UC") {
-                        if (name.indexOf("UP") > -1 || it < 1) { // UP are added and others are taken just once
-                            limit = limit + ($(this).attr('data-limit')) * 1;
+                        if (name === "   ") {
+                            $(this).attr("id", "dummy");
                         }
-                        it = 1;
+
+                        var sum = 0;
+                        var limit = 0;
+                        var it = 0;
+                        var color = "";
+                        var sumLink = "http://netbeans.org/bugzilla/buglist.cgi?bug_id=";
+                        $("td[data-id='" + name + "']").each(function() {
+                            var a = $(this).parent().children()[1];
+
+                            if ($(a).text() !== "Plugin Portal UC" && $(a).text() !== "Certified UC") {
+                                if (name.indexOf("UP") > -1 || it < 1) { // UP are added and others are taken just once
+                                    limit = limit + ($(this).attr('data-limit')) * 1;
+                                }
+                                it = 1;
 //                limit = limit + ($(this).attr('data-limit')) * 1;
-                        var link = ($(this).find('>:first-child').attr('href'));
-                        if (typeof link != "undefined") {
-                            link = link.substring(link.indexOf("=") + 1);
-                            sumLink += link;
-                        }
-                        sum = sum + $(this).text() * 1;
-                        if ($(this).attr('data-color')) {
-                            color = $(this).attr('data-color');
-                        }
-                    }
+                                var link = ($(this).find('>:first-child').attr('href'));
+                                if (typeof link != "undefined") {
+                                    link = link.substring(link.indexOf("=") + 1);
+                                    sumLink += link;
+                                }
+                                sum = sum + $(this).text() * 1;
+                                if ($(this).attr('data-color')) {
+                                    color = $(this).attr('data-color');
+                                }
+                            }
 
-                });
-                if (sumLink.length > 51) {
-                    console.log("A");
-                    $(this).append("<a href=" + sumLink + ">" + sum + "</a>");
-                }
-                if (sum != 0 && limit >= 0) {
-                    $(this)
-                            .attr(
-                            'title',
-                            ('\u2264'
-                                    + limit
-                                    + " - Quality Criteria for " + document
-                                    .getElementById('current_milestone').text));
-                    if (sum > limit) {
-                        if (color)
-                            $(this).attr('class', color + "_sum");
-                    } else {
-                        if (color)
-                            $(this).attr('class', color + "_sum");
-                    }
-                } else {
-                    console.log("false");
-                }
-                if (iterator === size) {
-                    cacheIndex();
-                }
-            });
+                        });
+                        if (sumLink.length > 51) {
+                            console.log("A");
+                            $(this).append("<a href=" + sumLink + ">" + sum + "</a>");
+                        }
+                        if (sum != 0 && limit >= 0) {
+                            $(this)
+                                    .attr(
+                                            'title',
+                                            ('\u2264'
+                                                    + limit
+                                                    + " - Quality Criteria for " + document
+                                                    .getElementById('current_milestone').text));
+                            if (sum > limit) {
+                                if (color)
+                                    $(this).attr('class', color + "_sum");
+                            } else {
+                                if (color)
+                                    $(this).attr('class', color + "_sum");
+                            }
+                        } else {
+                            console.log("false");
+                        }
+                        if (iterator === size) {
+                            cacheIndex();
+                        }
+                    });
 
 
 }
@@ -122,58 +122,58 @@ function countBugsDashboardMain() {
     var iterator = 0;
     $("td[data-id='sum']")
             .each(
-            function() {
-                iterator++;
-                var name = $(this).data('category');
+                    function() {
+                        iterator++;
+                        var name = $(this).data('category');
 
-                if (name === "   ") {
-                    $(this).attr("id", "dummy");
-                }
-
-                var sum = 0;
-                var limit = 0;
-                var color = "";
-                var sumLink = "http://netbeans.org/bugzilla/buglist.cgi?bug_id=";
-                $("td[data-id='" + name + "']").each(function() {
-                    var a = $(this).parent().children()[1];
-
-                    if ($(a).text() !== "Plugin Portal UC" && $(a).text() !== "Certified UC") {
-                        limit = limit + ($(this).attr('data-limit')) * 1;
-                        var link = ($(this).find('>:first-child').attr('href'));
-                        if (typeof link != "undefined") {
-                            link = link.substring(link.indexOf("=") + 1);
-                            sumLink += link;
+                        if (name === "   ") {
+                            $(this).attr("id", "dummy");
                         }
-                        sum = sum + $(this).text() * 1;
-                        if ($(this).attr('data-color')) {
-                            color = $(this).attr('data-color');
-                        }
-                    }
 
-                });
-                if (sumLink.length > 51) {
-                    $(this).append("<a href=" + sumLink + ">" + sum + "</a>");
-                }
-                if (sum != 0 && limit >= 0) {
-                    $(this)
-                            .attr(
-                            'title',
-                            ('\u2264'
-                                    + limit
-                                    + " - Quality Criteria for " + document
-                                    .getElementById('current_milestone').text));
-                    if (sum > limit) {
-                        if (color)
-                            $(this).attr('class', color + "_sum");
-                    } else {
-                        if (color)
-                            $(this).attr('class', color + "_sum");
-                    }
-                }
-                if (iterator === size) {
-                    cacheIndex();
-                }
-            });
+                        var sum = 0;
+                        var limit = 0;
+                        var color = "";
+                        var sumLink = "http://netbeans.org/bugzilla/buglist.cgi?bug_id=";
+                        $("td[data-id='" + name + "']").each(function() {
+                            var a = $(this).parent().children()[1];
+
+                            if ($(a).text() !== "Plugin Portal UC" && $(a).text() !== "Certified UC") {
+                                limit = limit + ($(this).attr('data-limit')) * 1;
+                                var link = ($(this).find('>:first-child').attr('href'));
+                                if (typeof link != "undefined") {
+                                    link = link.substring(link.indexOf("=") + 1);
+                                    sumLink += link;
+                                }
+                                sum = sum + $(this).text() * 1;
+                                if ($(this).attr('data-color')) {
+                                    color = $(this).attr('data-color');
+                                }
+                            }
+
+                        });
+                        if (sumLink.length > 51) {
+                            $(this).append("<a href=" + sumLink + ">" + sum + "</a>");
+                        }
+                        if (sum != 0 && limit >= 0) {
+                            $(this)
+                                    .attr(
+                                            'title',
+                                            ('\u2264'
+                                                    + limit
+                                                    + " - Quality Criteria for " + document
+                                                    .getElementById('current_milestone').text));
+                            if (sum > limit) {
+                                if (color)
+                                    $(this).attr('class', color + "_sum");
+                            } else {
+                                if (color)
+                                    $(this).attr('class', color + "_sum");
+                            }
+                        }
+                        if (iterator === size) {
+                            cacheIndex();
+                        }
+                    });
 
 
 }
@@ -200,58 +200,58 @@ function countBugsDashBoardArea() {
     iterator = 2;
     $("td[data-id='sum']")
             .each(
-            function() {
-                var name = $(this).data('category');
-                var sum = 0;
-                if (name === "   ") {
-                    $(this).attr("id", "dummy");
-                    return;
-                }
-                var limit2 = 0;
-                var color = "";
-                var sumLink = "http://netbeans.org/bugzilla/buglist.cgi?bug_id=";
-                $("td[data-id='" + name + "']").each(
-                        function() {
-                            var link = ($(this).find('>:first-child').attr('href'));
-                            if (typeof link != "undefined") {
-                                link = link.substring(link.indexOf("=") + 1);
-                                sumLink += link;
+                    function() {
+                        var name = $(this).data('category');
+                        var sum = 0;
+                        if (name === "   ") {
+                            $(this).attr("id", "dummy");
+                            return;
+                        }
+                        var limit2 = 0;
+                        var color = "";
+                        var sumLink = "http://netbeans.org/bugzilla/buglist.cgi?bug_id=";
+                        $("td[data-id='" + name + "']").each(
+                                function() {
+                                    var link = ($(this).find('>:first-child').attr('href'));
+                                    if (typeof link != "undefined") {
+                                        link = link.substring(link.indexOf("=") + 1);
+                                        sumLink += link;
+                                    }
+                                    limit2 += 1 * $(this).attr("data-limit");
+                                    sum = sum + $(this).text() * 1;
+                                    if ($(this).attr('data-color')
+                                            && color != 'red'
+                                            && color != 'light_red') {
+                                        color = $(this).attr('data-color');
+                                    }
+                                });
+                        if (sumLink.length > 51) {
+                            $(this).append("<a href=" + sumLink + ">" + sum + "</a>");
+                        }
+
+                        if (name.indexOf("UP") > -1) {
+                            limit[iterator] = limit2;
+                        }
+
+                        if (sum != 0 && limit[iterator] >= 0) {
+                            $(this)
+                                    .attr(
+                                            'title',
+                                            ('\u2264'
+                                                    + limit[iterator]
+                                                    + " - Quality Criteria for " + document
+                                                    .getElementById('current_milestone').text));
+                            if (sum > limit[iterator]) {
+                                if (color)
+                                    $(this).attr('class', "red_sum");
+                            } else {
+                                if (color)
+                                    $(this).attr('class', "green_sum");
                             }
-                            limit2 += 1 * $(this).attr("data-limit");
-                            sum = sum + $(this).text() * 1;
-                            if ($(this).attr('data-color')
-                                    && color != 'red'
-                                    && color != 'light_red') {
-                                color = $(this).attr('data-color');
-                            }
-                        });
-                if (sumLink.length > 51) {
-                    $(this).append("<a href=" + sumLink + ">" + sum + "</a>");
-                }
+                        }
+                        iterator++;
 
-                if (name.indexOf("UP") > -1) {
-                    limit[iterator] = limit2;
-                }
-
-                if (sum != 0 && limit[iterator] >= 0) {
-                    $(this)
-                            .attr(
-                            'title',
-                            ('\u2264'
-                                    + limit[iterator]
-                                    + " - Quality Criteria for " + document
-                                    .getElementById('current_milestone').text));
-                    if (sum > limit[iterator]) {
-                        if (color)
-                            $(this).attr('class', "red_sum");
-                    } else {
-                        if (color)
-                            $(this).attr('class', "green_sum");
-                    }
-                }
-                iterator++;
-
-            });
+                    });
 
 }
 

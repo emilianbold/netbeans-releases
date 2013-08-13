@@ -115,7 +115,7 @@ public final class GroovyElementsProvider implements CompletionProvider {
             Set<IndexedField> fields;
 
             if ("".equals(context.getPrefix())) { // NOI18N
-                fields = index.getFields(".*", context.getTypeName(), QuerySupport.Kind.REGEXP); // NOI18N
+                fields = index.getAllFields(context.getTypeName());
             } else {
                 fields = index.getFields(context.getPrefix(), context.getTypeName(), QuerySupport.Kind.PREFIX);
             }
