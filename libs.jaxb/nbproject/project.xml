@@ -15,12 +15,8 @@
             </module-dependencies>
             <friend-packages>
                 <friend>org.netbeans.modules.aspect.editor</friend>
-                <friend>org.netbeans.modules.compapp.projects.jbi</friend>
-                <friend>org.netbeans.modules.compapp.configextension</friend>
                 <friend>it.imolinfo.jbi4corba.netbeansplugin.libraries</friend>
                 <friend>org.netbeans.modules.soa.palette.java</friend>
-                <friend>org.netbeans.modules.jaxb.project</friend>
-                <friend>org.netbeans.modules.visualweb.websvcmgr</friend>
                 <friend>org.netbeans.modules.uml</friend>
                 <friend>org.netbeans.modules.uml.drawingarea</friend>
                 <friend>org.netbeans.modules.websvc.jaxws21</friend>

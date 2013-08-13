@@ -299,7 +299,6 @@ CLASS      NullPointerException                       null
 CLASS      Number                                     null
 CLASS      NumberFormatException                      null
 CLASS      Object                                     null
-CLASS      Objects                                    null
 CLASS      ObjectGraphBuilder                         null
 CLASS      ObjectInput                                null
 CLASS      ObjectInputStream                          null
@@ -311,6 +310,7 @@ CLASS      ObjectStreamClass                          null
 CLASS      ObjectStreamConstants                      null
 CLASS      ObjectStreamException                      null
 CLASS      ObjectStreamField                          null
+CLASS      Objects                                    null
 CLASS      Observable                                 null
 CLASS      ObservableList                             null
 CLASS      ObservableMap                              null

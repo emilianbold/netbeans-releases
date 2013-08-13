@@ -120,9 +120,12 @@ public class CompletionContext extends EditorFeatureContext {
      * @return the token id or null if no token can be achieved.
      */
     public CssTokenId getActiveTokenId() {
-        TokenSequence<CssTokenId> ts = getTokenSequence();
-        restoreTokenSequence();
-        return ts.token() == null ? null : ts.token().id();
+        try {
+            TokenSequence<CssTokenId> ts = getTokenSequence();
+            return ts.token() == null ? null : ts.token().id();
+        } finally {
+            restoreTokenSequence();
+        }
     }
     
     /**

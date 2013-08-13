@@ -573,6 +573,10 @@ public final class QuerySupport {
     private final List<URL> roots;
 
     private QuerySupport (final String indexerName, int indexerVersion, final URL... roots) throws IOException {
+        System.out.println("QuerySupport: " + System.identityHashCode(this));
+        for (URL url : roots) {
+            System.out.println(url.getPath());
+        }
         this.indexerQuery = IndexerQuery.forIndexer(indexerName, indexerVersion);
         this.roots = new LinkedList<URL>(Arrays.asList(roots));
 
@@ -837,17 +841,19 @@ public final class QuerySupport {
         }
 
         private LayeredDocumentIndex findIndex(URL root) {
+            LayeredDocumentIndex res = null;
             try {
                 FileObject cacheFolder = CacheFolder.getDataFolder(root);
                 assert cacheFolder != null;
                 FileObject indexFolder = cacheFolder.getFileObject(indexerId);
                 if (indexFolder != null) {
-                    return indexFactory.getIndex(indexFolder);
+                    res = indexFactory.getIndex(indexFolder);
                 }
             } catch (IOException ioe) {
                 LOG.log(Level.INFO, "Can't create index for " + indexerId + " and " + root, ioe); //NOI18N
             }
-            return null;
+            System.out.println(root +"->"+res);
+            return res;
         }        
     } // End of IndexerQuery class
 

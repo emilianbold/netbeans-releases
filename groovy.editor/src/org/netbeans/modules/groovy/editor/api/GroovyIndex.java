@@ -123,7 +123,7 @@ public final class GroovyIndex {
             }
         }
 
-        final Set<IndexResult> result = new HashSet<IndexResult>();
+        final Set<IndexResult> result = new HashSet<>();
         String field;
 
         switch (kind) {
@@ -149,10 +149,10 @@ public final class GroovyIndex {
         if (includeAll) {
             uniqueClasses = null;
         } else if (uniqueClasses == null) {
-            uniqueClasses = new HashSet<String>();
+            uniqueClasses = new HashSet<>();
         }
 
-        final Set<IndexedClass> classes = new HashSet<IndexedClass>();
+        final Set<IndexedClass> classes = new HashSet<>();
 
         for (IndexResult map : result) {
             String simpleName = map.getValue(GroovyIndexer.CLASS_NAME);
@@ -255,7 +255,7 @@ public final class GroovyIndex {
         boolean inherited = clz == null;
 
         //    public void searchByCriteria(final String name, final ClassIndex.NameKind kind, /*final ResultConvertor<T> convertor,*/ final Set<String> result) throws IOException {
-        final Set<IndexResult> result = new HashSet<IndexResult>();
+        final Set<IndexResult> result = new HashSet<>();
 
         String field = GroovyIndexer.METHOD_NAME;
         QuerySupport.Kind originalKind = kind;
@@ -269,7 +269,7 @@ public final class GroovyIndex {
         search(field, name, kind, result);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
-        final Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
+        final Set<IndexedMethod> methods = new HashSet<>();
 
         for (IndexResult map : result) {
             if (clz != null) {
@@ -333,10 +333,19 @@ public final class GroovyIndex {
         return methods;
     }
 
+    /**
+     * Gets all fields for the given fully qualified name.
+     *
+     * @param fqName fully qualified name
+     * @return all fields for the given type
+     */
+    public Set<IndexedField> getAllFields(final String fqName) {
+        return getFields(".*", fqName, QuerySupport.Kind.REGEXP); // NOI18N
+    }
 
     public Set<IndexedField> getFields(final String name, final String clz, QuerySupport.Kind kind) {
         boolean inherited = clz == null;
-        final Set<IndexResult> result = new HashSet<IndexResult>();
+        final Set<IndexResult> result = new HashSet<>();
 
         String field = GroovyIndexer.FIELD_NAME;
         QuerySupport.Kind originalKind = kind;
@@ -350,7 +359,7 @@ public final class GroovyIndex {
         search(field, name, kind, result);
 
         // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
-        final Set<IndexedField> fields = new HashSet<IndexedField>();
+        final Set<IndexedField> fields = new HashSet<>();
 
         for (IndexResult map : result) {
             if (clz != null) {
@@ -422,9 +431,9 @@ public final class GroovyIndex {
         boolean haveRedirected = false;
 
         //String field = RubyIndexer.FIELD_FQN_NAME;
-        Set<IndexedMethod> methods = new HashSet<IndexedMethod>();
-        Set<String> scannedClasses = new HashSet<String>();
-        Set<String> seenSignatures = new HashSet<String>();
+        Set<IndexedMethod> methods = new HashSet<>();
+        Set<String> scannedClasses = new HashSet<>();
+        Set<String> seenSignatures = new HashSet<>();
 
         if (prefix == null) {
             prefix = "";
@@ -451,7 +460,7 @@ public final class GroovyIndex {
 
         String searchField = GroovyIndexer.FQN_NAME;
 
-        Set<IndexResult> result = new HashSet<IndexResult>();
+        Set<IndexResult> result = new HashSet<>();
 
         search(searchField, classFqn, QuerySupport.Kind.EXACT, result);
 
