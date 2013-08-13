@@ -161,6 +161,10 @@ public class RemoteFileObjectFactory {
         return fo;
     }
 
+    public RemoteFileObjectBase register(RemoteFileObjectBase fo) {
+        return putIfAbsent(fo.getPath(), fo);
+    }
+
     private RemoteFileObjectBase createRemoteDirectory(RemoteFileObjectBase parent, String remotePath, File cacheFile, RemoteFileObject owner) {
         cacheRequests++;
         if (fileObjectsCache.size() == 0) {

@@ -5,12 +5,12 @@ Debugging               > Variables                 V
                           Breakpoints               B
                           Sessions                  n
                           Threads                   T
-                          Expression Evaluation
+                          Expression Evaluation     E
                           Sources                   S
                           Debugging                 D
                           Disassembly               m
-                          HTTP Server Monitor       H
                           Memory                    o
                           Registers                 R
                           ========================
-                          Debugger Console
+                          Debugger Console          u
+                          Analyze Stack             A

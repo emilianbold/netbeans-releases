@@ -13,7 +13,7 @@ Project Group          >   u
 Project Properties         t   - Project Properties (project-name)
 ========================
 Import Project         >   I
-Export Project         >   p
+Export Project         >   r
 ========================
 Save                       S
 Save As...                 v

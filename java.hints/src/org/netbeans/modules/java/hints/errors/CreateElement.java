@@ -141,6 +141,8 @@ public final class CreateElement implements ErrorRule<Void> {
         List<Fix> result = analyzeImpl(info, diagnosticKey, offset);
         
         if (CAST_KEY.equals(diagnosticKey)) {
+            result = new ArrayList<>(result);
+            
             for (Iterator<Fix> it = result.iterator(); it.hasNext();) {
                 Fix f = it.next();
                 

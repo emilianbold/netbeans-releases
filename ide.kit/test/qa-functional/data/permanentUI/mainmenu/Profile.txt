@@ -1,8 +1,8 @@
 | Profile |                            P (mnemonics)
 ===========
 Profile Project                        P   - Profile Project (project-name) - Profile Main Project
-Profile File
-Profile Test File
+Profile File                           F
+Profile Test File                      i
 Attach Profiler...                     A
 ====================================
 Rerun Profiling Session                R
@@ -15,7 +15,7 @@ Run GC                                 G
 Take Snapshot of Collected Results     T
 Take Heap Dump...                      H
 Load Snapshot...                       L
-Load IDE Snapshot...
+Load IDE Snapshot...                   o
 Load Heap Dump...                      u
 Compare Snapshots...                   C
 ====================================

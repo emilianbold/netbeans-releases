@@ -1,5 +1,6 @@
 C/C++
-    C/C++ Project From Existing Code
+    C/C++ Project with Existing Sources
+    C/C++ Project from Binary File
     C/C++ Application
     C/C++ Dynamic Library
     C/C++ Static Library

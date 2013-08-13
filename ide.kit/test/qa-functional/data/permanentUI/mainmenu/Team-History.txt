@@ -1,2 +1,2 @@
-History  >    Show Local History   H
+History  >    Show History         T
               Revert Deleted       D

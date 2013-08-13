@@ -2,7 +2,7 @@
 =========
 Apply Diff Patch...            Y
 Diff                           F
-Add to Favorites               A
+Add to Favorites               R
 ============================
 Analyze Javadoc                A
 Add to Palette...              e [dynamic]
@@ -11,7 +11,7 @@ Internationalization       >   z
 Java Platforms                 J
 NetBeans Platforms             N
 Ant Variables                  V
-Ant Libraries                  L
+Libraries                      L
 Servers                        S
 Cloud Providers                C
 Mobility Deployment            m

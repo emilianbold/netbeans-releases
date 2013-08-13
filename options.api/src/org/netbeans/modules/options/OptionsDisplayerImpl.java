@@ -65,8 +65,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.options.classic.OptionsAction;
 import org.netbeans.modules.options.export.OptionsChooserPanel;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -118,6 +117,7 @@ public class OptionsDisplayerImpl {
     private JButton btnImport;
     private static final RequestProcessor RP = new RequestProcessor(OptionsDisplayerImpl.class.getName(), 1, true);
     private static final int DELAY = 500;
+    private boolean savingInProgress = false;
     
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
@@ -244,7 +244,9 @@ public class OptionsDisplayerImpl {
 	    public void run() {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        bAPPLY.setEnabled(optsPanel.isChanged() && optsPanel.dataValid());
+                        if (!savingInProgress) {
+                            bAPPLY.setEnabled(optsPanel.isChanged() && optsPanel.dataValid());
+                        }
                     }
                 });
 	    }
@@ -472,11 +474,13 @@ public class OptionsDisplayerImpl {
             }
         }
         
-        @NbBundle.Messages({"ProgressHandle_Saving_Options_DisplayName=Saving Options..."})
+        @NbBundle.Messages({"Saving_Options_Lengthy_Operation_Title=Lengthy operation in progress",
+        "Saving_Options_Lengthy_Operation=Please wait while options are being saved."})
         private void saveOptionsOffEDT(final boolean okPressed) {
-            RequestProcessor.Task saveTask;
-            RequestProcessor RP = new RequestProcessor("Saving Options Off EDT", 1); // NOI18N
-            Runnable runnable = new Runnable() {
+            savingInProgress = true;
+            JPanel content = new JPanel();
+            content.add(new JLabel(Bundle.Saving_Options_Lengthy_Operation()));
+            ProgressUtils.runOffEventThreadWithCustomDialogContent(new Runnable() {
                 @Override
                 public void run() {
                     if(okPressed) {
@@ -485,17 +489,8 @@ public class OptionsDisplayerImpl {
                         optionsPanel.save(true);
                     }
                 }
-            };
-            saveTask = RP.create(runnable);
-            final ProgressHandle ph = ProgressHandleFactory.createHandle(Bundle.ProgressHandle_Saving_Options_DisplayName(), saveTask);
-            saveTask.addTaskListener(new TaskListener() {
-                @Override
-                public void taskFinished(org.openide.util.Task task) {
-                    ph.finish();
-                }
-            });
-            ph.start();
-            saveTask.schedule(0);
+            }, Bundle.Saving_Options_Lengthy_Operation_Title(), content, 50, 5000);
+            savingInProgress = false;
         }
     }
     

@@ -5,4 +5,3 @@ Java EE
     EJB Module with Existing Sources
     Enterprise Application Client
     Enterprise Application Client with Existing Sources
-    Packaged Archive

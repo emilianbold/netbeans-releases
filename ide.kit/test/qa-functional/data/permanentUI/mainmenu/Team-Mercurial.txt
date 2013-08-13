@@ -1,2 +1,2 @@
-Mercurial      >  Initialize Project     n
-                  Clone Other...         h
+Mercurial      >  Initialize Repository...     N
+                  Clone Other...               R
