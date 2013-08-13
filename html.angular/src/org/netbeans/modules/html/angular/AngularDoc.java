@@ -42,8 +42,9 @@
 package org.netbeans.modules.html.angular;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -135,7 +136,7 @@ public class AngularDoc {
         String docURL = directive.getExternalDocumentationURL_partial();
         URL url = new URI(docURL).toURL();
         synchronized (cacheFile) {
-            try (Writer writer = new FileWriter(cacheFile)) {
+            try (Writer writer = new OutputStreamWriter(new FileOutputStream(cacheFile), "UTF-8")) { // NOI18N
                 writer.append("<!doctype html><html><head><title>AngularJS documentation</title></head><body>");
                 Utils.loadURL(url, writer, null);
                 writer.append("</body></html>");
