@@ -184,6 +184,7 @@ import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl.TestIndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl.TestIndexImpl;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
@@ -864,7 +865,25 @@ public abstract class CslTestBase extends NbTestCase {
         }
 
         String expected = readFile(goldenFile);
-        assertEquals(expected.trim(), description.trim());
+        final String expectedTrimmed = expected.trim();
+        final String actualTrimmed = description.trim();
+
+        if (expectedTrimmed.equals(actualTrimmed)) {
+            return; // Actual and expected content are equals --> Test passed
+        } else {
+            // We want to ignore different line separators (like \r\n against \n) because they
+            // might be causing failing tests on a different operation systems like Windows :]
+            final String expectedUnified = expectedTrimmed.replaceAll("\r", "");
+            final String actualUnified = actualTrimmed.replaceAll("\r", "");
+
+            if (expectedUnified.equals(actualUnified)) {
+                return; // Only difference is in line separation --> Test passed
+            }
+
+            // There are some diffrerences between expected and actual content --> Test failed
+
+            fail("Not matching goldenfile: " + FileUtil.getFileDisplayName(FileUtil.toFileObject(goldenFile)) + lineSeparator(2) + getContentDifferences(expectedUnified, actualUnified));
+        }
     }
 
     public void assertEquals(Collection<String> s1, Collection<String> s2) {
@@ -2775,6 +2794,114 @@ public abstract class CslTestBase extends NbTestCase {
         } else {
             ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
         }
+    }
+
+    /**
+     * Checks code completion result.
+     * <p>
+     * Should be used in situation when we are interested in the result that comes from the
+     * completion of certain {@link CompletionProposal}.
+     * <p>
+     * One particular use case could be the fast import feature (i.e. automatic import of the
+     * class that was chosen in code completion but wasn't imported yet).
+     *
+     * @param file the file we are testing against; will be used on the one hand as source
+     *        file for the completion and on the other hand the corresponding file with the
+     *        same name and additional ".ccresult" suffix will be find and used as a golden file
+     * @param caretLine line where we are invoking completion
+     * @param proposal proposal we want to complete
+     * @throws ParseException encapsulating the user exception, might thrown by {@link ParserManager#parse(java.util.Collection, org.netbeans.modules.parsing.api.UserTask)
+     */
+    public void checkCompletionResult(
+            final String file,
+            final String caretLine,
+            final CompletionProposal proposal) throws ParseException {
+
+        final QueryType type = QueryType.COMPLETION;
+        final boolean caseSensitive = true;
+
+        Source testSource = getTestSource(getTestFile(file));
+
+        final int caretOffset;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        } else {
+            caretOffset = -1;
+        }
+
+        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result r = caretOffset == -1 ? resultIterator.getParserResult() : resultIterator.getParserResult(caretOffset);
+                assertTrue(r instanceof ParserResult);
+                ParserResult pr = (ParserResult) r;
+
+                CodeCompletionHandler cc = getCodeCompleter();
+                assertNotNull("getCodeCompleter must be implemented", cc);
+
+                Document doc = GsfUtilities.getDocument(pr.getSnapshot().getSource().getFileObject(), true);
+                boolean upToOffset = type == QueryType.COMPLETION;
+                String prefix = cc.getPrefix(pr, caretOffset, upToOffset);
+                if (prefix == null) {
+                    int[] blk = org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument) doc, caretOffset);
+
+                    if (blk != null) {
+                        int start = blk[0];
+                        if (start < caretOffset ) {
+                            if (upToOffset) {
+                                prefix = doc.getText(start, caretOffset - start);
+                            } else {
+                                prefix = doc.getText(start, blk[1] - start);
+                            }
+                        }
+                    }
+                }
+
+                final int finalCaretOffset = caretOffset;
+                final String finalPrefix = prefix;
+                final ParserResult finalParserResult = pr;
+                CodeCompletionContext context = new CodeCompletionContext() {
+
+                    @Override
+                    public int getCaretOffset() {
+                        return finalCaretOffset;
+                    }
+
+                    @Override
+                    public ParserResult getParserResult() {
+                        return finalParserResult;
+                    }
+
+                    @Override
+                    public String getPrefix() {
+                        return finalPrefix;
+                    }
+
+                    @Override
+                    public boolean isPrefixMatch() {
+                        return true;
+                    }
+
+                    @Override
+                    public QueryType getQueryType() {
+                        return type;
+                    }
+
+                    @Override
+                    public boolean isCaseSensitive() {
+                        return caseSensitive;
+                    }
+                };
+
+                CodeCompletionResult completionResult = cc.complete(context);
+                completionResult.beforeInsert(proposal);
+                completionResult.insert(proposal);
+                completionResult.afterInsert(proposal);
+
+                String fileContent = doc.getText(0, doc.getLength());;
+                assertFileContentsMatches(file, fileContent, false, ".ccresult");
+            }
+        });
     }
 
     public void checkCompletionDocumentation(final String file, final String caretLine, final boolean includeModifiers, final String itemPrefix) throws Exception {
