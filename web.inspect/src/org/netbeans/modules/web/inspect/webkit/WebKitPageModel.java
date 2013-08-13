@@ -105,7 +105,7 @@ public class WebKitPageModel extends PageModel {
     /** Determines whether the selection mode is switched on. */
     private boolean selectionMode;
     /** Determines whether the selection between the IDE and the browser pane is synchronized. */
-    private boolean synchronizeSelection;
+    private boolean synchronizeSelection = true;
     /** Owner project of the inspected page. */
     private final Project project;
     /** Page context. */

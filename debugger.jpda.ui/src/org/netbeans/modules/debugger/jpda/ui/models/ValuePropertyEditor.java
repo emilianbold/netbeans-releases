@@ -108,6 +108,10 @@ class ValuePropertyEditor implements ExPropertyEditor {
             return hasPropertyEditorFor(clazz);
         } catch (ClassNotFoundException ex) {
             return false;
+        } catch (ExceptionInInitializerError eie) {
+            return false;
+        } catch (LinkageError le) {
+            return false;
         }
     }
     

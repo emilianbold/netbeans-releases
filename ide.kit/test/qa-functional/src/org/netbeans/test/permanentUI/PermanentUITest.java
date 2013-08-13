@@ -39,7 +39,6 @@
  *
  * Portions Copyrighted 2008 Sun Microsystems, Inc.
  */
-
 package org.netbeans.test.permanentUI;
 
 import junit.framework.Test;
@@ -50,14 +49,15 @@ import org.netbeans.junit.NbModuleSuite;
  * @author Lukas Hasik
  */
 public class PermanentUITest {
+
     public static Test suite() {
-        return NbModuleSuite.emptyConfiguration()
-                .clusters(".*").enableModules(".*")
-                .addTest(MainMenuTest.class, MainMenuTest.ALL_TESTS)
-                .addTest(MainMenuTestJava.class, MainMenuTest.ALL_TESTS)
-                //.addTest(NewProjectTest.class)
-                //.addTest(OptionsTest.class)
+        NbModuleSuite.Configuration conf = NbModuleSuite.emptyConfiguration().clusters(".*").enableModules(".*");
+        return conf
+                .addTest(MainMenuTest.class, MainMenuTest.TESTS)
+                .addTest(MainMenuTestJava.class, MainMenuTestJava.TESTS)
+                .addTest(NewProjectTest.class)
+                .addTest(OptionsTest.class)
                 .suite();
-  }
+    }
 
 }

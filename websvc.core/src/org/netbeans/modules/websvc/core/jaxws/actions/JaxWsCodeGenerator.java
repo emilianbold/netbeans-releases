@@ -46,19 +46,13 @@ package org.netbeans.modules.websvc.core.jaxws.actions;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ImportTree;
 import java.io.IOException;
-import java.io.StringWriter;
-import java.io.Writer;
 import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.TypeElement;
@@ -72,17 +66,16 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.modules.j2ee.api.ejbjar.Car;
-import org.netbeans.modules.websvc.api.support.java.SourceUtils;
 import org.netbeans.modules.websvc.api.support.InvokeOperationCookie;
 import org.openide.util.Lookup;
-import org.openide.util.RequestProcessor;
 import static org.netbeans.api.java.source.JavaSource.Phase;
-import static com.sun.source.tree.Tree.Kind.*;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.editor.BaseDocument;
 
 import org.netbeans.modules.editor.NbEditorUtilities;
+import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.websvc.api.jaxws.client.JAXWSClientSupport;
@@ -101,7 +94,6 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
-import org.openide.text.IndentEngine;
 import org.openide.text.NbDocument;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -742,33 +734,32 @@ public class JaxWsCodeGenerator  {
 
                 targetSource.runModificationTask(clientMethodGenerator).commit();
             } else {
+                // create & format inserted text
+                final String invocationBody = task.getJavaInvocationBody(
+                        operation,
+                        portJavaName,
+                        portGetterMethod,
+                        returnTypeName,
+                        operationJavaName,
+                        respType);
+
+                final Indent indent = Indent.get(document);
+                indent.lock();
                 try {
-                    // create & format inserted text
-                    IndentEngine eng = IndentEngine.find(document);
-                    StringWriter textWriter = new StringWriter();
-                    Writer indentWriter = eng.createWriter(document, pos, textWriter);
-
-                    // create the inserted text
-                    String invocationBody = task.getJavaInvocationBody(
-                            operation,
-                            portJavaName,
-                            portGetterMethod,
-                            returnTypeName,
-                            operationJavaName,
-                            respType);
-
-                    indentWriter.write(invocationBody);
-                    indentWriter.close();
-                    String textToInsert = textWriter.toString();
-
-                    try {
-                        document.insertString(pos, textToInsert, null);
-                    } catch (BadLocationException badLoc) {
-                        document.insertString(pos + 1, textToInsert, null);
-                    }
-                } catch (BadLocationException badLoc) {
-                    ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, 
-                            badLoc);
+                    ((BaseDocument)document).runAtomic(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                System.out.println("............. 11111111111 ............. ");
+                                document.insertString(pos, invocationBody, null);
+                                indent.reindent(pos, pos+invocationBody.length());
+                            } catch (BadLocationException ex) {
+                                Exceptions.printStackTrace(ex);
+                            }
+                        }
+                    }); 
+                } finally {
+                    indent.unlock();
                 }
             }
 
@@ -1121,20 +1112,16 @@ public class JaxWsCodeGenerator  {
         CompilerTask compilerTask = getCompilerTask(serviceJavaName, serviceFName, 
                 argumentDeclPart, new String[0], argumentInitPart, manager);
         targetSource.runUserActionTask(compilerTask, true);
-
-        IndentEngine eng = IndentEngine.find(document);
-        StringWriter textWriter = new StringWriter();
-        Writer indentWriter = eng.createWriter(document, pos, textWriter);
         
         StringBuilder methodBody = new StringBuilder();
 
+        String serviceDeclForJava = "";
         if (compilerTask.containsWsRefInjection()) { //if in J2SE
             Object[] args = new Object[]{service.getJavaName(), null, null, 
                     null, null, null, null, "service"}; //TODO: compute proper var name
-            String serviceDeclForJava = MessageFormat.format(JAVA_SERVICE_DEF, args);
+            serviceDeclForJava = MessageFormat.format(JAVA_SERVICE_DEF, args);
             methodBody.append( serviceDeclForJava );
-            indentWriter.write(serviceDeclForJava);
-        }
+        } 
         // create the inserted text
         String invocationBody = getDispatchInvocationMethod(port, operation);
         
@@ -1143,21 +1130,23 @@ public class JaxWsCodeGenerator  {
                 methodBody.append( invocationBody ).toString(), pos );
         ModificationResult result = targetSource.runModificationTask(generator);
         if (generator.isMethodBody()) {
-
-            indentWriter.write(invocationBody);
-            indentWriter.close();
-            String textToInsert = textWriter.toString();
-
+            final String insideMethodBody = serviceDeclForJava+invocationBody;
+            final Indent indent = Indent.get(document);
+            indent.lock();
             try {
-                document.insertString(pos, textToInsert, null);
-            }
-            catch (BadLocationException badLoc) {
-                try {
-                    document.insertString(pos + 1, textToInsert, null);
-                }
-                catch (BadLocationException ex) {
-                    ErrorManager.getDefault().notify(ex);
-                }
+                ((BaseDocument)document).runAtomic(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            document.insertString(pos, insideMethodBody, null);
+                            indent.reindent(pos, pos+insideMethodBody.length());
+                        } catch (BadLocationException ex) {
+                            Exceptions.printStackTrace(ex);
+                        }
+                    }
+                }); 
+            } finally {
+                indent.unlock();
             }
         }
         else {

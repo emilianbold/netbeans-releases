@@ -7,7 +7,7 @@ Cut                        t
 Copy                       y
 Paste                      P
 Paste Formatted            o
-Paste from History
+Paste from History         H
 Delete                     D
 Select All                 A
 Select Identifier          I

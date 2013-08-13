@@ -1,2 +1,0 @@
-Versioning              > Subversion   S
-                          Mercurial    M

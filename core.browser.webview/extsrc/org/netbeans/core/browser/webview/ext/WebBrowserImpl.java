@@ -411,20 +411,22 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
     @Override
     public void dispose() {
         synchronized( LOCK ) {
+            browserListners.clear();
             if( isInitialized() ) {
                 container.removeAll();
+                initialized = false;
                 // There can be pending tasks in FX thread that
                 // will dereference the browser field => clear the field
                 // once all these tasks are done
                 javafx.application.Platform.runLater(new Runnable() {
                     @Override
                     public void run() {
+                        //#233974
+                        browser.getEngine().loadContent( "<html><body>"); //NOI18N
                         browser = null;
                     }
                 });
-                initialized = false;
             }
-            browserListners.clear();
             container = null;
         }
     }

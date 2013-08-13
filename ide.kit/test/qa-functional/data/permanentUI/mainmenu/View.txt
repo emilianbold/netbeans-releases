@@ -1,6 +1,7 @@
 | View |                       V (mnemonics)
 ========
     Editors                >   E
+    Split                  >   S
     Code Folds             >   C
 ============================
     IDE Log                    L
@@ -14,4 +15,5 @@
 [ ] Show Versioning Labels     V
 [ ] Synchronize Editor with Views      y
 ============================
+[ ] Show Only Editor           O
 [ ] Full Screen                F

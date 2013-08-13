@@ -73,6 +73,8 @@ class CloseButtonHandler extends MouseAdapter {
     public void mouseClicked( MouseEvent e ) {
         if( e.getSource() instanceof TabTable ) {
             TabTable table = ( TabTable ) e.getSource();
+            if( !table.isShowing() )
+                return;
             Point p = e.getPoint();
             int row = table.rowAtPoint( p );
             int col = table.columnAtPoint( p );
