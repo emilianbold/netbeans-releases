@@ -261,20 +261,48 @@ public class ProjectBridge {
     }
     
     public void convertIncludePaths(Set<String> set, List<String> paths, String compilePath, String filePath){
+        List<String> ordinary = new ArrayList<>();
+        List<Integer> incuded = new ArrayList<>();
         for (String path : paths){
-            if ( !( path.startsWith("/") || (path.length()>1 && path.charAt(1)==':') ) ) { // NOI18N
+            if ( path.startsWith("/") || (path.length()>1 && path.charAt(1)==':') ) {  // NOI18N
+                String aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
+                ordinary.add(getRelativepath(aPath));
+            } else {
                 if (path.equals(".")) { // NOI18N
-                    path = compilePath;
+                    String aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, compilePath);
+                    ordinary.add(getRelativepath(aPath));
                 } else {
-                    path = compilePath + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + path;
+                    String aPath = compilePath + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + path;
+                    aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, aPath);
+                    if (!CndFileUtils.isExistingDirectory(baseFolderFileSystem, aPath)) {
+                        if (path.endsWith(".h") || path.endsWith(".hpp") || path.endsWith(".hxx") || path.endsWith(".def") || path.endsWith(".inc")) { // NOI18N
+                            // it looks like -include <relative path>
+                            // try to resolve include directive later
+                            incuded.add(ordinary.size());
+                        }
+                    }
+                    ordinary.add(getRelativepath(aPath));
                 }
             }
-            path = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, path);
-            set.add(getRelativepath(path));
         }
         if (isDifferentCompilePath(filePath, compilePath)){
-            set.add(getRelativepath(compilePath));
+            ordinary.add(getRelativepath(compilePath));
         }
+        for(int i : incuded) {
+            String inc = paths.get(i);
+            for(String p : ordinary) {
+                if ( !(p.startsWith("/") || (p.length()>1 && p.charAt(1)==':') ) ) {  // NOI18N
+                    p = CndPathUtilities.toAbsolutePath(makeConfigurationDescriptor.getBaseDirFileObject(), p);
+                }
+                String aPath = p + CndFileUtils.getFileSeparatorChar(baseFolderFileSystem) + inc;
+                aPath = CndFileUtils.normalizeAbsolutePath(baseFolderFileSystem, aPath);
+                if (CndFileUtils.isExistingFile(baseFolderFileSystem, aPath)) {
+                    ordinary.set(i, getRelativepath(aPath));
+                    break;
+                }
+            }
+        }
+        set.addAll(ordinary);
     }
 
     private boolean isDifferentCompilePath(String name, String path){
