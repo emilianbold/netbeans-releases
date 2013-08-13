@@ -65,4 +65,8 @@ public class AutomatedIndentingTest extends JsTestBase {
     public void testIssue234083() throws Exception {
         insertChar("switch(x){\n    case 1:\n  case^\n}", ' ', "switch(x){\n    case 1:\n    case ^\n}");
     }
+
+    public void testIssue231017() throws Exception {
+        insertChar("$('div')\n^", '.', "$('div')\n        .^");
+    }
 }
