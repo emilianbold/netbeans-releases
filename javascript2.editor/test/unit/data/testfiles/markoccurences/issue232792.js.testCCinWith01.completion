@@ -1,20 +1,15 @@
 Code completion result for source line:
-<input data-bind='value: userNameToAdd, valueUpdate: "keyup", css: { invalid: | }' /></input>
+| // try here
 (QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
 ------------------------------------
-CONSTRUCTO TestModel(lists, selectedList)  [PUBLIC]   index.html
-CLASS      UNKNOWN                         [PUBLIC]   index.html
-CLASS      ko                              [PUBLIC]   Knockout
-FIELD      savedLists                      [PUBLIC]   index.html
-FIELD      userNameToAddIsValid            [PUBLIC]   index.html
-VARIABLE   $data: ko.$bindings             [PRIVATE]  index.html
-VARIABLE   $element                        [PRIVATE]  index.html
-VARIABLE   $parent: undefined              [PRIVATE]  index.html
-VARIABLE   $parents: Array                 [PRIVATE]  index.html
-VARIABLE   $root: ko.$bindings             [PRIVATE]  index.html
-VARIABLE   arguments: Arguments            [PRIVATE]  index.html
-VARIABLE   undefined                       [PUBLIC]   index.html
-VARIABLE   userNameToAdd                   [PUBLIC]   index.html
+CLASS      A                               [PUBLIC]   issue232792.js
+CLASS      B                               [PUBLIC]   issue232792.js
+CLASS      console                         [PUBLIC]   issue232792.js
+METHOD     getGlobal(): undefined          [PUBLIC]   issue232792.js
+METHOD     getInfo(): undefined            [PUBLIC]   issue232792.js
+METHOD     getInfo(): undefined            [PUBLIC]   issue232792.js
+METHOD     getName(): undefined            [PUBLIC]   issue232792.js
+FIELD      monitor: Number                 [PUBLIC]   issue232792.js
 KEYWORD    break                                      null
 KEYWORD    case                                       null
 KEYWORD    catch                                      null
