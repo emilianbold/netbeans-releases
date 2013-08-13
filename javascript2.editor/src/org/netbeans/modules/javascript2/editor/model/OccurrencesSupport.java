@@ -105,7 +105,7 @@ public class OccurrencesSupport {
     private Occurrence findDeclaration (JsObject object, int offset) {
         Occurrence result = null;
         JsElement.Kind kind = object.getJSKind();
-        if (kind != JsElement.Kind.ANONYMOUS_OBJECT 
+        if (kind != JsElement.Kind.ANONYMOUS_OBJECT && kind != JsElement.Kind.WITH_OBJECT
                 && object.getDeclarationName() != null && object.getDeclarationName().getOffsetRange().containsInclusive(offset)
                 && !ModelUtils.isGlobal(object)) {
             if (kind.isPropertyGetterSetter()) {

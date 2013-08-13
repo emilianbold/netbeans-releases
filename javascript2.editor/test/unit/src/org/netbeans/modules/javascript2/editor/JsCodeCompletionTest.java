@@ -239,4 +239,16 @@ public class JsCodeCompletionTest extends JsCodeCompletionBase {
     public void testIssue233719_02() throws Exception {
         checkCompletion("testfiles/structure/issue233719.js", "console.log(man.^prop2);", false);
     }
+    
+    public void testIssue23277() throws Exception {
+        checkCompletion("testfiles/markoccurences/issue232792.js", "A.B.^getName();", false);
+    }
+    
+    public void testCCinWith01() throws Exception {
+        checkCompletion("testfiles/markoccurences/issue232792.js", "    ^ // try here", false);
+    }
+    
+    public void testIssue232798() throws Exception {
+        checkCompletion("testfiles/markoccurences/issue232792.js", "        this.^c // issue 232798", false);
+    }
 }

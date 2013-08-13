@@ -94,6 +94,11 @@ public abstract class CloneableOpenSupport extends Object {
      * @see #openCloneableTopComponent
      */
     public void open() {
+        CloneableOpenSupport redirect = CloneableOpenSupportRedirector.findRedirect(this);
+        if (redirect != null) {
+            redirect.open();
+            return;
+        }
         //Bugfix #10688 open() is now run in AWT thread
         Mutex.EVENT.writeAccess(
             new Runnable() {

@@ -177,7 +177,17 @@ public class JsFormatter implements Formatter {
                     }
 
                     if (!token.isVirtual()) {
-                        updateContinuationEnd(formatContext, token, continuations);
+                        // if there is pending continuation (ususally on the same line)
+                        // such as "   .something({..." we need to update
+                        // the continuation data on (, { and [ the same way as
+                        // it would be on EOL
+                        boolean change = false;
+                        if (formatContext.isPendingContinuation() && token.getKind() != FormatToken.Kind.EOL) {
+                            change = updateContinuationStart(formatContext, token, continuations, false);
+                        }
+                        if (!change) {
+                            updateContinuationEnd(formatContext, token, continuations);
+                        }
 
                         if (!firstTokenFound) {
                             firstTokenFound = true;
@@ -288,7 +298,9 @@ public class JsFormatter implements Formatter {
                             int continuationLevel = formatContext.getContinuationLevel();
                             if (isContinuation(formatContext, token, false)) {
                                 continuationLevel++;
-                                updateContinuationStart(formatContext, token, continuations);
+                                updateContinuationStart(formatContext, token, continuations, true);
+                            } else {
+                                formatContext.setPendingContinuation(false);
                             }
                             indentationSize += continuationIndent * continuationLevel;
                             if (started) {
@@ -346,7 +358,9 @@ public class JsFormatter implements Formatter {
         int continuationLevel = formatContext.getContinuationLevel();
         if (isContinuation(formatContext, lastWrap.getToken(), true)) {
             continuationLevel++;
-            updateContinuationStart(formatContext, lastWrap.getToken(), continuations);
+            updateContinuationStart(formatContext, lastWrap.getToken(), continuations, true);
+        } else {
+            formatContext.setPendingContinuation(false);
         }
         indentationSize += continuationIndent * continuationLevel;
         formatContext.indentLineWithOffsetDiff(
@@ -464,7 +478,9 @@ public class JsFormatter implements Formatter {
                     int continuationLevel = formatContext.getContinuationLevel();
                     if (isContinuation(formatContext, tokenBeforeEol, true)) {
                         continuationLevel++;
-                        updateContinuationStart(formatContext, tokenBeforeEol, continuations);
+                        updateContinuationStart(formatContext, tokenBeforeEol, continuations, true);
+                    } else {
+                        formatContext.setPendingContinuation(false);
                     }
                     indentationSize += continuationIndent * continuationLevel;
                     formatContext.indentLine(
@@ -639,26 +655,33 @@ public class JsFormatter implements Formatter {
         }
     }
 
-    private void updateContinuationStart(FormatContext formatContext, FormatToken token,
-            Stack<FormatContext.ContinuationBlock> continuations) {
+    private boolean updateContinuationStart(FormatContext formatContext, FormatToken token,
+            Stack<FormatContext.ContinuationBlock> continuations, boolean continuation) {
 
-        FormatToken nextImportant = FormatTokenStream.getNextImportant(token);
+        boolean change = false;
+        FormatToken nextImportant = continuation ? FormatTokenStream.getNextImportant(token) : token;
         if (nextImportant != null && nextImportant.getKind() == FormatToken.Kind.TEXT) {
             if (JsTokenId.BRACKET_LEFT_CURLY == nextImportant.getId()) {
                 continuations.push(new FormatContext.ContinuationBlock(
                         FormatContext.ContinuationBlock.Type.CURLY, true));
                 formatContext.incContinuationLevel();
+                formatContext.setPendingContinuation(false);
                 processed.add(nextImportant);
+                change = true;
             } else if (JsTokenId.BRACKET_LEFT_BRACKET == nextImportant.getId()) {
                 continuations.push(new FormatContext.ContinuationBlock(
                         FormatContext.ContinuationBlock.Type.BRACKET, true));
                 formatContext.incContinuationLevel();
+                formatContext.setPendingContinuation(false);
                 processed.add(nextImportant);
+                change = true;
             } else if (JsTokenId.BRACKET_LEFT_PAREN == nextImportant.getId()) {
                 continuations.push(new FormatContext.ContinuationBlock(
                         FormatContext.ContinuationBlock.Type.PAREN, true));
                 formatContext.incContinuationLevel();
+                formatContext.setPendingContinuation(false);
                 processed.add(nextImportant);
+                change = true;
             } else if (JsTokenId.KEYWORD_FUNCTION == nextImportant.getId()) {
                 FormatToken curly = nextImportant;
                 while (curly != null) {
@@ -678,16 +701,31 @@ public class JsFormatter implements Formatter {
                     continuations.push(new FormatContext.ContinuationBlock(
                         FormatContext.ContinuationBlock.Type.CURLY, true));
                     formatContext.incContinuationLevel();
+                    formatContext.setPendingContinuation(false);
                     processed.add(curly);
+                    change = true;
+                }
+            } else {
+                if (continuation) {
+                    formatContext.setPendingContinuation(true);
                 }
             }
         }
+        return change;
     }
 
 
     private void updateContinuationEnd(FormatContext formatContext, FormatToken token,
             Stack<FormatContext.ContinuationBlock> continuations) {
-        if (token.isVirtual() || continuations.isEmpty() || token.getKind() != FormatToken.Kind.TEXT) {
+        if (token.isVirtual() || token.getKind() != FormatToken.Kind.TEXT) {
+            return;
+        }
+        if (formatContext.isPendingContinuation() && (JsTokenId.BRACKET_RIGHT_CURLY == token.getId()
+                || JsTokenId.BRACKET_RIGHT_BRACKET == token.getId()
+                || JsTokenId.BRACKET_RIGHT_PAREN == token.getId())) {
+            formatContext.setPendingContinuation(false);
+        }
+        if (continuations.isEmpty()) {
             return;
         }
 

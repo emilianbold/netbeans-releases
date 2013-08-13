@@ -54,14 +54,4 @@ public interface DeclarationScope {
 
     Collection<? extends DeclarationScope> getChildrenScopes();
 
-    /**
-     * Returns the types used in with blocks which applies to given offset.
-     * The returned list is sorted by offset so the outer with block is
-     * the first one.
-     *
-     * @param offset the offset for which we want to get with types
-     * @return the types used in with blocks
-     */
-    List<? extends TypeUsage> getWithTypesForOffset(int offset);
-
 }

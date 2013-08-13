@@ -62,6 +62,7 @@ import org.netbeans.modules.cnd.repository.spi.PersistentFactory;
 import org.netbeans.modules.cnd.repository.testbench.Stats;
 import org.netbeans.modules.cnd.repository.util.Filter;
 import org.netbeans.modules.cnd.repository.relocate.api.UnitCodec;
+import org.netbeans.modules.cnd.repository.sfs.FileRWAccess;
 import org.netbeans.modules.cnd.repository.support.RepositoryStatistics;
 import org.netbeans.modules.cnd.repository.testbench.RepositoryStatisticsImpl;
 
@@ -80,6 +81,87 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         public ConcurrentFileRWAccess(File file, CharSequence unit) throws IOException {
             super(file, unitCodec);
             this.unit = unit;
+        }
+
+        @Override
+        public void move(FileRWAccess from, long offset, int size, long newOffset) throws IOException {
+            try {
+                super.move(from, offset, size, newOffset);
+            } catch (IOException e) {
+                onException(e);
+                throw e;
+            }
+        }
+
+        @Override
+        public void move(long offset, int size, long newOffset) throws IOException {
+            try {
+                super.move(offset, size, newOffset); 
+            } catch (IOException e) {
+                onException(e);
+                throw e;
+            }
+        }
+
+        @Override
+        public void truncate(long size) throws IOException {
+            try {
+                super.truncate(size);
+            } catch (IOException e) {
+                onException(e);
+                throw e;
+            }
+        }
+
+        @Override
+        public long size() throws IOException {
+            try {
+                return super.size();
+            } catch (IOException e) {
+                onException(e);
+                throw e;
+            }
+        }
+
+        @Override
+        protected void writeBuffer() throws IOException {
+            try {
+                super.writeBuffer();
+            } catch (IOException e) {
+                onException(e);
+                throw e;
+            }
+        }
+
+        @Override
+        public int write(PersistentFactory factory, Persistent object, long offset) throws IOException {
+            try {
+                return super.write(factory, object, offset);
+            } catch (IOException e) {
+                onException(e);
+                throw e;
+            }
+        }
+
+        @Override
+        public Persistent read(PersistentFactory factory, long offset, int size) throws IOException {
+            try {
+                return super.read(factory, offset, size);
+            } catch (IOException e) {
+                onException(e);
+                throw e;
+            }
+        }
+        
+        private void onException(IOException e) {
+            synchronized (cacheLock) {
+                nameToFileCache.remove(new Filter<ConcurrentFileRWAccess>() {
+                    @Override
+                    public boolean accept(ConcurrentFileRWAccess value) {
+                        return value == ConcurrentFileRWAccess.this;
+                    }
+                });
+            }
         }
     }
 
@@ -230,10 +312,8 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     }
     
     private void putFile(String fileName, ConcurrentFileRWAccess aFile) throws IOException {
-        ConcurrentFileRWAccess removedFile;
-        synchronized (cacheLock) {
-            removedFile = nameToFileCache.put(fileName, aFile);
-        }
+        assert Thread.holdsLock(cacheLock);
+        ConcurrentFileRWAccess removedFile = nameToFileCache.put(fileName, aFile);
         if (removedFile != null) {
             try {
                 removedFile.lock.writeLock().lock();

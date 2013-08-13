@@ -143,7 +143,7 @@ public class ScssCompletionTest extends CssModuleTestBase {
                 + "  float: left;\n"
                 + "  margin-left: $dist;\n"
                 + "}", arr("mix1", "mix2"), Match.EXACT);
-        
+
         checkCC("div{\n"
                 + "    @include mi|;\n"
                 + "}\n"
@@ -157,7 +157,7 @@ public class ScssCompletionTest extends CssModuleTestBase {
                 + "  float: left;\n"
                 + "  margin-left: $dist;\n"
                 + "}", arr("mix1", "mix2"), Match.EXACT);
-        
+
     }
 
     public void testDeclarationsInMixin() throws ParseException {
@@ -216,18 +216,41 @@ public class ScssCompletionTest extends CssModuleTestBase {
                 + "}", arr("red"), Match.CONTAINS);
 
     }
-    
+
     public void testPropertyValueCompletion() throws ParseException {
         checkCC(".clz { color: | }", arr("red"), Match.CONTAINS);
         checkCC(".clz { color: f| }", arr("fuchsia"), Match.CONTAINS);
         checkCC(".clz { color: fuch| }", arr("fuchsia", "$color_chooser"), Match.EXACT);
     }
-    
-     //Bug 233597 - Completion for color based properties offers colors twice
+
+    //Bug 233597 - Completion for color based properties offers colors twice
     public void testPropertyValueCompletionDoesntOfferValuesMoreTimes() throws ParseException {
         checkCC("div{\n"
                 + "       color: red | \n"
                 + "   }",
                 arr("red"), Match.DOES_NOT_CONTAIN);
     }
+
+    //Bug 234184 - Sass: missing completion for mixins inside media query
+    public void testMixinsCompletionInMQ() throws ParseException {
+        checkCC("@mixin test2($para, $para2) { \n"
+                + "}\n"
+                + "@mixin test($para, $para2) { \n"
+                + "}\n"
+                + "@for $i from 1 through 3 { \n"
+                + "   @media tv {  \n"
+                + "        @include | \n"
+                + " }\n"
+                + "}", arr("test2", "test"), Match.EXACT);
+        checkCC("@mixin one($para, $para2) { \n"
+                + "}\n"
+                + "@mixin two($para, $para2) { \n"
+                + "}\n"
+                + "@for $i from 1 through 3 { \n"
+                + "   @media tv {  \n"
+                + "        @include o| \n"
+                + " }\n"
+                + "}", arr("one"), Match.EXACT);
+    }
+    
 }
