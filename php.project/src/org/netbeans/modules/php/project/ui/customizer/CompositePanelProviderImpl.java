@@ -191,7 +191,7 @@ public class CompositePanelProviderImpl implements ProjectCustomizer.CompositeCa
         } else if (BROWSER.equals(nm)) {
             return new CustomizerBrowser(category, uiProps);
         } else if (PHP_INCLUDE_PATH.equals(nm)) {
-            return new CustomizerPhpIncludePath(category, uiProps);
+            return new CustomizerIncludePath(category, uiProps);
         } else if (IGNORE_PATH.equals(nm)) {
             return new CustomizerIgnorePath(category, uiProps);
         } else if (FRAMEWORKS.equals(nm)) {
