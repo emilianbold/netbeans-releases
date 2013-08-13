@@ -57,6 +57,8 @@ import javax.swing.event.DocumentListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProvider;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
@@ -88,6 +90,15 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
     }
 
     private void postInitComponents() {
+        for (int i = 1;; i++) {
+            displayName.setText("Remote Platform " + i); //NOI18N
+            String antName = PropertyUtils.getUsablePropertyName(displayName.getText());
+            if (RemotePlatformProvider.isValidPlatformAntName(antName)) {
+                break;
+            }
+        }
+        displayName.selectAll();
+
         final ChangeListener radioChangeListener = new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -566,6 +577,11 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
             ui.buttonTest.setEnabled(false);
             if (ui.displayName.getText().isEmpty()) {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_DisplayName")); // NOI18N
+                return false;
+            }
+            if (!RemotePlatformProvider.isValidPlatformAntName(PropertyUtils.getUsablePropertyName(ui.displayName.getText()))) {
+                wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                        NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_PlatformAlreadyExists")); // NOI18N
                 return false;
             }
             if (ui.host.getText().isEmpty()) {
