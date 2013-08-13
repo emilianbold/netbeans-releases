@@ -266,6 +266,11 @@ public class GridDesigner extends JPanel {
 
         HelpCtx.setHelpIDString(this, "gui.layouts.griddesigner"); // NOI18N
     }
+
+    public void cleanup() {
+        setSelectedNodes(Collections.EMPTY_LIST);
+        removeFormModelListener();
+    }
     
     /**
      * Updates the gap toggle button and gap width/height spinners state.

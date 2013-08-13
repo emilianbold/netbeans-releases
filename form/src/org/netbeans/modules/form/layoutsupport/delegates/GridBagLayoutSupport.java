@@ -116,7 +116,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport {
     @Override
     public Component getSupportCustomizer() {
         if (isGridDesignerEnabled()) {
-            GridDesigner designer = new GridDesigner();
+            final GridDesigner designer = new GridDesigner();
             RADVisualContainer container = ((LayoutSupportManager)getLayoutContext()).getMetaContainer();
             designer.setDesignedContainer(container);
             DialogDescriptor dd = new DialogDescriptor(designer, NbBundle.getMessage(GridDesigner.class, "GridDesignerWindow.title")); // NOI18N
@@ -126,6 +126,7 @@ public class GridBagLayoutSupport extends AbstractLayoutSupport {
                 @Override
                 public void windowClosed(WindowEvent e) {
                     customizerBounds = e.getWindow().getBounds();
+                    designer.cleanup();
                 }
             });
             if (customizerBounds != null) { // set same bounds as last time
