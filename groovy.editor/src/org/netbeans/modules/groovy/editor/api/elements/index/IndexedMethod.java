@@ -44,6 +44,7 @@
 package org.netbeans.modules.groovy.editor.api.elements.index;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -66,15 +67,12 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
     /** Deprecated? */
     /** Parenthesis or space delimited? */
 
-    public static enum MethodType { METHOD, ATTRIBUTE, DBCOLUMN };
-    
     protected final String signature;
     private String[] args;
     private String name;
     private List<String> parameters;
     private boolean smart;
     private boolean inherited; 
-    private MethodType methodType = MethodType.METHOD;
     private final String returnType;
     
     private IndexedMethod(String signature, String returnType, IndexResult result, String clz, String attributes, int flags) {
@@ -90,20 +88,13 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
 
         return m;
     }
-    
-    public MethodType getMethodType() {
-        return methodType;
-    }
-    
-    public void setMethodType(MethodType methodType) {
-        this.methodType = methodType;
-    }
 
     @Override
     public String toString() {
         return getSignature();
     }
 
+    @Override
     public String getName() {
         if (name == null) {
             int parenIndex = signature.indexOf('(');
@@ -143,16 +134,14 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
         return args;
     }
 
+    @Override
     public List<String> getParameters() {
         if (parameters == null) {
             String[] argArray = getArgs();
 
             if ((argArray != null) && (argArray.length > 0)) {
-                parameters = new ArrayList<String>(argArray.length);
-
-                for (String arg : argArray) {
-                    parameters.add(arg);
-                }
+                parameters = new ArrayList<>(argArray.length);
+                parameters.addAll(Arrays.asList(argArray));
             } else {
                 parameters = Collections.emptyList();
             }
@@ -161,10 +150,12 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
         return parameters;
     }
 
+    @Override
     public boolean isDeprecated() {
         return false;
     }
 
+    @Override
     public ElementKind getKind() {
         if (((name == null) && signature.startsWith("initialize(")) || // NOI18N
                 ((name != null) && name.equals("initialize"))) { // NOI18N
@@ -213,6 +204,7 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
         return hash;
     }
     
+    @Override
     public boolean isInherited() {
         return inherited;
     }
@@ -250,6 +242,7 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
         return attributes;
     }
 
+    @Override
     public boolean isTopLevel() {
         return false;
     }

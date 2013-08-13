@@ -50,7 +50,6 @@ import java.util.EnumSet;
 import java.util.Set;
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
@@ -104,13 +103,6 @@ public abstract class IndexedElement extends GroovyElement {
 
         return document;
     }
-
-// FIXME parsing API
-//    public ParserFile getFile() {
-//        boolean platform = false; // XXX FIND OUT WHAT IT IS!
-//
-//        return new DefaultParserFile(getFileObject(), null, platform);
-//    }
 
     @Override
     public FileObject getFileObject() {
@@ -177,8 +169,8 @@ public abstract class IndexedElement extends GroovyElement {
     
     /** Return flag corresponding to the given encoding chars */
     public static int stringToFlag(char first, char second) {
-        int high = 0;
-        int low = 0;
+        int high;
+        int low;
         if (first > '9') {
             high = first-'a'+10;
         } else {

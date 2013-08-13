@@ -31,7 +31,6 @@
 package org.netbeans.modules.groovy.editor.api.elements.index;
 
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 
@@ -71,6 +70,7 @@ public class IndexedField extends IndexedElement {
         this.smart = smart;
     }
 
+    @Override
     public ElementKind getKind() {
         return ElementKind.FIELD;
     }
@@ -80,6 +80,7 @@ public class IndexedField extends IndexedElement {
         return classFqn + "#" + name;
     }
 
+    @Override
     public String getName() {
         return name;
     }

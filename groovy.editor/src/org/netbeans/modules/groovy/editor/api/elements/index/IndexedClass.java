@@ -76,18 +76,22 @@ public final class IndexedClass extends IndexedElement implements IClassElement 
     }
 
     // XXX Is this necessary?
+    @Override
     public String getSignature() {
         return classFqn;
     }
 
+    @Override
     public String getName() {
         return simpleName;
     }
 
+    @Override
     public ElementKind getKind() {
         return (flags & MODULE) != 0 ? ElementKind.MODULE : ElementKind.CLASS;
     }
 
+    @Override
     public Set<String> getIncludes() {
         return null;
     }
@@ -119,6 +123,7 @@ public final class IndexedClass extends IndexedElement implements IClassElement 
         return sb.toString();
     }
 
+    @Override
     public String getFqn() {
         return classFqn;
     }
