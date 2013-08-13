@@ -101,7 +101,7 @@ public class TapParserTest extends NbTestCase {
         TestCaseVo testCase3 = testCases.get(2);
         assertEquals("nette-tester/tests/Greeting.test.phpt", testCase3.getName());
         assertEquals(TestCase.Status.FAILED, testCase3.getStatus());
-        assertEquals("Failed: 'Hello JohnX' should be 10", testCase3.getMessage());
+        assertEquals("'Hello JohnX' should be 10", testCase3.getMessage());
         assertEquals(Arrays.asList(
                 "in Tester/Framework/Assert.php(365)",
                 "in Tester/Framework/Assert.php(57) Tester\\Assert::fail()",
@@ -114,7 +114,7 @@ public class TapParserTest extends NbTestCase {
         TestCaseVo testCase4 = testCases.get(3);
         assertEquals("nette-tester/tests/Greeting2.test.phpt", testCase4.getName());
         assertEquals(TestCase.Status.FAILED, testCase4.getStatus());
-        assertEquals("Failed: 'Hello JohnX' should be 'Hello John'", testCase4.getMessage());
+        assertEquals("'Hello JohnX' should be 'Hello John'", testCase4.getMessage());
         TestCase.Diff diff = testCase4.getDiff();
         assertNotNull(diff);
         assertEquals(EXPECTED_CONTENT, diff.getExpected());
@@ -130,7 +130,7 @@ public class TapParserTest extends NbTestCase {
         TestCaseVo testCase5 = testCases.get(4);
         assertEquals("nette-tester/tests/Greeting3.test.phpt", testCase5.getName());
         assertEquals(TestCase.Status.FAILED, testCase5.getStatus());
-        assertEquals("Failed: InvalidArgumentException was expected, but none was thrown", testCase5.getMessage());
+        assertEquals("InvalidArgumentException was expected, but none was thrown", testCase5.getMessage());
         assertNull(testCase5.getDiff());
         assertEquals(Arrays.asList(
                 "in Tester/Framework/Assert.php(365)",
@@ -143,7 +143,7 @@ public class TapParserTest extends NbTestCase {
         TestCaseVo testCase6 = testCases.get(5);
         assertEquals("nette-tester/tests/Greeting4.test.phpt", testCase6.getName());
         assertEquals(TestCase.Status.FAILED, testCase6.getStatus());
-        assertEquals("Failed: E_NOTICE with a message matching 'Undefined property: Greeting::$abc' was expected"
+        assertEquals("E_NOTICE with a message matching 'Undefined property: Greeting::$abc' was expected"
                 + " but got 'Undefined property: Greeting::$say'", testCase6.getMessage());
         assertNull(testCase6.getDiff());
         assertEquals(Arrays.asList(

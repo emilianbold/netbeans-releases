@@ -57,11 +57,13 @@ public final class TapParser {
         NOT_OK,
     }
 
+    public static final Pattern FILE_LINE_PATTERN = Pattern.compile("in ([^(]+)\\((\\d+)\\).*"); // NOI18N
+
     private static final String OK_PREFIX = "ok "; // NOI18N
     private static final String NOT_OK_PREFIX = "not ok "; // NOI18N
+    private static final String FAILED_PREFIX = "Failed: "; // NOI18N
     private static final String SKIP_SUFFIX = " #skip"; // NOI18N
     private static final String HELLIP = "... "; // NOI18N
-    private static final Pattern FILE_LINE_PATTERN = Pattern.compile("in ([^(]+)\\((\\d+)\\).*"); // NOI18N
     private static final Pattern DIFF_LINE_PATTERN = Pattern.compile("diff \"([^\"]+)\" \"([^\"]+)\""); // NOI18N
 
     private final TestSuiteVo testSuite = new TestSuiteVo();
@@ -147,28 +149,30 @@ public final class TapParser {
         StringBuilder message = null;
         List<String> stackTrace = new ArrayList<>();
         while (!commentLines.isEmpty()) {
-            String firstLine = commentLines.get(0);
+            String line = commentLines.get(0);
             commentLines.remove(0);
-            if (firstLine.isEmpty()) {
+            if (line.isEmpty()) {
                 // ignore empty lines
-            } else if (FILE_LINE_PATTERN.matcher(firstLine).matches()) { // NOI18N
-                stackTrace.add(firstLine);
+            } else if (FILE_LINE_PATTERN.matcher(line).matches()) { // NOI18N
+                stackTrace.add(line);
                 stackTrace.addAll(processStackTrace(commentLines));
                 commentLines.clear();
-            } else if (firstLine.startsWith("diff \"")) { // NOI18N
-                processDiff(firstLine);
+            } else if (line.startsWith("diff \"")) { // NOI18N
+                processDiff(line);
             } else {
                 if (message == null) {
                     message = new StringBuilder(200);
                 }
                 if (message.length() > 0) {
                     // unfortunately, \n not supported in the ui
-                    if (firstLine.startsWith(HELLIP)) {
-                        firstLine = firstLine.substring(HELLIP.length());
+                    if (line.startsWith(HELLIP)) {
+                        line = line.substring(HELLIP.length());
                     }
                     message.append(" "); // NOI18N
+                } else if (line.startsWith(FAILED_PREFIX)) {
+                    line = line.substring(FAILED_PREFIX.length());
                 }
-                message.append(firstLine);
+                message.append(line);
             }
         }
         if (message != null) {
