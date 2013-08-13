@@ -46,6 +46,7 @@ import java.awt.event.ActionListener;
 import java.io.IOException;
 import javax.swing.JComponent;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.editor.tools.storage.api.ToolPreferences;
 import org.netbeans.spi.editor.hints.projects.ProjectSettings;
 import org.netbeans.spi.editor.hints.projects.support.StandardProjectSettings.Standard;
@@ -83,7 +84,7 @@ class ProjectCustomizer implements CompositeCategoryProvider {
 
     @Override
     public JComponent createComponent(Category category, Lookup context) {
-        Project prj = context.lookup(Project.class);
+        final Project prj = context.lookup(Project.class);
         
         assert prj != null;
         
@@ -91,7 +92,6 @@ class ProjectCustomizer implements CompositeCategoryProvider {
         
         final ToolPreferences[] toSave = new ToolPreferences[1];
         
-        //TODO: should rather use store listener to avoid touching disk in AWT
         category.setOkButtonListener(new ActionListener() {
             @Override public void actionPerformed(ActionEvent e) {
                 toSave[0] = settingsPanel.commit();
@@ -105,6 +105,8 @@ class ProjectCustomizer implements CompositeCategoryProvider {
                         toSave[0].save();
                         toSave[0] = null;
                     }
+                    
+                    ProjectManager.getDefault().saveProject(prj);
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 }

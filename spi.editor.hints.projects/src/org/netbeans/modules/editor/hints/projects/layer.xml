@@ -18,5 +18,21 @@
                 </file>
             </folder>
         </folder>
+        <folder name="org-netbeans-modules-maven">
+            <folder name="Lookup">
+                <file name="EditorHints.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.LookupProvider" />
+                    <attr name="instanceCreate" methodvalue="org.netbeans.spi.editor.hints.projects.support.StandardProjectSettings.createPreferencesBasedSettings" />
+                </file>
+            </folder>
+            <folder name="Customizer">
+                <file name="EditorHints.instance">
+                    <attr name="instanceOf" stringvalue="org.netbeans.spi.project.ui.support.ProjectCustomizer$CompositeCategoryProvider" />
+                    <attr name="instanceCreate" methodvalue="org.netbeans.spi.editor.hints.projects.support.StandardProjectSettings.createCustomizerProvider" />
+                    <attr intvalue="1100" name="position"/>
+                    <attr name="customizersFolder" stringvalue="Projects/hints/java-based" />
+                </file>
+            </folder>
+        </folder>
     </folder>
 </filesystem>

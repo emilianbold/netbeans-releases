@@ -45,11 +45,15 @@ import org.netbeans.spi.editor.hints.projects.PerProjectHintsPanel;
 import java.awt.BorderLayout;
 import java.awt.Component;
 import java.awt.Container;
+import java.io.File;
 import java.io.IOException;
 import java.util.logging.Logger;
+import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.editor.tools.storage.api.ToolPreferences;
+import org.netbeans.spi.editor.hints.projects.PerProjectHintsPanel.MimeType2Preferences;
+import org.netbeans.spi.editor.hints.projects.ProjectSettings;
 import org.netbeans.spi.editor.hints.projects.support.StandardProjectSettings.Standard;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -69,12 +73,13 @@ class ProjectHintSettingPanel extends javax.swing.JPanel {
     private final JComponent panelUI;
     private final Standard projectSettings;
     private       String settingsFileLocation;
-    private       ToolPreferences perProjectToolPreferences;
+    private       MimeType2Preferences perProjectPreferences;
+    private       ToolPreferences toolPreferences;
     
     public ProjectHintSettingPanel(final Standard projectSettings, String customizersFolderLocation) {
         this.projectSettings = projectSettings;
-        this.settingsFileLocation = projectSettings.getSettingsFileLocation();
-        this.perProjectToolPreferences = projectSettings.preferencesFrom(settingsFileLocation);
+        this.settingsFileLocation = projectSettings.hasLocation() ? projectSettings.getSettingsFileLocation() : null;
+        settingsFileLocationChanged();
         FileObject customizersFolder;
         
         try {
@@ -86,6 +91,7 @@ class ProjectHintSettingPanel extends javax.swing.JPanel {
 
         panel = PerProjectHintsPanel.create(customizersFolder);
         initComponents();
+        advanced.setVisible(projectSettings.hasLocation());
         if (projectSettings.getUseProjectSettings()) {
             useProjectSettings.setSelected(true);
         } else {
@@ -103,7 +109,7 @@ class ProjectHintSettingPanel extends javax.swing.JPanel {
         advanced.setEnabled(useProjectSettings.isSelected());
 
         if (useProjectSettings.isSelected()) {
-            panel.setPerProjectSettings(perProjectToolPreferences);
+            panel.setPerProjectSettings(perProjectPreferences);
         } else {
             panel.setGlobalSettings();
         }
@@ -120,9 +126,10 @@ class ProjectHintSettingPanel extends javax.swing.JPanel {
     
     public ToolPreferences commit() {
         projectSettings.setUseProjectSettings(useProjectSettings.isSelected());
-//        projectSettings.setSettingsFileLocation(new File(settingsFileLocation.getText()));
+        if (projectSettings.hasLocation())
+            projectSettings.setSettingsFileLocation(settingsFileLocation);
         panel.applyChanges();
-        return useProjectSettings.isSelected() ? perProjectToolPreferences : null;
+        return useProjectSettings.isSelected() && toolPreferences != null ? toolPreferences : null;
     }
     
     /**
@@ -231,7 +238,8 @@ class ProjectHintSettingPanel extends javax.swing.JPanel {
         DialogDescriptor dd = new DialogDescriptor(panel, Bundle.CAP_ProjectSpecificOptions(), true, DialogDescriptor.OK_CANCEL_OPTION, DialogDescriptor.OK_OPTION, null);
         
         if (DialogDisplayer.getDefault().notify(dd) == DialogDescriptor.OK_OPTION) {
-            this.perProjectToolPreferences = projectSettings.preferencesFrom(settingsFileLocation = panel.getHintFileLocation());
+            settingsFileLocation = panel.getHintFileLocation();
+            settingsFileLocationChanged();
             settingsOriginChanged();
         }
     }//GEN-LAST:event_advancedActionPerformed
@@ -240,6 +248,22 @@ class ProjectHintSettingPanel extends javax.swing.JPanel {
         OptionsDisplayer.getDefault().open("Editor/Hints");
     }//GEN-LAST:event_globalSettingsActionPerformed
 
+    private void settingsFileLocationChanged() {
+        if (projectSettings.hasLocation()) {
+            final ToolPreferences toolPreferencesFin = toolPreferences = projectSettings.preferencesFrom(settingsFileLocation);
+            perProjectPreferences = new MimeType2Preferences() {
+                @Override public Preferences getPreferences(String mimeType) {
+                    return toolPreferencesFin.getPreferences(ProjectSettings.HINTS_TOOL_ID, mimeType);
+                }
+            };
+        } else {
+            perProjectPreferences = new MimeType2Preferences() {
+                @Override public Preferences getPreferences(String mimeType) {
+                    return projectSettings.getProjectSettings(mimeType);
+                }
+            };
+        }
+    }
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton advanced;
     private javax.swing.JButton globalSettings;
