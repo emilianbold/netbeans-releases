@@ -142,11 +142,6 @@ public class JQueryModel {
         }
 
         @Override
-        public List<? extends TypeUsage> getWithTypesForOffset(int offset) {
-            return delegate.getWithTypesForOffset(offset);
-        }
-
-        @Override
         public Collection<? extends JsObject> getParameters() {
             return delegate.getParameters();
         }

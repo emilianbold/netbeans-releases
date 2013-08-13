@@ -16,6 +16,7 @@ CONSTRUCTO RegExp(pattern: String): RegEx  [PUBLIC]   JS Platform
 CONSTRUCTO String(): String                [PUBLIC]   JS Platform
 CONSTRUCTO XMLHttpRequest(): XMLHttpReque  [PUBLIC]   JS Platform
 CLASS      AbstractView                    [PUBLIC]   JS Platform
+CLASS      Arguments                       [PUBLIC]   JS Platform
 CLASS      Attr                            [PUBLIC]   JS Platform
 CLASS      CDATASection                    [PUBLIC]   JS Platform
 CLASS      CSS2Properties                  [PUBLIC]   JS Platform
