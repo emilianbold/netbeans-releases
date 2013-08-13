@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
@@ -253,8 +255,7 @@ public class WebXmlUpdater {
                     adaptorServlet.addInitParam(initParam);
                 } else {
                     if (restSupport.hasJersey2(true)) {
-                        throw new IllegalStateException("this should not be needed!"); //
-                        //adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS_2_0);
+                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS_2_0);
                     } else {
                         adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
                     }
