@@ -221,4 +221,8 @@ public class JsWithFastTest extends JsWithBase {
     public void testVarInWith_05() throws Exception {
         checkOccurrences("testfiles/with/varInWith01.js", "console.log(myDataVarI^nWith);", true); 
     }
+    
+    public void testVarInWith_06() throws Exception {
+        checkCompletion("testfiles/with/varInWith01.js", "console.log(myDataVarInWith.^kolik);", true); 
+    }
 }
