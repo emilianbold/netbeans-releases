@@ -59,9 +59,15 @@ public abstract class PageInspector {
     public static final String PROP_MODEL = "model"; // NOI18N
 
     /**
-     * Returns the default {@code PageInspector}.
+     * Returns the default {@code PageInspector}. This method can return <code>null</code>
+     * if no page inspector is registered. If your module cannot reasonably work without
+     * a real inspector, then it should request its presence by putting
+     * following into manifest:
+     * <pre>
+     * OpenIDE-Module-Needs: org.netbeans.modules.web.browser.api.PageInspector
+     * </pre>
      * 
-     * @return default {@code PageInspector}.
+     * @return default {@code PageInspector} or <code>null</code>
      */
     public static synchronized PageInspector getDefault() {
         if(DEFAULT == null) {
