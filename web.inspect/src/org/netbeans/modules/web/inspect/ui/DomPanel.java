@@ -324,18 +324,29 @@ public class DomPanel extends JPanel implements ExplorerManager.Provider {
         urlLabel.setOpaque(false);
         if (pageModel != null) {
             Lookup lookup = pageModel.getPageContext();
-            BrowserFamilyId id = lookup.lookup(BrowserFamilyId.class);
-            if (id != null) {
-                for (WebBrowser browser : WebBrowsers.getInstance().getAll(true, true, true, false)) {
-                    if (browser.hasNetBeansIntegration() && (id == browser.getBrowserFamily())) {
-                        Image image = browser.getIconImage(true);
-                        if (image != null) {
-                            Icon icon = new ImageIcon(image);
-                            urlLabel.setIcon(icon);
-                            break;
+            Image image = lookup.lookup(Image.class);
+            Icon icon;
+            if (image == null) {
+                icon = lookup.lookup(Icon.class);
+            } else {
+                icon = new ImageIcon(image);
+            }
+            if (icon == null) {
+                BrowserFamilyId id = lookup.lookup(BrowserFamilyId.class);
+                if (id != null) {
+                    for (WebBrowser browser : WebBrowsers.getInstance().getAll(true, true, true, false)) {
+                        if (browser.hasNetBeansIntegration() && (id == browser.getBrowserFamily())) {
+                            image = browser.getIconImage(true);
+                            if (image != null) {
+                                icon = new ImageIcon(image);
+                                break;
+                            }
                         }
                     }
                 }
+            }
+            if (icon != null) {
+                urlLabel.setIcon(icon);
             }
         }
     }
