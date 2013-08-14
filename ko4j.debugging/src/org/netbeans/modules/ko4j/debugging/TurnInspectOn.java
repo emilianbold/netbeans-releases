@@ -41,59 +41,49 @@
  */
 package org.netbeans.modules.ko4j.debugging;
 
-import java.io.IOException;
-import java.net.ServerSocket;
-import java.net.Socket;
-import org.netbeans.modules.web.browser.api.PageInspector;
-import org.netbeans.modules.web.webkit.debugging.api.WebKitDebugging;
-import org.netbeans.modules.web.webkit.debugging.spi.Factory;
-import org.openide.util.Exceptions;
-import org.openide.util.Lookup;
-import org.openide.util.lookup.Lookups;
+import java.lang.reflect.Method;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.modules.maven.api.execute.ExecutionContext;
+import org.netbeans.modules.maven.api.execute.LateBoundPrerequisitesChecker;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
  * 
  * @author Jan Stola
  */
-final class Server {
-    private static final Server INSTANCE = new Server();
-    private ServerSocket socket;
-
-    public static Server getInstance() {
-        return INSTANCE;
-    }
+@ProjectServiceProvider(
+    projectType = "org-netbeans-modules-maven",
+    service = LateBoundPrerequisitesChecker.class
+)
+public final class TurnInspectOn implements LateBoundPrerequisitesChecker {
+    private static final Logger LOG = Logger.getLogger(TurnInspectOn.class.getName());
     
-    public int acceptClient() {
-        ensureStarted();
-        Thread t = new Thread(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    Socket client = socket.accept();
-                    MessageDispatcherImpl dispatcher = new MessageDispatcherImpl();
-                    Transport transport = new Transport(client, dispatcher);
-                    WebKitDebugging webKit = Factory.createWebKitDebugging(transport);
-                    Lookup context = Lookups.fixed(transport, webKit, dispatcher);
-                    PageInspector.getDefault().inspectPage(context);
-                } catch (IOException ioex) {
-                    Exceptions.printStackTrace(ioex);
-                }
-            }
-        });
-        t.start();
-        return socket.getLocalPort();
+    @Override
+    public boolean checkRunConfig(RunConfig config, ExecutionContext con) {
+        if (
+            ("debug".equals(config.getActionName()) || "run".equals(config.getActionName()))
+            && isBootFXOn(config)
+        ) {
+            int port = Server.getInstance().acceptClient();
+            config.setProperty("netbeans.inspect.port", "" + port);
+        }
+        Object o = config.getActionName();
+        return true;
     }
 
-    private synchronized void ensureStarted() {
-        if (socket != null) {
-            return;
-        }
+    private static boolean isBootFXOn(RunConfig config) {
         try {
-            socket = new ServerSocket();
-            socket.bind(null);
-        } catch (IOException ioex) {
-            Exceptions.printStackTrace(ioex);
+            Method mpMethod = config.getClass().getMethod("getMavenProject");
+            Object mp = mpMethod.invoke(config);
+            Method artiMethod = mp.getClass().getMethod("getArtifacts");
+            Set s = (Set)artiMethod.invoke(mp);
+            return s.toString().contains("org.apidesign.html:boot-fx:");
+        } catch (Exception ex) {
+            LOG.log(Level.SEVERE, "Problems obtaining list of artifacts", ex);
         }
+        return false;
     }
-
 }
