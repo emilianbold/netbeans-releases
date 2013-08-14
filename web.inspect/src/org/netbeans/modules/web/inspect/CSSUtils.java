@@ -41,11 +41,17 @@
  */
 package org.netbeans.modules.web.inspect;
 
+import java.awt.EventQueue;
 import java.io.IOException;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.text.BadLocationException;
 import javax.swing.text.StyledDocument;
+import org.netbeans.modules.css.model.api.Model;
+import org.netbeans.modules.web.common.api.LexerUtils;
+import org.netbeans.modules.web.inspect.sourcemap.Mapping;
+import org.netbeans.modules.web.inspect.sourcemap.SourceMap;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.cookies.EditorCookie;
@@ -55,6 +61,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.text.Line;
 import org.openide.text.NbDocument;
+import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.UserQuestionException;
@@ -180,7 +187,7 @@ public class CSSUtils {
      * returns {@code false} otherwise.
      */
     public static boolean openAtOffset(FileObject fob, int offset) {
-        return openAt(fob, offset, true);
+        return openAt(fob, -1, offset);
     }
 
     /**
@@ -192,25 +199,38 @@ public class CSSUtils {
      * returns {@code false} otherwise.
      */
     public static boolean openAtLine(FileObject fob, int lineNo) {
-        return openAt(fob, lineNo, false);
+        return openAt(fob, lineNo, 0);
+    }
+
+    /**
+     * Opens the specified file at the given line and column.
+     * 
+     * @param fob file that should be opened.
+     * @param lineNo line where the caret should be placed.
+     * @param columnNo column where the caret should be placed.
+     * @return {@code true} when the file was opened successfully,
+     * returns {@code false} otherwise.
+     */
+    public static boolean openAtLineAndColumn(FileObject fob, int lineNo, int columnNo) {
+        return openAt(fob, lineNo, columnNo);
     }
 
     /**
      * Opens the specified file at the given position. The position is either
-     * offset (when {@code offset} is {@code true}) or line number otherwise.
+     * offset (when {@code lineNo} is -1) or line/column otherwise.
      * This method has been copied (with minor modifications) from UiUtils
      * class in csl.api module. This method is not CSS-specific. It was placed
      * into this file just because there was no better place.
      * 
      * @param fob file that should be opened.
-     * @param position position where the caret should be placed (either
-     * offset of line number).
-     * @param offset determines whether the {@code position} should be
-     * interpreted as offset or line number.
+     * @param lineNo line where the caret should be placed
+     * (or -1 when the {@code columnNo} represents an offset).
+     * @param columnNo column (or offset when {@code lineNo} is -1)
+     * where the caret should be placed.
      * @return {@code true} when the file was opened successfully,
      * returns {@code false} otherwise.
      */
-    private static boolean openAt(FileObject fob, int position, boolean offset) {
+    private static boolean openAt(FileObject fob, int lineNo, int columnNo) {
         try {
             DataObject dob = DataObject.find(fob);
             Lookup dobLookup = dob.getLookup();
@@ -218,7 +238,7 @@ public class CSSUtils {
             LineCookie lc = dobLookup.lookup(LineCookie.class);
             OpenCookie oc = dobLookup.lookup(OpenCookie.class);
 
-            if ((ec != null) && (lc != null) && (position != -1)) {
+            if ((ec != null) && (lc != null) && (columnNo != -1)) {
                 StyledDocument doc;
                 try {
                     doc = ec.openDocument();
@@ -238,8 +258,9 @@ public class CSSUtils {
                 }
 
                 if (doc != null) {
-                    int line = offset ? NbDocument.findLineNumber(doc, position) : position;
-                    int column = offset ? position - NbDocument.findLineOffset(doc, line) : 0;
+                    boolean offset = (lineNo == -1);
+                    int line = offset ? NbDocument.findLineNumber(doc, columnNo) : lineNo;
+                    int column = offset ? columnNo - NbDocument.findLineOffset(doc, line) : columnNo;
                     if (line != -1) {
                         Line l = lc.getLineSet().getCurrent(line);
                         if (l != null) {
@@ -358,6 +379,84 @@ public class CSSUtils {
     public static boolean isColorProperty(String propertyName) {
         // Simple heuristics
         return propertyName.contains("color"); // NOI18N
+    }
+
+    /**
+     * Jumps into the location given by a source map.
+     * 
+     * @param cssFile compiled CSS file.
+     * @param sourceModel source model corresponding to the CSS file.
+     * @param styleSheetText text of the style-sheet that corresponds to the CSS file.
+     * @param offset offset in the compiled CSS file.
+     * @return {@code true} if the file contains source map information
+     * and this information was used successfully to open the source file,
+     * returns {@code false} otherwise.
+     */
+    public static boolean goToSourceBySourceMap(FileObject cssFile, Model sourceModel, String styleSheetText, int offset) {
+        if (styleSheetText != null) {
+            String sourceMapPath = sourceMapPath(styleSheetText);
+            if (sourceMapPath != null) {
+                FileObject folder = cssFile.getParent();
+                FileObject sourceMapFob = folder.getFileObject(sourceMapPath);
+                if (sourceMapFob != null) {
+                    try {
+                        CharSequence modelSource = sourceModel.getModelSource();
+                        int line = LexerUtils.getLineOffset(modelSource, offset);
+                        int lineStartOffset = LexerUtils.getLineBeginningOffset(modelSource, line);
+                        int column = offset-lineStartOffset;
+                        String sourceMapText = sourceMapFob.asText();
+                        SourceMap sourceMap = new SourceMap(sourceMapText);
+                        final Mapping mapping = sourceMap.findMapping(line, column);
+                        if (mapping == null) {
+                            Logger.getLogger(CSSUtils.class.getName()).log(Level.INFO,
+                                "No mapping for line {0} and column {1}!", new Object[] {line, column}); // NOI18N
+                        } else {
+                            int sourceIndex = mapping.getSourceIndex();
+                            String sourcePath = sourceMap.getSourcePath(sourceIndex);
+                            folder = sourceMapFob.getParent();
+                            final FileObject source = folder.getFileObject(sourcePath);
+                            EventQueue.invokeLater(new Runnable() {
+                                @Override
+                                public void run() {
+                                    int line = mapping.getOriginalLine();
+                                    int column = mapping.getOriginalColumn();
+                                    CSSUtils.openAtLineAndColumn(source, line, column);
+                                }
+                            });
+                            return true;
+                        }
+                    } catch (IOException ioex) {
+                        Exceptions.printStackTrace(ioex);
+                    } catch (BadLocationException blex) {
+                        Logger.getLogger(CSSUtils.class.getName()).log(Level.INFO, null, blex);
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    /**
+     * Returns the path to the source map.
+     * 
+     * @param cssText text of some file.
+     * @return path to the source map or {@code null} if there is no source
+     * map information in the given text.
+     */
+    private static String sourceMapPath(String cssText) {
+        String result = null;
+        if (cssText != null) {
+            String sourceMapPrefix = "/*# sourceMappingURL="; // NOI18N
+            int index = cssText.lastIndexOf(sourceMapPrefix);
+            if (index != -1) {
+                cssText = cssText.substring(index+sourceMapPrefix.length());
+                index = cssText.indexOf("*/"); // NOI18N
+                if (index != -1) {
+                    result = cssText.substring(0, index).trim();
+                }
+            }
+        }
+        return result;
     }
 
 }
