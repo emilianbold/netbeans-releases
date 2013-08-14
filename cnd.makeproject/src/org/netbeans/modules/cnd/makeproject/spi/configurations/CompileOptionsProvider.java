@@ -43,6 +43,7 @@ package org.netbeans.modules.cnd.makeproject.spi.configurations;
 
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.openide.util.Lookup;
 
 /**
@@ -52,8 +53,8 @@ import org.openide.util.Lookup;
 public abstract class CompileOptionsProvider {
     private static CompileOptionsProvider DEFAULT = new Default();
 
-    public abstract void rename(MakeConfiguration makeConfiguration, String newName);
-    public abstract void remove(MakeConfiguration makeConfiguration);
+    public abstract void onRename(MakeConfigurationDescriptor cd, MakeConfiguration makeConfiguration, String newName);
+    public abstract void onRemove(MakeConfigurationDescriptor cd, MakeConfiguration makeConfiguration);
     public abstract AllOptionsProvider getOptions(Item item);
     
     protected CompileOptionsProvider() {
@@ -102,18 +103,18 @@ public abstract class CompileOptionsProvider {
         }
 
         @Override
-        public void rename(MakeConfiguration makeConfiguration, String newName) {
+        public void onRename(MakeConfigurationDescriptor cd, MakeConfiguration makeConfiguration, String newName) {
             CompileOptionsProvider service = getService();
             if (service != null) {
-                service.rename(makeConfiguration, newName);
+                service.onRename(cd, makeConfiguration, newName);
             }
         }
 
         @Override
-        public void remove(MakeConfiguration makeConfiguration) {
+        public void onRemove(MakeConfigurationDescriptor cd, MakeConfiguration makeConfiguration) {
             CompileOptionsProvider service = getService();
             if (service != null) {
-                service.remove(makeConfiguration);
+                service.onRemove(cd, makeConfiguration);
             }
         }
     }
