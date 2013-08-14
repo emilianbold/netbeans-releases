@@ -100,9 +100,9 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
             final IndexQueryImpl indexScopeQuery, final IndexResult indexResult) {
         String[] values = indexResult.getValues(IDX_FIELD);
         Set<ClassElement> retval = values.length > 0 ? new HashSet<ClassElement>() : Collections.<ClassElement>emptySet();
-
+        String url = indexResult.getUrl().toString();
         for (String val : values) {
-            final ClassElement clz = fromSignature(query, indexScopeQuery, indexResult, Signature.get(val));
+            final ClassElement clz = fromSignature(query, indexScopeQuery, url, Signature.get(val));
             if (clz != null) {
                 retval.add(clz);
             }
@@ -111,7 +111,7 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
     }
 
     private static ClassElement fromSignature(final NameKind query,
-            final IndexQueryImpl indexScopeQuery, final IndexResult indexResult, final Signature clsSignature) {
+            final IndexQueryImpl indexScopeQuery, final String url, final Signature clsSignature) {
         Parameters.notNull("query", query);
         ClassSignatureParser signParser = new ClassSignatureParser(clsSignature);
         ClassElement retval = null;
@@ -119,7 +119,7 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
             retval = new ClassElementImpl(signParser.getQualifiedName(), signParser.getOffset(),
                     signParser.getSuperClassName(), signParser.getPossibleFQSuperClassName(),
                     signParser.getSuperInterfaces(), signParser.getFQSuperInterfaces(), signParser.getFlags(),
-                    signParser.getUsedTraits(), indexResult.getUrl().toString(), indexScopeQuery,
+                    signParser.getUsedTraits(), url, indexScopeQuery,
                     signParser.isDeprecated());
         }
         return retval;

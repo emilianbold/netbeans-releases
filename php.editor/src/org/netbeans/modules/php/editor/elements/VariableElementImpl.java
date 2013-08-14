@@ -123,9 +123,9 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<VariableElement> retval = values.length > 0
                 ? new HashSet<VariableElement>() : Collections.<VariableElement>emptySet();
-
+        String url = indexResult.getUrl().toString();
         for (final String val : values) {
-            final VariableElement var = fromSignature(query, indexQuery, indexResult, Signature.get(val));
+            final VariableElement var = fromSignature(query, indexQuery, url, Signature.get(val));
             if (var != null) {
                 retval.add(var);
             }
@@ -134,12 +134,12 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
     }
 
     public static VariableElement fromSignature(final NameKind query,
-            final IndexQueryImpl indexScopeQuery, final IndexResult indexResult, final Signature sig) {
+            final IndexQueryImpl indexScopeQuery, final String url, final Signature sig) {
         final VariableSignatureParser signParser = new VariableSignatureParser(sig);
         VariableElement retval = null;
         if (matchesQuery(query, signParser)) {
             retval = new VariableElementImpl(signParser.getVariableName(),
-                    signParser.getOffset(), indexResult.getUrl().toString(),
+                    signParser.getOffset(), url,
                     indexScopeQuery, signParser.getTypes(), signParser.getFQTypes(),
                     signParser.isDeprecated());
         }

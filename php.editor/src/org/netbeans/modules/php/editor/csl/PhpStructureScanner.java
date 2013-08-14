@@ -49,6 +49,7 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.project.api.PhpAnnotations;
 
 /**
  *
@@ -61,9 +62,13 @@ public class PhpStructureScanner implements StructureScanner {
         List<? extends StructureItem> result = Collections.<StructureItem>emptyList();
         if (info instanceof PHPParseResult) {
             PHPParseResult phpParseResult = (PHPParseResult) info;
-            result = NavigatorScanner.create(phpParseResult.getModel()).scan();
+            result = NavigatorScanner.create(phpParseResult.getModel(), isResolveDeprecatedElements()).scan();
         }
         return result;
+    }
+
+    protected boolean isResolveDeprecatedElements() {
+        return PhpAnnotations.getDefault().isResolveDeprecatedElements();
     }
 
     @Override
