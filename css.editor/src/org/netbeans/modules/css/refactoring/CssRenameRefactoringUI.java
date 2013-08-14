@@ -69,7 +69,7 @@ public class CssRenameRefactoringUI implements RefactoringUI, RefactoringUIBypas
     public CssRenameRefactoringUI(CssElementContext context) {
 	this.context = context;
         this.extraInfo = new CssRefactoringExtraInfo();
-        Collection<Object> lookupContent = new ArrayList<Object>();
+        Collection<Object> lookupContent = new ArrayList<>();
         lookupContent.add(context);
         lookupContent.add(extraInfo);
         if(context instanceof CssElementContext.File ||

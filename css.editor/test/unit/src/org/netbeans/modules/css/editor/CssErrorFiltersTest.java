@@ -45,7 +45,6 @@ import javax.swing.text.BadLocationException;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.NodeUtil;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**

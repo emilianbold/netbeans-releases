@@ -54,7 +54,7 @@ import org.netbeans.spi.project.ProjectConfigurationProvider;
 import org.openide.util.Exceptions;
 
 /**
- * PhoneGap pseudo browser
+ * Cordova pseudo browser
  * @author Jan Becicka
  */
 public class EnhancedBrowserImpl implements ClientProjectEnhancedBrowserImplementation {

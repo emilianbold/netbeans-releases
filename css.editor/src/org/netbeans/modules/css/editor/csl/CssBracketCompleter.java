@@ -43,238 +43,22 @@ package org.netbeans.modules.css.editor.csl;
 
 import java.util.ArrayList;
 import java.util.List;
-import javax.swing.SwingUtilities;
 import javax.swing.text.BadLocationException;
-import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
-import javax.swing.text.Position;
-import org.netbeans.api.lexer.Language;
-import org.netbeans.api.lexer.LanguagePath;
-import org.netbeans.api.lexer.Token;
-import org.netbeans.api.lexer.TokenHierarchy;
-import org.netbeans.api.lexer.TokenId;
-import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.editor.BaseDocument;
-import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.KeystrokeHandler;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.lib.api.CssParserResult;
-import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.modules.parsing.api.Snapshot;
-import org.netbeans.modules.web.indent.api.LexUtilities;
 
 /**
  *
  * @author marek.fukala@sun.com
  */
 public class CssBracketCompleter implements KeystrokeHandler {
-
-    private static final char[][] PAIRS = new char[][]{{'{', '}'}, {'"', '"'}, {'\'', '\''}}; //NOI18N
-    private char justAddedPair;
-    private int justAddedPairOffset = -1;
-
-    private int pairIndex(char ch) {
-        for (int i = 0; i < PAIRS.length; i++) {
-            char pair = PAIRS[i][0];
-            if (pair == ch) {
-                return i;
-            }
-        }
-        return -1;
-    }
-
-    @Override
-    public boolean beforeCharInserted(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
-        Caret caret = target.getCaret();
-
-        if (justAddedPair == ch && justAddedPairOffset == dot) {
-            //skip
-            justAddedPair = 0;
-            justAddedPairOffset = -1;
-            caret.setDot(dot + 1);
-            return true;
-        }
-
-        justAddedPair = 0;
-        justAddedPairOffset = -1;
-
-        if (ch == '}') {
-            //handle curly bracket skipping
-            //if there is a matching opening bracket and there is no opened unpaired bracket before
-            //then just skip the typed char
-            TokenSequence<CssTokenId> ts = getCssTokenSequence(doc, dot, true);
-            if (ts != null) {
-                ts.move(dot);
-                if (ts.moveNext()) {
-                    //ts is already positioned
-                    if (ts.token().id() == CssTokenId.RBRACE) {
-                        //skip it
-                        caret.setDot(dot + 1);
-                        return true;
-                    }
-                }
-            }
-        }
-
-        //test if we care about the typed character
-        int pairIdx = pairIndex(ch);
-        if (pairIdx == -1) {
-            return false;
-        }
-
-        if (target.getSelectionStart() != dot) {
-            /** @todo implement the adding quotes around selected text
-             */
-            return false;
-        }
-
-
-        if (ch == '\'' || ch == '"') {
-            //handle quotations
-
-            //issue 189711 workaround - if the css code is embedde in html attribute value
-            //and user types " at the end of the value additional quotation is incorrectly
-            //added: <div id="myid| + " => <div id="myid""
-            //
-            //we need to check if the actuall css code is embedded in an attribute
-            //value w/o depending on the html module. An SPI in web.common could do it as well
-            TokenHierarchy<Document> hi = TokenHierarchy.get(doc);
-            if(findHtmlValueToken(hi, dot)) {
-                //we are in a css value, do not complete the quote
-                return false;
-            }
-            
-            TokenSequence<CssTokenId> ts = getCssTokenSequence(doc, dot, true);
-            if (ts != null) {
-                int diff = ts.move(dot);
-                if (ts.moveNext()) {
-                    Token t = ts.token();
-                    if (t.id() == CssTokenId.STRING) {
-                        //we are in or at a string
-                        char front = t.text().charAt(diff);
-                        if (front == ch) {
-                            //do not insert, just move caret
-                            caret.setDot(dot + 1);
-                            return true;
-                        } else {
-                            //do nothing
-                            return false;
-                        }
-                    }
-                }
-
-                //cover "text| and user types "
-                //in such case just the quotation should be added
-
-                //go back until we find " or ; { or } and test of the 
-                //found quotation is a part of a string or not
-                ts.move(dot);
-                while (ts.movePrevious()) {
-                    Token t = ts.token();
-                    if (t.text().charAt(0) == ch) {
-                        if (t.id() == CssTokenId.STRING) {
-                            //no unmatched quotation mark
-                            break;
-                        } else {
-                            //found unmatched quotation mark - do nothing
-                            return false;
-                        }
-                    }
-                    if (t.id() == CssTokenId.LBRACE || t.id() == CssTokenId.RBRACE || t.id() == CssTokenId.SEMI) {
-                        //break the loop, not quotation found - we can complete
-                        break;
-                    }
-                }
-            }
-        }
-
-        justAddedPair = PAIRS[pairIdx][1];
-        justAddedPairOffset = dot + 1;
-
-        doc.insertString(dot, String.valueOf(PAIRS[pairIdx][0]), null);
-        doc.insertString(dot + 1, String.valueOf(justAddedPair), null);
-        caret.setDot(dot + 1);
-        return true;
-
-    }
-    
-    private static boolean findHtmlValueToken(TokenHierarchy<?> hi, int offset)  {
-        boolean found = findHtmlValueToken(hi, offset, true);
-        return found ? true : findHtmlValueToken(hi, offset, false);
-    }
-    
-    private static boolean findHtmlValueToken(TokenHierarchy<?> hi, int offset, boolean backward)  {
-        List<TokenSequence<?>> embeddedTokenSequences = hi.embeddedTokenSequences(offset, backward);
-        for(TokenSequence<?> htmlts : embeddedTokenSequences) {
-            if(htmlts.language().mimeType().equals("text/html")) {
-                 //it relly looks like our parent ts
-                int ediff = htmlts.move(offset);
-                if (ediff == 0 && backward && htmlts.movePrevious() || htmlts.moveNext()) {
-                    TokenId id = htmlts.token().id();
-                    //XXX !!!! DEPENDENCY to HtmlTokenId !!!!
-                    return id.name().equals("VALUE_CSS");
-                }
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public boolean afterCharInserted(Document doc, final int caretOffset, JTextComponent target, char ch) throws BadLocationException {
-        if ('}' != ch) {
-            return false;
-        }
-        final int lineStart = Utilities.getRowFirstNonWhite((BaseDocument) doc, caretOffset);
-        if (lineStart != caretOffset) {
-            return false;
-        }
-
-        reindentLater((BaseDocument) doc, caretOffset, caretOffset);
-
-        return false;
-    }
-
-    @Override
-    public boolean charBackspaced(Document doc, int dot, JTextComponent target, char ch) throws BadLocationException {
-        if (justAddedPairOffset - 1 == dot) {
-            //removed the paired char, remove the pair as well
-            doc.remove(dot, 1);
-        }
-
-        justAddedPair = 0;
-        justAddedPairOffset = -1;
-
-        return false;
-
-    }
-
-    @Override
-    public int beforeBreak(final Document doc, final int dot, final JTextComponent jtc) throws BadLocationException {
-        if (dot == 0 || dot == doc.getLength()) { //check corners
-            return -1;
-        }
-        String context = doc.getText(dot - 1, 2); //get char before and after
-
-        if ("{}".equals(context)) { //NOI18N
-            BaseDocument bdoc = (BaseDocument) doc;
-
-            //smart indent
-            doc.insertString(dot, "\n", null); //NOI18N
-            //move caret
-            jtc.getCaret().setDot(dot);
-            //and indent the line
-            reindentLater(bdoc, dot - 1, dot + 2);
-
-        }
-
-        return -1;
-
-    }
 
     @Override
     public OffsetRange findMatching(Document doc, int caretOffset) {
@@ -284,7 +68,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
 
     @Override
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
-        ArrayList<OffsetRange> ranges = new ArrayList<OffsetRange>(2);
+        ArrayList<OffsetRange> ranges = new ArrayList<>(2);
 
         Node root = ((CssParserResult) info).getParseTree();
         Snapshot snapshot = info.getSnapshot();
@@ -328,102 +112,29 @@ public class CssBracketCompleter implements KeystrokeHandler {
     }
 
     @Override
+    public boolean beforeCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+        return false;
+    }
+
+    @Override
+    public boolean afterCharInserted(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+        return false;
+    }
+
+    @Override
+    public boolean charBackspaced(Document doc, int caretOffset, JTextComponent target, char ch) throws BadLocationException {
+        return false;
+    }
+
+    @Override
+    public int beforeBreak(Document doc, int caretOffset, JTextComponent target) throws BadLocationException {
+        return -1;
+    }
+
+    @Override
     public int getNextWordOffset(Document doc, int caretOffset, boolean reverse) {
         return -1;
     }
-    public static boolean unitTestingSupport = false;
 
-    //since the code runs under document atomic lock, we cannot lock the
-    //indentation infrastructure directly. Instead of that create a new
-    //AWT task and post it for later execution.
-    private void reindentLater(final BaseDocument doc, int start, int end) throws BadLocationException {
-        final Position from = doc.createPosition(Utilities.getRowStart(doc, start));
-        final Position to = doc.createPosition(Utilities.getRowEnd(doc, end));
-        Runnable rn = new Runnable() {
-
-            @Override
-            public void run() {
-                final Indent indent = Indent.get(doc);
-                indent.lock();
-                try {
-                    doc.runAtomic(new Runnable() {
-
-                        @Override
-                        public void run() {
-                            try {
-                                indent.reindent(from.getOffset(), to.getOffset());
-                            } catch (BadLocationException ex) {
-                                //ignore
-                            }
-                        }
-                    });
-                } finally {
-                    indent.unlock();
-                }
-            }
-        };
-        if (unitTestingSupport) {
-            rn.run();
-        } else {
-            SwingUtilities.invokeLater(rn);
-        }
-    }
-
-    private static TokenSequence<CssTokenId> getCssTokenSequence(Document doc, int offset, boolean checkBoundaries) {
-        TokenHierarchy hi = TokenHierarchy.get(doc);
-
-        //if we are at the border of the tokensequence then,
-        //try to look ahead
-        TokenSequence<CssTokenId> ts = tokenSequenceList(hi, offset, false);
-
-        //and back
-        if (ts == null) {
-            ts = tokenSequenceList(hi, offset, true);
-        }
-
-        if (ts == null) {
-            //token sequence neither in forward nor in backward direction, give up
-            return null;
-        }
-
-        //check boundaries of the token sequence - if the skip lenghts are used the token 
-        //sequence is returned even for offsets outside of the tokenSequence content
-
-        if(checkBoundaries) {
-            //test beginning
-            ts.moveStart();
-            if (ts.moveNext()) {
-                if (ts.offset() > offset) {
-                    return null;
-                }
-            }
-
-            //test end
-            ts.moveEnd();
-            if (ts.movePrevious()) {
-                if (ts.offset() + ts.token().length() < offset) {
-                    return null;
-                }
-            }
-        }
-
-        //seems to be ok
-        return ts;
-
-
-    }
-
-    @SuppressWarnings("unchecked")
-    private static TokenSequence<CssTokenId> tokenSequenceList(TokenHierarchy hi, int offset, boolean backwardBias) {
-        List<TokenSequence> tsl = hi.embeddedTokenSequences(offset, backwardBias);
-        if (tsl.size() > 0) {
-            TokenSequence ts = tsl.get(tsl.size() - 1);
-            if (ts.language() != CssTokenId.language()) {
-                return null;
-            } else {
-                return (TokenSequence<CssTokenId>) ts;
-            }
-        }
-        return null;
-    }
+   
 }

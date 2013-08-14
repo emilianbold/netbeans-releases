@@ -58,7 +58,7 @@ public class ModulesPropertyDefinitionProvider implements PropertyDefinitionProv
 
     @Override
     public Collection<String> getPropertyNames(FileObject context) {
-        Collection<String> all = new ArrayList<String>();
+        Collection<String> all = new ArrayList<>();
         for (CssEditorModule module : CssModuleSupport.getModules()) {
             all.addAll(module.getPropertyNames(context));
         }

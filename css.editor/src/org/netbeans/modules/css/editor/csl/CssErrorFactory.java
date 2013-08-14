@@ -42,7 +42,6 @@
 package org.netbeans.modules.css.editor.csl;
 
 import java.util.Arrays;
-import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.Severity;
 import org.netbeans.modules.csl.spi.DefaultError;
 import org.netbeans.modules.css.lib.api.FilterableError;

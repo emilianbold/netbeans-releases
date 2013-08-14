@@ -284,7 +284,7 @@ public class CssActionsImplementationProvider extends ActionsImplementationProvi
 
         @Override
         public void run(ResultIterator resultIterator) throws Exception {
-            Collection<CssParserResult> results = new ArrayList<CssParserResult>();
+            Collection<CssParserResult> results = new ArrayList<>();
             Snapshot snapshot = resultIterator.getSnapshot();
             try {
                 if ("text/css".equals(snapshot.getMimeType())) { //NOI18N

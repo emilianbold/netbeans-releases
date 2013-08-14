@@ -57,6 +57,7 @@ import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
@@ -82,6 +83,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
@@ -414,6 +416,7 @@ public class OptionsDisplayerImpl {
         private OptionsPanel        optionsPanel;
         private JButton             bOK;
         private JButton             bAPPLY;
+        private HelpCtx helpCtx = HelpCtx.DEFAULT_HELP;
         
         
         OptionsPanelListener (
@@ -428,16 +431,21 @@ public class OptionsDisplayerImpl {
             this.bAPPLY = bAPPLY;
         }
         
+        @NbBundle.Messages({"Loading_HelpCtx_Lengthy_Operation=Please wait while help context is being loaded."})
+        @Override
         public void propertyChange (PropertyChangeEvent ev) {
-            if (ev.getPropertyName ().equals ("buran" + OptionsPanelController.PROP_HELP_CTX)) {               //NOI18N            
-                RequestProcessor RP = new RequestProcessor("Loading Help Context Off EDT", 1); // NOI18N
-                RequestProcessor.Task loadHelpCtxTask = RP.create(new Runnable() {
+            if (ev.getPropertyName ().equals ("buran" + OptionsPanelController.PROP_HELP_CTX)) {               //NOI18N
+                AtomicBoolean helpCtxLoadingCancelled = new AtomicBoolean(false);
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
                     @Override
                     public void run() {
-                        descriptor.setHelpCtx(optionsPanel.getHelpCtx());
+                        helpCtx = optionsPanel.getHelpCtx();
                     }
-                });
-                loadHelpCtxTask.schedule(0);
+                }, Bundle.Loading_HelpCtx_Lengthy_Operation(), helpCtxLoadingCancelled, false, 50, 5000);
+                if(helpCtxLoadingCancelled.get()) {
+                    log.fine("Options Dialog - HelpCtx loading cancelled by user."); //NOI18N
+                }
+                descriptor.setHelpCtx(helpCtx);
             } else if (ev.getPropertyName ().equals ("buran" + OptionsPanelController.PROP_VALID)) {                  //NOI18N            
                 bOK.setEnabled (optionsPanel.dataValid ());
 		bAPPLY.setEnabled (optionsPanel.dataValid());

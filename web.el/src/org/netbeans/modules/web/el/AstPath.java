@@ -57,7 +57,7 @@ import org.openide.util.Parameters;
  */
 public final class AstPath {
 
-    private final List<Node> nodes = new ArrayList<Node>();
+    private final List<Node> nodes = new ArrayList<>();
     private final Node root;
 
     public AstPath(Node root) {
@@ -85,7 +85,7 @@ public final class AstPath {
     }
 
     public List<Node> leafToRoot() {
-        List<Node> copy = new ArrayList<Node>(nodes);
+        List<Node> copy = new ArrayList<>(nodes);
         Collections.reverse(copy);
         return copy;
     }
@@ -95,7 +95,7 @@ public final class AstPath {
     }
 
     public List<Node> rootToNode(Node target, boolean inclusive) {
-        List<Node> result = new ArrayList<Node>();
+        List<Node> result = new ArrayList<>();
         for (Node each : nodes) {
             if (equalsNodes(each, target)) {
                 if (inclusive) {

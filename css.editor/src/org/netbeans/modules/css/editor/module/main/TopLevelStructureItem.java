@@ -133,7 +133,7 @@ public abstract class TopLevelStructureItem implements StructureItem {
 
         @Override
         public List<? extends StructureItem> getNestedItems() {
-            return new ArrayList<StructureItem>(items);
+            return new ArrayList<>(items);
         }
     }
 

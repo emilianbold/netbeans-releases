@@ -386,6 +386,7 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         public static final String LIBRARIES_FOLDER = "LIBRARIES_FOLDER"; // NOI18N
         public static final String LIBRARIES_PATH = "LIBRARIES_PATH";
         public static final String LIBRARY_NAMES = "LIBRARY_NAMES"; // NOI18N
+        public static final String SITE_ROOT = "SITE_ROOT"; // NOI18N
         
         private boolean withExtenders;
 
@@ -425,10 +426,11 @@ public final class ClientSideProjectWizardIterator implements WizardDescriptor.P
         @Override
         public FileObject instantiate(Set<FileObject> files, ProgressHandle handle, WizardDescriptor wizardDescriptor, ClientSideProject project) throws IOException {
             AntProjectHelper projectHelper = project.getProjectHelper();
+            String customSiteRoot = (String) wizardDescriptor.getProperty(SITE_ROOT);
             // site template
             SiteTemplateImplementation siteTemplate = (SiteTemplateImplementation) wizardDescriptor.getProperty(SITE_TEMPLATE);
             ProjectProperties projectProperties = new ProjectProperties()
-                    .setSiteRootFolder(ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER)
+                    .setSiteRootFolder(customSiteRoot!=null?customSiteRoot:ClientSideProjectConstants.DEFAULT_SITE_ROOT_FOLDER)
                     .setTestFolder(ClientSideProjectConstants.DEFAULT_TEST_FOLDER)
                     .setConfigFolder(ClientSideProjectConstants.DEFAULT_CONFIG_FOLDER);
             if (siteTemplate != null) {

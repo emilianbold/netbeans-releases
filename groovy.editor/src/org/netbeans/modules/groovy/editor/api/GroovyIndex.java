@@ -52,10 +52,12 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedField;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
@@ -94,10 +96,32 @@ public final class GroovyIndex {
             return EMPTY;
         }
     }
-    
-    public Set<IndexedClass> getClasses(String name, final QuerySupport.Kind kind, boolean includeAll,
-        boolean skipClasses, boolean skipModules) {
-        return getClasses(name, kind, includeAll, skipClasses, skipModules, null);
+
+    /**
+     * Returns all {@link IndexedClass}es that are located in the given package.
+     *
+     * @param packageName package name for which we want to get {@link IndexedClass}es
+     * @return all {@link IndexedClass}es that are located in the given package
+     */
+    public Set<IndexedClass> getClassesFromPackage(String packageName) {
+        Set<IndexedClass> result = new HashSet<>();
+
+        for (IndexedClass indexedClass : getAllClasses()) {
+            String pkgName = GroovyUtils.getPackageName(indexedClass.getFqn());
+            if (packageName.equals(pkgName)) {
+                result.add(indexedClass);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all available {@link IndexedClass}es.
+     *
+     * @return all available {@link IndexedClass}es
+     */
+    public Set<IndexedClass> getAllClasses() {
+        return getClasses(".*", QuerySupport.Kind.REGEXP);
     }
 
     /**
@@ -109,8 +133,7 @@ public final class GroovyIndex {
      * @param includeAll If true, return multiple IndexedClasses for the same logical
      *   class, one for each declaration point.
      */
-    public Set<IndexedClass> getClasses(String name, final QuerySupport.Kind kind, boolean includeAll,
-        boolean skipClasses, boolean skipModules, Set<String> uniqueClasses) {
+    public Set<IndexedClass> getClasses(String name, final QuerySupport.Kind kind) {
         String classFqn = null;
 
         if (name != null) {
@@ -144,13 +167,6 @@ public final class GroovyIndex {
         }
 
         search(field, name, kind, result);
-
-        // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
-        if (includeAll) {
-            uniqueClasses = null;
-        } else if (uniqueClasses == null) {
-            uniqueClasses = new HashSet<>();
-        }
 
         final Set<IndexedClass> classes = new HashSet<>();
 
@@ -221,22 +237,7 @@ public final class GroovyIndex {
                 isClass = (flags & IndexedClass.MODULE) == 0;
             }
 
-            if (skipClasses && isClass) {
-                continue;
-            }
-
-            if (skipModules && !isClass) {
-                continue;
-            }
-
             String fqn = map.getValue(GroovyIndexer.FQN_NAME);
-
-            // Only return a single instance for this signature
-            if (!includeAll) {
-                if (!uniqueClasses.contains(fqn)) { // use a map to point right to the class
-                    uniqueClasses.add(fqn);
-                }
-            }
 
             classes.add(createClass(fqn, simpleName, map));
         }
@@ -341,6 +342,24 @@ public final class GroovyIndex {
      */
     public Set<IndexedField> getAllFields(final String fqName) {
         return getFields(".*", fqName, QuerySupport.Kind.REGEXP); // NOI18N
+    }
+
+    /**
+     * Gets all static fields for the given fully qualified name.
+     *
+     * @param fqName fully qualified name
+     * @return all static fields for the given type
+     */
+    public Set<IndexedField> getStaticFields(final String fqName) {
+        Set<IndexedField> fields = getFields(".*", fqName, QuerySupport.Kind.REGEXP); // NOI18N
+        Set<IndexedField> staticFields = new HashSet<>();
+
+        for (IndexedField field : fields) {
+            if (field.getModifiers().contains(Modifier.STATIC)) {
+                staticFields.add(field);
+            }
+        }
+        return staticFields;
     }
 
     public Set<IndexedField> getFields(final String name, final String clz, QuerySupport.Kind kind) {
@@ -534,8 +553,7 @@ public final class GroovyIndex {
             flags = IndexedElement.stringToFlag(attrs, 0);
         }
 
-        IndexedClass c =
-            IndexedClass.create(this, simpleName, fqn, map, attrs, flags);
+        IndexedClass c = IndexedClass.create(simpleName, fqn, map, attrs, flags);
 
         return c;
     }
@@ -578,7 +596,7 @@ public final class GroovyIndex {
             }
         }
 
-        IndexedMethod m = IndexedMethod.create(this, methodSignature, type, clz, map, attributes, flags);
+        IndexedMethod m = IndexedMethod.create(methodSignature, type, clz, map, attributes, flags);
 
         m.setInherited(inherited);
         return m;
@@ -623,8 +641,7 @@ public final class GroovyIndex {
             //signature = signature.substring(0, attributeIndex);
         }
 
-        IndexedField m =
-            IndexedField.create(this, name, type, clz, map, attributes, flags);
+        IndexedField m = IndexedField.create(type, name, clz, map, attributes, flags);
         m.setInherited(inherited);
 
         return m;

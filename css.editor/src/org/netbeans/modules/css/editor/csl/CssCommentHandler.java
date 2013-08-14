@@ -86,7 +86,7 @@ public class CssCommentHandler extends CommentHandler.DefaultCommentHandler {
     }
 
     public int[] getCommentBlocks(final Document doc, final int from, final int to) {
-        final ArrayList<Integer> comments = new ArrayList<Integer>();
+        final ArrayList<Integer> comments = new ArrayList<>();
 
         Runnable task = new Runnable() {
 

@@ -47,6 +47,7 @@ package org.netbeans.modules.j2ee.weblogic9;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.HttpURLConnection;
+import java.net.Proxy;
 import java.net.URL;
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
@@ -57,6 +58,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.modules.j2ee.weblogic9.deploy.WLDeploymentManager;
 
 /**
  * Utility class.
@@ -77,20 +79,20 @@ public final class URLWait {
      *
      * @return true if non error response was obtained
      */
-    public static boolean waitForUrlReady(ExecutorService service, URL url, int timeout) {
+    public static boolean waitForUrlReady(WLDeploymentManager dm, ExecutorService service, URL url, int timeout) {
         String host = url.getHost();
         try {
             InetAddress.getByName(host);
         } catch (UnknownHostException e) {
             return false;
         }
-        return waitForUrlConnection(service, url, timeout, 100);
+        return waitForUrlConnection(dm, service, url, timeout, 100);
     }
 
-    private static boolean waitForUrlConnection(ExecutorService service,
+    private static boolean waitForUrlConnection(WLDeploymentManager dm, ExecutorService service,
             URL url, int timeout, int retryTime) {
 
-        Connect connect = new Connect(url, retryTime);
+        Connect connect = new Connect(dm, url, retryTime);
         Future<Boolean> task = service.submit(connect);
 
         try {
@@ -107,13 +109,16 @@ public final class URLWait {
 
     private static class Connect implements Callable<Boolean> {
 
+        private final WLDeploymentManager dm;
+
         private final URL url;
 
         private final int retryTime;
 
         private final String host;
 
-        public Connect(URL url, int retryTime) {
+        public Connect(WLDeploymentManager dm, URL url, int retryTime) {
+            this.dm = dm;
             this.url = url;
             this.retryTime = retryTime;
             host = url.getHost();
@@ -135,17 +140,31 @@ public final class URLWait {
                 }
 
                 try {
-                    con = (HttpURLConnection) url.openConnection();
+                    if (dm.isProxyMisconfigured()) {
+                        con = (HttpURLConnection) url.openConnection(Proxy.NO_PROXY);
+                    } else {
+                        con = (HttpURLConnection) url.openConnection();
+                    }
                     int code = con.getResponseCode();
-                    boolean error = (code == -1)
-                            // with no index page we will get 403 - FORBIDDEN
-                            // so we handle it as "something is running there"
-                            // as opposed to 404
-                            || (code > 399 && code < 600 && code != 403);
-                    if (!error) {
-                        return Boolean.TRUE;
+                    if (code == HttpURLConnection.HTTP_BAD_GATEWAY) {
+                        dm.setProxyMisconfigured(true);
+                    } else {
+                        boolean error = (code == -1)
+                                // with no index page we will get 403 - FORBIDDEN
+                                // so we handle it as "something is running there"
+                                // as opposed to 404
+                                || (code > 399 && code < 600 && code != 403);
+                        if (!error) {
+                            return Boolean.TRUE;
+                        }
                     }
                 } catch (IOException ioe) {
+                    // try without proxy in next loop
+                    if (ioe.getMessage() != null && ioe.getMessage().contains(Integer.toString(HttpURLConnection.HTTP_BAD_GATEWAY))) {
+                        dm.setProxyMisconfigured(true);
+                    } else {
+                        dm.setProxyMisconfigured(false);
+                    }
                     LOGGER.log(Level.FINE, null, ioe);
                 } finally {
                     if (con != null) {

@@ -202,9 +202,10 @@ public class AndroidBrowser extends HtmlBrowser.Impl implements EnhancedBrowser{
 
                 device.openUrl(url.toExternalForm());
 
-                if (Browser.CHROME.getName().equals(b.getName())) {
+                final Project project = context.lookup(Project.class);
+                if (Browser.CHROME.getName().equals(b.getName()) && project != null) {
                     try {
-                        build.startDebugging(device, context.lookup(Project.class), new ProxyLookup(context, Lookups.fixed(BrowserFamilyId.ANDROID, url)), false);
+                        build.startDebugging(device, project, new ProxyLookup(context, Lookups.fixed(BrowserFamilyId.ANDROID, url)), false);
                     } catch (IllegalStateException ex) {
                         LOGGER.log(Level.INFO, ex.getMessage(), ex);
                         SwingUtilities.invokeLater(new Runnable() {

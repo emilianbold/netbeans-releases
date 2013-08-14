@@ -41,19 +41,11 @@
  */
 package org.netbeans.modules.css.editor;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
-import org.netbeans.modules.csl.api.CompletionProposal;
-import org.netbeans.modules.csl.api.Error;
 import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.api.Severity;
-import org.netbeans.modules.css.editor.csl.CssErrorFactory;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.Browser;
-import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.ProblemDescription;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;

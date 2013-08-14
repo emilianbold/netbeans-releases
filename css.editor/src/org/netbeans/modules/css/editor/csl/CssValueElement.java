@@ -42,8 +42,8 @@
 
 package org.netbeans.modules.css.editor.csl;
 
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.GrammarElement;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 
 /**
  * Represents CSS property value. Just one item in case of multivalues e.g. background: red 1px; 

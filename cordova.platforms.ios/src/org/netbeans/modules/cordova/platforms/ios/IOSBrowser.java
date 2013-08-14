@@ -153,13 +153,18 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
         this.url = url;
         final IOSDevice dev = kind == Kind.IOS_DEVICE_DEFAULT ? IOSDevice.CONNECTED : IOSDevice.IPHONE;
         dev.openUrl(url.toExternalForm());
+        final Project project = projectContext.lookup(Project.class);
+        if (project==null) {
+            //dont start debugging session for non project files
+            return;
+        }
         
         ProgressUtils.runOffEventDispatchThread(new Runnable() {
             @Override
             public void run() {
                 if (kind == Kind.IOS_DEVICE_DEFAULT) {
                     try {
-                        build.startDebugging(dev, projectContext.lookup(Project.class), new ProxyLookup(projectContext, Lookups.fixed(BrowserFamilyId.IOS, url)), true);
+                        build.startDebugging(dev, project, new ProxyLookup(projectContext, Lookups.fixed(BrowserFamilyId.IOS, url)), true);
                     } catch (IllegalStateException ise) {
                         build.stopDebugging(true);
                         SwingUtilities.invokeLater(new Runnable() {
@@ -177,7 +182,7 @@ public class IOSBrowser extends HtmlBrowser.Impl implements EnhancedBrowser {
                         });
                     }
                 } else {
-                    build.startDebugging(dev, projectContext.lookup(Project.class), new ProxyLookup(projectContext, Lookups.fixed(BrowserFamilyId.IOS, url)), false);
+                    build.startDebugging(dev, project, new ProxyLookup(projectContext, Lookups.fixed(BrowserFamilyId.IOS, url)), false);
                 }
             }
         }, kind == Kind.IOS_DEVICE_DEFAULT ? Bundle.LBL_OpeningiOS() : Bundle.LBL_Opening(), new AtomicBoolean(), false);

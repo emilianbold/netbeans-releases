@@ -100,7 +100,7 @@ public class ELDeclarationFinder implements DeclarationFinder {
         final FileObject file = DataLoadersBridge.getDefault().getFileObject(doc);
         final ClasspathInfo cp = ClasspathInfo.create(file);
         final RefsHolder refs = new RefsHolder();
-        final List<AlternativeLocation> alternatives = new ArrayList<AlternativeLocation>();
+        final List<AlternativeLocation> alternatives = new ArrayList<>();
         try {
             JavaSource.create(cp).runUserActionTask(new Task<CompilationController>() {
                 @Override
@@ -162,7 +162,7 @@ public class ELDeclarationFinder implements DeclarationFinder {
 
     @Override
     public OffsetRange getReferenceSpan(final Document doc, final int caretOffset) {
-        final AtomicReference<OffsetRange> ret = new AtomicReference<OffsetRange>(OffsetRange.NONE);
+        final AtomicReference<OffsetRange> ret = new AtomicReference<>(OffsetRange.NONE);
         doc.render(new Runnable() {
             @Override
             public void run() {

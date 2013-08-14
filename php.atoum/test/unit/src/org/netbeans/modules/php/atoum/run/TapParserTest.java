@@ -172,6 +172,23 @@ public class TapParserTest extends NbTestCase {
         assertEquals(100L, testCase10.getTime());
     }
 
+    public void testParseIssue233908() throws Exception {
+        List<TestSuiteVo> suites = new TapParser()
+                .parse(getFileContent("atoum-tap-233908.log"), 100L);
+        assertEquals(1, suites.size());
+        TestCaseVo testCase = suites.get(0).getTestCases().get(0);
+        assertEquals("testPlus", testCase.getName());
+        assertEquals(TestCase.Status.FAILED, testCase.getStatus());
+        assertEquals("integer(2) is not equal to integer(3)", testCase.getMessage());
+        assertNotNull(testCase.getDiff());
+        assertEquals("int(3)", testCase.getDiff().getExpected());
+        assertEquals("int(2)", testCase.getDiff().getActual());
+        assertEquals("/home/gapon/NetBeansProjects/Calculator-atoum/test/Calculator.php", testCase.getFile());
+        assertEquals(62, testCase.getLine());
+        assertEquals(100L, testCase.getTime());
+    }
+
+
     private String getFileContent(String filePath) throws IOException {
         File file = new File(getDataDir(), filePath);
         assertTrue(file.getAbsolutePath(), file.isFile());

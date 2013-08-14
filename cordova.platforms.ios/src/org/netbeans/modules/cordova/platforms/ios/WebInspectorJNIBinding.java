@@ -56,6 +56,8 @@ public class WebInspectorJNIBinding {
 
     private native void nsendMessage(String xml);
     
+    private native boolean nisDeviceConnected();
+
     private transient int started = 0;
     
     private static WebInspectorJNIBinding instance;
@@ -107,5 +109,9 @@ public class WebInspectorJNIBinding {
             return;
         }
         nsendMessage(message);
+    }
+    
+    public boolean isDeviceConnected() {
+        return nisDeviceConnected();
     }
 }

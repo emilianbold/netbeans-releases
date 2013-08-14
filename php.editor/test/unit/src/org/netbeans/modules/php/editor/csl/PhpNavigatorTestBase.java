@@ -41,13 +41,13 @@
  */
 package org.netbeans.modules.php.editor.csl;
 
-import org.netbeans.modules.php.editor.csl.PhpStructureScanner;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.StructureItem;
+import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
@@ -74,8 +74,14 @@ public abstract class PhpNavigatorTestBase extends ParserTestBase {
 
         Source testSource = getTestSource(testFile);
 
-        final PhpStructureScanner instance = new PhpStructureScanner();
-        final List<StructureItem> result = new ArrayList<StructureItem>();
+        final PhpStructureScanner instance = new PhpStructureScanner() {
+
+            @Override
+            protected boolean isResolveDeprecatedElements() {
+                return true;
+            }
+        };
+        final List<StructureItem> result = new ArrayList<>();
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
 
             @Override

@@ -122,7 +122,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
 
     @Override
     public int[] getHyperlinkSpan(final Document doc, final int offset, HyperlinkType type) {
-        final AtomicReference<int[]> ret = new AtomicReference<int[]>();
+        final AtomicReference<int[]> ret = new AtomicReference<>();
         doc.render(new Runnable() {
 
             @Override
@@ -225,7 +225,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
      * @return the node and the ELElement containing it or null.
      */
     protected static Pair<Node, ELElement> resolveNodeAndElement(final Document doc, final int offset, final AtomicBoolean cancel) {
-        final List<Pair<Node,ELElement>> result = new ArrayList<Pair<Node,ELElement>>(1);
+        final List<Pair<Node,ELElement>> result = new ArrayList<>(1);
         Source source = Source.create(doc);
         try {
             ParserManager.parse(Collections.singletonList(source), new UserTask() {
@@ -266,7 +266,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
         }
         final FileObject file = DataLoadersBridge.getDefault().getFileObject(doc);
         ClasspathInfo cp = ClasspathInfo.create(file);
-        final AtomicReference<ElementHandle<Element>> handleRef = new AtomicReference<ElementHandle<Element>>();
+        final AtomicReference<ElementHandle<Element>> handleRef = new AtomicReference<>();
         try {
             JavaSource.create(cp).runUserActionTask(new Task<CompilationController>() {
 

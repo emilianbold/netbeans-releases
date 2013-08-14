@@ -271,7 +271,10 @@ public class SiteTemplateWizard extends JPanel {
         "# {0} - template name",
         "SiteTemplateWizard.template.preparing=Preparing template \"{0}\" for first usage...",
         "# {0} - template name",
-        "SiteTemplateWizard.error.preparing=Cannot prepare template \"{0}\" (see IDE log for more details)."
+        "SiteTemplateWizard.error.preparing=Cannot prepare template \"{0}\" (see IDE log for more details).",
+        "# {0} - template name",
+        "# {1} - custom error",
+        "SiteTemplateWizard.error.preparing.custom=Cannot prepare template \"{0}\". {1}"
     })
     public String prepareTemplate() {
         assert !EventQueue.isDispatchThread();
@@ -303,6 +306,9 @@ public class SiteTemplateWizard extends JPanel {
         } catch (IOException ex) {
             LOGGER.log(Level.INFO, null, ex);
             return Bundle.SiteTemplateWizard_error_preparing(templateName);
+        } catch (IllegalStateException ex) {
+            LOGGER.log(Level.INFO, null, ex);
+            return Bundle.SiteTemplateWizard_error_preparing_custom(templateName, ex.getMessage());
         } finally {
             progressHandle.finish();
         }

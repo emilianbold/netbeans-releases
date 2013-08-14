@@ -54,7 +54,7 @@ import java.util.logging.Logger;
  */
 public class URLRetriever {
     
-    private static final WeakHashMap<String, String> PAGES_CACHE = new WeakHashMap<String, String>();
+    private static final WeakHashMap<String, String> PAGES_CACHE = new WeakHashMap<>();
     
     public static String getURLContentAndCache(URL url) {
         //strip off the anchor url part
@@ -64,18 +64,18 @@ public class URLRetriever {
         String file_content = PAGES_CACHE.get(path);
         if (file_content == null) {
             try {
-                InputStream is = url.openStream();
-                byte buffer[] = new byte[8096];
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                int count = 0;
-                do {
-                    count = is.read(buffer);
-                    if (count > 0) {
-                        baos.write(buffer, 0, count);
-                    }
-                } while (count > 0);
-
-                is.close();
+                ByteArrayOutputStream baos;
+                try (InputStream is = url.openStream()) {
+                    byte buffer[] = new byte[8096];
+                    baos = new ByteArrayOutputStream();
+                    int count = 0;
+                    do {
+                        count = is.read(buffer);
+                        if (count > 0) {
+                            baos.write(buffer, 0, count);
+                        }
+                    } while (count > 0);
+                }
                 file_content = baos.toString("UTF-8"); //NOI18N
                 baos.close();
             } catch (java.io.IOException e) {

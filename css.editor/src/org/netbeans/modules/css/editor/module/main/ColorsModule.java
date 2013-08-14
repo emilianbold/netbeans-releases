@@ -43,13 +43,10 @@ package org.netbeans.modules.css.editor.module.main;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import org.netbeans.modules.css.lib.api.CssColor;
 import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
+import org.netbeans.modules.css.lib.api.CssColor;
 import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
-import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
@@ -110,7 +107,7 @@ public class ColorsModule extends ExtCssEditorModule implements CssModule {
 
     @Override
     public Collection<String> getPropertyNames(FileObject file) {
-        Collection<String> names = new ArrayList<String>(super.getPropertyNames(file));
+        Collection<String> names = new ArrayList<>(super.getPropertyNames(file));
         names.add(COLOR_LIST_PROPERTY_NAME);
         return names;
     }

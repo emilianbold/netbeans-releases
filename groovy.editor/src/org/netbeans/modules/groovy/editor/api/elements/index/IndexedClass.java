@@ -46,7 +46,6 @@ package org.netbeans.modules.groovy.editor.api.elements.index;
 
 import java.util.Set;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.elements.common.IClassElement;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
@@ -64,30 +63,34 @@ public final class IndexedClass extends IndexedElement implements IClassElement 
 
     private final String simpleName;
 
-    protected IndexedClass(GroovyIndex index, IndexResult result, String fqn, String simpleName, String attributes, int flags) {
-        super(index, result, fqn, attributes, flags);
+    protected IndexedClass(IndexResult result, String fqn, String simpleName, String attributes, int flags) {
+        super(result, fqn, attributes, flags);
         this.simpleName = simpleName;
     }
 
-    public static IndexedClass create(GroovyIndex index, String simpleName, String fqn, IndexResult result,
+    public static IndexedClass create(String simpleName, String fqn, IndexResult result,
         String attributes, int flags) {
-        IndexedClass c = new IndexedClass(index, result, fqn, simpleName, attributes, flags);
+        IndexedClass c = new IndexedClass(result, fqn, simpleName, attributes, flags);
         return c;
     }
 
     // XXX Is this necessary?
+    @Override
     public String getSignature() {
         return classFqn;
     }
 
+    @Override
     public String getName() {
         return simpleName;
     }
 
+    @Override
     public ElementKind getKind() {
         return (flags & MODULE) != 0 ? ElementKind.MODULE : ElementKind.CLASS;
     }
 
+    @Override
     public Set<String> getIncludes() {
         return null;
     }
@@ -104,21 +107,8 @@ public final class IndexedClass extends IndexedElement implements IClassElement 
     public int hashCode() {
         return classFqn == null ? super.hashCode() : classFqn.hashCode();
     }
-    
-    public static String decodeFlags(int flags) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(IndexedElement.decodeFlags(flags));
 
-        if ((flags & MODULE) != 0) {
-            sb.append("|MODULE");
-        }
-        if (sb.length() > 0) {
-            sb.append("|");
-        }
-        
-        return sb.toString();
-    }
-
+    @Override
     public String getFqn() {
         return classFqn;
     }

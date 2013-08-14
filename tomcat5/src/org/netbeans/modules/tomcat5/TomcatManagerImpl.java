@@ -70,6 +70,7 @@ import org.netbeans.modules.tomcat5.progress.Status;
 import org.openide.util.RequestProcessor;
 import org.openide.util.NbBundle;
 import java.io.*;
+import java.net.Proxy;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.tomcat5.util.TomcatProperties;
@@ -510,7 +511,7 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
         InputStreamReader reader = null;
         
         URL urlToConnectTo = null;
-        
+
         boolean failed = false;
         String msg = null;
         while (retries >= 0) {
@@ -527,7 +528,11 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     Logger.getLogger(TomcatManagerImpl.class.getName()).log(Level.FINE, null, new Exception(message));
                 }
 
-                conn = urlToConnectTo.openConnection();
+                if (tm.isMisconfiguredProxy()) {
+                    conn = urlToConnectTo.openConnection(Proxy.NO_PROXY);
+                } else {
+                    conn = urlToConnectTo.openConnection();
+                }
                 HttpURLConnection hconn = (HttpURLConnection) conn;
 
                 // Set up standard connection characteristics
@@ -561,6 +566,8 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     String errMsg = NbBundle.getMessage(TomcatManagerImpl.class, "MSG_AuthorizationFailed");
                     pes.fireHandleProgressEvent (null, new Status (ActionType.EXECUTE, cmdType, errMsg, StateType.FAILED));
                     return;
+                } else if (respCode == HttpURLConnection.HTTP_BAD_GATEWAY) {
+                    throw new IOException(Integer.toString(respCode));
                 }
                 if (Boolean.getBoolean("org.netbeans.modules.tomcat5.LogManagerCommands")) { // NOI18N
                     int code = hconn.getResponseCode();
@@ -634,6 +641,13 @@ public class TomcatManagerImpl implements ProgressObject, Runnable {
                     msg = buff.toString();
                 }
             } catch (Exception e) {
+                if (e instanceof IOException && e.getMessage() != null
+                        && e.getMessage().contains(Integer.toString(HttpURLConnection.HTTP_BAD_GATEWAY))) {
+                    tm.setMisconfiguredProxy(true);
+                    LOGGER.log(Level.INFO, "Proxy is misconfigured for localhost");
+                } else if (tm.isMisconfiguredProxy()) {
+                    tm.setMisconfiguredProxy(false);
+                }
                 if (retries < 0) {
                     LOGGER.log(Level.INFO, "TomcatManagerImpl connecting to: " + urlToConnectTo, e); // NOI18N
                     pes.fireHandleProgressEvent (tmId, new Status (ActionType.EXECUTE, cmdType, e.getLocalizedMessage (), StateType.FAILED));

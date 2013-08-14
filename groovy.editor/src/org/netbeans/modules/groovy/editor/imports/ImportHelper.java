@@ -186,7 +186,7 @@ public final class ImportHelper {
         final GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(fo,
                 Collections.singleton(ClassPath.SOURCE), null, null));
 
-        Set<IndexedClass> classes = index.getClasses(missingClass, QuerySupport.Kind.PREFIX, true, false, false);
+        Set<IndexedClass> classes = index.getClasses(missingClass, QuerySupport.Kind.PREFIX);
         for (IndexedClass indexedClass : classes) {
             if (!indexedClass.getName().equals(missingClass)) {
                 continue;
