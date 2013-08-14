@@ -78,7 +78,7 @@ public class TesterOptionsPanelController extends OptionsPanelController impleme
     public void update() {
         assert EventQueue.isDispatchThread();
         getPanel().setTesterPath(getTesterOptions().getTesterPath());
-        changed = true;
+        changed = false;
     }
 
     @Override
@@ -94,7 +94,6 @@ public class TesterOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void cancel() {
-        changed = false;
     }
 
     @Override
@@ -147,7 +146,8 @@ public class TesterOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public void stateChanged(ChangeEvent e) {
-        if (changed) {
+        if (!changed) {
+            changed = true;
             propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
