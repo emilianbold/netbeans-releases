@@ -486,15 +486,25 @@ public abstract class RemoteFileObjectBase {
         }
     }
 
-    protected void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    protected void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop, 
+            boolean expected, RefreshMode refreshMode)
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
     }
-    
-    protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {        
+
+    public static enum RefreshMode {
+        /** is called because its parent refresh() was called with recursive == true */
+        FROM_PARENT,
+        //FROM_REFRESH_MANAGER,
+        /** other cases */
+        DEFAULT
+    }
+
+    protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
     }
 
     /*package*/ void nonRecursiveRefresh() {
         try {
-            refreshImpl(false, null, true);
+            refreshImpl(false, null, true, RefreshMode.DEFAULT);
         } catch (ConnectException ex) {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {
@@ -510,7 +520,7 @@ public abstract class RemoteFileObjectBase {
 
     public final void refresh(boolean expected) {
         try {
-            refreshImpl(true, null, expected);
+            refreshImpl(true, null, expected, RefreshMode.DEFAULT);
         } catch (ConnectException ex) {
             RemoteLogger.finest(ex, this);
         } catch (IOException ex) {

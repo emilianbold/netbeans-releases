@@ -445,10 +445,12 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
-        if (Boolean.valueOf(System.getProperty("cnd.remote.refresh.plain.file", "true"))) { //NOI18N
+    protected void refreshImpl(boolean recursive, Set<String> antiLoop, 
+    boolean expected, RefreshMode refreshMode)
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+        if (refreshMode != RefreshMode.FROM_PARENT && Boolean.valueOf(System.getProperty("cnd.remote.refresh.plain.file", "true"))) { //NOI18N
             long time = System.currentTimeMillis();
-            getParent().refreshImpl(false, antiLoop, expected);
+            getParent().refreshImpl(false, antiLoop, expected, refreshMode);
             RemoteLogger.getInstance().log(Level.FINE, "Refreshing {0} took {1} ms", new Object[] { getPath(), System.currentTimeMillis() - time });
         }
     }

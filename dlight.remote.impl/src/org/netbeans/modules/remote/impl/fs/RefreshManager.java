@@ -97,7 +97,7 @@ public class RefreshManager {
                    set.remove(fo);
                 }
                 try {
-                    fo.refreshImpl(false, null, expected);
+                    fo.refreshImpl(false, null, expected, RemoteFileObjectBase.RefreshMode.DEFAULT);
                 } catch (ConnectException ex) {
                     clear();
                     break;

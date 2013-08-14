@@ -255,8 +255,8 @@ public final class FindComponentModules {
                     }
                     Set<UpdateElement> reqs = inf.getRequiredElements ();
                     for (UpdateElement ue : reqs) {
-                        if (ocForEnable.canBeAdded(el.getUpdateUnit(), ue)) {
-                            ocForEnable.add(el.getUpdateUnit(), ue);
+                        if (ocForEnable.canBeAdded(ue.getUpdateUnit(), ue)) {
+                            ocForEnable.add(ue.getUpdateUnit(), ue);
                         }
                     }
 //                    Set<String> breaks = inf.getBrokenDependencies ();
