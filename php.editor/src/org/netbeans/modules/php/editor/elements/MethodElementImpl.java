@@ -150,9 +150,9 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<MethodElement> retval = values.length > 0
                 ? new HashSet<MethodElement>() : Collections.<MethodElement>emptySet();
-
+        String url = indexResult.getUrl().toString();
         for (String val : values) {
-            final MethodElement method = fromSignature(type, query, indexQuery, indexResult, Signature.get(val));
+            final MethodElement method = fromSignature(type, query, indexQuery, url, Signature.get(val));
             if (method != null) {
                 retval.add(method);
             }
@@ -161,13 +161,13 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
     }
 
     private static MethodElement fromSignature(final TypeElement type, final NameKind query,
-            final IndexQueryImpl indexScopeQuery, final IndexResult indexResult, final Signature sig) {
+            final IndexQueryImpl indexScopeQuery, final String url, final Signature sig) {
         Parameters.notNull("NameKind query: can't be null", query);
         final MethodSignatureParser signParser = new MethodSignatureParser(sig);
         MethodElement retval = null;
         if (matchesQuery(query, signParser)) {
             retval = new MethodElementImpl(type, signParser.getMethodName(), false,
-                    signParser.getOffset(), signParser.getFlags(), indexResult.getUrl().toString(),
+                    signParser.getOffset(), signParser.getFlags(), url,
                     indexScopeQuery, new ParametersFromSignature(signParser), new ReturnTypesFromSignature(signParser), signParser.isDeprecated());
         }
         return retval;

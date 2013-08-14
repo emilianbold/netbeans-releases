@@ -64,30 +64,34 @@ public final class IndexedClass extends IndexedElement implements IClassElement 
 
     private final String simpleName;
 
-    protected IndexedClass(GroovyIndex index, IndexResult result, String fqn, String simpleName, String attributes, int flags) {
-        super(index, result, fqn, attributes, flags);
+    protected IndexedClass(IndexResult result, String fqn, String simpleName, String attributes, int flags) {
+        super(result, fqn, attributes, flags);
         this.simpleName = simpleName;
     }
 
     public static IndexedClass create(GroovyIndex index, String simpleName, String fqn, IndexResult result,
         String attributes, int flags) {
-        IndexedClass c = new IndexedClass(index, result, fqn, simpleName, attributes, flags);
+        IndexedClass c = new IndexedClass(result, fqn, simpleName, attributes, flags);
         return c;
     }
 
     // XXX Is this necessary?
+    @Override
     public String getSignature() {
         return classFqn;
     }
 
+    @Override
     public String getName() {
         return simpleName;
     }
 
+    @Override
     public ElementKind getKind() {
         return (flags & MODULE) != 0 ? ElementKind.MODULE : ElementKind.CLASS;
     }
 
+    @Override
     public Set<String> getIncludes() {
         return null;
     }
@@ -119,6 +123,7 @@ public final class IndexedClass extends IndexedElement implements IClassElement 
         return sb.toString();
     }
 
+    @Override
     public String getFqn() {
         return classFqn;
     }

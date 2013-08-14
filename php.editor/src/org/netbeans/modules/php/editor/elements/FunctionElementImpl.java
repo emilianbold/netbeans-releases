@@ -92,9 +92,9 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
             final NameKind query, final IndexQueryImpl indexQuery, final IndexResult indexResult) {
         String[] values = indexResult.getValues(IDX_FIELD);
         Set<FunctionElement> retval = values.length > 0 ? new HashSet<FunctionElement>() : Collections.<FunctionElement>emptySet();
-
+        String url = indexResult.getUrl().toString();
         for (String val : values) {
-            final FunctionElement fnc = fromSignature(query, indexQuery, indexResult, Signature.get(val));
+            final FunctionElement fnc = fromSignature(query, indexQuery, url, Signature.get(val));
             if (fnc != null) {
                 retval.add(fnc);
             }
@@ -102,13 +102,13 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
         return retval;
     }
 
-    public static FunctionElement fromSignature(final NameKind query, IndexQueryImpl indexScopeQuery, IndexResult indexResult, Signature sig) {
+    public static FunctionElement fromSignature(final NameKind query, IndexQueryImpl indexScopeQuery, String url, Signature sig) {
         Parameters.notNull("NameKind query: can't be null", query);
         FunctionSignatureParser signParser = new FunctionSignatureParser(sig);
         FunctionElement retval = null;
         if (matchesQuery(query, signParser)) {
             retval = new FunctionElementImpl(signParser.getQualifiedName(),
-                    signParser.getOffset(), indexResult.getUrl().toString(),
+                    signParser.getOffset(), url,
                     indexScopeQuery,  new ParametersFromSignature(signParser), new ReturnTypesFromSignature(signParser),
                     signParser.isDeprecated());
         }

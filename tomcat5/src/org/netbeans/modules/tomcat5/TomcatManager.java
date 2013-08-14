@@ -133,6 +133,8 @@ public class TomcatManager implements DeploymentManager {
     
     private boolean needsRestart;
 
+    private boolean misconfiguredProxy;
+
     /** Creates an instance of connected TomcatManager
      * @param conn <CODE>true</CODE> to create connected manager
      * @param uri URI for DeploymentManager
@@ -174,6 +176,14 @@ public class TomcatManager implements DeploymentManager {
     
     public synchronized boolean getNeedsRestart() {
         return needsRestart;
+    }
+
+    public synchronized boolean isMisconfiguredProxy() {
+        return misconfiguredProxy;
+    }
+
+    public synchronized void setMisconfiguredProxy(boolean misconfiguredProxy) {
+        this.misconfiguredProxy = misconfiguredProxy;
     }
 
     /**

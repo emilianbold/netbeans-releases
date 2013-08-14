@@ -91,7 +91,7 @@ public final class TraitElementImpl extends TypeElementImpl implements TraitElem
         return fromSignature(NameKind.empty(), indexScopeQuery, indexResult);
     }
 
-    private static TraitElement fromSignature(NameKind query, IndexQueryImpl indexScopeQuery, IndexResult indexResult, Signature signature) {
+    private static TraitElement fromSignature(NameKind query, IndexQueryImpl indexScopeQuery, String url, Signature signature) {
         Parameters.notNull("query", query); //NOI18N
         TraitSignatureParser signParser = new TraitSignatureParser(signature);
         TraitElement retval = null;
@@ -100,7 +100,7 @@ public final class TraitElementImpl extends TypeElementImpl implements TraitElem
                     signParser.getQualifiedName(),
                     signParser.getOffset(),
                     signParser.getUsedTraits(),
-                    indexResult.getUrl().toString(),
+                    url,
                     indexScopeQuery,
                     signParser.isDeprecated());
         }
@@ -110,8 +110,9 @@ public final class TraitElementImpl extends TypeElementImpl implements TraitElem
     public static Set<TraitElement> fromSignature(final NameKind query, final IndexQueryImpl indexScopeQuery, final IndexResult indexResult) {
         String[] values = indexResult.getValues(IDX_FIELD);
         Set<TraitElement> retval = values.length > 0 ? new HashSet<TraitElement>() : Collections.<TraitElement>emptySet();
+        String url = indexResult.getUrl().toString();
         for (String val : values) {
-            final TraitElement trait = fromSignature(query, indexScopeQuery, indexResult, Signature.get(val));
+            final TraitElement trait = fromSignature(query, indexScopeQuery, url, Signature.get(val));
             if (trait != null) {
                 retval.add(trait);
             }

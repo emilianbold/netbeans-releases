@@ -89,9 +89,9 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<TypeConstantElement> retval = values.length > 0
                 ? new HashSet<TypeConstantElement>() : Collections.<TypeConstantElement>emptySet();
-
+        String url = indexResult.getUrl().toString();
         for (final String val : values) {
-            final TypeConstantElement constant = fromSignature(type, query, indexScopeQuery, indexResult, Signature.get(val));
+            final TypeConstantElement constant = fromSignature(type, query, indexScopeQuery, url, Signature.get(val));
             if (constant != null) {
                 retval.add(constant);
             }
@@ -100,7 +100,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
     }
 
     private static TypeConstantElement fromSignature(final TypeElement type, final NameKind query,
-            final IndexQueryImpl indexScopeQuery, final IndexResult indexResult, final Signature signature) {
+            final IndexQueryImpl indexScopeQuery, final String url, final Signature signature) {
         final ConstantSignatureParser signParser = new ConstantSignatureParser(signature);
         TypeConstantElement retval = null;
         if (matchesQuery(query, signParser)) {
@@ -109,7 +109,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
                     signParser.getConstantName(),
                     signParser.getValue(),
                     signParser.getOffset(),
-                    indexResult.getUrl().toString(),
+                    url,
                     indexScopeQuery,
                     signParser.isDeprecated());
         }

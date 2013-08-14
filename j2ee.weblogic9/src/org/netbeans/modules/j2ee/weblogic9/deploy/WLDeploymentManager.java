@@ -156,6 +156,9 @@ public class WLDeploymentManager implements DeploymentManager2 {
     /* GuardedBy("this") */
     private boolean initialized;
 
+    /* GuardedBy("this") */
+    private boolean proxyMisconfigured;
+
     public WLDeploymentManager(String uri, String host, String port,
             boolean disconnected, WLSharedState mutableState) {
         this.uri = uri;
@@ -201,7 +204,15 @@ public class WLDeploymentManager implements DeploymentManager2 {
     public synchronized Version getDomainVersion() {
         init();
         return domainVersion;
-    }    
+    }
+
+    public synchronized boolean isProxyMisconfigured() {
+        return proxyMisconfigured;
+    }
+
+    public synchronized void setProxyMisconfigured(boolean proxyMisconfigured) {
+        this.proxyMisconfigured = proxyMisconfigured;
+    }
 
     /**
      * Returns the InstanceProperties object for the current server instance.

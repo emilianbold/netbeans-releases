@@ -91,13 +91,15 @@ public final class NavigatorScanner {
     private final FileScope fileScope;
     private final Set<TypeElement> deprecatedTypes;
 
-    public static NavigatorScanner create(Model model) {
-        return new NavigatorScanner(model);
+    public static NavigatorScanner create(Model model, boolean resolveDeprecatedElements) {
+        return new NavigatorScanner(model, resolveDeprecatedElements);
     }
 
-    private NavigatorScanner(Model model) {
+    private NavigatorScanner(Model model, boolean resolveDeprecatedElements) {
         fileScope = model.getFileScope();
-        deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
+        deprecatedTypes = resolveDeprecatedElements
+                ? ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()))
+                : Collections.<TypeElement>emptySet();
     }
 
     public List<? extends StructureItem> scan() {
