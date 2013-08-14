@@ -58,7 +58,7 @@ import org.netbeans.junit.NbModuleSuite;
  */
 public class NavigateTest extends GeneralJavaScript {
 
-    private String projectName = "completionTest";
+    private String projectName = "navigationTest";
     private static final Logger LOGGER = Logger.getLogger(NavigateTest.class.getName());
 
     public NavigateTest(String args) {
@@ -100,7 +100,7 @@ public class NavigateTest extends GeneralJavaScript {
 
     public void testDeclaration() throws Exception {
         startTest();
-        
+        openFile("goto.js");
         EditorOperator eo = new EditorOperator("goto.js");
         EditorOperator ed;
         int position;
@@ -124,7 +124,7 @@ public class NavigateTest extends GeneralJavaScript {
                 eo.setCaretPosition(offset+Integer.valueOf(data[0].trim()).intValue());
                 new org.netbeans.jellytools.actions.Action(null, null, KeyStroke.getKeyStroke(KeyEvent.VK_B, 2)).performShortcut(eo);
                 try {
-                    ed = new EditorOperator("rename.js");
+                    ed = new EditorOperator("test.js");
                     position = ed.txtEditorPane().getCaretPosition();
                     boolean result = false;
                     if (position == Integer.valueOf(data[1]).intValue()) {
