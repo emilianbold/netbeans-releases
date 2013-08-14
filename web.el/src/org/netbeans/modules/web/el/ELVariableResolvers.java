@@ -123,7 +123,7 @@ public final class ELVariableResolvers {
 
                     @Override
                     public List<ELVariableResolver.VariableInfo> get() {
-                        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+                        List<ELVariableResolver.VariableInfo> result = new ArrayList<>();
                         for (ELVariableResolver resolver : getResolvers()) {
                             result.addAll(resolver.getManagedBeans(context, compilationContext.context()));
                         }
@@ -144,7 +144,7 @@ public final class ELVariableResolvers {
 
                     @Override
                     public List<ELVariableResolver.VariableInfo> get() {
-                        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+                        List<ELVariableResolver.VariableInfo> result = new ArrayList<>();
                         for (ELVariableResolver resolver : getResolvers()) {
                             result.addAll(resolver.getVariables(snapshot, offset, compilationContext.context()));
                         }
@@ -165,7 +165,7 @@ public final class ELVariableResolvers {
 
                     @Override
                     public List<ELVariableResolver.VariableInfo> get() {
-                        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+                        List<ELVariableResolver.VariableInfo> result = new ArrayList<>();
                         for (ELVariableResolver resolver : getResolvers()) {
                             result.addAll(resolver.getBeansInScope(scope, context, compilationContext.context()));
                         }
@@ -186,7 +186,7 @@ public final class ELVariableResolvers {
 
                     @Override
                     public List<ELVariableResolver.VariableInfo> get() {
-                        List<ELVariableResolver.VariableInfo> result = new ArrayList<ELVariableResolver.VariableInfo>();
+                        List<ELVariableResolver.VariableInfo> result = new ArrayList<>();
                         for (ELVariableResolver resolver : getResolvers()) {
                             result.addAll(resolver.getRawObjectProperties(name, context, compilationContext.context()));
                         }

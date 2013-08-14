@@ -2,7 +2,7 @@
 
  # DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  #
- # Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ # Copyright 2012-2013 Oracle and/or its affiliates. All rights reserved.
  #
  # Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  # Other names may be trademarks of their respective owners.
@@ -62,8 +62,26 @@ TIP=`hg tip --template '{rev}'`
 export TIP
 
 cd $NB_ALL
-hg clone -r $L10N_BRANCH $ML_REPO $NB_ALL/l10n
-hg clone -r $OTHER_LICENCES_BRANCH $OTHER_LICENCES_REPO $NB_ALL/otherlicenses
+# clone and update l10n - hg clone -r $L10N_BRANCH $ML_REPO $NB_ALL/l10n
+
+hg clone -U $ML_REPO $NB_ALL/l10n
+HG_ERROR_CODE=$?
+if [ $HG_ERROR_CODE != 0 ]; then
+    echo "ERROR: $HG_ERROR_CODE - hg clone l10n failed"
+    exit $HG_ERROR_CODE;
+fi
+
+hg -R $NB_ALL/l10n update $L10N_BRANCH
+
+# clone and update otherlicenses - hg clone -r $OTHER_LICENCES_BRANCH $OTHER_LICENCES_REPO $NB_ALL/otherlicenses
+hg clone -U $OTHER_LICENCES_REPO $NB_ALL/otherlicenses
+HG_ERROR_CODE=$?
+if [ $HG_ERROR_CODE != 0 ]; then
+    echo "ERROR: $HG_ERROR_CODE - hg clone otherlicenses failed"
+    exit $HG_ERROR_CODE;
+fi
+
+hg -R $NB_ALL/otherlicenses update $OTHER_LICENCES_BRANCH
 
 ###################################################################
 #

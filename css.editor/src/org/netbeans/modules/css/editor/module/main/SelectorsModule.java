@@ -118,7 +118,7 @@ public class SelectorsModule extends CssEditorModule {
 
     @Override
     public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        List<CompletionProposal> proposals = new ArrayList<>();
         Node activeNode = context.getActiveNode();
         Node errorNode = null;
         if(activeNode.type() == NodeType.recovery) {

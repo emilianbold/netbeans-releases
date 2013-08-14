@@ -44,7 +44,18 @@ package org.netbeans.modules.css.editor.csl;
 import java.awt.Color;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Set;
 import javax.swing.ImageIcon;
 import javax.swing.text.Caret;
 import javax.swing.text.Document;
@@ -54,17 +65,32 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.csl.api.*;
+import org.netbeans.modules.csl.api.CodeCompletionContext;
+import org.netbeans.modules.csl.api.CodeCompletionHandler;
+import org.netbeans.modules.csl.api.CodeCompletionResult;
+import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementHandle.UrlHandle;
+import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.ParameterInfo;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
 import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.editor.HtmlTags;
 import org.netbeans.modules.css.editor.URLRetriever;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
-import org.netbeans.modules.css.editor.module.spi.*;
+import org.netbeans.modules.css.editor.module.spi.CompletionContext;
+import org.netbeans.modules.css.editor.module.spi.CssCompletionItem;
+import org.netbeans.modules.css.editor.module.spi.HelpResolver;
+import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.indexing.api.CssIndex;
-import org.netbeans.modules.css.lib.api.*;
+import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.lib.api.CssTokenId;
+import org.netbeans.modules.css.lib.api.CssTokenIdCategory;
+import org.netbeans.modules.css.lib.api.Node;
+import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.lib.api.NodeUtil;
+import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.Properties;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
@@ -101,7 +127,7 @@ public class CssCompletion implements CodeCompletionHandler {
     @Override
     public CodeCompletionResult complete(CodeCompletionContext context) {
 
-        final List<CompletionProposal> completionProposals = new ArrayList<CompletionProposal>();
+        final List<CompletionProposal> completionProposals = new ArrayList<>();
 
         CssParserResult info = (CssParserResult) context.getParserResult();
         Snapshot snapshot = info.getSnapshot();
@@ -228,7 +254,7 @@ public class CssCompletion implements CodeCompletionHandler {
     }
 
     private List<CompletionProposal> completeHtmlSelectors(CompletionContext context, String prefix, int offset) {
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(20);
+        List<CompletionProposal> proposals = new ArrayList<>(20);
         Collection<String> items = new ArrayList(Arrays.asList(HtmlTags.getTags()));
         items.add(UNIVERSAL_SELECTOR);
         for (String tagName : items) {
@@ -253,18 +279,18 @@ public class CssCompletion implements CodeCompletionHandler {
 
         //there might be more grammar elements from multiple branches with the same name
         Map<String, Collection<ValueGrammarElement>> value2GrammarElement
-                = new HashMap<String, Collection<ValueGrammarElement>>();
+                = new HashMap<>();
         for (ValueGrammarElement element : props) {
             String elementValue = element.getValue().toString();
             Collection<ValueGrammarElement> col = value2GrammarElement.get(elementValue);
             if (col == null) {
-                col = new LinkedList<ValueGrammarElement>();
+                col = new LinkedList<>();
                 value2GrammarElement.put(elementValue, col);
             }
             col.add(element);
         }
 
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(props.size());
+        List<CompletionProposal> proposals = new ArrayList<>(props.size());
         boolean colorChooserAdded = false;
 
         for (Map.Entry<String, Collection<ValueGrammarElement>> entry : value2GrammarElement.entrySet()) {
@@ -353,7 +379,7 @@ public class CssCompletion implements CodeCompletionHandler {
     private Collection<CompletionProposal> getUsedColorsItems(CompletionContext context, String prefix,
             CssElement element, String origin, int anchor, boolean addSemicolon,
             boolean addSpaceBeforeItem) {
-        Collection<CompletionProposal> proposals = new HashSet<CompletionProposal>();
+        Collection<CompletionProposal> proposals = new HashSet<>();
         //unit testing - inject some testing used colors to the completion
         if (TEST_USED_COLORS != null) {
             for (String color : TEST_USED_COLORS) {
@@ -378,7 +404,7 @@ public class CssCompletion implements CodeCompletionHandler {
         //resort the files collection so the current file it first
         //we need that to ensure the color from current file has precedence
         //over the others
-        List<FileObject> resortedKeys = new ArrayList<FileObject>(result.keySet());
+        List<FileObject> resortedKeys = new ArrayList<>(result.keySet());
         if (resortedKeys.remove(current)) {
             resortedKeys.add(0, current);
         }
@@ -398,7 +424,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private Collection<String> filterStrings(Collection<String> values, String propertyNamePrefix) {
         propertyNamePrefix = propertyNamePrefix.toLowerCase();
-        List<String> filtered = new ArrayList<String>();
+        List<String> filtered = new ArrayList<>();
         for (String value : values) {
             if (value.toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(value);
@@ -409,7 +435,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private Collection<ValueGrammarElement> filterElements(Collection<ValueGrammarElement> values, String propertyNamePrefix) {
         propertyNamePrefix = propertyNamePrefix.toLowerCase();
-        List<ValueGrammarElement> filtered = new ArrayList<ValueGrammarElement>();
+        List<ValueGrammarElement> filtered = new ArrayList<>();
         for (ValueGrammarElement value : values) {
             if (value.toString().toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(value);
@@ -420,7 +446,7 @@ public class CssCompletion implements CodeCompletionHandler {
 
     private Collection<PropertyDefinition> filterProperties(Collection<PropertyDefinition> props, String propertyNamePrefix) {
         propertyNamePrefix = propertyNamePrefix.toLowerCase();
-        List<PropertyDefinition> filtered = new ArrayList<PropertyDefinition>();
+        List<PropertyDefinition> filtered = new ArrayList<>();
         for (PropertyDefinition p : props) {
             if (p.getName().toLowerCase().startsWith(propertyNamePrefix)) {
                 filtered.add(p);
@@ -739,8 +765,8 @@ public class CssCompletion implements CodeCompletionHandler {
         }
 
         //complete class selectors
-        Collection<String> allclasses = new HashSet<String>();
-        Collection<String> refclasses = new HashSet<String>();
+        Collection<String> allclasses = new HashSet<>();
+        Collection<String> refclasses = new HashSet<>();
 
         //adjust prefix - if there's just . before the caret, it is returned
         //as a prefix. If there are another characters, the dot is ommited
@@ -776,7 +802,7 @@ public class CssCompletion implements CodeCompletionHandler {
         }
 
         //lets create the completion items
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(refclasses.size());
+        List<CompletionProposal> proposals = new ArrayList<>(refclasses.size());
         for (String clazz : allclasses) {
             proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(context.getFileObject(), clazz),
                     clazz,
@@ -799,8 +825,8 @@ public class CssCompletion implements CodeCompletionHandler {
                  * || nodeType == NodeType.JJTERROR_SKIPBLOCK
                  */) && prefix.charAt(0) == '#')) {
             //complete class selectors
-            Collection<String> allids = new HashSet<String>();
-            Collection<String> refids = new HashSet<String>();
+            Collection<String> allids = new HashSet<>();
+            Collection<String> refids = new HashSet<>();
 
             //adjust prefix - if there's just # before the caret, it is returned as a prefix
             //if there is some text behind the prefix the hash is part of the prefix
@@ -836,7 +862,7 @@ public class CssCompletion implements CodeCompletionHandler {
             }
 
             //lets create the completion items
-            List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(allids.size());
+            List<CompletionProposal> proposals = new ArrayList<>(allids.size());
             for (String id : allids) {
                 proposals.add(CssCompletionItem.createSelectorCompletionItem(new CssElement(context.getFileObject(), id),
                         id,
@@ -1532,9 +1558,9 @@ public class CssCompletion implements CodeCompletionHandler {
     private static class CssLinkCompletion extends FileReferenceCompletion<CssCompletionItem> {
 
         private static final String GO_UP_TEXT = "../"; //NOI18N
-        private boolean addQuotes;
-        private boolean addSemicolon;
-        private FileObject file;
+        private final boolean addQuotes;
+        private final boolean addSemicolon;
+        private final FileObject file;
 
         public CssLinkCompletion(FileObject file, boolean addQuotes, boolean addSemicolon) {
             this.file = file;
@@ -1543,7 +1569,11 @@ public class CssCompletion implements CodeCompletionHandler {
         }
 
         @Override
-        public CssCompletionItem createFileItem(int anchor, String name, Color color, ImageIcon icon) {
+        public CssCompletionItem createFileItem(FileObject file, int anchor) {
+            String name = file.getNameExt();
+            Color color = file.isFolder() ? Color.BLUE : null;
+            ImageIcon icon = FileReferenceCompletion.getIcon(file);
+
             return CssCompletionItem.createFileCompletionItem(new CssElement(file, name), name, anchor, color, icon, addQuotes, addSemicolon);
         }
 

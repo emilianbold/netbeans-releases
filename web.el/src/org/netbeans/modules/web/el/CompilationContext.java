@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.web.el;
 
-import java.util.HashMap;
-import java.util.Map;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.openide.filesystems.FileObject;

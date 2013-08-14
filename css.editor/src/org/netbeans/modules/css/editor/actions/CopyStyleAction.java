@@ -45,18 +45,20 @@ package org.netbeans.modules.css.editor.actions;
 
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
-import java.net.*;
+import java.net.URL;
 import javax.swing.text.JTextComponent;
 import org.netbeans.editor.BaseAction;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
-
 import org.openide.awt.StatusDisplayer;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
-import org.openide.util.*;
+import org.openide.util.HelpCtx;
+import org.openide.util.Lookup;
+import org.openide.util.NbBundle;
 import org.openide.util.datatransfer.ExClipboard;
-import org.openide.filesystems.*;
 
 
 /**

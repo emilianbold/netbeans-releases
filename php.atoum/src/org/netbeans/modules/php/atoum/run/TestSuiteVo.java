@@ -66,6 +66,7 @@ public final class TestSuiteVo {
     @CheckForNull
     public String getFile() {
         if (!fileSearched) {
+            fileSearched = true;
             for (TestCaseVo testCase : testCases) {
                 file = testCase.getFile();
                 if (file != null) {

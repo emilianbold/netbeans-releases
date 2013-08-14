@@ -279,10 +279,6 @@ public class ASTUtils {
 
     @SuppressWarnings("unchecked")
     public static List<ASTNode> children(ASTNode root) {
-
-        // Logger PRIV_LOG = Logger.getLogger(AstUtilities.class.getName());
-        // PRIV_LOG.log(Level.FINEST, "children(ASTNode):Name" + root.getClass().getName() +":"+ root.getText());
-
         List<ASTNode> children = new ArrayList<>();
 
         if (root instanceof ModuleNode) {
@@ -299,16 +295,20 @@ public class ASTUtils {
                     children.add(property);
 
                     FieldNode field = property.getField();
-                    String name = field.getName();
-                    if (name.length() > 0 && (field.getModifiers() & Opcodes.ACC_STATIC) == 0
-                            && (field.getModifiers() & Opcodes.ACC_PRIVATE) != 0) {
+                    String fieldName = field.getName();
+                    String fieldTypeName = field.getType().getNameWithoutPackage();
 
-                        // this is the groovy way, they don't specify en locale :(
-                        name = name.substring(0, 1).toUpperCase() + name.substring(1, name.length());
-                        if ((field.getModifiers() & Opcodes.ACC_FINAL) == 0) {
-                            possibleMethods.add("set" + name); // NOI18N
+                    if (fieldName.length() > 0 && !field.isStatic() && (field.getModifiers() & Opcodes.ACC_PRIVATE) != 0) {
+
+                        fieldName = Character.toUpperCase(fieldName.charAt(0)) + fieldName.substring(1, fieldName.length());
+                        if (!field.isFinal()) {
+                            possibleMethods.add("set" + fieldName); // NOI18N
                         }
-                        possibleMethods.add("get" + name); // NOI18N
+                        possibleMethods.add("get" + fieldName); // NOI18N
+
+                        if ("Boolean".equals(fieldTypeName) || "boolean".equals(fieldTypeName)) { // NOI18N
+                            possibleMethods.add("is" + fieldName); // NOI18N
+                        }
                     }
                 }
 
@@ -340,10 +340,7 @@ public class ASTUtils {
                 if (constructor.getLineNumber() >= 0) {
                     children.add(constructor);
                 }
-                // PRIV_LOG.log(Level.FINEST, "Constructor found: " + constructor.toString());
             }
-
-
 
         } else if (root instanceof MethodNode) {
             MethodNode methodNode = (MethodNode) root;
@@ -364,7 +361,6 @@ public class ASTUtils {
             children = astChildrenSupport.children();
         }
 
-        // PRIV_LOG.log(Level.FINEST, "List:" + children.toString());
         return children;
     }
 

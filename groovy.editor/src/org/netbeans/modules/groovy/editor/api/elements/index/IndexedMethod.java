@@ -44,10 +44,10 @@
 package org.netbeans.modules.groovy.editor.api.elements.index;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.elements.common.IMethodElement;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
@@ -66,39 +66,26 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
     /** Deprecated? */
     /** Parenthesis or space delimited? */
 
-    public static enum MethodType { METHOD, ATTRIBUTE, DBCOLUMN };
-    
     protected final String signature;
     private String[] args;
     private String name;
     private List<String> parameters;
     private boolean smart;
     private boolean inherited; 
-    private MethodType methodType = MethodType.METHOD;
     private final String returnType;
     
-    private IndexedMethod(String signature, String returnType, GroovyIndex index,
-            IndexResult result, String clz, String attributes, int flags) {
+    private IndexedMethod(String signature, String returnType, IndexResult result, String clz, String attributes, int flags) {
 
-        super(index, result, clz, attributes, flags);
+        super(result, clz, attributes, flags);
         this.signature = signature;
         this.returnType = returnType;
     }
 
-    public static IndexedMethod create(GroovyIndex index, String signature, String returnType,
+    public static IndexedMethod create(String signature, String returnType,
             String clz, IndexResult result, String attributes, int flags) {
-        IndexedMethod m =
-            new IndexedMethod(signature, returnType, index, result, clz, attributes, flags);
+        IndexedMethod m = new IndexedMethod(signature, returnType, result, clz, attributes, flags);
 
         return m;
-    }
-    
-    public MethodType getMethodType() {
-        return methodType;
-    }
-    
-    public void setMethodType(MethodType methodType) {
-        this.methodType = methodType;
     }
 
     @Override
@@ -106,6 +93,7 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
         return getSignature();
     }
 
+    @Override
     public String getName() {
         if (name == null) {
             int parenIndex = signature.indexOf('(');
@@ -145,16 +133,14 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
         return args;
     }
 
+    @Override
     public List<String> getParameters() {
         if (parameters == null) {
             String[] argArray = getArgs();
 
             if ((argArray != null) && (argArray.length > 0)) {
-                parameters = new ArrayList<String>(argArray.length);
-
-                for (String arg : argArray) {
-                    parameters.add(arg);
-                }
+                parameters = new ArrayList<>(argArray.length);
+                parameters.addAll(Arrays.asList(argArray));
             } else {
                 parameters = Collections.emptyList();
             }
@@ -163,10 +149,12 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
         return parameters;
     }
 
+    @Override
     public boolean isDeprecated() {
         return false;
     }
 
+    @Override
     public ElementKind getKind() {
         if (((name == null) && signature.startsWith("initialize(")) || // NOI18N
                 ((name != null) && name.equals("initialize"))) { // NOI18N
@@ -184,6 +172,33 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
     public void setSmart(boolean smart) {
         this.smart = smart;
     }
+
+    @Override
+    public boolean isInherited() {
+        return inherited;
+    }
+
+    public void setInherited(boolean inherited) {
+        this.inherited = inherited;
+    }
+
+    public boolean hasBlock() {
+        return (flags & BLOCK) != 0;
+    }
+
+    public boolean isBlockOptional() {
+        return (flags & BLOCK_OPTIONAL) != 0;
+    }
+
+    public String getEncodedAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public boolean isTopLevel() {
+        return false;
+    }
+
 
     @Override
     public boolean equals(Object obj) {
@@ -213,46 +228,5 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
         hash = 53 * hash + (this.classFqn != null ? this.classFqn.hashCode() : 0);
         hash = 53 * hash + flags;
         return hash;
-    }
-    
-    public boolean isInherited() {
-        return inherited;
-    }
-
-    public void setInherited(boolean inherited) {
-        this.inherited = inherited;
-    }
-    
-    public boolean hasBlock() {
-        return (flags & BLOCK) != 0;
-    }
-
-    public boolean isBlockOptional() {
-        return (flags & BLOCK_OPTIONAL) != 0;
-    }
-    
-    public static String decodeFlags(int flags) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(IndexedElement.decodeFlags(flags));
-
-        if ((flags & BLOCK) != 0) {
-            sb.append("|BLOCK");
-        }
-        if ((flags & BLOCK_OPTIONAL) != 0) {
-            sb.append("|BLOCK_OPTIONAL");
-        }
-        if (sb.length() > 0) {
-            sb.append("|");
-        }
-        
-        return sb.toString();
-    }
-    
-    public String getEncodedAttributes() {
-        return attributes;
-    }
-
-    public boolean isTopLevel() {
-        return false;
     }
 }

@@ -85,7 +85,11 @@ public final class TransformationHandler {
             
             if (SINGLETON_ANNOTATION.equals(annotationName)) {
                 final FieldSignature signature = new FieldSignature(SINGLETON_FIELD_NAME);
-                final CompletionItem proposal = new FieldItem(SINGLETON_FIELD_NAME, Modifier.STATIC, anchorOffset, null, typeNode.getNameWithoutPackage());
+                final CompletionItem proposal = new FieldItem(
+                        typeNode.getNameWithoutPackage(),
+                        SINGLETON_FIELD_NAME,
+                        Modifier.STATIC,
+                        anchorOffset);
                 
                 if (signature.getName().startsWith(prefix)) { // NOI18N
                     result.put(signature, proposal);
@@ -102,7 +106,11 @@ public final class TransformationHandler {
                 if (DELEGATE_ANNOTATION.equals(fieldAnnotationName)) {
                     for (FieldNode annotatedField : field.getType().getFields()) {
                         final FieldSignature signature = new FieldSignature(annotatedField.getName());
-                        final CompletionItem fieldProposal = new FieldItem(annotatedField.getName(), annotatedField.getModifiers(), anchorOffset, null, annotatedField.getType().getNameWithoutPackage());
+                        final CompletionItem fieldProposal = new FieldItem(
+                                annotatedField.getType().getNameWithoutPackage(),
+                                annotatedField.getName(),
+                                annotatedField.getModifiers(),
+                                anchorOffset);
 
                         if (signature.getName().startsWith(prefix)) {
                             result.put(signature, fieldProposal);

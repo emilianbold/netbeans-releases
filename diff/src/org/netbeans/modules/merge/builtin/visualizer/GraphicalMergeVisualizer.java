@@ -58,6 +58,7 @@ import org.openide.windows.TopComponent;
 
 import org.netbeans.api.diff.Difference;
 import org.netbeans.api.diff.StreamSource;
+import org.netbeans.modules.diff.DiffModuleConfig;
 import org.netbeans.spi.diff.MergeVisualizer;
 
 /**
@@ -68,9 +69,9 @@ import org.netbeans.spi.diff.MergeVisualizer;
 @org.openide.util.lookup.ServiceProvider(service=org.netbeans.spi.diff.MergeVisualizer.class)
 public class GraphicalMergeVisualizer extends MergeVisualizer implements Serializable {
     
-    private Color colorUnresolvedConflict = new java.awt.Color(255, 160, 180);
-    private Color colorResolvedConflict = new java.awt.Color(180, 255, 180);
-    private Color colorOtherConflict = new java.awt.Color(160, 200, 255);
+    private Color colorUnresolvedConflict = DiffModuleConfig.getDefault().getUnresolvedColor();
+    private Color colorResolvedConflict = DiffModuleConfig.getDefault().getAppliedColor();
+    private Color colorOtherConflict = DiffModuleConfig.getDefault().getNotAppliedColor();
     
     /** The currently opened merge dialog. */
     private MergeDialogComponent merge;

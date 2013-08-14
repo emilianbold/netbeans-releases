@@ -41,8 +41,8 @@
  */
 package org.netbeans.modules.css.editor.csl;
 
-import java.util.Set;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;

@@ -63,7 +63,7 @@ import org.openide.util.Pair;
 public class CssDeclarationFinder implements DeclarationFinder {
 
     private AtomicReference<FutureParamTask<DeclarationLocation, EditorFeatureContext>> taskRef 
-            = new AtomicReference<FutureParamTask<DeclarationLocation, EditorFeatureContext>>();
+            = new AtomicReference<>();
 
     @Override
     public DeclarationLocation findDeclaration(ParserResult info, int caretOffset) {

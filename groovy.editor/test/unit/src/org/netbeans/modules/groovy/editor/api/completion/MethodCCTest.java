@@ -42,8 +42,6 @@
 
 package org.netbeans.modules.groovy.editor.api.completion;
 
-import org.netbeans.junit.RandomlyFails;
-
 /**
  *
  * @author schmidtm

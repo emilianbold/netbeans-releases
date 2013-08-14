@@ -70,7 +70,7 @@ public class StandardPropertiesHelpResolver extends HelpResolver {
     //to the anchor name in the help file
     //TODO possibly use some non class hardcoded mechanism - a property file
     private static final Map<String, String> propertyNamesTranslationTable = 
-            new HashMap<String, String>();
+            new HashMap<>();
     static {
         propertyNamesTranslationTable.put("transform", "effects"); //NOI18N
         

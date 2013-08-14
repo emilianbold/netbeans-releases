@@ -61,7 +61,7 @@ import org.openide.filesystems.FileObject;
  */
 public final class ELParserResult extends ParserResult {
 
-    private final List<ELElement> elements = new ArrayList<ELElement>();
+    private final List<ELElement> elements = new ArrayList<>();
 
     private final FileObject file;
 
@@ -101,7 +101,7 @@ public final class ELParserResult extends ParserResult {
     }
 
     public List<ELElement> getElementsTo(int offset) {
-        List<ELElement> result = new ArrayList<ELElement>();
+        List<ELElement> result = new ArrayList<>();
         for (ELElement each : elements) {
             if (each.getOriginalOffset().getStart() < offset) {
                 result.add(each);
@@ -146,7 +146,7 @@ public final class ELParserResult extends ParserResult {
 
     @Override
     public List<? extends Error> getDiagnostics() {
-        List<ELError> result = new ArrayList<ELError>();
+        List<ELError> result = new ArrayList<>();
         for (ELElement each : elements) {
             if (!each.isValid()) {
                 result.add(new ELError(each, file));

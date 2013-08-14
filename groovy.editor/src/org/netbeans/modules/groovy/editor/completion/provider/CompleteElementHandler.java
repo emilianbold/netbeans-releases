@@ -266,7 +266,7 @@ public final class CompleteElementHandler {
             return new ClassDefinition(node, null);
         }
 
-        Set<IndexedClass> classes = index.getClasses(node.getName(), QuerySupport.Kind.EXACT, true, false, false);
+        Set<IndexedClass> classes = index.getClasses(node.getName(), QuerySupport.Kind.EXACT);
 
         if (!classes.isEmpty()) {
             IndexedClass indexed = classes.iterator().next();

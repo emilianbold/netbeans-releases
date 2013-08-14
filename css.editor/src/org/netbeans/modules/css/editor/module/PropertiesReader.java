@@ -48,7 +48,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Properties;
-
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Pair;
@@ -74,14 +73,10 @@ public class PropertiesReader {
         if (u != null) {
             //System.err.println("Loading " + res);
             try {
-                // #51667: but in case we are in USE_DEBUG_LOADER mode, use gRAS (since getResource is not overridden)
-                InputStream is = u.openStream();
-                try {
-                    Collection<Pair<String, String>> col = new ArrayList<Pair<String, String>>();
+                try (InputStream is = u.openStream()) {
+                    Collection<Pair<String, String>> col = new ArrayList<>();
                     load(is, col);
                     return col;
-                } finally {
-                    is.close();
                 }
             } catch (IOException e) {
                 Exceptions.attachMessage(e, "While loading: " + res); // NOI18N

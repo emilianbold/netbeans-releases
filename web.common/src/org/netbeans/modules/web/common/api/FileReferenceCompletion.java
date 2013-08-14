@@ -59,28 +59,36 @@ import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileSystem;
 import org.openide.loaders.DataObject;
 import org.openide.loaders.DataObjectNotFoundException;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.RequestProcessor;
 
 /**
  *
  * @author marekfukala
+ * @param <T>
  */
 public abstract class FileReferenceCompletion<T> implements ValueCompletion<T> {
 
-    private static RequestProcessor RP = new RequestProcessor();
-    
-    private static final ImageIcon PACKAGE_ICON =
-            ImageUtilities.loadImageIcon("org/openide/loaders/defaultFolder.gif", false); // NOI18N
+    private static final RequestProcessor RP = new RequestProcessor();
 
-    public abstract T createFileItem(int anchor, String name, Color color, ImageIcon icon);
+    private static final ImageIcon PACKAGE_ICON
+            = ImageUtilities.loadImageIcon("org/openide/loaders/defaultFolder.gif", false); // NOI18N
+
+    /**
+     * @since 1.58
+     *
+     * @param file file which is supposed to be represented by the completion
+     * item
+     * @param anchor anchor of the completion item
+     * @return
+     */
+    public abstract T createFileItem(FileObject file, int anchor);
 
     public abstract T createGoUpItem(int anchor, Color color, ImageIcon icon);
 
     @Override
     public List<T> getItems(FileObject orig, int offset, String valuePart) {
-        List<T> result = new ArrayList<T>();
+        List<T> result = new ArrayList<>();
 
         String path = "";   // NOI18N
         String fileNamePart = valuePart;
@@ -101,7 +109,7 @@ public abstract class FileReferenceCompletion<T> implements ValueCompletion<T> {
             String ctxPath = resolveRelativeURL("/" + orig.getPath(), path);  // NOI18N
             //is this absolute path?
             if (path.startsWith("/")) {
-                if(documentBase == null) {
+                if (documentBase == null) {
                     //abosolute path but no web root, cannot complete
                     return Collections.emptyList();
                 } else {
@@ -121,27 +129,23 @@ public abstract class FileReferenceCompletion<T> implements ValueCompletion<T> {
                 //add go up in the directories structure item
                 if (!(documentBase != null && folder.equals(documentBase)) && !path.startsWith("/") // NOI18N
                         && (fileNamePart.isEmpty() // ../| case
-                        ||
-                        fileNamePart.equals(".") // ../.| case
-                        ||
-                        fileNamePart.equals("..")) //../..| case
+                        || fileNamePart.equals(".") // ../.| case
+                        || fileNamePart.equals("..")) //../..| case
                         ) { // NOI18N
                     result.add(createGoUpItem(anchor, Color.BLUE, PACKAGE_ICON)); // NOI18N
                 }
             }
-        } catch (FileStateInvalidException ex) {
+        } catch (FileStateInvalidException | IllegalArgumentException ex) {
             // unreachable FS - disable completion
-        } catch (IllegalArgumentException ex) {
-            // resolving failed
         }
 
         return result;
     }
 
     private List<T> files(int offset, FileObject folder, String prefix) {
-        List<T> res = new ArrayList<T>();
-        TreeMap<String, T> resFolders = new TreeMap<String, T>();
-        TreeMap<String, T> resFiles = new TreeMap<String, T>();
+        List<T> res = new ArrayList<>();
+        TreeMap<String, T> resFolders = new TreeMap<>();
+        TreeMap<String, T> resFiles = new TreeMap<>();
 
         Enumeration<? extends FileObject> files = folder.getChildren(false);
         while (files.hasMoreElements()) {
@@ -150,25 +154,25 @@ public abstract class FileReferenceCompletion<T> implements ValueCompletion<T> {
             if (fname.startsWith(prefix) && !"cvs".equalsIgnoreCase(fname)) {
 
                 if (file.isFolder()) {
-                    resFolders.put(file.getNameExt(), createFileItem(offset, file.getNameExt() + "/", java.awt.Color.BLUE, PACKAGE_ICON));
+                    resFolders.put(file.getNameExt(), createFileItem(file, offset));
                 } else {
-                    T fileItem = createFileItem(offset, file.getNameExt(), java.awt.Color.BLACK, null);
-                    if(fileItem instanceof PropertyChangeListener) { //"bit" hacky :-)
+                    T fileItem = createFileItem(file, offset);
+                    if (fileItem instanceof PropertyChangeListener) { //"bit" hacky :-)
                         //lazy load icons
-                        final PropertyChangeListener plistener = (PropertyChangeListener)fileItem;
+                        final PropertyChangeListener plistener = (PropertyChangeListener) fileItem;
                         RP.post(new Runnable() {
                             @Override
                             public void run() {
-                                ImageIcon icon = new ImageIcon(getIcon(file));
+                                ImageIcon icon = getIcon(file);
                                 plistener.propertyChange(
                                         new PropertyChangeEvent(this, "iconLoaded", null, icon)); //NOI18N
                             }
-                            
+
                         });
                     } else {
                         //direct icons load
-                        ImageIcon icon = new ImageIcon(getIcon(file));
-                        fileItem = createFileItem(offset, file.getNameExt(), java.awt.Color.BLACK, icon);
+                        ImageIcon icon = getIcon(file);
+                        fileItem = createFileItem(file, offset);
                     }
                     resFiles.put(file.getNameExt(), fileItem);
                 }
@@ -181,11 +185,14 @@ public abstract class FileReferenceCompletion<T> implements ValueCompletion<T> {
         return res;
     }
 
-    /** Returns an absolute context URL (starting with '/') for a relative URL and base URL.
-     *  @param relativeTo url to which the relative URL is related. Treated as directory iff
-     *    ends with '/'
-     *  @param url the relative URL by RFC 2396
-     *  @exception IllegalArgumentException if url is not absolute and relativeTo
+    /**
+     * Returns an absolute context URL (starting with '/') for a relative URL
+     * and base URL.
+     *
+     * @param relativeTo url to which the relative URL is related. Treated as
+     * directory iff ends with '/'
+     * @param url the relative URL by RFC 2396
+     * @exception IllegalArgumentException if url is not absolute and relativeTo
      * can not be related to, or if url is intended to be a directory
      */
     private static String resolveRelativeURL(String relativeTo, String url) {
@@ -238,17 +245,25 @@ public abstract class FileReferenceCompletion<T> implements ValueCompletion<T> {
         return result;
     }
 
-    /** This method returns an image, which is displayed for the FileObject in the explorer.
-     * @param doc This is the documet, in which the icon will be used (for exmaple for completion).
-     * @param fo file object for which the icon is looking for
-     * @return an Image which is dislayed in the explorer for the file.
+    /**
+     * This method returns an image, which is displayed for the FileObject in
+     * the explorer.
+     * 
+     * @since 1.58
+     * @param fo an instance of {@link FileObject}
+     * @return an instance of {@link Image}
      */
-    private static java.awt.Image getIcon(FileObject fo) {
-        try {
-            return DataObject.find(fo).getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16);
-        } catch (DataObjectNotFoundException e) {
-            Logger.getLogger(FileReferenceCompletion.class.getName()).log(Level.INFO, "Cannot find icon for " + fo.getNameExt(), e);
+    public static ImageIcon getIcon(FileObject fo) {
+        if (fo.isFolder()) {
+            return PACKAGE_ICON;
+        } else {
+            try {
+                return new ImageIcon(DataObject.find(fo).getNodeDelegate().getIcon(java.beans.BeanInfo.ICON_COLOR_16x16));
+            } catch (DataObjectNotFoundException e) {
+                Logger.getLogger(FileReferenceCompletion.class.getName()).log(Level.INFO, "Cannot find icon for " + fo.getNameExt(), e);
+            }
+            return null;
         }
-        return null;
     }
+    
 }

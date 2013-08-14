@@ -112,12 +112,12 @@ public final class TestCaseVo {
         this.message = message;
     }
 
-    @CheckForNull
     public List<String> getStackTrace() {
         return stackTrace;
     }
 
     public void setStackTrace(List<String> stackTrace) {
+        assert stackTrace != null;
         this.stackTrace = stackTrace;
     }
 

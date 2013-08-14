@@ -137,7 +137,7 @@ public class AVD implements Device {
         final MobilePlatform android = getPlatform();
         props.put("android.build.target", android.getPrefferedTarget().getName());//NOI18N
         props.put("android.sdk.home", android.getSdkLocation());//NOI18N
-        props.put("android.target.device.arg", isEmulator() ? "-e" : "-d");//NOI18N
+        props.put("android.target.device.arg", isEmulator() ? "emulate" : "run");//NOI18N
     }
 
     @Override

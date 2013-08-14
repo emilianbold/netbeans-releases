@@ -58,10 +58,9 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.css.editor.test.TestBase;
 import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
-import org.netbeans.modules.css.editor.csl.CssBracketCompleter;
 import org.netbeans.modules.html.editor.api.HtmlKit;
 import org.netbeans.modules.html.editor.indent.HtmlIndentTaskFactory;
+import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -77,7 +76,7 @@ public class CssIndenterTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         AbstractIndenter.inUnitTestRun = true;
-        CssBracketCompleter.unitTestingSupport = true;
+//        CssBracketCompleter.unitTestingSupport = true;
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/css"), cssFactory, CssTokenId.language());
@@ -272,8 +271,8 @@ public class CssIndenterTest extends TestBase {
         final String source2 = source.substring(0, sourcePos) + source.substring(sourcePos + 1);
 
 
-        final AtomicReference<Document> doc = new AtomicReference<Document>();
-        final AtomicReference<Caret> caret = new AtomicReference<Caret>();
+        final AtomicReference<Document> doc = new AtomicReference<>();
+        final AtomicReference<Caret> caret = new AtomicReference<>();
         //first invoke the action in the AWT
         try {
             JEditorPane ta = getPane(source2);
