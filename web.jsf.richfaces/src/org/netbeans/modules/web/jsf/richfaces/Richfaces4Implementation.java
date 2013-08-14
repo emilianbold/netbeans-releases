@@ -217,11 +217,16 @@ public class Richfaces4Implementation implements JsfComponentImplementation {
     }
 
     private static void updateIndexPage(WebModule webModule) throws DataObjectNotFoundException {
-        FileObject indexFO = webModule.getDocumentBase().getFileObject("index.xhtml"); //NOI18N
-        DataObject indexDO = DataObject.find(indexFO);
-        JsfComponentUtils.enhanceFileBody(indexDO, "</h:body>", "<br />\n<h:link outcome=\"welcomeRichfaces\" value=\"Richfaces welcome page\" />"); //NOI18N
-        if (indexFO.isValid() && indexFO.canWrite()) {
-            JsfComponentUtils.reformat(indexDO);
+        FileObject documentBase = webModule.getDocumentBase();
+        if (documentBase != null) {
+            FileObject indexFO = documentBase.getFileObject("index.xhtml"); //NOI18N
+            if (indexFO != null) {
+                DataObject indexDO = DataObject.find(indexFO);
+                JsfComponentUtils.enhanceFileBody(indexDO, "</h:body>", "<br />\n<h:link outcome=\"welcomeRichfaces\" value=\"Richfaces welcome page\" />"); //NOI18N
+                if (indexFO.isValid() && indexFO.canWrite()) {
+                    JsfComponentUtils.reformat(indexDO);
+                }
+            }
         }
     }
 
