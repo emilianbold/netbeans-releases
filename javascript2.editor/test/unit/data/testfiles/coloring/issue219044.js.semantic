@@ -1,15 +1,15 @@
-$(|>GLOBAL:document<|).ready(function() {
+|>GLOBAL:$<|(|>GLOBAL:document<|).ready(function() {
 
     // draw graph
     drawChart('#chart_placeholder');
 
     // get all JSONs data and fill up the content
-    $.getJSON(|>GLOBAL:JsonLocation<|.auctions, function(data) {
+    |>GLOBAL:$<|.getJSON(|>GLOBAL:JsonLocation<|.auctions, function(data) {
         // generate list
         |>GLOBAL:productList<| = generateProductList();
 
         // generate all products into it
-        $.each(data, function(|>UNUSED:index<|, element) {
+        |>GLOBAL:$<|.each(data, function(|>UNUSED:index<|, element) {
             |>GLOBAL:product<| = generateProduct(element);
             |>GLOBAL:productList<|.append(|>GLOBAL:product<|);
         });
@@ -18,6 +18,6 @@ $(|>GLOBAL:document<|).ready(function() {
         |>GLOBAL:productList<|.append(generateClearer());
 
         // append everything to the page
-        $('#products').append(|>GLOBAL:productList<|);
+        |>GLOBAL:$<|('#products').append(|>GLOBAL:productList<|);
     });
 });

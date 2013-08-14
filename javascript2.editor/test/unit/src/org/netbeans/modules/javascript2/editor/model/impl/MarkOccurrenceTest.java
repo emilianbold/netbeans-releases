@@ -895,44 +895,6 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/structure/issue233738.js","var myhelp = win^dow['someprom'];", true);
     }
     
-    
-    // testing with statement
-    public void testIssue232776_01() throws Exception {
-        checkOccurrences("testfiles/markoccurences/issue232776.js","p^rop01 = prop01 + prop02;", true);
-    }
-    
-    public void testIssue232776_02() throws Exception {
-        checkOccurrences("testfiles/markoccurences/issue232776.js","prop01 = prop01 + pro^p02;", true);
-    }
-    
-    public void testIssue232776_03() throws Exception {
-        checkOccurrences("testfiles/markoccurences/issue232776.js","metho^d01();", true);
-    }
-    
-    public void testIssue232776_04() throws Exception {
-        checkOccurrences("testfiles/markoccurences/issue232776.js","with (testWi^th01) {", true);
-    }
-    
-    public void testIssue232777_01() throws Exception {
-        checkOccurrences("testfiles/markoccurences/issue232777.js","app.des^cription = \"new description\";", true);
-    }
-    
-    public void testIssue232777_02() throws Exception {
-        checkOccurrences("testfiles/markoccurences/issue232777.js","ap^p.description = \"new description\";", true);
-    }
-    
-    public void testIssue232792_01() throws Exception {
-        checkOccurrences("testfiles/markoccurences/issue232792.js","getI^nfo();", true);
-    }
-    
-    public void testIssue232792_02() throws Exception {
-        checkOccurrences("testfiles/markoccurences/issue232792.js","A.getN^ame();", true);
-    }
-    
-    public void testIssue232792_03() throws Exception {
-        checkOccurrences("testfiles/markoccurences/issue232792.js","A.B.getN^ame();", true);
-    }
-    
     public void testIssue233787_01() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue233787.js", "ondra.address.str^eet = \"Piseckeho\";", true); 
     }
@@ -947,6 +909,18 @@ public class MarkOccurrenceTest extends JsTestBase {
     
     public void testIssue233787_04() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue233787.js", "console.log(address.stree^t);", true); 
+    }
+    
+    public void testIssue233720_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue233720.js", "var indexOfBeta = getIndexOfLatestBe^ta();", true); 
+    }
+    
+    public void testIssue233720_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue233720.js", "var indexOfB^eta = getIndexOfLatestBeta();", true); 
+    }
+
+    public void testIssue233720_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue233720.js", "return this.myMet^hod2();", true); 
     }
     
     private String getTestName() {
