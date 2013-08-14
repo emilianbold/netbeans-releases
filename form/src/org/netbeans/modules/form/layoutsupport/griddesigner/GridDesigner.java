@@ -332,6 +332,9 @@ public class GridDesigner extends JPanel {
         RADVisualContainer metacont = (RADVisualContainer)replicator.getTopMetaComponent();
         Object bean = replicator.getClonedComponent(metacont);
         Container container = metacont.getContainerDelegate(bean);
+        if (container == null) {
+            container = (Container) bean;
+        }
         LayoutManager layout = container.getLayout();
         gridManager = null;
         if (layout instanceof GridBagLayout) {
