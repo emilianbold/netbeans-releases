@@ -95,7 +95,7 @@ public class PanelOptionsVisual extends SettingsPanel implements PropertyChangeL
 
     private boolean isMainClassValid;
     private boolean isPreloaderNameValid;
-    private boolean isFXMLNameValid;
+    private boolean isFXMLNameValid = true;
     
     PanelOptionsVisual(PanelConfigureProject panel, WizardType type) {
         this.panel = panel;
@@ -683,23 +683,24 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
             if (!isMainClassValid) {
                 settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(PanelOptionsVisual.class, "ERROR_IllegalMainClassName")); // NOI18N
+                return false;
             }
-            return isMainClassValid;
-        } else if (txtPreloaderProject.isVisible() && txtPreloaderProject.isEnabled()) {
+        }
+        if (txtPreloaderProject.isVisible() && txtPreloaderProject.isEnabled()) {
             if (!isPreloaderNameValid) {
                 settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(PanelOptionsVisual.class, "ERROR_IllegalPreloaderProjectName")); // NOI18N
+                return false;
             }
-            return isPreloaderNameValid;
-        } else if (fxmlTextField.isVisible()) {
+        }
+        if (fxmlTextField.isVisible()) {
             if (!isFXMLNameValid) {
                 settings.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
                         NbBundle.getMessage(PanelOptionsVisual.class, "ERROR_IllegalFXMLName")); // NOI18N
+                return false;
             }
-            return isFXMLNameValid;
-        } else {
-            return true;
         }
+        return true;
     }
 
     @Override
@@ -764,7 +765,7 @@ private void createMainCheckBoxItemStateChanged(java.awt.event.ItemEvent evt) {/
                 break;
             }
         }
-        isMainClassValid = isValid;
+        isMainClassValid = !mainClassName.isEmpty() && isValid;
         panel.fireChangeEvent();
     }
 
