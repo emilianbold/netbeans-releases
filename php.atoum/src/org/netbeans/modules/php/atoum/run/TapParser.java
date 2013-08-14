@@ -168,7 +168,8 @@ public final class TapParser {
                 testCase.setStatus(TestCase.Status.ERROR);
                 stackTrace.addAll(processStackTrace(commentLines));
                 commentLines.clear();
-            } else if (firstLine.equals("-Reference")) { // NOI18N
+            } else if (firstLine.equals("-Reference") // NOI18N
+                    || firstLine.equals("-Expected")) { // NOI18N
                 processDiff(commentLines);
                 commentLines.clear();
             } else {
@@ -209,11 +210,13 @@ public final class TapParser {
     private void processDiff(List<String> lines) {
         StringBuilder diffExpected = new StringBuilder(200);
         StringBuilder diffActual = new StringBuilder(200);
+        boolean diff = false;
         for (String line : lines) {
-            if (line.equals("+Data")) { // NOI18N
+            if (line.startsWith("@@")) { // NOI18N
+                diff = true;
                 continue;
             }
-            if (line.startsWith("@@")) { // NOI18N
+            if (!diff) {
                 continue;
             }
             if (line.startsWith("+")) { // NOI18N
