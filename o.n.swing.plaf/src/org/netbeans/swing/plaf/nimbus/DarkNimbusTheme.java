@@ -176,6 +176,9 @@ public class DarkNimbusTheme {
         UIManager.put("Table.selectionBackground", new RelativeColor(new Color(0,0,0), new Color(0,0,0), "Table[Enabled+Selected].textBackground")); //NOI18N
         UIManager.put("nb.dataview.table.rollOverRowBackground", new RelativeColor(new Color(0,0,0), new Color(30,30,30), "Table[Enabled+Selected].textBackground"));
         
+        // autoupdate
+        UIManager.put("nb.autoupdate.search.highlight", new Color(255, 75, 0));
+        
         UIManager.put("selection.highlight", new Color(202, 152, 0));
         UIManager.put( "textArea.background", new Color( 128, 128, 128) );
 
