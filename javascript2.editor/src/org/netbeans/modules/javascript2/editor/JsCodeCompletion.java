@@ -96,6 +96,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private static final List<String> WINDOW_EXPRESSION_CHAIN = Arrays.<String>asList("window", "@pro"); //NOI18N
 
     private boolean caseSensitive;
+    
+    private static final String CHARS_NO_AUTO_COMPLETE = ";,/+-\\:="; //NOI18N
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext ccContext) {
@@ -410,7 +412,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                         }
                     default:
                         if (OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionFull()) {
-                            if (!Character.isWhitespace(lastChar)) {
+                            if (!Character.isWhitespace(lastChar) && CHARS_NO_AUTO_COMPLETE.indexOf(lastChar) == -1) {
                                 return QueryType.COMPLETION;
                             }
                         }
