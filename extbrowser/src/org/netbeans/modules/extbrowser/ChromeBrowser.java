@@ -51,8 +51,6 @@ import org.openide.util.Utilities;
 import java.beans.PropertyChangeListener;
 import java.io.File;
 import java.util.logging.Level;
-import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
-import org.openide.util.lookup.ServiceProvider;
 
 
 public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListener {
@@ -64,6 +62,7 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
 
     /** Creates new ExtWebBrowser */
     public ChromeBrowser() {
+        super(PrivateBrowserFamilyId.CHROME);
         ddeServer = ExtWebBrowser.CHROME;
     }
     
@@ -215,11 +214,6 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
         return retValue;        
     }
 
-    @Override
-    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
-        return PrivateBrowserFamilyId.CHROME;
-    }
-    
     private static File getLocalAppPath(){
         String localFiles = System.getenv("LOCALAPPDATA");              // NOI18N
         String chrome = localFiles+"\\Google\\Chrome\\Application\\chrome.exe";     // NOI18N

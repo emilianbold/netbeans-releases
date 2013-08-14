@@ -207,8 +207,8 @@ public class NbDdeBrowserImpl extends ExtBrowserImpl {
 
 
     @Override
-    protected PrivateBrowserFamilyId getDefaultPrivateBrowserFamilyId(){
-        PrivateBrowserFamilyId id = super.getDefaultPrivateBrowserFamilyId();
+    protected PrivateBrowserFamilyId detectPrivateBrowserFamilyId(){
+        PrivateBrowserFamilyId id = super.detectPrivateBrowserFamilyId();
         if (id != PrivateBrowserFamilyId.UNKNOWN){
             return id;
         }
