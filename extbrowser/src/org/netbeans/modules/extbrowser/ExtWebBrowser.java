@@ -44,11 +44,9 @@
 
 package org.netbeans.modules.extbrowser;
 
-import java.awt.Image;
 import java.beans.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
@@ -78,7 +76,11 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     
     /** DDE openURL timeout property name */
     public static final String PROP_DDE_OPENURL_TIMEOUT = "openurlTimeout";     // NOI18N
-    
+
+    /** Fired when Browser Family ID has changed. Only System Default browser are
+        expected to change Browser Family ID. */
+    public static final String PROP_PRIVATE_BROWSER_FAMILY = "privateBrowserFamilyId";   // NOI18N
+
     /** Name of DDE server corresponding to Google Chrome */
     public static final String CHROME = "CHROME";   // NOI18N
     /** Name of DDE server corresponding to Google Chromium */
@@ -116,7 +118,9 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     private static final Logger err = Logger.getLogger("org.netbeans.modules.extbrowser");   // NOI18N
     
     protected String name;
-    
+
+    private PrivateBrowserFamilyId family;
+
     public static Logger getEM() {
         return err;
     }
@@ -126,8 +130,13 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     
     protected transient PropertyChangeSupport pcs;
 
-    /** Creates new Browser */
     public ExtWebBrowser () {
+        this(PrivateBrowserFamilyId.UNKNOWN);
+    }
+
+    /** Creates new Browser */
+    public ExtWebBrowser (PrivateBrowserFamilyId family) {
+        this.family = family;
         init();
     }
 
@@ -141,6 +150,18 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
             pcs.addPropertyChangeListener(this);
         }
     }
+
+    private ExtWebBrowser browserExecutableDelegate = null;
+
+    /**
+     * This method allows browser factory to delegate its browser executable
+     * to some other browser factory. For example "Chrome with NB integration"
+     * should be executed just like regular "Chrome" browser.
+     */
+    public void useBrowserExecutableDelegate(ExtWebBrowser otherBrowser) {
+        this.browserExecutableDelegate = otherBrowser;
+    }
+
 
     /**
      * Gets DDE server name
@@ -243,6 +264,9 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
      * @return Value of property browserExecutable.
      */
     public NbProcessDescriptor getBrowserExecutable () {
+        if (browserExecutableDelegate != null) {
+            return browserExecutableDelegate.getBrowserExecutable();
+        }
         NbProcessDescriptor result = browserExecutable;
         if (browserExecutable == null || "".equals(browserExecutable.getProcessName())) { // NOI18N
             result = defaultBrowserExecutable();
@@ -470,12 +494,40 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
                 );
             }
         }
+        if (family == null) {
+            if (this instanceof ChromeBrowser) {
+                family = PrivateBrowserFamilyId.CHROME;
+            } else if (this instanceof ChromiumBrowser) {
+                family = PrivateBrowserFamilyId.CHROMIUM;
+            } else if (this instanceof FirefoxBrowser) {
+                family = PrivateBrowserFamilyId.FIREFOX;
+            } else if (this instanceof IExplorerBrowser) {
+                family = PrivateBrowserFamilyId.IE;
+            } else if (this instanceof MozillaBrowser) {
+                family = PrivateBrowserFamilyId.MOZILLA;
+            } else if (this instanceof SafariBrowser) {
+                family = PrivateBrowserFamilyId.SAFARI;
+//            } else if (this instanceof OperaBrowser) {
+//                family = PrivateBrowserFamilyId.OPERA;
+            } else {
+                family = PrivateBrowserFamilyId.UNKNOWN;
+            }
+        }
         init();
     }
 
     public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
-        return PrivateBrowserFamilyId.UNKNOWN;
+        return family;
     }
+
+    void setPrivateBrowserFamilyId(PrivateBrowserFamilyId family) {
+        if (!this.family.equals(family)) {
+            PrivateBrowserFamilyId oldVal = this.family;
+            this.family = family;
+            pcs.firePropertyChange(PROP_PRIVATE_BROWSER_FAMILY, oldVal, family);
+        }
+    }
+
 
     /** Default format that can format tags related to execution. 
      * Currently this is only the URL.

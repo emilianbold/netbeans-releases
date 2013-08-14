@@ -71,6 +71,7 @@ public class IExplorerBrowser extends ExtWebBrowser {
     
     /** Creates new ExtWebBrowser */
     public IExplorerBrowser() {
+        super(PrivateBrowserFamilyId.IE);
         ddeServer = ExtWebBrowser.IEXPLORE;
     }
 
@@ -132,10 +133,4 @@ public class IExplorerBrowser extends ExtWebBrowser {
         ois.defaultReadObject();
     }
 
-    @Override
-    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
-        return PrivateBrowserFamilyId.IE;
-    }
-    
-    
 }
