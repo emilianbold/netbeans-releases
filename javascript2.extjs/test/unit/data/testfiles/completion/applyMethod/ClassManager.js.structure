@@ -15,8 +15,8 @@ Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
       $className:FIELD:[PUBLIC]:ESCAPED{$className}:
       createdFn:FIELD:[PUBLIC]:ESCAPED{createdFn}:
       postprocessors:FIELD:[PUBLIC]:ESCAPED{postprocessors}:
-  createNamespaces:METHOD:[PRIVATE]:ESCAPED{createNamespaces}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }@arr;rootESCAPED{|}Ext.ClassManager.createNamespaces.rootESCAPED{|}Manager.createNamespaces.root</font>:
-  createOverride:METHOD:[PUBLIC]:ESCAPED{createOverride}ESCAPED{(}ESCAPED{className}ESCAPED{, }ESCAPED{data}ESCAPED{, }ESCAPED{createdFn}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.createOverride.meESCAPED{|}ManagerESCAPED{|}Manager.createOverride.me</font>:
+  createNamespaces:METHOD:[PRIVATE]:ESCAPED{createNamespaces}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.createNamespaces.root</font>:
+  createOverride:METHOD:[PUBLIC]:ESCAPED{createOverride}ESCAPED{(}ESCAPED{className}ESCAPED{, }ESCAPED{data}ESCAPED{, }ESCAPED{createdFn}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.createOverride.me</font>:
     classReady:METHOD:[PRIVATE]:ESCAPED{classReady}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
     me:VARIABLE:[PRIVATE]:ESCAPED{me}<font color="#999999">ESCAPED{ : }Manager</font>:
     overriddenClassName:VARIABLE:[PRIVATE]:ESCAPED{overriddenClassName}:
@@ -27,15 +27,15 @@ Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
   dynInstantiate:METHOD:[PRIVATE]:ESCAPED{dynInstantiate}ESCAPED{(}ESCAPED{name}ESCAPED{, }ESCAPED{args}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager@pro;instantiate@call;apply</font>:
   enableNamespaceParseCache:FIELD:[PUBLIC]:ESCAPED{enableNamespaceParseCache}<font color="#999999">ESCAPED{ : }Boolean</font>:
   existCache:CLASS:[PUBLIC]:ESCAPED{existCache}:
-  get:METHOD:[PUBLIC]:ESCAPED{get}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{)}<font color="#999999">ESCAPED{ : }@arr;rootESCAPED{|}Ext.ClassESCAPED{|}Ext.ClassManager.get.rootESCAPED{|}Manager.classesESCAPED{|}Manager.get.classesESCAPED{|}Manager.get.root</font>:
+  get:METHOD:[PUBLIC]:ESCAPED{get}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassESCAPED{|}Ext.ClassManager.get.rootESCAPED{|}Manager.classesESCAPED{|}Manager.get.classes</font>:
   getAliasesByName:METHOD:[PUBLIC]:ESCAPED{getAliasesByName}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{)}<font color="#999999">ESCAPED{ : }ArrayESCAPED{|}Manager.maps.nameToAliases</font>:
-  getByAlias:METHOD:[PUBLIC]:ESCAPED{getByAlias}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{alias}ESCAPED{)}<font color="#999999">ESCAPED{ : }@arr;rootESCAPED{|}Ext.ClassESCAPED{|}Ext.ClassManager.get.rootESCAPED{|}Manager.classesESCAPED{|}Manager.get.classesESCAPED{|}Manager.get.rootESCAPED{|}unresolved</font>:
+  getByAlias:METHOD:[PUBLIC]:ESCAPED{getByAlias}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{alias}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassESCAPED{|}Ext.ClassManager.get.rootESCAPED{|}Manager.classesESCAPED{|}Manager.get.classesESCAPED{|}unresolved</font>:
   getClass:METHOD:[PUBLIC]:ESCAPED{getClass}ESCAPED{(}<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{object}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassESCAPED{|}Ext.ClassManager.getClass.objectESCAPED{|}Object.self</font>:
-  getInstantiator:METHOD:[PRIVATE]:ESCAPED{getInstantiator}ESCAPED{(}ESCAPED{length}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.getInstantiator.instantiatorESCAPED{|}Manager.getInstantiator.instantiator</font>:
+  getInstantiator:METHOD:[PRIVATE]:ESCAPED{getInstantiator}ESCAPED{(}ESCAPED{length}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.getInstantiator.instantiator</font>:
   getName:METHOD:[PUBLIC]:ESCAPED{getName}ESCAPED{(}<font color="#999999">ESCAPED{Ext.Class|Object}ESCAPED{ }</font>ESCAPED{object}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.Class.$classNameESCAPED{|}Ext.ClassManager.getName.objectESCAPED{|}Object.$classNameESCAPED{|}String</font>:
   getNameByAlias:METHOD:[PUBLIC]:ESCAPED{getNameByAlias}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{alias}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.maps.aliasToNameESCAPED{|}String</font>:
   getNameByAlternate:METHOD:[PUBLIC]:ESCAPED{getNameByAlternate}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{alternate}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager.maps.alternateToNameESCAPED{|}String</font>:
-  getNamesByExpression:METHOD:[PUBLIC]:ESCAPED{getNamesByExpression}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{expression}ESCAPED{)}<font color="#999999">ESCAPED{ : }ArrayESCAPED{|}Ext.ClassManager.getNamesByExpression.namesESCAPED{|}Manager.getNamesByExpression.namesESCAPED{|}String[]</font>:
+  getNamesByExpression:METHOD:[PUBLIC]:ESCAPED{getNamesByExpression}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{expression}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.getNamesByExpression.namesESCAPED{|}String[]</font>:
   instantiate:METHOD:[PRIVATE]:ESCAPED{instantiate}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager@call;@call;getInstantiator</font>:
   instantiateByAlias:METHOD:[PUBLIC]:ESCAPED{instantiateByAlias}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Manager@pro;instantiate@call;applyESCAPED{|}Object</font>:
   instantiators:FIELD:[PUBLIC]:ESCAPED{instantiators}<font color="#999999">ESCAPED{ : }Array</font>:
@@ -83,8 +83,8 @@ cls:PARAMETER:[PUBLIC]:ESCAPED{cls}:
 data:PARAMETER:[PUBLIC]:ESCAPED{data}:
   alias:FIELD:[PUBLIC]:ESCAPED{alias}:
   xtype:FIELD:[PUBLIC]:ESCAPED{xtype}:
-  xtypes:FIELD:[PUBLIC]:ESCAPED{xtypes}<font color="#999999">ESCAPED{ : }mixin.xtypesESCAPED{|}xtypes</font>:
-  xtypesChain:FIELD:[PUBLIC]:ESCAPED{xtypesChain}<font color="#999999">ESCAPED{ : }xtypesChain</font>:
+  xtypes:FIELD:[PUBLIC]:ESCAPED{xtypes}<font color="#999999">ESCAPED{ : }mixin.xtypes</font>:
+  xtypesChain:FIELD:[PUBLIC]:ESCAPED{xtypesChain}:
   xtypesMap:FIELD:[PUBLIC]:ESCAPED{xtypesMap}<font color="#999999">ESCAPED{ : }Boolean</font>:
 alternate:VARIABLE:[PRIVATE]:ESCAPED{alternate}:
 ln:VARIABLE:[PRIVATE]:ESCAPED{ln}:
@@ -99,4 +99,4 @@ Ext:CLASS:[PUBLIC]:ESCAPED{Ext}:
   getDisplayName:METHOD:[PUBLIC]:ESCAPED{getDisplayName}ESCAPED{(}<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{object}ESCAPED{)}<font color="#999999">ESCAPED{ : }Object.$classNameESCAPED{|}Object.displayNameESCAPED{|}String</font>:
   namespace:FIELD:[PUBLIC]:ESCAPED{namespace}:
   undefine:METHOD:[PRIVATE]:ESCAPED{undefine}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{className}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
-  widget:METHOD:[PUBLIC]:ESCAPED{widget}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{config}ESCAPED{)}<font color="#999999">ESCAPED{ : }@arr;rootESCAPED{|}Ext.ClassESCAPED{|}Ext.ClassManager.get.rootESCAPED{|}Manager.classesESCAPED{|}Manager.get.classesESCAPED{|}Manager.get.rootESCAPED{|}Manager@pro;instantiate@call;applyESCAPED{|}ObjectESCAPED{|}StringESCAPED{|}widget.T</font>:
+  widget:METHOD:[PUBLIC]:ESCAPED{widget}ESCAPED{(}<font color="#999999">ESCAPED{String}ESCAPED{ }</font>ESCAPED{name}ESCAPED{, }<font color="#999999">ESCAPED{Object}ESCAPED{ }</font>ESCAPED{config}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassESCAPED{|}Ext.ClassManager.get.rootESCAPED{|}Manager.classesESCAPED{|}Manager.get.classesESCAPED{|}Manager@pro;instantiate@call;applyESCAPED{|}ObjectESCAPED{|}StringESCAPED{|}widget.T</font>:

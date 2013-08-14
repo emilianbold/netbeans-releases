@@ -41,9 +41,6 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-
 /**
  *
  * @author Petr Pisl
@@ -224,5 +221,41 @@ public class JsWithFastTest extends JsWithBase {
     
     public void testVarInWith_06() throws Exception {
         checkCompletion("testfiles/with/varInWith01.js", "console.log(myDataVarInWith.^kolik);", true); 
+    }
+    
+    public void testIssue232776_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232776.js","p^rop01 = prop01 + prop02;", true);
+    }
+    
+    public void testIssue232776_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232776.js","prop01 = prop01 + pro^p02;", true);
+    }
+    
+    public void testIssue232776_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232776.js","metho^d01();", true);
+    }
+    
+    public void testIssue232776_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232776.js","with (testWi^th01) {", true);
+    }
+    
+    public void testIssue232777_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232777.js","app.des^cription = \"new description\";", true);
+    }
+    
+    public void testIssue232777_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232777.js","ap^p.description = \"new description\";", true);
+    }
+    
+    public void testIssue232792_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232792.js","getI^nfo();", true);
+    }
+    
+    public void testIssue232792_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232792.js","A.getN^ame();", true);
+    }
+    
+    public void testIssue232792_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue232792.js","A.B.getN^ame();", true);
     }
 }
