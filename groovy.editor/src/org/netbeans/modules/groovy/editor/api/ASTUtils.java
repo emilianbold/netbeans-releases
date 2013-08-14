@@ -279,10 +279,6 @@ public class ASTUtils {
 
     @SuppressWarnings("unchecked")
     public static List<ASTNode> children(ASTNode root) {
-
-        // Logger PRIV_LOG = Logger.getLogger(AstUtilities.class.getName());
-        // PRIV_LOG.log(Level.FINEST, "children(ASTNode):Name" + root.getClass().getName() +":"+ root.getText());
-
         List<ASTNode> children = new ArrayList<>();
 
         if (root instanceof ModuleNode) {
@@ -346,10 +342,7 @@ public class ASTUtils {
                 if (constructor.getLineNumber() >= 0) {
                     children.add(constructor);
                 }
-                // PRIV_LOG.log(Level.FINEST, "Constructor found: " + constructor.toString());
             }
-
-
 
         } else if (root instanceof MethodNode) {
             MethodNode methodNode = (MethodNode) root;
@@ -370,7 +363,6 @@ public class ASTUtils {
             children = astChildrenSupport.children();
         }
 
-        // PRIV_LOG.log(Level.FINEST, "List:" + children.toString());
         return children;
     }
 
