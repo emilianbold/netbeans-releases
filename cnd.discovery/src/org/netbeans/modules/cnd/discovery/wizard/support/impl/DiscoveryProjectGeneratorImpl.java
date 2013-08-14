@@ -154,7 +154,7 @@ public class DiscoveryProjectGeneratorImpl {
                                 throw new UnsupportedOperationException();
                             }
                         };
-                        support.putOptions(activeConfiguration, it);
+                        support.putOptions(makeConfigurationDescriptor, activeConfiguration, it);
                     }
                 }
             }
