@@ -193,15 +193,19 @@ public class GoToRuleSourceAction extends AbstractAction {
                         Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
                         if (modelRule != null) {
                             found[0] = true;
-                            if (!Utilities.goToMetaSource(modelRule)) {
-                                int snapshotOffset = modelRule.getStartOffset();
-                                final int offset = result.getSnapshot().getOriginalOffset(snapshotOffset);
-                                EventQueue.invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        CSSUtils.openAtOffset(fob, offset);
-                                    }
-                                });
+                            StyleSheetBody body = rule.getParentStyleSheet();
+                            String styleSheetText = (body == null) ? null : body.getText();
+                            int snapshotOffset = modelRule.getStartOffset();
+                            final int offset = result.getSnapshot().getOriginalOffset(snapshotOffset);
+                            if (!CSSUtils.goToSourceBySourceMap(fob, sourceModel, styleSheetText, offset)) {
+                                if (!Utilities.goToMetaSource(modelRule)) {
+                                    EventQueue.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            CSSUtils.openAtOffset(fob, offset);
+                                        }
+                                    });
+                                }
                             }
                         }
                     }
