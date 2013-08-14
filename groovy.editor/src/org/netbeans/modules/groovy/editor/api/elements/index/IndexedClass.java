@@ -107,20 +107,6 @@ public final class IndexedClass extends IndexedElement implements IClassElement 
     public int hashCode() {
         return classFqn == null ? super.hashCode() : classFqn.hashCode();
     }
-    
-    public static String decodeFlags(int flags) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(IndexedElement.decodeFlags(flags));
-
-        if ((flags & MODULE) != 0) {
-            sb.append("|MODULE");
-        }
-        if (sb.length() > 0) {
-            sb.append("|");
-        }
-        
-        return sb.toString();
-    }
 
     @Override
     public String getFqn() {
