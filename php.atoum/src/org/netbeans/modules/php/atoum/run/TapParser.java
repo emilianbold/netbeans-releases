@@ -59,12 +59,12 @@ public final class TapParser {
     private static final Pattern SUITE_TEST_PATTERN = Pattern.compile("([^:\\s]+)::([^\\(]+)\\(\\)"); // NOI18N
 
     private final List<TestSuiteVo> testSuites = new ArrayList<>();
+    private final List<String> commentLines = new ArrayList<>();
 
     private TestSuiteVo testSuite = null;
     private TestCaseVo testCase = null;
     private int testCaseCount = 0;
     private State state = null;
-    private List<String> commentLines = new ArrayList<>();
 
 
     public TapParser() {
