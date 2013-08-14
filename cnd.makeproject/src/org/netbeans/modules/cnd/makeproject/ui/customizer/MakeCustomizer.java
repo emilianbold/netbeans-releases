@@ -766,7 +766,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
                     (getListData().get(0)).setDefault(true);
                 }
             }
-            CompileOptionsProvider.getDefault().remove((MakeConfiguration) c);
+            CompileOptionsProvider.getDefault().onRemove((MakeConfigurationDescriptor) projectDescriptor, (MakeConfiguration) c);
         }
 
         @Override
@@ -802,7 +802,7 @@ public final class MakeCustomizer extends javax.swing.JPanel implements HelpCtx.
             }
             String suggestedName = ConfigurationSupport.makeNameLegal(notifyDescriptor.getInputText());
             String name = ConfigurationSupport.getUniqueName(getConfs(), suggestedName);
-            CompileOptionsProvider.getDefault().rename((MakeConfiguration) c, name);
+            CompileOptionsProvider.getDefault().onRename((MakeConfigurationDescriptor) projectDescriptor, (MakeConfiguration) c, name);
             c.setName(name);
             return true;
         }
