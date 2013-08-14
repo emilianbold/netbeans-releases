@@ -307,7 +307,8 @@ public final class WebBrowsers {
     }
     
     private List<WebBrowserFactoryDescriptor> getFactories(boolean includeSystemDefaultBrowser) {
-        List<WebBrowserFactoryDescriptor> browsers = new ArrayList<WebBrowserFactoryDescriptor>();
+        List<WebBrowserFactoryDescriptor> browsers = new ArrayList<>();
+        List<WebBrowserFactoryDescriptor> browsersToUpdate = new ArrayList<>();
 
         WebBrowserFactoryDescriptor advancedChrome = null;
         WebBrowserFactoryDescriptor advancedChromium = null;
@@ -337,7 +338,7 @@ public final class WebBrowsers {
             if (fact.getBrowserFamilyId() == BrowserFamilyId.CHROMIUM && !fact.hasNetBeansIntegration()) {
                 advancedChromium = desc;
             }
-
+            browsersToUpdate.add(desc);
         }
 
         FileObject servicesBrowsers = getConfigFolder();
@@ -352,7 +353,7 @@ public final class WebBrowsers {
             if (Boolean.TRUE.equals(browserSetting.getPrimaryFile().getAttribute("hidden"))) {
                 continue;
             }
-            if (!includeSystemDefaultBrowser && browserSetting.getPrimaryFile().getName().startsWith("SystemDefaultBrowser")) {
+            if (!includeSystemDefaultBrowser && isSystemDefaultBrowser(browserSetting)) {
                 continue;
             }
             InstanceCookie cookie = browserSetting.getCookie(InstanceCookie.class);
@@ -377,12 +378,23 @@ public final class WebBrowsers {
             if (item == null) {
                 continue;
             }
+            ExtWebBrowser extFact = fact instanceof ExtWebBrowser ? (ExtWebBrowser)fact : null;
             boolean isDefault;
             if (IDESettings.getWWWBrowser() == null){
                 isDefault = false;
             }
             else {
                 isDefault = IDESettings.getWWWBrowser().equals(fact);
+            }
+            if (extFact != null && !isSystemDefaultBrowser(browserSetting)) {
+                // if this is Chrome browser instance which is configurable in
+                // the Options UI then its browser executable configuration should be
+                // used by "Chrome with NB integration"; similarly for Chromium
+                if (extFact.getPrivateBrowserFamilyId() == PrivateBrowserFamilyId.CHROME) {
+                    setBrowserExecutableDelegate(extFact, browsersToUpdate, BrowserFamilyId.CHROME);
+                } else if (extFact.getPrivateBrowserFamilyId() == PrivateBrowserFamilyId.CHROMIUM) {
+                    setBrowserExecutableDelegate(extFact, browsersToUpdate, BrowserFamilyId.CHROMIUM);
+                }
             }
 
             // ignore default Chrome browser if advanced version is available;
@@ -392,15 +404,15 @@ public final class WebBrowsers {
             // version of Chrome otherwise some features would not work (eg. saving changes in CDT)
             // if replaced browser was a default one then advanced browser version
             // is marked as default;
-            if (advancedChrome != null && fact instanceof ExtWebBrowser &&
-                    ((ExtWebBrowser)fact).getPrivateBrowserFamilyId() == PrivateBrowserFamilyId.CHROME) {
+            if (advancedChrome != null && extFact != null &&
+                    extFact.getPrivateBrowserFamilyId() == PrivateBrowserFamilyId.CHROME) {
                 if (isDefault) {
                     advancedChrome.setDefault(true);
                 }
                 continue;
             }
-            if (advancedChromium != null && fact instanceof ExtWebBrowser &&
-                    ((ExtWebBrowser)fact).getPrivateBrowserFamilyId() == PrivateBrowserFamilyId.CHROMIUM) {
+            if (advancedChromium != null && extFact != null &&
+                    extFact.getPrivateBrowserFamilyId() == PrivateBrowserFamilyId.CHROMIUM) {
                 if (isDefault) {
                     advancedChromium.setDefault(true);
                 }
@@ -425,6 +437,18 @@ public final class WebBrowsers {
             return ((EnhancedBrowserFactory)factory).getBrowserFamilyId();
         }
         return BrowserFamilyId.UNKNOWN;
+    }
+
+    private boolean isSystemDefaultBrowser(DataObject browserSetting) {
+        return browserSetting.getPrimaryFile().getName().startsWith("SystemDefaultBrowser");
+    }
+
+    private void setBrowserExecutableDelegate(ExtWebBrowser fact, List<WebBrowserFactoryDescriptor> browsersToUpdate, BrowserFamilyId family) {
+        for (WebBrowserFactoryDescriptor desc : browsersToUpdate) {
+            if (desc.getBrowserFamily() == family && desc.getFactory() instanceof ExtWebBrowser) {
+                ((ExtWebBrowser)desc.getFactory()).useBrowserExecutableDelegate(fact);
+            }
+        }
     }
 
     /**

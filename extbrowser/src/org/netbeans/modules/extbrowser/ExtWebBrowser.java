@@ -151,6 +151,18 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
         }
     }
 
+    private ExtWebBrowser browserExecutableDelegate = null;
+
+    /**
+     * This method allows browser factory to delegate its browser executable
+     * to some other browser factory. For example "Chrome with NB integration"
+     * should be executed just like regular "Chrome" browser.
+     */
+    public void useBrowserExecutableDelegate(ExtWebBrowser otherBrowser) {
+        this.browserExecutableDelegate = otherBrowser;
+    }
+
+
     /**
      * Gets DDE server name
      * @return server name of DDEserver.
@@ -252,6 +264,9 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
      * @return Value of property browserExecutable.
      */
     public NbProcessDescriptor getBrowserExecutable () {
+        if (browserExecutableDelegate != null) {
+            return browserExecutableDelegate.getBrowserExecutable();
+        }
         NbProcessDescriptor result = browserExecutable;
         if (browserExecutable == null || "".equals(browserExecutable.getProcessName())) { // NOI18N
             result = defaultBrowserExecutable();
