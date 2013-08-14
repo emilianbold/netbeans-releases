@@ -923,6 +923,26 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue233720.js", "return this.myMet^hod2();", true); 
     }
     
+    public void testIssue222964_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222964/issue222964.js", "console.log(window.store.address.stree^t);", true); 
+    }
+    
+    public void testIssue222964_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222964/issue222964.js", "console.log(window.store.addre^ss.street);", true); 
+    }
+    
+    public void testIssue222964_03() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222964/issue222964.js", "console.log(window.st^ore.address.street);", true); 
+    }
+    
+    public void testIssue222964_04() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222964/issue222964.js", "console.log(wind^ow.store.address.street);", true); 
+    }
+    
+    public void testIssue222964_05() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue222964/issue222964.js", "popul^ate: function() {", true); 
+    }
+    
     private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
