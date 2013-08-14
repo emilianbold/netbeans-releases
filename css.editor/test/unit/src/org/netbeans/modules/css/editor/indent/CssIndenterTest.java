@@ -77,7 +77,7 @@ public class CssIndenterTest extends TestBase {
     protected void setUp() throws Exception {
         super.setUp();
         AbstractIndenter.inUnitTestRun = true;
-        CssBracketCompleter.unitTestingSupport = true;
+//        CssBracketCompleter.unitTestingSupport = true;
 
         CssIndentTaskFactory cssFactory = new CssIndentTaskFactory();
         MockMimeLookup.setInstances(MimePath.parse("text/css"), cssFactory, CssTokenId.language());
