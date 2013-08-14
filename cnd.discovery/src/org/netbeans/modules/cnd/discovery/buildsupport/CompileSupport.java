@@ -51,6 +51,7 @@ import org.netbeans.modules.cnd.api.project.NativeProject;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.cnd.makeproject.api.configurations.Item;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
+import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfigurationDescriptor;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.AllOptionsProvider;
 import org.netbeans.modules.cnd.makeproject.spi.configurations.CompileOptionsProvider;
 import org.openide.filesystems.FileLock;
@@ -75,22 +76,22 @@ public class CompileSupport extends CompileOptionsProvider {
         NativeProject nativeProject = item.getNativeProject();
         Provider project = nativeProject.getProject();
         if (project instanceof Project) {
-            FileObject projectDirectory = ((Project)project).getProjectDirectory();
-            MakeConfiguration makeConfiguration = item.getFolder().getConfigurationDescriptor().getActiveConfiguration();
+            final MakeConfigurationDescriptor cd = item.getFolder().getConfigurationDescriptor();
+            MakeConfiguration makeConfiguration = cd.getActiveConfiguration();
             if (makeConfiguration != null) {
                 String confName = makeConfiguration.getName();
                 String itemPath = item.getAbsolutePath();
-                return getOptions(projectDirectory, confName, itemPath);
+                return getOptions(cd, confName, itemPath);
             }
         }
         return null;
     }
 
     @Override
-    public void rename(MakeConfiguration makeConfiguration, String newName) {
-        FileObject projectDirectory = makeConfiguration.getBaseFSPath().getFileObject();
+    public void onRename(MakeConfigurationDescriptor cd, MakeConfiguration makeConfiguration, String newName) {
+        FileObject nbPrivateProjectFileObject = cd.getNbPrivateProjectFileObject();
         String confName = makeConfiguration.getName();
-        FileObject properties = projectDirectory.getFileObject("nbproject/private/"+confName+"."+STORAGE_SUFFIX); // NOI18N
+        FileObject properties = nbPrivateProjectFileObject.getFileObject(confName+"."+STORAGE_SUFFIX); // NOI18N
         if (properties != null && properties.isValid()) {
             FileLock lock = null;
             try {
@@ -107,10 +108,10 @@ public class CompileSupport extends CompileOptionsProvider {
     }
 
     @Override
-    public void remove(MakeConfiguration makeConfiguration) {
-        FileObject projectDirectory = makeConfiguration.getBaseFSPath().getFileObject();
+    public void onRemove(MakeConfigurationDescriptor cd, MakeConfiguration makeConfiguration) {
+        FileObject nbPrivateProjectFileObject = cd.getNbPrivateProjectFileObject();
         String confName = makeConfiguration.getName();
-        FileObject properties = projectDirectory.getFileObject("nbproject/private/"+confName+"."+STORAGE_SUFFIX); // NOI18N
+        FileObject properties = nbPrivateProjectFileObject.getFileObject(confName+"."+STORAGE_SUFFIX); // NOI18N
         if (properties != null && properties.isValid()) {
             FileLock lock = null;
             try {
@@ -126,13 +127,13 @@ public class CompileSupport extends CompileOptionsProvider {
         }
     }
     
-    public void putOptions(MakeConfiguration makeConfiguration, Iterator<String> it) {
-        FileObject projectDirectory = makeConfiguration.getBaseFSPath().getFileObject();
+    public void putOptions(MakeConfigurationDescriptor cd, MakeConfiguration makeConfiguration, Iterator<String> it) {
+        FileObject nbPrivateProjectFileObject = cd.getNbPrivateProjectFileObject();
         String confName = makeConfiguration.getName();
-        FileObject properties = projectDirectory.getFileObject("nbproject/private/"+confName+"."+STORAGE_SUFFIX); // NOI18N
+        FileObject properties = nbPrivateProjectFileObject.getFileObject(confName+"."+STORAGE_SUFFIX); // NOI18N
         if (properties == null) {
             try {
-                properties = FileUtil.createData(projectDirectory, "nbproject/private/"+confName+"."+STORAGE_SUFFIX); // NOI18N
+                properties = FileUtil.createData(nbPrivateProjectFileObject, confName+"."+STORAGE_SUFFIX); // NOI18N
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
                 return;
@@ -164,8 +165,9 @@ public class CompileSupport extends CompileOptionsProvider {
         }
     }
     
-    private AllOptionsProvider getOptions(FileObject projectDirectory, String confName, String itemPath) {
-        FileObject properties = projectDirectory.getFileObject("nbproject/private/"+confName+"."+STORAGE_SUFFIX); // NOI18N
+    private AllOptionsProvider getOptions(MakeConfigurationDescriptor cd, String confName, String itemPath) {
+        FileObject nbPrivateProjectFileObject = cd.getNbPrivateProjectFileObject();
+        FileObject properties = nbPrivateProjectFileObject.getFileObject(confName+"."+STORAGE_SUFFIX); // NOI18N
         if (properties != null && properties.isValid()) {
             BufferedReader in = null;
             try {
