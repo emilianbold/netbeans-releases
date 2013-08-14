@@ -164,7 +164,8 @@ public class RunFindBugs {
                     if (classFO != null) {
                         sigFiles.add(classFO);
                     } else {
-                        LOG.log(Level.WARNING, "Cannot find sig file for: " + className); //TODO: should probably become FINE eventually
+                        //TODO: should probably become FINE eventually
+                        LOG.log(Level.WARNING, "Cannot find sig file for: {0}", className); //NOI18N
                     }
                 }
 
@@ -292,7 +293,7 @@ public class RunFindBugs {
             
             for (BugInstance b : r.getBugCollection().getCollection()) {
                 if (cancel != null && cancel.isCancelled()) return null;
-                if (singleBug != null && !singleBug.equals(b.getBugPattern().getType())) continue;
+                if (singleBug != null && !singleBug.substring(PREFIX_FINDBUGS.length()).equals(b.getBugPattern().getType())) continue;
                 if (singleBug == null && !settings.getBoolean(b.getBugPattern().getType(), customSettings == null && isEnabledByDefault(b.getBugPattern()))) {
                     continue;
                 }
