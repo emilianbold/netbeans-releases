@@ -41,8 +41,6 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.css.lib.api.properties.TokenAcceptor;
-import org.netbeans.modules.css.lib.api.properties.TokenAcceptor.Length;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**

@@ -68,7 +68,7 @@ public class CssBracketCompleter implements KeystrokeHandler {
 
     @Override
     public List<OffsetRange> findLogicalRanges(ParserResult info, int caretOffset) {
-        ArrayList<OffsetRange> ranges = new ArrayList<OffsetRange>(2);
+        ArrayList<OffsetRange> ranges = new ArrayList<>(2);
 
         Node root = ((CssParserResult) info).getParseTree();
         Snapshot snapshot = info.getSnapshot();

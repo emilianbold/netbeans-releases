@@ -49,7 +49,6 @@ import javax.swing.text.StyledDocument;
 import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
-//import org.netbeans.modules.refactoring.javascript.ui.tree.ElementGripFactory;
 import org.openide.filesystems.FileObject;
 import org.openide.text.PositionBounds;
 import org.openide.text.PositionRef;
@@ -127,7 +126,7 @@ import org.openide.util.lookup.Lookups;
             Exceptions.printStackTrace(ex);
             return null;
         }
-        newFileContent = new WeakReference<String>(result);
+        newFileContent = new WeakReference<>(result);
         return result;
     }
     

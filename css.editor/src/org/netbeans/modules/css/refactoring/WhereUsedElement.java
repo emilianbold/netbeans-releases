@@ -47,12 +47,11 @@ package org.netbeans.modules.css.refactoring;
 import java.util.Collections;
 import javax.swing.Icon;
 import javax.swing.text.Position.Bias;
-import org.netbeans.modules.csl.api.Modifier;
-
-import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.UiUtils;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.refactoring.api.Entry;

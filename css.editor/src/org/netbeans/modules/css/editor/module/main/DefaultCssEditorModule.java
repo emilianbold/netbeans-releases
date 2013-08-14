@@ -187,7 +187,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
 
     private synchronized Map<String, PropertyDefinition> getProperties() {
         if (propertyDescriptors == null) {
-            propertyDescriptors = new HashMap<String, PropertyDefinition>();
+            propertyDescriptors = new HashMap<>();
             for (CssModule module : MODULE_PROPERTY_DEFINITION_FILE_NAMES) {
                 String path = MODULE_PATH_BASE + module.getName();
                 propertyDescriptors.putAll(Utilities.parsePropertyDefinitionFile(path, module));
@@ -399,7 +399,7 @@ public class DefaultCssEditorModule extends CssEditorModule {
 
                                         List<OffsetRange> codeblocks = getResult().get("codeblocks"); //NOI18N
                                         if (codeblocks == null) {
-                                            codeblocks = new ArrayList<OffsetRange>();
+                                            codeblocks = new ArrayList<>();
                                             getResult().put("codeblocks", codeblocks); //NOI18N
                                         }
 
@@ -485,12 +485,12 @@ public class DefaultCssEditorModule extends CssEditorModule {
     @Override
     public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(final FeatureContext context, final T result) {
 
-        final List<StructureItem> imports = new ArrayList<StructureItem>();
-        final List<StructureItem> rules = new ArrayList<StructureItem>();
-        final List<StructureItem> atrules = new ArrayList<StructureItem>();
-        final Set<StructureItem> classes = new HashSet<StructureItem>();
-        final Set<StructureItem> ids = new HashSet<StructureItem>();
-        final Set<StructureItem> elements = new HashSet<StructureItem>();
+        final List<StructureItem> imports = new ArrayList<>();
+        final List<StructureItem> rules = new ArrayList<>();
+        final List<StructureItem> atrules = new ArrayList<>();
+        final Set<StructureItem> classes = new HashSet<>();
+        final Set<StructureItem> ids = new HashSet<>();
+        final Set<StructureItem> elements = new HashSet<>();
 
         final Snapshot snapshot = context.getSnapshot();
         final FileObject file = context.getFileObject();

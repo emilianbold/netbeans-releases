@@ -100,7 +100,7 @@ public class PagedMediaModule extends ExtCssEditorModule implements CssModule {
   
     @Override
     public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
-        List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        List<CompletionProposal> proposals = new ArrayList<>();
         Node activeNode = context.getActiveNode();
         boolean isError = activeNode.type() == NodeType.error;
         if (isError) {

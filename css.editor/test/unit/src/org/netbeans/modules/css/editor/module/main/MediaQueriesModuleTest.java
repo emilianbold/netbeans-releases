@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import org.netbeans.modules.csl.api.test.CslTestBase;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**

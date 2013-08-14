@@ -51,7 +51,7 @@ import java.util.List;
  */
 public class FeatureCancel {
     
-    private List<Runnable> cancelActions = new ArrayList<Runnable>();
+    private List<Runnable> cancelActions = new ArrayList<>();
     
     private boolean isCancelled = false;
     

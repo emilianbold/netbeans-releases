@@ -183,35 +183,35 @@ public class CssFileModel {
     //single threaded - called from constructor only, no need for synch
     private Collection<Entry> getClassesCollectionInstance() {
         if (classes == null) {
-            classes = new ArrayList<Entry>();
+            classes = new ArrayList<>();
         }
         return classes;
     }
 
     private Collection<Entry> getIdsCollectionInstance() {
         if (ids == null) {
-            ids = new ArrayList<Entry>();
+            ids = new ArrayList<>();
         }
         return ids;
     }
 
     private Collection<Entry> getHtmlElementsCollectionInstance() {
         if (htmlElements == null) {
-            htmlElements = new ArrayList<Entry>();
+            htmlElements = new ArrayList<>();
         }
         return htmlElements;
     }
 
     private Collection<Entry> getImportsCollectionInstance() {
         if (imports == null) {
-            imports = new ArrayList<Entry>();
+            imports = new ArrayList<>();
         }
         return imports;
     }
 
     private Collection<Entry> getColorsCollectionInstance() {
         if (colors == null) {
-            colors = new ArrayList<Entry>();
+            colors = new ArrayList<>();
         }
         return colors;
     }
@@ -303,7 +303,7 @@ public class CssFileModel {
         }
 
         private Collection<Entry> getImports(Node node) {
-            Collection<Entry> imports = new ArrayList<Entry>();
+            Collection<Entry> imports = new ArrayList<>();
             //@import "resources/global.css";
             Node[] resourceIdentifiers = NodeUtil.getChildrenByType(node, NodeType.resourceIdentifier);
             //scss import can contain several resourece separated by comma

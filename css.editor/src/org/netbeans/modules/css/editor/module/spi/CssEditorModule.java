@@ -41,7 +41,6 @@
  */
 package org.netbeans.modules.css.editor.module.spi;
 
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -54,6 +53,7 @@ import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
+import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Pair;
 

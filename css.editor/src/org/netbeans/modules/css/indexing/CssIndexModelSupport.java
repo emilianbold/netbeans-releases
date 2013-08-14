@@ -55,7 +55,7 @@ import org.openide.util.Lookup;
 public class CssIndexModelSupport {
 
     public static Collection<CssIndexModel> getModels(CssParserResult result) {
-        Collection<CssIndexModel> models = new ArrayList<CssIndexModel>();
+        Collection<CssIndexModel> models = new ArrayList<>();
         Collection<? extends CssIndexModelFactory> factories = Lookup.getDefault().lookupAll(CssIndexModelFactory.class);
 
         for (CssIndexModelFactory factory : factories) {
