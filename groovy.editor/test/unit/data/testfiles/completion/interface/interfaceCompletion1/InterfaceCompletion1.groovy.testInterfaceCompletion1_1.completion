@@ -9,6 +9,7 @@ PACKAGE    groovyjarjarasm                            null
 PACKAGE    groovyjarjarcommonscli                     null
 PACKAGE    java                                       null
 PACKAGE    javax                                      null
+PACKAGE    oracle                                     null
 PACKAGE    org                                        null
 PACKAGE    sun                                        null
 PACKAGE    sunw                                       null
