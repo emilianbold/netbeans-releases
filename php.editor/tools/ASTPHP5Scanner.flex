@@ -337,6 +337,10 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 	return createSymbol(ASTPHP5Symbols.T_RETURN);
 }
 
+<ST_IN_SCRIPTING>"yield" {
+	return createSymbol(ASTPHP5Symbols.T_YIELD);
+}
+
 <ST_IN_SCRIPTING>"try" {
 	return createSymbol(ASTPHP5Symbols.T_TRY);
 }
@@ -347,6 +351,10 @@ NOWDOC_CHARS=({NEWLINE}*(([^a-zA-Z_\x7f-\xff\n\r][^\n\r]*)|({LABEL}[^a-zA-Z0-9_\
 
 <ST_IN_SCRIPTING>"throw" {
 	return createSymbol(ASTPHP5Symbols.T_THROW);
+}
+
+<ST_IN_SCRIPTING>"finally" {
+	return createSymbol(ASTPHP5Symbols.T_FINALLY);
 }
 
 <ST_IN_SCRIPTING>"if" {

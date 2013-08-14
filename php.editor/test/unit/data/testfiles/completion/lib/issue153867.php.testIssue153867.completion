@@ -511,6 +511,7 @@ KEYWORD    eval()                                     Language Construct
 KEYWORD    exit()                                     Language Construct
 KEYWORD    extends                                    null
 KEYWORD    final                                      null
+KEYWORD    finally                                    null
 KEYWORD    for                                        null
 KEYWORD    foreach                                    null
 KEYWORD    function                                   null
@@ -543,3 +544,4 @@ KEYWORD    use                                        null
 KEYWORD    var                                        null
 KEYWORD    while                                      null
 KEYWORD    xor                                        null
+KEYWORD    yield                                      null

@@ -218,4 +218,16 @@ public class PHPFormatterAlignmentTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/alignment/issue211445_05.php", options);
     }
 
+    public void testFinally_01() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.PLACE_FINALLY_ON_NEW_LINE, true);
+        reformatFileContents("testfiles/formatting/alignment/finally_01.php", options);
+    }
+
+    public void testFinally_02() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.PLACE_FINALLY_ON_NEW_LINE, false);
+        reformatFileContents("testfiles/formatting/alignment/finally_02.php", options);
+    }
+
 }
