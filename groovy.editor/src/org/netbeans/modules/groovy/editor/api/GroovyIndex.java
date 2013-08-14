@@ -642,7 +642,7 @@ public final class GroovyIndex {
             //signature = signature.substring(0, attributeIndex);
         }
 
-        IndexedField m = IndexedField.create(name, type, clz, map, attributes, flags);
+        IndexedField m = IndexedField.create(type, name, clz, map, attributes, flags);
         m.setInherited(inherited);
 
         return m;

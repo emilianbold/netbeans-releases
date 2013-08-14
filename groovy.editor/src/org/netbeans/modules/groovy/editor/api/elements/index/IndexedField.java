@@ -31,6 +31,7 @@
 package org.netbeans.modules.groovy.editor.api.elements.index;
 
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 
@@ -40,25 +41,22 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
  */
 public class IndexedField extends IndexedElement {
 
-    private final String name;
-
-    private final String type;
-    
+    private final String typeName;
+    private final String fieldName;
     private boolean inherited;
-
     private boolean smart;
 
-    private IndexedField(String name, String type, IndexResult result, String classFqn,
+    private IndexedField(String typeName, String fieldName, IndexResult result, String classFqn,
             String attributes, int flags) {
         super(result, classFqn, attributes, flags);
-        this.name = name;
-        this.type = type;
+        this.typeName = GroovyUtils.stripPackage(typeName);
+        this.fieldName = fieldName;
     }
 
-    public static IndexedField create(String name, String type, String classFqn,
+    public static IndexedField create(String typeName, String fieldName, String classFqn,
             IndexResult result, String attributes, int flags) {
         
-        IndexedField m = new IndexedField(name, type, result, classFqn, attributes, flags);
+        IndexedField m = new IndexedField(typeName, fieldName, result, classFqn, attributes, flags);
         return m;
     }
 
@@ -77,16 +75,16 @@ public class IndexedField extends IndexedElement {
 
     @Override
     public String getSignature() {
-        return classFqn + "#" + name;
+        return classFqn + "#" + fieldName;
     }
 
     @Override
     public String getName() {
-        return name;
+        return fieldName;
     }
 
-    public String getType() {
-        return type;
+    public String getTypeName() {
+        return typeName;
     }
 
     @Override
@@ -98,7 +96,7 @@ public class IndexedField extends IndexedElement {
             return false;
         }
         final IndexedField other = (IndexedField) obj;
-        if (this.name != other.name && (this.name == null || !this.name.equals(other.name))) {
+        if (this.fieldName != other.fieldName && (this.fieldName == null || !this.fieldName.equals(other.fieldName))) {
             return false;
         }
         if (this.classFqn != other.classFqn && (this.classFqn == null || !this.classFqn.equals(other.classFqn))) {
@@ -113,7 +111,7 @@ public class IndexedField extends IndexedElement {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 43 * hash + (this.name != null ? this.name.hashCode() : 0);
+        hash = 43 * hash + (this.fieldName != null ? this.fieldName.hashCode() : 0);
         hash = 43 * hash + (this.classFqn != null ? this.classFqn.hashCode() : 0);
         hash = 53 * hash + flags;
         return hash;
