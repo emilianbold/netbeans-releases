@@ -108,7 +108,10 @@ public final class MetaElementsProvider implements CompletionProvider {
                     MetaProperty prop = (MetaProperty) field;
                     if (prop.getName().startsWith(context.getPrefix())) {
                         result.put(new FieldSignature(prop.getName()), new CompletionItem.FieldItem(
-                                prop.getName(), prop.getModifiers(), context.getAnchor(), context.getParserResult(), prop.getType().getSimpleName()));
+                                prop.getType().getSimpleName(),
+                                prop.getName(),
+                                prop.getModifiers(),
+                                context.getAnchor()));
                     }
                 }
             }
