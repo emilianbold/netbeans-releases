@@ -174,6 +174,33 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
     }
 
     @Override
+    public boolean isInherited() {
+        return inherited;
+    }
+
+    public void setInherited(boolean inherited) {
+        this.inherited = inherited;
+    }
+
+    public boolean hasBlock() {
+        return (flags & BLOCK) != 0;
+    }
+
+    public boolean isBlockOptional() {
+        return (flags & BLOCK_OPTIONAL) != 0;
+    }
+
+    public String getEncodedAttributes() {
+        return attributes;
+    }
+
+    @Override
+    public boolean isTopLevel() {
+        return false;
+    }
+
+
+    @Override
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -201,48 +228,5 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
         hash = 53 * hash + (this.classFqn != null ? this.classFqn.hashCode() : 0);
         hash = 53 * hash + flags;
         return hash;
-    }
-    
-    @Override
-    public boolean isInherited() {
-        return inherited;
-    }
-
-    public void setInherited(boolean inherited) {
-        this.inherited = inherited;
-    }
-    
-    public boolean hasBlock() {
-        return (flags & BLOCK) != 0;
-    }
-
-    public boolean isBlockOptional() {
-        return (flags & BLOCK_OPTIONAL) != 0;
-    }
-    
-    public static String decodeFlags(int flags) {
-        StringBuilder sb = new StringBuilder();
-        sb.append(IndexedElement.decodeFlags(flags));
-
-        if ((flags & BLOCK) != 0) {
-            sb.append("|BLOCK");
-        }
-        if ((flags & BLOCK_OPTIONAL) != 0) {
-            sb.append("|BLOCK_OPTIONAL");
-        }
-        if (sb.length() > 0) {
-            sb.append("|");
-        }
-        
-        return sb.toString();
-    }
-    
-    public String getEncodedAttributes() {
-        return attributes;
-    }
-
-    @Override
-    public boolean isTopLevel() {
-        return false;
     }
 }

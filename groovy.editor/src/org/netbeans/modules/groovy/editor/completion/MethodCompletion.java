@@ -56,6 +56,7 @@ import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.modules.csl.api.CompletionProposal;
+import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.ConstructorItem;
@@ -200,7 +201,7 @@ public class MethodCompletion extends BaseCompletion {
         List<String> imports = new ArrayList<>();
         imports.addAll(ImportUtils.getDefaultImportPackages());
         imports.addAll(getImportedTypes());
-        imports.addAll(getTypesInSamePackage());
+        imports.addAll(getCurrentPackage());
         imports.addAll(getTypesInSameFile());
 
         return imports;
@@ -224,7 +225,7 @@ public class MethodCompletion extends BaseCompletion {
         return importedTypes;
     }
 
-    private List<String> getTypesInSamePackage() {
+    private List<String> getCurrentPackage() {
         ModuleNode moduleNode = ContextHelper.getSurroundingModuleNode(context);
         if (moduleNode != null) {
             String packageName = moduleNode.getPackageName();
