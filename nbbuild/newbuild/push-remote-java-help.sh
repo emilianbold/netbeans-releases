@@ -22,7 +22,7 @@ fi
 CHANGED_FILES_COUNT=`hg st -mar usersguide/javahelp | wc -l`
 echo CHANGED_FILES_COUNT: $CHANGED_FILES_COUNT
 if [ "$CHANGED_FILES_COUNT" -gt 0 ]; then
-    echo $CHANGED_FILES_COUNT changes found, let\'s start build and push.
+    echo $CHANGED_FILES_COUNT changes found, let start the build and push.
     ant clean build || exit 2
     echo Build succeed.
 
@@ -36,26 +36,23 @@ if [ "$CHANGED_FILES_COUNT" -gt 0 ]; then
     OUT_COUNT=`hg parent -v --template 'files: {files}'| grep '^files:' | wc -l`
     echo OUT_COUNT: $OUT_COUNT
     if [ "$OUT_COUNT" -gt 0 ]; then
-        echo "There are $OUT_COUNT outgoing changes, let\'s push"
+        echo "There are $OUT_COUNT outgoing changes, start pushing..."
         hg push -b $push_branch -f $push_url
         HG_RESULT=$?
         if [ $HG_RESULT == 0 ]; then
             echo Push succeed.
         else
-            echo "Hg push failed: $HG_RESULT, let\'s rollback the commit"
+            echo "Hg push failed: $HG_RESULT, rolling back the commit"
             hg rollback
             hg up -C
-            hg clean
             exit $HG_RESULT;
         fi
     else
-        echo "There are no outgoing changes, let\'s rollback the commit"
+        echo "There are no outgoing changes, rolling back the commit"
         hg rollback
         hg up -C
-        hg clean
     fi
 else
     echo No changes found, no reason to push.
     hg up -C
-    hg clean
 fi
