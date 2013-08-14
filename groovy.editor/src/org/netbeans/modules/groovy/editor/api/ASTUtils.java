@@ -309,6 +309,12 @@ public class ASTUtils {
                             possibleMethods.add("set" + name); // NOI18N
                         }
                         possibleMethods.add("get" + name); // NOI18N
+
+                        if ("Boolean".equals(field.getType().getNameWithoutPackage()) ||
+                            "boolean".equals(field.getType().getNameWithoutPackage())) {
+
+                            possibleMethods.add("is" + name); // NOI18N
+                        }
                     }
                 }
 
