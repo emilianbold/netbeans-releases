@@ -42,7 +42,10 @@ if [ "$CHANGED_FILES_COUNT" -gt 0 ]; then
         if [ $HG_RESULT == 0 ]; then
             echo Push succeed.
         else
-            echo "Hg push failed: $HG_RESULT"
+            echo "Hg push failed: $HG_RESULT, let\'s rollback the commit"
+            hg rollback
+            hg up -C
+            hg clean
             exit $HG_RESULT;
         fi
     else
