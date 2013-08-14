@@ -46,6 +46,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
 import org.netbeans.spi.project.ActionProvider;
+import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
@@ -79,7 +80,6 @@ public class IOSActionProvider implements ActionProvider {
         "ERR_NotMac=iOS Development is available only on Mac OS X",
         "ERR_Title=Error",
         "LBL_Opening=Connecting to iOS Simulator",
-        "ERR_NO_PhoneGap=PhoneGap Platform is not configured.\nConfigure? ",
         "ERR_NO_Xcode=Supported version of Xcode and Command Line Tools for Xcode not found.\n"
             + "Make sure, that you have latest version of Xcode and iOS SDK installed from Mac App Store."
     })
@@ -127,17 +127,10 @@ public class IOSActionProvider implements ActionProvider {
                     build.perform(BuildPerformer.REBUILD_IOS, p);
             }
         } catch (IllegalStateException ex) {
-            NotifyDescriptor not = new NotifyDescriptor(
-                    Bundle.ERR_NO_PhoneGap(),
-                    Bundle.ERR_Title(),
-                    NotifyDescriptor.OK_CANCEL_OPTION,
-                    NotifyDescriptor.ERROR_MESSAGE,
-                    null,
-                    null);
-            Object value = DialogDisplayer.getDefault().notify(not);
-            if (NotifyDescriptor.CANCEL_OPTION != value) {
-                OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms"); // NOI18N
-            }
+                NotifyDescriptor.Message not = new DialogDescriptor.Message(
+                        ex.getMessage(),
+                        DialogDescriptor.ERROR_MESSAGE);
+                Object value = DialogDisplayer.getDefault().notify(not);
             return;
         }
     }

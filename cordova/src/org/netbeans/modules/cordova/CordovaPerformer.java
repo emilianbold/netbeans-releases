@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 import java.util.prefs.Preferences;
 import javax.swing.SwingUtilities;
@@ -68,8 +70,9 @@ import org.netbeans.modules.cordova.platforms.spi.MobilePlatform;
 import org.netbeans.modules.cordova.wizard.CordovaProjectExtender;
 import org.netbeans.modules.cordova.platforms.spi.SDK;
 import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
+import org.netbeans.modules.cordova.project.ConfigUtils;
 import org.netbeans.modules.cordova.project.CordovaCustomizerPanel;
-import org.netbeans.modules.cordova.project.PhoneGapBrowserFactory;
+import org.netbeans.modules.cordova.project.CordovaBrowserFactory;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
 import org.netbeans.modules.web.browser.api.WebBrowser;
@@ -81,6 +84,7 @@ import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
+import org.openide.loaders.DataObject;
 
 /**
  *
@@ -89,50 +93,43 @@ import org.openide.execution.ExecutorTask;
 @ServiceProvider(service = BuildPerformer.class)
 public class CordovaPerformer implements BuildPerformer {
     public static final String NAME_BUILD_XML = "build.xml"; // NOI18N
+    public static final String NAME_PLUGINS_PROPERTIES = "plugins.properties"; //NII18N
     public static final String NAME_CONFIG_XML = "config.xml"; // NOI18N
     public static final String PATH_BUILD_XML = "nbproject/" + NAME_BUILD_XML; // NOI18N
+    public static final String PATH_PLUGINS_PROPERTIES = "nbproject/" + NAME_PLUGINS_PROPERTIES; // NOI18N
     public static final String PATH_EXTRA_ANT_JAR = "ant/extra/org-netbeans-modules-cordova-projectupdate.jar"; // NOI18N
     public static final String DEFAULT_ID_PREFIX = "com.coolappz"; // NOI18N
     public static final String DEFAULT_EMAIL = "info@com.coolappz"; // NOI18N
     public static final String DEFAULT_WWW = "http://www.coolappz.com";
     public static final String DEFAULT_VERSION = "1.0.0"; // NOI18N
-    public static final String DEFAULT_DESCRIPTION = Bundle.DSC_PhoneGap();
+    public static final String DEFAULT_DESCRIPTION = Bundle.DSC_Cordova();
     public static final String PROP_BUILD_SCRIPT_VERSION = "cordova_build_script_version"; // NOI18N
     public static final String PROP_PROVISIONING_PROFILE = "ios.provisioning.profile"; // NOI18N
     public static final String PROP_CERTIFICATE_NAME = "ios.certificate.name"; // NOI18N
     
     private final RequestProcessor RP = new RequestProcessor(CordovaPerformer.class.getName(), 10);
 
-    private final int BUILD_SCRIPT_VERSION = 11;
+    private final int BUILD_SCRIPT_VERSION = 34;
     
     public static CordovaPerformer getDefault() {
         return Lookup.getDefault().lookup(CordovaPerformer.class);
     }
     
     
-    public Task createPlatforms(Project project) {
-        Task task1 = null;
-        Task task2 = null;
-        if (PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).isReady()) {
-            task1 = perform("create-android", project); // NOI18N
-        }
-        if (PlatformManager.getPlatform(PlatformManager.IOS_TYPE).isReady()) {
-            task2 = perform("create-ios", project); // NOI18N
-        }
-        
-        if (task1 == null && task2 == null ) {
-            task1 = perform("create-resources", project); // NOI18N
-        }
-        
-        Task t = new CompoundTask(task1, task2);
-        return t;
+    public Task createPlatforms(final Project project) {
+        return perform("upgrade-to-cordova-project", project);      
     }
     
     @NbBundle.Messages({
         "LBL_InstallThroughItunes=Install application using iTunes and tap on it",
         "CTL_InstallAndRun=Install and Run",
-        "DSC_PhoneGap=PhoneGap Application",
-        "ERR_StartFileNotFound=Start file cannot be found."
+        "DSC_Cordova=Cordova Application",
+        "ERR_StartFileNotFound=Start file cannot be found.",
+        "ERR_NO_Cordova=NetBeans cannot find cordova or git on your PATH. Please install cordova and git.\n" +
+            "NetBeans might require restart for changes to take effect.\n",
+        "ERR_NO_Provisioning=Provisioning Profile not found.\nPlease use XCode and install valid Provisioning Profile for your device.",
+        "ERR_NOT_Cordova=Create Cordova Resources and rename site root to 'www'?"
+            
     })
     @Override
     public ExecutorTask perform(final String target, final Project project) {
@@ -147,11 +144,9 @@ public class CordovaPerformer implements BuildPerformer {
         }
         
         if (((target.startsWith("build") || target.startsWith("sim")) // NOI18N
-                && ClientProjectUtilities.getSiteRoot(project).getFileObject("res") == null)) { // NOI18N
-            String message = NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaCustomizerPanel.createConfigsLabel.text") + "\n"
-                    + NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaPanel.createConfigs.text") + "?";
+                && !CordovaPlatform.isCordovaProject(project))) { // NOI18N
             NotifyDescriptor desc = new NotifyDescriptor(
-                    message,
+                    Bundle.ERR_NOT_Cordova(),
                     NbBundle.getMessage(CordovaCustomizerPanel.class, "CordovaPanel.createConfigs.text"),
                     NotifyDescriptor.OK_CANCEL_OPTION,
                     NotifyDescriptor.QUESTION_MESSAGE,
@@ -161,16 +156,33 @@ public class CordovaPerformer implements BuildPerformer {
             if (desc.getValue() != NotifyDescriptor.OK_OPTION) {
                 return null;
             }
-        }
+       }
 
         if (!CordovaPlatform.getDefault().isReady()) {
-            throw new IllegalStateException();
+            throw new IllegalStateException(Bundle.ERR_NO_Cordova());
         }
+        
+        ProjectBrowserProvider provider = project.getLookup().lookup(ProjectBrowserProvider.class);
+        if (provider != null &&
+                "ios_1".equals(provider.getActiveBrowser().getId()) && 
+                (target.equals(BuildPerformer.RUN_IOS) || target.equals(BuildPerformer.BUILD_IOS)) &&
+                PlatformManager.getPlatform(PlatformManager.IOS_TYPE).getProvisioningProfilePath() == null
+                ) {
+            throw new IllegalStateException(Bundle.ERR_NO_Provisioning());
+       }        
+
+        
         final ExecutorTask runTarget[] = new ExecutorTask[1];
         Runnable run = new Runnable() {
             @Override
             public void run() {
-                generateBuildScripts(project);
+                try {
+                    FileObject siteRoot = ClientProjectUtilities.getSiteRoot(project);
+                    DataObject.find(siteRoot).rename("www");
+                } catch (IOException iOException) {
+                    Exceptions.printStackTrace(iOException);
+                }
+               generateBuildScripts(project);
                 FileObject buildFo = project.getProjectDirectory().getFileObject(PATH_BUILD_XML);//NOI18N
                 try {
                     runTarget[0] = ActionUtils.runTarget(buildFo, new String[]{target}, properties(project));
@@ -187,13 +199,14 @@ public class CordovaPerformer implements BuildPerformer {
                                 URL u = ServerURLMapping.toServer(project, startFile);
                                 activeConfiguration.toBrowserURL(project, startFile, u);
                                 
-                                BrowserURLMapperImplementation.BrowserURLMapper mapper = ((PhoneGapBrowserFactory) activeConfiguration.getHtmlBrowserFactory()).getMapper();
+                                BrowserURLMapperImplementation.BrowserURLMapper mapper = ((CordovaBrowserFactory) activeConfiguration.getHtmlBrowserFactory()).getMapper();
                                 if (!device.isEmulator()) {
                                     DialogDescriptor dd = new DialogDescriptor(Bundle.LBL_InstallThroughItunes(), Bundle.CTL_InstallAndRun());
                                     if (DialogDisplayer.getDefault().notify(dd) != DialogDescriptor.OK_OPTION) {
                                         return;
                                     }
                                 }
+                                Thread.sleep(1000);
                                 WebKitDebuggingSupport.getDefault().startDebugging(device, project, Lookups.fixed(mapper, BrowserFamilyId.PHONEGAP, getConfig(project).getId()), false);
                             }
                         }
@@ -201,6 +214,8 @@ public class CordovaPerformer implements BuildPerformer {
                 } catch (IOException ex) {
                     Exceptions.printStackTrace(ex);
                 } catch (IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                } catch (InterruptedException ex) {
                     Exceptions.printStackTrace(ex);
                 }
             }
@@ -216,9 +231,9 @@ public class CordovaPerformer implements BuildPerformer {
 
     private Properties properties(Project p) {
         Properties props = new Properties();
-        final CordovaPlatform phoneGap = CordovaPlatform.getDefault();
-        props.put(PROP_CORDOVA_HOME, phoneGap.getSdkLocation());//NOI18N
-        props.put(PROP_CORDOVA_VERSION, phoneGap.getVersion().toString());//NOI18N
+        final CordovaPlatform cordovaPlatform = CordovaPlatform.getDefault();
+//        props.put(PROP_CORDOVA_HOME, cordovaPlatform.getSdkLocation());//NOI18N
+        props.put(PROP_CORDOVA_VERSION, cordovaPlatform.getVersion().toString());//NOI18N
         final FileObject siteRoot = ClientProjectUtilities.getSiteRoot(p);
         final String siteRootRelative = FileUtil.getRelativePath(p.getProjectDirectory(), siteRoot);
         props.put(PROP_SITE_ROOT, siteRootRelative);
@@ -249,7 +264,10 @@ public class CordovaPerformer implements BuildPerformer {
 
         //workaround for some strange behavior of ant execution in netbeans
         props.put(PROP_ENV_DISPLAY, ":0.0");//NOI18N
-        props.put(PROP_ANDROID_SDK_HOME, PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation());
+        final String sdkLocation = PlatformManager.getPlatform(PlatformManager.ANDROID_TYPE).getSdkLocation();
+        if (sdkLocation!=null) {
+            props.put(PROP_ANDROID_SDK_HOME, sdkLocation);
+        }
 
         ProjectBrowserProvider provider = p.getLookup().lookup(ProjectBrowserProvider.class);
         if (provider != null && provider.getActiveBrowser().getBrowserFamily()==BrowserFamilyId.PHONEGAP) {
@@ -294,6 +312,10 @@ public class CordovaPerformer implements BuildPerformer {
             }
             if (fresh) {
                 preferences.putInt(PROP_BUILD_SCRIPT_VERSION, BUILD_SCRIPT_VERSION);
+                Map<String, String> map = new HashMap<String, String>();
+                map.put("__PROJECT_NAME__", ProjectUtils.getInformation(project).getName());// NOI18N
+                ConfigUtils.replaceToken(project.getProjectDirectory().getFileObject(PATH_BUILD_XML), map);
+                createScript(project, "empty.properties", PATH_PLUGINS_PROPERTIES, false);
             }
 
             getConfig(project);
@@ -330,7 +352,16 @@ public class CordovaPerformer implements BuildPerformer {
         }
     }
 
-    private static boolean createScript(Project project, String source, String target, boolean overwrite) throws IOException {
+    /**
+     * 
+     * @param project
+     * @param source
+     * @param target
+     * @param overwrite
+     * @return true if script was created. False if script was already there
+     * @throws IOException 
+     */
+    public static boolean createScript(Project project, String source, String target, boolean overwrite) throws IOException {
         FileObject build = null;
         if (!overwrite) {
             build = project.getProjectDirectory().getFileObject(target);

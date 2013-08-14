@@ -52,7 +52,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
         projectType = "org-netbeans-modules-web-clientproject", // NOI18N
         service = ClientProjectEnhancedBrowserProvider.class)
 /**
- * PhoneGap pseudo browser
+ * Cordova pseudo browser
  *
  * @author Jan Becicka
  */

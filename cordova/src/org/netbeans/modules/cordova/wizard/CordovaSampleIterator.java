@@ -68,6 +68,7 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
 import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.project.ConfigUtils;
 import static org.netbeans.modules.cordova.wizard.Bundle.*;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
@@ -82,7 +83,7 @@ import org.openide.util.NbBundle;
  * @author Martin Janicek
  * @author Jan Becicka
  */
-public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<WizardDescriptor> {
+public class CordovaSampleIterator implements ProgressInstantiatingIterator<WizardDescriptor> {
 
     protected transient Panel[] myPanels;
     protected transient int myIndex;
@@ -114,12 +115,12 @@ public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<Wiz
     
     @NbBundle.Messages({
         "LBL_NameNLocation=Name and Location",
-        "LBL_PhoneGapSetup=Mobile Platforms Setup"})
+        "LBL_CordovaSetup=Mobile Platforms Setup"})
     protected String[] createSteps() {
         if (CordovaPlatform.getDefault().isReady()) {
             return new String[] {LBL_NameNLocation()};
         } else {
-            return new String[] {LBL_PhoneGapSetup(), LBL_NameNLocation()};
+            return new String[] {LBL_CordovaSetup(), LBL_NameNLocation()};
         }
     }
 
@@ -191,68 +192,19 @@ public class PhoneGapSampleIterator implements ProgressInstantiatingIterator<Wiz
         FileObject template = Templates.getTemplate(descriptor);
         unZipFile(template.getInputStream(), projectFolder);
         final CordovaPlatform cordovaPlatform = CordovaPlatform.getDefault();
-        File destFolder = new File(projectFolder.getPath() + "/public_html/js/libs/Cordova-" + cordovaPlatform.getVersion()); // NOI18N
-        
-        FileObject cordovajsFo = cordovaPlatform.getCordovaJS(PlatformManager.ANDROID_TYPE);
-        
-        FileUtil.createFolder(destFolder);
-        
-        FileObject destFolderFo = FileUtil.toFileObject(destFolder);
-        
-        FileUtil.copyFile(cordovajsFo, destFolderFo, "cordova-" + cordovaPlatform.getVersion(), "js"); // NOI18N
                 
         ProjectManager.getDefault().clearNonProjectCache();
 
         Map<String, String> map = new HashMap<String, String>();
-        map.put("${project.name}", targetName);                             // NOI18N
-        replaceTokens(projectFolder, map , "nbproject/project.properties"); // NOI18N
+        map.put("CordovaMapsSample", targetName);                             // NOI18N
+        ConfigUtils.replaceTokens(projectFolder, map , "nbproject/project.xml"); // NOI18N
         
-        Map<String, String> map2 = new HashMap<String, String>();
-        map2.put("js/libs/Cordova-2.5.0/cordova-2.5.0.js", "js/libs/Cordova-" + cordovaPlatform.getVersion() + "/cordova-" + cordovaPlatform.getVersion() + ".js" ); // NOI18N
-        replaceTokens(projectFolder, map2 , "public_html/index.html"); // NOI18N
-
         final Project project = FileOwnerQuery.getOwner(projectFolder);
+        CordovaPerformer.createScript(project, "mapplugins.properties", "nbproject/plugins.properties", true);
         CordovaTemplate.CordovaExtender.setPhoneGapBrowser(project);
-        CordovaPerformer.getDefault().createPlatforms(project);
+        CordovaPerformer.getDefault().createPlatforms(project).waitFinished();
         
         return Collections.singleton(projectFolder);
-    }
-
-    private void replaceTokens(FileObject dir, Map<String, String> map, String ... files) throws IOException {
-        for (String file : files) {
-            replaceToken(dir.getFileObject(file), map);
-        }
-    }
-
-    private void replaceToken(FileObject fo, Map<String, String> map) throws IOException {
-        if (fo == null) {
-            return;
-        }
-        FileLock lock = fo.lock();
-        try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader( 
-                    new FileInputStream(FileUtil.toFile(fo)), 
-                    Charset.forName("UTF-8")));                     // NOI18N
-            String line;
-            StringBuilder sb = new StringBuilder();
-            while ((line = reader.readLine()) != null) {
-                for (Map.Entry<String, String> entry : map.entrySet()) {
-                    line = line.replace(entry.getKey(), entry.getValue());
-                }
-                sb.append(line);
-                sb.append("\n"); // NOI18N
-            }
-            OutputStreamWriter writer = new OutputStreamWriter(
-                    fo.getOutputStream(lock), "UTF-8");             // NOI18N
-            try {
-                writer.write(sb.toString());
-            } finally {
-                writer.close();
-                reader.close();
-            }
-        } finally {
-            lock.releaseLock();
-        }
     }
 
     private void unZipFile(InputStream source, FileObject rootFolder) throws IOException {

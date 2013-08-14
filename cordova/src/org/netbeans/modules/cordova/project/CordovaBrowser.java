@@ -85,9 +85,9 @@ public class CordovaBrowser extends HtmlBrowser.Impl {
     }
 
     @Override
-    @NbBundle.Messages({"LBL_PhoneGap=PhoneGap"})
+    @NbBundle.Messages({"LBL_Cordova=Cordova"})
     public String getTitle() {
-        return Bundle.LBL_PhoneGap();
+        return Bundle.LBL_Cordova();
     }
 
     @Override

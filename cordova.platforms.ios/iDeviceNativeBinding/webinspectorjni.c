@@ -64,6 +64,19 @@ JNIEXPORT void JNICALL Java_org_netbeans_modules_cordova_platforms_ios_WebInspec
     return;
 }
 
+JNIEXPORT jboolean JNICALL Java_org_netbeans_modules_cordova_platforms_ios_WebInspectorJNIBinding_nisDeviceConnected(JNIEnv * env, jobject thiz) {
+    idevice_t dev = NULL;
+    
+    if (IDEVICE_E_SUCCESS != idevice_new(&dev, NULL)) {
+        return JNI_FALSE;
+    }
+    if (dev != NULL) {
+        idevice_free(dev);
+        dev = NULL;
+    }
+    return JNI_TRUE;
+}
+
 JNIEXPORT void JNICALL Java_org_netbeans_modules_cordova_platforms_ios_WebInspectorJNIBinding_nstop(JNIEnv * env, jobject thiz) {
     if (client != NULL) {
         webinspector_client_free(client);
