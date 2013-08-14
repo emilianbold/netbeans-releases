@@ -207,11 +207,11 @@
       <SubComponents>
         <Component class="javax.swing.JTextArea" name="taDescription">
           <Properties>
-            <Property name="background" type="java.awt.Color" editor="org.netbeans.beaninfo.editors.ColorEditor">
-              <Color blue="ee" green="ee" red="ee" type="rgb"/>
+            <Property name="editable" type="boolean" value="false"/>
+            <Property name="background" type="java.awt.Color" editor="org.netbeans.modules.form.RADConnectionPropertyEditor">
+              <Connection code="(java.awt.Color)(UIManager.get(&quot;textArea.background&quot;)!=null?&#xa;    UIManager.get(&quot;textArea.background&quot;):new java.awt.Color(238, 238, 238))" type="code"/>
             </Property>
             <Property name="columns" type="int" value="20"/>
-            <Property name="editable" type="boolean" value="false"/>
             <Property name="lineWrap" type="boolean" value="true"/>
             <Property name="rows" type="int" value="5"/>
             <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">

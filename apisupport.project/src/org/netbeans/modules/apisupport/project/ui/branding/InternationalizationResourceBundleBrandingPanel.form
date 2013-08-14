@@ -98,7 +98,7 @@
         </Property>
       </Properties>
       <AuxValues>
-        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="localeComboBox.setSelectedItem(java.util.Locale.getDefault());"/>
+        <AuxValue name="JavaCodeGenerator_InitCodePost" type="java.lang.String" value="localeComboBox.setSelectedItem(Locale.getDefault());"/>
         <AuxValue name="JavaCodeGenerator_InitCodePre" type="java.lang.String" value="java.util.Locale [] locales = java.util.Locale.getAvailableLocales();&#xa;Comparator&lt;Locale&gt; localeComparator = new Comparator&lt;Locale&gt;() {&#xa;&#xa;    @Override&#xa;    public int compare(Locale o1, Locale o2) {&#xa;        return o1.toString().compareTo(o2.toString());&#xa;    }&#xa;};&#xa;java.util.Arrays.sort(locales, localeComparator);"/>
       </AuxValues>
     </Component>
