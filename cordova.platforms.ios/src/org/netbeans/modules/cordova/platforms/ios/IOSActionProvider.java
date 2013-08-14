@@ -44,6 +44,7 @@ package org.netbeans.modules.cordova.platforms.ios;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.cordova.platforms.spi.BuildPerformer;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.DialogDescriptor;
@@ -121,6 +122,7 @@ public class IOSActionProvider implements ActionProvider {
                     break;
                 case COMMAND_RUN:
                 case COMMAND_RUN_SINGLE:
+                    WebKitDebuggingSupport.getDefault().stopDebugging(true);
                     build.perform(BuildPerformer.RUN_IOS, p);
                     break;
                 case COMMAND_REBUILD:
