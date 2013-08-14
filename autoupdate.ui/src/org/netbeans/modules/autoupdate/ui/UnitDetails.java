@@ -51,6 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.api.autoupdate.UpdateElement;
 import org.netbeans.api.autoupdate.UpdateUnit;
 import org.openide.util.NbBundle;
@@ -200,9 +201,8 @@ public class UnitDetails extends DetailsPanel {
     }
 
     private void setUnitHighlighing(Unit u) {
-        //TODO - use some color from UI palette instead of the hardcoded one,
-        // if possible, to make it custom (or native) L&F friendly.
-        final Color highlightColor = Color.YELLOW;
+        Color highlightColor = UIManager.getColor("nb.autoupdate.search.highlight");
+        highlightColor = highlightColor == null ? Color.YELLOW : highlightColor;
         final ColorHighlighter highlighter = new ColorHighlighter(getDetails(), highlightColor);
 
         int idx = highlighter.highlight(u.getFilter());
