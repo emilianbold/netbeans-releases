@@ -311,7 +311,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
             sb.append("var $parent = undefined;\n");
             return;
         }
-        String prefix = "$parentContext.";
+        StringBuilder prefix = new StringBuilder("$parentContext.");
         for (int i = 0; i < parents.size() - 1; i++) {
             sb.append("with (").append(parents.get(i).getValue()).append(") {\n");
         }
@@ -321,7 +321,7 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
                 sb.append(additionalPrefix).append(prefix).append("$data = ").append(parents.get(i + 1).getValue()).append(";\n");
             }
             sb.append(prefix).append("$data = ").append(parents.get(i + 1).getValue()).append(";\n");
-            prefix = prefix + "$parentContext.";
+            prefix.append("$parentContext.");
             sb.append("}\n");
         }
         if (additionalPrefix != null) {
@@ -333,12 +333,12 @@ public class KOJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin {
     private static void generateParents(StringBuilder sb, List<ParentContext> parents) {
         sb.append("var $parents = ["); // NOI18N
         int pos = sb.length();
-        String prefix = "$parentContext.";
+        StringBuilder prefix = new StringBuilder("$parentContext.");
         for (int i = 0; i < parents.size(); i++) {
             sb.insert(pos, ",");
             sb.insert(pos, "$data");
             sb.insert(pos, prefix);
-            prefix = prefix + "$parentContext.";
+            prefix.append("$parentContext.");
         }
         if (!parents.isEmpty()) {
             sb.setLength(sb.length() - 1);
