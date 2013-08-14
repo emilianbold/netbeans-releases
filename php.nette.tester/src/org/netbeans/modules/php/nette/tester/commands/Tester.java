@@ -323,7 +323,7 @@ public final class Tester {
         }
 
         private void mapLocation(TestCaseVo kase, TestCase testCase) {
-            // XXX
+            // XXX - see https://github.com/nette/tester/issues/46
             if (true) return;
             String file = kase.getFile();
             if (file == null) {
