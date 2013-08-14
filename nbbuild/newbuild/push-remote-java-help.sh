@@ -23,18 +23,33 @@ CHANGED_FILES_COUNT=`hg st -mar usersguide/javahelp | wc -l`
 echo CHANGED_FILES_COUNT: $CHANGED_FILES_COUNT
 if [ "$CHANGED_FILES_COUNT" -gt 0 ]; then
     echo $CHANGED_FILES_COUNT changes found, let\'s start build and push.
-    ant clean build-nozip || exit 2
+    ant clean build || exit 2
     echo Build succeed.
+
+    # update to latest tip
     hg pull -u
-    hg ci -m "new help files" -u "$commit_username"
-    echo Pushing...
-    hg push -b $push_branch -f $push_url
-    HG_RESULT=$?
-    if [ $HG_RESULT == 0 ]; then
-        echo Push succeed.
+
+    # encode windows-like line-endings to unix-like
+    hg ci -m "new help files" -u "$commit_username" --config 'extensions.win32text=' --config 'encode.**=cleverencode:'
+
+    # check count of really modified files for push
+    OUT_COUNT=`hg parent -v --template 'files: {files}'| grep '^files:' | wc -l`
+    echo OUT_COUNT: $OUT_COUNT
+    if [ "$OUT_COUNT" -gt 0 ]; then
+        echo "There are $OUT_COUNT outgoing changes, let\'s push"
+        hg push -b $push_branch -f $push_url
+        HG_RESULT=$?
+        if [ $HG_RESULT == 0 ]; then
+            echo Push succeed.
+        else
+            echo "Hg push failed: $HG_RESULT"
+            exit $HG_RESULT;
+        fi
     else
-        echo "Hg push failed: $HG_RESULT"
-        exit $HG_RESULT;
+        echo "There are no outgoing changes, let\'s rollback the commit"
+        hg rollback
+        hg up -C
+        hg clean
     fi
 else
     echo No changes found, no reason to push.
