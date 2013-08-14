@@ -1894,7 +1894,37 @@
                         profileAttribute.setValue(new String(project.getProperty("javac.profile")));
                         man.addConfiguredAttribute(profileAttribute);
                     }
-                    
+                    var perm_elev = new String(project.getProperty("permissions.elevated"));
+                    var cust_perm = new String(project.getProperty("manifest.custom.permissions"));
+                    var cust_cb = new String(project.getProperty("manifest.custom.codebase"));
+                    var sa1 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                    sa1.setName("Codebase");
+                    if(!defined(cust_cb) || cust_cb == "*") {
+                        sa1.setValue("*");
+                        print("Warning: From JDK7u25 the Codebase manifest attribute should be used to restrict JAR repurposing.");
+                        print("         Please set manifest.custom.codebase property to override the current default non-secure value '*'.");
+                    } else {
+                        sa1.setValue(cust_cb);
+                    }
+                    man.addConfiguredAttribute(sa1);
+                    var sa2 = new org.apache.tools.ant.taskdefs.Manifest.Attribute();
+                    sa2.setName("Permissions");
+                    if(!defined(cust_perm)) {
+                        if(isTrue(perm_elev)) {
+                            sa2.setValue("all-permissions");
+                        } else {
+                            sa2.setValue("sandbox");
+                        }
+                    } else {
+                        if(cust_perm == "all-permissions") {
+                            sa2.setValue("all-permissions");
+                        } else {
+                            sa2.setValue("sandbox");
+                        }
+                    }
+                    man.addConfiguredAttribute(sa2);
+                    // Note: see JavaFX Jira issue #RT-25003 if attribute names are created lowercase in manifest
+
                     jar.perform();
                 ]]>
             </script>

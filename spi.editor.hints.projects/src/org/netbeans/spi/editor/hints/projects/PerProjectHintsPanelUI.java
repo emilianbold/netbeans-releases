@@ -148,11 +148,13 @@ class PerProjectHintsPanelUI extends javax.swing.JPanel {
 
     public void setPerProjectSettings(final MimeType2Preferences preferences) {
         this.preferencesProvider = preferences;
+        mimeType2OptionsPanel.clear();
         change();
     }
     
     public void setGlobalSettings() {
         this.preferencesProvider = globalPreferencesProvider;
+        mimeType2OptionsPanel.clear();
         change();
     }
     

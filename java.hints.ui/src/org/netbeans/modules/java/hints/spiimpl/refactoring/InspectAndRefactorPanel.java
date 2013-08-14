@@ -288,35 +288,24 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         customScopeButton = new JButton();
 
         inspectLabel.setLabelFor(scopeCombo);
-
         Mnemonics.setLocalizedText(inspectLabel, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.inspectLabel.text")); // NOI18N
+
         Mnemonics.setLocalizedText(refactorUsingLabel, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.refactorUsingLabel.text")); // NOI18N
 
         buttonGroup.add(configurationRadio);
         configurationRadio.setSelected(true);
         Mnemonics.setLocalizedText(configurationRadio, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.configurationRadio.text")); // NOI18N
-        configurationRadio.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                configurationRadioActionPerformed(evt);
-            }
-        });
-        configurationRadio.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                configurationRadioActionPerformed(evt);
+        configurationRadio.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent evt) {
+                configurationRadioItemStateChanged(evt);
             }
         });
 
         buttonGroup.add(singleRefactorRadio);
-
         Mnemonics.setLocalizedText(singleRefactorRadio, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.singleRefactorRadio.text")); // NOI18N
-        configurationCombo.addItemListener(new java.awt.event.ItemListener() {
-            public void itemStateChanged(java.awt.event.ItemEvent evt) {
-                configurationComboItemStateChanged(evt);
-            }
-        });
-        singleRefactorRadio.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
-                singleRefactorRadioActionPerformed(evt);
+        singleRefactorRadio.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent evt) {
+                singleRefactorRadioItemStateChanged(evt);
             }
         });
 
@@ -334,7 +323,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         });
 
         Mnemonics.setLocalizedText(manageConfigurations, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.manageConfigurations.text")); // NOI18N
-                manageConfigurations.addItemListener(new ItemListener() {
+        manageConfigurations.addItemListener(new ItemListener() {
             public void itemStateChanged(ItemEvent evt) {
                 manageConfigurationsItemStateChanged(evt);
             }
@@ -344,6 +333,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 manageConfigurationsActionPerformed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(manageSingleRefactoring, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.manageSingleRefactoring.text")); // NOI18N
         manageSingleRefactoring.setEnabled(false);
         manageSingleRefactoring.addActionListener(new ActionListener() {
@@ -351,6 +341,7 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
                 manageSingleRefactoringActionPerformed(evt);
             }
         });
+
         Mnemonics.setLocalizedText(customScopeButton, NbBundle.getMessage(InspectAndRefactorPanel.class, "InspectAndRefactorPanel.customScopeButton.text")); // NOI18N
         customScopeButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
@@ -408,10 +399,6 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void configurationRadioActionPerformed(ActionEvent evt) {//GEN-FIRST:event_configurationRadioActionPerformed
-        setConfig(true);
-    }//GEN-LAST:event_configurationRadioActionPerformed
-
     private void setConfig(boolean yes) {
         singleRefactoringCombo.setEnabled(!yes);
         manageSingleRefactoring.setEnabled(!yes);
@@ -420,10 +407,6 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
         storePrefs();
     }
     
-    private void singleRefactorRadioActionPerformed(ActionEvent evt) {//GEN-FIRST:event_singleRefactorRadioActionPerformed
-        setConfig(false);
-    }//GEN-LAST:event_singleRefactorRadioActionPerformed
-
     private void manageConfigurationsActionPerformed(ActionEvent evt) {//GEN-FIRST:event_manageConfigurationsActionPerformed
         manageRefactorings(false);
     }//GEN-LAST:event_manageConfigurationsActionPerformed
@@ -487,6 +470,14 @@ public class InspectAndRefactorPanel extends javax.swing.JPanel implements Popup
             storeScope(customScope);
         }
     }//GEN-LAST:event_customScopeButtonActionPerformed
+
+    private void configurationRadioItemStateChanged(ItemEvent evt) {//GEN-FIRST:event_configurationRadioItemStateChanged
+        setConfig(true);
+    }//GEN-LAST:event_configurationRadioItemStateChanged
+
+    private void singleRefactorRadioItemStateChanged(ItemEvent evt) {//GEN-FIRST:event_singleRefactorRadioItemStateChanged
+        setConfig(false);
+    }//GEN-LAST:event_singleRefactorRadioItemStateChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private ButtonGroup buttonGroup;
