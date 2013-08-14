@@ -41,12 +41,10 @@
  */
 package org.netbeans.modules.web.el.completion;
 
-import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
-import org.openide.util.ImageUtilities;
 
 /**
  *

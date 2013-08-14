@@ -63,7 +63,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import javax.lang.model.element.Element;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.Modifier;
@@ -117,7 +116,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
      */
     private static synchronized Set<String> getKeywordFixedTexts() {
         if (keywordFixedTexts == null) {
-            keywordFixedTexts = new HashSet<String>();
+            keywordFixedTexts = new HashSet<>();
             for (ELTokenId elTokenId : ELTokenId.values()) {
                 if (ELTokenId.ELTokenCategories.KEYWORDS.hasCategory(elTokenId)) {
                     keywordFixedTexts.add(elTokenId.fixedText());
@@ -129,7 +128,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
 
     @Override
     public CodeCompletionResult complete(final CodeCompletionContext context) {
-        final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>(50);
+        final List<CompletionProposal> proposals = new ArrayList<>(50);
         CodeCompletionResult result = new DefaultCompletionResult(proposals, false);
         final ELElement element = getElementAt(context.getParserResult(), context.getCaretOffset());
         if (element == null || !element.isValid()) {
@@ -267,7 +266,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
     }
 
     private Map<AstIdentifier, Node> getAssignments(ParserResult parserResult, int offset) {
-        Map<AstIdentifier, Node> result = new HashMap<AstIdentifier, Node>();
+        Map<AstIdentifier, Node> result = new HashMap<>();
         ELParserResult elParserResult = (ELParserResult) parserResult;
         for (ELElement elElement : elParserResult.getElementsTo(offset)) {
             if (elElement.getError() != null) {

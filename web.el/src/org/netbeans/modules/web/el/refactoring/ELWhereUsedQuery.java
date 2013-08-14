@@ -97,7 +97,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         }
         
         final FileObject file = handle.getFileObject();
-        final AtomicReference<Problem> problemRef = new AtomicReference<Problem>();
+        final AtomicReference<Problem> problemRef = new AtomicReference<>();
         JavaSource jsource = JavaSource.create(ClasspathInfo.create(file));
         try {
             jsource.runUserActionTask(new Task<CompilationController>() {
@@ -146,7 +146,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     protected Problem handleProperty(CompilationContext info, RefactoringElementsBag refactoringElementsBag, TreePathHandle handle, ExecutableElement targetType) {
         String propertyName = RefactoringUtil.getPropertyName(targetType.getSimpleName().toString(), targetType.getReturnType());
         ELIndex index = ELIndex.get(handle.getFileObject());
-        final Set<IndexResult> result = new HashSet<IndexResult>();
+        final Set<IndexResult> result = new HashSet<>();
         // search for property nodes only if the method has no params (or accepts one vararg)
         if (targetType.getParameters().isEmpty() ||
                 (targetType.getParameters().size() == 1 && targetType.isVarArgs())) {
@@ -188,7 +188,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
             final FileObject context,
             final List<VariableInfo> variables) {
 
-        final List<Node> result = new ArrayList<Node>();
+        final List<Node> result = new ArrayList<>();
         final TypeMirror targetType = targetMethod.getEnclosingElement().asType();
         root.accept(new NodeVisitor() {
 
@@ -279,7 +279,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
     }
 
     private List<Node> findMatchingIdentifierNodes(Node root, final String identifierName) {
-        final List<Node> result = new ArrayList<Node>();
+        final List<Node> result = new ArrayList<>();
         root.accept(new NodeVisitor() {
 
             @Override
@@ -327,7 +327,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
 
     private List<ELElement> getMatchingElements(Collection<? extends IndexResult> indexResult) {
         // probably should store offsets rather than doing full expression comparison
-        List<ELElement> result = new ArrayList<ELElement>();
+        List<ELElement> result = new ArrayList<>();
         for (IndexResult ir : indexResult) {
             FileObject file = ir.getFile();
             if(file == null) {

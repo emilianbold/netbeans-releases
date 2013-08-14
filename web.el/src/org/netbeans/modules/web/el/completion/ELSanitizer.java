@@ -67,7 +67,7 @@ public final class ELSanitizer {
     private final int relativeOffset;
 
     static {
-        BRACKETS = new HashSet<Pair<ELTokenId, ELTokenId>>();
+        BRACKETS = new HashSet<>();
         BRACKETS.add(Pair.of(ELTokenId.LBRACKET, ELTokenId.RBRACKET));
         BRACKETS.add(Pair.of(ELTokenId.LPAREN, ELTokenId.RPAREN));
     }

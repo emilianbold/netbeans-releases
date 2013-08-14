@@ -92,7 +92,7 @@ public final class ELTypeUtilities {
     private static final String FACES_CONTEXT_CLASS = "javax.faces.context.FacesContext"; //NOI18N
     private static final String UI_COMPONENT_CLASS = "javax.faces.component.UIComponent";//NOI18N
 
-    private static final Map<Class<? extends Node>, Set<TypeKind>> TYPES = new HashMap<Class<? extends Node>, Set<TypeKind>>();
+    private static final Map<Class<? extends Node>, Set<TypeKind>> TYPES = new HashMap<>();
 
     static {
         put(AstFloatingPoint.class, TypeKind.FLOAT, TypeKind.DOUBLE);
@@ -102,7 +102,7 @@ public final class ELTypeUtilities {
     }
 
     private static void put(Class<? extends Node> node, TypeKind... kinds) {
-        Set<TypeKind> kindSet = new HashSet<TypeKind>();
+        Set<TypeKind> kindSet = new HashSet<>();
         kindSet.addAll(Arrays.asList(kinds));
         TYPES.put(node, kindSet);
     }
@@ -133,9 +133,9 @@ public final class ELTypeUtilities {
      */
     public static List<Element> getSuperTypesFor(CompilationContext info, Element element, ELElement elElement, List<Node> rootToNode) {
         final TypeMirror tm = getTypeMirrorFor(info, element, elElement, rootToNode);
-        List<Element> types = new ArrayList<Element>();
+        List<Element> types = new ArrayList<>();
 
-        Deque<TypeMirror> deque = new ArrayDeque<TypeMirror>();
+        Deque<TypeMirror> deque = new ArrayDeque<>();
         deque.add(tm);
         while (!deque.isEmpty()) {
             TypeMirror mirror = deque.pop();
@@ -262,7 +262,7 @@ public final class ELTypeUtilities {
             return Collections.emptyList();
         }
 
-        List<Node> parameters = new ArrayList<Node>();
+        List<Node> parameters = new ArrayList<>();
         for (int i = 0; i < methodArgs.jjtGetNumChildren(); i++) {
             parameters.add(methodArgs.jjtGetChild(i));
         }
@@ -343,7 +343,7 @@ public final class ELTypeUtilities {
     }
 
     public static List<String> getParameterNames(CompilationContext info, final ExecutableElement method) {
-        List<String> result = new ArrayList<String>();
+        List<String> result = new ArrayList<>();
         for (VariableElement param : method.getParameters()) {
             result.add(param.getSimpleName().toString());
         }
@@ -643,9 +643,8 @@ public final class ELTypeUtilities {
                         return;
                     }
                     ExecutableElement method = null;
-                    Node current = parent;
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
-                        current = parent.jjtGetChild(i);
+                        Node current = parent.jjtGetChild(i);
                         if (current instanceof AstDotSuffix || NodeUtil.isMethodCall(current)) {
                             method = getElementForProperty(info, current, enclosing);
                             if (method == null) {

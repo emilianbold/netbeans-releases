@@ -121,8 +121,8 @@ public class ELRefactoringPlugin implements RefactoringPlugin {
     protected static ParserResultHolder getParserResult(FileObject fo) {
         try {
             final Source source = Source.create(fo);
-            final AtomicReference<ELParserResult> result = new AtomicReference<ELParserResult>();
-            final AtomicReference<Snapshot> snapshot = new AtomicReference<Snapshot>();
+            final AtomicReference<ELParserResult> result = new AtomicReference<>();
+            final AtomicReference<Snapshot> snapshot = new AtomicReference<>();
             ParserManager.parse(Collections.singletonList(source), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
