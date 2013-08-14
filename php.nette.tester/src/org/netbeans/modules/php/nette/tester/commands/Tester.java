@@ -150,12 +150,17 @@ public final class Tester {
         }
         // custom tests
         List<TestRunInfo.TestInfo> customTests = runInfo.getCustomTests();
-        if (!customTests.isEmpty()) {
-            // XXX
+        if (customTests.isEmpty()) {
+            File startFile = FileUtil.toFile(runInfo.getStartFile());
+            params.add(startFile.getAbsolutePath());
+        } else {
+            for (TestRunInfo.TestInfo testInfo : customTests) {
+                String location = testInfo.getLocation();
+                assert location != null : testInfo;
+                params.add(new File(location).getAbsolutePath());
+            }
             runInfo.resetCustomTests();
         }
-        File startFile = FileUtil.toFile(runInfo.getStartFile());
-        params.add(startFile.getAbsolutePath());
         tester.additionalParameters(params);
         try {
             if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
