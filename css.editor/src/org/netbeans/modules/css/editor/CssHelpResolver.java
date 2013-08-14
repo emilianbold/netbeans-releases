@@ -81,7 +81,7 @@ public class CssHelpResolver {
     
     private static final String HELP_LOCATION = "docs/css21-spec.zip"; //NOI18N
     private static URL HELP_ZIP_URL;
-    private WeakHashMap<String, String> pages_cache = new WeakHashMap<String, String>();
+    private WeakHashMap<String, String> pages_cache = new WeakHashMap<>();
 
     public static CssHelpResolver instance() {
         return INSTANCE;
@@ -113,18 +113,18 @@ public class CssHelpResolver {
         String file_content = pages_cache.get(path);
         if (file_content == null) {
             try {
-                InputStream is = url.openStream();
-                byte buffer[] = new byte[1000];
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                int count = 0;
-                do {
-                    count = is.read(buffer);
-                    if (count > 0) {
-                        baos.write(buffer, 0, count);
-                    }
-                } while (count > 0);
-
-                is.close();
+                ByteArrayOutputStream baos;
+                try (InputStream is = url.openStream()) {
+                    byte buffer[] = new byte[1000];
+                    baos = new ByteArrayOutputStream();
+                    int count = 0;
+                    do {
+                        count = is.read(buffer);
+                        if (count > 0) {
+                            baos.write(buffer, 0, count);
+                        }
+                    } while (count > 0);
+                }
                 file_content = baos.toString();
                 baos.close();
             } catch (java.io.IOException e) {
@@ -266,7 +266,7 @@ public class CssHelpResolver {
     private void parseSource(String sourcePath) {
         ResourceBundle bundle = NbBundle.getBundle(sourcePath);
 
-        properties = new HashMap<String, PropertyDescriptor>();
+        properties = new HashMap<>();
 
         Enumeration<String> keys = bundle.getKeys();
         while (keys.hasMoreElements()) {
@@ -280,7 +280,7 @@ public class CssHelpResolver {
 
             //parse the value - delimiter is semicolon
             StringTokenizer st = new StringTokenizer(value, ";"); //NOI18N
-            Map<String, String> valueToLink = new HashMap<String, String>();
+            Map<String, String> valueToLink = new HashMap<>();
             while (st.hasMoreTokens()) {
                 String val = st.nextToken();
                 int propertyValueIdx = helpLink.indexOf('-');

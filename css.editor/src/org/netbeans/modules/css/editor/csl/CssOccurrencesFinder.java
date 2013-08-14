@@ -100,7 +100,7 @@ public class CssOccurrencesFinder extends OccurrencesFinder {
                 return ;
             }
 
-            Map<OffsetRange, ColoringAttributes> occurrencesMapLocal = new HashMap<OffsetRange, ColoringAttributes>();
+            Map<OffsetRange, ColoringAttributes> occurrencesMapLocal = new HashMap<>();
             for(OffsetRange range : occurrences) {
                 occurrencesMapLocal.put(range, ColoringAttributes.MARK_OCCURRENCES);
             }

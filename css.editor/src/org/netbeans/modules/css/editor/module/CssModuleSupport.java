@@ -42,7 +42,17 @@
 package org.netbeans.modules.css.editor.module;
 
 import java.net.URL;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
@@ -51,7 +61,17 @@ import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.DeclarationFinder.DeclarationLocation;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.modules.css.editor.module.spi.*;
+import org.netbeans.modules.css.editor.module.spi.Browser;
+import org.netbeans.modules.css.editor.module.spi.CompletionContext;
+import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
+import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
+import org.netbeans.modules.css.editor.module.spi.FeatureCancel;
+import org.netbeans.modules.css.editor.module.spi.FeatureContext;
+import org.netbeans.modules.css.editor.module.spi.FutureParamTask;
+import org.netbeans.modules.css.editor.module.spi.HelpResolver;
+import org.netbeans.modules.css.editor.module.spi.PropertySupportResolver;
+import org.netbeans.modules.css.editor.module.spi.SemanticAnalyzer;
+import org.netbeans.modules.css.editor.module.spi.SemanticAnalyzerResult;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
@@ -97,8 +117,8 @@ public class CssModuleSupport {
     }
 
     public static Map<OffsetRange, Set<ColoringAttributes>> getSemanticHighlights(FeatureContext context, FeatureCancel cancel) {
-        Map<OffsetRange, Set<ColoringAttributes>> all = new HashMap<OffsetRange, Set<ColoringAttributes>>();
-        final Collection<NodeVisitor<Map<OffsetRange, Set<ColoringAttributes>>>> visitors = new ArrayList<NodeVisitor<Map<OffsetRange, Set<ColoringAttributes>>>>();
+        Map<OffsetRange, Set<ColoringAttributes>> all = new HashMap<>();
+        final Collection<NodeVisitor<Map<OffsetRange, Set<ColoringAttributes>>>> visitors = new ArrayList<>();
 
         for (CssEditorModule module : getModules()) {
             NodeVisitor<Map<OffsetRange, Set<ColoringAttributes>>> visitor = module.getSemanticHighlightingNodeVisitor(context, all);
@@ -129,8 +149,8 @@ public class CssModuleSupport {
     }
 
     public static Set<OffsetRange> getMarkOccurrences(EditorFeatureContext context, FeatureCancel cancel) {
-        Set<OffsetRange> all = new HashSet<OffsetRange>();
-        final Collection<NodeVisitor<Set<OffsetRange>>> visitors = new ArrayList<NodeVisitor<Set<OffsetRange>>>();
+        Set<OffsetRange> all = new HashSet<>();
+        final Collection<NodeVisitor<Set<OffsetRange>>> visitors = new ArrayList<>();
 
         for (CssEditorModule module : getModules()) {
             NodeVisitor<Set<OffsetRange>> visitor = module.getMarkOccurrencesNodeVisitor(context, all);
@@ -162,8 +182,8 @@ public class CssModuleSupport {
     }
 
     public static Map<String, List<OffsetRange>> getFolds(FeatureContext context, FeatureCancel cancel) {
-        Map<String, List<OffsetRange>> all = new HashMap<String, List<OffsetRange>>();
-        final Collection<NodeVisitor<Map<String, List<OffsetRange>>>> visitors = new ArrayList<NodeVisitor<Map<String, List<OffsetRange>>>>();
+        Map<String, List<OffsetRange>> all = new HashMap<>();
+        final Collection<NodeVisitor<Map<String, List<OffsetRange>>>> visitors = new ArrayList<>();
 
         for (CssEditorModule module : getModules()) {
             NodeVisitor<Map<String, List<OffsetRange>>> visitor = module.getFoldsNodeVisitor(context, all);
@@ -196,7 +216,7 @@ public class CssModuleSupport {
 
     public static Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>> getDeclarationLocation(final Document document, final int caretOffset, final FeatureCancel cancel) {
         final AtomicReference<Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>> result =
-                new AtomicReference<Pair<OffsetRange, FutureParamTask<DeclarationLocation, EditorFeatureContext>>>();
+                new AtomicReference<>();
         document.render(new Runnable() {
 
             @Override
@@ -218,8 +238,8 @@ public class CssModuleSupport {
     }
 
     public static List<StructureItem> getStructureItems(FeatureContext context, FeatureCancel cancel) {
-        List<StructureItem> all = new ArrayList<StructureItem>();
-        final Collection<NodeVisitor<List<StructureItem>>> visitors = new ArrayList<NodeVisitor<List<StructureItem>>>();
+        List<StructureItem> all = new ArrayList<>();
+        final Collection<NodeVisitor<List<StructureItem>>> visitors = new ArrayList<>();
 
         for (CssEditorModule module : getModules()) {
             NodeVisitor<List<StructureItem>> visitor = module.getStructureItemsNodeVisitor(context, all);
@@ -256,7 +276,7 @@ public class CssModuleSupport {
      * @return 
      */
     public static CssEditorModule getModuleForInstantRename(EditorFeatureContext context) {
-        Set<OffsetRange> all = new HashSet<OffsetRange>();
+        Set<OffsetRange> all = new HashSet<>();
         //first module allowing to instant rename the context will win and do the rename
         for (CssEditorModule module : getModules()) {
             if (module.isInstantRenameAllowed(context)) {
@@ -273,7 +293,7 @@ public class CssModuleSupport {
      * @return 
      */
     public static Set<OffsetRange> getInstantRenameRegions(EditorFeatureContext context, CssEditorModule module) {
-        Set<OffsetRange> all = new HashSet<OffsetRange>();
+        Set<OffsetRange> all = new HashSet<>();
         //first module allowing to instant rename the context will win and do the rename
         assert module.isInstantRenameAllowed(context);
 
@@ -359,7 +379,7 @@ public class CssModuleSupport {
 //    //eof hotfix
 
     public static List<CompletionProposal> getCompletionProposals(CompletionContext context) {
-        List<CompletionProposal> all = new ArrayList<CompletionProposal>();
+        List<CompletionProposal> all = new ArrayList<>();
         for (CssEditorModule module : getModules()) {
             all.addAll(module.getCompletionProposals(context));
         }
@@ -367,7 +387,7 @@ public class CssModuleSupport {
     }
 
     public static Collection<String> getPseudoClasses(EditorFeatureContext context) {
-        Collection<String> all = new HashSet<String>();
+        Collection<String> all = new HashSet<>();
         for (CssEditorModule module : getModules()) {
             Collection<String> vals = module.getPseudoClasses(context);
             if (vals != null) {
@@ -378,7 +398,7 @@ public class CssModuleSupport {
     }
 
     public static Collection<String> getPseudoElements(EditorFeatureContext context) {
-        Collection<String> all = new HashSet<String>();
+        Collection<String> all = new HashSet<>();
         for (CssEditorModule module : getModules()) {
             Collection<String> vals = module.getPseudoElements(context);
             if (vals != null) {
@@ -390,7 +410,7 @@ public class CssModuleSupport {
 
     public static SortedSet<Browser> getBrowsers(FileObject file) {
         //sort by browser name
-        SortedSet<Browser> all = new TreeSet<Browser>(new Comparator<Browser>() {
+        SortedSet<Browser> all = new TreeSet<>(new Comparator<Browser>() {
 
             @Override
             public int compare(Browser t, Browser t1) {
@@ -457,7 +477,7 @@ public class CssModuleSupport {
     }
 
     private static Collection<HelpResolver> getSortedHelpResolvers(FileObject file) {
-        List<HelpResolver> list = new ArrayList<HelpResolver>();
+        List<HelpResolver> list = new ArrayList<>();
         for (CssEditorModule module : getModules()) {
             Collection<HelpResolver> resolvers = module.getHelpResolvers(file);
             if (resolvers != null) {
