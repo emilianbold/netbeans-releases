@@ -48,7 +48,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.elements.common.IMethodElement;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
@@ -82,7 +81,7 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
         this.returnType = returnType;
     }
 
-    public static IndexedMethod create(GroovyIndex index, String signature, String returnType,
+    public static IndexedMethod create(String signature, String returnType,
             String clz, IndexResult result, String attributes, int flags) {
         IndexedMethod m = new IndexedMethod(signature, returnType, result, clz, attributes, flags);
 
