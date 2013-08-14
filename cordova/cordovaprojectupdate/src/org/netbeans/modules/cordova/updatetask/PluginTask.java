@@ -159,47 +159,4 @@ public class PluginTask extends Task {
             exec.execute();
         }
     }
-    
-    
-    private class CordovaPlugin {
-        private String id;
-        private String url;
-
-        public CordovaPlugin(String id, String url) {
-            this.id = id;
-            this.url = url;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-        public String getUrl() {
-            return url;
-        }
-
-        @Override
-        public int hashCode() {
-            int hash = 5;
-            hash = 29 * hash + (this.id != null ? this.id.hashCode() : 0);
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final CordovaPlugin other = (CordovaPlugin) obj;
-            if ((this.id == null) ? (other.id != null) : !this.id.equals(other.id)) {
-                return false;
-            }
-            return true;
-        }
-        
-        
-    }
 }
