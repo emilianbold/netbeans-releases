@@ -49,6 +49,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
 import org.netbeans.modules.parsing.api.Snapshot;
@@ -68,6 +70,7 @@ public class JsfVariablesModel {
 
     static boolean inTest = false;
 
+    private static final Logger LOG = Logger.getLogger(JsfVariablesModel.class.getName());
     private static final String VARIABLE_NAME = "var";  //NOI18N
     private static final String VALUE_NAME = "value";  //NOI18N
     private static WeakReference<JsfVariablesModel> lastModelCache;
@@ -172,8 +175,24 @@ public class JsfVariablesModel {
                                 int doc_from = result.getSnapshot().getOriginalOffset(itemsAttribute.valueOffset());
                                 int doc_to = result.getSnapshot().getOriginalOffset(itemsAttribute.valueOffset() + itemsAttribute.value().length());
 
-                                if(doc_from == -1 || doc_to == -1) {
+                                if (doc_from == -1 || doc_to == -1) {
                                     continue; //the offsets cannot be mapped to the document
+                                }
+
+                                CharSequence topLeveLSnapshotText = topLevelSnapshot.getText();
+
+                                // XXX - review this code once it will be reported with details about the facelet
+                                if (doc_to > topLeveLSnapshotText.length()) {
+                                    // We don't know the case when this happens since there comes about one report per
+                                    // year and no user provided the source where it happened. Let's store the facelet
+                                    // source into the logger and report it with WARNING level to be able to fix it
+                                    // properly.
+                                    LOG.log(Level.INFO,
+                                            "It happened in Facelet''s doc_from={0}, doc_to={1}, text={2}",
+                                            new Object[]{doc_from, doc_to, topLeveLSnapshotText});
+                                    LOG.log(Level.WARNING,
+                                            "Error in the JsfVariablesModel initialization, please report it.");
+                                    continue;
                                 }
 
                                 String documentValueContent = topLevelSnapshot.getText().subSequence(doc_from, doc_to).toString();
