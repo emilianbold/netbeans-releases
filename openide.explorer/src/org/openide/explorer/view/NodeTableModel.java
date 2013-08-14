@@ -61,6 +61,7 @@ import java.util.TreeMap;
 import javax.swing.*;
 import javax.swing.table.AbstractTableModel;
 import org.openide.awt.Mnemonics;
+import org.openide.util.Exceptions;
 
 
 /**
@@ -123,6 +124,11 @@ public class NodeTableModel extends AbstractTableModel {
      * @param nodes the rows
      */
     public void setNodes(Node[] nodes) {
+        boolean asserts = false;
+        assert (asserts = true);
+        if (asserts && !EventQueue.isDispatchThread()) {
+            Exceptions.printStackTrace(new IllegalStateException("Must be called in AWT to assure data consistency."));
+        }
         for (int i = 0; i < nodeRows.length; i++)
             nodeRows[i].removePropertyChangeListener(pcl);
 
@@ -138,6 +144,11 @@ public class NodeTableModel extends AbstractTableModel {
      * @param props the columns
      */
     public void setProperties(Property[] props) {
+        boolean asserts = false;
+        assert (asserts = true);
+        if (asserts && !EventQueue.isDispatchThread()) {
+            Exceptions.printStackTrace(new IllegalStateException("Must be called in AWT to assure data consistency."));
+        }
         int size = props.length;
         sortColumn = -1;
         treeColumnProperty = null;
@@ -595,7 +606,10 @@ public class NodeTableModel extends AbstractTableModel {
      * @return property at (row, column)
      */
     public Object getValueAt(int row, int column) {
-        return getPropertyFor(nodeRows[row], allPropertyColumns[propertyColumns[column]].getProperty());
+        Node node = nodeRows[row];
+        int pc = propertyColumns[column];
+        ArrayColumn ac = allPropertyColumns[pc];
+        return getPropertyFor(node, ac.getProperty());
     }
 
     /** Cell is editable only if it has non null value.
