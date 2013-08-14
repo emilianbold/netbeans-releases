@@ -60,6 +60,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.event.TableModelListener;
 import javax.swing.event.TreeModelListener;
 import javax.swing.plaf.ComponentUI;
+import javax.swing.plaf.FontUIResource;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.table.DefaultTableModel;
 
@@ -526,7 +527,7 @@ public class FormUtils
             return o; // no need to change reference
         }
 
-        if (o.getClass() == Font.class) {
+        if (o.getClass() == Font.class || o.getClass() == FontUIResource.class) {
             return o;
         }
         // Issue 49973 & 169933
