@@ -182,7 +182,9 @@ public class AnimationLayer implements ActionListener {
         Dimension oldSize = container.getSize();
         container.setSize(maxContDim);
         containerImage = container.createImage(maxContDim.width, maxContDim.height);
-        container.paint(containerImage.getGraphics());
+        if (containerImage != null) { // for some reason the container's peer is null here sometimes...
+            container.paint(containerImage.getGraphics());
+        }
         container.setSize(oldSize);
         for (Component comp : components) {
             comp.setVisible(map.get(comp));
@@ -295,7 +297,7 @@ public class AnimationLayer implements ActionListener {
      * @param g graphics context.
      */
     public void paint(Graphics g) {
-        if (timer.isRunning()) {
+        if (timer.isRunning() && containerImage != null) {
             Graphics gClip = g.create();
             gClip.setClip(0, 0, containerImage.getWidth(null), containerImage.getHeight(null));
             gClip.drawImage(containerImage, 0, 0, null);

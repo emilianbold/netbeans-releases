@@ -124,6 +124,21 @@ public class StandardProjectSettings {
         };
     }
     
+    /**Augment the given project's {@link Lookup} with the per-project hints settings.
+     * 
+     * @return a {@link LookupProvider} that augments the given project's {@link Lookup} with per-project settings
+     * @since 1.4
+     */
+    public static @NonNull LookupProvider createPreferencesBasedSettings() {
+        return new LookupProvider() {
+            @Override public Lookup createAdditionalLookup(Lookup baseContext) {
+                Project project = baseContext.lookup(Project.class);
+                assert project != null;
+                return Lookups.fixed(new Standard(project, KEY_USE_PROJECT, null, null));
+            }
+        };
+    }
+    
     /**Augments the project's customizer with the standard version of per-project hints customizer.
      * Similar to {@link #createCustomizerProvider(java.lang.String) }, but the <code>customizersFolder</code>
      * is read get from <code>customizersFolder</code> attribute of the given file. Intended to be put directly
@@ -160,11 +175,11 @@ public class StandardProjectSettings {
 
         private final Project project;
         
-        private final String keyUseProject;
-        private final String keyHintSettingsFile;
-        private final String defaultHintLocation;
+        private final @NonNull String keyUseProject;
+        private final @NullAllowed String keyHintSettingsFile;
+        private final @NullAllowed String defaultHintLocation;
 
-        public Standard(Project project, String keyUseProject, String keyHintSettingsFile, String defaultHintLocation) {
+        public Standard(Project project, @NonNull String keyUseProject, @NullAllowed String keyHintSettingsFile, @NullAllowed String defaultHintLocation) {
             this.keyUseProject = keyUseProject;
             this.keyHintSettingsFile = keyHintSettingsFile;
             this.defaultHintLocation = defaultHintLocation;
@@ -185,22 +200,29 @@ public class StandardProjectSettings {
         }
 
         public String getSettingsFileLocation() {
+            assert hasLocation();
             String result = ProjectUtils.getPreferences(project, ProjectSettings.class, true).get(keyHintSettingsFile, null);
             
             return result != null ? result : defaultHintLocation;
         }
 
         public void setSettingsFileLocation(String settings) {
+            assert hasLocation();
             ProjectUtils.getPreferences(project, ProjectSettings.class, true).put(keyHintSettingsFile, settings);
         }
 
         @Override
         public Preferences getProjectSettings(String mimeType) {
-            URI settingsLocation = project.getProjectDirectory().toURI().resolve(getSettingsFileLocation());
-            return ToolPreferences.from(settingsLocation).getPreferences(HINTS_TOOL_ID, mimeType);
+            if (hasLocation()) {
+                URI settingsLocation = project.getProjectDirectory().toURI().resolve(getSettingsFileLocation());
+                return ToolPreferences.from(settingsLocation).getPreferences(HINTS_TOOL_ID, mimeType);
+            } else {
+                return ProjectUtils.getPreferences(project, ProjectSettings.class, true).node(mimeType);
+            }
         }
         
         public ToolPreferences preferencesFrom(String source) {
+            assert hasLocation();
             URI settingsLocation = project.getProjectDirectory().toURI().resolve(getSettingsFileLocation());
             return ToolPreferences.from(settingsLocation);
         }
@@ -211,6 +233,10 @@ public class StandardProjectSettings {
         
         public File getProjectLocation() {
             return FileUtil.toFile(project.getProjectDirectory());
+        }
+        
+        public boolean hasLocation() {
+            return keyHintSettingsFile != null;
         }
         
     }
