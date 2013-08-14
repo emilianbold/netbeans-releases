@@ -130,6 +130,10 @@ public class ExtWebBrowser implements HtmlBrowser.Factory, java.io.Serializable,
     
     protected transient PropertyChangeSupport pcs;
 
+    public ExtWebBrowser () {
+        this(PrivateBrowserFamilyId.UNKNOWN);
+    }
+
     /** Creates new Browser */
     public ExtWebBrowser (PrivateBrowserFamilyId family) {
         this.family = family;
