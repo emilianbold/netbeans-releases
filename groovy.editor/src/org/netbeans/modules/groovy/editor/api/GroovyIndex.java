@@ -553,8 +553,7 @@ public final class GroovyIndex {
             flags = IndexedElement.stringToFlag(attrs, 0);
         }
 
-        IndexedClass c =
-            IndexedClass.create(this, simpleName, fqn, map, attrs, flags);
+        IndexedClass c = IndexedClass.create(simpleName, fqn, map, attrs, flags);
 
         return c;
     }
@@ -597,7 +596,7 @@ public final class GroovyIndex {
             }
         }
 
-        IndexedMethod m = IndexedMethod.create(this, methodSignature, type, clz, map, attributes, flags);
+        IndexedMethod m = IndexedMethod.create(methodSignature, type, clz, map, attributes, flags);
 
         m.setInherited(inherited);
         return m;

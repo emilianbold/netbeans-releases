@@ -77,4 +77,4 @@ METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
 FIELD      class                           [PUBLIC]   Class
-FIELD      x                               [PRIVATE]  
+FIELD      x                                          String
