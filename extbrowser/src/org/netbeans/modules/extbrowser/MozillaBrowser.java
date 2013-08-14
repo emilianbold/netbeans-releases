@@ -63,6 +63,7 @@ public class MozillaBrowser extends ExtWebBrowser {
 
     /** Creates new ExtWebBrowser */
     public MozillaBrowser() {
+        super(PrivateBrowserFamilyId.MOZILLA);
         ddeServer = ExtWebBrowser.MOZILLA;
         //browserStartTimeout = 6000;
     }
@@ -177,9 +178,4 @@ public class MozillaBrowser extends ExtWebBrowser {
         return retValue;    
     }
 
-    @Override
-    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
-        return PrivateBrowserFamilyId.MOZILLA;
-    }
-    
 }

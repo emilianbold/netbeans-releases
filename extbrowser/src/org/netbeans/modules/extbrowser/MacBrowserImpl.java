@@ -54,7 +54,6 @@ import java.net.URL;
 import java.util.logging.Level;
 
 import java.util.logging.Logger;
-import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 import org.openide.NotifyDescriptor;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
@@ -109,8 +108,8 @@ public class MacBrowserImpl extends ExtBrowserImpl {
     }
     
     @Override
-    protected PrivateBrowserFamilyId getDefaultPrivateBrowserFamilyId( ) {
-        PrivateBrowserFamilyId pluginId = super.getDefaultPrivateBrowserFamilyId();
+    protected PrivateBrowserFamilyId detectPrivateBrowserFamilyId( ) {
+        PrivateBrowserFamilyId pluginId = super.detectPrivateBrowserFamilyId();
         if (pluginId != PrivateBrowserFamilyId.UNKNOWN){
             return pluginId;
         }

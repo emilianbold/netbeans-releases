@@ -59,6 +59,7 @@ public class SafariBrowser extends ExtWebBrowser {
 
     /** Creates new ExtWebBrowser */
     public SafariBrowser() {
+        super(PrivateBrowserFamilyId.SAFARI);
     }
 
     /** Determines whether the browser should be visible or not
@@ -106,11 +107,6 @@ public class SafariBrowser extends ExtWebBrowser {
         return new NbProcessDescriptor ("/usr/bin/open", // NOI18N
                 "-a safari {" + ExtWebBrowser.UnixBrowserFormat.TAG_URL + "}",
                 ExtWebBrowser.UnixBrowserFormat.getHint()); // NOI18N
-    }
-
-    @Override
-    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
-        return PrivateBrowserFamilyId.SAFARI;
     }
 
 }

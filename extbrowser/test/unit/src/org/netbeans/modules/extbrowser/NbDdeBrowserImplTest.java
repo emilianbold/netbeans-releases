@@ -148,7 +148,7 @@ public class NbDdeBrowserImplTest extends NbTestCase {
     
     protected void setUp () {
         if (org.openide.util.Utilities.isWindows ())
-            testObject = (ExtBrowserImpl)new ExtWebBrowser ().createHtmlBrowserImpl ();
+            testObject = (ExtBrowserImpl)new ExtWebBrowser (PrivateBrowserFamilyId.UNKNOWN).createHtmlBrowserImpl ();
     }
 
 }

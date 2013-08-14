@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.browser.api;
 
 import java.awt.Image;
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
 import java.net.URL;
 import java.util.Map;
 import java.util.WeakHashMap;
@@ -53,6 +55,7 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.StaticResource;
 import org.netbeans.api.project.Project;
 import org.netbeans.core.IDESettings;
+import org.netbeans.modules.extbrowser.ExtWebBrowser;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.awt.HtmlBrowser;
@@ -104,6 +107,22 @@ public final class WebBrowser {
                 }
             }
         });
+        if (factoryDesc.getFactory() instanceof ExtWebBrowser) {
+            ExtWebBrowser fa = (ExtWebBrowser)factoryDesc.getFactory();
+            fa.addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (evt.getPropertyName().equals(ExtWebBrowser.PROP_PRIVATE_BROWSER_FAMILY)) {
+                        RP.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                refreshDelegate();
+                            }
+                        });
+                    }
+                }
+            });
+        }
     }
 
     static WebBrowser createIDEGlobalDelegate() {

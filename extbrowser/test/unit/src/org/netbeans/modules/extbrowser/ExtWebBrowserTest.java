@@ -129,7 +129,7 @@ public class ExtWebBrowserTest extends NbTestCase {
     protected ExtWebBrowser testObject;
     
     protected void setUp () {
-        testObject = new ExtWebBrowser ();
+        testObject = new ExtWebBrowser (PrivateBrowserFamilyId.UNKNOWN);
     }
     
 }

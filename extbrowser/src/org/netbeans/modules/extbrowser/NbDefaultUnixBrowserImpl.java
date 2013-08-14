@@ -81,7 +81,6 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
     private static final String XDG_OPEN_COMMAND = "xdg-open"; // NOI18N
     private static final String XDG_SETTINGS_COMMAND = "xdg-settings"; // NOI18N
     private static final String XBROWSER_COMMAND = "x-www-browser"; // NOI18N
-    private static final String XDG_DEFAULT_WEB_BROWSER;
     
     private static final RequestProcessor REQUEST_PROCESSOR = 
         new RequestProcessor( NbDefaultUnixBrowserImpl.class );
@@ -96,7 +95,6 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
         XDG_OPEN_AVAILABLE = new File("/usr/bin/" + XDG_OPEN_COMMAND).exists(); // NOI18N
         XDG_SETTINGS_AVAILABLE = new File("/usr/bin/" + XDG_SETTINGS_COMMAND).exists(); // NOI18N
         XBROWSER_AVAILABLE = new File("/usr/bin/" + XBROWSER_COMMAND).exists(); // NOI18N
-        XDG_DEFAULT_WEB_BROWSER = detectDefaultWebBrowser();
     }
     
     static boolean isAvailable() {
@@ -113,17 +111,17 @@ class NbDefaultUnixBrowserImpl extends ExtBrowserImpl {
     }
 
     @Override
-    protected PrivateBrowserFamilyId getDefaultPrivateBrowserFamilyId() {
+    protected PrivateBrowserFamilyId detectPrivateBrowserFamilyId() {
         PrivateBrowserFamilyId browserFamilyId = detectBrowserFamily();
         if (browserFamilyId != null) {
             return browserFamilyId;
         }
-        return super.getDefaultPrivateBrowserFamilyId();
+        return super.detectPrivateBrowserFamilyId();
     }
 
     @CheckForNull
     private PrivateBrowserFamilyId detectBrowserFamily() {
-        String browserIdent = XDG_DEFAULT_WEB_BROWSER;
+        String browserIdent = detectDefaultWebBrowser();
         if (browserIdent == null
                 && XBROWSER_AVAILABLE) {
             // fallback
