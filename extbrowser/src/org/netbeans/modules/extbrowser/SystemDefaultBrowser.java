@@ -49,12 +49,14 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.extbrowser.PrivateBrowserFamilyId;
 import org.openide.awt.HtmlBrowser;
 import org.openide.execution.NbProcessDescriptor;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.Utilities;
 
 /**
@@ -66,6 +68,8 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
 
     private static final long serialVersionUID = -7317179197254112564L;
     private static final Logger logger = Logger.getLogger(SystemDefaultBrowser.class.getName());
+    private static RequestProcessor RP = new RequestProcessor(SystemDefaultBrowser.class.getName(), 3);
+    private transient AtomicBoolean detected = new AtomicBoolean(false);
 
     private static final boolean ACTIVE;
     static {
@@ -98,6 +102,7 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
     
     /** Creates new ExtWebBrowser */
     public SystemDefaultBrowser() {
+        super(PrivateBrowserFamilyId.UNKNOWN);
     }
 
     /**
@@ -180,13 +185,33 @@ public class SystemDefaultBrowser extends ExtWebBrowser {
         return p;
     }
 
+    private void readObject (java.io.ObjectInputStream ois)
+            throws java.io.IOException, ClassNotFoundException {
+        ois.defaultReadObject ();
+        detected = new AtomicBoolean(false);
+    }
+
+
     @Override
     public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
-        HtmlBrowser.Impl impl = createHtmlBrowserImpl();
-        if (impl != null && impl instanceof ExtBrowserImpl) {
-            return ((ExtBrowserImpl)impl).getDefaultPrivateBrowserFamilyId();
+        detectSystemDefaultBrowser();
+        return super.getPrivateBrowserFamilyId();
+    }
+
+    private synchronized void detectSystemDefaultBrowser() {
+        if (detected.getAndSet(true)) {
+            return;
         }
-        return PrivateBrowserFamilyId.UNKNOWN;
+        final HtmlBrowser.Impl impl = createHtmlBrowserImpl();
+        final ExtBrowserImpl extImpl = impl != null && impl instanceof ExtBrowserImpl ? (ExtBrowserImpl)impl : null;
+        if (extImpl != null) {
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    setPrivateBrowserFamilyId(extImpl.detectPrivateBrowserFamilyId());
+                }
+            });
+        }
     }
 
     private static final class Jdk6BrowserImpl extends ExtBrowserImpl {
