@@ -42,7 +42,14 @@
 package org.netbeans.modules.css.editor.module.main;
 
 import java.io.PrintWriter;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -78,7 +85,6 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
-import org.netbeans.modules.web.common.api.WebUtils;
 
 /**
  *
@@ -187,7 +193,7 @@ public class CssModuleTestBase extends CslTestBase {
     protected void assertAlternatives(ResolvedProperty propertyValue, String... expected) {
         Set<ValueGrammarElement> alternatives = propertyValue.getAlternatives();
         Collection<String> alts = convert(alternatives);
-        Collection<String> expc = new ArrayList<String>(Arrays.asList(expected));
+        Collection<String> expc = new ArrayList<>(Arrays.asList(expected));
         if (alts.size() > expc.size()) {
             alts.removeAll(expc);
             throw new AssertionFailedError(String.format("Found %s unexpected alternative(s): %s", alts.size(), toString(alts)));
@@ -195,8 +201,8 @@ public class CssModuleTestBase extends CslTestBase {
             expc.removeAll(alts);
             throw new AssertionFailedError(String.format("There're %s expected alternative(s) missing : %s", expc.size(), toString(expc)));
         } else {
-            Collection<String> alts2 = new ArrayList<String>(alts);
-            Collection<String> expc2 = new ArrayList<String>(expc);
+            Collection<String> alts2 = new ArrayList<>(alts);
+            Collection<String> expc2 = new ArrayList<>(expc);
 
             alts2.removeAll(expc);
             expc2.removeAll(alts);
@@ -213,7 +219,7 @@ public class CssModuleTestBase extends CslTestBase {
     }
 
     private Collection<String> convert(Set<ValueGrammarElement> toto) {
-        Collection<String> x = new HashSet<String>();
+        Collection<String> x = new HashSet<>();
         for (ValueGrammarElement e : toto) {
             x.add(e.getValue().toString());
         }
@@ -363,7 +369,7 @@ public class CssModuleTestBase extends CslTestBase {
 
         final BaseDocument doc = getDocument(content.toString());
         Source source = Source.create(doc);
-        final AtomicReference<CompletionProposal> found = new AtomicReference<CompletionProposal>();
+        final AtomicReference<CompletionProposal> found = new AtomicReference<>();
         ParserManager.parse(Collections.singleton(source), new UserTask() {
 
             @Override
@@ -463,11 +469,11 @@ public class CssModuleTestBase extends CslTestBase {
     }
 
     private void assertCompletionItemNames(String[] expected, CodeCompletionResult ccresult, Match type) {
-        Collection<String> real = new ArrayList<String>();
+        Collection<String> real = new ArrayList<>();
         for (CompletionProposal ccp : ccresult.getItems()) {
             real.add(getCompletionItemText(ccp));
         }
-        Collection<String> exp = new ArrayList<String>(Arrays.asList(expected));
+        Collection<String> exp = new ArrayList<>(Arrays.asList(expected));
 
         if (type == Match.EXACT) {
             assertEquals(exp, real);

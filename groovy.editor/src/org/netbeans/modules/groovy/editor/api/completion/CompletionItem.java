@@ -914,22 +914,24 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
     public static class FieldItem extends CompletionItem {
 
         private final String typeName;
-        private final String name;
-        private final ParserResult info;
-        private final int modifiers;
+        private final String fieldName;
+        private final Set<Modifier> modifiers;
 
         
-        public FieldItem(String name, int modifiers, int anchorOffset, ParserResult info, String typeName) {
+        public FieldItem(String typeName, String fieldName, int modifiers, int anchorOffset) {
+            this(typeName, fieldName, Utilities.modelModifiersToGsf(Utilities.reflectionModifiersToModel(modifiers)), anchorOffset);
+        }
+
+        public FieldItem(String typeName, String fieldName, Set<Modifier> modifiers, int anchorOffset) {
             super(null, anchorOffset);
-            this.name = name;
-            this.info = info;
             this.typeName = typeName;
+            this.fieldName = fieldName;
             this.modifiers = modifiers;
         }
 
         @Override
         public String getName() {
-            return name;
+            return fieldName;
         }
 
         @Override
@@ -946,17 +948,17 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         public ImageIcon getIcon() {
             // todo: what happens, if i get a CCE here?
             return (ImageIcon) ElementIcons.getElementIcon(javax.lang.model.element.ElementKind.FIELD,
-                    Utilities.reflectionModifiersToModel(modifiers));
+                    Utilities.gsfModifiersToModel(modifiers, null));
         }
 
         @Override
         public Set<Modifier> getModifiers() {
-            return Utilities.modelModifiersToGsf(Utilities.reflectionModifiersToModel(modifiers));
+            return modifiers;
         }
 
         @Override
         public ElementHandle getElement() {
-            return ElementHandleSupport.createHandle(typeName, name, ElementKind.FIELD, getModifiers());
+            return ElementHandleSupport.createHandle(typeName, fieldName, ElementKind.FIELD, getModifiers());
         }
     }
 

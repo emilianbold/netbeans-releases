@@ -50,11 +50,10 @@ import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
-import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.css.indexing.api.CssIndex;
-import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
+import org.netbeans.modules.css.refactoring.api.Entry;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -62,6 +61,7 @@ import org.netbeans.modules.refactoring.api.Problem;
 import org.netbeans.modules.refactoring.api.WhereUsedQuery;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.text.CloneableEditorSupport;
@@ -140,7 +140,7 @@ public class CssWhereUsedQueryPlugin implements RefactoringPlugin {
                         type = null;
                 }
 
-                List<FileObject> involvedFiles = new LinkedList<FileObject>(files);
+                List<FileObject> involvedFiles = new LinkedList<>(files);
                 DependenciesGraph deps = index.getDependencies(context.getFileObject());
                 Collection<FileObject> relatedFiles = deps.getAllRelatedFiles();
 

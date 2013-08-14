@@ -77,7 +77,7 @@ abstract class BaseOptionsPanelController extends OptionsPanelController impleme
     @Override
     public final void update() {
         updateInternal();
-        changed = true;
+        changed = false;
     }
 
     @Override
@@ -93,7 +93,6 @@ abstract class BaseOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public final void cancel() {
-        changed = false;
     }
 
     @Override
@@ -118,7 +117,8 @@ abstract class BaseOptionsPanelController extends OptionsPanelController impleme
 
     @Override
     public final void stateChanged(ChangeEvent e) {
-        if (changed) {
+        if (!changed) {
+            changed = true;
             propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
         }
         propertyChangeSupport.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);

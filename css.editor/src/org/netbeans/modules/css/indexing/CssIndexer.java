@@ -94,10 +94,10 @@ public class CssIndexer extends EmbeddingIndexer {
     public static final char VIRTUAL_ELEMENT_MARKER = '!'; //NOI18N
     
     //used during the indexing (content is mutable)
-    private static final Map<FileObject, AtomicLong> importsHashCodes = new HashMap<FileObject, AtomicLong>();
+    private static final Map<FileObject, AtomicLong> importsHashCodes = new HashMap<>();
     
     //final version used after the indexing finishes (immutable)
-    private static Map<FileObject, AtomicLong> computedImportsHashCodes = new HashMap<FileObject, AtomicLong>();
+    private static Map<FileObject, AtomicLong> computedImportsHashCodes = new HashMap<>();
     
 //    static {
 //	LOG.setLevel(Level.ALL);
@@ -165,7 +165,7 @@ public class CssIndexer extends EmbeddingIndexer {
         if (!entries.isEmpty()) {
             
             //eliminate duplicated entries
-            Collection<String> entryStrings = new HashSet<String>();
+            Collection<String> entryStrings = new HashSet<>();
             for(Entry entry : entries) {
                 StringBuilder sb = new StringBuilder();
                 sb.append(entry.getName());
@@ -240,7 +240,7 @@ public class CssIndexer extends EmbeddingIndexer {
         
         @Override
         public void scanFinished(Context context) {
-            computedImportsHashCodes = new HashMap<FileObject, AtomicLong>(importsHashCodes); //shallow copy
+            computedImportsHashCodes = new HashMap<>(importsHashCodes); //shallow copy
             FileObject root = context.getRoot();
             if(root != null) {
                 fireChange(root);

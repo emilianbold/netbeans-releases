@@ -127,14 +127,19 @@ public class AnalysisOptionsPanel extends JPanel {
     })
     private void initCodeSniffer(DocumentListener defaultDocumentListener) {
         codeSnifferHintLabel.setText(Bundle.AnalysisOptionsPanel_codeSniffer_hint(CodeSniffer.NAME, CodeSniffer.LONG_NAME));
-        codeSnifferStandardsModel.fetchStandards(codeSnifferStandardComboBox);
         codeSnifferStandardComboBox.setModel(codeSnifferStandardsModel);
 
         // listeners
         codeSnifferTextField.getDocument().addDocumentListener(defaultDocumentListener);
         codeSnifferTextField.getDocument().addDocumentListener(new CodeSnifferPathDocumentListener());
-        ItemListener defaultItemListener = new DefaultItemListener();
-        codeSnifferStandardComboBox.addItemListener(defaultItemListener);
+        final ItemListener defaultItemListener = new DefaultItemListener();
+        codeSnifferStandardsModel.fetchStandards(codeSnifferStandardComboBox, new Runnable() {
+            @Override
+            public void run() {
+                // #232279
+                codeSnifferStandardComboBox.addItemListener(defaultItemListener);
+            }
+        });
     }
 
     @NbBundle.Messages({
@@ -154,7 +159,7 @@ public class AnalysisOptionsPanel extends JPanel {
     }
 
     void setStandards(final String selectedCodeSnifferStandard, String customCodeSnifferPath) {
-        codeSnifferStandardsModel.fetchStandards(codeSnifferStandardComboBox, customCodeSnifferPath);
+        codeSnifferStandardsModel.fetchStandards(codeSnifferStandardComboBox, customCodeSnifferPath, null);
         codeSnifferStandardsModel.setSelectedItem(selectedCodeSnifferStandard);
     }
 
@@ -163,9 +168,7 @@ public class AnalysisOptionsPanel extends JPanel {
     }
 
     public void setCodeSnifferPath(String path) {
-        ignoreChanges = true;
         codeSnifferTextField.setText(path);
-        ignoreChanges = false;
     }
 
     @CheckForNull
@@ -179,8 +182,12 @@ public class AnalysisOptionsPanel extends JPanel {
 
     public void setCodeSnifferStandard(String standard) {
         ignoreChanges = true;
-        codeSnifferStandardsModel.setSelectedItem(standard);
-        ignoreChanges = false;
+        codeSnifferStandardsModel.setSelectedItem(standard, new Runnable() {
+            @Override
+            public void run() {
+                ignoreChanges = false;
+            }
+        });
     }
 
     public String getMessDetectorPath() {
@@ -620,10 +627,6 @@ public class AnalysisOptionsPanel extends JPanel {
         }
 
         private void processUpdate() {
-            if (ignoreChanges) {
-                // default values set
-                return;
-            }
             String codeSnifferPath = getCodeSnifferPath();
             // reset cached standards only if the new path is valid
             ValidationResult result = new AnalysisOptionsValidator()

@@ -104,9 +104,9 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<FieldElement> retval = values.length > 0
                 ? new HashSet<FieldElement>() : Collections.<FieldElement>emptySet();
-
+        String url = indexResult.getUrl().toString();
         for (String val : values) {
-            final FieldElement field = fromSignature(type, query, indexQuery, indexResult, Signature.get(val));
+            final FieldElement field = fromSignature(type, query, indexQuery, url, Signature.get(val));
             if (field != null) {
                 retval.add(field);
             }
@@ -115,13 +115,13 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
     }
 
     public static FieldElement fromSignature(final TypeElement type, final NameKind query,
-            final IndexQueryImpl indexScopeQuery, final IndexResult indexResult, final Signature sig) {
+            final IndexQueryImpl indexScopeQuery, final String url, final Signature sig) {
         Parameters.notNull("query", query); //NOI18N
         final FieldSignatureParser signParser = new FieldSignatureParser(sig);
         FieldElement retval = null;
         if (matchesQuery(query, signParser)) {
             retval = new FieldElementImpl(type, signParser.getFieldName(),
-                    signParser.getOffset(), signParser.getFlags(), indexResult.getUrl().toString(),
+                    signParser.getOffset(), signParser.getFlags(), url,
                     indexScopeQuery, signParser.getTypes(), signParser.getFQTypes(), signParser.isDeprecated());
 
         }

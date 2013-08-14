@@ -52,12 +52,12 @@ import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenId;
 import org.netbeans.editor.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
-import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
-import org.netbeans.modules.web.indent.api.support.IndenterContextData;
-import org.netbeans.modules.web.indent.api.support.IndentCommand;
-import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
-import org.netbeans.modules.web.indent.api.LexUtilities;
 import org.netbeans.modules.editor.indent.spi.Context;
+import org.netbeans.modules.web.indent.api.LexUtilities;
+import org.netbeans.modules.web.indent.api.embedding.JoinedTokenSequence;
+import org.netbeans.modules.web.indent.api.support.AbstractIndenter;
+import org.netbeans.modules.web.indent.api.support.IndentCommand;
+import org.netbeans.modules.web.indent.api.support.IndenterContextData;
 
 /**
  * Logic of building indenter state is worth rewritting. It evolved over the time
@@ -100,7 +100,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
 
     @Override
     protected void reset() {
-        stack = new Stack<CssStackItem>();
+        stack = new Stack<>();
         inComment = false;
         previousCommentLineStartsWithAsterix = false;
         inMedia = false;
@@ -202,7 +202,7 @@ public class CssIndenter extends AbstractIndenter<CssTokenId> {
     protected List<IndentCommand> getLineIndent(IndenterContextData<CssTokenId> context,
             List<IndentCommand> preliminaryNextLineIndent) throws BadLocationException {
         Stack<CssStackItem> blockStack = getStack();
-        List<IndentCommand> iis = new ArrayList<IndentCommand>();
+        List<IndentCommand> iis = new ArrayList<>();
         getIndentFromState(iis, true, context.getLineStartOffset());
 
         JoinedTokenSequence<CssTokenId> ts = context.getJoinedTokenSequences();

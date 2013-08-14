@@ -135,11 +135,9 @@ public class IOSPlatform implements MobilePlatform {
     @Override
     public Collection<? extends Device> getConnectedDevices() throws IOException {
         final WebInspectorJNIBinding inspector = WebInspectorJNIBinding.getDefault();
-        try {
-            inspector.start();
-            inspector.stop();
+        if (inspector.isDeviceConnected()) {
             return Collections.singleton(IOSDevice.CONNECTED);
-        } catch (IllegalStateException ex) {
+        } else {
             return Collections.emptyList();
         }
     }
@@ -224,11 +222,11 @@ public class IOSPlatform implements MobilePlatform {
         if (f.exists() && f.isDirectory()) {
             File[] listFiles = f.listFiles(new FilenameFilter() {
 
-                                   @Override
-                                   public boolean accept(File dir, String name) {
-                                       return name.endsWith(".mobileprovision"); // NOI18N
-                                   }
-                               });
+                @Override
+                public boolean accept(File dir, String name) {
+                    return name.endsWith(".mobileprovision"); // NOI18N
+                }
+            });
             if (listFiles.length > 0) {
                 def = listFiles[0].getAbsolutePath();
             }

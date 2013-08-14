@@ -76,8 +76,9 @@ public class DeviceDebugTransport extends IOSDebugTransport implements Transport
     }
     
     private void sendMessage(String message) {
-        //if (keepGoing)
+        if (keepGoing) {
             nativeCall.sendMessage(message);
+        }
     }
 
     @Override

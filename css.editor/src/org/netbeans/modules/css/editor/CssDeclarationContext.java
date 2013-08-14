@@ -44,7 +44,6 @@ package org.netbeans.modules.css.editor;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeUtil;
-import org.netbeans.modules.css.lib.api.properties.ResolvedProperty;
 import org.netbeans.modules.web.common.api.LexerUtils;
 
 /**

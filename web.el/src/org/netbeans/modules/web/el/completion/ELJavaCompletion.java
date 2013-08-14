@@ -121,7 +121,7 @@ public class ELJavaCompletion {
         // adds packages to the CC
         addPackages(cc, pm.getPrefix(), offset, proposals);
 
-        Set<PackageEntry> packages = new HashSet<PackageEntry>();
+        Set<PackageEntry> packages = new HashSet<>();
         if (dotIndex == -1) {
             // java.lang package is imported by default
             packages.add(DEFAULT_PACKAGE);
@@ -176,7 +176,7 @@ public class ELJavaCompletion {
     }
 
     private static Collection<DefaultCompletionProposal> getFieldsAndMethods(TypeElement typeElement, int i) {
-        Map<String, DefaultCompletionProposal> classProposals = new HashMap<String, DefaultCompletionProposal>();
+        Map<String, DefaultCompletionProposal> classProposals = new HashMap<>();
         for (Element element : typeElement.getEnclosedElements()) {
             if (element.getModifiers().containsAll(PUBLIC_STATIC) && FIELD_METHOD.contains(element.getKind())) {
                 classProposals.put(element.getSimpleName().toString(), new JavaFieldCompletionItem(element, typeElement.getSimpleName().toString(), i));

@@ -78,8 +78,9 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
     public static Set<NamespaceElement> fromSignature(final NameKind query, final IndexQueryImpl indexQuery, final IndexResult indexResult) {
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<NamespaceElement> retval = new HashSet<>();
+        String url = indexResult.getUrl().toString();
         for (final String val : values) {
-            final NamespaceElement namespace = fromSignature(query, indexQuery, indexResult, Signature.get(val));
+            final NamespaceElement namespace = fromSignature(query, indexQuery, url, Signature.get(val));
             if (namespace != null) {
                 retval.add(namespace);
             }
@@ -87,12 +88,12 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
         return retval;
     }
 
-    public static NamespaceElement fromSignature(final NameKind query, IndexQueryImpl indexScopeQuery, IndexResult indexResult, Signature sig) {
+    public static NamespaceElement fromSignature(final NameKind query, IndexQueryImpl indexScopeQuery, String url, Signature sig) {
         final NamespaceSignatureParser signParser = new NamespaceSignatureParser(sig);
         NamespaceElement retval = null;
         if (matchesQuery(query, signParser)) {
                 retval = new NamespaceElementImpl(signParser.getQualifiedName(),
-                0, indexResult.getUrl().toString(),
+                0, url,
                 indexScopeQuery, signParser.isDeprecated());
         }
         return retval;

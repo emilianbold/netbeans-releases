@@ -79,4 +79,4 @@ METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
 FIELD      class                           [PUBLIC]   Class
-FIELD      delegation                      [PRIVATE]  
+FIELD      delegation                                 Delegation

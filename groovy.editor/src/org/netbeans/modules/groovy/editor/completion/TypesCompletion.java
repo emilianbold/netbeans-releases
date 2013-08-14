@@ -204,7 +204,7 @@ public class TypesCompletion extends BaseCompletion {
 
             if (index != null) {
                 String camelCaseFirstWord = CamelCaseUtil.getCamelCaseFirstWord(request.getPrefix());
-                Set<IndexedClass> classes = index.getClasses(camelCaseFirstWord, QuerySupport.Kind.PREFIX, true, false, false);
+                Set<IndexedClass> classes = index.getClasses(camelCaseFirstWord, QuerySupport.Kind.PREFIX);
 
                 if (classes.isEmpty()) {
                     LOG.log(Level.FINEST, "Nothing found in GroovyIndex");

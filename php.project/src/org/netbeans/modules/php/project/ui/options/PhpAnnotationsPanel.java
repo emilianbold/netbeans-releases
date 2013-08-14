@@ -259,6 +259,8 @@ public class PhpAnnotationsPanel extends JPanel {
         deleteButton = new JButton();
         noteLabel = new JLabel();
         infoLabel = new JLabel();
+        warningLabel = new JLabel();
+        warningText = new JLabel();
 
         Mnemonics.setLocalizedText(resolveDeprecatedCheckBox, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.resolveDeprecatedCheckBox.text")); // NOI18N
 
@@ -279,6 +281,10 @@ public class PhpAnnotationsPanel extends JPanel {
 
         Mnemonics.setLocalizedText(infoLabel, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.infoLabel.text")); // NOI18N
 
+        Mnemonics.setLocalizedText(warningLabel, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.warningLabel.text")); // NOI18N
+
+        Mnemonics.setLocalizedText(warningText, NbBundle.getMessage(PhpAnnotationsPanel.class, "PhpAnnotationsPanel.warningText.text")); // NOI18N
+
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -298,7 +304,12 @@ public class PhpAnnotationsPanel extends JPanel {
                 .addGroup(layout.createParallelGroup(Alignment.LEADING)
                     .addComponent(noteLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
                     .addComponent(annotationsLabel)
-                    .addComponent(resolveDeprecatedCheckBox))
+                    .addComponent(resolveDeprecatedCheckBox)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(ComponentPlacement.RELATED)
+                        .addComponent(warningText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
                 .addGap(0, 0, Short.MAX_VALUE))
         );
 
@@ -308,6 +319,10 @@ public class PhpAnnotationsPanel extends JPanel {
             layout.createParallelGroup(Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(resolveDeprecatedCheckBox)
+                .addGap(3, 3, 3)
+                .addGroup(layout.createParallelGroup(Alignment.BASELINE)
+                    .addComponent(warningLabel, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
+                    .addComponent(warningText, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addComponent(annotationsLabel)
                 .addPreferredGap(ComponentPlacement.RELATED)
@@ -336,6 +351,8 @@ public class PhpAnnotationsPanel extends JPanel {
     private JLabel infoLabel;
     private JLabel noteLabel;
     private JCheckBox resolveDeprecatedCheckBox;
+    private JLabel warningLabel;
+    private JLabel warningText;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

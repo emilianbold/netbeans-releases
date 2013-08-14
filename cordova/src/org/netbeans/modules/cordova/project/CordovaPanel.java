@@ -44,7 +44,6 @@ package org.netbeans.modules.cordova.project;
 import java.io.IOException;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
-import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.cordova.wizard.CordovaTemplate;
@@ -69,7 +68,6 @@ public class CordovaPanel extends javax.swing.JPanel {
         initComponents();
         update();
         platformsPane.setVisible(false);
-        platformSetup.setVisible(false);
         packageTextField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
@@ -96,7 +94,6 @@ public class CordovaPanel extends javax.swing.JPanel {
     public CordovaPanel() {
         this(null);
         platformsPane.setVisible(true);
-        platformSetup.setVisible(true);
     }
     
     public void setControlsEnabled(boolean enabled) {
@@ -106,7 +103,6 @@ public class CordovaPanel extends javax.swing.JPanel {
         iosTargetCombo.setEnabled(enabled);
         packageLabel.setEnabled(enabled);
         packageTextField.setEnabled(enabled);
-        platformSetup.setEnabled(enabled);
         this.setEnabled(enabled);
     }    
     
@@ -128,13 +124,6 @@ public class CordovaPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         phoneGapCheckBox = new javax.swing.JCheckBox();
-        packageTextField = new javax.swing.JTextField();
-        packageLabel = new javax.swing.JLabel();
-        platformSetup = new javax.swing.JButton();
-        nameLabel = new javax.swing.JLabel();
-        nameTextField = new javax.swing.JTextField();
-        versionTextField = new javax.swing.JTextField();
-        versionLabel = new javax.swing.JLabel();
         platformsPane = new javax.swing.JTabbedPane();
         androidPanel = new javax.swing.JPanel();
         androidTarget = new javax.swing.JLabel();
@@ -178,6 +167,12 @@ public class CordovaPanel extends javax.swing.JPanel {
         tfiPadSplashPortrait = new javax.swing.JTextField();
         tfiPadSplashRetLandscape = new javax.swing.JTextField();
         tfiPadSplashRetPortrait = new javax.swing.JTextField();
+        packageTextField = new javax.swing.JTextField();
+        packageLabel = new javax.swing.JLabel();
+        nameLabel = new javax.swing.JLabel();
+        nameTextField = new javax.swing.JTextField();
+        versionTextField = new javax.swing.JTextField();
+        versionLabel = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(phoneGapCheckBox, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.phoneGapCheckBox.text")); // NOI18N
         phoneGapCheckBox.addChangeListener(new javax.swing.event.ChangeListener() {
@@ -185,25 +180,6 @@ public class CordovaPanel extends javax.swing.JPanel {
                 phoneGapCheckBoxStateChanged(evt);
             }
         });
-
-        packageTextField.setText(org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.packageTextField.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(packageLabel, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.packageLabel.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(platformSetup, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.platformSetup.text")); // NOI18N
-        platformSetup.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                platformSetupActionPerformed(evt);
-            }
-        });
-
-        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.nameLabel.text")); // NOI18N
-
-        nameTextField.setText(org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.nameTextField.text")); // NOI18N
-
-        versionTextField.setText(org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.versionTextField.text")); // NOI18N
-
-        org.openide.awt.Mnemonics.setLocalizedText(versionLabel, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.versionLabel.text")); // NOI18N
 
         org.openide.awt.Mnemonics.setLocalizedText(androidTarget, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.androidTarget.text")); // NOI18N
 
@@ -411,6 +387,12 @@ public class CordovaPanel extends javax.swing.JPanel {
 
         platformsPane.addTab(org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.iOSPanel.TabConstraints.tabTitle"), iOSPanel); // NOI18N
 
+        org.openide.awt.Mnemonics.setLocalizedText(packageLabel, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.packageLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.nameLabel.text")); // NOI18N
+
+        org.openide.awt.Mnemonics.setLocalizedText(versionLabel, org.openide.util.NbBundle.getMessage(CordovaPanel.class, "CordovaPanel.versionLabel.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -422,16 +404,9 @@ public class CordovaPanel extends javax.swing.JPanel {
                     .addComponent(versionLabel))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(packageTextField)
+                    .addComponent(packageTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 309, Short.MAX_VALUE)
                     .addComponent(nameTextField)
                     .addComponent(versionTextField)))
-            .addGroup(layout.createSequentialGroup()
-                .addGap(0, 0, 0)
-                .addComponent(platformsPane)
-                .addGap(0, 0, 0))
-            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
-                .addGap(0, 0, Short.MAX_VALUE)
-                .addComponent(platformSetup))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -448,16 +423,9 @@ public class CordovaPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(versionTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(versionLabel))
-                .addGap(0, 0, 0)
-                .addComponent(platformsPane)
-                .addGap(0, 0, 0)
-                .addComponent(platformSetup))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
-
-    private void platformSetupActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_platformSetupActionPerformed
-        OptionsDisplayer.getDefault().open("Advanced/MobilePlatforms");//NOI18N
-    }//GEN-LAST:event_platformSetupActionPerformed
 
     private void phoneGapCheckBoxStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_phoneGapCheckBoxStateChanged
         setControlsEnabled(phoneGapCheckBox.isSelected());
@@ -495,7 +463,6 @@ public class CordovaPanel extends javax.swing.JPanel {
     private javax.swing.JLabel packageLabel;
     private javax.swing.JTextField packageTextField;
     private javax.swing.JCheckBox phoneGapCheckBox;
-    private javax.swing.JButton platformSetup;
     private javax.swing.JTabbedPane platformsPane;
     private javax.swing.JTextField tfHdpiSplashLandscape;
     private javax.swing.JTextField tfHdpiSplashPortrait;
@@ -541,36 +508,46 @@ public class CordovaPanel extends javax.swing.JPanel {
             //config not created
             return;
         }
-        config.setId(packageTextField.getText());
-        config.setName(nameTextField.getText());
-        config.setVersion(versionTextField.getText());
+        final String pkg = packageTextField.getText();
+        if (!pkg.trim().isEmpty()) {
+            config.setId(pkg);
+        }
+        final String name = nameTextField.getText();
+        if (!name.trim().isEmpty()) {
+            config.setName(name);
+        }
         
-        config.setIcon(SourceConfig.ANDROID_PLATFORM, tfXhdpiIcon.getText());
-        config.setIcon(SourceConfig.IOS_PLATFORM, tfRetinaIcon.getText());
+        final String version = versionTextField.getText();
+        if (!version.trim().isEmpty()) {
+            config.setVersion(version);
+        }
         
-        config.setSplash(SourceConfig.ANDROID_PLATFORM, 800, 480, tfHdpiSplashLandscape.getText());
-        config.setSplash(SourceConfig.ANDROID_PLATFORM, 480, 800, tfHdpiSplashPortrait.getText());
-        
-        config.setSplash(SourceConfig.ANDROID_PLATFORM, 1280, 720, tfXhdpiSplashLandscape.getText());
-        config.setSplash(SourceConfig.ANDROID_PLATFORM, 720, 1280, tfXHdpiSplashPortrait.getText());
-
-        config.setSplash(SourceConfig.ANDROID_PLATFORM, 480, 320, tfMdpiSplashLandscape.getText());
-        config.setSplash(SourceConfig.ANDROID_PLATFORM, 320, 480, tfMdpiSplashPortrait.getText());
-
-        config.setSplash(SourceConfig.ANDROID_PLATFORM, 320, 200, tfLdpiSplashLandscape.getText());
-        config.setSplash(SourceConfig.ANDROID_PLATFORM, 200, 320, tfLdpiSplashPortrait.getText());
-        
-        config.setSplash(SourceConfig.IOS_PLATFORM, 480, 320, tfiPhoneSplashLandscape.getText());
-        config.setSplash(SourceConfig.IOS_PLATFORM, 320, 480, tfiPhoneSplashPortrait.getText());
-
-        config.setSplash(SourceConfig.IOS_PLATFORM, 960, 640, tfiPhoneSplashRetLandscape.getText());
-        config.setSplash(SourceConfig.IOS_PLATFORM, 640, 960, tfiPhoneSplashRetPortrait.getText());
-
-        config.setSplash(SourceConfig.IOS_PLATFORM, 1024, 768, tfiPadSplashLandscape.getText());
-        config.setSplash(SourceConfig.IOS_PLATFORM, 768, 1024, tfiPadSplashPortrait.getText());
-
-        config.setSplash(SourceConfig.IOS_PLATFORM, 2048, 1536, tfiPadSplashRetLandscape.getText());
-        config.setSplash(SourceConfig.IOS_PLATFORM, 1536, 2048, tfiPadSplashRetPortrait.getText());
+//        config.setIcon(SourceConfig.ANDROID_PLATFORM, tfXhdpiIcon.getText());
+//        config.setIcon(SourceConfig.IOS_PLATFORM, tfRetinaIcon.getText());
+//        
+//        config.setSplash(SourceConfig.ANDROID_PLATFORM, 800, 480, tfHdpiSplashLandscape.getText());
+//        config.setSplash(SourceConfig.ANDROID_PLATFORM, 480, 800, tfHdpiSplashPortrait.getText());
+//        
+//        config.setSplash(SourceConfig.ANDROID_PLATFORM, 1280, 720, tfXhdpiSplashLandscape.getText());
+//        config.setSplash(SourceConfig.ANDROID_PLATFORM, 720, 1280, tfXHdpiSplashPortrait.getText());
+//
+//        config.setSplash(SourceConfig.ANDROID_PLATFORM, 480, 320, tfMdpiSplashLandscape.getText());
+//        config.setSplash(SourceConfig.ANDROID_PLATFORM, 320, 480, tfMdpiSplashPortrait.getText());
+//
+//        config.setSplash(SourceConfig.ANDROID_PLATFORM, 320, 200, tfLdpiSplashLandscape.getText());
+//        config.setSplash(SourceConfig.ANDROID_PLATFORM, 200, 320, tfLdpiSplashPortrait.getText());
+//        
+//        config.setSplash(SourceConfig.IOS_PLATFORM, 480, 320, tfiPhoneSplashLandscape.getText());
+//        config.setSplash(SourceConfig.IOS_PLATFORM, 320, 480, tfiPhoneSplashPortrait.getText());
+//
+//        config.setSplash(SourceConfig.IOS_PLATFORM, 960, 640, tfiPhoneSplashRetLandscape.getText());
+//        config.setSplash(SourceConfig.IOS_PLATFORM, 640, 960, tfiPhoneSplashRetPortrait.getText());
+//
+//        config.setSplash(SourceConfig.IOS_PLATFORM, 1024, 768, tfiPadSplashLandscape.getText());
+//        config.setSplash(SourceConfig.IOS_PLATFORM, 768, 1024, tfiPadSplashPortrait.getText());
+//
+//        config.setSplash(SourceConfig.IOS_PLATFORM, 2048, 1536, tfiPadSplashRetLandscape.getText());
+//        config.setSplash(SourceConfig.IOS_PLATFORM, 1536, 2048, tfiPadSplashRetPortrait.getText());
         
         config.save();
     }
@@ -580,36 +557,40 @@ public class CordovaPanel extends javax.swing.JPanel {
         nameTextField.setText(config.getName());
         versionTextField.setText(config.getVersion());
         
-        tfXhdpiIcon.setText(config.getIcon(SourceConfig.ANDROID_PLATFORM));
-        tfRetinaIcon.setText(config.getIcon(SourceConfig.IOS_PLATFORM));
-        
-        tfHdpiSplashLandscape.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 800, 480));
-        tfHdpiSplashPortrait.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 480, 800));
-        
-        tfXhdpiSplashLandscape.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 1280, 720));
-        tfXHdpiSplashPortrait.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 720, 1280));
-
-        tfMdpiSplashLandscape.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 480, 320));
-        tfMdpiSplashPortrait.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 320, 480));
-
-        tfLdpiSplashLandscape.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 320, 200));
-        tfLdpiSplashPortrait.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 200, 320));
-        
-        tfiPhoneSplashLandscape.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 480, 320));
-        tfiPhoneSplashPortrait.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 320, 480));
-
-        tfiPhoneSplashRetLandscape.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 960, 640));
-        tfiPhoneSplashRetPortrait.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 640, 960));
-
-        tfiPadSplashLandscape.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 1024, 768));
-        tfiPadSplashPortrait.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 768, 1024));
-
-        tfiPadSplashRetLandscape.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 2048, 1536));
-        tfiPadSplashRetPortrait.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 1536, 2048));
+//        tfXhdpiIcon.setText(config.getIcon(SourceConfig.ANDROID_PLATFORM));
+//        tfRetinaIcon.setText(config.getIcon(SourceConfig.IOS_PLATFORM));
+//        
+//        tfHdpiSplashLandscape.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 800, 480));
+//        tfHdpiSplashPortrait.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 480, 800));
+//        
+//        tfXhdpiSplashLandscape.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 1280, 720));
+//        tfXHdpiSplashPortrait.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 720, 1280));
+//
+//        tfMdpiSplashLandscape.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 480, 320));
+//        tfMdpiSplashPortrait.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 320, 480));
+//
+//        tfLdpiSplashLandscape.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 320, 200));
+//        tfLdpiSplashPortrait.setText(config.getSplash(SourceConfig.ANDROID_PLATFORM, 200, 320));
+//        
+//        tfiPhoneSplashLandscape.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 480, 320));
+//        tfiPhoneSplashPortrait.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 320, 480));
+//
+//        tfiPhoneSplashRetLandscape.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 960, 640));
+//        tfiPhoneSplashRetPortrait.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 640, 960));
+//
+//        tfiPadSplashLandscape.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 1024, 768));
+//        tfiPadSplashPortrait.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 768, 1024));
+//
+//        tfiPadSplashRetLandscape.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 2048, 1536));
+//        tfiPadSplashRetPortrait.setText(config.getSplash(SourceConfig.IOS_PLATFORM, 1536, 2048));
     }
 
     public void setProjectName(String name) {
         packageTextField.setText(CordovaPerformer.DEFAULT_ID_PREFIX + "." + name.replaceAll(" ", "")); // NOI18N
         nameTextField.setText(name);
+    }
+
+    public void setVersion(String string) {
+        versionTextField.setText(string);
     }
 }

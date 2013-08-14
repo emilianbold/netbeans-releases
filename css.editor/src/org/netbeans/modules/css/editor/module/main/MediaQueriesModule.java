@@ -58,7 +58,6 @@ import org.netbeans.modules.css.editor.module.spi.FeatureContext;
 import org.netbeans.modules.css.editor.module.spi.Utilities;
 import org.netbeans.modules.css.lib.api.CssTokenId;
 import org.netbeans.modules.css.lib.api.Node;
-import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.lib.api.NodeVisitor;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.util.lookup.ServiceProvider;
@@ -94,7 +93,7 @@ public class MediaQueriesModule extends CssEditorModule {
 
         private MediaFeature(boolean minMax) {
             String baseName = name().replace('_', '-');
-            names = new ArrayList<String>(minMax ? 3 : 1);
+            names = new ArrayList<>(minMax ? 3 : 1);
             names.add(baseName);
             if(minMax) {
                 names.add("max-" + baseName);
@@ -112,7 +111,7 @@ public class MediaQueriesModule extends CssEditorModule {
     
     /* test */ static Collection<String> getMediaFeatures() {
         if(MEDIA_FEATURE_NAMES == null) {
-            MEDIA_FEATURE_NAMES = new ArrayList<String>();
+            MEDIA_FEATURE_NAMES = new ArrayList<>();
             for(MediaFeature mf : MediaFeature.values()) {
                 MEDIA_FEATURE_NAMES.addAll(mf.getNames());
             }
@@ -124,7 +123,7 @@ public class MediaQueriesModule extends CssEditorModule {
 
     @Override
     public List<CompletionProposal> getCompletionProposals(final CompletionContext context) {
-        final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        final List<CompletionProposal> proposals = new ArrayList<>();
         Node node = context.getActiveNode();
 
         //switch to first non error node
@@ -192,7 +191,7 @@ public class MediaQueriesModule extends CssEditorModule {
     }
 
     private static List<CompletionProposal> getMediaFeatures(final CompletionContext context) {
-        final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        final List<CompletionProposal> proposals = new ArrayList<>();
         for(String mtype : getMediaFeatures()) {
             proposals.add(CssCompletionItem.createRAWCompletionItem(null, mtype, ElementKind.FIELD, context.getAnchorOffset(), true));
         }
@@ -200,7 +199,7 @@ public class MediaQueriesModule extends CssEditorModule {
     }
     
     private static List<CompletionProposal> getMediaTypes(final CompletionContext context) {
-        final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        final List<CompletionProposal> proposals = new ArrayList<>();
         for(String mtype : MEDIA_TYPES) {
             proposals.add(CssCompletionItem.createRAWCompletionItem(null, mtype, ElementKind.OTHER, context.getAnchorOffset(), true));
         }

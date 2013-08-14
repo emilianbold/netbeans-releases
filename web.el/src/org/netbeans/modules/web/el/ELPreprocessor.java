@@ -94,7 +94,7 @@ public class ELPreprocessor {
     private String preprocessedExpression;
     private final boolean[] diffs;
 
-    private List<OffsetRange> stringLiterals = new LinkedList<OffsetRange>();
+    private List<OffsetRange> stringLiterals = new LinkedList<>();
     
     public ELPreprocessor(String expression, String[][]... conversionTables) {
         this.originalExpression = expression;

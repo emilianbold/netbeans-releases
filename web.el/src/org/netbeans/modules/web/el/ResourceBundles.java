@@ -46,11 +46,7 @@ import com.sun.el.parser.AstDotSuffix;
 import com.sun.el.parser.AstIdentifier;
 import com.sun.el.parser.AstString;
 import com.sun.el.parser.Node;
-import java.io.BufferedReader;
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.*;
 import java.util.logging.Logger;
@@ -60,6 +56,7 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.project.SourceGroup;
 import org.netbeans.api.project.Sources;
 import org.netbeans.modules.web.api.webmodule.WebModule;
@@ -94,7 +91,7 @@ public final class ResourceBundles {
      * Caches the bundles to avoid reading them again. Holds the bundles for
      * one FileObject at time.
      */
-    protected static final Map<FileObject, ResourceBundles> CACHE = new WeakHashMap<FileObject, ResourceBundles>(1);
+    protected static final Map<FileObject, ResourceBundles> CACHE = new WeakHashMap<>(1);
 
     private final WebModule webModule;
     private final Project project;
@@ -208,7 +205,7 @@ public final class ResourceBundles {
             return Collections.<Location>emptyList();
         }
 
-        List<Location> locations = new ArrayList<Location>(rbi.getFiles().size());
+        List<Location> locations = new ArrayList<>(rbi.getFiles().size());
         for (FileObject fileObject : rbi.getFiles()) {
             locations.add(new Location(0, fileObject));
         }
@@ -222,7 +219,7 @@ public final class ResourceBundles {
      * @return locations (including the offset) of the searched key, never {@code null}
      */
     public List<Location> getLocationsForBundleKey(String ident, String key) {
-        List<Location> locations = new ArrayList<Location>();
+        List<Location> locations = new ArrayList<>();
         for (Location location : getLocationsForBundleIdent(ident)) {
             try {
                 DataObject dobj = DataObject.find(location.getFile());
@@ -263,7 +260,7 @@ public final class ResourceBundles {
      * @return List of identifier/string pairs. Identifier = resource bundle base name - string = res bundle key.
      */
     public List<Pair<AstIdentifier, Node>> collectKeys(final Node root, ResolverContext context) {
-        final List<Pair<AstIdentifier, Node>> result = new ArrayList<Pair<AstIdentifier, Node>>();
+        final List<Pair<AstIdentifier, Node>> result = new ArrayList<>();
         List<Node> path = new AstPath(root).rootToLeaf();
         for (int i = 0; i < path.size(); i++) {
             Node node = path.get(i);
@@ -337,7 +334,7 @@ public final class ResourceBundles {
         if (rbInfo == null) {
             return Collections.emptyMap();
         }
-        Map<String, String> result = new HashMap<String, String>();
+        Map<String, String> result = new HashMap<>();
         for (String key : rbInfo.getResourceBundle().keySet()) {
             String value = rbInfo.getResourceBundle().getString(key);
             result.put(key, value);
@@ -417,13 +414,13 @@ public final class ResourceBundles {
     }
     
     private Map<String, ResourceBundleInfo> createResourceBundleMapAndFileChangeListeners() {
-        Map<String, ResourceBundleInfo> result = new HashMap<String, ResourceBundleInfo>();
+        Map<String, ResourceBundleInfo> result = new HashMap<>();
         ClassPathProvider provider = project.getLookup().lookup(ClassPathProvider.class);
         if (provider == null) {
             return null;
         }
 
-        Sources sources = project.getLookup().lookup(Sources.class);
+        Sources sources = ProjectUtils.getSources(project);
         if (sources == null) {
             return null;
         }
@@ -442,7 +439,6 @@ public final class ResourceBundles {
                     ClassLoader classLoader = classPath.getClassLoader(false);
                     try {
                         // TODO - rewrite listening on all (localized) files
-                        FileObject fileObject = null;
                         String resourceFileName = new StringBuilder()
                                 .append(bundleFile.replace(".", "/"))
                                 .append(".properties")
@@ -451,7 +447,7 @@ public final class ResourceBundles {
                         URL url = classLoader.getResource(resourceFileName);
                         if(url != null) {
                             LOGGER.finer(String.format("Found %s URL for resource bundle %s", url, resourceFileName ));
-                            fileObject = URLMapper.findFileObject(url);
+                            FileObject fileObject = URLMapper.findFileObject(url);
                             if(fileObject != null) {
                                 if (fileObject.canWrite()) {
                                     fileObject.addFileChangeListener(

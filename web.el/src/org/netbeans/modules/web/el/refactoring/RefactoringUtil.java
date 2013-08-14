@@ -44,7 +44,6 @@
 package org.netbeans.modules.web.el.refactoring;
 
 import com.sun.el.parser.Node;
-import com.sun.source.tree.Tree;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -87,11 +86,13 @@ public final class RefactoringUtil {
         try {
             source.runUserActionTask(new CancellableTask<CompilationController>() {
 
+                @Override
                 public void run(CompilationController co) throws Exception {
                     co.toPhase(JavaSource.Phase.RESOLVED);
                     refactoring.getContext().add(co);
                 }
 
+                @Override
                 public void cancel() {
                 }
             }, false);
@@ -201,7 +202,7 @@ public final class RefactoringUtil {
     }
     
     private static int getPrefixLength(String accessor, boolean includeSetter) {
-        List<String> accessorPrefixes = new ArrayList<String>();
+        List<String> accessorPrefixes = new ArrayList<>();
         accessorPrefixes.add("get");
         if (includeSetter) {
             accessorPrefixes.add("set");

@@ -60,10 +60,10 @@ import org.netbeans.modules.css.editor.csl.CssLanguage;
 import org.netbeans.modules.css.indexing.CssIndexModelSupport;
 import org.netbeans.modules.css.indexing.CssIndexer;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
-import org.netbeans.modules.web.common.api.DependenciesGraph;
-import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
+import org.netbeans.modules.web.common.api.DependenciesGraph.Node;
 import org.netbeans.modules.web.common.api.FileReference;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.openide.filesystems.FileObject;
@@ -85,7 +85,7 @@ public class CssIndex {
     private static final String SCSS_EXT = "scss"; //NOI18N
     private static final String SASS_EXT = "sass"; //NOI18N
     
-    private static final Map<Project, CssIndex> INDEXES = new WeakHashMap<Project, CssIndex>();
+    private static final Map<Project, CssIndex> INDEXES = new WeakHashMap<>();
     
      /**
      * Creates a new instance of {@link CssIndex}.
@@ -213,7 +213,7 @@ public class CssIndex {
         Collection<? extends IndexResult> results =
                     querySupport.query(CssIndexer.CSS_CONTENT_KEY, "", QuerySupport.Kind.PREFIX, factory.getIndexKeys().toArray(new String[0]));
             
-        Map<FileObject, T> file2model = new HashMap<FileObject, T>();
+        Map<FileObject, T> file2model = new HashMap<>();
         for(IndexResult result : results) {
             file2model.put(result.getFile(), factory.loadFromIndex(result));
         }
@@ -329,7 +329,7 @@ public class CssIndex {
     
     public Map<FileObject, Collection<String>> findByPrefix(RefactoringElementType type, String prefix) {
         String keyName = type.getIndexKey();
-        Map<FileObject, Collection<String>> map = new HashMap<FileObject, Collection<String>>();
+        Map<FileObject, Collection<String>> map = new HashMap<>();
         try {
             Collection<? extends IndexResult> results;
             if(prefix.length() == 0) {
@@ -351,7 +351,7 @@ public class CssIndex {
                         if(file != null) {
                             Collection<String> col = map.get(file);
                             if(col == null) {
-                                col = new LinkedList<String>();
+                                col = new LinkedList<>();
                                 map.put(file, col);
                             }
                             col.add(e);
@@ -372,7 +372,7 @@ public class CssIndex {
     
     private Map<FileObject, Collection<String>> findAll(RefactoringElementType type, boolean includeVirtualElements) {
         String keyName = type.getIndexKey();
-        Map<FileObject, Collection<String>> map = new HashMap<FileObject, Collection<String>>();
+        Map<FileObject, Collection<String>> map = new HashMap<>();
         try {
             Collection<? extends IndexResult> results =
                     querySupport.query(keyName, "", QuerySupport.Kind.PREFIX, keyName);
@@ -390,7 +390,7 @@ public class CssIndex {
                     }
                     Collection<String> col = map.get(result.getFile());
                     if (col == null) {
-                        col = new LinkedList<String>();
+                        col = new LinkedList<>();
                         map.put(result.getFile(), col);
                     }
                     col.add(e);
@@ -427,7 +427,7 @@ public class CssIndex {
             }
             searchExpression.append(")[,;].*"); //NOI18N
             
-            Collection<FileObject> matchedFiles = new LinkedList<FileObject>();
+            Collection<FileObject> matchedFiles = new LinkedList<>();
             Collection<? extends IndexResult> results = querySupport.query(keyName, searchExpression.toString(), QuerySupport.Kind.REGEXP, keyName);
             for (IndexResult result : filterDeletedFiles(results)) {
                 matchedFiles.add(result.getFile());
@@ -448,7 +448,7 @@ public class CssIndex {
     public Collection<FileObject> getAllIndexedFiles() {
         try {
             Collection<? extends IndexResult> results = querySupport.query(CssIndexer.CSS_CONTENT_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.CSS_CONTENT_KEY);
-            Collection<FileObject> stylesheets = new LinkedList<FileObject>();
+            Collection<FileObject> stylesheets = new LinkedList<>();
             for(IndexResult result : filterDeletedFiles(results)) {
                 if(result.getFile().getMIMEType().equals(CssLanguage.CSS_MIME_TYPE)) {
                     stylesheets.add(result.getFile());
@@ -549,13 +549,13 @@ public class CssIndex {
     
     private AllDependenciesMaps createAllDependencies() throws IOException {
         Collection<? extends IndexResult> results = filterDeletedFiles(querySupport.query(CssIndexer.IMPORTS_KEY, "", QuerySupport.Kind.PREFIX, CssIndexer.IMPORTS_KEY));
-        Map<FileObject, Collection<FileReference>> source2dests = new HashMap<FileObject, Collection<FileReference>>();
-        Map<FileObject, Collection<FileReference>> dest2sources = new HashMap<FileObject, Collection<FileReference>>();
+        Map<FileObject, Collection<FileReference>> source2dests = new HashMap<>();
+        Map<FileObject, Collection<FileReference>> dest2sources = new HashMap<>();
         for (IndexResult result : results) {
             String importsValue = result.getValue(CssIndexer.IMPORTS_KEY);
             FileObject file = result.getFile();
             Collection<String> imports = decodeListValue(importsValue);
-            Collection<FileReference> imported = new HashSet<FileReference>();
+            Collection<FileReference> imported = new HashSet<>();
             for (String importedFileName : imports) {
                 //resolve the file
                 FileReference resolvedReference = resolveImport(file, importedFileName);
@@ -564,7 +564,7 @@ public class CssIndex {
                     //add reverse dependency
                     Collection<FileReference> sources = dest2sources.get(resolvedReference.target());
                     if (sources == null) {
-                        sources = new HashSet<FileReference>();
+                        sources = new HashSet<>();
                         dest2sources.put(resolvedReference.target(), sources);
                     }
                     sources.add(resolvedReference);
@@ -712,7 +712,7 @@ public class CssIndex {
     //each list value is terminated by semicolon
     private Collection<String> decodeListValue(String value) {
         assert value.charAt(value.length() - 1) == ';';
-        Collection<String> list = new ArrayList<String>();
+        Collection<String> list = new ArrayList<>();
         StringTokenizer st = new StringTokenizer(value.substring(0, value.length() - 1), ",");
         while (st.hasMoreTokens()) {
             list.add(st.nextToken());
@@ -725,7 +725,7 @@ public class CssIndex {
     //Please note that the IndexResult.getFile() result is cached, so the IndexResult.getFile()
     //won't become null after the query is run, but the file will simply become invalid.
     private Collection<? extends IndexResult> filterDeletedFiles(Collection<? extends IndexResult> queryResult) {
-        Collection<IndexResult> filtered = new ArrayList<IndexResult>();
+        Collection<IndexResult> filtered = new ArrayList<>();
         for(IndexResult result : queryResult) {
             if(result.getFile() != null) {
                 filtered.add(result);

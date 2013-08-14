@@ -59,6 +59,7 @@ import org.netbeans.modules.editor.indent.api.Indent;
 import org.netbeans.spi.editor.completion.*;
 import java.awt.Color;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.event.KeyEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -66,12 +67,15 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.html.editor.lib.api.model.HtmlTagAttribute;
 import org.netbeans.modules.html.editor.HtmlPreferences;
 import org.netbeans.modules.html.editor.javadoc.HelpManager;
+import org.netbeans.modules.web.common.api.FileReferenceCompletion;
 import org.netbeans.spi.editor.completion.support.AsyncCompletionTask;
 import org.netbeans.spi.editor.completion.support.CompletionUtilities;
 import org.netbeans.swing.plaf.LFCustoms;
+import org.openide.filesystems.FileObject;
 import org.openide.util.ImageUtilities;
 import org.openide.xml.XMLUtil;
 
@@ -121,8 +125,20 @@ public class HtmlCompletionItem implements CompletionItem {
         return new CharRefItem(name, value, substitutionOffset, helpId);
     }
 
-    public static HtmlCompletionItem createFileCompletionItem(String value, int substitutionOffset, Color color, ImageIcon icon) {
-        return new FileAttributeValue(value, substitutionOffset, color, icon);
+    /**
+     * @param file
+     * @param substitutionOffset
+     * @return an instance of {@link HtmlCompletionItem}
+     * @since 2.40
+     */
+    @NonNull
+    public static HtmlCompletionItem createFileCompletionItem(FileObject file, int substitutionOffset) {
+        boolean folder = file.isFolder();
+        String name = new StringBuilder().append(file.getNameExt()).append(folder ? '/' : "").toString();
+        Color color = folder ? Color.BLUE : null;
+        ImageIcon icon = FileReferenceCompletion.getIcon(file);
+        
+        return new FileAttributeValue(folder, name, substitutionOffset, color, icon);
     }
 
     public static HtmlCompletionItem createGoUpFileCompletionItem(int substitutionOffset, Color color, ImageIcon icon) {
@@ -188,10 +204,10 @@ public class HtmlCompletionItem implements CompletionItem {
         }
 
     }
-    
+
     /**
      * @since 2.30
-     * @return 
+     * @return
      */
     public int getAnchorOffset() {
         return substitutionOffset;
@@ -356,15 +372,15 @@ public class HtmlCompletionItem implements CompletionItem {
 
     /**
      * Override this method and do the help content initialization here.
-     * 
-     * Used by HtmlCompletionItem$DocQuery - called when an instance of CompletionDocumentation
-     * is created.
-     * 
+     *
+     * Used by HtmlCompletionItem$DocQuery - called when an instance of
+     * CompletionDocumentation is created.
+     *
      * @since 2.34
      */
     public void prepareHelp() {
     }
-    
+
     @Override
     public CompletionTask createDocumentationTask() {
         return new AsyncCompletionTask(new HtmlCompletionProvider.DocQuery(this, false));
@@ -416,15 +432,15 @@ public class HtmlCompletionItem implements CompletionItem {
      */
     public static class Tag extends HtmlCompletionItem {
 
-        private static final ImageIcon HTML_TAG_ICON =
-                ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/html_element.png", false); // NOI18N
-        private static final ImageIcon SVG_TAG_ICON =
-                ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/class.png", false); // NOI18N
-        private static final ImageIcon MATHML_TAG_ICON =
-                ImageUtilities.loadImageIcon("org/netbeans/modules/html/editor/resources/mathml.png", false); // NOI18N
-        
+        private static final ImageIcon HTML_TAG_ICON
+                = ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/html_element.png", false); // NOI18N
+        private static final ImageIcon SVG_TAG_ICON
+                = ImageUtilities.loadImageIcon("org/netbeans/modules/csl/source/resources/icons/class.png", false); // NOI18N
+        private static final ImageIcon MATHML_TAG_ICON
+                = ImageUtilities.loadImageIcon("org/netbeans/modules/html/editor/resources/mathml.png", false); // NOI18N
+
         private static final Color GRAY_COLOR = Color.GRAY;
-        private static final Color DEFAULT_FG_COLOR = new Color(0,0,0xFF);
+        private static final Color DEFAULT_FG_COLOR = new Color(0, 0, 0xFF);
         private boolean possible;
         private HtmlTag tag;
 
@@ -458,7 +474,7 @@ public class HtmlCompletionItem implements CompletionItem {
         @Override
         protected String getLeftHtmlText() {
             StringBuilder b = new StringBuilder();
-            if(possible) {
+            if (possible) {
                 b.append("<font color=#");
                 b.append(hexColorCode(DEFAULT_FG_COLOR));
                 b.append(">&lt;");
@@ -516,7 +532,7 @@ public class HtmlCompletionItem implements CompletionItem {
             OPTIONAL_MISSING(Color.BLUE, false, DEFAULT_SORT_PRIORITY - 10), //NOI18N
             REQUIRED_EXISTING(Color.GRAY, false, DEFAULT_SORT_PRIORITY),
             REQUIRED_MISSING(Color.BLUE, false, DEFAULT_SORT_PRIORITY - 10); //NOI18N
-            
+
             private Color color;
             private boolean bold;
             private int sortPriority;
@@ -527,7 +543,7 @@ public class HtmlCompletionItem implements CompletionItem {
                 this.sortPriority = sortPriority;
             }
         }
-        
+
         private int orderIndex;
         private Type type;
         private HtmlTag tag;
@@ -605,8 +621,8 @@ public class HtmlCompletionItem implements CompletionItem {
     public static class CharRefItem extends HtmlCompletionItem {
 
         private char value;
-        private static final Color FG = new Color(0x99,0,0);
-        
+        private static final Color FG = new Color(0x99, 0, 0);
+
         CharRefItem(String name, char value, int substitutionOffset, String helpId) {
             super(name, substitutionOffset, helpId);
             this.value = value;
@@ -659,11 +675,11 @@ public class HtmlCompletionItem implements CompletionItem {
         @Override
         protected String getSubstituteText() {
             StringBuilder sb = new StringBuilder();
-            if(addQuotation) {
+            if (addQuotation) {
                 sb.append("\"");
             }
             sb.append(super.getSubstituteText());
-            if(addQuotation) {
+            if (addQuotation) {
                 sb.append("\"");
             }
             return sb.toString();
@@ -675,14 +691,14 @@ public class HtmlCompletionItem implements CompletionItem {
         private boolean required;
         private boolean autocompleteQuotes;
         private HtmlTagAttribute attr;
-        
+
         public Attribute(HtmlTagAttribute attr, String value, int offset, boolean required, String helpId) {
             super(attr != null ? attr.getHelp() : null, value, offset, helpId);
             this.attr = attr;
             this.required = required;
             this.autocompleteQuotes = HtmlPreferences.autocompleteQuotesAfterEqualSign();
         }
-        
+
         public Attribute(String value, int offset, boolean required, HelpItem helpItem) {
             super(helpItem, value, offset, null);
             this.required = required;
@@ -694,10 +710,10 @@ public class HtmlCompletionItem implements CompletionItem {
             this.required = required;
             this.autocompleteQuotes = HtmlPreferences.autocompleteQuotesAfterEqualSign();
         }
-        
+
         /**
          * @since 2.18
-         * 
+         *
          * @param value
          * @param offset
          * @param required
@@ -713,12 +729,12 @@ public class HtmlCompletionItem implements CompletionItem {
         protected Color getAttributeColor() {
             return Color.green.darker();
         }
-        
+
         @Override
         protected String getSubstituteText() {
             StringBuilder sb = new StringBuilder();
             sb.append(getItemText());
-            if(autocompleteQuotes) {
+            if (autocompleteQuotes) {
                 sb.append("=\"\""); //NOI18N
             }
             return sb.toString();
@@ -737,7 +753,7 @@ public class HtmlCompletionItem implements CompletionItem {
         @Override
         protected String getLeftHtmlText() {
             StringBuilder sb = new StringBuilder();
-            if(required) {
+            if (required) {
                 sb.append("<b>"); //NOI18N
             }
             sb.append("<font color=#"); //NOI18N
@@ -745,10 +761,10 @@ public class HtmlCompletionItem implements CompletionItem {
             sb.append(">"); //NOI18N
             sb.append(getItemText());
             sb.append("</font>"); //NOI18N
-            if(required) {
+            if (required) {
                 sb.append("</b>"); //NOI18N
             }
-            
+
             return sb.toString();
         }
 
@@ -768,10 +784,10 @@ public class HtmlCompletionItem implements CompletionItem {
             this.required = required;
         }
 
-         @Override
+        @Override
         protected String getLeftHtmlText() {
             StringBuilder sb = new StringBuilder();
-            if(required) {
+            if (required) {
                 sb.append("<b>"); //NOI18N
             }
             sb.append("<font color=#"); //NOI18N
@@ -779,10 +795,10 @@ public class HtmlCompletionItem implements CompletionItem {
             sb.append(">"); //NOI18N
             sb.append(getItemText());
             sb.append("</font>"); //NOI18N
-            if(required) {
+            if (required) {
                 sb.append("</b>"); //NOI18N
             }
-            
+
             return sb.toString();
         }
     }
@@ -793,11 +809,13 @@ public class HtmlCompletionItem implements CompletionItem {
     public static class FileAttributeValue extends HtmlCompletionItem implements PropertyChangeListener, LazyCompletionItem {
 
         private javax.swing.ImageIcon icon;
-        private Color color;
-        private boolean visible = false;
+        private final Color color;
+        private boolean visible;
+        private final boolean folder;
 
-        FileAttributeValue(String text, int substitutionOffset, Color color, javax.swing.ImageIcon icon) {
+        FileAttributeValue(boolean folder, String text, int substitutionOffset, Color color, javax.swing.ImageIcon icon) {
             super(text, substitutionOffset);
+            this.folder = folder;
             this.color = color;
             this.icon = icon;
         }
@@ -807,24 +825,33 @@ public class HtmlCompletionItem implements CompletionItem {
             return icon;
         }
 
-         @Override
+        @Override
         protected String getLeftHtmlText() {
-            StringBuilder sb = new StringBuilder();
-            sb.append("<font color=#"); //NOI18N
-            sb.append(hexColorCode(color));
-            sb.append(">"); //NOI18N
-            sb.append(getItemText());
-            sb.append("</font>"); //NOI18N
-            return sb.toString();
+            if (color == null) {
+                return getItemText();
+            } else {
+                StringBuilder sb = new StringBuilder();
+                sb.append("<font color=#"); //NOI18N
+                sb.append(hexColorCode(color));
+                sb.append(">"); //NOI18N
+                sb.append(getItemText());
+                sb.append("</font>"); //NOI18N
+                return sb.toString();
+            }
         }
 
+        @Override
+        public CharSequence getSortText() {
+            return folder ? new StringBuilder().append("_").append(getItemText()).toString() : getItemText();
+        }
+        
         private void iconLoaded(ImageIcon icon) {
             this.icon = icon;
-            if(visible) {
+            if (visible) {
                 repaintCompletionView_EDT();
             }
         }
-        
+
         private void repaintCompletionView_EDT() {
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -848,8 +875,8 @@ public class HtmlCompletionItem implements CompletionItem {
 
         @Override
         public void propertyChange(PropertyChangeEvent evt) {
-            if(evt.getPropertyName().equals("iconLoaded")) { //NOI18N
-                iconLoaded((ImageIcon)evt.getNewValue());
+            if (evt.getPropertyName().equals("iconLoaded")) { //NOI18N
+                iconLoaded((ImageIcon) evt.getNewValue());
             }
         }
 
@@ -863,7 +890,7 @@ public class HtmlCompletionItem implements CompletionItem {
     public static class GoUpFileAttributeValue extends FileAttributeValue {
 
         GoUpFileAttributeValue(int substitutionOffset, Color color, javax.swing.ImageIcon icon) {
-            super("../", substitutionOffset, color, icon); //NOI18N
+            super(true, "../", substitutionOffset, color, icon); //NOI18N
         }
 
         @Override
@@ -876,7 +903,7 @@ public class HtmlCompletionItem implements CompletionItem {
         Color tweakedToLookAndFeel = LFCustoms.shiftColor(c);
         return Integer.toHexString(tweakedToLookAndFeel.getRGB()).substring(2);
     }
-    
+
     private static String escape(String s) {
         if (s != null) {
             try {

@@ -76,7 +76,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
 
     private int caretPosition;
     private boolean cancelled;
-    private final Map<OffsetRange, ColoringAttributes> occurrences = new HashMap<OffsetRange, ColoringAttributes>();
+    private final Map<OffsetRange, ColoringAttributes> occurrences = new HashMap<>();
 
     public ELOccurrencesFinder() {
     }
@@ -126,7 +126,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
         }
         final Pair<ELElement,Node> target = Pair.of(current, targetNode);
         // find other similar nodes
-        final List<Pair<ELElement, Node>> matching = new ArrayList<Pair<ELElement, Node>>();
+        final List<Pair<ELElement, Node>> matching = new ArrayList<>();
         for (final ELElement eLElement : parserResult.getElements()) {
             if (checkAndResetCancel()) {
                 return;
@@ -172,7 +172,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
         if (!resourceBundles.canHaveBundles()) {
             return Collections.emptyMap();
         }
-        List<Pair<AstIdentifier, Node>> keys = new ArrayList<Pair<AstIdentifier, Node>>();
+        List<Pair<AstIdentifier, Node>> keys = new ArrayList<>();
         // the logic here is a bit strange, maybe should add new methods to ResourceBundles
         // for a more straightforward computation.
         // first, check whether the current EL elements has keys
@@ -193,7 +193,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
             return Collections.emptyMap();
         }
         // third: collect the other matching keys and return them
-        Map<OffsetRange, ColoringAttributes> result = new HashMap<OffsetRange, ColoringAttributes>();
+        Map<OffsetRange, ColoringAttributes> result = new HashMap<>();
         for (ELElement each : parserResult.getElements()) {
             if (!each.isValid()) {
                 continue;
@@ -210,7 +210,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
 
     private Map<OffsetRange, ColoringAttributes> findMatchingTypes(CompilationContext info, ELParserResult parserResult, Pair<ELElement,Node> target, List<Pair<ELElement,Node>> candidates) {
         Element targetType = ELTypeUtilities.resolveElement(info, target.first(), target.second());
-        Map<OffsetRange, ColoringAttributes>  result = new HashMap<OffsetRange, ColoringAttributes>();
+        Map<OffsetRange, ColoringAttributes>  result = new HashMap<>();
 
         for (Pair<ELElement,Node> candidate : candidates) {
             if (checkAndResetCancel()) {

@@ -238,8 +238,8 @@ public abstract class AttrValuesCompletion {
     public static class FilenameSupport extends FileReferenceCompletion<HtmlCompletionItem> {
 
         @Override
-        public HtmlCompletionItem createFileItem(int anchor, String name, Color color, ImageIcon icon) {
-            return HtmlCompletionItem.createFileCompletionItem(name, anchor, color, icon);
+        public HtmlCompletionItem createFileItem(FileObject file, int anchor) {
+            return HtmlCompletionItem.createFileCompletionItem(file, anchor);
         }
 
         @Override

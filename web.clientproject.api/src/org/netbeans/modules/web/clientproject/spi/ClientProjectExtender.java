@@ -80,5 +80,5 @@ public interface ClientProjectExtender {
      * @param libsPath 
      */
     public void apply(FileObject projectRoot, FileObject siteRoot, String libsPath);
-
+    
 }

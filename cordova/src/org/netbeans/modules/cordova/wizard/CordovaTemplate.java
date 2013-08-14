@@ -43,14 +43,12 @@ package org.netbeans.modules.cordova.wizard;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import javax.swing.text.StyledDocument;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
@@ -58,7 +56,6 @@ import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.api.templates.TemplateRegistration;
 import org.netbeans.modules.cordova.CordovaPerformer;
 import org.netbeans.modules.cordova.CordovaPlatform;
-import org.netbeans.modules.cordova.platforms.api.PlatformManager;
 import org.netbeans.modules.cordova.project.CordovaPanel;
 import org.netbeans.modules.cordova.updatetask.SourceConfig;
 import org.netbeans.modules.web.browser.api.BrowserFamilyId;
@@ -69,11 +66,7 @@ import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.netbeans.modules.web.clientproject.spi.SiteTemplateImplementation;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
-import org.openide.cookies.EditorCookie;
-import org.openide.cookies.SaveCookie;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.loaders.DataObject;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -85,7 +78,7 @@ import org.openide.util.lookup.ServiceProvider;
 /**
  *
  */
-@NbBundle.Messages({"LBL_Name=PhoneGap Sample Project"})
+@NbBundle.Messages({"LBL_Name=Cordova Hello World"})
 @ServiceProvider(service = SiteTemplateImplementation.class, position = 1000)
 public class CordovaTemplate implements SiteTemplateImplementation {
 
@@ -96,33 +89,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
 
     @Override
     public void apply(FileObject projectDir, ProjectProperties projectProperties, ProgressHandle handle) throws IOException {
-        try {
-            FileObject p = FileUtil.createFolder(projectDir, projectProperties.getSiteRootFolder());
-            final CordovaPlatform cordovaPlatform = CordovaPlatform.getDefault();
-            File examplesFolder = new File(cordovaPlatform.getSdkLocation() + "/lib/android/example/assets/www");//NOI18N
-            FileObject examples = FileUtil.toFileObject(examplesFolder);
-            FileObject index = FileUtil.copyFile(examples.getFileObject("index.html"), p, "index");//NOI18N
-            FileUtil.copyFile(examples.getFileObject("main.js"), p, "main");//NOI18N
-            FileUtil.copyFile(examples.getFileObject("master.css"), p, "master");//NOI18N
-            FileUtil.copyFile(examples.getFileObject("js/index.js"), FileUtil.createFolder(p, "js"), "index");//NOI18N
-            FileUtil.copyFile(examples.getFileObject("css/index.css"), FileUtil.createFolder(p, "css"), "index");//NOI18N
-            FileUtil.copyFile(examples.getFileObject("img/cordova.png"), FileUtil.createFolder(p, "img"), "cordova");//NOI18N
-            FileUtil.copyFile(examples.getFileObject("img/logo.png"), FileUtil.createFolder(p, "img"), "logo");//NOI18N
-            DataObject find = DataObject.find(index);
-            EditorCookie c = find.getLookup().lookup(EditorCookie.class);
-            StyledDocument openDocument = c.openDocument();
-            String version = cordovaPlatform.getVersion().toString();
-            final String cordova = cordovaPlatform.getCordovaJS(PlatformManager.ANDROID_TYPE).getNameExt();//NOI18N
-            int start = openDocument.getText(0, openDocument.getLength()).indexOf(cordova);
-            openDocument.remove(start, cordova.length());
-            openDocument.insertString(start, "js/libs/Cordova-" + version + "/" + "cordova-" + version + ".js", null);//NOI18N
-            find.getCookie(SaveCookie.class).save();
-
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (Throwable ex) {
-            
-        }
+        CordovaPerformer.getDefault().perform("create-hello-world", FileOwnerQuery.getOwner(projectDir)).waitFinished();
     }
 
 
@@ -133,22 +100,28 @@ public class CordovaTemplate implements SiteTemplateImplementation {
 
     @Override
     public boolean isPrepared() {
-        return true;
+        return CordovaPlatform.getDefault().isReady();
     }
 
+    @NbBundle.Messages(
+        "ERR_NO_Cordova=NetBeans cannot find cordova on your PATH."
+    )
     @Override
     public void prepare() throws IOException {
+        if (!CordovaPlatform.getDefault().isReady()) {
+            throw new IllegalStateException(Bundle.ERR_NO_Cordova(), null);
+        }
     }
 
     @Override
     public Collection<String> supportedLibraries() {
-        return Collections.singletonList("Cordova");//NOI18N
+        return Collections.emptyList();//NOI18N
     }
 
     @Override
     public void configure(ProjectProperties projectProperties) {
         projectProperties.setConfigFolder("config");//NOI18N
-        projectProperties.setSiteRootFolder("public_html");//NOI18N
+        projectProperties.setSiteRootFolder("www");//NOI18N
         projectProperties.setTestFolder("test");//NOI18N
     }
 
@@ -184,14 +157,9 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         })
         public void apply(FileObject projectRoot, FileObject siteRoot, String librariesPath) {
             try {
-                librariesPath = librariesPath == null ? "js/libs":librariesPath; // NOI18N
-                final CordovaPlatform cordovaPlatform = CordovaPlatform.getDefault();
-                String version = cordovaPlatform.getVersion().toString();
-
-                FileObject libFo = cordovaPlatform.getCordovaJS(PlatformManager.ANDROID_TYPE);
-                FileObject createFolder = FileUtil.createFolder(siteRoot, librariesPath + "/Cordova-" + version);//NOI18N
-                FileUtil.copyFile(libFo, createFolder, "cordova-" + version);//NOI18N
                 final Project project = FileOwnerQuery.getOwner(projectRoot);
+                
+                CordovaPerformer.getDefault().createPlatforms(project).waitFinished();
                 
                 Preferences preferences = ProjectUtils.getPreferences(project, CordovaPlatform.class, true);
                 preferences.put("phonegap", "true"); // NOI18N
@@ -201,15 +169,12 @@ public class CordovaTemplate implements SiteTemplateImplementation {
                     
                     try {
                         final SourceConfig config = CordovaPerformer.getConfig(project);
-                        config.setId(panel.getPackageName());
-                        config.save();
-
+                        panel.save(config);
                     } catch (IOException ex) {
                         Exceptions.printStackTrace(ex);
                     }
-
-                    CordovaPerformer.getDefault().createPlatforms(project);
-                    panel = null;
+                    CordovaPerformer.createScript(project, "plugins.properties", "nbproject/plugins.properties", true);
+                   panel = null;
                 }
             } catch (IOException ex) {
                 Exceptions.printStackTrace(ex);
@@ -221,6 +186,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
         @Override
         public void initialize(WizardDescriptor wizardDescriptor) {
             wizardDescriptor.putProperty("SITE_TEMPLATE", Lookup.getDefault().lookup(CordovaTemplate.class)); // NOI18N
+            wizardDescriptor.putProperty("SITE_ROOT", "www"); // NOI18N
         }
 
         public static void setPhoneGapBrowser(final Project project) throws IOException, IllegalArgumentException {
@@ -286,6 +252,7 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             SiteTemplateImplementation template = (SiteTemplateImplementation) wizardDescriptor.getProperty("SITE_TEMPLATE");//NOI18N
             panel.setPanelEnabled(template instanceof CordovaTemplate);
             panel.setProjectName((String) wizardDescriptor.getProperty("NAME"));
+            panel.setVersion(CordovaPerformer.DEFAULT_VERSION);
         }
 
         @Override
@@ -298,18 +265,18 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             "ERR_InvalidAppId={0} is not a valid Application ID"
         })
         public boolean isValid() {
-            final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
-            if (sdkLocation == null) {
-                setErrorMessage(Bundle.ERR_MobilePlatforms());
-                return false;
-            }
-            
-            if (!SourceConfig.isValidId(panel.getPackageName())) {
-                setErrorMessage(Bundle.ERR_InvalidAppId(panel.getPackageName()));
-                return false;
-            }
-
-            setErrorMessage("");
+//            final String sdkLocation = CordovaPlatform.getDefault().getSdkLocation();
+//            if (sdkLocation == null) {
+//                setErrorMessage(Bundle.ERR_MobilePlatforms());
+//                return false;
+//            }
+//            
+//            if (!SourceConfig.isValidId(panel.getPackageName())) {
+//                setErrorMessage(Bundle.ERR_InvalidAppId(panel.getPackageName()));
+//                return false;
+//            }
+//
+//            setErrorMessage("");
             return true;
         }
 
@@ -323,17 +290,17 @@ public class CordovaTemplate implements SiteTemplateImplementation {
             panel.update();
         }
 
-        private String getPackageName() {
-            return panel.getPackageName();
+        private void save(SourceConfig c) throws IOException {
+            panel.save(c);
         }
     }
     
     @NbBundle.Messages({
-        "LBL_PhoneGapApp=PhoneGap Application"
+        "LBL_CordovaApp=Cordova Application"
     })
     @TemplateRegistration(folder = "Project/ClientSide",
-            displayName = "#LBL_PhoneGapApp",
-            description = "../resources/PhoneGapProjectDescription.html", // NOI18N
+            displayName = "#LBL_CordovaApp",
+            description = "../resources/CordovaProjectDescription.html", // NOI18N
             iconBase = "org/netbeans/modules/cordova/resources/project.png", // NOI18N
             position = 400)
     public static WizardDescriptor.InstantiatingIterator newProjectWithExtender() {

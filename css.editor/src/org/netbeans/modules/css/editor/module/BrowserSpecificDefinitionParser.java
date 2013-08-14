@@ -70,8 +70,8 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
     private String resourcePath;
     private Browser browser;
     private CssModule module;
-    private final Set<String> supportedPropertiesNames = new HashSet<String>();
-    private final Map<String, PropertyDefinition> vendorSpecificProperties = new HashMap<String, PropertyDefinition>();
+    private final Set<String> supportedPropertiesNames = new HashSet<>();
+    private final Map<String, PropertyDefinition> vendorSpecificProperties = new HashMap<>();
 
     public BrowserSpecificDefinitionParser(String resourcePath, Browser browser, CssModule module) {
         this.resourcePath = resourcePath;
@@ -95,7 +95,7 @@ public class BrowserSpecificDefinitionParser extends PropertySupportResolver {
 
             //parse bundle key - there might be more properties separated by semicolons
             StringTokenizer nameTokenizer = new StringTokenizer(name, ";"); //NOI18N
-            Collection<String> propertyNames = new ArrayList<String>();
+            Collection<String> propertyNames = new ArrayList<>();
             while (nameTokenizer.hasMoreTokens()) {
                 String parsed_name = nameTokenizer.nextToken().trim();
                 propertyNames.add(parsed_name);

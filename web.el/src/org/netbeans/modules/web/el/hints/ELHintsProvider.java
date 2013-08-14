@@ -43,7 +43,6 @@
 package org.netbeans.modules.web.el.hints;
 
 import java.io.IOException;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import org.netbeans.api.java.source.ClasspathInfo;

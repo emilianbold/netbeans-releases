@@ -51,7 +51,6 @@ public final class PropertyNames {
     public static final String PROP_BUILD_SCRIPT_VERSION     = "build.script.version"; // NOI18N
     public static final String PROP_ENV_DISPLAY              = "env.DISPLAY"; // NOI18N
     public static final String PROP_UPDATE_TASK_JAR          = "update.task.jar"; // NOI18N
-    public static final String PROP_PHONEGAP                 = "phonegap"; // NOI18N
     public static final String PROP_CORDOVA_VERSION          = "cordova.version"; // NOI18N
     public static final String PROP_ANDROID_PROJECT_ACTIVITY = "android.project.activity"; // NOI18N
     public static final String PROP_CORDOVA_HOME             = "cordova.home"; // NOI18N

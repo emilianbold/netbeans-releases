@@ -156,7 +156,7 @@ public class CssPreferences {
 
     private static Collection<String> getDisabledErrorChecksAsCollection() {
         //return modifiable collection!
-        ArrayList<String> list = new ArrayList<String>();
+        ArrayList<String> list = new ArrayList<>();
         list.addAll(Arrays.asList(disabledErrorChecks.split(DELIMITER)));
         return list;
     }

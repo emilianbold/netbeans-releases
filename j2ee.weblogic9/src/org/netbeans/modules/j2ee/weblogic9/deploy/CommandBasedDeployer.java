@@ -236,7 +236,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                             FailedAuthenticationSupport.checkFailedAuthentication(getDeploymentManager(), lineProcessor.getLastLine());
                             break;
                         } else {
-                            waitForUrlReady(module, progress);
+                            waitForUrlReady(getDeploymentManager(), module, progress);
                             continue;
                         }
                     } catch (InterruptedException ex) {
@@ -712,7 +712,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
         return javaBinary;
     }
 
-    private static void waitForUrlReady(TargetModuleID moduleID,
+    private static void waitForUrlReady(WLDeploymentManager dm, TargetModuleID moduleID,
             WLProgressObject progressObject) throws InterruptedException, TimeoutException {
 
         // prevent hitting the old content
@@ -725,16 +725,16 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                 for (int i = 0; i < ch.length; i++) {
                     webUrl = ch[i].getWebURL();
                     if (webUrl != null) {
-                        waitForUrlReady(webUrl, progressObject, start);
+                        waitForUrlReady(dm, webUrl, progressObject, start);
                     }
                 }
             }
         } else {
-            waitForUrlReady(webUrl, progressObject, start);
+            waitForUrlReady(dm, webUrl, progressObject, start);
         }
     }
 
-    private static void waitForUrlReady(String webUrl, WLProgressObject progressObject,
+    private static void waitForUrlReady(WLDeploymentManager dm, String webUrl, WLProgressObject progressObject,
             long start) throws InterruptedException, TimeoutException {
 
         if (webUrl != null) {
@@ -746,7 +746,7 @@ public final class CommandBasedDeployer extends AbstractDeployer {
                         new WLDeploymentStatus(ActionType.EXECUTE, CommandType.DISTRIBUTE, StateType.RUNNING, waitingMsg));
 
                 while (System.currentTimeMillis() - start < TIMEOUT) {
-                    if (URLWait.waitForUrlReady(URL_WAIT_RP, url, 1000)) {
+                    if (URLWait.waitForUrlReady(dm, URL_WAIT_RP, url, 1000)) {
                         break;
                     }
                 }

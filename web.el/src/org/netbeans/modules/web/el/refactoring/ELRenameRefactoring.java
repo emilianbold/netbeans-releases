@@ -118,7 +118,7 @@ public class ELRenameRefactoring extends ELWhereUsedQuery {
     protected void addElements(CompilationContext info, ELElement elem, List<Node> matchingNodes, RefactoringElementsBag refactoringElementsBag) {
         FileObject file = elem.getSnapshot().getSource().getFileObject();
         ModificationResult modificationResult = new ModificationResult();
-        List<Difference> differences = new ArrayList<Difference>();
+        List<Difference> differences = new ArrayList<>();
 
         TypeMirror returnType = null;
         TreePathHandle treePathHandle = rename.getRefactoringSource().lookup(TreePathHandle.class);

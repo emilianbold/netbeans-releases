@@ -92,6 +92,7 @@ public final class ClientSideProjectProperties {
 
     //customizer license headers
     private LicensePanelSupport licenseSupport;
+    private boolean isSiteRootModified;
 
     public ClientSideProjectProperties(ClientSideProject project) {
         this.project = project;
@@ -164,7 +165,11 @@ public final class ClientSideProjectProperties {
         // save properties
         EditableProperties privateProperties = project.getProjectHelper().getProperties(AntProjectHelper.PRIVATE_PROPERTIES_PATH);
         EditableProperties projectProperties = project.getProjectHelper().getProperties(AntProjectHelper.PROJECT_PROPERTIES_PATH);
-        putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRootFolderReference);
+        
+        if (isSiteRootModified) {
+            putProperty(projectProperties, ClientSideProjectConstants.PROJECT_SITE_ROOT_FOLDER, siteRootFolderReference);
+            isSiteRootModified = false;
+        }
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_TEST_FOLDER, testFolderReference);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_CONFIG_FOLDER, configFolderReference);
         putProperty(projectProperties, ClientSideProjectConstants.PROJECT_ENCODING, encoding);
@@ -211,6 +216,7 @@ public final class ClientSideProjectProperties {
     }
 
     public void setSiteRootFolder(String siteRootFolder) {
+        isSiteRootModified = true;
         this.siteRootFolder = siteRootFolder;
     }
 

@@ -57,12 +57,12 @@ import org.openide.util.lookup.ServiceProvider;
  * @author Jan Becicka
  */
 @NbBundle.Messages({
-    "LBL_PhoneGapIOSDevice=PhoneGap (iOS Device)",
-    "LBL_PhoneGapIOSSimulator=PhoneGap (iOS Simulator)",
-    "LBL_PhoneGapAndroidDevice=PhoneGap (Android Device)",
-    "LBL_PhoneGapAndroidEmulator=PhoneGap (Android Emulator)"
+    "LBL_CordovaIOSDevice=Cordova (iOS Device)",
+    "LBL_CordovaIOSSimulator=Cordova (iOS Simulator)",
+    "LBL_CordovaAndroidDevice=Cordova (Android Device)",
+    "LBL_CordovaAndroidEmulator=Cordova (Android Emulator)"
 })
-public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory, BrowserURLMapperProvider {
+public abstract class CordovaBrowserFactory implements EnhancedBrowserFactory, HtmlBrowser.Factory, BrowserURLMapperProvider {
 
     private CordovaURLMapper mapper;
     
@@ -90,7 +90,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
-    public static class IOSDevice extends PhoneGapBrowserFactory {
+    public static class IOSDevice extends CordovaBrowserFactory {
 
         @Override
         public Image getIconImage(boolean small) {
@@ -99,7 +99,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
         @Override
         public String getDisplayName() {
-            return Bundle.LBL_PhoneGapIOSDevice();
+            return Bundle.LBL_CordovaIOSDevice();
         }
 
         @Override
@@ -119,7 +119,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
-    public static class IOSSimulator extends PhoneGapBrowserFactory {
+    public static class IOSSimulator extends CordovaBrowserFactory {
 
         @Override
         public Image getIconImage(boolean small) {
@@ -128,7 +128,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
         @Override
         public String getDisplayName() {
-            return Bundle.LBL_PhoneGapIOSSimulator();
+            return Bundle.LBL_CordovaIOSSimulator();
         }
 
         @Override
@@ -148,7 +148,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
     }
 
     @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
-    public static class AndroidEmulator extends PhoneGapBrowserFactory {
+    public static class AndroidEmulator extends CordovaBrowserFactory {
 
         @Override
         public Image getIconImage(boolean small) {
@@ -157,7 +157,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
         @Override
         public String getDisplayName() {
-            return Bundle.LBL_PhoneGapAndroidEmulator();
+            return Bundle.LBL_CordovaAndroidEmulator();
         }
 
         @Override
@@ -176,7 +176,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
         }
 
         @ServiceProvider(service = HtmlBrowser.Factory.class, path = "Services/Browsers2")
-        public static class AndroidDevice extends PhoneGapBrowserFactory {
+        public static class AndroidDevice extends CordovaBrowserFactory {
 
             @Override
             public Image getIconImage(boolean small) {
@@ -185,7 +185,7 @@ public abstract class PhoneGapBrowserFactory implements EnhancedBrowserFactory, 
 
             @Override
             public String getDisplayName() {
-                return Bundle.LBL_PhoneGapAndroidDevice();
+                return Bundle.LBL_CordovaAndroidDevice();
             }
 
             @Override

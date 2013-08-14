@@ -96,6 +96,10 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel<S
 
     @Override
     public void setSelectedItem(final Object anItem) {
+        setSelectedItem(anItem, null);
+    }
+
+    public void setSelectedItem(final Object anItem, final Runnable postTask) {
         if (anItem == null) {
             return;
         }
@@ -110,6 +114,9 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel<S
                         if (standards.contains(standard)) {
                             selectedStandard = standard;
                             fireContentsChanged();
+                            if (postTask != null) {
+                                postTask.run();
+                            }
                         }
                     }
                 });
@@ -140,7 +147,11 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel<S
         fetchStandards(component, null);
     }
 
-    public void fetchStandards(final JComboBox<String> component, @NullAllowed final String customCodeSnifferPath) {
+    public void fetchStandards(final JComboBox<String> component, @NullAllowed Runnable postTask) {
+        fetchStandards(component, null, postTask);
+    }
+
+    public void fetchStandards(final JComboBox<String> component, @NullAllowed final String customCodeSnifferPath, @NullAllowed final Runnable postTask) {
         assert EventQueue.isDispatchThread();
         assert component != null;
 
@@ -173,6 +184,9 @@ public final class CodeSnifferStandardsComboBoxModel extends AbstractListModel<S
                             // #231832 - add one empty item
                             standardsRef.add(0, ""); // NOI18N
                             setStandards(standardsRef);
+                        }
+                        if (postTask != null) {
+                            postTask.run();
                         }
                     }
                 });

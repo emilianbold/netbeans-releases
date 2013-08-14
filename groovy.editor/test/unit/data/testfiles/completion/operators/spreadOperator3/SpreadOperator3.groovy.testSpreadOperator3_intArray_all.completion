@@ -144,3 +144,4 @@ METHOD     wait(long)                      [PUBLIC]   void
 METHOD     wait(long, int)                 [PUBLIC]   void
 METHOD     with(Closure)                              Object
 METHOD     xor(Number)                                Number
+FIELD      class                           [PUBLIC]   Class

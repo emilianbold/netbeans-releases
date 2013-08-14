@@ -29,12 +29,12 @@
         <folder name="Project">
             <folder name="Samples">
                 <folder name="HTML5">
-                    <file name="PhoneGapSample" url="PhoneGapSample.zip">
-                        <attr name="displayName" bundlevalue="org.netbeans.modules.cordova.wizard.Bundle#Templates/Project/Samples/HTML5/PhoneGapMaps"/>
+                    <file name="CordovaMapsSample.zip" url="CordovaMapsSample.zip">
+                        <attr name="displayName" bundlevalue="org.netbeans.modules.cordova.wizard.Bundle#Templates/Project/Samples/HTML5/CordovaMapsSample"/>
                         <attr name="position" intvalue="2000"/>
                         <attr name="iconBase" stringvalue="org/netbeans/modules/cordova/resources/project.png"/>
-                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cordova.wizard.PhoneGapSampleIterator"/>
-                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cordova/resources/PhoneGapSampleDescription.html"/>
+                        <attr name="instantiatingIterator" newvalue="org.netbeans.modules.cordova.wizard.CordovaSampleIterator"/>
+                        <attr name="instantiatingWizardURL" urlvalue="nbresloc:/org/netbeans/modules/cordova/resources/CordovaSampleDescription.html"/>
                         <attr name="template" boolvalue="true"/>
                     </file>
                 </folder>

@@ -102,7 +102,7 @@ public class GroovyTypeSearcher implements IndexSearcher {
         
         Set<IndexedClass> classes = null;
         if (textForQuery.length() > 0) {
-            classes = index.getClasses(textForQuery, kind, true, false, false, null);
+            classes = index.getClasses(textForQuery, kind);
         } else {
             return Collections.emptySet();
         }

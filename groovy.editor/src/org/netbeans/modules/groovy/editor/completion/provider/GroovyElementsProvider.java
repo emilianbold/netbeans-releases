@@ -121,13 +121,11 @@ public final class GroovyElementsProvider implements CompletionProvider {
             }
 
             for (IndexedField indexedField : fields) {
-                result.put(getFieldSignature(indexedField), new CompletionItem.JavaFieldItem(
-                        context.getTypeName(),
+                result.put(getFieldSignature(indexedField), new CompletionItem.FieldItem(
+                        indexedField.getTypeName(),
                         indexedField.getName(),
-                        null, 
-                        Utilities.gsfModifiersToModel(indexedField.getModifiers(), Modifier.PRIVATE),
-                        context.getAnchor(),
-                        false));
+                        indexedField.getModifiers(),
+                        context.getAnchor()));
             }
         }
 
