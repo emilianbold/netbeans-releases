@@ -100,11 +100,13 @@ public final class TeamMenuAction extends AbstractAction implements DynamicMenuC
         menu.add(createItem(Actions.forID(CATEGORY_TEAM, LogoutAction.ID)));
         menu.add(new JSeparator());
         
-        for (TeamServer server : servers) {
-            menu.add(getSubMenu(server));
+        if(!servers.isEmpty()) {
+            for (TeamServer server : servers) {
+                menu.add(getSubMenu(server));
+            }
+            menu.add(new JSeparator());        
         }
         
-        menu.add(new JSeparator());        
         menu.add(createItem(Actions.forID(CATEGORY_TEAM, AddInstanceAction.ID)));
         
         return new JComponent[] {menu};
@@ -118,14 +120,18 @@ public final class TeamMenuAction extends AbstractAction implements DynamicMenuC
 
     private JMenu getSubMenu(final TeamServer server) throws IllegalArgumentException {
         JMenu subMenu = new JMenu(server.getDisplayName());
-        for(Action a : server.getTeamMenuActions()) {
-            if(a == null) {
-                subMenu.addSeparator();
-            } else {
-                subMenu.add(createItem(a));
+        
+        Action[] actions = server.getTeamMenuActions();
+        if(actions != null && actions.length > 0) {
+            for(Action a : actions) {
+                if(a == null) {
+                    subMenu.addSeparator();
+                } else {
+                    subMenu.add(createItem(a));
+                }
             }
+            subMenu.addSeparator();
         }
-        subMenu.addSeparator();
         subMenu.add(createItem(new EditInstanceAction(server)));
         subMenu.add(createItem(new RemoveInstanceAction(server)));
         

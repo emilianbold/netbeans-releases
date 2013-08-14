@@ -48,7 +48,9 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -80,21 +82,68 @@ public class FileObjectBasedFile extends File {
     private final String path;
     private File[] NO_CHILDREN = new File[0];
     private final Object lock = new Object();
+    private boolean refreshed = false;
+    private final Factory factory;
 
-    public FileObjectBasedFile(ExecutionEnvironment env, String path) {
+    /*package*/ final static class Factory {
+
+        private final Object lock = new Object();
+        private final Map<String, FileObjectBasedFile> files = new HashMap<>();
+
+        /*package*/ FileObjectBasedFile create(ExecutionEnvironment env, String path) {
+            FileObjectBasedFile file;
+            synchronized (lock) {
+                file = files.get(path);
+                if (file == null) {
+                    file = new FileObjectBasedFile(env, path, this);
+                    files.put(path, file);
+                }
+            }
+            return file;
+        }
+
+        /*package*/ FileObjectBasedFile create(ExecutionEnvironment env, FileObject fo) {
+            FileObjectBasedFile file;
+            synchronized (lock) {
+                file = files.get(fo.getPath());
+                if (file == null || file.fo == null) {
+                    file = new FileObjectBasedFile(env, fo, this);
+                    files.put(fo.getPath(), file);
+                }
+            }
+            return file;
+        }
+
+        private void notifyDeleted(String path) {
+            synchronized (lock) {
+                files.remove(path);
+            }
+        }
+
+        private void notifyRenamed(FileObjectBasedFile file, String oldPath) {
+            synchronized (lock) {
+                files.remove(oldPath);
+                files.put(file.getPath(), file);
+            }
+        }
+    }
+
+    private FileObjectBasedFile(ExecutionEnvironment env, String path, Factory factory) {
         super(path);
         RemoteLogger.assertTrue(path != null, "Path should not be null"); //NOI18N
         this.fo = null;
         this.path = toUnix(super.getPath());
         this.env = env;
+        this.factory = factory;
     }
 
-    public FileObjectBasedFile(ExecutionEnvironment env, FileObject fo) {
+    private FileObjectBasedFile(ExecutionEnvironment env, FileObject fo, Factory factory) {
         super(fo == null || "".equals(fo.getPath()) ? "/" : fo.getPath()); // NOI18N
         this.fo = fo;
         // super.getPath() changes slashes and can lead to #186521 Wrong path returned by remote file chooser
         this.path = (fo == null || "".equals(fo.getPath())) ? "/" : fo.getPath(); // NOI18N
         this.env = env;
+        this.factory = factory;
     }
 
     public FileObject getFileObject() {
@@ -158,6 +207,15 @@ public class FileObjectBasedFile extends File {
 
     @Override
     public boolean renameTo(File dest) {
+        String oldPath = getPath();
+        boolean success = renameImpl(dest);
+        if (success) {
+            factory.notifyRenamed(this, oldPath);
+        }
+        return success;
+    }
+
+    private boolean renameImpl(File dest) {
         if (fo == null) {
             fo = FileSystemProvider.getFileObject(env, path);
         }
@@ -165,8 +223,7 @@ public class FileObjectBasedFile extends File {
             Future<Integer> result = renameTo(env, getPath(), dest.getPath(), new StringWriter());
             try {
                 return result.get() == 0;
-            } catch (InterruptedException ex) {
-            } catch (ExecutionException ex) {
+            } catch (InterruptedException | ExecutionException ex) {
             }
             return false;
         } else {
@@ -178,12 +235,12 @@ public class FileObjectBasedFile extends File {
                 name = name.substring(0, pos);                        
             }
             try {
-                FileLock lock = fo.lock();
+                FileLock aLock = fo.lock();
                 try {
-                    fo.rename(lock, name, ext);
+                    fo.rename(aLock, name, ext);
                     return true;
                 } finally {
-                    lock.releaseLock();
+                    aLock.releaseLock();
                 }
             } catch (IOException ex) {
                 return false;
@@ -233,16 +290,16 @@ public class FileObjectBasedFile extends File {
                 if (parentPath != null && parentPath.length() > 0) {
                     final FileObject parentFO = FileSystemProvider.getFileObject(env, parentPath);
                     if (parentFO == null) {
-                        return new FileObjectBasedFile(env, parentPath);
+                        return factory.create(env, parentPath);
                     } else {
-                        return new FileObjectBasedFile(env, fo);
+                        return factory.create(env, parentFO);
                     }
                 }
             }
             return null;
         }
         FileObject parent = fo.getParent();
-        return parent == null ? null : new FileObjectBasedFile(env, parent);
+        return parent == null ? null : factory.create(env, parent);
     }
     
     @Override
@@ -257,6 +314,15 @@ public class FileObjectBasedFile extends File {
 
     @Override
     public boolean delete() {
+        boolean success = deleteImpl();
+        String p = getPath();
+        if (success) {
+            factory.notifyDeleted(p);
+        }
+        return success;
+    }
+
+    private boolean deleteImpl() {
         if (fo == null) {
             fo = FileSystemProvider.getFileObject(env, path);
         }
@@ -329,7 +395,7 @@ public class FileObjectBasedFile extends File {
         List<File> res = new ArrayList<File>(children.length);
         for (FileObject child : children) {
             if (filter == null || filter.accept(this, child.getNameExt())) {
-                res.add(new FileObjectBasedFile(env, child));
+                res.add(factory.create(env, child));
             }
         }
         return res.toArray(new File[res.size()]);
@@ -337,6 +403,10 @@ public class FileObjectBasedFile extends File {
 
     private FileObject[] getChilfdrenFO() {
         synchronized (lock) {
+            if (!refreshed) {
+                FileSystemProvider.refresh(fo, false);
+                refreshed = true;
+            }
             return fo.getChildren();
         }
     }

@@ -36,6 +36,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.modules.cnd.api.model.*;
@@ -102,13 +103,13 @@ public class CppTypeProvider implements TypeProvider {
         synchronized (activeTaskLock) {
             task = activeTask;
             if (task != null && !sameContext(task.context, context)) {
-                task.cancel(true);
+                task.cancel();
                 task = null;
                 activeTask = null;
             }
 
             if (task == null) {
-                task = new WorkerTask(context, new HashSet<TypeDescriptor>());
+                task = new WorkerTask(context);
                 activeTask = task;
                 RP.submit(task);
             }
@@ -122,6 +123,17 @@ public class CppTypeProvider implements TypeProvider {
                     break;
                 }
             } catch (InterruptedException ex) {
+                // do not interrupt thread, 
+                // #234193 - Exception in repository from go to type
+//                Thread.interrupted();
+                if (TRACE) {
+                    LOG.log(Level.INFO, "InterruptedException"); // NOI18N
+                }                
+                break;
+            } catch (CancellationException ex) {
+                if (TRACE) {
+                    LOG.log(Level.INFO, "CancellationException"); // NOI18N
+                }                
                 break;
             } catch (ExecutionException ex) {
                 if (!(ex.getCause() instanceof CancellationException)) {
@@ -152,7 +164,7 @@ public class CppTypeProvider implements TypeProvider {
             activeTask = null;
         }
         if (task != null) {
-            task.cancel(true);
+            task.cancel();
         }
     }
 
@@ -169,11 +181,17 @@ public class CppTypeProvider implements TypeProvider {
 
         private final Set<TypeDescriptor> result;
         private final Context context;
+        private final AtomicBoolean cancelled;
 
-        public WorkerTask(Context context, Set<TypeDescriptor> result) {
-            super(new Worker(context, result), null);
+        public WorkerTask(Context context) {
+            this(context, new HashSet<TypeDescriptor>(), new AtomicBoolean(false));
+        }
+        
+        private WorkerTask(Context context, Set<TypeDescriptor> result, AtomicBoolean cancelled) {
+            super(new Worker(context, result, cancelled), null);
             this.context = context;
             this.result = result;
+            this.cancelled = cancelled;
         }
 
         private List<TypeDescriptor> getResult() {
@@ -187,6 +205,10 @@ public class CppTypeProvider implements TypeProvider {
                 return !result.isEmpty();
             }
         }
+        
+        public void cancel() {
+            cancelled.set(true);
+        }
     }
 
     private static class Worker implements Runnable {
@@ -194,14 +216,16 @@ public class CppTypeProvider implements TypeProvider {
         private final Context context;
         private final Set<TypeDescriptor> result;
         private long startTime;
+        private final AtomicBoolean cancelled;
 
-        private Worker(Context context, Set<TypeDescriptor> result) {
+        private Worker(Context context, Set<TypeDescriptor> result, AtomicBoolean cancelled) {
             if (TRACE) {
                 LOG.log(Level.INFO, "New Worker for searching \"{0}\", {1} in {2} created.", // NOI18N
                         new Object[]{context.getText(), context.getSearchType().name(), context.getProject()});
             }
             this.context = context;
             this.result = result;
+            this.cancelled = cancelled;
         }
 
         @Override
@@ -316,7 +340,7 @@ public class CppTypeProvider implements TypeProvider {
         }
 
         private void checkCancelled() throws CancellationException {
-            if (Thread.interrupted()) {
+            if (cancelled.get()) {
                 throw new CancellationException();
             }
         }

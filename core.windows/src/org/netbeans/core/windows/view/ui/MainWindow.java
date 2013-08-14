@@ -106,6 +106,9 @@ public final class MainWindow {
    private JComponent statusBar;
 
    private static final Logger LOGGER = Logger.getLogger(MainWindow.class.getName());
+   
+   //update main window title bar when current document is modified (Mac OS X only)
+   private final RequestProcessor RP = new RequestProcessor( "MainWndMac", 1 ); //NOI18N
 
    /** Constructs main window. */
    private MainWindow(JFrame frame) {
@@ -310,41 +313,52 @@ public final class MainWindow {
            if( null != saveResult && null != dobResult ) {
                saveListener = new LookupListener() {
                    @Override
-                   public void resultChanged(LookupEvent ev) {
-                       if (ev.getSource() == saveResult) {
-                           boolean modified = saveResult.allItems().size() > 0;
-                           frame.getRootPane().putClientProperty ("Window.documentModified", //NOI18N
-                                   modified ? Boolean.TRUE : Boolean.FALSE);
-                       } else if (ev.getSource() == dobResult) {
-                           Collection<? extends Lookup.Item<DataObject>> allItems = dobResult.allItems();
-                           int count = allItems.size();
-                           switch (count) {
-                               case 1 :
-                                   DataObject dob = allItems.iterator().next().getInstance();
-                                   if( null != dob ) {
-                                    FileObject file = dob.getPrimaryFile();
-                                    File f = FileUtil.toFile(file);
-                                    if (f != null) {
-                                        frame.getRootPane().putClientProperty("Window.documentFile", f); //NOI18N
-                                        break;
-                                    }
-                                   }
-                                   //Fall through
-                               case 0 :
-                                   //Fall through
-                               default :
-                                   frame.getRootPane().putClientProperty("Window.documentFile", null); //NOI18N
+                   public void resultChanged(final LookupEvent ev) {
+                       RP.post( new Runnable() {
+
+                           @Override
+                           public void run() {
+                               updateMacDocumentProperties(ev);
                            }
-                       }
+                       });
                    }
 
                };
                saveResult.addLookupListener(saveListener);
                dobResult.addLookupListener(saveListener);
            }
+           dobResult.allItems();
        }
    }
 
+   private void updateMacDocumentProperties( LookupEvent ev ) {
+        if (ev.getSource() == saveResult) {
+            final boolean modified = saveResult.allItems().size() > 0;
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    frame.getRootPane().putClientProperty ("Window.documentModified", //NOI18N
+                            modified ? Boolean.TRUE : Boolean.FALSE);
+                }
+            });
+        } else if (ev.getSource() == dobResult) {
+            final File[] documentFile = new File[1];
+            Collection<? extends Lookup.Item<DataObject>> allItems = dobResult.allItems();
+            if( 1 == allItems.size() ) {
+                DataObject dob = allItems.iterator().next().getInstance();
+                if( null != dob ) {
+                    FileObject file = dob.getPrimaryFile();
+                    documentFile[0] = FileUtil.toFile( file );
+                }
+            }
+            SwingUtilities.invokeLater( new Runnable() {
+                @Override
+                public void run() {
+                    frame.getRootPane().putClientProperty("Window.documentFile", documentFile[0]); //NOI18N
+                }
+            });
+        }
+   }
 
    private static void decoratePanel (JPanel panel, boolean safeAccess) {
        assert safeAccess || SwingUtilities.isEventDispatchThread () : "Must run in AWT queue.";

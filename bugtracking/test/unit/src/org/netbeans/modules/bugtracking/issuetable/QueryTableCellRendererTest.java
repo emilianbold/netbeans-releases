@@ -163,7 +163,7 @@ public class QueryTableCellRendererTest {
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(issueObsoleteFormat, result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#999999\"><s>Archived</s></font>- this issue doesn't belong to the query anymore</html>", result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#999999\"><s>Archived</s></font>- this task doesn't belong to the query anymore</html>", result.getTooltip());
 
         // obsolete issue, selected
         rendererQuery.containsIssue = false;
@@ -175,7 +175,7 @@ public class QueryTableCellRendererTest {
         assertEquals(obsoleteHighlightColor, result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(defaultStyle.getFormat(), result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#999999\"><s>Archived</s></font>- this issue doesn't belong to the query anymore</html>", result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#999999\"><s>Archived</s></font>- this task doesn't belong to the query anymore</html>", result.getTooltip());
 
         // modified issue, not selected
         rendererQuery.containsIssue = true;
@@ -188,7 +188,7 @@ public class QueryTableCellRendererTest {
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(issueModifiedFormat, result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#0000FF\">Modified</font>- this issue is modified - changed</html>", result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#0000FF\">Modified</font>- this task is modified - changed</html>", result.getTooltip());
 
 
         // modified issue, selected
@@ -202,7 +202,7 @@ public class QueryTableCellRendererTest {
         assertEquals(modifiedHighlightColor, result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(null, result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#0000FF\">Modified</font>- this issue is modified - changed</html>", result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#0000FF\">Modified</font>- this task is modified - changed</html>", result.getTooltip());
 
         // new issue, not selected
         rendererQuery.containsIssue = true;
@@ -215,7 +215,7 @@ public class QueryTableCellRendererTest {
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(issueNewFormat, result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#00b400\">New</font>- this issue is new</html>", result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#00b400\">New</font>- this task is new</html>", result.getTooltip());
 
 
         // new issue, selected
@@ -229,7 +229,7 @@ public class QueryTableCellRendererTest {
         assertEquals(newHighlightColor, result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(null, result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#00b400\">New</font>- this issue is new</html>", result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#00b400\">New</font>- this task is new</html>", result.getTooltip());
 
     }
 

@@ -8,6 +8,7 @@ Clean and Build Project (SampleProject)       C   - Clean and Build Project (pro
 Batch Build Project... (SampleProject)        j   - Batch Build Project (project-name)... - Batch Build Main Project - hidden in Ruby and PHP bundles
 ================================
 Set Project Configuration      >   n   - Set Project Configuration (project-name) > - Set Main Project Configuration
+Set Project Browser            > 
 Set Main Project               >   M
 ================================
 Generate Javadoc (SampleProject)   G   - Generate Javadoc (project-name) - hidden in Ruby, PHP and C/C++ bundles

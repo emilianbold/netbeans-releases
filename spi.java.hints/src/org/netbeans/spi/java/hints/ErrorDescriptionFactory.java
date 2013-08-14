@@ -118,7 +118,8 @@ public class ErrorDescriptionFactory {
 
         if (context.getHintMetadata().kind == Hint.Kind.INSPECTION) {
             start = (int) context.getInfo().getTrees().getSourcePositions().getStartPosition(context.getInfo().getCompilationUnit(), tree);
-            end = (int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree);
+            end = Math.min((int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree),
+                           findLineEnd(context.getInfo(), start));
         } else {
             start = end = context.getCaretLocation();
         }
@@ -223,9 +224,20 @@ public class ErrorDescriptionFactory {
                 }
                 return new int[] {
                     start,
-                    (int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree),
+                    Math.min((int) context.getInfo().getTrees().getSourcePositions().getEndPosition(context.getInfo().getCompilationUnit(), tree),
+                             findLineEnd(context.getInfo(), start)),
                 };
         }
+    }
+
+    private static int findLineEnd(CompilationInfo info, int start) {
+        String text = info.getText();
+
+        for (int i = start + 1; i < text.length(); i++) {
+            if (text.charAt(i) == '\n') return i;
+        }
+
+        return text.length();
     }
 
     static List<Fix> resolveDefaultFixes(HintContext ctx, Fix... provided) {

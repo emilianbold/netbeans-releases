@@ -270,7 +270,7 @@ public final class BrowserSupport {
             return null;
         }
         if (checkDependentFiles) {
-            if ( file.equals( project ) || DependentFileQuery.isDependent(file, fo)) {
+            if ( file.equals( project.getProjectDirectory() ) || DependentFileQuery.isDependent(file, fo)) {
                 // Two cases :
                 // - a project was "Run" and we have no idea which exact project's 
                 //   file was opened in browser;

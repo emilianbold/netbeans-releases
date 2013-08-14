@@ -82,6 +82,7 @@ public interface FileSystemProviderImplementation {
     String getCanonicalPath(FileObject fileObject) throws IOException;
     String getCanonicalPath(FileSystem fs, String absPath) throws IOException;
     String getCanonicalPath(ExecutionEnvironment env, String absPath) throws IOException;
+    void refresh(FileObject fileObject, boolean recursive);
     void scheduleRefresh(FileObject fileObject);
     void scheduleRefresh(ExecutionEnvironment env, Collection<String> paths);
     void addRecursiveListener(FileChangeListener listener, FileSystem fileSystem, String absPath);

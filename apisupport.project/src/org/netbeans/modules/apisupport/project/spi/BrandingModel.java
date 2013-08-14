@@ -984,6 +984,8 @@ public abstract class BrandingModel {
     }
 
     public void reloadProperties() {}
+    
+    public abstract void updateProjectInternationalizationLocales();
 
     public Locale getLocale() {
         return locale;

@@ -73,7 +73,7 @@ public class SimpleExtBrowser extends ExtWebBrowser {
     
     /** Creates new SimpleExtBrowser */
     public SimpleExtBrowser() {
-        super();
+        super(PrivateBrowserFamilyId.UNKNOWN);
         if (Utilities.getOperatingSystem () == Utilities.OS_OS2) {
             browserExecutable = new NbProcessDescriptor(
                 "Netscape.exe", // NOI18N
@@ -117,11 +117,6 @@ public class SimpleExtBrowser extends ExtWebBrowser {
         return new SimpleExtBrowserImpl(this);
     }
 
-    @Override
-    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
-        return PrivateBrowserFamilyId.UNKNOWN;
-    }
-        
     /** Default format that can format tags related to execution. Currently this is only the URL.
      */
     public static class BrowserFormat extends org.openide.util.MapFormat {

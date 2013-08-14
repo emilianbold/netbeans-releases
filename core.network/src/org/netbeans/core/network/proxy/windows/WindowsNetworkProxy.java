@@ -76,7 +76,6 @@ public class WindowsNetworkProxy implements NetworkProxyResolver {
             
             if (prxCnf.autoDetect) {
                 LOGGER.log(Level.INFO, "Windows system proxy resolver: auto detect"); //NOI18N
-                return new NetworkProxySettings();
             }
 
             Pointer pacFilePointer = prxCnf.pacFile;

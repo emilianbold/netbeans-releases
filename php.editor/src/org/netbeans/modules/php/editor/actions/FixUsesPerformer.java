@@ -123,6 +123,7 @@ public class FixUsesPerformer {
     }
 
     private void processSelections() {
+        resolveDuplicateSelections();
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(parserResult.getModel().getFileScope(), importData.caretPosition);
         assert namespaceScope != null;
         int startOffset = getOffset(baseDocument, namespaceScope);
@@ -143,7 +144,42 @@ public class FixUsesPerformer {
                 }
             }
         }
+        replaceUnimportedItems();
         editList.replace(startOffset, 0, createInsertString(useParts), false, 0);
+    }
+
+    private void replaceUnimportedItems() {
+        for (ImportData.DataItem dataItem : importData.getItemsToReplace()) {
+            ItemVariant defaultVariant = dataItem.getDefaultVariant();
+            for (UsedNamespaceName usedNamespaceName : dataItem.getUsedNamespaceNames()) {
+                editList.replace(usedNamespaceName.getOffset(), usedNamespaceName.getReplaceLength(), defaultVariant.getName(), false, 0);
+            }
+        }
+    }
+
+    private void resolveDuplicateSelections() {
+        List<ImportData.DataItem> dataItems = importData.getItems();
+        List<ItemVariant> selectionsCopy = new ArrayList<>(selections);
+        List<Integer> itemsToRemove = new ArrayList<>();
+        for (int i = 0; i < selections.size(); i++) {
+            List<UsedNamespaceName> usedNamespaceNames = new ArrayList<>();
+            ItemVariant baseVariant = selections.get(i);
+            for (int j = i + 1; j < selectionsCopy.size(); j++) {
+                ItemVariant testedVariant = selectionsCopy.get(j);
+                if (baseVariant.equals(testedVariant) && !itemsToRemove.contains(j)) {
+                    ImportData.DataItem duplicateItem = dataItems.get(j);
+                    usedNamespaceNames.addAll(duplicateItem.getUsedNamespaceNames());
+                    itemsToRemove.add(j);
+                }
+            }
+            if (!usedNamespaceNames.isEmpty()) {
+                dataItems.get(i).addUsedNamespaceNames(usedNamespaceNames);
+            }
+        }
+        for (Integer integer : itemsToRemove) {
+            dataItems.remove((int) integer);
+            selections.remove((int) integer);
+        }
     }
 
     private AliasStrategy createAliasStrategy(final int selectionIndex, final List<String> existingUseParts, final List<ItemVariant> selections) {

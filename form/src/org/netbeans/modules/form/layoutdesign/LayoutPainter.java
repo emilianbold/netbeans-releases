@@ -399,10 +399,9 @@ public class LayoutPainter implements LayoutConstants {
             }
             x2--;
             int diam = Math.min(4, x2-x1);
-            Stroke stroke = new BasicStroke(1, BasicStroke.CAP_BUTT, 
-                BasicStroke.JOIN_BEVEL, 0, new float[] {1, 1}, 0);
             Stroke oldStroke = g.getStroke();
-            g.setStroke(stroke);
+            Stroke dottedStroke = new BasicStroke(1, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL, 0, new float[] {1, 1}, 0);
+            g.setStroke(dottedStroke);
             if (dimension == HORIZONTAL) {
                 g.drawLine(x1, y, x2, y);
                 angle += 90;
@@ -741,6 +740,7 @@ public class LayoutPainter implements LayoutConstants {
         int h1 = gapInfo.paintRect.height;
         if (x1 < -Short.MAX_VALUE || x1 > 2*Short.MAX_VALUE
                 || y1 < -Short.MAX_VALUE || y1 > 2*Short.MAX_VALUE
+                || w1 < 0 || h1 < 0
                 || w1 > 2*Short.MAX_VALUE || h1 > 2*Short.MAX_VALUE) {
             return; // avoid painting overload if current space is incorrectly calculated
         }
@@ -795,7 +795,7 @@ public class LayoutPainter implements LayoutConstants {
                             x+=4, d1*=-1, d2*=-1) {
                         g.drawLine(x, by+d1, x+4, by+d2);
                     }
-            }
+                }
             } else if (w1 > 4) { // paint a vertical "saw"
                 int count = w1 / 120 + 1;
                 int step = w1 / count;

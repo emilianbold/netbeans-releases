@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.remotefs.versioning.spi;
 
+import java.io.FileNotFoundException;
+import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.*;
@@ -225,6 +227,16 @@ public class FileProxyProviderImpl extends FileOperationsProvider implements VCS
         public long lastModified(VCSFileProxy file) {
             softEDTAssert();
             return lastModified(toFileProxy(file));
+        }
+
+        @Override
+        public InputStream getInputStream(VCSFileProxy file, boolean checkLock) throws FileNotFoundException {
+            softEDTAssert();
+            FileObject fo = toFileObject(file);
+            if (fo == null) {
+                throw new FileNotFoundException("File not found: " + file.getPath()); //NOI18N
+            }
+            return getInputStream(fo, checkLock);
         }
 
         private static final Set<Integer> alreadyTraced = new HashSet<Integer>();

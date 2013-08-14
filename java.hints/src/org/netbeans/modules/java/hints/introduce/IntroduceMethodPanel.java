@@ -32,14 +32,15 @@ package org.netbeans.modules.java.hints.introduce;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import org.netbeans.modules.java.hints.introduce.IntroduceFieldPanel;
 import java.util.Collections;
 import java.util.EnumSet;
 import java.util.Set;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Modifier;
+import javax.swing.DefaultComboBoxModel;
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import org.netbeans.modules.java.hints.introduce.IntroduceHint.TargetDescription;
 import org.openide.util.NbPreferences;
 import org.openide.util.Utilities;
 
@@ -47,7 +48,7 @@ import org.openide.util.Utilities;
  *
  * @author Jan Lahoda
  */
-public class IntroduceMethodPanel extends javax.swing.JPanel {
+public class IntroduceMethodPanel extends CommonMembersPanel {
     
     public static final int INIT_METHOD = 1;
     public static final int INIT_FIELD = 2;
@@ -60,7 +61,8 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
     
     private JButton btnOk;
     
-    public IntroduceMethodPanel(String name, int duplicatesCount) {
+    public IntroduceMethodPanel(String name, int duplicatesCount, Iterable<TargetDescription> targets) {
+        super(targets);
         initComponents();
         
         this.name.setText(name);
@@ -96,6 +98,8 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
             duplicates.setSelected(true); //from pref
             duplicates.setText(duplicates.getText() + " (" + duplicatesCount + ")");
         }
+
+        initialize(target, duplicates);
     }
     
     private Preferences getPreferences() {
@@ -151,6 +155,8 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
         accessPrivate = new javax.swing.JRadioButton();
         errorLabel = createErrorLabel();
         duplicates = new javax.swing.JCheckBox();
+        jLabel1 = new javax.swing.JLabel();
+        target = new javax.swing.JComboBox();
 
         lblName.setLabelFor(name);
         org.openide.awt.Mnemonics.setLocalizedText(lblName, org.openide.util.NbBundle.getBundle(IntroduceMethodPanel.class).getString("LBL_Name")); // NOI18N
@@ -183,6 +189,12 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(duplicates, org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "IntroduceMethodPanel.duplicates.text")); // NOI18N
 
+        jLabel1.setLabelFor(target);
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(IntroduceMethodPanel.class, "IntroduceMethodPanel.jLabel1.text")); // NOI18N
+
+        target.setModel(new DefaultComboBoxModel());
+        target.setRenderer(new TargetsRendererImpl());
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -206,7 +218,13 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(accessPrivate))))
                     .addComponent(errorLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 491, Short.MAX_VALUE)
-                    .addComponent(duplicates))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(duplicates)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(target, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -225,7 +243,11 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
                     .addComponent(accessPrivate))
                 .addGap(18, 18, 18)
                 .addComponent(duplicates)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 96, Short.MAX_VALUE)
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel1)
+                    .addComponent(target, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 54, Short.MAX_VALUE)
                 .addComponent(errorLabel)
                 .addContainerGap())
         );
@@ -250,9 +272,11 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
     private javax.swing.JCheckBox duplicates;
     private javax.swing.JLabel errorLabel;
     private javax.swing.ButtonGroup initilizeIn;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel lblAccess;
     private javax.swing.JLabel lblName;
     private javax.swing.JTextField name;
+    private javax.swing.JComboBox target;
     // End of variables declaration//GEN-END:variables
     
     public String getMethodName() {
@@ -284,7 +308,7 @@ public class IntroduceMethodPanel extends javax.swing.JPanel {
     public boolean getReplaceOther() {
         return replaceOtherTest != null ? replaceOtherTest : duplicates.isSelected();
     }
-    
+
     //For tests:
     private String methodNameTest;
     private Set<Modifier> accessTest;

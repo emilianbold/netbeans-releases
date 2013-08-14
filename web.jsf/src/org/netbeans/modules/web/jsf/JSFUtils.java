@@ -62,9 +62,12 @@ import org.netbeans.modules.j2ee.common.ProjectUtil;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
+import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.jsf.api.ConfigurationUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModel;
+import org.netbeans.modules.web.jsf.api.metamodel.JsfModelProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -240,13 +243,14 @@ public class JSFUtils {
         }
         return value;
     }
-    /** Returns relative path from one file to another file
+    /**
+     * Returns relative path from one file to another file.
      */
-    public static String getRelativePath (FileObject fromFO, FileObject toFO){
+    public static String getRelativePath (FileObject fromFO, FileObject toFO) {
         StringBuilder path = new StringBuilder("./"); //NOI18N
         FileObject parent = fromFO.getParent();
         String tmpPath = null;
-        while (parent != null && (tmpPath = FileUtil.getRelativePath(parent, toFO)) == null){
+        while (parent != null && (tmpPath = FileUtil.getRelativePath(parent, toFO)) == null) {
             parent = parent.getParent();
             path.append("../"); //NOI18N
         }
@@ -414,5 +418,18 @@ public class JSFUtils {
                 cp.findResource("com/sun/facelets/Facelet.class") != null || //NOI18N
                 cp.findResource("com/sun/faces/facelets/Facelet.class") != null || // NOI18N
                 cp.findResource("javax/faces/view/facelets/FaceletContext.class") != null; //NOI18N
+    }
+
+    /**
+     * Gets JSF metaModel of the Project.
+     * @param project project
+     * @return model if found, {@code null} otherwise
+     */
+    public static MetadataModel<JsfModel> getModel(Project project) {
+        JsfModelProvider modelProvider = project.getLookup().lookup(JsfModelProvider.class);
+        if (modelProvider == null) {
+            return null;
+        }
+        return modelProvider.getModel();
     }
 }

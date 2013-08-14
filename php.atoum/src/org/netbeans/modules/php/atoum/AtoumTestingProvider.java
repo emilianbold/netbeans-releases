@@ -51,6 +51,7 @@ import org.netbeans.modules.php.atoum.commands.Atoum;
 import org.netbeans.modules.php.atoum.create.TestCreator;
 import org.netbeans.modules.php.atoum.locate.AtoumTestLocator;
 import org.netbeans.modules.php.atoum.run.TestRunner;
+import org.netbeans.modules.php.atoum.ui.customizer.AtoumCustomizer;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
 import org.netbeans.modules.php.spi.testing.create.CreateTestsResult;
 import org.netbeans.modules.php.spi.testing.locate.Locations;
@@ -58,6 +59,7 @@ import org.netbeans.modules.php.spi.testing.locate.TestLocator;
 import org.netbeans.modules.php.spi.testing.run.TestRunException;
 import org.netbeans.modules.php.spi.testing.run.TestRunInfo;
 import org.netbeans.modules.php.spi.testing.run.TestSession;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
@@ -139,6 +141,11 @@ public class AtoumTestingProvider implements PhpTestingProvider {
             }
         }
         return null;
+    }
+
+    @Override
+    public ProjectCustomizer.CompositeCategoryProvider createCustomizer(PhpModule phpModule) {
+        return new AtoumCustomizer(phpModule);
     }
 
 }

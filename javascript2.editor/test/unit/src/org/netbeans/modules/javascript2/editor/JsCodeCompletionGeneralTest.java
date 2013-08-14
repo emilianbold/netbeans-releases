@@ -326,6 +326,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
     public void testIssue223311_01() throws Exception {
         checkCompletion("testfiles/completion/general/issue223311.js", "var b = (a).s^", false);
     }
+    
+    public void testIssue223681_01() throws Exception {
+        checkCompletion("testfiles/completion/general/issue223681.js", "$scope.^     // here", false);
+    }
  
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
@@ -335,5 +339,10 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
             JS_SOURCE_ID,
             ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
         );
+    }
+
+    @Override
+    protected boolean classPathContainsBinaries() {
+        return true;
     }
 }

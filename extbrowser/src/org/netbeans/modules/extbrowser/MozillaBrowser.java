@@ -63,6 +63,7 @@ public class MozillaBrowser extends ExtWebBrowser {
 
     /** Creates new ExtWebBrowser */
     public MozillaBrowser() {
+        super(PrivateBrowserFamilyId.MOZILLA);
         ddeServer = ExtWebBrowser.MOZILLA;
         //browserStartTimeout = 6000;
     }
@@ -77,7 +78,7 @@ public class MozillaBrowser extends ExtWebBrowser {
             try {
                 detectedPath = NbDdeBrowserImpl.getBrowserPath("MOZILLA");      // NOI18N
             } catch (NbBrowserException e) {
-                ExtWebBrowser.getEM().log(Level.INFO, "Cannot detect Mozilla : " + e);      // NOI18N
+                ExtWebBrowser.getEM().log(Level.FINEST, "Cannot detect Mozilla : " + e);      // NOI18N
             }
             if ((detectedPath != null) && (detectedPath.trim().length() > 0)) {
                 return Boolean.FALSE;
@@ -177,9 +178,4 @@ public class MozillaBrowser extends ExtWebBrowser {
         return retValue;    
     }
 
-    @Override
-    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
-        return PrivateBrowserFamilyId.MOZILLA;
-    }
-    
 }

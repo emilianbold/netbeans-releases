@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.git.utils;
 
+import java.awt.Color;
 import java.awt.EventQueue;
 import java.io.File;
 import java.io.IOException;
@@ -67,6 +68,7 @@ import java.util.regex.Pattern;
 import org.netbeans.api.queries.SharabilityQuery;
 import org.netbeans.libs.git.GitBranch;
 import org.netbeans.libs.git.GitException;
+import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.progress.ProgressMonitor;
 import org.netbeans.modules.git.FileInformation;
@@ -803,10 +805,15 @@ public final class GitUtils {
     }
     
     private static final String REF_SPEC_PATTERN = "+refs/heads/{0}:refs/remotes/{1}/{0}"; //NOI18N
+    private static final String REF_SPEC_GLOBAL_PATTERN = "+refs/heads/*:refs/remotes/{0}/*"; //NOI18N
     public static final String REF_SPEC_DEL_PREFIX = ":refs/remotes/"; //NOI18N
     private static final String REF_PUSHSPEC_PATTERN = "refs/heads/{0}:refs/heads/{1}"; //NOI18N
     public static final String REF_PUSHSPEC_DEL_PREFIX = ":refs/heads/"; //NOI18N
     private static final String REF_TAG_PUSHSPEC_PATTERN = "refs/tags/{0}:refs/tags/{0}"; //NOI18N
+
+    public static String getGlobalRefSpec (String remoteName) {
+        return MessageFormat.format(REF_SPEC_GLOBAL_PATTERN, remoteName);
+    }
 
     public static String getRefSpec(GitBranch branch, String remoteName) {
         return MessageFormat.format(REF_SPEC_PATTERN, branch.getName(), remoteName);
@@ -864,6 +871,18 @@ public final class GitUtils {
             throw new GitException("Cannot run without indexing due to: " + ex.getMessage(), ex); //NOI18N
         }
     }
+    
+    public static String getColorString (Color c) {
+        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
+    }
+
+    private static String getHex (int i) {
+        String hex = Integer.toHexString(i & 0x000000FF);
+        if (hex.length() == 1) {
+            hex = "0" + hex; //NOI18N
+        }
+        return hex;
+    }
 
     private static boolean indexingFilesSubtree (Set<File> recursiveRoots, File[] files) {
         for (File f : files) {
@@ -881,6 +900,35 @@ public final class GitUtils {
             }
         }
         return true;
+    }
+
+    public static GitRemoteConfig prepareConfig(GitRemoteConfig original, String remoteName, String remoteUri, List<String> fetchRefSpecs) {
+        List<String> remoteUris;
+        if (original != null) {
+            remoteUris = new LinkedList<String>(original.getUris());
+            if (!remoteUris.contains(remoteUri)) {
+                remoteUris.add(remoteUri);
+            }
+        } else {
+            remoteUris = Arrays.asList(remoteUri);
+        }
+        List<String> refSpecs;
+        if (original != null) {
+            refSpecs = new LinkedList<String>(original.getFetchRefSpecs());
+            if (!refSpecs.contains(GitUtils.getRefSpec("*", remoteName))) {
+                for (String refSpec : fetchRefSpecs) {
+                    if (!refSpecs.contains(refSpec)) {
+                        refSpecs.add(refSpec);
+                    }
+                }
+            }
+        } else {
+            refSpecs = fetchRefSpecs;
+        }
+        return new GitRemoteConfig(remoteName, remoteUris,
+                original == null ? Collections.<String>emptyList() : original.getPushUris(),
+                refSpecs,
+                original == null ? Collections.<String>emptyList() : original.getPushRefSpecs());
     }
 
     private static class NullProgressMonitor extends ProgressMonitor {

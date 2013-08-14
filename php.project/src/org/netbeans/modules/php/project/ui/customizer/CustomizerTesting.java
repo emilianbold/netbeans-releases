@@ -46,6 +46,7 @@ import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
 import javax.swing.GroupLayout;
@@ -66,16 +67,19 @@ public class CustomizerTesting extends JPanel {
 
     private final ProjectCustomizer.Category category;
     private final PhpProjectProperties uiProps;
+    final Map<String, TestingProviderPanel> testingPanels;
     // @GuardedBy("EDT")
     final Set<String> selectedTestingProviders = new TreeSet<>();
 
 
-    CustomizerTesting(ProjectCustomizer.Category category, PhpProjectProperties uiProps) {
+    CustomizerTesting(ProjectCustomizer.Category category, PhpProjectProperties uiProps, Map<String, TestingProviderPanel> testingPanels) {
         assert category != null;
         assert uiProps != null;
+        assert testingPanels != null;
 
         this.category = category;
         this.uiProps = uiProps;
+        this.testingPanels = testingPanels;
 
         initComponents();
         init();
@@ -134,7 +138,7 @@ public class CustomizerTesting extends JPanel {
         storeData();
     }
 
-    @NbBundle.Messages("CustomizerTesting.error.none=At least one testing provider must be selected.")
+    @NbBundle.Messages("CustomizerTesting.error.none=For running tests, at least one testing provider must be selected.")
     private void validateData() {
         assert EventQueue.isDispatchThread();
         if (selectedTestingProviders.isEmpty()) {
@@ -214,9 +218,17 @@ public class CustomizerTesting extends JPanel {
             if (e.getStateChange() == ItemEvent.SELECTED) {
                 boolean added = selectedTestingProviders.add(testingProvider);
                 assert added : "Provider " + testingProvider + " already present in " + selectedTestingProviders;
+                TestingProviderPanel panel = testingPanels.get(testingProvider);
+                if (panel != null) {
+                    panel.showProviderPanel();
+                }
             } else {
                 boolean removed = selectedTestingProviders.remove(testingProvider);
                 assert removed : "Provider " + testingProvider + " not present in " + selectedTestingProviders;
+                TestingProviderPanel panel = testingPanels.get(testingProvider);
+                if (panel != null) {
+                    panel.hideProviderPanel();
+                }
             }
             validateAndStore();
         }

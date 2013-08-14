@@ -111,9 +111,13 @@ public class NamespacesModule extends CssEditorModule {
                 //in body, no prefix 
                 proposals.addAll(getNamespaceCompletionProposals(context));
             case bodyItem:
-                CompletionProposal nsKeywordProposal =
-                        CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
-                proposals.add(nsKeywordProposal);
+                if(context.getActiveTokenId()  == null  //so the completion in empty file works
+                        || context.getActiveTokenId() == CssTokenId.AT_IDENT
+                        || context.getActiveTokenId() == CssTokenId.ERROR && context.getPrefix().startsWith("@")) { //NOI18N
+                    CompletionProposal nsKeywordProposal =
+                            CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
+                    proposals.add(nsKeywordProposal);
+                }
                 break;
 
             case media:
@@ -138,7 +142,7 @@ public class NamespacesModule extends CssEditorModule {
             case namespace:
                 CssTokenId tokenId = context.getTokenSequence().token().id();
                 if (tokenId == CssTokenId.NAMESPACE_SYM) {
-                    nsKeywordProposal =
+                    CompletionProposal nsKeywordProposal =
                             CssCompletionItem.createRAWCompletionItem(new CssElement(NAMESPACE_KEYWORD), NAMESPACE_KEYWORD, ElementKind.FIELD, context.getAnchorOffset(), false);
                     proposals.add(nsKeywordProposal);
                 }

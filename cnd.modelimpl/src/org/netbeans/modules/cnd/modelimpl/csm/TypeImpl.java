@@ -124,7 +124,7 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
 
     // FIX for lazy resolver calls
     private CharSequence[] qname = null;
-    private CsmUID<CsmClassifier> classifierUID;
+    private volatile CsmUID<CsmClassifier> classifierUID;
 
     // package-local - for facory only
     TypeImpl(CsmClassifier classifier, int pointerDepth, int reference, int arrayDepth, AST ast, CsmFile file, int startOffset, int endOffset) {
@@ -951,6 +951,10 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
         }
         // can be null if cached one was removed
         return classifier;
+    }
+    
+    protected final boolean isClassifierInitialized() {
+        return classifierUID != null;
     }
 
     public final void initClassifier(CsmClassifier classifier) {

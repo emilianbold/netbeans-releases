@@ -53,7 +53,7 @@ import org.openide.util.lookup.InstanceContent;
  */
 public class JsfUtils {
 
-    public static final String JSF_XHTML_FILE_MIMETYPE = "text/facelets+xhtml"; //NOI18N
+    public static final String JSF_XHTML_FILE_MIMETYPE = "text/facelets"; //NOI18N
 
     public static boolean isFaceletsFile(FileObject fo) {
         InstanceContent ic = new InstanceContent();

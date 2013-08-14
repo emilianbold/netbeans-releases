@@ -42,8 +42,8 @@
 package org.netbeans.modules.javascript2.editor.extdoc.model;
 
 import java.util.List;
-import org.netbeans.modules.javascript2.editor.doc.spi.DocIdentifier;
 import org.netbeans.modules.javascript2.editor.doc.spi.DocParameter;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
@@ -79,7 +79,7 @@ public class ExtDocTypeSimpleElement extends ExtDocBaseElement implements DocPar
 
 
     @Override
-    public DocIdentifier getParamName() {
+    public Identifier getParamName() {
         return null;
     }
 

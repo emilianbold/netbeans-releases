@@ -161,12 +161,12 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }
 
     @Override
-    public InputStream getInputStream() throws FileNotFoundException {
+    public InputStream getInputStream(boolean checkLock) throws FileNotFoundException {
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         if (delegate == null) {
             throw fileNotFoundException("read"); //NOI18N
         }
-        return delegate.getInputStream();
+        return delegate.getInputStream(checkLock);
     }
 
     @Override
@@ -223,15 +223,17 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
     }  
   
     @Override
-    protected final void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    protected final void refreshThisFileMetadataImpl(boolean recursive, Set<String> antiLoop, 
+        boolean expected, RefreshMode refreshMode)
+            throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         // TODO: this dummy implementation is far from optimal in terms of performance. It needs to be improved.
         if (getParent() != null) {
-            getParent().refreshImpl(false, antiLoop, expected);
+            getParent().refreshImpl(false, antiLoop, expected, refreshMode);
         }
     }    
     
     @Override
-    protected final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    protected final void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop == null) {
             antiLoop = new HashSet<String>();
         }
@@ -242,9 +244,9 @@ public abstract class RemoteLinkBase extends RemoteFileObjectBase implements Fil
         }
         RemoteFileObjectBase delegate = getCanonicalDelegate();
         // For link we need to refresh both delegate and link metadata itself
-        refreshThisFileMetadataImpl(recursive, antiLoop, expected);
+        refreshThisFileMetadataImpl(recursive, antiLoop, expected, refreshMode);
         if (delegate != null) {
-            delegate.refreshImpl(recursive, antiLoop, expected);
+            delegate.refreshImpl(recursive, antiLoop, expected, refreshMode);
         } else {
             RemoteLogger.log(Level.FINEST, "Null delegate for link {0}", this); //NOI18N
         }

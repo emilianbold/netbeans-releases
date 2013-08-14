@@ -1439,7 +1439,9 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                     List<?> fileList = (List<?>) t.getTransferData(DataFlavor.javaFileListFlavor);
                     //#92812 - make sure mac os does not return null value
                     if( null != fileList ) {
-                        return NbCollections.checkedListByCopy(fileList, File.class, true);
+                        List<File> checkedList = NbCollections.checkedListByCopy(
+                                fileList, File.class, true);
+                        return filterRelativePaths(checkedList);
                     }
                 } else if( t.isDataFlavorSupported( getUriListDataFlavor() ) ) {
                     //linux
@@ -1453,6 +1455,25 @@ public class DataFolder extends MultiDataObject implements DataObject.Container 
                 Logger.getLogger(DataFlavor.class.getName()).log(Level.FINE, null, ex);
             }
             return null;
+        }
+
+        /**
+         * Filter files with relative paths from a list, i.e. create a sublist
+         * of the original list that contains only files with absolute paths.
+         * See bug 233673.
+         *
+         * @param list List of files, cannot be null.
+         * @return List of files, can be empty, never null.
+         *
+         */
+        private List<File> filterRelativePaths(List<File> list) {
+            List<File> absOnly = new ArrayList<File>(list.size());
+            for (File f : list) {
+                if (f.isAbsolute()) {
+                    absOnly.add(f);
+                }
+            }
+            return absOnly;
         }
 
         private DataFlavor getUriListDataFlavor() {

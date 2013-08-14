@@ -892,4 +892,8 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /** on JTextPane */
     public void componentShown(ComponentEvent e) {
     }
+
+    boolean isAnnotated() {
+        return annotated;
+    }
 }

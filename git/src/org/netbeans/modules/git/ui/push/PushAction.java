@@ -46,6 +46,7 @@ import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
 import java.io.File;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
@@ -95,6 +96,17 @@ import org.openide.util.RequestProcessor.Task;
 @NbBundle.Messages({"#PushAction", "LBL_PushAction_Name=Pus&h..."})
 public class PushAction extends SingleRepositoryAction {
     
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/push-setting.png"; //NOI18N
+    
+    public PushAction () {
+        super(ICON_RESOURCE);
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
+    
     private static final Logger LOG = Logger.getLogger(PushAction.class.getName());
 
     @Override
@@ -116,10 +128,14 @@ public class PushAction extends SingleRepositoryAction {
                 PushWizard wiz = new PushWizard(repository, remotes);
                 if (wiz.show()) {
                     Utils.logVCSExternalRepository("GIT", wiz.getPushUri()); //NOI18N
-                    push(repository, wiz.getPushUri(), wiz.getPushMappings(), wiz.getFetchRefSpecs());
+                    push(repository, wiz.getPushUri(), wiz.getPushMappings(), wiz.getFetchRefSpecs(), wiz.getRemoteName());
                 }
             }
         });
+    }
+    
+    public Task push (File repository, String remote, Collection<PushMapping> pushMappins, List<String> fetchRefSpecs) {
+        return push(repository, remote, pushMappins, fetchRefSpecs, null);
     }
     
     @NbBundle.Messages({
@@ -139,7 +155,8 @@ public class PushAction extends SingleRepositoryAction {
             + "New Id        : {2}\n"
             + "Result        : {3}\n"
     })
-    public Task push (File repository, final String remote, final Collection<PushMapping> pushMappins, final List<String> fetchRefSpecs) {
+    public Task push (File repository, final String target, final Collection<PushMapping> pushMappins,
+    final List<String> fetchRefSpecs, final String remoteNameToUpdate) {
         GitProgressSupport supp = new GitProgressSupport() {
             @Override
             protected void perform () {
@@ -156,7 +173,7 @@ public class PushAction extends SingleRepositoryAction {
                         toDelete.add(refSpec.substring(GitUtils.REF_SPEC_DEL_PREFIX.length()));
                     }
                 }
-                LOG.log(Level.FINE, "Pushing {0}/{1} to {2}", new Object[] { pushRefSpecs, fetchRefSpecs, remote }); //NOI18N
+                LOG.log(Level.FINE, "Pushing {0}/{1} to {2}", new Object[] { pushRefSpecs, fetchRefSpecs, target }); //NOI18N
                 try {
                     GitClient client = getClient();
                     // init push hooks
@@ -169,8 +186,20 @@ public class PushAction extends SingleRepositoryAction {
                         client.deleteBranch(branch, true, getProgressMonitor());
                         getLogger().output(Bundle.MSG_PushAction_branchDeleted(branch));
                     }
+                    if (remoteNameToUpdate != null) {
+                        GitRemoteConfig config = client.getRemote(remoteNameToUpdate, getProgressMonitor());
+                        if (isCanceled()) {
+                            return;
+                        }
+                        config = GitUtils.prepareConfig(config, remoteNameToUpdate, target,
+                                Arrays.asList(new String[] { GitUtils.getGlobalRefSpec(remoteNameToUpdate) }));
+                        client.setRemote(config, getProgressMonitor());
+                        if (isCanceled()) {
+                            return;
+                        }
+                    }
                     // push
-                    GitPushResult result = client.push(remote, pushRefSpecs, fetchRefSpecs, getProgressMonitor());
+                    GitPushResult result = client.push(target, pushRefSpecs, fetchRefSpecs, getProgressMonitor());
                     reportRemoteConflicts(result.getRemoteRepositoryUpdates());
                     logUpdates(result.getRemoteRepositoryUpdates(), "MSG_PushAction.updates.remoteUpdates"); //NOI18N
                     logUpdates(result.getLocalRepositoryUpdates(), "MSG_PushAction.updates.localUpdates"); //NOI18N

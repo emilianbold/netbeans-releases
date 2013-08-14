@@ -93,7 +93,6 @@ import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.websvc.rest.MiscPrivateUtilities;
 import org.netbeans.modules.websvc.rest.WebXmlUpdater;
 import static org.netbeans.modules.websvc.rest.WebXmlUpdater.getRestServletAdaptorByName;
-import static org.netbeans.modules.websvc.rest.WebXmlUpdater.getRestServletMapping;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
 import static org.netbeans.modules.websvc.rest.spi.RestSupport.REST_SERVLET_ADAPTOR;
 import org.openide.DialogDisplayer;
@@ -357,22 +356,18 @@ public class MiscUtilities {
     }
 
 
-    public static ServletMapping getRestServletMapping(WebApp webApp) {
+    public static ServletMapping25 getRestServletMapping(WebApp webApp) {
         return WebXmlUpdater.getRestServletMapping(webApp);
     }
 
     public static String getApplicationPathFromDD(WebApp webApp) {
         if (webApp != null) {
-            ServletMapping sm = getRestServletMapping(webApp);
+            ServletMapping25 sm = getRestServletMapping(webApp);
             if (sm != null) {
                 String urlPattern = null;
-                if (sm instanceof ServletMapping25) {
-                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
-                    if (urlPatterns.length > 0) {
-                        urlPattern = urlPatterns[0];
-                    }
-                } else {
-                    urlPattern = sm.getUrlPattern();
+                String[] urlPatterns = sm.getUrlPatterns();
+                if (urlPatterns.length > 0) {
+                    urlPattern = urlPatterns[0];
                 }
                 if (urlPattern != null) {
                     if (urlPattern.endsWith("*")) { //NOI18N

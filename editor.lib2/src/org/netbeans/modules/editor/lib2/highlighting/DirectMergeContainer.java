@@ -47,6 +47,7 @@ import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.AttributeSet;
 import org.netbeans.api.editor.settings.AttributesUtilities;
@@ -443,8 +444,10 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                     hlStartOffset = hlSequence.getStartOffset();
                     if (hlStartOffset < hlEndOffset) { // Invalid layer: next highlight overlaps previous one
                         // To prevent infinite loops finish this HL
-                        LOG.info("Disabled an invalid highlighting layer: hlStartOffset=" + hlStartOffset + // NOI18N
+                        if (LOG.isLoggable(Level.FINE)) {
+                            LOG.fine("Disabled an invalid highlighting layer: hlStartOffset=" + hlStartOffset + // NOI18N
                                 " < previous hlEndOffset=" + hlEndOffset + " for layer=" + layer); // NOI18N
+                        }
                         hlStartOffset = hlEndOffset = Integer.MAX_VALUE;
                         return false;
                     }
@@ -452,14 +455,18 @@ public final class DirectMergeContainer implements HighlightsContainer, Highligh
                     if (hlEndOffset <= hlStartOffset) {
                         if (hlEndOffset < hlStartOffset) { // Invalid highlight: end offset before start offset
                             // To prevent infinite loops finish this HL
-                            LOG.info("Disabled an invalid highlighting layer: hlStartOffset=" + hlStartOffset + // NOI18N
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("Disabled an invalid highlighting layer: hlStartOffset=" + hlStartOffset + // NOI18N
                                     " > hlEndOffset=" + hlEndOffset + " for layer=" + layer); // NOI18N
+                            }
                             hlStartOffset = hlEndOffset = Integer.MAX_VALUE;
                             return false;
                         }
                         emptyHighlightCount++;
                         if (emptyHighlightCount >= MAX_EMPTY_HIGHLIGHT_COUNT) {
-                            LOG.info("Disabled an invalid highlighting layer: too many empty highlights=" + emptyHighlightCount); // NOI18N
+                            if (LOG.isLoggable(Level.FINE)) {
+                                LOG.fine("Disabled an invalid highlighting layer: too many empty highlights=" + emptyHighlightCount); // NOI18N
+                            }
                             hlStartOffset = hlEndOffset = Integer.MAX_VALUE;
                             return false;
                         }

@@ -59,6 +59,7 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
 
     /** Creates new ExtWebBrowser */
     public ChromiumBrowser() {
+        super(PrivateBrowserFamilyId.CHROMIUM);
         ddeServer = ExtWebBrowser.CHROMIUM;
     }
 
@@ -128,11 +129,6 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
         }
 
         return null;        
-    }
-
-    @Override
-    public PrivateBrowserFamilyId getPrivateBrowserFamilyId() {
-        return PrivateBrowserFamilyId.CHROMIUM;
     }
 
     private static File getLocalAppPath(){

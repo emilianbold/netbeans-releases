@@ -2082,10 +2082,26 @@ public class JavaCompletionProvider implements CompletionProvider {
                 if (queryType == COMPLETION_QUERY_TYPE) {
                     TreePath tryPath = Utilities.getPathElementOfKind(Tree.Kind.TRY, path);
                     Set<TypeMirror> exs = controller.getTreeUtilities().getUncaughtExceptions(tryPath);
-                    Elements elements = controller.getElements();
-                    for (TypeMirror ex : exs)
-                        if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement())))
-                            results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
+                    if (!exs.isEmpty()) {
+                        Trees trees = controller.getTrees();
+                        Types types = controller.getTypes();
+                        for (Tree t : dtt.getTypeAlternatives()) {
+                            TypeMirror tm = trees.getTypeMirror(new TreePath(path, t));
+                            if (tm != null && tm.getKind() != TypeKind.ERROR) {
+                                for (Iterator<TypeMirror> it = exs.iterator(); it.hasNext();) {
+                                    if (types.isSubtype(tm, it.next()))
+                                        it.remove();
+                                }
+                            }
+                        }
+                        Elements elements = controller.getElements();
+                        for (TypeMirror ex : exs) {
+                            if (ex.getKind() == TypeKind.DECLARED && startsWith(env, ((DeclaredType)ex).asElement().getSimpleName().toString()) && (Utilities.isShowDeprecatedMembers() || !elements.isDeprecated(((DeclaredType)ex).asElement()))) {
+                                results.add(JavaCompletionItem.createTypeItem(env.getController(), (TypeElement)((DeclaredType)ex).asElement(), (DeclaredType)ex, anchorOffset, env.getReferencesCount(), elements.isDeprecated(((DeclaredType)ex).asElement()), false, false, false, true, false, env.getWhiteList()));
+                                env.addToExcludes(((DeclaredType)ex).asElement());
+                            }
+                        }
+                    }
                 }
                 TypeElement te = controller.getElements().getTypeElement("java.lang.Throwable"); //NOI18N
                 if (te != null)
@@ -2196,7 +2212,6 @@ public class JavaCompletionProvider implements CompletionProvider {
             EnhancedForLoopTree efl = (EnhancedForLoopTree)path.getLeaf();
             SourcePositions sourcePositions = env.getSourcePositions();
             CompilationUnitTree root = env.getRoot();
-            CompilationController controller = env.getController();
             if (sourcePositions.getStartPosition(root, efl.getExpression()) >= offset) {
                 TokenSequence<JavaTokenId> last = findLastNonWhitespaceToken(env, (int)sourcePositions.getEndPosition(root, efl.getVariable()), offset);
                 if (last != null && last.token().id() == JavaTokenId.COLON) {
@@ -2793,7 +2808,7 @@ public class JavaCompletionProvider implements CompletionProvider {
             Element e = controller.getTrees().getElement(exPath);
             TypeMirror tm = controller.getTrees().getTypeMirror(exPath);
             if (e == null) {
-                if (tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY || tm.getKind() == TypeKind.ERROR)) {
+                if (tm != null && (tm.getKind() == TypeKind.DECLARED || tm.getKind() == TypeKind.ARRAY)) {
                     addKeyword(env, INSTANCEOF_KEYWORD, SPACE, false);
                 }
                 return;
@@ -4462,7 +4477,9 @@ public class JavaCompletionProvider implements CompletionProvider {
             TypeMirror type = et.getReturnType();
             if (site.getKind() == TypeKind.DECLARED) {
                 if ("getClass".contentEquals(el.getSimpleName()) && et.getParameterTypes().isEmpty() //NOI18N
-                        && type.getKind() == TypeKind.DECLARED && JAVA_LANG_CLASS.contentEquals(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName())) {
+                        && type.getKind() == TypeKind.DECLARED
+                        && JAVA_LANG_CLASS.contentEquals(((TypeElement)((DeclaredType)type).asElement()).getQualifiedName())
+                        && ((TypeElement)((DeclaredType)type).asElement()).getTypeParameters().size() == 1) {
                     Types types = env.getController().getTypes();
                     type = types.getDeclaredType((TypeElement)((DeclaredType)type).asElement(), types.getWildcardType(site, null));
                 }
@@ -5279,6 +5296,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         
         private Set<TypeMirror> getMatchingArgumentTypes(TypeMirror type, Iterable<? extends Element> elements, String name, TypeMirror[] argTypes, TypeMirror[] typeArgTypes, ExecutableElement prototypeSym, ExecutableType prototype, Types types, TypeUtilities tu) {
             Set<TypeMirror> ret = new HashSet<TypeMirror>();
+            List<TypeMirror> tatList = typeArgTypes != null ? Arrays.asList(typeArgTypes) : null;
             for (Element e : elements) {
                 if ((e.getKind() == CONSTRUCTOR || e.getKind() == METHOD) && name.contentEquals(e.getSimpleName())) {
                     List<? extends VariableElement> params = ((ExecutableElement)e).getParameters();
@@ -5289,14 +5307,15 @@ public class JavaCompletionProvider implements CompletionProvider {
                     ExecutableType meth = e == prototypeSym && prototype != null ? prototype : (ExecutableType)asMemberOf(e, type, types);
                     Iterator<? extends TypeMirror> parIt = meth.getParameterTypes().iterator();
                     TypeMirror param = null;
+                    Map<TypeVariable, TypeMirror> table = new HashMap<TypeVariable, TypeMirror>();
                     for (int i = 0; i <= argTypes.length; i++) {
                         if (parIt.hasNext())
                             param = parIt.next();
                         else if (!varArgs)
                             break;
+                        if (tatList != null && param.getKind() == TypeKind.DECLARED && tatList.size() == meth.getTypeVariables().size())
+                            param = tu.substitute(param, meth.getTypeVariables(), tatList);
                         if (i == argTypes.length) {
-                            if (typeArgTypes != null && param.getKind() == TypeKind.DECLARED && typeArgTypes.length == meth.getTypeVariables().size())
-                                param = tu.substitute(param, meth.getTypeVariables(), Arrays.asList(typeArgTypes));
                             TypeMirror toAdd = null;
                             if (i < parSize)
                                 toAdd = param;
@@ -5330,8 +5349,28 @@ public class JavaCompletionProvider implements CompletionProvider {
                                 varArgs = false;
                             else if (argTypes[i].getKind() != TypeKind.ERROR && !types.isAssignable(argTypes[i], ((ArrayType)param).getComponentType()))
                                 break;
-                        } else if (argTypes[i].getKind() != TypeKind.ERROR && !types.isAssignable(argTypes[i], param))
+                        } else if (argTypes[i].getKind() != TypeKind.ERROR && !types.isAssignable(argTypes[i], param)) {
+                            if (tatList == null && param.getKind() == TypeKind.DECLARED && argTypes[i].getKind() == TypeKind.DECLARED
+                                    && types.isAssignable(types.erasure(argTypes[i]), types.erasure(param))) {
+                                Iterator<? extends TypeMirror> argTypeTAs = ((DeclaredType) argTypes[i]).getTypeArguments().iterator();
+                                for (Iterator<? extends TypeMirror> it = ((DeclaredType)param).getTypeArguments().iterator(); it.hasNext();) {
+                                    TypeMirror paramTA = it.next();
+                                    if (argTypeTAs.hasNext() && paramTA.getKind() == TypeKind.TYPEVAR) {
+                                        table.put((TypeVariable)paramTA, argTypeTAs.next());
+                                    } else {
+                                        break;
+                                    }                                    
+                                }
+                                if (table.size() == meth.getTypeVariables().size()) {
+                                    tatList = new ArrayList<TypeMirror>(meth.getTypeVariables().size());
+                                    for (TypeVariable tv : meth.getTypeVariables()) {
+                                        tatList.add(table.get(tv));
+                                    }
+                                }
+                                continue;
+                            }
                             break;
+                        }
                     }
                 }
             }

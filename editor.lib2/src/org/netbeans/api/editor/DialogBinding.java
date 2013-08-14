@@ -33,6 +33,7 @@ package org.netbeans.api.editor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
+import javax.swing.JTextField;
 import javax.swing.text.Document;
 import javax.swing.text.EditorKit;
 import javax.swing.text.JTextComponent;
@@ -156,8 +157,10 @@ public final class DialogBinding {
         int length,
         final String mimeType
     ) {
-        if (component instanceof JEditorPane)
+        if (component instanceof JEditorPane) {
             ((JEditorPane) component).setEditorKit(MimeLookup.getLookup(mimeType).lookup(EditorKit.class));
+            ((JEditorPane) component).setBackground(new JTextField().getBackground());
+        }
         Document doc = component.getDocument();
         doc.putProperty("mimeType", DialogBindingTokenId.language().mimeType()); //NOI18N
         InputAttributes inputAttributes = new InputAttributes();

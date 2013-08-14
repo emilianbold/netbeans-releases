@@ -41,36 +41,25 @@
  */
 package org.netbeans.modules.javascript2.editor.model.impl;
 
-import jdk.nashorn.internal.ir.AccessNode;
-import jdk.nashorn.internal.ir.BinaryNode;
-import jdk.nashorn.internal.ir.CallNode;
-import jdk.nashorn.internal.ir.FunctionNode;
-import jdk.nashorn.internal.ir.IdentNode;
-import jdk.nashorn.internal.ir.IndexNode;
-import jdk.nashorn.internal.ir.LiteralNode;
 import jdk.nashorn.internal.ir.Node;
-import jdk.nashorn.internal.ir.ObjectNode;
-import jdk.nashorn.internal.ir.ReferenceNode;
-import jdk.nashorn.internal.ir.UnaryNode;
-import jdk.nashorn.internal.parser.Lexer;
-import jdk.nashorn.internal.parser.TokenType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
-import jdk.nashorn.internal.ir.TernaryNode;
+import javax.swing.SwingUtilities;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.lexer.Token;
+import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.javascript2.editor.JsCompletionItem;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsDocumentationHolder;
 import org.netbeans.modules.javascript2.editor.embedding.JsEmbeddingProvider;
 import org.netbeans.modules.javascript2.editor.index.IndexedElement;
@@ -83,10 +72,12 @@ import org.netbeans.modules.javascript2.editor.model.JsArray;
 import org.netbeans.modules.javascript2.editor.model.JsElement;
 import org.netbeans.modules.javascript2.editor.model.JsFunction;
 import org.netbeans.modules.javascript2.editor.model.JsObject;
+import org.netbeans.modules.javascript2.editor.model.JsWith;
 import org.netbeans.modules.javascript2.editor.model.Model;
 import org.netbeans.modules.javascript2.editor.model.Type;
 import org.netbeans.modules.javascript2.editor.model.TypeUsage;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
+import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.openide.filesystems.FileObject;
 
@@ -103,6 +94,8 @@ public class ModelUtils {
     private static final String GENERATED_FUNCTION_PREFIX = "_L"; //NOI18N
     
     private static final String GENERATED_ANONYM_PREFIX = "Anonym$"; //NOI18N
+    
+    private static final List<String> KNOWN_TYPES = Arrays.asList(Type.ARRAY, Type.STRING, Type.BOOLEAN, Type.NUMBER, Type.UNDEFINED);
     
     public static JsObjectImpl getJsObject (ModelBuilder builder, List<Identifier> fqName, boolean isLHS) {
         JsObject result = builder.getCurrentObject();
@@ -123,15 +116,20 @@ public class ModelUtils {
             }
         }
         if (tmpObject == null) {
-            DeclarationScope scope = builder.getCurrentDeclarationFunction();
-            while (scope != null && tmpObject == null && scope.getParentScope() != null) {
-                tmpObject = ((JsFunction)scope).getParameter(firstName);
-                scope = scope.getParentScope();
-            }
-            if (tmpObject == null) {
-                tmpObject = builder.getGlobal();
+            JsObject current = builder.getCurrentObject();
+            if (current instanceof JsWith) {
+                tmpObject = current;
             } else {
-                result = tmpObject;
+                DeclarationScope scope = builder.getCurrentDeclarationFunction();
+                while (scope != null && tmpObject == null && scope.getParentScope() != null) {
+                    tmpObject = ((JsFunction)scope).getParameter(firstName);
+                    scope = scope.getParentScope();
+                }
+                if (tmpObject == null) {
+                    tmpObject = builder.getGlobal();
+                } else {
+                    result = tmpObject;
+                }
             }
         }
         for (int index = (tmpObject instanceof ParameterObject ? 1 : 0); index < fqName.size() ; index++) {
@@ -170,7 +168,8 @@ public class ModelUtils {
             for (JsObject property : jsObject.getProperties().values()) {
                 JsElement.Kind kind = property.getJSKind();
                 if (kind == JsElement.Kind.OBJECT || kind == JsElement.Kind.ANONYMOUS_OBJECT || kind == JsElement.Kind.OBJECT_LITERAL
-                        || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR) {
+                        || kind == JsElement.Kind.FUNCTION || kind == JsElement.Kind.METHOD || kind == JsElement.Kind.CONSTRUCTOR
+                        || kind == JsElement.Kind.WITH_OBJECT) {
                     tmpObject = findJsObject(property, offset);
                 }
                 if (tmpObject != null) {
@@ -365,11 +364,24 @@ public class ModelUtils {
         return result;
     }
 
-    public static Collection<TypeUsage> resolveSemiTypeOfExpression(JsParserResult parserResult, Node expression) {
+    public static Collection<TypeUsage> resolveSemiTypeOfExpression(ModelBuilder builder, Node expression) {
         Collection<TypeUsage> result = new HashSet<TypeUsage>();
         SemiTypeResolverVisitor visitor = new SemiTypeResolverVisitor();
         if (expression != null) {
             result = visitor.getSemiTypes(expression);
+        }
+        if (builder.getCurrentWith()!= null) {
+            Collection<TypeUsage> withResult = new HashSet<TypeUsage>();
+            String withSemi = SemiTypeResolverVisitor.ST_WITH + builder.getCurrentWith().getFullyQualifiedName();
+            
+            for(TypeUsage type : result) {
+                if (!KNOWN_TYPES.contains(type.getType())) {
+                    withResult.add(new TypeUsageImpl(withSemi + type.getType(), type.getOffset(), type.isResolved()));
+                } else {
+                    withResult.add(type);
+                }
+            }
+            result = withResult;
         }
         return result;
     }
@@ -444,12 +456,17 @@ public class ModelUtils {
                         String newVarType;
                         if (!variable.getAssignments().isEmpty()) {
                              newVarType= SemiTypeResolverVisitor.ST_EXP + variable.getFullyQualifiedName().replace(".", SemiTypeResolverVisitor.ST_PRO);
+                             result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
+                             resolved = true;
+                             break;
                         } else {
-                            newVarType = variable.getFullyQualifiedName();
+                            if (variable.getJSKind() != JsElement.Kind.PARAMETER) {
+                                newVarType = variable.getFullyQualifiedName();
+                                result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
+                                resolved = true;
+                                break;
+                            }
                         }
-                        result.add(new TypeUsageImpl(newVarType, type.getOffset(), false));
-                        resolved = true;
-                        break;
                     }
                 }
                 if (!resolved) {
@@ -634,11 +651,10 @@ public class ModelUtils {
         return result;
     }
     
-    public static Collection<TypeUsage> resolveTypeFromExpression (Model model, JsIndex jsIndex, List<String> exp, int offset) {
+    public static Collection<TypeUsage> resolveTypeFromExpression (Model model, @NullAllowed JsIndex jsIndex, List<String> exp, int offset) {
         List<JsObject> localObjects = new ArrayList<JsObject>();
         List<JsObject> lastResolvedObjects = new ArrayList<JsObject>();
         List<TypeUsage> lastResolvedTypes = new ArrayList<TypeUsage>();
-        
         
             for (int i = exp.size() - 1; i > -1; i--) {
                 String kind = exp.get(i);
@@ -665,6 +681,25 @@ public class ModelUtils {
                     // find possible variables from local context, index contains only 
                     // public definition, we are interested in the private here as well
                     int index = name.lastIndexOf('.');
+                    // needs to look, whether the expression is in a with statement
+                    Collection<? extends TypeUsage> typeFromWith = getTypeFromWith(model, offset);
+                    if (!typeFromWith.isEmpty()) {
+                        String firstNamePart = index == -1 ? name : name.substring(0, index);
+                        for (TypeUsage type : typeFromWith) {
+                            //Collection<TypeUsage> resolveTypeFromSemiType = ModelUtils.resolveTypeFromSemiType(model.getGlobalObject(), type);
+                            String sType = type.getType();
+//                            if (sType.startsWith("@exp;")) {
+//                                sType = sType.substring(5);
+//                                sType = sType.replace("@pro;", ".");
+//                            }
+                            localObject = ModelUtils.findJsObjectByName(model, sType);
+                            if (localObject != null && localObject.getProperty(firstNamePart) != null) {
+                                name = localObject.getFullyQualifiedName() + "." + name;
+                                break;
+                            }
+                        }
+                    }
+                    
                     if (index > -1) { // the first part is a fqn
                         localObject = ModelUtils.findJsObjectByName(model, name);
                         if (localObject != null) {
@@ -689,9 +724,11 @@ public class ModelUtils {
                                 }
                             }
                         }
-                        TypeUsage windowProperty = tryResolveWindowProperty(jsIndex, name);
-                        if (windowProperty != null) {
-                            lastResolvedTypes.add(windowProperty);
+                        if (jsIndex != null) {
+                            TypeUsage windowProperty = tryResolveWindowProperty(jsIndex, name);
+                            if (windowProperty != null) {
+                                lastResolvedTypes.add(windowProperty);
+                            }
                         }
                     }
                     if(localObject == null || (localObject.getJSKind() != JsElement.Kind.PARAMETER
@@ -715,11 +752,27 @@ public class ModelUtils {
 //                                resolveAssignments(jsIndex, type.getType(), fromAssignments);
 //                            }
 //                        } else {
-                        if ("@pro".equals(kind)) { //NOI18N
+                        if ("@pro".equals(kind) && jsIndex != null) { //NOI18N
                             resolveAssignments(model, jsIndex, name, fromAssignments);
                         } 
 //                        }
                         lastResolvedTypes.addAll(fromAssignments);
+                        if (!typeFromWith.isEmpty()) {
+//                            Collection<TypeUsage> resolveTypes = ModelUtils.resolveTypes(typeFromWith, parserRestult);
+                            
+                            for (TypeUsage typeUsage : typeFromWith) {
+                                String sType = typeUsage.getType();
+                            if (sType.startsWith("@exp;")) {
+                                sType = sType.substring(5);
+                                sType = sType.replace("@pro;", ".");
+                            }   
+                                ModelUtils.resolveAssignments(model, jsIndex, sType, fromAssignments);
+                                for (TypeUsage typeUsage1 : fromAssignments) {
+                                    lastResolvedTypes.add(new TypeUsageImpl(typeUsage1.getType() + kind + ";" + name, typeUsage.getOffset(), false));
+                                }
+                                
+                            }
+                        }
                     }
                     
                     if(!localObjects.isEmpty()){
@@ -795,46 +848,55 @@ public class ModelUtils {
                     
                     
                     for (TypeUsage typeUsage : lastResolvedTypes) {
-                        // for the type build the prototype chain. 
-                        Collection<String> prototypeChain = new ArrayList<String>();
-                        prototypeChain.add(typeUsage.getType());
-                        prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
-                        
-                        Collection<? extends IndexResult> indexResults = null;        
-                        for (String fqn : prototypeChain) {
-                            // at first look at the properties of the object
-                            indexResults = jsIndex.findByFqn(fqn + "." + name, JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES); //NOI18N
-                            if (indexResults.isEmpty()) {
-                                // if the property was not found, try to look at the prototype of the object
-                                indexResults = jsIndex.findByFqn(fqn + ".prototype." + name, JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES); //NOI18N
+                        if (jsIndex != null) {
+                            // for the type build the prototype chain.
+                            Collection<String> prototypeChain = new ArrayList<String>();
+                            prototypeChain.add(typeUsage.getType());
+                            prototypeChain.addAll(findPrototypeChain(typeUsage.getType(), jsIndex));
+
+                            Collection<? extends IndexResult> indexResults = null;
+                            for (String fqn : prototypeChain) {
+                                // at first look at the properties of the object
+                                indexResults = jsIndex.findByFqn(fqn + "." + name,
+                                        JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES, JsIndex.FIELD_ARRAY_TYPES); //NOI18N
+                                if (indexResults.isEmpty()) {
+                                    // if the property was not found, try to look at the prototype of the object
+                                    indexResults = jsIndex.findByFqn(fqn + ".prototype." + name,
+                                            JsIndex.FIELD_FLAG, JsIndex.FIELD_RETURN_TYPES, JsIndex.FIELD_ARRAY_TYPES); //NOI18N
+                                }
+                                if(!indexResults.isEmpty()) {
+                                    // if the property / method was already found, we don't need to continue.
+                                    // in the runtime is also used the first one that is found in the prototype chain
+                                    break;
+                                }
                             }
-                            if(!indexResults.isEmpty()) {
-                                // if the property / method was already found, we don't need to continue. 
-                                // in the runtime is also used the first one that is found in the prototype chain
-                                break;
+
+                            boolean checkProperty = (indexResults == null || indexResults.isEmpty()) && !"@mtd".equals(kind);
+                            if (indexResults != null) {
+                                for (IndexResult indexResult : indexResults) {
+                                    // go through the resul from index and add appropriate types to the new resolved
+                                    JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
+                                    if ("@mtd".equals(kind) && jsKind.isFunction()) {
+                                        //Collection<TypeUsage> resolved = resolveTypeFromSemiType(model, ModelUtils.findJsObject(model, offset), IndexedElement.getReturnTypes(indexResult));
+                                        Collection<TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
+                                        ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
+                                    } else if ("@arr".equals(kind)) { // NOI18N
+                                        Collection<TypeUsage> resolvedTypes = IndexedElement.getArrayTypes(indexResult);
+                                        ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
+                                    } else {
+                                        checkProperty = true;
+                                    }
+                                }
                             }
-                        }
-                        
-                        boolean checkProperty = indexResults.isEmpty() && !"@mtd".equals(kind);
-                        for (IndexResult indexResult : indexResults) {
-                            // go through the resul from index and add appropriate types to the new resolved
-                            JsElement.Kind jsKind = IndexedElement.Flag.getJsKind(Integer.parseInt(indexResult.getValue(JsIndex.FIELD_FLAG)));
-                            if ("@mtd".equals(kind) && jsKind.isFunction()) {
-                                //Collection<TypeUsage> resolved = resolveTypeFromSemiType(model, ModelUtils.findJsObject(model, offset), IndexedElement.getReturnTypes(indexResult));
-                                Collection<TypeUsage> resolvedTypes = IndexedElement.getReturnTypes(indexResult);
-                                ModelUtils.addUniqueType(newResolvedTypes, resolvedTypes);
-                            } else {
-                                checkProperty = true;
-                            }
-                        }
-                        if (checkProperty) {
-                            String propertyFQN = typeUsage.getType() + "." + name;
-                            List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
-                            resolveAssignments(model, jsIndex, propertyFQN, fromAssignment);
-                            if (fromAssignment.isEmpty()) {
-                                ModelUtils.addUniqueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
-                            } else {
-                                ModelUtils.addUniqueType(newResolvedTypes, fromAssignment);
+                            if (checkProperty) {
+                                String propertyFQN = typeUsage.getType() + "." + name;
+                                List<TypeUsage> fromAssignment = new ArrayList<TypeUsage>();
+                                resolveAssignments(model, jsIndex, propertyFQN, fromAssignment);
+                                if (fromAssignment.isEmpty()) {
+                                    ModelUtils.addUniqueType(newResolvedTypes, new TypeUsageImpl(propertyFQN));
+                                } else {
+                                    ModelUtils.addUniqueType(newResolvedTypes, fromAssignment);
+                                }
                             }
                         }
                         // from libraries look for top level types
@@ -881,9 +943,9 @@ public class ModelUtils {
     public static List<String> expressionFromType(TypeUsage type) {
         String sexp = type.getType();
         if ((sexp.startsWith("@exp;") || sexp.startsWith("@new;") || sexp.startsWith("@arr;")
-                || sexp.startsWith("@call;")) && (sexp.length() > 5)) {
+                || sexp.startsWith("@call;") || sexp.startsWith(SemiTypeResolverVisitor.ST_WITH)) && (sexp.length() > 5)) {
             
-            int start = sexp.startsWith("@call;") || sexp.startsWith("@arr;") ? 1 : sexp.charAt(5) == '@' ? 6 : 5;
+            int start = sexp.startsWith("@call;") || sexp.startsWith("@arr;") || sexp.startsWith(SemiTypeResolverVisitor.ST_WITH) ? 1 : sexp.charAt(5) == '@' ? 6 : 5;
             sexp = sexp.substring(start);
             List<String> nExp = new ArrayList<String>();
             String[] split = sexp.split("@");
@@ -893,7 +955,9 @@ public class ModelUtils {
                     nExp.add("@arr");
                 } else if (split[i].startsWith("call;")) {
                     nExp.add("@mtd");
-                } else {
+                } else if (split[i].startsWith("with;")) {
+                    nExp.add("@with");
+                }else {
                     nExp.add("@pro");
                 }
             }
@@ -903,12 +967,13 @@ public class ModelUtils {
         }
     }
     
-    public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult) {
+    public static Collection<TypeUsage> resolveTypes(Collection<? extends TypeUsage> unresolved, JsParserResult parserResult, boolean useIndex) {
+        //assert !SwingUtilities.isEventDispatchThread() : "Type resolution may block AWT due to index search";
         Collection<TypeUsage> types = new ArrayList<TypeUsage>(unresolved);
         Set<String> original = null;
         Model model = parserResult.getModel();
         FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-        JsIndex jsIndex = JsIndex.get(fo);
+        JsIndex jsIndex = useIndex ? JsIndex.get(fo) : null;
         int cycle = 0;
         boolean resolvedAll = false;
         while (!resolvedAll && cycle < 10) {
@@ -945,15 +1010,33 @@ public class ModelUtils {
     private static void resolveAssignments(Model model, JsObject jsObject, int offset, List<JsObject> resolvedObjects, List<TypeUsage> resolvedTypes) {
         Collection<? extends Type> assignments = jsObject.getAssignmentForOffset(offset);
         for (Type typeName : assignments) {
-            
-            JsObject byOffset = findObjectForOffset(typeName.getType(), offset, model);
-            if (byOffset != null) {
-                if(!jsObject.getName().equals(byOffset.getName())) {
-                    resolvedObjects.add(byOffset);
-                    resolveAssignments(model, byOffset, offset, resolvedObjects, resolvedTypes);
+            String type = typeName.getType();
+            if (type.startsWith(SemiTypeResolverVisitor.ST_WITH)) {
+                List<String> expression = expressionFromType((TypeUsage)typeName);
+                Collection<? extends TypeUsage> typesFromWith = ModelUtils.getTypeFromWith(model, typeName.getOffset());
+                expression.remove(expression.size() - 1);
+                expression.remove(expression.size() - 1);
+
+                StringBuilder sb = new StringBuilder();
+                for (int i = expression.size() - 1; i > 0; i--) {
+                    sb.append(expression.get(i--));
+                    sb.append(";");
+                    sb.append(expression.get(i));
                 }
+                for (TypeUsage typeWith: typesFromWith) {
+                    resolvedTypes.add(new TypeUsageImpl(SemiTypeResolverVisitor.ST_EXP + typeWith.getType() + sb.toString(), typeName.getOffset(), false));
+                }
+                
             } else {
-                resolvedTypes.add((TypeUsage)typeName);
+                JsObject byOffset = findObjectForOffset(typeName.getType(), offset, model);
+                if (byOffset != null) {
+                    if(!jsObject.getName().equals(byOffset.getName())) {
+                        resolvedObjects.add(byOffset);
+                        resolveAssignments(model, byOffset, offset, resolvedObjects, resolvedTypes);
+                    }
+                } else {
+                    resolvedTypes.add((TypeUsage)typeName);
+                }
             }
         }
     }
@@ -1064,6 +1147,33 @@ public class ModelUtils {
         return result;
     }
     
+    /**
+     * 
+     * @param model
+     * @param offset
+     * @return types from with expressions. The collection has the order of items from most inner with to
+     *      the outer with.
+     */
+    public static Collection <? extends TypeUsage> getTypeFromWith(Model model, int offset) {
+        JsObject jsObject = ModelUtils.findJsObject(model, offset);
+        while(jsObject != null && jsObject.getJSKind() != JsElement.Kind.WITH_OBJECT) {
+            jsObject = jsObject.getParent();
+        }
+        if (jsObject != null && jsObject.getJSKind() == JsElement.Kind.WITH_OBJECT) {
+            List<TypeUsage> types = new ArrayList<TypeUsage>();
+            JsWith wObject = (JsWith)jsObject;
+            Collection<? extends TypeUsage> withTypes = wObject.getTypes();
+            types.addAll(withTypes);
+            while (wObject.getOuterWith() != null) {
+                wObject = wObject.getOuterWith();
+                withTypes = wObject.getTypes();
+                types.addAll(withTypes);
+            }
+            return types;
+        }
+        return Collections.EMPTY_LIST;
+    }
+    
     public static void addUniqueType(Collection <TypeUsage> where, Set<String> forbidden, TypeUsage type) {
         String typeName = type.getType();
         if (forbidden.contains(typeName)) {
@@ -1164,5 +1274,131 @@ public class ModelUtils {
     
     public static boolean isKnownGLobalType(String type) {
         return knownGlobalObjects.contains(type);
+    }
+    
+    /**
+     * 
+     * @param snapshot
+     * @param offset offset where the expression should be resolved
+     * @param lookBefore if yes, looks for the beginning of the expression before the offset,
+     *                  if no, it can be in a middle of expression
+     * @return 
+     */
+    public static List<String> resolveExpressionChain(Snapshot snapshot, int offset, boolean lookBefore) {
+        TokenHierarchy<?> th = snapshot.getTokenHierarchy();
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(th, offset);
+        if (ts == null) {
+            return Collections.<String>emptyList();
+        }
+
+        ts.move(offset);
+        if (ts.movePrevious() && (ts.moveNext() || ((ts.offset() + ts.token().length()) == snapshot.getText().length()))) {
+            if (!lookBefore && ts.token().id() != JsTokenId.OPERATOR_DOT) {
+                ts.movePrevious();
+            }
+            Token<? extends JsTokenId> token = lookBefore ? LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL)) : ts.token();
+            int parenBalancer = 0;
+            // 1 - method call, 0 - property, 2 - array
+            int partType = 0;
+            boolean wasLastDot = lookBefore;
+            int offsetFirstRightParen = -1;
+            List<String> exp = new ArrayList();
+
+            while (token.id() != JsTokenId.WHITESPACE && token.id() != JsTokenId.OPERATOR_SEMICOLON
+                    && token.id() != JsTokenId.BRACKET_RIGHT_CURLY && token.id() != JsTokenId.BRACKET_LEFT_CURLY
+                    && token.id() != JsTokenId.BRACKET_LEFT_PAREN
+                    && token.id() != JsTokenId.BLOCK_COMMENT
+                    && token.id() != JsTokenId.LINE_COMMENT
+                    && token.id() != JsTokenId.OPERATOR_ASSIGNMENT
+                    && token.id() != JsTokenId.OPERATOR_PLUS) {
+
+                if (token.id() != JsTokenId.EOL) {
+                    if (token.id() != JsTokenId.OPERATOR_DOT) {
+                        if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
+                            parenBalancer++;
+                            partType = 1;
+                            if (offsetFirstRightParen == -1) {
+                                offsetFirstRightParen = ts.offset();
+                            }
+                            while (parenBalancer > 0 && ts.movePrevious()) {
+                                token = ts.token();
+                                if (token.id() == JsTokenId.BRACKET_RIGHT_PAREN) {
+                                    parenBalancer++;
+                                } else {
+                                    if (token.id() == JsTokenId.BRACKET_LEFT_PAREN) {
+                                        parenBalancer--;
+                                    }
+                                }
+                            }
+                        } else if (token.id() == JsTokenId.BRACKET_RIGHT_BRACKET) {
+                            parenBalancer++;
+                            partType = 2;
+                            while (parenBalancer > 0 && ts.movePrevious()) {
+                                token = ts.token();
+                                if (token.id() == JsTokenId.BRACKET_RIGHT_BRACKET) {
+                                    parenBalancer++;
+                                } else {
+                                    if (token.id() == JsTokenId.BRACKET_LEFT_BRACKET) {
+                                        parenBalancer--;
+                                    }
+                                }
+                            }
+                        } else if (parenBalancer == 0 && "operator".equals(token.id().primaryCategory())) { // NOI18N
+                            return exp;
+                        } else {
+                            exp.add(token.text().toString());
+                            switch (partType) {
+                                case 0:
+                                    exp.add("@pro");   // NOI18N
+                                    break;
+                                case 1:
+                                    exp.add("@mtd");   // NOI18N
+                                    offsetFirstRightParen = -1;
+                                    break;
+                                case 2:
+                                    exp.add("@arr");    // NOI18N
+                                    break;
+                                default:
+                                    break;
+                            }
+                            partType = 0;
+                            wasLastDot = false;
+                        }
+                    } else {
+                        wasLastDot = true;
+                    }
+                } else {
+                    if (!wasLastDot && ts.movePrevious()) {
+                        // check whether it's continuatino of previous line
+                        token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.LINE_COMMENT));
+                        if (token.id() != JsTokenId.OPERATOR_DOT) {
+                            // the dot was not found => it's not continuation of expression
+                            break;
+                        }
+                    }
+                }
+                if (!ts.movePrevious()) {
+                    break;
+                }
+                token = ts.token();
+            }
+            if (token.id() == JsTokenId.WHITESPACE) {
+                if (ts.movePrevious()) {
+                    token = LexUtilities.findPrevious(ts, Arrays.asList(JsTokenId.WHITESPACE, JsTokenId.BLOCK_COMMENT, JsTokenId.EOL));
+                    if (token.id() == JsTokenId.KEYWORD_NEW && !exp.isEmpty()) {
+                        exp.remove(exp.size() - 1);
+                        exp.add("@pro");    // NOI18N
+                    } else if (!lookBefore && offsetFirstRightParen > -1) {
+                        // in the case when the expression is like ( new Object()).someMethod
+                        exp.addAll(resolveExpressionChain(snapshot, offsetFirstRightParen - 1, true));
+                    }
+                }
+            } else if (exp.isEmpty() && !lookBefore && offsetFirstRightParen > -1) {
+                // in the case when the expression is like ( new Object()).someMethod
+                exp.addAll(resolveExpressionChain(snapshot, offsetFirstRightParen - 1, true));
+            }
+            return exp;
+        }
+        return Collections.<String>emptyList();
     }
 }

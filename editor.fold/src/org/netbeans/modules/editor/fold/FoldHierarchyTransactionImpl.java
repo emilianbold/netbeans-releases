@@ -330,13 +330,14 @@ public final class FoldHierarchyTransactionImpl {
                     // Now correct the end offset to the one before insertion
                     api.foldSetEndOffset(childFold, doc, insertOffset);
                     FoldStateChange state = getFoldStateChange(childFold);
-                    if (state.getOriginalStartOffset() >= 0 && state.getOriginalStartOffset() > childFoldEndOffset) {
+                    if (state.getOriginalEndOffset() >= 0 && state.getOriginalStartOffset() > childFoldEndOffset) {
                         LOG.warning("Original start offset > end offset, dumping fold hierarchy: " + execution);
                         LOG.warning("Document event was: " + evt + " offset: " + insertOffset + ", len: " + evt.getLength());
                     }
                     api.foldStateChangeEndOffsetChanged(state, childFoldEndOffset);
-                    if (fold.getStartOffset() > fold.getEndOffset()) {
-                        LOG.warning("Updated fold is inconsistent, dumping fold hierarchy: " + execution);
+                    if (childFold.getStartOffset() > childFold.getEndOffset()) {
+                        LOG.warning("Updated fold " + childFold + " is inconsistent, dumping fold hierarchy: " + execution);
+                        LOG.warning("The original offsets were: " + childFoldStartOffset + "-" + childFoldEndOffset);
                         LOG.warning("Document event was: " + evt + " offset: " + insertOffset + ", len: " + evt.getLength());
                     }
                     
@@ -583,6 +584,8 @@ public final class FoldHierarchyTransactionImpl {
         sbDebug.append("\n addFold1 ENTER");
         int index;
         boolean useLast; // use hints from lastOperationFold and lastOperationIndex
+        final boolean initUseLast;
+        
         if (parentFold == null) { // attempt to guess
             parentFold = lastOperationFold;
             if (parentFold == null // no valid guess
@@ -591,17 +594,18 @@ public final class FoldHierarchyTransactionImpl {
             ) { // Use root fold
                 parentFold = execution.getRootFold();
                 index = findFoldInsertIndex(parentFold, foldStartOffset, foldEndOffset);
-                useLast = false;
+                initUseLast = useLast = false;
             } else {
                 index = lastOperationIndex;
-                useLast = true;
+                initUseLast = useLast = true;
             }
 
         } else { // already valid parentFold (do not use last* vars)
             index = findFoldInsertIndex(parentFold, foldStartOffset, foldEndOffset);
-            useLast = false;
+            initUseLast = useLast = false;
         }            
-        sbDebug.append(", rootFold = " + execution.getRootFold());
+        sbDebug.append(", rootFold = " + execution.getRootFold()).append(", useLast = " + useLast + ", parentFold = " + parentFold +
+                ", index = " + index);
         
         // Check whether the index is withing bounds
         int foldCount = parentFold.getFoldCount();
@@ -618,10 +622,12 @@ public final class FoldHierarchyTransactionImpl {
         Fold prevFold; // fold that precedes fold being added
         if (index > 0) {
             prevFold = parentFold.getFold(index - 1);
-            if (useLast && foldStartOffset < prevFold.getStartOffset()) { // bad guess
+            // prev fold must end at most before this fold's start
+            if (useLast && foldStartOffset < prevFold.getEndOffset()) { // bad guess
                 index = findFoldInsertIndex(parentFold, foldStartOffset, foldEndOffset);
                 useLast = false;
                 prevFold = (index > 0) ? parentFold.getFold(index - 1) : null;
+                sbDebug.append("\n reset prev fold, new index = " + index);
             }
 
         } else { // index == 0
@@ -633,18 +639,21 @@ public final class FoldHierarchyTransactionImpl {
         // at higher index as well.
         Fold nextFold;
         if (index < foldCount) { // next fold exists
-            nextFold = parentFold.getFold(index);
+            nextFold = parentFold.getFold(index);           
+            // TODO: >= is probably suboptimal. The next fold can start at the same offset and nest within
             if (useLast && foldStartOffset >= nextFold.getStartOffset()) { // bad guess
                 index = findFoldInsertIndex(parentFold, foldStartOffset, foldEndOffset);
                 useLast = false;
                 prevFold = (index > 0) ? parentFold.getFold(index - 1) : null;
                 nextFold = (index < foldCount) ? parentFold.getFold(index) : null;
+                sbDebug.append("\n reset next fold, new index = " + index);
             }
 
         } else { // index >= foldCount
             nextFold = null;
         }
 
+        sbDebug.append("\nprevFold = " + prevFold + ", nextFold = " + nextFold);
         // Check whether the fold to be added overlaps
         // with previous fold (it's start offset is before end offset
         // of the previous fold.
@@ -761,11 +770,12 @@ public final class FoldHierarchyTransactionImpl {
                         //  in multiple empty folds (same like in findFoldInsertIndex())
                         nextIndex = FoldUtilitiesImpl.findFoldStartIndex(parentFold,
                         foldEndOffset, false);
-                        sbDebug.append("\n addFold3 nextIndex = FoldUtilitiesImpl.findFoldStartIndex(parentFold, foldEndOffset, false)"
-                        + " nextIndex:" + nextIndex + " index:" + index);
 
                         // nextIndex should not be -1 - otherwise should not reach this code
                         nextFold = parentFold.getFold(nextIndex);
+
+                        sbDebug.append("\n addFold3 nextIndex = FoldUtilitiesImpl.findFoldStartIndex(parentFold, foldEndOffset, false)"
+                        + " nextIndex:" + nextIndex + " index:" + index + ", new nextFold = " + nextFold);
                     }
 
                     if (foldEndOffset < nextFold.getEndOffset()) { // ends inside
@@ -842,6 +852,23 @@ public final class FoldHierarchyTransactionImpl {
                 assert (nextIndex - index) >= 0 : "Negative length." + sbDebug.toString();
                 assert (nextIndex <= parentFold.getFoldCount()) : "End index exceeds children list size." + sbDebug.toString();
                 ApiPackageAccessor.get().foldExtractToChildren(parentFold, index, nextIndex - index, fold);
+                
+                // sanity check:
+                Fold realPF = fold.getParent();
+                if (realPF == null || realPF != parentFold || realPF.getStartOffset() > fold.getStartOffset() || realPF.getEndOffset() < fold.getEndOffset()) {
+                    LOG.warning("Invalid parent fold after insertion. Fold = " + fold + ", parent = " + realPF);
+                    LOG.warning("debug info: " + sbDebug.toString());
+                } else {
+
+                    int ix = realPF.getFoldIndex(fold);
+                    Fold realPrev = ix > 0 ? realPF.getFold(ix - 1) : null;
+                    Fold realNext = ix < realPF.getFoldCount() - 1 ? realPF.getFold(ix + 1) : null;
+                    if ((realPrev != null && realPrev.getEndOffset() > fold.getStartOffset()) ||
+                        (realNext != null && realNext.getStartOffset() < fold.getStartOffset())) {
+                        LOG.warning("Invalid next/prev offsets: fold = " + fold + ", prev = " + realPrev + ", next = " + realNext);
+                        LOG.warning("debug info: " + sbDebug.toString());
+                    }
+                }
                 
                 // Update affected offsets
                 updateAffectedOffsets(fold);

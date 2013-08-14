@@ -45,6 +45,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.j2ee.dd.api.common.InitParam;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
@@ -253,8 +255,7 @@ public class WebXmlUpdater {
                     adaptorServlet.addInitParam(initParam);
                 } else {
                     if (restSupport.hasJersey2(true)) {
-                        throw new IllegalStateException("this should not be needed!"); //
-                        //adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS_2_0);
+                        adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS_2_0);
                     } else {
                         adaptorServlet.setServletClass(REST_SERVLET_ADAPTOR_CLASS);
                     }
@@ -319,41 +320,26 @@ public class WebXmlUpdater {
     private boolean updateServletMapping(WebApp webApp, String servletName) throws ClassNotFoundException {
         boolean updated = false;
         String resourcesUrl = "/webresources/*"; //NOI18N
-        ServletMapping sm = getRestServletMapping(webApp);
+        ServletMapping25 sm = getRestServletMapping(webApp);
         if (sm == null) {
-            sm = (ServletMapping) webApp.createBean("ServletMapping"); //NOI18N
+            sm = (ServletMapping25) webApp.createBean("ServletMapping"); //NOI18N
             sm.setServletName(servletName);
-            if (sm instanceof ServletMapping25) {
-                ((ServletMapping25)sm).addUrlPattern(resourcesUrl);
-            } else {
-                sm.setUrlPattern(resourcesUrl);
-            }
+            sm.addUrlPattern(resourcesUrl);
             webApp.addServletMapping(sm);
             updated = true;
         } else {
             // check old url pattern
             boolean urlPatternChanged = false;
-            if (sm instanceof ServletMapping25) {
-                String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
-                if (urlPatterns.length == 0 || !resourcesUrl.equals(urlPatterns[0])) {
-                    urlPatternChanged = true;
-                }
-            } else {
-                if (!resourcesUrl.equals(sm.getUrlPattern())) {
-                    urlPatternChanged = true;
-                }
+            String[] urlPatterns = sm.getUrlPatterns();
+            if (urlPatterns.length == 0 || !resourcesUrl.equals(urlPatterns[0])) {
+                urlPatternChanged = true;
             }
 
             if (urlPatternChanged) {
-                if (sm instanceof ServletMapping25) {
-                    String[] urlPatterns = ((ServletMapping25)sm).getUrlPatterns();
-                    if (urlPatterns.length>0) {
-                        ((ServletMapping25)sm).setUrlPattern(0, resourcesUrl);
-                    } else {
-                        ((ServletMapping25)sm).addUrlPattern(resourcesUrl);
-                    }
+                if (urlPatterns.length>0) {
+                    sm.setUrlPattern(0, resourcesUrl);
                 } else {
-                    sm.setUrlPattern(resourcesUrl);
+                    sm.addUrlPattern(resourcesUrl);
                 }
                 updated = true;
             }
@@ -378,7 +364,7 @@ public class WebXmlUpdater {
         return webApp;
     }
 
-    public static ServletMapping getRestServletMapping(WebApp webApp) {
+    public static ServletMapping25 getRestServletMapping(WebApp webApp) {
         if (webApp == null) {
             return null;
         }
@@ -394,7 +380,7 @@ public class WebXmlUpdater {
         if (servletName != null) {
             for (ServletMapping sm : webApp.getServletMapping()) {
                 if (servletName.equals(sm.getServletName())) {
-                    return sm;
+                    return (ServletMapping25)sm;
                 }
             }
         }

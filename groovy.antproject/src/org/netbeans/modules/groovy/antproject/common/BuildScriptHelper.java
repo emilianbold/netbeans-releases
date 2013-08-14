@@ -49,7 +49,7 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.List;
 import org.netbeans.api.project.Project;
-import org.netbeans.modules.groovy.support.spi.GroovyExtender;
+import org.netbeans.modules.groovy.support.api.GroovyExtender;
 import org.netbeans.spi.project.support.ant.GeneratedFilesHelper;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
@@ -66,8 +66,7 @@ public class BuildScriptHelper {
 
     
     public static void refreshBuildScript(Project project, URL stylesheet, boolean checkProjectXml) {
-        GroovyExtender extender = project.getLookup().lookup(GroovyExtender.class);
-        if (extender != null && extender.isActive()) {
+        if (GroovyExtender.isActive(project)) {
             GeneratedFilesHelper helper = new GeneratedFilesHelper(project.getProjectDirectory());
             try {
                 int flags = helper.getBuildScriptState(GROOVY_BUILD_XML, stylesheet);

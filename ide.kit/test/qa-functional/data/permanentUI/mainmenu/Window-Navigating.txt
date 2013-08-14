@@ -1,4 +1,0 @@
-Navigating              > Navigator       N
-                          Bookmarks       B
-                          DOM Tree
-                          Hierarchy       H

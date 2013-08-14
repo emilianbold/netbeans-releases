@@ -42,8 +42,9 @@
 package org.netbeans.modules.html.angular;
 
 import java.io.File;
-import java.io.FileWriter;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.OutputStreamWriter;
 import java.io.Writer;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -65,7 +66,9 @@ import org.openide.util.RequestProcessor;
  * @author marekfukala
  */
 @NbBundle.Messages({
-    "doc.building=Loading AngularJS Documentation"
+    "doc.building=Loading AngularJS Documentation",
+    "# {0} - the documentation URL",
+    "doc.cannotGet=Cannot load AngularJS documentation from \"{0}\"."
 })
 public class AngularDoc {
 
@@ -122,8 +125,8 @@ public class AngularDoc {
             }
             return Utils.getFileContent(cacheFile);
         } catch (URISyntaxException | IOException ex) {
-            LOG.log(Level.INFO, "Can't load Angular JS documentation from {0}");
-            return null;
+            LOG.log(Level.INFO, "Cannot load AngularJS documentation from \"{0}\".", new Object[]{directive.getExternalDocumentationURL_partial()}); //NOI18N
+            return Bundle.doc_cannotGet(directive.getExternalDocumentationURL_partial());
         }
 
     }
@@ -133,7 +136,7 @@ public class AngularDoc {
         String docURL = directive.getExternalDocumentationURL_partial();
         URL url = new URI(docURL).toURL();
         synchronized (cacheFile) {
-            try (Writer writer = new FileWriter(cacheFile)) {
+            try (Writer writer = new OutputStreamWriter(new FileOutputStream(cacheFile), "UTF-8")) { // NOI18N
                 writer.append("<!doctype html><html><head><title>AngularJS documentation</title></head><body>");
                 Utils.loadURL(url, writer, null);
                 writer.append("</body></html>");

@@ -1976,6 +1976,7 @@ public class Reformatter implements ReformatTask {
             if ((elseStat != null && redundantIfBraces == CodeStyle.BracesGenerationStyle.ELIMINATE && danglingElseChecker.hasDanglingElse(node.getThenStatement())) ||
                     (redundantIfBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node))))
                 redundantIfBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
+            lastIndent = indent;
             boolean prevblock = wrapStatement(cs.wrapIfStatement(), redundantIfBraces, cs.spaceBeforeIfLeftBrace() ? 1 : 0, node.getThenStatement());
             if (elseStat != null) {
                 if (cs.placeElseOnNewLine() || !prevblock) {
@@ -2000,6 +2001,7 @@ public class Reformatter implements ReformatTask {
         @Override
         public Boolean visitDoWhileLoop(DoWhileLoopTree node, Void p) {
             accept(DO);
+            lastIndent = indent;
             boolean old = continuationIndent;
             try {
                 CodeStyle.BracesGenerationStyle redundantDoWhileBraces = cs.redundantDoWhileBraces();
@@ -2043,6 +2045,7 @@ public class Reformatter implements ReformatTask {
             } finally {
                 continuationIndent = old;
             }
+            lastIndent = indent;
             CodeStyle.BracesGenerationStyle redundantWhileBraces = cs.redundantWhileBraces();
             if (redundantWhileBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
                 redundantWhileBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
@@ -2104,6 +2107,7 @@ public class Reformatter implements ReformatTask {
             } finally {
                 continuationIndent = old;
             }
+            lastIndent = indent;
             CodeStyle.BracesGenerationStyle redundantForBraces = cs.redundantForBraces();
             if (redundantForBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
                 redundantForBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
@@ -2128,6 +2132,7 @@ public class Reformatter implements ReformatTask {
             } finally {
                 continuationIndent = old;
             }
+            lastIndent = indent;
             CodeStyle.BracesGenerationStyle redundantForBraces = cs.redundantForBraces();
             if (redundantForBraces == CodeStyle.BracesGenerationStyle.GENERATE && (startOffset > sp.getStartPosition(root, node) || endOffset < sp.getEndPosition(root, node)))
                 redundantForBraces = CodeStyle.BracesGenerationStyle.LEAVE_ALONE;
@@ -2146,6 +2151,7 @@ public class Reformatter implements ReformatTask {
             } finally {
                 continuationIndent = old;
             }
+            lastIndent = indent;
             scan(node.getBlock(), p);
             return true;
         }
@@ -3122,12 +3128,12 @@ public class Reformatter implements ReformatTask {
             if (bof) {
                 maxCount = minCount;
             }
-            int count = Math.min(minCount, maxCount);
+            int count = maxCount > 0 ? Math.min(minCount, maxCount) : minCount;
             if (lastBlankLinesTokenIndex < 0) {
                 lastBlankLines = count;
                 lastBlankLinesTokenIndex = tokens.index();
                 lastBlankLinesDiff = diffs.isEmpty() ? null : diffs.getFirst();
-            } else if (lastBlankLines < count || lastBlankLines > maxCount) {
+            } else if (lastBlankLines < count) {
                 lastBlankLines = count;
                 rollback(lastBlankLinesTokenIndex, lastBlankLinesTokenIndex, lastBlankLinesDiff);
             } else {

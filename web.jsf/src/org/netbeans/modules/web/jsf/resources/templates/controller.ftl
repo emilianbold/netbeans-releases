@@ -53,7 +53,7 @@ import javax.annotation.Resource;
 import javax.ejb.EJB;
 </#if>
 <#if managedBeanName??>
-<#if cdiEnabled??>
+<#if cdiEnabled?? && cdiEnabled>
 import javax.inject.Named;
 import javax.enterprise.context.SessionScoped;
 <#else>
@@ -80,7 +80,7 @@ import javax.persistence.Persistence;
 
 
 <#if managedBeanName??>
-<#if cdiEnabled??>
+<#if cdiEnabled?? && cdiEnabled>
 @Named("${managedBeanName}")
 <#else>
 @ManagedBean(name="${managedBeanName}")
@@ -325,7 +325,7 @@ public class ${controllerClassName} implements Serializable {
 </#if>
     }
 
-<#if ejbClassName?? && cdiEnabled??>
+<#if ejbClassName?? && cdiEnabled?? && cdiEnabled>
     public ${entityClassName} get${entityClassName}(${keyType} id) {
         return ejbFacade.find(id);
     }
@@ -347,7 +347,7 @@ public class ${controllerClassName} implements Serializable {
             ${controllerClassName} controller = (${controllerClassName})facesContext.getApplication().getELResolver().
                     getValue(facesContext.getELContext(), null, "${managedBeanName}");
 <#if ejbClassName??>
-<#if cdiEnabled??>
+<#if cdiEnabled?? && cdiEnabled>
             return controller.get${entityClassName}(getKey(value));
 <#else>
             return controller.ejbFacade.find(getKey(value));

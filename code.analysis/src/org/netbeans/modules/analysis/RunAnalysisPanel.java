@@ -316,6 +316,16 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
                 e.consume();
             }
         });
+
+        if (state != null && state.scope != null) {
+            for (int i = 0; i < scopeCombo.getItemCount(); i++) {
+                ScopeDescription sd = (ScopeDescription)scopeCombo.getItemAt(i);
+                if (sd != null && sd.getId().equals(state.scope)) {
+                    scopeCombo.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
     }
 
     void started() {
@@ -774,7 +784,8 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         return new DialogState(configurationRadio.isSelected(),
                                selectedConfiguration instanceof AnalyzerFactory ? SPIAccessor.ACCESSOR.getAnalyzerId((AnalyzerFactory) selectedConfiguration) : null,
                                selectedConfiguration instanceof Configuration ? ((Configuration) selectedConfiguration).id() : null,
-                               selectedInspection instanceof AnalyzerAndWarning ? SPIAccessor.ACCESSOR.getWarningId(((AnalyzerAndWarning) selectedInspection).wd) : null);
+                               selectedInspection instanceof AnalyzerAndWarning ? SPIAccessor.ACCESSOR.getWarningId(((AnalyzerAndWarning) selectedInspection).wd) : null,
+                               ((ScopeDescription) scopeCombo.getSelectedItem()).getId());
     }
 
     FutureWarnings getAnalyzerId2Description() {
@@ -856,6 +867,7 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         public String getDisplayName();
         public Icon   getIcon();
         public Scope  getScope(AtomicBoolean cancel);
+        public String getId();
     }
 
     private static final class AllProjectsScopeDescription implements ScopeDescription {
@@ -888,6 +900,10 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
 
             return target;
         }
+        
+        public String getId() {
+            return "*allProjects"; // NOI18N
+        }
     }
 
     private static final class CurrentProjectScopeDescription implements ScopeDescription {
@@ -913,6 +929,10 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
             
             return RunAnalysis.addProjectToScope(project, Scope.create(null, null, null), cancel, projects2RegisteredContent);
         }
+        
+        public String getId() {
+            return "*currentProject"; // NOI18N
+        }
     }
 
     private static final class PackageScopeDescription implements ScopeDescription {
@@ -935,6 +955,10 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         @Override
         public Scope getScope(AtomicBoolean cancel) {
             return Scope.create(null, Collections.singletonList(pack), null);
+        }
+        
+        public String getId() {
+            return "*currentPackage"; // NOI18N
         }
     }
 
@@ -964,6 +988,10 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         @Override
         public Scope getScope(AtomicBoolean cancel) {
             return Scope.create(null, null, Collections.singletonList(file));
+        }
+        
+        public String getId() {
+            return "*currentFile";
         }
     }
 
@@ -1028,12 +1056,14 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
         private final String  selectedAnalyzer;
         private final String  selectedConfiguration;
         private final String  selectedInspection;
+        private final String  scope;
 
-        private DialogState(boolean configurationsSelected, String selectedAnalyzer, String selectedConfiguration, String selectedInspection) {
+        private DialogState(boolean configurationsSelected, String selectedAnalyzer, String selectedConfiguration, String selectedInspection, String scope) {
             this.configurationsSelected = configurationsSelected;
             this.selectedAnalyzer = selectedAnalyzer;
             this.selectedConfiguration = selectedConfiguration;
             this.selectedInspection = selectedInspection;
+            this.scope = scope;
         }
         
         public void save() {
@@ -1059,11 +1089,12 @@ public final class RunAnalysisPanel extends javax.swing.JPanel implements Lookup
             return new DialogState(prefs.getBoolean("configurationsSelected", true),
                                    prefs.get("selectedAnalyzer", null),
                                    prefs.get("selectedConfiguration", null),
-                                   prefs.get("selectedInspection", null));
+                                   prefs.get("selectedInspection", null),
+                                   null);
         }
         
         public static DialogState from(WarningDescription wd) {
-            return new DialogState(false, null, null, SPIAccessor.ACCESSOR.getWarningId(wd));
+            return new DialogState(false, null, null, SPIAccessor.ACCESSOR.getWarningId(wd), null);
         }
     }
     

@@ -42,10 +42,12 @@
 package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.*;
+import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -132,16 +134,25 @@ public final class ELTypeUtilities {
     public static List<Element> getSuperTypesFor(CompilationContext info, Element element, ELElement elElement, List<Node> rootToNode) {
         final TypeMirror tm = getTypeMirrorFor(info, element, elElement, rootToNode);
         List<Element> types = new ArrayList<Element>();
-        TypeMirror mirror = tm;
-        while (mirror.getKind() == TypeKind.DECLARED) {
-            Element el = info.info().getTypes().asElement(mirror);
-            types.add(el);
 
-            if (el.getKind() == ElementKind.CLASS) {
-                TypeElement tel = (TypeElement) el;
-                mirror = tel.getSuperclass();
-            } else {
-                break;
+        Deque<TypeMirror> deque = new ArrayDeque<TypeMirror>();
+        deque.add(tm);
+        while (!deque.isEmpty()) {
+            TypeMirror mirror = deque.pop();
+            if (mirror.getKind() == TypeKind.DECLARED) {
+                Element el = info.info().getTypes().asElement(mirror);
+                types.add(el);
+
+                if (el.getKind() == ElementKind.CLASS) {
+                    TypeElement tel = (TypeElement) el;
+                    TypeMirror superclass = tel.getSuperclass();
+                    deque.add(superclass);
+                } else if (el.getKind() == ElementKind.INTERFACE) {
+                    TypeElement tel = (TypeElement) el;
+                    for (TypeMirror ifaceMirror : tel.getInterfaces()) {
+                        deque.add(ifaceMirror);
+                    }
+                }
             }
         }
 
@@ -258,12 +269,26 @@ public final class ELTypeUtilities {
         return parameters;
     }
 
-    
     /**
-     * @return true if {@code methodNode} and {@code method} have matching parameters;
-     * false otherwise.
+     * Says whether the given method node and the element's method correspond.
+     * @param info context
+     * @param methodNode EL's method node
+     * @param method method element
+     * @return {@code true} if the method node correspond (param, naming) to the method element, {@code false} otherwise
      */
     public static boolean isSameMethod(CompilationContext info, Node methodNode, ExecutableElement method) {
+        return isSameMethod(info, methodNode, method, false);
+    }
+
+    /**
+     * Says whether the given method node and the element's method correspond.
+     * @param info context
+     * @param methodNode EL's method node
+     * @param method method element
+     * @param includeSetter whether setters method should be considered as correct - <b>not precise, do not call it in refactoring</b>
+     * @return {@code true} if the method node correspond with the method element, {@code false} otherwise
+     */
+    public static boolean isSameMethod(CompilationContext info, Node methodNode, ExecutableElement method, boolean includeSetter) {
         String image = getMethodName(methodNode);
         String methodName = method.getSimpleName().toString();
         TypeMirror methodReturnType = method.getReturnType();
@@ -274,7 +299,7 @@ public final class ELTypeUtilities {
         if (NodeUtil.isMethodCall(methodNode) &&
                 (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName, methodReturnType).equals(image))) {
             //now we are in AstDotSuffix or AstBracketSuffix
-            
+
             //lets check if the parameters are equal
             List<Node> parameters = getMethodParameters(methodNode);
             int methodNodeParams = parameters.size();
@@ -284,27 +309,31 @@ public final class ELTypeUtilities {
             return method.getParameters().size() == methodNodeParams && haveSameParameters(info, methodNode, method);
         }
 
-        if (methodNode instanceof AstDotSuffix
-                && (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName, methodReturnType).equals(image))) {
+        if (methodNode instanceof AstDotSuffix) {
+            if (methodName.equals(image) || RefactoringUtil.getPropertyName(methodName, methodReturnType).equals(image)) {
+                if (methodNode.jjtGetNumChildren() > 0) {
+                    for (int i = 0; i < method.getParameters().size(); i++) {
+                        final VariableElement methodParameter = method.getParameters().get(i);
+                        final Node methodNodeParameter = methodNode.jjtGetChild(i);
 
-            if (methodNode.jjtGetNumChildren() > 0) {
-                for (int i = 0; i < method.getParameters().size(); i++) {
-                    final VariableElement methodParameter = method.getParameters().get(i);
-                    final Node methodNodeParameter = methodNode.jjtGetChild(i);
-                    
-                    if (!isSameType(info, methodNodeParameter, methodParameter)) {
-                        return false;
+                        if (!isSameType(info, methodNodeParameter, methodParameter)) {
+                            return false;
+                        }
                     }
                 }
-            }
-            
-            if (image.equals(methodName)) {
+
+                if (image.equals(methodName)) {
+                    return true;
+                }
+
+                return method.isVarArgs()
+                        ? method.getParameters().size() == 1
+                        : method.getParameters().isEmpty();
+            } else if (includeSetter && RefactoringUtil.getPropertyName(methodName, methodReturnType, true).equals(image)) {
+                // issue #225849 - we don't have additional information from the Facelet,
+                // believe the naming conventions. This is not used for refactoring actions.
                 return true;
             }
-            
-            return method.isVarArgs()
-                    ? method.getParameters().size() == 1
-                    : method.getParameters().isEmpty();
         }
         return false;
     }
@@ -371,12 +400,15 @@ public final class ELTypeUtilities {
 //                    PropertySuffix[attrs]
 //                    PropertySuffix[muj]
 
+        return isImplicitObjectReference(info, target, Arrays.asList(ImplicitObjectType.RAW), directly);
+    }
+
+    public static boolean isImplicitObjectReference(CompilationContext info, Node target, List<ImplicitObjectType> types, boolean directly) {
         int repeation = directly ? 2 : Integer.MAX_VALUE;
         do {
             if (target instanceof AstIdentifier) {
                 for (ImplicitObject each : getImplicitObjects(info)) {
-                    if (each.getType() == ImplicitObjectType.RAW
-                            && each.getName().equals(target.getImage())) {
+                    if (types.contains(each.getType()) && each.getName().equals(target.getImage())) {
                         return true;
                     }
                 }
@@ -500,7 +532,7 @@ public final class ELTypeUtilities {
                 if (!each.getModifiers().contains(Modifier.PUBLIC)) {
                     continue;
                 }
-                if (isSameMethod(info, property, each)) {
+                if (isSameMethod(info, property, each, true)) {
                     return each;
                 }
             }

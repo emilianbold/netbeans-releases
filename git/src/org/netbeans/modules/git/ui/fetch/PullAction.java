@@ -93,6 +93,17 @@ import org.openide.util.RequestProcessor.Task;
 @NbBundle.Messages({"#PullAction", "LBL_PullAction_Name=P&ull..."})
 public class PullAction extends SingleRepositoryAction {
     
+    private static final String ICON_RESOURCE = "org/netbeans/modules/git/resources/icons/pull-setting.png"; //NOI18N
+    
+    public PullAction () {
+        super(ICON_RESOURCE);
+    }
+
+    @Override
+    protected String iconResource () {
+        return ICON_RESOURCE;
+    }
+    
     private static final Logger LOG = Logger.getLogger(PullAction.class.getName());
 
     @Override
@@ -168,7 +179,7 @@ public class PullAction extends SingleRepositoryAction {
                     if (isCanceled()) {
                         return;
                     }
-                    config = FetchAction.prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecs);
+                    config = GitUtils.prepareConfig(config, remoteNameToUpdate, target, fetchRefSpecs);
                     client.setRemote(config, getProgressMonitor());
                     if (isCanceled()) {
                         return;

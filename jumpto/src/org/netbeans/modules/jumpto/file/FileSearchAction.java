@@ -146,7 +146,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
 
     /* package */ static final Logger LOGGER = Logger.getLogger(FileSearchAction.class.getName());
     private static final char LINE_NUMBER_SEPARATOR = ':';    //NOI18N
-    private static final Pattern PATTERN_WITH_LINE_NUMBER = Pattern.compile("(.*)"+LINE_NUMBER_SEPARATOR+"(\\d+)");    //NOI18N
+    private static final Pattern PATTERN_WITH_LINE_NUMBER = Pattern.compile("(.*)"+LINE_NUMBER_SEPARATOR+"(\\d*)");    //NOI18N
     
     private static ListModel EMPTY_LIST_MODEL = new DefaultListModel();
     private static final RequestProcessor rp = new RequestProcessor ("FileSearchAction-RequestProcessor",1);
@@ -276,7 +276,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         return this.openBtn != null && this.openBtn.isEnabled();
     }
 
-    static boolean isLineNumberChange(
+    private static boolean isLineNumberChange(
             @NonNull final String oldText,
             @NonNull final String newText) {
         final int oldIndex = oldText.indexOf(LINE_NUMBER_SEPARATOR);

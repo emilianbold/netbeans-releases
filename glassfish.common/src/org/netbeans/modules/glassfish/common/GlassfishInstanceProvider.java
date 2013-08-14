@@ -51,6 +51,7 @@ import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.GlassFishStatus;
 import org.glassfish.tools.ide.admin.CommandSetProperty;
+import org.glassfish.tools.ide.admin.ServerAdmin;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.utils.ServerUtils;
@@ -78,6 +79,14 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     private static final Logger LOGGER
             = GlassFishLogger.get(GlassfishInstanceProvider.class);
 
+    // Initialize GlassFish asadmin command execution framework to use
+    // AdminAuthenticator.
+    // Plugin proxy initialization is done as a side effect
+    // of AdminAuthenticator constructor.
+    static {
+        ServerAdmin.init(new AdminAuthenticator());
+    }
+    
     public static final String GLASSFISH_AUTOREGISTERED_INSTANCE = "glassfish_autoregistered_instance";
 
     private static final String AUTOINSTANCECOPIED = "autoinstance-copied"; // NOI18N

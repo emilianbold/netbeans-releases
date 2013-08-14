@@ -199,6 +199,7 @@ public final class SvnOptionsController extends OptionsPanelController implement
 
         if (clientChanged) {
             SvnClientFactory.resetClient();
+            repository = null;
         }
         // {folder} variable setting
         annotationSettings.applyChanges();

@@ -102,6 +102,8 @@ import org.openide.util.NbBundle.Messages;
 })
 public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousInstantiatingIterator<WizardDescriptor> {
 
+    private static final String SOURCE_TYPE_GROOVY = "groovy"; // NOI18N
+
     static final String FOLDER = "Classes";
 
     static final String JDK_5 = "jdk5";
@@ -162,6 +164,14 @@ public class NewJavaFileWizardIterator implements WizardDescriptor.AsynchronousI
                 };
             } else {
                 assert type == Type.PACKAGE;
+                SourceGroup[] groovySourceGroups = sources.getSourceGroups(SOURCE_TYPE_GROOVY);
+                if (groovySourceGroups.length > 0) {
+                    List<SourceGroup> all = new ArrayList<>();
+                    all.addAll(Arrays.asList(groups));
+                    all.addAll(Arrays.asList(groovySourceGroups));
+                    groups = all.toArray(new SourceGroup[all.size()]);
+                }
+
                 SourceGroup[] resources = sources.getSourceGroups(JavaProjectConstants.SOURCES_TYPE_RESOURCES);
                 assert resources != null;
                 if (resources.length > 0) { // #161244

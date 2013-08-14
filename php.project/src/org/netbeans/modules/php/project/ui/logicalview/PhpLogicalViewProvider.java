@@ -75,9 +75,11 @@ import org.netbeans.modules.php.spi.framework.PhpFrameworkProvider;
 import org.netbeans.modules.php.spi.framework.PhpModuleActionsExtender;
 import org.netbeans.modules.php.spi.framework.actions.RunCommandAction;
 import org.netbeans.modules.php.spi.testing.PhpTestingProvider;
+import org.netbeans.modules.web.clientproject.api.remotefiles.RemoteFilesNodeFactory;
 import org.netbeans.spi.project.ui.LogicalViewProvider;
 import org.netbeans.spi.project.ui.ProjectProblemsProvider;
 import org.netbeans.spi.project.ui.support.CommonProjectActions;
+import org.netbeans.spi.project.ui.support.NodeFactory;
 import org.netbeans.spi.project.ui.support.NodeFactorySupport;
 import org.openide.LifecycleManager;
 import org.openide.awt.ActionID;
@@ -388,10 +390,16 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
         private void addCodeCoverageAction(List<Action> actions) {
             boolean coverageSupported = false;
             PhpModule phpModule = project.getPhpModule();
-            for (PhpTestingProvider testingProvider : project.getTestingProviders()) {
-                if (testingProvider.isCoverageSupported(phpModule)) {
-                    coverageSupported = true;
-                    break;
+            List<PhpTestingProvider> testingProviders = project.getTestingProviders();
+            if (testingProviders.isEmpty()) {
+                // no testing provider set yet => show action
+                coverageSupported = true;
+            } else {
+                for (PhpTestingProvider testingProvider : testingProviders) {
+                    if (testingProvider.isCoverageSupported(phpModule)) {
+                        coverageSupported = true;
+                        break;
+                    }
                 }
             }
             if (coverageSupported) {
@@ -709,6 +717,11 @@ public class PhpLogicalViewProvider implements LogicalViewProvider {
             return item;
         }
 
+    }
+
+    @NodeFactory.Registration(projectType = "org-netbeans-modules-php-project", position = 250)
+    public static NodeFactory createRemoteFiles() {
+        return RemoteFilesNodeFactory.createRemoteFilesNodeFactory();
     }
 
 }

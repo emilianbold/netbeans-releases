@@ -69,9 +69,4 @@ public class KOAttributeCompletionItem extends HtmlCompletionItem.Attribute {
         return isInKnockoutFile ? KOUtils.KO_COLOR : super.getAttributeColor();
     }
 
-    @Override
-    public boolean hasHelp() {
-        return isInKnockoutFile; //do not show KO's help  for generic data-bind attribute outside KO app
-    }
-
 }

@@ -128,7 +128,7 @@ public class UnixBrowserImplTest extends NbTestCase {
     
     protected void setUp () {
         if (org.openide.util.Utilities.isUnix ())
-            testObject = new ExtWebBrowser ().createHtmlBrowserImpl ();
+            testObject = new ExtWebBrowser (PrivateBrowserFamilyId.UNKNOWN).createHtmlBrowserImpl ();
     }
 
 }

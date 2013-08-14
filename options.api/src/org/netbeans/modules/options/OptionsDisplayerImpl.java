@@ -57,6 +57,7 @@ import java.awt.event.WindowListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.lang.ref.WeakReference;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.AbstractButton;
@@ -65,8 +66,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
-import org.netbeans.api.progress.ProgressHandle;
-import org.netbeans.api.progress.ProgressHandleFactory;
+import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.modules.options.classic.OptionsAction;
 import org.netbeans.modules.options.export.OptionsChooserPanel;
 import org.netbeans.spi.options.OptionsPanelController;
@@ -83,6 +83,7 @@ import org.openide.filesystems.FileRenameEvent;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
+import org.openide.util.HelpCtx;
 import org.openide.util.LookupEvent;
 import org.openide.util.LookupListener;
 import org.openide.util.Mutex;
@@ -118,6 +119,7 @@ public class OptionsDisplayerImpl {
     private JButton btnImport;
     private static final RequestProcessor RP = new RequestProcessor(OptionsDisplayerImpl.class.getName(), 1, true);
     private static final int DELAY = 500;
+    private boolean savingInProgress = false;
     
     public OptionsDisplayerImpl (boolean modal) {
         this.modal = modal;
@@ -244,7 +246,9 @@ public class OptionsDisplayerImpl {
 	    public void run() {
                 SwingUtilities.invokeLater(new Runnable() {
                     public void run() {
-                        bAPPLY.setEnabled(optsPanel.isChanged() && optsPanel.dataValid());
+                        if (!savingInProgress) {
+                            bAPPLY.setEnabled(optsPanel.isChanged() && optsPanel.dataValid());
+                        }
                     }
                 });
 	    }
@@ -412,6 +416,7 @@ public class OptionsDisplayerImpl {
         private OptionsPanel        optionsPanel;
         private JButton             bOK;
         private JButton             bAPPLY;
+        private HelpCtx helpCtx = HelpCtx.DEFAULT_HELP;
         
         
         OptionsPanelListener (
@@ -426,16 +431,21 @@ public class OptionsDisplayerImpl {
             this.bAPPLY = bAPPLY;
         }
         
+        @NbBundle.Messages({"Loading_HelpCtx_Lengthy_Operation=Please wait while help context is being loaded."})
+        @Override
         public void propertyChange (PropertyChangeEvent ev) {
-            if (ev.getPropertyName ().equals ("buran" + OptionsPanelController.PROP_HELP_CTX)) {               //NOI18N            
-                RequestProcessor RP = new RequestProcessor("Loading Help Context Off EDT", 1); // NOI18N
-                RequestProcessor.Task loadHelpCtxTask = RP.create(new Runnable() {
+            if (ev.getPropertyName ().equals ("buran" + OptionsPanelController.PROP_HELP_CTX)) {               //NOI18N
+                AtomicBoolean helpCtxLoadingCancelled = new AtomicBoolean(false);
+                ProgressUtils.runOffEventDispatchThread(new Runnable() {
                     @Override
                     public void run() {
-                        descriptor.setHelpCtx(optionsPanel.getHelpCtx());
+                        helpCtx = optionsPanel.getHelpCtx();
                     }
-                });
-                loadHelpCtxTask.schedule(0);
+                }, Bundle.Loading_HelpCtx_Lengthy_Operation(), helpCtxLoadingCancelled, false, 50, 5000);
+                if(helpCtxLoadingCancelled.get()) {
+                    log.fine("Options Dialog - HelpCtx loading cancelled by user."); //NOI18N
+                }
+                descriptor.setHelpCtx(helpCtx);
             } else if (ev.getPropertyName ().equals ("buran" + OptionsPanelController.PROP_VALID)) {                  //NOI18N            
                 bOK.setEnabled (optionsPanel.dataValid ());
 		bAPPLY.setEnabled (optionsPanel.dataValid());
@@ -472,11 +482,13 @@ public class OptionsDisplayerImpl {
             }
         }
         
-        @NbBundle.Messages({"ProgressHandle_Saving_Options_DisplayName=Saving Options..."})
+        @NbBundle.Messages({"Saving_Options_Lengthy_Operation_Title=Lengthy operation in progress",
+        "Saving_Options_Lengthy_Operation=Please wait while options are being saved."})
         private void saveOptionsOffEDT(final boolean okPressed) {
-            RequestProcessor.Task saveTask;
-            RequestProcessor RP = new RequestProcessor("Saving Options Off EDT", 1); // NOI18N
-            Runnable runnable = new Runnable() {
+            savingInProgress = true;
+            JPanel content = new JPanel();
+            content.add(new JLabel(Bundle.Saving_Options_Lengthy_Operation()));
+            ProgressUtils.runOffEventThreadWithCustomDialogContent(new Runnable() {
                 @Override
                 public void run() {
                     if(okPressed) {
@@ -485,17 +497,8 @@ public class OptionsDisplayerImpl {
                         optionsPanel.save(true);
                     }
                 }
-            };
-            saveTask = RP.create(runnable);
-            final ProgressHandle ph = ProgressHandleFactory.createHandle(Bundle.ProgressHandle_Saving_Options_DisplayName(), saveTask);
-            saveTask.addTaskListener(new TaskListener() {
-                @Override
-                public void taskFinished(org.openide.util.Task task) {
-                    ph.finish();
-                }
-            });
-            ph.start();
-            saveTask.schedule(0);
+            }, Bundle.Saving_Options_Lengthy_Operation_Title(), content, 50, 5000);
+            savingInProgress = false;
         }
     }
     

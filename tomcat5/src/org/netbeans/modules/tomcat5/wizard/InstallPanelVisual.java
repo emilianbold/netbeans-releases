@@ -94,6 +94,10 @@ class InstallPanelVisual extends javax.swing.JPanel {
     
     private RequestProcessor.Task validationTask;
     
+    /* GuardedBy(this) */
+    private String textHomeDir;
+
+    /* GuardedBy(this) */
     private TomcatVersion version;
     
     /** Creates new form JPanel */
@@ -142,15 +146,11 @@ class InstallPanelVisual extends javax.swing.JPanel {
     }
     
     public void addChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.add(l);
-        }
+        listeners.add(l);
     }
     
     public void removeChangeListener(ChangeListener l) {
-        synchronized (listeners) {
-            listeners.remove(l);
-        }
+        listeners.remove(l);
     }
     
     /** This method is called from within the constructor to
@@ -640,23 +640,28 @@ class InstallPanelVisual extends javax.swing.JPanel {
         // when calling jTextFieldBaseDir.setText which triggers two consecutive 
         // events removeUpdate and insertUpdate. validation after the first one 
         // inevitably leads to a failure.
+        synchronized (this) {
+            textHomeDir = jTextFieldHomeDir.getText();
+        }
         if (validationTask == null) {
             validationTask = RequestProcessor.getDefault().create(new Runnable() {
+                @Override
                 public void run() {
-                    if (!SwingUtilities.isEventDispatchThread()) {
-                        SwingUtilities.invokeLater(this);
-                        return;
-                    }
-
                     synchronized (InstallPanelVisual.this) {
-                        version = TomcatFactory.getTomcatVersion(new File(jTextFieldHomeDir.getText()));
+                        version = TomcatFactory.getTomcatVersion(new File(textHomeDir));
                         LOGGER.log(Level.FINE, "Detected Tomcat version {0}", version);
                     }
-                    
-                    ChangeEvent event = new ChangeEvent(this);                    
-                    for (ChangeListener listener : listeners) {
-                        listener.stateChanged(event);
-                    }
+
+                    SwingUtilities.invokeLater(new Runnable() {
+
+                        @Override
+                        public void run() {
+                            ChangeEvent event = new ChangeEvent(this);
+                            for (ChangeListener listener : listeners) {
+                                listener.stateChanged(event);
+                            }
+                        }
+                    });
                 }
             });
         }

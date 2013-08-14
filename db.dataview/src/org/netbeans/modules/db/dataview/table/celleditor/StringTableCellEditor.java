@@ -66,6 +66,7 @@ import javax.swing.KeyStroke;
 import javax.swing.SwingUtilities;
 import javax.swing.table.TableCellEditor;
 import javax.swing.table.TableModel;
+import javax.swing.text.JTextComponent;
 import org.jdesktop.swingx.JXButton;
 import org.jdesktop.swingx.JXPanel;
 import org.netbeans.modules.db.dataview.table.ResultSetTableCellEditor;
@@ -75,7 +76,7 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
 
     private JXButton customEditorButton = new JXButton("...");
     private int row, column;
-
+    
     public StringTableCellEditor(final JTextField textField) {
         super(textField);
         customEditorButton.addActionListener(this);
@@ -88,9 +89,10 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
     }
 
     @Override
-    public Component getTableCellEditorComponent(final JTable table, Object value, boolean isSelected, int row, int column) {
+    public Component getTableCellEditorComponent(final JTable table, Object value, boolean isSelected, final int row, final int column) {
         this.table = table;
-        final JComponent c = (JComponent) super.getTableCellEditorComponent(table, value, isSelected, row, column);
+        final JComponent c = (JComponent) super.getTableCellEditorComponent(table, value, isSelected, row, column);        
+        final JTextComponent tc = c instanceof JTextComponent ? (JTextComponent) c : null;
 
         JXPanel panel = new JXPanel(new BorderLayout()) {
 
@@ -104,6 +106,10 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
             protected boolean processKeyBinding(KeyStroke ks, KeyEvent e, int condition, boolean pressed) {
                 InputMap map = c.getInputMap(condition);
                 ActionMap am = c.getActionMap();
+                
+                if (tc != null && ks.isOnKeyRelease()) {
+                    table.getModel().setValueAt(tc.getText(), row, column);
+                }
 
                 if (map != null && am != null && isEnabled()) {
                     Object binding = map.get(ks);
@@ -138,6 +144,8 @@ public class StringTableCellEditor extends ResultSetTableCellEditor implements T
 
     protected void editCell(JTable table, int row, int column) {
         JTextArea textArea = new JTextArea(20, 80);
+        // Work aroung JDK bugs 7027598 (this bug suggests this work-around) #233347
+        textArea.setDropTarget(null);
         TableModel tm = table.getModel();
         int modelRow = table.convertRowIndexToModel(row);
         int modelColumn = table.convertColumnIndexToModel(column);

@@ -364,10 +364,11 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
     }
 
     @NbBundle.Messages({
+        "JavaScriptLibrarySelectionPanel.update.tooltip=Click to update",
         "# {0} - date or n/a",
         "JavaScriptLibrarySelectionPanel.update.default=<html><a href=\"#\">Updated: {0}</a>",
         "# {0} - date with time or 'never' (see next message)",
-        "JavaScriptLibrarySelectionPanel.update.default.tooltip=Updated: {0}",
+        "JavaScriptLibrarySelectionPanel.update.default.tooltip=Updated: {0}, click to update",
         "# T13Y: If the lib has not been updated yet, this label is used instead of a date (see previous message)",
         "JavaScriptLibrarySelectionPanel.update.never=never",
         "JavaScriptLibrarySelectionPanel.update.running=Updating...",
@@ -382,6 +383,7 @@ public final class JavaScriptLibrarySelectionPanel extends JPanel {
             String when;
             if (lastUpdateTime == null) {
                 when = Bundle.JavaScriptLibrarySelectionPanel_update_never();
+                tooltip = Bundle.JavaScriptLibrarySelectionPanel_update_tooltip();
             } else {
                 Date updateDate = new Date(lastUpdateTime.toMillis());
                 when = DateFormat.getDateInstance()

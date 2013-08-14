@@ -841,6 +841,7 @@
     TypeMap = {
       java.sql.Types.BIGINT = BIGINT;
       java.sql.Types.BLOB = BLOB;
+      java.sql.Types.BOOLEAN = BOOLEAN;
       java.sql.Types.CHAR = CHAR;
       java.sql.Types.BINARY = "CHAR FOR BIT DATA";
       java.sql.Types.CLOB = CLOB;
@@ -870,7 +871,7 @@
 //      UPDATE = UPDATE;
 //      DELETE = DELETE;
 //    };
-    SizelessTypes = (BIGINT,CLOB,DATE,DOUBLE,INTEGER,"LONG VARCHAR",REAL,SMALLINT,TIME,TIMESTAMP);
+    SizelessTypes = (BIGINT,BOOLEAN, CLOB,DATE,DOUBLE,INTEGER,"LONG VARCHAR",REAL,SMALLINT,TIME,TIMESTAMP);
     DecimalTypes = (DECIMAL,NUMERIC);
     CharacterTypes = (CHAR,VARCHAR);
 

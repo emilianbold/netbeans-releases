@@ -617,6 +617,15 @@ made subject to such option by the copyright holder.
                     waits to synchronize with system clipboard. Defaults to 1000ms.
                 </api>
             </li>
+            <li>
+                <api type="export" group="systemproperty" name="netbeans.ignore.dupmodule" category="devel">
+                    By default ModuleManager throws <code>DuplicateException</code> when an attempt is made
+                    to load an already loaded module.
+                    One can change this behavior by providing <code>-Dnetbeans.ignore.dupmodule=true</code>
+                    since version 2.63. When <code>-Dnetbeans.ignore.dupmodule=true</code> is provided,
+                    attempt of duplicate loading is logged instead of throwing <code>DuplicateException</code>.
+                </api>
+            </li>
         </ul>
         <p>
             There are also some options passed to the launcher (interpreted

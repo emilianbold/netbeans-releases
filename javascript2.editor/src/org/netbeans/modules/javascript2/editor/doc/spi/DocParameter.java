@@ -42,6 +42,7 @@
 package org.netbeans.modules.javascript2.editor.doc.spi;
 
 import java.util.List;
+import org.netbeans.modules.javascript2.editor.model.Identifier;
 import org.netbeans.modules.javascript2.editor.model.Type;
 
 /**
@@ -55,7 +56,7 @@ public interface DocParameter {
      * Gets name of the parameter.
      * @return parameter name, {@code null} if it doesn't have any name
      */
-    DocIdentifier getParamName();
+    Identifier getParamName();
 
     /**
      * Gets default value of the parameter.

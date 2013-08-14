@@ -16,4 +16,3 @@ namespace ${namespace};
 class ${name} {
     //put your code here
 }
-?>

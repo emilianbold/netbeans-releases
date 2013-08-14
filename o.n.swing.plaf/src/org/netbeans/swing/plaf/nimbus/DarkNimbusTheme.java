@@ -177,6 +177,7 @@ public class DarkNimbusTheme {
         UIManager.put("nb.dataview.table.rollOverRowBackground", new RelativeColor(new Color(0,0,0), new Color(30,30,30), "Table[Enabled+Selected].textBackground"));
         
         UIManager.put("selection.highlight", new Color(202, 152, 0));
+        UIManager.put( "textArea.background", new Color( 128, 128, 128) );
 
         UIManager.put( "nb.laf.postinstall.callable", new Callable<Object>() { //NOI18N
 
@@ -201,5 +202,12 @@ public class DarkNimbusTheme {
         UIManager.put( "nb.bigclose.tab.icon.enabled.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
         UIManager.put( "nb.bigclose.tab.icon.pressed.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
         UIManager.put( "nb.bigclose.tab.icon.rollover.name", "org/openide/awt/resources/vista_bigclose_rollover.png");
+
+        //browser picker
+        UIManager.put( "Nb.browser.picker.background.light", new Color(116,116,116));
+        UIManager.put( "Nb.browser.picker.foreground.light", new Color(192,192,192));
+        //#233622
+        UIManager.put( "List[Selected].textForeground", UIManager.getColor( "nimbusSelectedText" ) );
+
    }
 }

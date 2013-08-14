@@ -56,6 +56,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -150,6 +151,9 @@ import org.openide.util.RequestProcessor;
 import org.openide.util.WeakListeners;
 import org.openide.util.WeakSet;
 import org.openide.util.lookup.Lookups;
+import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -231,6 +235,29 @@ public final class PhpProject implements Project {
         }
     };
 
+    // #233052
+    private final WindowSystemListener windowSystemListener = new WindowSystemListener() {
+
+        @Override
+        public void beforeLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void afterLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void beforeSave(WindowSystemEvent event) {
+            // browser
+            getLookup().lookup(ClientSideDevelopmentSupport.class).close();
+        }
+
+        @Override
+        public void afterSave(WindowSystemEvent event) {
+        }
+
+    };
+
 
     public PhpProject(AntProjectHelper helper) {
         assert helper != null;
@@ -268,6 +295,8 @@ public final class PhpProject implements Project {
             }
         };
         frameworks.addChangeListener(WeakListeners.change(frameworksListener, frameworks));
+        WindowManager windowManager = WindowManager.getDefault();
+        windowManager.addWindowSystemListener(WeakListeners.create(WindowSystemListener.class, windowSystemListener, windowManager));
     }
 
     @Override
@@ -993,6 +1022,10 @@ public final class PhpProject implements Project {
             // noop
         }
 
+        private boolean isVisible(FileObject file) {
+            return PhpProjectUtils.isVisible(PhpVisibilityQuery.forProject(PhpProject.this), file);
+        }
+
         // if any direct child of source folder changes, reset frameworks (new framework can be found in project)
         private void frameworksReset(FileObject file) {
             FileObject sourcesDirectory = getSourcesDirectory();
@@ -1049,6 +1082,16 @@ public final class PhpProject implements Project {
             }
             return null;
         }
+
+        @Override
+        public Collection<FileObject> getWebRoots() {
+            FileObject webRoot = ProjectPropertiesSupport.getWebRootDirectory(PhpProject.this);
+            if (webRoot == null) {
+                return Collections.emptyList();
+            }
+            return Collections.singleton(webRoot);
+        }
+
     }
 
     private static final class PhpSearchInfo extends SearchInfoDefinition implements PropertyChangeListener {

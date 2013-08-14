@@ -283,7 +283,7 @@ public class JellyTestCase extends NbTestCase {
                 closeDialogs((JDialog) ownees[i], chooser);
             }
         }
-        new JDialogOperator(dialog).close();
+        new JDialogOperator(dialog).requestClose();
     }
 
     /** Finishes test with status Fail

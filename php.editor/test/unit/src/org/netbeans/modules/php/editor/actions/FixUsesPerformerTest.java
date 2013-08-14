@@ -56,7 +56,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.netbeans.modules.php.editor.PHPCodeCompletionTestBase;
+import org.netbeans.modules.php.editor.completion.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
 import org.netbeans.modules.php.editor.api.ElementQuery.Index;
@@ -128,6 +128,36 @@ public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
         String[] selections = new String[] {"\\Fom\\Bom\\ClassName", "\\Foo\\Bar\\ClassName", "\\Baz\\Bat\\ClassName"};
         Options options = new Options(false, false, true, true);
         performTest("$a = new ClassName();^//HERE", selections, false, options);
+    }
+
+    public void testIssue233527() throws Exception {
+        String[] selections = new String[] {"\\NS1\\NS2\\SomeClass", "\\NS1\\NS2\\SomeClass"};
+        Options options = new Options(false, false, true, true);
+        performTest("public function test(SomeClass $a) {^", selections, false, options);
+    }
+
+    public void testIssue222595_01() throws Exception {
+        String[] selections = new String[] {"\\pl\\dagguh\\people\\Person"};
+        Options options = new Options(false, false, false, true);
+        performTest("function assignRoom(Room $room, Person $roomOwner);^", selections, false, options);
+    }
+
+    public void testIssue222595_02() throws Exception {
+        String[] selections = new String[] {"\\pl\\dagguh\\people\\Person"};
+        Options options = new Options(true, false, true, true);
+        performTest("function assignRoom(Room $room, Person $roomOwner);^", selections, false, options);
+    }
+
+    public void testIssue222595_03() throws Exception {
+        String[] selections = new String[] {};
+        Options options = new Options(false, false, true, true);
+        performTest("function addRoom(\\pl\\dagguh\\buildings\\Room $room);^", selections, false, options);
+    }
+
+    public void testIssue222595_04() throws Exception {
+        String[] selections = new String[] {};
+        Options options = new Options(true, false, true, true);
+        performTest("function addRoom(\\pl\\dagguh\\buildings\\Room $room);^", selections, false, options);
     }
 
     private String getTestResult(final String fileName, final String caretLine, final String[] selections, final boolean removeUnusedUses, final Options options) throws Exception {
@@ -204,20 +234,15 @@ public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
     }
 
     private String getTestFolderPath() {
-        return "testfiles/actions/" + getTestName();//NOI18N
+        return "testfiles/actions/" + transformTestMethodNameToDirectory();//NOI18N
     }
 
     private String getTestPath() {
         return getTestFolderPath() + "/" + getName() + ".php";//NOI18N
     }
 
-    private String getTestName() {
-        String name = getName();
-        int indexOf = name.indexOf("_");
-        if (indexOf != -1) {
-            name = name.substring(0, indexOf);
-        }
-        return name;
+    private String transformTestMethodNameToDirectory() {
+        return getName().replace('_', '/');
     }
 
 }

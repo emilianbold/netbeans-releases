@@ -266,7 +266,7 @@ public class ErrorControlOperatorHint extends HintRule {
 
     @Override
     @NbBundle.Messages("ErrorControlOperatorHintDesc=Error control operator disables all error reporting for an affected expression. "
-            + "It should be used only for some special cases (line fopen(), unlink(), etc.). "
+            + "It should be used only for some special cases (like fopen(), unlink(), etc.). "
             + "Otherwise it's a cause of an unexpected behavior of the application. Handle your errors in a common way.")
     public String getDescription() {
         return Bundle.ErrorControlOperatorHintDesc();

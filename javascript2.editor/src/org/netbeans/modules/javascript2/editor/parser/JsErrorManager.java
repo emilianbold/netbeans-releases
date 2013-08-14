@@ -70,6 +70,8 @@ public class JsErrorManager extends ErrorManager {
 
     private static final Logger LOGGER = Logger.getLogger(JsErrorManager.class.getName());
 
+    private static final int MAX_MESSAGE_LENGTH = 100;
+
     private static final boolean SHOW_BADGES_EMBEDDED = Boolean.getBoolean(JsErrorManager.class.getName() + ".showBadgesEmbedded");;
 
     private static final Comparator<SimpleError> POSITION_COMPARATOR = new Comparator<SimpleError>() {
@@ -374,7 +376,13 @@ public class JsErrorManager extends ErrorManager {
         protected final long token;
 
         public ParserError(String message, int line, int column, long token) {
-            this.message = message;
+            if (message.length() > MAX_MESSAGE_LENGTH) {
+                this.message = message.substring(0, MAX_MESSAGE_LENGTH);
+                LOGGER.log(Level.FINE, "Too long error message {0}", message);
+            } else {
+                this.message = message;
+            }
+
             this.line = line;
             this.column = column;
             this.token = token;

@@ -473,7 +473,17 @@ public class FileObjects {
         else {
             return new MemoryFileObject(pkgStr, nameStr, uri, lastModified, (CharBuffer)CharBuffer.allocate( length + 1 ).append( content ).append( ' ' ).flip() );
         }        
-    }        
+    }
+
+    /**
+     * Wraps an existing JFO so that writes + creations on the file are suppressed. Does not wrap
+     * if the JFO is already a wrapper(performance).
+     *
+     * @return JFO wrapper which silently ignores modifications
+     */
+    public static InferableJavaFileObject nullWriteFileObject(@NonNull final InferableJavaFileObject delegate) {
+        return delegate instanceof NullWriteFileObject ? delegate : new NullWriteFileObject(delegate);
+    }
 
     /**
      * Removes extension from fileName
@@ -1581,6 +1591,30 @@ public class FileObjects {
         
         
     }
+
+    private static class NullWriteFileObject extends ForwardingInferableJavaFileObject {
+        private NullWriteFileObject (@NonNull final InferableJavaFileObject delegate) {
+            super (delegate);
+        }
+
+        @Override
+        public OutputStream openOutputStream() throws IOException {
+            return new NullOutputStream();
+        }
+
+        @Override
+        public Writer openWriter() throws IOException {
+            return new OutputStreamWriter(openOutputStream());
+        }
+
+        private static class NullOutputStream extends OutputStream {
+            @Override
+            public void write(int b) throws IOException {
+                //pass
+            }
+        }
+    }
+
     //</editor-fold>
 
     public static class InvalidFileException extends IOException {

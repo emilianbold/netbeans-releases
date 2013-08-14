@@ -61,8 +61,6 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.io.Writer;
-import java.lang.ref.Reference;
-import java.lang.ref.SoftReference;
 import java.lang.reflect.Method;
 import java.net.URL;
 import java.nio.CharBuffer;
@@ -112,8 +110,6 @@ import org.netbeans.modules.csl.api.Rule.UserConfigurableRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.lucene.support.Index.Status;
-import org.netbeans.modules.parsing.lucene.support.Queries.QueryKind;
 import org.netbeans.modules.parsing.spi.indexing.Indexable;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
@@ -128,7 +124,6 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Handler;
@@ -185,14 +180,11 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.impl.indexing.*;
-import org.netbeans.modules.parsing.impl.indexing.lucene.LayeredDocumentIndex;
-import org.netbeans.modules.parsing.impl.indexing.lucene.LuceneIndexFactory;
 import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl;
 import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl.TestIndexDocumentImpl;
 import org.netbeans.modules.parsing.impl.indexing.lucene.TestIndexFactoryImpl.TestIndexImpl;
 import org.netbeans.modules.parsing.lucene.support.DocumentIndex;
-import org.netbeans.modules.parsing.lucene.support.IndexDocument;
-import org.netbeans.modules.parsing.lucene.support.Queries;
+import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.indexing.Context;
 import org.netbeans.modules.parsing.spi.indexing.EmbeddingIndexer;
@@ -273,7 +265,7 @@ public abstract class CslTestBase extends NbTestCase {
             
             Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests");
             logger.setLevel(Level.FINEST);
-            Waiter w = new Waiter();
+            Waiter w = new Waiter(classPathContainsBinaries());
             logger.addHandler(w);
 
             // initialize classpaths indexing
@@ -292,7 +284,7 @@ public abstract class CslTestBase extends NbTestCase {
         if (classPathsForTest != null && !classPathsForTest.isEmpty()) {
             Logger logger = Logger.getLogger(RepositoryUpdater.class.getName() + ".tests");
             logger.setLevel(Level.FINEST);
-            Waiter w = new Waiter();
+            Waiter w = new Waiter(classPathContainsBinaries());
             logger.addHandler(w);
 
             for(String cpId : classPathsForTest.keySet()) {
@@ -720,27 +712,50 @@ public abstract class CslTestBase extends NbTestCase {
         }
 
         // Appending lines which are missing in expected content and are present in actual content
-        boolean firstOccurence = true;
+        boolean noErrorInActual = true;
         for (String actualLine : actualLines) {
             if (expectedLines.contains(actualLine) == false) {
-                if (firstOccurence) {
+                if (noErrorInActual) {
                     sb.append("Actual content contains following lines which are missing in expected content: ").append(lineSeparator(1));
-                    firstOccurence = false;
+                    noErrorInActual = false;
                 }
                 sb.append("\t").append(actualLine).append(lineSeparator(1));
             }
         }
 
         // Appending lines which are missing in actual content and are present in expected content
-        firstOccurence = true;
+        boolean noErrorInExpected = true;
         for (String expectedLine : expectedLines) {
             if (actualLines.contains(expectedLine) == false) {
                 // If at least one line missing in actual content we want to append header line
-                if (firstOccurence) {
+                if (noErrorInExpected) {
                     sb.append("Expected content contains following lines which are missing in actual content: ").append(lineSeparator(1));
-                    firstOccurence = false;
+                    noErrorInExpected = false;
                 }
                 sb.append("\t").append(expectedLine).append(lineSeparator(1));
+            }
+        }
+
+        // If both values are true it means the content is the same, but some lines are
+        // placed on a different line number in actual and expected content
+        if (noErrorInActual && noErrorInExpected) {
+            for (int lineNumber = 0; lineNumber < expectedLines.size(); lineNumber++) {
+                String expectedLine = expectedLines.get(lineNumber);
+                String actualLine = actualLines.get(lineNumber);
+
+                if (!expectedLine.equals(actualLine)) {
+                    sb.append("Line ").
+                        append(lineNumber).
+                        append(" contains different content than expected: ").
+                        append(lineSeparator(1)).
+                        append("Expected: \t").
+                        append(expectedLine).
+                        append(lineSeparator(1)).
+                        append("Actual:  \t").
+                        append(actualLine).
+                        append(lineSeparator(2));
+
+                }
             }
         }
 
@@ -850,7 +865,25 @@ public abstract class CslTestBase extends NbTestCase {
         }
 
         String expected = readFile(goldenFile);
-        assertEquals(expected.trim(), description.trim());
+        final String expectedTrimmed = expected.trim();
+        final String actualTrimmed = description.trim();
+
+        if (expectedTrimmed.equals(actualTrimmed)) {
+            return; // Actual and expected content are equals --> Test passed
+        } else {
+            // We want to ignore different line separators (like \r\n against \n) because they
+            // might be causing failing tests on a different operation systems like Windows :]
+            final String expectedUnified = expectedTrimmed.replaceAll("\r", "");
+            final String actualUnified = actualTrimmed.replaceAll("\r", "");
+
+            if (expectedUnified.equals(actualUnified)) {
+                return; // Only difference is in line separation --> Test passed
+            }
+
+            // There are some diffrerences between expected and actual content --> Test failed
+
+            fail("Not matching goldenfile: " + FileUtil.getFileDisplayName(FileUtil.toFileObject(goldenFile)) + lineSeparator(2) + getContentDifferences(expectedUnified, actualUnified));
+        }
     }
 
     public void assertEquals(Collection<String> s1, Collection<String> s2) {
@@ -1363,7 +1396,7 @@ public abstract class CslTestBase extends NbTestCase {
         });
     }
 
-    private String annotateFinderResult(Snapshot snapshot, Map<OffsetRange, ColoringAttributes> highlights, int caretOffset) throws Exception {
+    protected String annotateFinderResult(Snapshot snapshot, Map<OffsetRange, ColoringAttributes> highlights, int caretOffset) throws Exception {
         Set<OffsetRange> ranges = highlights.keySet();
         StringBuilder sb = new StringBuilder();
         CharSequence text = snapshot.getText();
@@ -1472,7 +1505,7 @@ public abstract class CslTestBase extends NbTestCase {
         });
     }
     
-    private void checkNoOverlaps(Set<OffsetRange> ranges, Document doc) throws BadLocationException {
+    protected void checkNoOverlaps(Set<OffsetRange> ranges, Document doc) throws BadLocationException {
         // Make sure there are no overlapping ranges
         List<OffsetRange> sortedRanges = new ArrayList<OffsetRange>(ranges);
         Collections.sort(sortedRanges);
@@ -1487,7 +1520,7 @@ public abstract class CslTestBase extends NbTestCase {
         }
     }
 
-    private String annotateSemanticResults(Document doc, Map<OffsetRange, Set<ColoringAttributes>> highlights) throws Exception {
+    protected String annotateSemanticResults(Document doc, Map<OffsetRange, Set<ColoringAttributes>> highlights) throws Exception {
         StringBuilder sb = new StringBuilder();
         String text = doc.getText(0, doc.getLength());
         Map<Integer, OffsetRange> starts = new HashMap<Integer, OffsetRange>(100);
@@ -2633,7 +2666,7 @@ public abstract class CslTestBase extends NbTestCase {
             caretOffset = -1;
         }
 
-        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+        UserTask task = new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = caretOffset == -1 ? resultIterator.getParserResult() : resultIterator.getParserResult(caretOffset);
                 assertTrue(r instanceof ParserResult);
@@ -2755,6 +2788,119 @@ public abstract class CslTestBase extends NbTestCase {
                 String described = describeCompletion(caretLine, pr.getSnapshot().getSource().createSnapshot().getText().toString(), caretOffset, true, caseSensitive, type, proposals, includeModifiers, deprecatedHolder, formatter);
                 assertDescriptionMatches(file, described, true, ".completion");
             }
+        };
+        if (classPathsForTest == null || classPathsForTest.isEmpty()) {
+            ParserManager.parse(Collections.singleton(testSource), task);
+        } else {
+            ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+        }
+    }
+
+    /**
+     * Checks code completion result.
+     * <p>
+     * Should be used in situation when we are interested in the result that comes from the
+     * completion of certain {@link CompletionProposal}.
+     * <p>
+     * One particular use case could be the fast import feature (i.e. automatic import of the
+     * class that was chosen in code completion but wasn't imported yet).
+     *
+     * @param file the file we are testing against; will be used on the one hand as source
+     *        file for the completion and on the other hand the corresponding file with the
+     *        same name and additional ".ccresult" suffix will be find and used as a golden file
+     * @param caretLine line where we are invoking completion
+     * @param proposal proposal we want to complete
+     * @throws ParseException encapsulating the user exception, might thrown by {@link ParserManager#parse(java.util.Collection, org.netbeans.modules.parsing.api.UserTask)
+     */
+    public void checkCompletionResult(
+            final String file,
+            final String caretLine,
+            final CompletionProposal proposal) throws ParseException {
+
+        final QueryType type = QueryType.COMPLETION;
+        final boolean caseSensitive = true;
+
+        Source testSource = getTestSource(getTestFile(file));
+
+        final int caretOffset;
+        if (caretLine != null) {
+            caretOffset = getCaretOffset(testSource.createSnapshot().getText().toString(), caretLine);
+            enforceCaretOffset(testSource, caretOffset);
+        } else {
+            caretOffset = -1;
+        }
+
+        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+            public @Override void run(ResultIterator resultIterator) throws Exception {
+                Parser.Result r = caretOffset == -1 ? resultIterator.getParserResult() : resultIterator.getParserResult(caretOffset);
+                assertTrue(r instanceof ParserResult);
+                ParserResult pr = (ParserResult) r;
+
+                CodeCompletionHandler cc = getCodeCompleter();
+                assertNotNull("getCodeCompleter must be implemented", cc);
+
+                Document doc = GsfUtilities.getDocument(pr.getSnapshot().getSource().getFileObject(), true);
+                boolean upToOffset = type == QueryType.COMPLETION;
+                String prefix = cc.getPrefix(pr, caretOffset, upToOffset);
+                if (prefix == null) {
+                    int[] blk = org.netbeans.editor.Utilities.getIdentifierBlock((BaseDocument) doc, caretOffset);
+
+                    if (blk != null) {
+                        int start = blk[0];
+                        if (start < caretOffset ) {
+                            if (upToOffset) {
+                                prefix = doc.getText(start, caretOffset - start);
+                            } else {
+                                prefix = doc.getText(start, blk[1] - start);
+                            }
+                        }
+                    }
+                }
+
+                final int finalCaretOffset = caretOffset;
+                final String finalPrefix = prefix;
+                final ParserResult finalParserResult = pr;
+                CodeCompletionContext context = new CodeCompletionContext() {
+
+                    @Override
+                    public int getCaretOffset() {
+                        return finalCaretOffset;
+                    }
+
+                    @Override
+                    public ParserResult getParserResult() {
+                        return finalParserResult;
+                    }
+
+                    @Override
+                    public String getPrefix() {
+                        return finalPrefix;
+                    }
+
+                    @Override
+                    public boolean isPrefixMatch() {
+                        return true;
+                    }
+
+                    @Override
+                    public QueryType getQueryType() {
+                        return type;
+                    }
+
+                    @Override
+                    public boolean isCaseSensitive() {
+                        return caseSensitive;
+                    }
+                };
+
+                CodeCompletionResult completionResult = cc.complete(context);
+                completionResult.beforeInsert(proposal);
+                completionResult.insert(proposal);
+                completionResult.afterInsert(proposal);
+
+                String fileContent = doc.getText(0, doc.getLength());;
+                assertFileContentsMatches(file, fileContent, false, ".ccresult");
+            }
         });
     }
 
@@ -2773,7 +2919,7 @@ public abstract class CslTestBase extends NbTestCase {
             caretOffset = -1;
         }
 
-        ParserManager.parse(Collections.singleton(testSource), new UserTask() {
+        UserTask task = new UserTask() {
             public @Override void run(ResultIterator resultIterator) throws Exception {
                 Parser.Result r = resultIterator.getParserResult();
                 assertTrue(r instanceof ParserResult);
@@ -2781,7 +2927,7 @@ public abstract class CslTestBase extends NbTestCase {
 
                 CodeCompletionHandler cc = getCodeCompleter();
                 assertNotNull("getCodeCompleter must be implemented", cc);
-                
+
                 Document doc = GsfUtilities.getDocument(resultIterator.getSnapshot().getSource().getFileObject(), true);
                 boolean upToOffset = type == QueryType.COMPLETION;
                 String prefix = cc.getPrefix(pr, caretOffset, upToOffset);
@@ -2803,7 +2949,7 @@ public abstract class CslTestBase extends NbTestCase {
                     }
                 }
 
-                
+
                 // resultIterator.getSource().testUpdateIndex();
 
                 final int finalCaretOffset = caretOffset;
@@ -2907,11 +3053,17 @@ public abstract class CslTestBase extends NbTestCase {
                         return sb.toString();
                     }
                 };
-                
+
                 String described = describeCompletionDoc(pr.getSnapshot().getText().toString(), caretOffset, false, caseSensitive, type, match, documentation, includeModifiers, deprecatedHolder, formatter);
                 assertDescriptionMatches(file, described, true, ".html");
             }
-        });
+        };
+
+        if (classPathsForTest == null || classPathsForTest.isEmpty()) {
+            ParserManager.parse(Collections.singleton(testSource), task);
+        } else {
+            ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
+        }
     }
     
     private String describeCompletionDoc(String text, int caretOffset, boolean prefixSearch, boolean caseSensitive, QueryType type,
@@ -4408,6 +4560,10 @@ public abstract class CslTestBase extends NbTestCase {
         return null;
     }
 
+    protected boolean classPathContainsBinaries() {
+        return false;
+    }
+
     protected boolean cleanCacheDir() {
         return true;
     }
@@ -4454,16 +4610,20 @@ public abstract class CslTestBase extends NbTestCase {
 
     private static final class Waiter extends Handler {
 
-        private final CountDownLatch latch = new CountDownLatch(1);
+        private final CountDownLatch latch;
+
+        private final boolean binaries;
         
-        public Waiter() {
+        public Waiter(boolean binaries) {
+            latch = new CountDownLatch(binaries ? 2 : 1);
+            this.binaries = binaries;
         }
 
         public void waitForScanToFinish() {
             try {
                 latch.await(60000, TimeUnit.MILLISECONDS);
                 if (latch.getCount() > 0) {
-                    //fail("Waiting for classpath scanning to finish timed out");
+                    fail("Waiting for classpath scanning to finish timed out");
                 }
             } catch (InterruptedException ex) {
                 fail("Waiting for classpath scanning to finish was interrupted");
@@ -4473,7 +4633,7 @@ public abstract class CslTestBase extends NbTestCase {
         @Override
         public void publish(LogRecord record) {
             String msg = record.getMessage();
-            if ("scanSources".equals(msg)) {
+            if ("scanSources".equals(msg) || (binaries && "scanBinary".equals(msg))) {
                 latch.countDown();
             }
         }

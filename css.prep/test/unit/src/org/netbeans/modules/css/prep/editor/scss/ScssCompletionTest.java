@@ -94,7 +94,7 @@ public class ScssCompletionTest extends CssModuleTestBase {
     public void testVarCompletionInMixinBody() throws ParseException {
         checkCC("$var: 1;  @mixin my { $| }", arr("$var"), Match.EXACT);
         checkCC("$var: 1;  @mixin my { $v| }", arr("$var"), Match.EXACT);
-        
+
         checkCC("$var: 1;  @mixin my { color: $| }", arr("$var"), Match.EXACT);
         checkCC("$var: 1;  @mixin my { color: $va| }", arr("$var"), Match.EXACT);
 
@@ -127,6 +127,37 @@ public class ScssCompletionTest extends CssModuleTestBase {
     public void testMixinsCompletion() throws ParseException {
         checkCC("@mixin mymixin() {}\n @include | ", arr("mymixin"), Match.CONTAINS);
         checkCC("@mixin mymixin() {}\n @include mymi| ", arr("mymixin"), Match.EXACT);
+    }
+
+    public void testMixinsCompletion2() throws ParseException {
+        checkCC("div{\n"
+                + "    @include |;\n"
+                + "}\n"
+                + "\n"
+                + "\n"
+                + "@mixin mix1($dist) {\n"
+                + "  float: left;\n"
+                + "  margin-left: $dist;\n"
+                + "}\n"
+                + "@mixin mix2($dist) {\n"
+                + "  float: left;\n"
+                + "  margin-left: $dist;\n"
+                + "}", arr("mix1", "mix2"), Match.EXACT);
+
+        checkCC("div{\n"
+                + "    @include mi|;\n"
+                + "}\n"
+                + "\n"
+                + "\n"
+                + "@mixin mix1($dist) {\n"
+                + "  float: left;\n"
+                + "  margin-left: $dist;\n"
+                + "}\n"
+                + "@mixin mix2($dist) {\n"
+                + "  float: left;\n"
+                + "  margin-left: $dist;\n"
+                + "}", arr("mix1", "mix2"), Match.EXACT);
+
     }
 
     public void testDeclarationsInMixin() throws ParseException {
@@ -164,13 +195,13 @@ public class ScssCompletionTest extends CssModuleTestBase {
         checkCC("@mixin mymixin() { | \n color: blue} ", arr("table"), Match.CONTAINS);
         checkCC("@mixin mymixin() { ta| \n color: blue} ", arr("table"), Match.CONTAINS);
     }
-    
+
     public void testSelectorsInMixinWithNestedRule() throws ParseException {
         //we are checking insert prefixes!
         checkCC("@mixin mymixin() { | div { } } ", arr("div"), Match.CONTAINS);
         checkCC("@mixin mymixin() { tabl| div { } } ", arr("table"), Match.CONTAINS);
         checkCC("@mixin mymixin() { table| div { } } ", arr("table"), Match.CONTAINS);
-        
+
         checkCC("@mixin mymixin() { div {} | } ", arr("div"), Match.CONTAINS);
         checkCC("@mixin mymixin() { div {} tabl|  } ", arr("table"), Match.CONTAINS);
         checkCC("@mixin mymixin() { div {} table|  } ", arr("table"), Match.CONTAINS);
@@ -185,4 +216,41 @@ public class ScssCompletionTest extends CssModuleTestBase {
                 + "}", arr("red"), Match.CONTAINS);
 
     }
+
+    public void testPropertyValueCompletion() throws ParseException {
+        checkCC(".clz { color: | }", arr("red"), Match.CONTAINS);
+        checkCC(".clz { color: f| }", arr("fuchsia"), Match.CONTAINS);
+        checkCC(".clz { color: fuch| }", arr("fuchsia", "$color_chooser"), Match.EXACT);
+    }
+
+    //Bug 233597 - Completion for color based properties offers colors twice
+    public void testPropertyValueCompletionDoesntOfferValuesMoreTimes() throws ParseException {
+        checkCC("div{\n"
+                + "       color: red | \n"
+                + "   }",
+                arr("red"), Match.DOES_NOT_CONTAIN);
+    }
+
+    //Bug 234184 - Sass: missing completion for mixins inside media query
+    public void testMixinsCompletionInMQ() throws ParseException {
+        checkCC("@mixin test2($para, $para2) { \n"
+                + "}\n"
+                + "@mixin test($para, $para2) { \n"
+                + "}\n"
+                + "@for $i from 1 through 3 { \n"
+                + "   @media tv {  \n"
+                + "        @include | \n"
+                + " }\n"
+                + "}", arr("test2", "test"), Match.EXACT);
+        checkCC("@mixin one($para, $para2) { \n"
+                + "}\n"
+                + "@mixin two($para, $para2) { \n"
+                + "}\n"
+                + "@for $i from 1 through 3 { \n"
+                + "   @media tv {  \n"
+                + "        @include o| \n"
+                + " }\n"
+                + "}", arr("one"), Match.EXACT);
+    }
+    
 }

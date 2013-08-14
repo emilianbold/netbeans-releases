@@ -46,7 +46,7 @@ import java.net.URL;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.groovy.antproject.base.AbstractGroovyExtender;
 import org.netbeans.modules.groovy.antproject.common.BuildScriptType;
-import org.netbeans.modules.groovy.support.spi.GroovyExtender;
+import org.netbeans.modules.groovy.support.spi.GroovyExtenderImplementation;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
@@ -56,7 +56,7 @@ import org.netbeans.spi.project.ProjectServiceProvider;
  */
 @ProjectServiceProvider(
     service =
-        GroovyExtender.class,
+        GroovyExtenderImplementation.class,
     projectType = {
         "org-netbeans-modules-j2ee-ejbjarproject"
     }

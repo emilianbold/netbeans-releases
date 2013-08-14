@@ -41,18 +41,17 @@
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
  */
-
 package org.netbeans.performance.languages.actions;
 
+import junit.framework.Test;
 import org.netbeans.modules.performance.utilities.PerformanceTestCase;
 import org.netbeans.performance.languages.setup.ScriptingSetup;
-
 import org.netbeans.jellytools.Bundle;
 import org.netbeans.jellytools.NewProjectWizardOperator;
 import org.netbeans.jellytools.EditorOperator;
+import static org.netbeans.jellytools.JellyTestCase.emptyConfiguration;
 import org.netbeans.jemmy.operators.ComponentOperator;
-import org.netbeans.junit.NbTestSuite;
-import org.netbeans.junit.NbModuleSuite;
+import org.netbeans.modules.performance.guitracker.LoggingRepaintManager;
 
 /**
  *
@@ -61,62 +60,56 @@ import org.netbeans.junit.NbModuleSuite;
 public class CreatePHPProjectTest extends PerformanceTestCase {
 
     private NewProjectWizardOperator wizard;
-    public String category, project, project_name, project_type,  editor_name;
-    
-    public CreatePHPProjectTest(String testName)
-    {
-        super(testName);        
+    public String category, project, project_name, project_type, editor_name;
+
+    public CreatePHPProjectTest(String testName) {
+        super(testName);
         expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;
-    }
-    
-    public CreatePHPProjectTest(String testName, String performanceDataName)
-    {
-        super(testName,performanceDataName);
-        expectedTime = 10000;
-        WAIT_AFTER_OPEN=20000;
+        WAIT_AFTER_OPEN = 20000;
     }
 
-    public static NbTestSuite suite() {
-        NbTestSuite suite = new NbTestSuite();
-        suite.addTest(NbModuleSuite.create(NbModuleSuite.createConfiguration(ScriptingSetup.class)
-             .addTest(CreatePHPProjectTest.class)
-             .enableModules(".*").clusters(".*")));
-        return suite;
+    public CreatePHPProjectTest(String testName, String performanceDataName) {
+        super(testName, performanceDataName);
+        expectedTime = 10000;
+        WAIT_AFTER_OPEN = 20000;
+    }
+
+    public static Test suite() {
+        return emptyConfiguration().addTest(ScriptingSetup.class).addTest(CreatePHPProjectTest.class).suite();
     }
 
     @Override
-    public void initialize(){
+    public void initialize() {
         closeAllModal();
     }
 
     @Override
-    public void prepare(){
-        repaintManager().addRegionFilter(repaintManager().IGNORE_STATUS_LINE_FILTER);
-        repaintManager().addRegionFilter(repaintManager().IGNORE_DIFF_SIDEBAR_FILTER);
+    public void prepare() {
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_STATUS_LINE_FILTER);
+        repaintManager().addRegionFilter(LoggingRepaintManager.IGNORE_DIFF_SIDEBAR_FILTER);
         wizard = NewProjectWizardOperator.invoke();
         wizard.selectCategory(category);
         wizard.selectProject(project);
         wizard.next();
     }
-    
-    public ComponentOperator open(){
+
+    public ComponentOperator open() {
         wizard.finish();
         return null;
     }
-    
+
     @Override
-    public void close(){
+    public void close() {
         repaintManager().resetRegionFilters();
         EditorOperator.closeDiscardAll();
-    }    
-    
+    }
+
     public void testCreatePhpProject() {
         category = "PHP";
         project = Bundle.getString("org.netbeans.modules.php.project.ui.wizards.Bundle", "Templates/Project/PHP/PHPProject.php");
         project_type = "PHPApplication";
         editor_name = "index.php";
-        doMeasurement();        
+        doMeasurement();
     }
 
 }

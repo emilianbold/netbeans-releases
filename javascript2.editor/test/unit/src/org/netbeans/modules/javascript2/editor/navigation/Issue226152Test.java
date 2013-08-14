@@ -91,4 +91,9 @@ public class Issue226152Test  extends JsTestBase{
             ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
         );
     }
+
+    @Override
+    protected boolean classPathContainsBinaries() {
+        return true;
+    }
 }

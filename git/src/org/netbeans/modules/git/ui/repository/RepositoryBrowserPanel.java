@@ -1550,7 +1550,7 @@ public class RepositoryBrowserPanel extends JPanel implements Provider, Property
             super(Children.LEAF, repository);
             this.uri = uri;
             this.remote = remote;
-            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/" + (uri.push ? "push" : "fetch") + ".png"); //NOI18N
+            setIconBaseWithExtension("org/netbeans/modules/git/resources/icons/remote_" + (uri.push ? "push" : "fetch") + ".png"); //NOI18N
         }
 
         @Override

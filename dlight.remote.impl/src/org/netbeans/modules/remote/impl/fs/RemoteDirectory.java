@@ -1256,7 +1256,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    public final InputStream getInputStream() throws FileNotFoundException {
+    public final InputStream getInputStream(boolean checkLock) throws FileNotFoundException {
         throw new FileNotFoundException(getPath());
     }
 
@@ -1326,7 +1326,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
     }
 
     @Override
-    protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
+    protected void refreshImpl(boolean recursive, Set<String> antiLoop, boolean expected, RefreshMode refreshMode) throws ConnectException, IOException, InterruptedException, CancellationException, ExecutionException {
         if (antiLoop != null) {
             if (antiLoop.contains(getPath())) {
                 return;
@@ -1344,7 +1344,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         DirectoryStorage refreshedStorage = refreshDirectoryStorage(null, expected);
         if (recursive) {
             for (RemoteFileObjectBase child : getExistentChildren(refreshedStorage)) {
-                child.refreshImpl(true, antiLoop, expected);
+                child.refreshImpl(true, antiLoop, expected, RefreshMode.FROM_PARENT);
             }
         }
     }

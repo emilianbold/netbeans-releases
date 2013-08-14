@@ -54,7 +54,6 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.javaee.project.api.ClientSideDevelopmentSupport;
-import org.netbeans.modules.javaee.project.api.JavaEEProjectSettingConstants;
 import org.netbeans.modules.javaee.project.api.WhiteListUpdater;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.utils.LoggingUtils;
@@ -66,6 +65,10 @@ import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ui.ProjectOpenedHook;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
+import org.openide.util.WeakListeners;
+import org.openide.windows.WindowManager;
+import org.openide.windows.WindowSystemEvent;
+import org.openide.windows.WindowSystemListener;
 
 @ProjectServiceProvider(service = {ProjectOpenedHook.class}, projectType={
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
@@ -145,6 +148,10 @@ public class ProjectHookImpl extends ProjectOpenedHook {
             getPreferences().addPreferenceChangeListener(preferencesListener);
         }
 
+        // #233052
+        WindowManager windowManager = WindowManager.getDefault();
+        windowManager.addWindowSystemListener(WeakListeners.create(WindowSystemListener.class, windowSystemListener, windowManager));
+
         RP.post(new Runnable() {
             @Override
             public void run() {
@@ -206,21 +213,25 @@ public class ProjectHookImpl extends ProjectOpenedHook {
         Profile profile = null;
         String projectType = getProjectType();
         if (projectType != null) {
-            if ("ear".equals(projectType)) { //NOI18N
-                Ear earProj = Ear.getEar(project.getProjectDirectory());
-                if (earProj != null) {
-                    profile = earProj.getJ2eeProfile();
-                }
-            } else if ("war".equals(projectType)) { //NOI18N
-                WebModule webM = WebModule.getWebModule(project.getProjectDirectory());
-                if (webM != null) {
-                    profile = webM.getJ2eeProfile();
-                }
-            } else if ("ejb".equals(projectType)) { //NOI18N
-                EjbJar ejbProj = EjbJar.getEjbJar(project.getProjectDirectory());
-                if (ejbProj != null) {
-                    profile = ejbProj.getJ2eeProfile();
-                }
+            switch (projectType) {
+                case "ear": //NOI18N
+                    Ear earProj = Ear.getEar(project.getProjectDirectory());
+                    if (earProj != null) {
+                        profile = earProj.getJ2eeProfile();
+                    }
+                    break;
+                case "war": //NOI18N
+                    WebModule webM = WebModule.getWebModule(project.getProjectDirectory());
+                    if (webM != null) {
+                        profile = webM.getJ2eeProfile();
+                    }
+                    break;
+                case "ejb": //NOI18N
+                    EjbJar ejbProj = EjbJar.getEjbJar(project.getProjectDirectory());
+                    if (ejbProj != null) {
+                        profile = ejbProj.getJ2eeProfile();
+                    }
+                    break;
             }
         }
         if (profile != null) {
@@ -236,4 +247,27 @@ public class ProjectHookImpl extends ProjectOpenedHook {
         }
         return null;
     }
+
+    private final WindowSystemListener windowSystemListener = new WindowSystemListener() {
+
+        @Override
+        public void beforeLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void afterLoad(WindowSystemEvent event) {
+        }
+
+        @Override
+        public void beforeSave(WindowSystemEvent event) {
+            ClientSideDevelopmentSupport clientSideSupport = project.getLookup().lookup(ClientSideDevelopmentSupport.class);
+            if (clientSideSupport != null) {
+                clientSideSupport.close();
+            }
+        }
+
+        @Override
+        public void afterSave(WindowSystemEvent event) {
+        }
+    };
 }

@@ -56,6 +56,7 @@ import java.awt.event.ActionListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -74,6 +75,7 @@ import javax.swing.JSplitPane;
 import javax.swing.JSpinner;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
+import javax.swing.KeyStroke;
 import javax.swing.OverlayLayout;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
@@ -97,13 +99,19 @@ import org.netbeans.modules.form.layoutsupport.LayoutSupportManager;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.AddGapsAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.RemoveGapsAction;
 import org.netbeans.modules.form.layoutsupport.griddesigner.actions.DesignContainerAction;
+import org.openide.awt.AcceleratorBinding;
 import org.openide.awt.Mnemonics;
 import org.openide.explorer.propertysheet.PropertySheet;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
 import org.openide.nodes.FilterNode;
 import org.openide.nodes.Node;
+import org.openide.util.ContextAwareAction;
 import org.openide.util.HelpCtx;
 import org.openide.util.ImageUtilities;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.util.actions.SystemAction;
 
 /**
@@ -176,10 +184,12 @@ public class GridDesigner extends JPanel {
         toolBar.setFloatable(false);
         UndoRedoSupport support = UndoRedoSupport.getSupport(formModel);
         support.reset(glassPane);
-        JButton redoButton = initUndoRedoButton(toolBar.add(support.getRedoAction()));
-        toolBar.add(redoButton);
         JButton undoButton = initUndoRedoButton(toolBar.add(support.getUndoAction()));
         toolBar.add(undoButton);
+        JButton redoButton = initUndoRedoButton(toolBar.add(support.getRedoAction()));
+        toolBar.add(redoButton);
+        setupUndoRedoShortcut(true, support.getUndoAction());
+        setupUndoRedoShortcut(false, support.getRedoAction());
         toolBar.add(Box.createRigidArea(new Dimension(15,10)));
 
         gapButton = initGapButton();
@@ -270,7 +280,33 @@ public class GridDesigner extends JPanel {
 
         HelpCtx.setHelpIDString(this, "gui.layouts.griddesigner"); // NOI18N
     }
-    
+
+    private void setupUndoRedoShortcut(boolean undo, Action ourAction) {
+        // try to obtain the same shortcut for undo/redo as defined in the IDE
+        KeyStroke ks = null;
+        FileObject undoRedoFO = FileUtil.getConfigFile(undo ? "Menu/Edit/org-openide-actions-UndoAction.shadow" : "Menu/Edit/org-openide-actions-RedoAction.shadow"); // NOI18N
+        if (undoRedoFO != null) {
+            ContextAwareAction undoRedoAction = SystemAction.get(undo ? org.openide.actions.UndoAction.class : org.openide.actions.RedoAction.class);
+            Action a = undoRedoAction.createContextAwareInstance(Lookup.EMPTY);
+            AcceleratorBinding.setAccelerator(a, undoRedoFO);
+            Object ksObj = a.getValue(Action.ACCELERATOR_KEY);
+            if (ksObj instanceof KeyStroke) {
+                ks = (KeyStroke) ksObj;
+            }
+        }
+        if (ks == null) { // fallback to Ctrl-Z/Ctrl-Y
+            ks = Utilities.stringToKey(undo ? "D-Z" : "D-Y"); // NOI18N
+        }
+        String actionId = ourAction.getClass().getName();
+        getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(ks, actionId);
+        getActionMap().put(actionId, ourAction);
+    }
+
+    public void cleanup() {
+        setSelectedNodes(Collections.EMPTY_LIST);
+        removeFormModelListener();
+    }
+
     /**
      * Updates the gap toggle button and gap width/height spinners state.
      */
@@ -557,7 +593,7 @@ public class GridDesigner extends JPanel {
         return new PropertyChangeListener() {
             @Override
             public void propertyChange(PropertyChangeEvent evt) {
-                if (!glassPane.isUserActionInProgress()) {
+                if (isShowing() && !glassPane.isUserActionInProgress()) {
                     if (!updateScheduled) {
                         // This method is called several times when a change
                         // is done to some property (in property sheet)
@@ -644,16 +680,15 @@ public class GridDesigner extends JPanel {
      * @param menu menu to update.
      */
     void updateContextMenu(DesignerContext context, JPopupMenu menu) {
-        if (metaSelection.isEmpty()) {
-            if ((context.getFocusedColumn() == -1) == (context.getFocusedRow() == -1)) {
-                RADVisualContainer root = (RADVisualContainer)replicator.getTopMetaComponent();
-                RADVisualContainer parent = root.getParentContainer();
-                if (haveIdenticalLayoutDelegate(root, parent)) {
-                    // Design Parent action
-                    menu.add(new DesignContainerAction(this, parent, true));
-                }
+        if ((context.getFocusedColumn() == -1) == (context.getFocusedRow() == -1)) {
+            RADVisualContainer root = (RADVisualContainer)replicator.getTopMetaComponent();
+            RADVisualContainer parent = root.getParentContainer();
+            if (haveIdenticalLayoutDelegate(root, parent)) {
+                // Design Parent action
+                menu.add(new DesignContainerAction(this, parent, true));
             }
-        } else if (metaSelection.size() == 1) {
+        }
+        if (metaSelection.size() == 1) {
             RADVisualContainer root = (RADVisualContainer)replicator.getTopMetaComponent();
             RADVisualComponent comp = metaSelection.iterator().next();
             if (comp instanceof RADVisualContainer) {

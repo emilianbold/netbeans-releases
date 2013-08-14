@@ -48,6 +48,7 @@ import javax.swing.DefaultCellEditor;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.UIManager;
+import javax.swing.text.DefaultCaret;
 import org.jdesktop.swingx.renderer.JRendererCheckBox;
 import org.netbeans.modules.db.dataview.util.DataViewUtils;
 
@@ -94,6 +95,8 @@ public class ResultSetTableCellEditor extends DefaultCellEditor {
         };
 
         textField.addActionListener(delegate);
+        // #204176 - workarround for MacOS L&F
+        textField.setCaret(new DefaultCaret());
     }
 
     @Override

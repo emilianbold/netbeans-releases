@@ -204,6 +204,8 @@ public final class JmeSdkCdcDetector extends CDCPlatformDetector {
         for (final FileObject fo : fileObjects) {
             if (fo.isData() && "index".equals(fo.getName())) { //NOI18N
                 folders.add(fo.getParent());
+            } else if (fo.isData() && fo.hasExt("zip") && fo.getParent().getName().equals("api")) {
+                folders.add(fo);
             }
         }
         for (final FileObject fo : fileObjects) {

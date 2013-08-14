@@ -7,7 +7,7 @@
 
 <helenProject version="1.0">
     <documents>
-		<directory title="/Users/smorgan/Documents/netbeans-repo/cnd-main/cnd/javahelp/org/netbeans/modules/cnd/help">
+		<directory title="/net/edgard/export/repos/cnd-main/cnd/javahelp/org/netbeans/modules/cnd/help">
 			<directory title="CandC++ProjectBasics">
 				<file title="AddtlIncludeDirectories.html"/>
 				<file title="AddtlLibraryDirectories.html"/>
@@ -334,6 +334,7 @@
 				<file title="CodeAssistanceWizardP4.html"/>
 				<file title="CodeAssistanceWizardP5.html"/>
 				<file title="CodeAssistanceWizardP6.html"/>
+				<file title="CodeCompletionOptions.html"/>
 				<file title="ConfiguringBuildTools.html"/>
 				<file title="ConfiguringCodeStyle.html"/>
 				<file title="ConfiguringFileExtensions.html"/>

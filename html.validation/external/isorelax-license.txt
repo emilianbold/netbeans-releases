@@ -1,8 +1,8 @@
 Name: ISO-RELAX
 Version: 20041111
-License: MIT
+License: MIT-isorelax
 OSR: -
-Files: isorelax20041111.jar
+Files: isorelax.jar
 Description: Relax validation APIs
 Origin: http://sourceforge.net/projects/iso-relax/
 

@@ -55,8 +55,8 @@ import java.util.List;
 import java.util.Set;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingUtilities;
-import javax.swing.event.TableModelEvent;
-import javax.swing.event.TableModelListener;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -183,9 +183,9 @@ public class SelectConfigFilesPanel extends javax.swing.JPanel {
         this.availableFiles = availableFiles;
         configFileTable.setEnabled(true);
         ConfigFilesUIs.connectFilesSelectionTable(availableFiles, alreadySelectedFiles, configFileTable);
-        configFileTable.getModel().addTableModelListener(new TableModelListener() {
+        ConfigFilesUIs.setCheckBoxListener(configFileTable, new ChangeListener() {
             @Override
-            public void tableChanged(TableModelEvent e) {
+            public void stateChanged(ChangeEvent e) {
                 updateSelectAllNonButtons();
             }
         });

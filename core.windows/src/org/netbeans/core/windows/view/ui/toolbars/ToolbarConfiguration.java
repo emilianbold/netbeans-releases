@@ -398,6 +398,13 @@ public final class ToolbarConfiguration implements ToolbarPool.Configuration {
      */
     public Component activate () {
         refresh();
+        //#233904
+        SwingUtilities.invokeLater( new Runnable() {
+            @Override
+            public void run() {
+                rebuildMenu();
+            }
+        });
         return toolbarPanel;
     }
 

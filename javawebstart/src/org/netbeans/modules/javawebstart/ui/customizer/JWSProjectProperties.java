@@ -96,7 +96,6 @@ import org.openide.util.MutexException;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
 
-import static org.netbeans.modules.java.api.common.project.ProjectProperties.JAVAC_CLASSPATH;
 import static org.netbeans.modules.java.api.common.project.ProjectProperties.ENDORSED_CLASSPATH;
 
 /**
@@ -151,7 +150,10 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     private static final String JAR_INDEX = "jar.index";    //NOI18N
     private static final String JAR_ARCHIVE_DISABLED ="jar.archive.disabled";   //NOI18N
     public static final String BUILD_SCRIPT ="buildfile";      //NOI18N
-
+    
+    // explicit manifest entries (see #231951, #234231, http://docs.oracle.com/javase/7/docs/technotes/guides/jweb/no_redeploy.html)
+    public static final String MANIFEST_CUSTOM_CODEBASE = "manifest.custom.codebase"; // NOI18N
+    public static final String MANIFEST_CUSTOM_PERMISSIONS = "manifest.custom.permissions"; // NOI18N
 
     public enum DescType {
         application, applet, component;
@@ -406,6 +408,15 @@ public class JWSProjectProperties /*implements TableModelListener*/ {
     }
     
     private void storeRest(EditableProperties editableProps, EditableProperties privProps) {
+        // create extended manifest attribute properties if not existing
+        if(!editableProps.containsKey(MANIFEST_CUSTOM_CODEBASE) && !privProps.containsKey(MANIFEST_CUSTOM_CODEBASE)) {
+            editableProps.setProperty(MANIFEST_CUSTOM_CODEBASE, ""); // NOI18N
+            editableProps.setComment(MANIFEST_CUSTOM_CODEBASE, new String[]{"# " + NbBundle.getMessage(JWSProjectProperties.class, "COMMENT_manifest_custom_codebase")}, false); // NOI18N
+        }
+        if(!editableProps.containsKey(MANIFEST_CUSTOM_PERMISSIONS) && !privProps.containsKey(MANIFEST_CUSTOM_PERMISSIONS)) {
+            editableProps.setProperty(MANIFEST_CUSTOM_PERMISSIONS, ""); // NOI18N
+            editableProps.setComment(MANIFEST_CUSTOM_PERMISSIONS, new String[]{"# " + NbBundle.getMessage(JWSProjectProperties.class, "COMMENT_manifest_custom_permissions")}, false); // NOI18N
+        }
         // store codebase type
         String selItem = ((CodebaseComboBoxModel) codebaseModel).getSelectedCodebaseItem();
         String propName = null;

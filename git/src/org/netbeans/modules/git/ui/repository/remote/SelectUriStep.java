@@ -116,12 +116,10 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             panel.rbConfiguredUri,
             panel.rbCreateNew,
             panel.lblRemoteNames,
+            panel.cbPersistRemote,
             panel.cmbRemoteNames
         };
         this.mode = mode;
-        if (mode == Mode.PUSH) {
-            panel.remotesPanel.setVisible(false);
-        }
         remoteNameEditTimer = new Timer(300, this);
         remoteNameEditTimer.setRepeats(false);
         remoteNameEditTimer.stop();
@@ -161,12 +159,17 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             panel.cmbConfiguredRepositories.setSelectedIndex(0);
         }
         panel.rbConfiguredUri.setSelected(!panel.rbCreateNew.isSelected());
-        panel.cmbRemoteNames.setModel(new DefaultComboBoxModel(remotes.keySet().toArray()));
+        if (remotes.isEmpty()) {
+            panel.cmbRemoteNames.setModel(new DefaultComboBoxModel(new String[] { "origin" })); //NOI18N
+        } else {
+            panel.cmbRemoteNames.setModel(new DefaultComboBoxModel(remotes.keySet().toArray()));
+        }
     }
 
     private void attachListeners () {
         panel.rbCreateNew.addActionListener(this);
         panel.rbConfiguredUri.addActionListener(this);
+        panel.cbPersistRemote.addActionListener(this);
         panel.cmbConfiguredRepositories.addActionListener(this);
         panel.cmbRemoteNames.addItemListener(this);
         ((JTextComponent) panel.cmbRemoteNames.getEditor().getEditorComponent()).getDocument().addDocumentListener(this);
@@ -179,6 +182,8 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             enableFields();
             validateBeforeNext();
         } else if (e.getSource() == remoteNameEditTimer) {
+            validateBeforeNext();
+        } else if (e.getSource() == panel.cbPersistRemote) {
             validateBeforeNext();
         }
     }
@@ -228,7 +233,8 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
         } else if (panel.rbCreateNew.isSelected()) {
             valid = repository.isValid();
             msg = repository.getMessage();
-            if (valid && mode != Mode.PUSH && ((JTextComponent) panel.cmbRemoteNames.getEditor().getEditorComponent()).getText().trim().isEmpty()) {
+            if (valid && (mode != Mode.PUSH || panel.cbPersistRemote.isSelected())
+                    && ((JTextComponent) panel.cmbRemoteNames.getEditor().getEditorComponent()).getText().trim().isEmpty()) {
                 valid = false;
                 msg = new Message(NbBundle.getMessage(SelectUriStep.class, "MSG_SelectUriStep.errorEmptyRemoteName"), false); //NOI18N
             }

@@ -45,8 +45,11 @@ import java.util.List;
 import javax.swing.text.BadLocationException;
 import org.netbeans.modules.css.lib.TestUtil;
 import org.netbeans.modules.css.lib.api.CssParserResult;
+import org.netbeans.modules.css.model.api.ElementFactory;
+import org.netbeans.modules.css.model.api.Model;
 import org.netbeans.modules.css.model.api.ModelTestBase;
-import org.netbeans.modules.css.model.api.*;
+import org.netbeans.modules.css.model.api.Page;
+import org.netbeans.modules.css.model.api.StyleSheet;
 import org.netbeans.modules.parsing.spi.ParseException;
 
 /**

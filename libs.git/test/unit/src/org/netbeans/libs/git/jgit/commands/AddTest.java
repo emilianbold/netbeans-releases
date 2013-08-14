@@ -47,6 +47,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -61,6 +65,7 @@ import org.eclipse.jgit.lib.FileMode;
 import org.eclipse.jgit.lib.ObjectId;
 import org.eclipse.jgit.lib.ObjectInserter;
 import org.eclipse.jgit.lib.ObjectLoader;
+import org.eclipse.jgit.lib.ObjectReader;
 import org.eclipse.jgit.lib.Repository;
 import org.eclipse.jgit.lib.StoredConfig;
 import org.eclipse.jgit.revwalk.RevCommit;
@@ -69,6 +74,7 @@ import org.eclipse.jgit.treewalk.TreeWalk;
 import org.eclipse.jgit.treewalk.WorkingTreeIterator;
 import org.eclipse.jgit.treewalk.filter.PathFilter;
 import org.eclipse.jgit.treewalk.filter.PathFilterGroup;
+import org.eclipse.jgit.util.RawParseUtils;
 import org.netbeans.libs.git.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitStatus;
@@ -491,6 +497,70 @@ public class AddTest extends AbstractGitTestCase {
         assertEquals(0, res.size());
         assertStatus(client.getStatus(roots, NULL_PROGRESS_MONITOR),
                 workDir, f, true, Status.STATUS_NORMAL, Status.STATUS_NORMAL, Status.STATUS_NORMAL, false);
+    }
+    
+    public void testAddSymlink () throws Exception {
+        if (isWindows()) {
+            return;
+        }
+        String path = "folder/file";
+        File f = new File(workDir, path);
+        f.getParentFile().mkdir();
+        write(f, "file");
+        add(f);
+        commit(f);
+        
+        Thread.sleep(1100);
+        
+        // try with commandline client
+        File link = new File(workDir, "link");
+        runExternally(workDir, Arrays.asList("ln", "-s", path, link.getName()));
+        long ts = Files.readAttributes(Paths.get(link.getAbsolutePath()), BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS).lastModifiedTime().toMillis();
+        runExternally(workDir, Arrays.asList("git", "add", link.getName()));
+        DirCacheEntry e = repository.readDirCache().getEntry(link.getName());
+        assertEquals(FileMode.SYMLINK, e.getFileMode());
+        ObjectId id = e.getObjectId();
+        assertEquals(ts, e.getLastModified() / 1000 * 1000);
+        ObjectReader reader = repository.getObjectDatabase().newReader();
+        assertTrue(reader.has(e.getObjectId()));
+        byte[] bytes = reader.open(e.getObjectId()).getBytes();
+        assertEquals(path, RawParseUtils.decode(bytes));
+        
+        // now with internal
+        File link2 = new File(workDir, "link2");
+        Files.createSymbolicLink(Paths.get(link2.getAbsolutePath()), Paths.get(path));
+        getClient(workDir).add(new File[] { link2 }, NULL_PROGRESS_MONITOR);
+        
+        DirCacheEntry e2 = repository.readDirCache().getEntry(link2.getName());
+        assertEquals(FileMode.SYMLINK, e2.getFileMode());
+        assertEquals(id, e2.getObjectId());
+        assertEquals(0, e2.getLength());
+        assertEquals(ts, e2.getLastModified() / 1000 * 1000);
+        assertTrue(reader.has(e2.getObjectId()));
+        bytes = reader.open(e2.getObjectId()).getBytes();
+        assertEquals(path, RawParseUtils.decode(bytes));
+        reader.release();
+    }
+    
+    public void testAddMissingSymlink () throws Exception {
+        if (isWindows()) {
+            return;
+        }
+        String path = "folder/file";
+        File f = new File(workDir, path);
+        
+        // try with commandline client
+        File link = new File(workDir, "link");
+        Files.createSymbolicLink(Paths.get(link.getAbsolutePath()), Paths.get(path));
+        getClient(workDir).add(new File[] { link }, NULL_PROGRESS_MONITOR);
+        DirCacheEntry e = repository.readDirCache().getEntry(link.getName());
+        assertEquals(FileMode.SYMLINK, e.getFileMode());
+        assertEquals(0, e.getLength());
+        ObjectReader reader = repository.getObjectDatabase().newReader();
+        assertTrue(reader.has(e.getObjectId()));
+        byte[] bytes = reader.open(e.getObjectId()).getBytes();
+        assertEquals(path, RawParseUtils.decode(bytes));
+        reader.release();
     }
 
     private void assertDirCacheEntry (Collection<File> files) throws IOException {

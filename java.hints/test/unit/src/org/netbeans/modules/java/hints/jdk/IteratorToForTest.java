@@ -490,6 +490,63 @@ public class IteratorToForTest {
                 .assertWarnings();
     }
     
+    @Test public void for234091a() throws Exception {
+        HintTest.create()
+                .input("package test;\n"
+                     + "import java.util.*;\n"
+                     + "public class Test {\n"
+                     + "    public void method(String[] strings) {\n"
+                     + "        for (int i = 0; i < strings.length; i++) {\n"
+                     + "            String string = strings[i];\n"
+                     + "            System.out.println(string);\n"
+                     + "        }\n"
+                     + "    }\n"
+                     + "}\n")
+                .run(IteratorToFor.class)
+                .findWarning("4:8-4:11:verifier:" + Bundle.ERR_IteratorToForArray())
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n"
+                                    + "import java.util.*;\n"
+                                    + "public class Test {\n"
+                                    + "    public void method(String[] strings) {\n"
+                                    + "        for (String string : strings) {\n"
+                                    + "            System.out.println(string);\n"
+                                    + "        }\n"
+                                    + "    }\n"
+                                    + "}\n");
+    }
+
+    @Test public void for234091b() throws Exception {
+        HintTest.create()
+                .input("package test;\n"
+                     + "import java.util.*;\n"
+                     + "public class Test {\n"
+                     + "    public void method(String[] strings) {\n"
+                     + "        for (int i = 0; i < strings.length; i++) {\n"
+                     + "            System.out.println(strings[i]);\n"
+                     + "            String string = strings[i];\n"
+                     + "            System.out.println(string);\n"
+                     + "        }\n"
+                     + "    }\n"
+                     + "}\n")
+                .run(IteratorToFor.class)
+                .findWarning("4:8-4:11:verifier:" + Bundle.ERR_IteratorToForArray())
+                .applyFix()
+                .assertCompilable()
+                .assertVerbatimOutput("package test;\n"
+                                    + "import java.util.*;\n"
+                                    + "public class Test {\n"
+                                    + "    public void method(String[] strings) {\n"
+                                    + "        for (String string1 : strings) {\n"
+                                    + "            System.out.println(string1);\n"
+                                    + "            String string = string1;\n"
+                                    + "            System.out.println(string);\n"
+                                    + "        }\n"
+                                    + "    }\n"
+                                    + "}\n");
+    }
+
     // XXX also ought to match: for (Iterator i = coll.iterator(); i.hasNext(); ) {use((Type) i.next());}
     // XXX match final modifiers on iterator and/or element vars
     // XXX remove import of java.util.Iterator if present

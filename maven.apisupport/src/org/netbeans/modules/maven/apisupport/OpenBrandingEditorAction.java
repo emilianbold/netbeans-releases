@@ -51,6 +51,7 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import javax.swing.AbstractAction;
@@ -166,7 +167,7 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
                 return FileUtil.toFile(p.getProjectDirectory());
             }
             @Override protected BrandingSupport createBranding() throws IOException {
-                return new GenericBrandingSupport(p, brandingPath);
+                return new GenericBrandingSupport(p, brandingPath, this.locale = Locale.getDefault());
             }
             @Override protected boolean isBrandingEnabledRefresh() {
                 return true;
@@ -176,6 +177,10 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
             }
             @Override protected String loadTitle() {
                 return null;
+            }
+            @Override
+            public void updateProjectInternationalizationLocales() {
+                
             }
         };
         model.init();
@@ -187,9 +192,10 @@ public class OpenBrandingEditorAction extends AbstractAction implements ContextA
         private final Project p;
         private Map<String,BrandableModuleImpl> modules;
 
-        GenericBrandingSupport(Project p, String brandingPath) throws IOException {
+        GenericBrandingSupport(Project p, String brandingPath, Locale locale) throws IOException {
             super(p, brandingPath);
             this.p = p;
+            this.locale = locale;
         }
 
         @Override protected BrandableModule findBrandableModule(String moduleCodeNameBase) {

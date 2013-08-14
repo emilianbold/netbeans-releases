@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.javascript2.editor;
 
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.BadLocationException;
@@ -55,6 +56,7 @@ import org.netbeans.editor.BaseDocument;
 import org.netbeans.editor.Utilities;
 import org.netbeans.lib.editor.util.CharSequenceUtilities;
 import org.netbeans.modules.csl.api.EditorOptions;
+import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.spi.GsfUtilities;
 import org.netbeans.modules.editor.indent.api.IndentUtils;
 import org.netbeans.modules.javascript2.editor.doc.JsDocumentationCompleter;
@@ -74,6 +76,9 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
      * (that does not also have code on the same line).
      */
     static final boolean CONTINUE_COMMENTS = Boolean.getBoolean("js.cont.comment"); // NOI18N
+
+    // unit testing
+    static boolean completeDocumentation = true;
 
     private static final Logger LOGGER = Logger.getLogger(JsTypedBreakInterceptor.class.getName());
 
@@ -131,9 +136,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
         JsTokenId id = token.id();
 
         // Insert a missing }
-        boolean insertRightBrace = isAddRightBrace(doc, offset);
-
-        if (!id.isError() && isInsertMatchingEnabled() && insertRightBrace && !isDocToken(id)) {
+        if (!id.isError() && isInsertMatchingEnabled() && !isDocToken(id) && isAddRightBrace(doc, offset)) {
             int indent = GsfUtilities.getLineIndent(doc, offset);
 
             int afterLastNonWhite = Utilities.getRowLastNonWhite(doc, offset);
@@ -474,7 +477,7 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
 
     @Override
     public void afterInsert(Context context) throws BadLocationException {
-        if (commentGenerator != null) {
+        if (completeDocumentation && commentGenerator != null) {
             JsDocumentationCompleter.generateCompleteComment(
                     (BaseDocument) context.getDocument(),
                     commentGenerator.getOffset(),
@@ -544,14 +547,56 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
      *  or false if not.
      */
     private boolean isAddRightBrace(BaseDocument doc, int caretOffset) throws BadLocationException {
-        if (LexUtilities.getTokenBalance(doc,
-                JsTokenId.BRACKET_LEFT_CURLY, JsTokenId.BRACKET_RIGHT_CURLY, caretOffset, language) <= 0) {
+        TokenSequence<? extends JsTokenId> ts = LexUtilities.getTokenSequence(doc, caretOffset, language);
+        if (ts == null) {
             return false;
         }
+
+        // get balance from start index of the tokenSequence
+        ts.moveIndex(0);
+        if (!ts.moveNext()) {
+            return false;
+        }
+
+        int balance = 0;
+        boolean balancedAfter = false;
+
+        do {
+            Token t = ts.token();
+
+            if (t.id() == JsTokenId.BRACKET_LEFT_CURLY) {
+                balance++;
+            } else if (t.id() == JsTokenId.BRACKET_RIGHT_CURLY) {
+                balance--;
+            }
+        } while (ts.offset() < caretOffset && ts.moveNext());
+
+        for (TokenSequenceIterator tsi = new TokenSequenceIterator(TokenHierarchy.get(doc).tokenSequenceList(ts.languagePath(), caretOffset, doc.getLength()), false); tsi.hasMore();) {
+            TokenSequence<?> sq = tsi.getSequence();
+            Token t = sq.token();
+
+            if (t.id() == JsTokenId.BRACKET_LEFT_CURLY) {
+                balance++;
+            } else if (t.id() == JsTokenId.BRACKET_RIGHT_CURLY) {
+                balance--;
+            }
+            if (balance == 0
+                    && (t.id() == JsTokenId.BRACKET_LEFT_CURLY || t.id() == JsTokenId.BRACKET_RIGHT_CURLY)) {
+                balancedAfter = true;
+                break;
+            }
+        }
+
+        if (balance < 0) {
+            return false;
+        }
+
         int caretRowStartOffset = org.netbeans.editor.Utilities.getRowStart(doc, caretOffset);
-        TokenSequence<? extends JsTokenId> ts = LexUtilities.getPositionedSequence(
-                doc, caretOffset, language);
+        ts = LexUtilities.getPositionedSequence(doc, caretOffset, language);
         if (ts == null) {
+            return false;
+        }
+        if (ts.offset() == caretOffset && !ts.movePrevious()) {
             return false;
         }
         boolean first = true;
@@ -572,7 +617,9 @@ public class JsTypedBreakInterceptor implements TypedBreakInterceptor {
                     }
                     break; // Skip
                 case BRACKET_LEFT_CURLY:
-                    return true;
+                    return !balancedAfter;
+                default:
+                    return false;
             }
             first = false;
         } while (ts.movePrevious());

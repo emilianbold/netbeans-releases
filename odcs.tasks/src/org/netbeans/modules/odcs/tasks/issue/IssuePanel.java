@@ -151,7 +151,14 @@ import org.openide.util.NbBundle.Messages;
 public class IssuePanel extends javax.swing.JPanel implements Scrollable {
     final SimpleDateFormat INPUT_DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd"); // NOI18N
     
-    private static final Color HIGHLIGHT_COLOR = new Color(217, 255, 217);
+    private static Color highlightColor = null;
+    static {
+        highlightColor = UIManager.getColor( "nb.bugtracking.label.highlight" ); //NOI18N
+        if( null == highlightColor ) {
+            highlightColor = new Color(217, 255, 217);
+        }
+    }
+    
     private static final String RESOLUTION_RESOLVED = "RESOLVED";               // NOI18N    
     private static final String STATUS_FIXED = "FIXED";                         // NOI18N
     private static final String STATUS_UNCONFIRMED = "UNCONFIRMED";             // NOI18N
@@ -551,7 +558,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
                 duplicateField.setEditable(false);
                 duplicateButton.setVisible(false);
                 duplicateField.setBorder(BorderFactory.createEmptyBorder(0,0,0,0));
-                duplicateField.setBackground(getBackground());
+                Color bkColor = getBackground();
+                if( null != bkColor ) {
+                    bkColor = new Color( bkColor.getRGB() );
+                }
+                duplicateField.setBackground(bkColor);
             } else {
                 JTextField field = new JTextField();
                 duplicateField.setEditable(true);
@@ -904,6 +915,11 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
             field.setUI(new BasicTextFieldUI());
         }
         field.setBackground(getBackground());
+        Color bkColor = getBackground();
+        if( null != bkColor ) {
+            bkColor = new Color( bkColor.getRGB() );
+        }
+        field.setBackground(bkColor);
         Caret caret = field.getCaret();
         if (caret instanceof DefaultCaret) {
             ((DefaultCaret)caret).setUpdatePolicy(DefaultCaret.NEVER_UPDATE);
@@ -1006,7 +1022,7 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         boolean highlight = !issue.getTaskData().isNew() && (issue.getFieldStatus(field) != ODCSIssue.FIELD_STATUS_UPTODATE);
         label.setOpaque(highlight);
         if (highlight) {
-            label.setBackground(HIGHLIGHT_COLOR);
+            label.setBackground(highlightColor);
         }
     }
 

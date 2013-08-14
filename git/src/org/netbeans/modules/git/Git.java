@@ -215,7 +215,7 @@ public final class Git {
     public GitClient getClient (File repository, GitProgressSupport progressSupport, boolean handleAuthenticationIssues) throws GitException {
         // get the only instance for the repository folder, so we can synchronize on it
         File repositoryFolder = getRepositoryRoot(repository);
-        if (repositoryFolder != null) {
+        if (repositoryFolder != null && repository.equals(repositoryFolder)) {
             repository = repositoryFolder;
         }
         GitClient client = new GitClient(repository, progressSupport, handleAuthenticationIssues);

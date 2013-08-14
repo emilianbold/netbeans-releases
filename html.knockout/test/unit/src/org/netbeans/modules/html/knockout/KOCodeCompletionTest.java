@@ -71,17 +71,7 @@ public class KOCodeCompletionTest extends JsCodeCompletionBase {
         checkCompletion("completion/with/index.html", "            <div data-bind=\"text: ^\"></div>", false);
     }
 
-    public void testIssue234569() throws Exception {
+    public void testIssue231569() throws Exception {
         checkCompletion("completion/issue231569/index.html", "                <input data-bind='value: userNameToAdd, valueUpdate: \"keyup\", css: { invalid: ^ }' /></input>", false);
-    }
-    
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        List<FileObject> cpRoots = new LinkedList<FileObject>(/*ClasspathProviderImplAccessor.getJsStubs()*/);
-        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/completion/simple")));
-        return Collections.singletonMap(
-            JS_SOURCE_ID,
-            ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))
-        );
     }
 }

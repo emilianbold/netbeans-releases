@@ -16,56 +16,111 @@ __netbeans_import__('libs/knockout-2.2.1.js');
 init();;
 });
 (function(){
+var $element;
 var $root = ko.$bindings;
+var $parentContext = undefined;
+var $context = {
+$parentContext :undefined,
+$root : ko.$bindings,
+};
+$context.$parentContext.$data = undefined;
+$parentContext.$data = undefined;
 var $parent = undefined;
 var $parents = [];
-var $element;
 var $data = ko.$bindings;
-with (ko.$bindings) {
+with ($data) {
 (lidickove);}
 });
 (function(){
-var $root = ko.$bindings;
-var $parent = ko.$bindings;
-var $parents = [ko.$bindings];
-var $index = 0;
 var $element;
+var $root = ko.$bindings;
+var $index = 0;
+var $parentContext = {
+$parentContext :undefined,
+$root : ko.$bindings,
+};
+var $context = {
+$parentContext :{
+$parentContext :undefined,
+$root : ko.$bindings,
+},
+$root : ko.$bindings,
+$index : 0,
+};
+var $parent = ko.$bindings;
+$context.$parentContext.$data = ko.$bindings;
+$parentContext.$data = ko.$bindings;
+var $parents = [$parentContext.$data];
 with (ko.$bindings) {
 var $data = lidickove[0];
-with (lidickove[0]) {
-(jmeno);}
 }
+with ($data) {
+(jmeno);}
 });
 (function(){
-var $root = ko.$bindings;
-var $parent = ko.$bindings;
-var $parents = [ko.$bindings];
-var $index = 0;
 var $element;
+var $root = ko.$bindings;
+var $index = 0;
+var $parentContext = {
+$parentContext :undefined,
+$root : ko.$bindings,
+};
+var $context = {
+$parentContext :{
+$parentContext :undefined,
+$root : ko.$bindings,
+},
+$root : ko.$bindings,
+$index : 0,
+};
+var $parent = ko.$bindings;
+$context.$parentContext.$data = ko.$bindings;
+$parentContext.$data = ko.$bindings;
+var $parents = [$parentContext.$data];
 with (ko.$bindings) {
 var $data = lidickove[0];
-with (lidickove[0]) {
+}
+with ($data) {
 (jmeno == 'pepa' ? 'jouda' :
 'king');}
-}
 });
 (function(){
+var $element;
 var $root = ko.$bindings;
+var $parentContext = undefined;
+var $context = {
+$parentContext :undefined,
+$root : ko.$bindings,
+};
+$context.$parentContext.$data = undefined;
+$parentContext.$data = undefined;
 var $parent = undefined;
 var $parents = [];
-var $element;
 var $data = ko.$bindings;
-with (ko.$bindings) {
+with ($data) {
 (pepa);}
 });
 (function(){
-var $root = ko.$bindings;
-var $parent = ko.$bindings;
-var $parents = [ko.$bindings];
 var $element;
+var $root = ko.$bindings;
+var $parentContext = {
+$parentContext :undefined,
+$root : ko.$bindings,
+};
+var $context = {
+$parentContext :{
+$parentContext :undefined,
+$root : ko.$bindings,
+},
+$root : ko.$bindings,
+};
+var $parent = ko.$bindings;
+$context.$parentContext.$data = ko.$bindings;
+$parentContext.$data = ko.$bindings;
+var $parents = [$parentContext.$data];
 with (ko.$bindings) {
 var $data = pepa;
-with (pepa) {
-(jmeno);}
 }
+with ($data) {
+(jmeno);}
 });

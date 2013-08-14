@@ -67,6 +67,30 @@ public class CommentCollectorTest extends NbTestCase {
     }
 
     private File work;
+    
+    public class xTest {
+        /* comment before */
+        public void m() {}
+        /* comment after */
+        /* comment before 2 */
+        public void m2() {
+        }
+        /* comment after 2 */
+        /*
+        block comment before 3
+        */
+        // line comment before 3
+        public void m3() {
+            
+            // line comment in 3
+        }
+        /* block comment after 3 */
+        
+        public void m4() {
+            
+        }
+        // line comment after 4
+    }
 
     @Override
     protected void setUp() throws Exception {
@@ -92,6 +116,95 @@ public class CommentCollectorTest extends NbTestCase {
         FileObject testSourceFO = FileUtil.toFileObject(aFile);
         assertNotNull(testSourceFO);
         return JavaSource.forFileObject(testSourceFO);
+    }
+    
+    public void testCollectEmptyComments199756() throws Exception {
+        File testFile = new File(work, "Test.java");
+        final String origin = "public class Test {\n" +
+        "        /* comment before */\n" +
+        "        public void m() {}\n" +
+        "        /* comment after */\n\n" +
+        "        /** comment before 2 */\n" +
+        "        public void m2() {\n" +
+        "        }\n" +
+        "        /* comment after 2 */\n\n" +
+        "        /**\n" +
+        "        doc comment before 3\n" +
+        "        */\n" +
+        "        // line comment before 3\n" +
+        "        public void m3() {\n" +
+        "            \n" +
+        "            // line comment in 3\n" +
+        "        }\n" +
+        "        /* block comment after 3 */\n\n" +
+        "        \n" +
+        "        public void m4() {\n" +
+        "            \n" +
+        "        }\n" +
+        "        // line comment after 4\n" +
+        "    }";
+        TestUtilities.copyStringToFile(testFile, origin);
+        
+        JavaSource src = getJavaSource(testFile);
+
+        Task<WorkingCopy> task = new Task<WorkingCopy>() {
+            protected CommentHandlerService service;
+
+            public void run(WorkingCopy workingCopy) throws Exception {
+//                CommentCollector cc = CommentCollector.getInstance();
+                workingCopy.toPhase(JavaSource.Phase.PARSED);
+//                cc.collect(workingCopy);
+                CompilationUnitTree cu = workingCopy.getCompilationUnit();
+                GeneratorUtilities.get(workingCopy).importComments(cu, cu);
+
+                service = CommentHandlerService.instance(workingCopy.impl.getJavacTask().getContext());
+                CommentPrinter printer = new CommentPrinter(service);
+                cu.accept(printer, null);
+
+
+                TreeVisitor<Void, Void> w = new TreeScanner<Void, Void>() {
+                    @Override
+                    public Void visitMethod(MethodTree node, Void aVoid) {
+                        switch (node.getName().toString()) {
+                            case "m":
+                                verify(node, CommentSet.RelativePosition.PRECEDING, service, 
+                                        "/* comment before */");
+                                verify(node, CommentSet.RelativePosition.TRAILING, service, 
+                                        "/* comment after */");
+                                break;
+                            case "m2":
+                                verify(node, CommentSet.RelativePosition.PRECEDING, service, 
+                                        "/** comment before 2 */");
+                                verify(node, CommentSet.RelativePosition.TRAILING, service, 
+                                        "/* comment after 2 */");
+                                break;
+                            case "m3":
+                                verify(node, CommentSet.RelativePosition.PRECEDING, service, 
+                                        "/**\n        doc comment before 3\n        */", "// line comment before 3");
+                                verify(node.getBody(), CommentSet.RelativePosition.INNER, service,
+                                        "",
+                                        "// line comment in 3");
+                                verify(node, CommentSet.RelativePosition.TRAILING, service, 
+                                        "/* block comment after 3 */");
+                                break;
+                            case "m4":
+                                verify(node, CommentSet.RelativePosition.PRECEDING, service);
+                                verify(node.getBody(), CommentSet.RelativePosition.INNER, service,
+                                        "");
+                                verify(node, CommentSet.RelativePosition.TRAILING, service, 
+                                        "// line comment after 4");
+                                break;
+                        }
+                        return super.visitMethod(node, aVoid);
+                    }
+                };
+                cu.accept(w, null);
+
+            }
+
+
+        };
+        src.runModificationTask(task);
     }
 
     @Test

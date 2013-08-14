@@ -98,19 +98,11 @@ public class ElementsParser implements Iterator<Element> {
     private AtomicReference<Element> lastFoundElement;
     private String root_element, doctype_public_id, doctype_file, doctype_name;
 
-    public ElementsParser(CharSequence sourceCode, TokenSequence<HTMLTokenId> tokenSequence, int position) {
-        if (position < 0) {
-            throw new IllegalArgumentException(String.format("Position (%s) must be positive", position));
-        }
+    /* The {@link TokenSequence} needs to be properly positioned. */
+    private ElementsParser(CharSequence sourceCode, TokenSequence<HTMLTokenId> tokenSequence) {
         this.sourceCode = sourceCode;
         this.ts = tokenSequence;
-        int diff = ts.move(position);
-        if (diff != 0) {
-            throw new IllegalArgumentException(String.format("Parser must be started "
-                    + "at a token beginning, not in the middle (position=%s, token diff=%s, token=%s)",
-                    position, diff, (ts.moveNext() ? ts.token() : null))); //NOI18N
-        }
-
+        
         state = S_INIT;
         start = -1;
         attr_keys = new ArrayList<>();
@@ -118,6 +110,33 @@ public class ElementsParser implements Iterator<Element> {
         eof = false;
     }
 
+    public static ElementsParser forOffset(CharSequence sourceCode, TokenSequence<HTMLTokenId> tokenSequence, int position) {
+        if (position < 0) {
+            throw new IllegalArgumentException(String.format("Position (%s) must be positive", position));
+        }
+        
+        int diff = tokenSequence.move(position);
+        if (diff != 0) {
+            throw new IllegalArgumentException(String.format("Parser must be started "
+                    + "at a token beginning, not in the middle (position=%s, token diff=%s, token=%s)",
+                    position, diff, (tokenSequence.moveNext() ? tokenSequence.token() : null))); //NOI18N
+        }
+        return new ElementsParser(sourceCode, tokenSequence);
+    }
+    
+    public static ElementsParser forTokenIndex(CharSequence sourceCode, TokenSequence<HTMLTokenId> tokenSequence, int tokenIndex) {
+        if (tokenIndex < 0) {
+            throw new IllegalArgumentException(String.format("TokenSequence index (%s) must be positive", tokenIndex));
+        }
+        tokenSequence.moveEnd();
+        int lastTokenIndex = tokenSequence.index();
+        if(tokenIndex > lastTokenIndex) {
+            throw new IllegalArgumentException(String.format("token index (%s) is bigger than last index in the sequence (%s)", tokenIndex, lastTokenIndex));
+        }
+        tokenSequence.moveIndex(tokenIndex);
+        return new ElementsParser(sourceCode, tokenSequence);
+    }
+    
     @Override
     public boolean hasNext() {
         if (lastFoundElement == null) {

@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.web.common.spi;
 
+import java.util.Collection;
+import org.netbeans.api.annotations.common.NonNull;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -63,5 +65,13 @@ public interface ProjectWebRootProvider {
      * the file.
      */
     public FileObject getWebRoot(FileObject file);
+
+    /**
+     * Finds all web roots for a project.
+     * @return collection of web roots of the given project, can be empty but never {@code null}.
+     * @since 1.57
+     */
+    @NonNull
+    Collection<FileObject> getWebRoots();
 
 }

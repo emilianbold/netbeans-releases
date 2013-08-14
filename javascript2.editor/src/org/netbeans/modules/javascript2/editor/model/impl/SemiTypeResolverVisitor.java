@@ -83,6 +83,7 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
     public static final String ST_NEW = "@new;"; //NOI18N
     public static final String ST_ARR = "@arr;"; //NOI18N
     public static final String ST_ANONYM = "@anonym;"; //NOI18N
+    public static final String ST_WITH = "@with;"; //NOI18N
             
     private static final TypeUsage BOOLEAN_TYPE = new TypeUsageImpl(Type.BOOLEAN, -1, true);
     private static final TypeUsage STRING_TYPE = new TypeUsageImpl(Type.STRING, -1, true);
@@ -277,7 +278,18 @@ public class SemiTypeResolverVisitor extends PathNodeVisitor {
         if (exp.isEmpty()) {
             exp.add(ST_ARR);
         } else {
-            exp.add(exp.size() - 1, ST_ARR);
+            boolean propertyAccess = false;
+            if (indexNode.getIndex() instanceof LiteralNode) {
+                LiteralNode lNode = (LiteralNode)indexNode.getIndex();
+                if (lNode.isString()) {
+                    exp.add(ST_PRO);
+                    exp.add(lNode.getPropertyName());
+                    propertyAccess = true;
+                }
+            }
+            if (!propertyAccess) {
+                exp.add(exp.size() - 1, ST_ARR);
+            }
         }
         //add(exp, indexNode.getStart(), false);
         //reset();

@@ -54,7 +54,7 @@ import org.netbeans.modules.css.model.api.Namespaces;
  */
 public class NamespacesI extends ModelElement implements Namespaces {
 
-    private List<Namespace> namespaces = new ArrayList<Namespace>();
+    private List<Namespace> namespaces = new ArrayList<>();
     private final ModelElementListener elementListener = new ModelElementListener.Adapter() {
 
         @Override

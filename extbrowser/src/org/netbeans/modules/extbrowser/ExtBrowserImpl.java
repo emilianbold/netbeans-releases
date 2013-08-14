@@ -81,7 +81,9 @@ public abstract class ExtBrowserImpl extends HtmlBrowser.Impl {
     }
     
 
-    protected PrivateBrowserFamilyId getDefaultPrivateBrowserFamilyId(){
+    /** This method will be always run on background thread as detection can
+         take a while for System Default browser. The method will be called only once.*/
+    protected PrivateBrowserFamilyId detectPrivateBrowserFamilyId(){
         return PrivateBrowserFamilyId.UNKNOWN;
     }
 

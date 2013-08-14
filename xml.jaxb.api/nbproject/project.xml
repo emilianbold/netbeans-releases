@@ -13,18 +13,12 @@
                 <package>javax.xml.bind.attachment</package>
                 <package>javax.xml.bind.helpers</package>
                 <package>javax.xml.bind.util</package>
-                <package>javax.xml.stream</package>
-                <package>javax.xml.stream.events</package>
-                <package>javax.xml.stream.util</package>
               </public-packages>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxb/activation.jar</runtime-relative-path>
             </class-path-extension>
             <class-path-extension>
                 <runtime-relative-path>ext/jaxb/api/jaxb-api.jar</runtime-relative-path>
-            </class-path-extension>
-            <class-path-extension>
-                <runtime-relative-path>ext/jaxb/api/jsr173_1.0_api.jar</runtime-relative-path>
             </class-path-extension>
         </data>
     </configuration>

@@ -54,6 +54,8 @@ import java.awt.event.FocusListener;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.prefs.Preferences;
 import javax.swing.Action;
@@ -118,6 +120,29 @@ public class NbEditorUI extends EditorUI {
     }
 
     private static final RequestProcessor WORKER = new RequestProcessor(NbEditorUI.class.getName(), 1, false, false);
+    private static final LinkedHashSet<FileObject> objectsToRefresh = new LinkedHashSet<>();
+    private static final Object lock = new Object();
+    private static final RequestProcessor.Task TASK = WORKER.create(new Runnable() {
+        @Override
+        public void run() {
+            FileObject fo;
+            do {
+                synchronized (lock) {
+                    // let's be fair - get 1-st object
+                    Iterator<FileObject> iterator = objectsToRefresh.iterator();
+                    if (iterator.hasNext()) {
+                        fo = iterator.next();
+                        objectsToRefresh.remove(fo);
+                    } else {
+                        fo = null;
+                    }
+                }
+                if (fo != null) {
+                    fo.refresh();
+                }
+            } while (fo != null);
+        }
+    });
     
     public NbEditorUI() {
         focusL = new FocusAdapter() {
@@ -130,11 +155,10 @@ public class NbEditorUI extends EditorUI {
                         final FileObject fo = dob.getPrimaryFile();
                         if (fo != null) {
                             // Fixed #48151 - posting the refresh outside of AWT thread
-                            WORKER.post(new Runnable() {
-                                public void run() {
-                                    fo.refresh();
-                                }
-                            });
+                            synchronized (lock) {
+                                objectsToRefresh.add(fo);
+                            }
+                            TASK.schedule(0);
                         }
                     }
                 }

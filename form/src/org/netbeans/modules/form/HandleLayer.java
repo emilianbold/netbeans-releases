@@ -338,7 +338,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
             if (selectionDragger != null) {
                 Stroke oldStroke = g2.getStroke();
-                g2.setStroke(getPaintStroke());
+                g2.setStroke(getPaintSelectionStroke());
                 selectionDragger.paintDragFeedback(g2);
                 g2.setStroke(oldStroke);
             }
@@ -378,7 +378,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             int width = selRect.width + correction;
             int height = selRect.height + correction;
             Stroke oldStroke = g.getStroke();
-            g.setStroke(getPaintStroke());
+            g.setStroke(getPaintSelectionStroke());
             g.drawRect(x, y, width, height);
             g.setStroke(oldStroke);
             if (inLayout) {
@@ -422,7 +422,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 g.translate(convertPoint.x, convertPoint.y);
                 Color oldColor = g.getColor();
                 g.setColor(formSettings.getGuidingLineColor());
+                Stroke oldStroke = g.getStroke();
+                g.setStroke(getPaintLayoutStroke());
                 layoutDesigner.paintSelection(g);
+                g.setStroke(oldStroke);
                 g.setColor(oldColor);
                 g.translate(-convertPoint.x, -convertPoint.y);
             }
@@ -731,20 +734,28 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         return resizeHandle;
     }
 
-    // paint stroke cached
+    // paint strokes cached
     private static int lastPaintWidth = -1;
-    private Stroke paintStroke;
+    private Stroke paintSelectionStroke;
+    private Stroke paintLayoutStroke;
 
-    private Stroke getPaintStroke() {
+    private Stroke getPaintSelectionStroke() {
         int width = formSettings.getSelectionBorderSize();
         if (lastPaintWidth != width) {
-            paintStroke = null;
+            paintSelectionStroke = null;
         }
-        if (paintStroke == null) {
-            paintStroke = new BasicStroke(width);
+        if (paintSelectionStroke == null) {
+            paintSelectionStroke = new BasicStroke(width);
             lastPaintWidth = width;
         }
-        return paintStroke;
+        return paintSelectionStroke;
+    }
+
+    private Stroke getPaintLayoutStroke() {
+        if (paintLayoutStroke == null) {
+            paintLayoutStroke = new BasicStroke(1);
+        }
+        return paintLayoutStroke;
     }
 
     void maskDraggingComponents() {
@@ -763,7 +774,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         int keyCode = e.getKeyCode();
 
         if (keyCode == KeyEvent.VK_TAB || e.getKeyChar() == '\t') {
-            if (!e.isControlDown()) {
+            if (!e.isControlDown() && !e.isMetaDown()) {
                 if (e.getID() == KeyEvent.KEY_PRESSED) {
                     RADComponent nextComp = formDesigner.getNextVisualComponent(
                                                               !e.isShiftDown());
@@ -832,7 +843,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                 && (keyCode == KeyEvent.VK_DOWN || keyCode == KeyEvent.VK_UP
                     || keyCode == KeyEvent.VK_LEFT || keyCode == KeyEvent.VK_RIGHT)) {
             // cursor keys
-            if (e.isControlDown() && !e.isAltDown() && !e.isShiftDown()) {
+            if ((e.isControlDown() || e.isMetaDown()) && !e.isAltDown() && !e.isShiftDown()) {
                 // duplicating
                 DuplicateAction.performAction(formDesigner.getSelectedNodes(), keyCode);
                 e.consume();
@@ -1027,8 +1038,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     private RADComponent selectComponent(MouseEvent e, boolean mousePressed) {
         RADComponent hitMetaComp;
         if (formDesigner.getSelectedComponents().size() > 1
-            && mousePressed
-            && !e.isShiftDown() && !e.isControlDown() && !e.isAltDown()) {
+                && mousePressed && !extraModifier(e)) {
             // If multiple components already selected and some of them is on
             // current mouse position, keep this component selected on mouse
             // pressed (i.e. don't try to selected a possible subcomponent).
@@ -1068,7 +1078,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             }
         }
 
-        if ((e.isControlDown() || e.isShiftDown()) && !e.isAltDown()) {
+        if (!e.isAltDown() && (e.isShiftDown() || ctrlOrCmdModifier(e))) {
             if (hitMetaComp != null) {
                 // Shift adds to selection, Ctrl toggles selection,
                 // other components selection is not affected
@@ -1085,6 +1095,23 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         }
 
         return hitMetaComp;
+    }
+
+    private static boolean extraModifier(MouseEvent e) {
+        return e.isShiftDown()
+            || e.isAltDown()
+        // Mac: Ctrl not extra if used for popup menu
+            || (e.isControlDown() && (!e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3))
+        // Mac: don't confuse Command key with right mouse (InputEvent.META_MASK == InputEvent.BUTTON3_MASK)
+            || (e.isMetaDown() && e.getButton() != MouseEvent.BUTTON3 && (e.getModifiers()&InputEvent.BUTTON3_DOWN_MASK) != InputEvent.BUTTON3_DOWN_MASK);
+    }
+
+    private static boolean ctrlOrCmdModifier(MouseEvent e) {
+        // assuming this is asked only for a mouse press event
+        if (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() == InputEvent.META_MASK) { // on Mac
+            return (e.getModifiers() & InputEvent.META_DOWN_MASK) == InputEvent.META_DOWN_MASK;
+        }
+        return (e.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
     }
 
 /*    private RADComponent[] getComponentsIntervalToSelect(
@@ -1147,20 +1174,24 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     }
 
     private boolean processDoubleClick(MouseEvent e) {
-        if (e.isShiftDown() || e.isControlDown())
+        if (e.isShiftDown() || e.isControlDown() || e.isMetaDown()) {
             return false;
+        }
 
         RADComponent metacomp = getMetaComponentAt(e.getPoint(), COMP_SELECTED);
-        if (metacomp == null)
+        if (metacomp == null) {
             return true;
+        }
 
         if (e.isAltDown()) {
-             if (metacomp == formDesigner.getTopDesignComponent()) {
+            if (metacomp == formDesigner.getTopDesignComponent()) {
                 metacomp = metacomp.getParentComponent();
-                if (metacomp == null)
+                if (metacomp == null) {
                     return true;
+                }
+            } else {
+                 return false;
             }
-             else return false;
         }
 
         Node node = metacomp.getNodeReference();
@@ -1485,7 +1516,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
         resizeType = 0;
         int resizing = 0;
-        if (!e.isAltDown() && !e.isControlDown() && !e.isShiftDown()) {
+        if (!extraModifier(e)) {
             Point p = e.getPoint();
             boolean compInLayout = selectedComponentsInSameVisibleContainer();
             if (compInLayout || isNewLayoutRootSelection(false)) {
@@ -1883,52 +1914,46 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
     @Override
     public void mouseClicked(MouseEvent e) {
-        if (SwingUtilities.isRightMouseButton(e)
-            && !draggingEnded && !endDragging(null))
-        {
-            if (mouseOnNonVisualTray(e.getPoint())) {
-                dispatchToNonVisualTray(e);
-            } else {
-                showContextMenu(e.getPoint());
-            }
-        }
         highlightPanel(e, true);
         e.consume();
     }
 
     @Override
     public void mouseReleased(MouseEvent e) {
-        if (!HandleLayer.this.isVisible())
+        if (!HandleLayer.this.isVisible()) {
             return;
+        }
 
-        if (SwingUtilities.isLeftMouseButton(e)) {
+        boolean leftMouseReleased = (e.getButton() == MouseEvent.BUTTON1);
+        boolean rightMouseDown = (e.getModifiers() & InputEvent.BUTTON3_DOWN_MASK) == InputEvent.BUTTON3_DOWN_MASK;
+        boolean popup = e.isPopupTrigger();
+        Point p = e.getPoint();
+
+        if (leftMouseReleased && !popup && !rightMouseDown) {
             if (formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT
-                && !draggingEnded && !endDragging(e))
-            {   // there was no dragging, so mouse release may have other meaning
-                boolean modifier = e.isControlDown() || e.isAltDown() || e.isShiftDown();
-                if ((resizeType & DESIGNER_RESIZING) != 0
-                    && e.getClickCount() == 2
-                    && !modifier
-                    && !viewOnly)
-                {   // doubleclick on designer's resizing border
+                    && !draggingEnded && !endDragging(e)) {
+                // there was no dragging
+                boolean anyModifier = extraModifier(e);
+                if ((resizeType & DESIGNER_RESIZING) != 0 && !viewOnly
+                        && e.getClickCount() == 2 && !anyModifier) {
+                    // doubleclick on designer's resizing border
                     setUserDesignerSize();
-                } else if (mouseOnNonVisualTray(e.getPoint())) {
+                } else if (mouseOnNonVisualTray(p)) {
                     dispatchToNonVisualTray(e);
-                }
-                else if (prevLeftMousePoint != null
-                         && prevLeftMousePoint.distance(e.getPoint()) <= 3
-                         && !modifier)
-                {   // second click on the same place in a component
-                    RADComponent metacomp = getMetaComponentAt(e.getPoint(), COMP_SELECTED);
+                } else if (prevLeftMousePoint != null
+                         && prevLeftMousePoint.distance(p) <= 3
+                         && !anyModifier) {
+                    // second click on the same place in a component
+                    RADComponent metacomp = getMetaComponentAt(p, COMP_SELECTED);
                     if (metacomp != null) {
                         formDesigner.startInPlaceEditing(metacomp);
                     }
-                }
-                else if (e.getClickCount() == 1
-                         && !e.isAltDown()
-                         && !e.isControlDown())
-                {   // plain click or shift click
-                    if (mouseOnVisual(e.getPoint())) {
+                } else if (e.getClickCount() == 1 && (!anyModifier || e.isShiftDown())) {
+                    // plain click: in case of multiselect to select just one component
+                    //              (in mouse press don't know if dragging follows)
+                    // or shift click: applied only on release (selection dragging
+                    //                 may follow after mouse press)
+                    if (mouseOnVisual(p)) {
                         selectComponent(e, false);
                     } // otherwise Other Components node selected in mousePressed
                 }
@@ -1936,8 +1961,22 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
             prevLeftMousePoint = lastLeftMousePoint;
             lastLeftMousePoint = null;
-        } else if (mouseOnNonVisualTray(e.getPoint())) {
-            dispatchToNonVisualTray(e);
+        } else if (!draggingEnded) {
+            if (mouseOnNonVisualTray(p)) {
+                dispatchToNonVisualTray(e);
+            } else if (popup && !endDragging(null)) {
+                if (mouseOnVisual(p)) {
+                    // If popup menu is already displayed (elsewhere), we did not receive
+                    // mouse press event and now may have the clicked component unselected.
+                    RADComponent hitMetaComp = getMetaComponentAt(p, COMP_DEEPEST);
+                    if (!formDesigner.isComponentSelected(hitMetaComp)) {   
+                        formDesigner.setSelectedComponent(hitMetaComp);
+                    }            
+                } else {
+                    selectOtherComponentsNode();
+                }
+                showContextMenu(p);
+            }
         }
 
         e.consume();
@@ -1974,77 +2013,79 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
     @Override
     public void mousePressed(MouseEvent e) {
         formDesigner.componentActivated();
-        if (!HandleLayer.this.isVisible())
+        if (!HandleLayer.this.isVisible()) {
             return;
+        }
 
-        if (SwingUtilities.isRightMouseButton(e)) {
+        boolean leftMousePressed = (e.getButton() == MouseEvent.BUTTON1);
+        boolean rightMousePressed = (e.getButton() == MouseEvent.BUTTON3);
+        boolean leftMouseDown = (e.getModifiers() & InputEvent.BUTTON1_DOWN_MASK) == InputEvent.BUTTON1_DOWN_MASK;
+        boolean rightMouseDown = (e.getModifiers() & InputEvent.BUTTON3_DOWN_MASK) == InputEvent.BUTTON3_DOWN_MASK;
+        boolean popup = e.isPopupTrigger();
+        Point p = e.getPoint();
+
+        if (rightMousePressed || popup) {
             if (formDesigner.getDesignerMode() != FormDesigner.MODE_SELECT) {
                 formDesigner.toggleSelectionMode(); // calls endDragging(null)
                 repaint();
-            }
-            else if (endDragging(null)) { // there was dragging, now canceled
+            } else if (endDragging(null)) { // there was dragging, now canceled
                 repaint();
-            }
-            else if (!SwingUtilities.isLeftMouseButton(e)) {
-                // no dragging, ensure a component is selected for conext menu
-                if (mouseOnNonVisualTray(e.getPoint())) {
+            } else {
+                if (mouseOnNonVisualTray(p)) {
                     dispatchToNonVisualTray(e);
-                } else if (!mouseOnVisual(e.getPoint())) {
-                    selectOtherComponentsNode();
-                } else {
-                    // [we used to only select the component if there was nothing selected
-                    //  on current position, but changed to always select - #94543]
-                    RADComponent hitMetaComp = selectComponent(e, true);
-                    processMouseClickInLayout(hitMetaComp, e);
-                }
-                draggingEnded = false; // reset flag preventing dragging from start
-            }
-            e.consume();
-        }
-        else if (SwingUtilities.isLeftMouseButton(e)) {
-            lastLeftMousePoint = e.getPoint();
-
-            boolean modifier = e.isControlDown() || e.isAltDown() || e.isShiftDown();
-
-            if (formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT) {
-                if (mouseOnNonVisualTray(e.getPoint())) {
-                    dispatchToNonVisualTray(e);
-                } else {
-                    checkResizing(e);
-                    if (!(e.isShiftDown() && e.isAltDown() && e.isControlDown())) {
-                        if (!mouseOnVisual(lastLeftMousePoint)) {
-                            if ((resizeType == 0) && (selectedComponentAt(lastLeftMousePoint, 0, true) == null))
-                                selectOtherComponentsNode();
-                        }
-                        // Shift+left is reserved for interval or area selection,
-                        // applied on mouse release or mouse dragged; ignore it here.
-                        else if ((e.getClickCount() != 2 || !processDoubleClick(e)) // no doubleclick
-                                 && resizeType == 0 // no resizing
-                                 && (!e.isShiftDown() || e.isAltDown())) {
-                            RADComponent hitMetaComp = selectComponent(e, true); 
-                            if (!modifier) { // plain single click
-                                processMouseClickInLayout(hitMetaComp, e);
-                            }
-                        }
+                } else if (!leftMouseDown) {
+                    // no dragging, ensure a component is selected for context menu
+                    if (mouseOnVisual(p)) {
+                        // We used to only select the component if there was nothing selected
+                        // on current position, but changed to always select - bug 94543.
+                        RADComponent hitMetaComp = selectComponent(e, true);
+                        processMouseClickInLayout(hitMetaComp, e);
+                    } else {
+                        selectOtherComponentsNode();
+                    }
+                    if (popup) {
+                        showContextMenu(p); // on Mac show context menu on Ctrl+left mouse press (not release)
                     }
                 }
-//                endDragging(null); // for sure
                 draggingEnded = false; // reset flag preventing dragging from start
             }
-            else if (!viewOnly) { // form can be modified
+
+        } else if (formDesigner.getDesignerMode() != FormDesigner.MODE_ADD
+                   && mouseOnNonVisualTray(p)) {
+            dispatchToNonVisualTray(e);
+
+        } else if (leftMousePressed && !rightMouseDown) {
+            lastLeftMousePoint = p;
+            if (formDesigner.getDesignerMode() == FormDesigner.MODE_SELECT) {
+                checkResizing(e);
+                if (!mouseOnVisual(lastLeftMousePoint)) {
+                    if ((resizeType == 0) && (selectedComponentAt(lastLeftMousePoint, 0, true) == null))
+                        selectOtherComponentsNode();
+                }
+                // Shift+left is reserved for interval or area selection,
+                // applied on mouse release or mouse dragged; ignore it here.
+                else if ((e.getClickCount() != 2 || !processDoubleClick(e)) // no doubleclick
+                         && resizeType == 0 // no resizing
+                         && (!e.isShiftDown() || e.isAltDown())) {
+                    RADComponent hitMetaComp = selectComponent(e, true); 
+                    if (!extraModifier(e)) { // plain single click
+                        processMouseClickInLayout(hitMetaComp, e);
+                    }
+                }
+                draggingEnded = false; // reset flag preventing dragging from start
+            } else if (!viewOnly) { // form can be modified
                 if (formDesigner.getDesignerMode() == FormDesigner.MODE_CONNECT) {
                     selectComponent(e, true);
-                }
-                else if (formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
+                } else if (formDesigner.getDesignerMode() == FormDesigner.MODE_ADD) {
                     endDragging(e);
                     if (!e.isShiftDown()) {
                         formDesigner.toggleSelectionMode();
                     }
-                    // otherwise stay in adding mode
+                    // otherwise (with Shift held) stay in adding mode
                 }
             }
-            e.consume();
         }
+        e.consume();
     }
 
     // ---------
@@ -2052,8 +2093,9 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
     @Override
     public void mouseDragged(MouseEvent e) {
-        if (formDesigner.getDesignerMode() != FormDesigner.MODE_SELECT)
-            return; // dragging makes sense only selection mode
+        if (formDesigner.getDesignerMode() != FormDesigner.MODE_SELECT) {
+            return; // dragging makes sense only in selection mode
+        }
         Point p = e.getPoint();
         if (lastMousePosition != null) {
             lastXPosDiff = p.x - lastMousePosition.x;
@@ -2062,9 +2104,9 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
         if (!draggingEnded && !anyDragger() && lastLeftMousePoint != null) { // no dragging yet
             if (!viewOnly
-                 && !e.isControlDown() && (!e.isShiftDown() || e.isAltDown())
-                 && (resizeType != 0 || lastLeftMousePoint.distance(p) > 6))
-            {   // start component dragging
+                    && !e.isControlDown() && !e.isMetaDown() && (!e.isShiftDown() || e.isAltDown())
+                    && (resizeType != 0 || lastLeftMousePoint.distance(p) > 6)) {
+                // start component dragging
                 RADVisualComponent[] draggedComps =
                     (resizeType & DESIGNER_RESIZING) == 0 ? getComponentsToDrag() :
                     new RADVisualComponent[] { formDesigner.getTopDesignComponent() };
@@ -2072,16 +2114,15 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     if (resizeType == 0) {
                         draggedComponent = new ExistingComponentDrag(
                             draggedComps, lastLeftMousePoint, e.getModifiers());
-                    }
-                    else  {
+                    } else  {
                         draggedComponent = new ResizeComponentDrag(
                             draggedComps, lastLeftMousePoint, resizeType);
                     }
                 }
             }
             if (draggedComponent == null // component dragging has not started
-                && lastLeftMousePoint.distance(p) > 4
-                && !e.isAltDown() && !e.isControlDown()) {
+                    && lastLeftMousePoint.distance(p) > 4
+                    && !e.isAltDown() && !e.isControlDown() && !e.isMetaDown()) {
                 // check for possible selection dragging
                 RADComponent topComp = formDesigner.getTopDesignComponent();
                 RADComponent comp = getMetaComponentAt(lastLeftMousePoint, COMP_DEEPEST);
@@ -2097,8 +2138,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             draggedComponent.move(e);
             highlightPanel(e, false);
             repaint();
-        }
-        else if (selectionDragger != null) {
+        } else if (selectionDragger != null) {
             selectionDragger.drag(p);
             repaint();
         }
@@ -2688,7 +2728,10 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
                     // paint the layout designer feedback
                     g.translate(convertPoint.x, convertPoint.y);
                     g.setColor(formSettings.getGuidingLineColor());
+                    Stroke oldStroke = g.getStroke();
+                    g.setStroke(getPaintLayoutStroke());
                     formDesigner.getLayoutDesigner().paintMoveFeedback(g);
+                    g.setStroke(oldStroke);
                     g.translate(-convertPoint.x, -convertPoint.y);
                 }
                 else if (oldDrag && isDraggableLayoutComponent()
@@ -3541,14 +3584,15 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             Container contDel = targetContainer.getContainerDelegate(cont);
             Point contPos = convertPointFromComponent(0, 0, contDel);
             g.setColor(formSettings.getSelectionBorderColor());
-            g.setStroke(ComponentDragger.dashedStroke1);
             g.translate(contPos.x, contPos.y);
+            Stroke oldStroke = g.getStroke();
+            g.setStroke(ComponentDragger.dashedStroke1);
             laysup.paintDragFeedback(cont, contDel,
                                      showingComponents[0],
                                      constraints, this.index,
                                      g);
+            g.setStroke(oldStroke);
             g.translate(-contPos.x, -contPos.y);
-//                    g.setStroke(stroke);
             paintDraggedComponent(showingComponents[0], gg);
         }
     }
