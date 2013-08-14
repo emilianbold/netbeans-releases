@@ -1558,9 +1558,9 @@ public class CssCompletion implements CodeCompletionHandler {
     private static class CssLinkCompletion extends FileReferenceCompletion<CssCompletionItem> {
 
         private static final String GO_UP_TEXT = "../"; //NOI18N
-        private boolean addQuotes;
-        private boolean addSemicolon;
-        private FileObject file;
+        private final boolean addQuotes;
+        private final boolean addSemicolon;
+        private final FileObject file;
 
         public CssLinkCompletion(FileObject file, boolean addQuotes, boolean addSemicolon) {
             this.file = file;
@@ -1569,7 +1569,11 @@ public class CssCompletion implements CodeCompletionHandler {
         }
 
         @Override
-        public CssCompletionItem createFileItem(int anchor, String name, Color color, ImageIcon icon) {
+        public CssCompletionItem createFileItem(FileObject file, int anchor) {
+            String name = file.getNameExt();
+            Color color = file.isFolder() ? Color.BLUE : null;
+            ImageIcon icon = FileReferenceCompletion.getIcon(file);
+
             return CssCompletionItem.createFileCompletionItem(new CssElement(file, name), name, anchor, color, icon, addQuotes, addSemicolon);
         }
 
