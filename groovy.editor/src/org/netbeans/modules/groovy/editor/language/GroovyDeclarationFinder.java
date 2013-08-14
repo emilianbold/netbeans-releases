@@ -191,8 +191,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
 
                 if (Character.isUpperCase(text.charAt(0))) {
                     // A Class or Constant?
-                    Set<IndexedClass> classes =
-                        index.getClasses(text, QuerySupport.Kind.EXACT, true, false, false);
+                    Set<IndexedClass> classes = index.getClasses(text, QuerySupport.Kind.EXACT);
 
                     if (classes.isEmpty()) {
                         return DeclarationLocation.NONE;
@@ -425,8 +424,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
 //                }
             }
 
-            Set<IndexedClass> classes =
-                index.getClasses(fqName, QuerySupport.Kind.EXACT, true, false, false);
+            Set<IndexedClass> classes = index.getClasses(fqName, QuerySupport.Kind.EXACT);
 
             for (IndexedClass indexedClass : classes) {
                 ASTNode node = ASTUtils.getForeignNode(indexedClass);
@@ -631,7 +629,7 @@ public class GroovyDeclarationFinder implements DeclarationFinder {
                 if (methods.isEmpty() && type.indexOf(".") == -1) {
                     // Perhaps we specified a class without its FQN, such as "TableDefinition"
                     // -- go and look for the full FQN and add in all the matches from there
-                    Set<IndexedClass> classes = index.getClasses(type, QuerySupport.Kind.EXACT, false, false, false);
+                    Set<IndexedClass> classes = index.getClasses(type, QuerySupport.Kind.EXACT);
                     Set<String> fqns = new HashSet<String>();
                     for (IndexedClass cls : classes) {
                         String f = cls.getFqn();

@@ -41,11 +41,9 @@
  */
 package org.netbeans.modules.css.editor.module.main;
 
-import java.util.Collection;
 import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.HelpResolver;
 import org.netbeans.modules.css.lib.api.properties.Properties;
-import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
 
 /**

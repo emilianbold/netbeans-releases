@@ -183,7 +183,7 @@ public class AndroidDevice implements Device {
         if (android.isReady()) {
             props.put("android.build.target", android.getPrefferedTarget().getName());//NOI18N
             props.put("android.sdk.home", android.getSdkLocation());//NOI18N
-            props.put("android.target.device.arg", isEmulator() ? "-e" : "-d");//NOI18N
+            props.put("android.target.device.arg", isEmulator() ? "emulate" : "run");//NOI18N
         } else {
             Logger.getLogger(AndroidDevice.class.getName()).fine("Android not configured.");
         }

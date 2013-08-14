@@ -84,7 +84,7 @@ public class NamespacesModule extends CssEditorModule {
 
     @Override
     public List<CompletionProposal> getCompletionProposals(final CompletionContext context) {
-        final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        final List<CompletionProposal> proposals = new ArrayList<>();
         Node activeNode = context.getActiveNode();
         boolean isError = activeNode.type() == NodeType.error;
         if (isError) {
@@ -176,7 +176,7 @@ public class NamespacesModule extends CssEditorModule {
     }
 
     private static List<CompletionProposal> getNamespaceCompletionProposals(final CompletionContext context) {
-        final List<CompletionProposal> proposals = new ArrayList<CompletionProposal>();
+        final List<CompletionProposal> proposals = new ArrayList<>();
         //todo: rewrite to use index later
         Model sourceModel = context.getSourceModel();
         sourceModel.runReadTask(new Model.ModelTask() {
@@ -219,7 +219,7 @@ public class NamespacesModule extends CssEditorModule {
 
     @Override
     public <T extends List<StructureItem>> NodeVisitor<T> getStructureItemsNodeVisitor(final FeatureContext context, final T result) {
-        final List<StructureItem> items = new ArrayList<StructureItem>();
+        final List<StructureItem> items = new ArrayList<>();
 
         return new NodeVisitor<T>() {
             

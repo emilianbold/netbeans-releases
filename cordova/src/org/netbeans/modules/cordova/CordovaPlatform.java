@@ -42,11 +42,11 @@
 package org.netbeans.modules.cordova;
 
 import java.io.*;
-import org.netbeans.modules.cordova.platforms.api.PlatformManager;
+import java.util.regex.Pattern;
+import org.netbeans.api.project.Project;
+import org.netbeans.modules.cordova.platforms.api.ProcessUtilities;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.util.Exceptions;
-import org.openide.util.NbPreferences;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -59,6 +59,7 @@ public class CordovaPlatform {
     private static String CORDOVA_SDK_ROOT_PREF = "cordova.home";//NOI18N
 
     private Version version;
+    private boolean isGitReady;
 
     private transient final java.beans.PropertyChangeSupport propertyChangeSupport = new java.beans.PropertyChangeSupport(this);
 
@@ -72,76 +73,17 @@ public class CordovaPlatform {
         return instance;
     }
     
-    public String getSdkLocation() {
-        String sdkLoc = NbPreferences.forModule(CordovaPlatform.class).get(CORDOVA_SDK_ROOT_PREF, null);
-        if (sdkLoc != null && sdkLoc.trim().isEmpty()) {
-            sdkLoc = null;
-        }
-        return sdkLoc;
-    }
-
-    public void setSdkLocation(String sdkLocation) {
-        version = null;
-        NbPreferences.forModule(CordovaPlatform.class).put(CORDOVA_SDK_ROOT_PREF, sdkLocation);
-        propertyChangeSupport.firePropertyChange("SDK", null, sdkLocation);//NOI18N
-    }
+    private static Pattern versionPattern = Pattern.compile("[0-9]+\\.[0-9]+\\.[0-9]+");
     
-    public FileObject getCordovaJS(String platform) {
-        if (PlatformManager.ANDROID_TYPE.equals(platform)) {
-           File js = new File(getSdkLocation() + "/lib/android/cordova.js");//NOI18N
-           if (!js.exists()) {
-               js = new File(getSdkLocation() + "/lib/android/cordova-" + getVersion() + ".js");//NOI18N
-           }
-           return FileUtil.toFileObject(js);
-        }
-        throw new IllegalStateException();
-    }
-    
-    public static Version getVersion(String sdkLocation) {
-        if (!checkPhonegapLocation(sdkLocation)) {
-            throw new IllegalArgumentException();
-        }
-
-        final BufferedReader bufferedReader;
-        try {
-            bufferedReader = new BufferedReader(new FileReader(sdkLocation + "/VERSION")); //NOI18N;
-            try {
-                String v = bufferedReader.readLine().trim();
-                return new Version(v);
-            } catch (IOException ex) {
-                Exceptions.printStackTrace(ex);
-
-            } finally {
-                try {
-                    bufferedReader.close();
-                } catch (IOException ex) {
-                    Exceptions.printStackTrace(ex);
-                }
-
-            }
-        } catch (FileNotFoundException ex) {
-            throw new IllegalArgumentException();
-        }
-        throw new IllegalArgumentException();
-    }
-    
-    private static boolean checkPhonegapLocation(String sdkLocation) {
-        File cordovaLoc = new File(sdkLocation);
-        File cordovaAndroid = new File(cordovaLoc, "lib/android"); //NOI18N
-        File cordovaIOS = new File(cordovaLoc, "lib/ios"); //NOI18N
-        File version = new File(cordovaLoc, "VERSION"); // NOI18N
-        return (cordovaLoc.exists() && cordovaLoc.isDirectory()
-                && cordovaAndroid.exists() && cordovaAndroid.isDirectory()
-                && cordovaIOS.exists() && cordovaIOS.isDirectory())
-                && version.exists();
-    }
-    
-
     public Version getVersion() {
-        final String sdkLocation = getSdkLocation();
-        assert sdkLocation != null;
         if (version == null) {
-            version = getVersion(sdkLocation);
+            try {
+                String v = ProcessUtilities.callProcess(Utilities.isWindows()?"cordova.cmd":"cordova", true, 60*1000, "-v");
+                if (versionPattern.matcher(v.trim()).matches()) {
+                    version = new Version(v);
+                }
+            } catch (IOException ex) {
+            }
         }
         return version;
     }
@@ -166,7 +108,26 @@ public class CordovaPlatform {
     }
     
     public boolean isReady() {
-        return getSdkLocation() != null;
+        return isGitReady() && getVersion() != null;
+    }
+    
+    public static boolean isCordovaProject(Project project) {
+        final FileObject root = project.getProjectDirectory();
+        root.refresh();
+        return root.getFileObject(".cordova") != null; // NOI18N
+    }
+
+    private boolean isGitReady() {
+        if (!isGitReady) {
+            try {
+                String v = ProcessUtilities.callProcess(Utilities.isWindows() ? "git.exe" : "git", true, 60 * 1000, "--version");
+                if (v.contains("version")) {
+                    isGitReady = true;
+                }
+            } catch (IOException ex) {
+            }
+        } 
+        return isGitReady;
     }
 
     public static class Version implements Comparable<Version> {
@@ -189,7 +150,7 @@ public class CordovaPlatform {
         }
         
         public boolean isSupported() {
-            return compareTo(new Version(("2.4")))>0; // NOI18N
+            return compareTo(new Version(("3.0")))>0; // NOI18N
         }
     }
 }

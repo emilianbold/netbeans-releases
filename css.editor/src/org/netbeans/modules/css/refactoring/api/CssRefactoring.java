@@ -92,7 +92,7 @@ public class CssRefactoring {
         DependenciesGraph deps = index.getDependencies(baseFile);
         Collection<FileObject> relatedFiles = deps.getAllReferedFiles();
         Collection<FileObject> queryResult = index.find(type, elementName);
-        Map<FileObject, Collection<EntryHandle>> result = new HashMap<FileObject, Collection<EntryHandle>>();
+        Map<FileObject, Collection<EntryHandle>> result = new HashMap<>();
 
         for (FileObject file : queryResult) {
             try {
@@ -112,7 +112,7 @@ public class CssRefactoring {
 
                 Collection<EntryHandle> entries = result.get(file);
                 if (entries == null) {
-                    entries = new ArrayList<EntryHandle>();
+                    entries = new ArrayList<>();
                     result.put(file, entries);
                 }
 

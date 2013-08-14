@@ -68,7 +68,6 @@ public abstract class IndexedElement extends GroovyElement {
     protected final String attributes;
     protected Set<Modifier> modifiers;
     protected int flags;
-    protected int docLength = -1;
     private Document document;
 
     protected IndexedElement(IndexResult result, String classFqn, String attributes, int flags) {

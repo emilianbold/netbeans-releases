@@ -50,13 +50,13 @@
 
 package org.netbeans.modules.css.editor.ui;
 
-import org.netbeans.modules.css.editor.HtmlTags;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.DefaultListModel;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
+import org.netbeans.modules.css.editor.HtmlTags;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.util.HelpCtx;
@@ -452,21 +452,25 @@ public class CssRuleCreateActionDialog extends javax.swing.JPanel {
     
     private void selectRuleActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_selectRuleActionPerformed
         String ruleType = evt.getActionCommand();
-        if(ruleType.equals(ELEMENT_TYPE)){
-            selectElementComboBox.setEnabled(true);
-            classPrefixComboBox.setEnabled(false);
-            selectClassTextField.setEnabled(false);
-            selectElementIdTextField.setEnabled(false);
-        }else if(ruleType.equals(CLASS_TYPE)){
-            selectElementComboBox.setEnabled(false);
-            classPrefixComboBox.setEnabled(true);
-            selectClassTextField.setEnabled(true);
-            selectElementIdTextField.setEnabled(false);
-        }else if(ruleType.equals(ELEMENT_ID_TYPE)){
-            selectElementComboBox.setEnabled(false);
-            classPrefixComboBox.setEnabled(false);
-            selectClassTextField.setEnabled(false);
-            selectElementIdTextField.setEnabled(true);
+        switch (ruleType) {
+            case ELEMENT_TYPE:
+                selectElementComboBox.setEnabled(true);
+                classPrefixComboBox.setEnabled(false);
+                selectClassTextField.setEnabled(false);
+                selectElementIdTextField.setEnabled(false);
+                break;
+            case CLASS_TYPE:
+                selectElementComboBox.setEnabled(false);
+                classPrefixComboBox.setEnabled(true);
+                selectClassTextField.setEnabled(true);
+                selectElementIdTextField.setEnabled(false);
+                break;
+            case ELEMENT_ID_TYPE:
+                selectElementComboBox.setEnabled(false);
+                classPrefixComboBox.setEnabled(false);
+                selectClassTextField.setEnabled(false);
+                selectElementIdTextField.setEnabled(true);
+                break;
         }
         resetRuleHierarchy();
     }//GEN-LAST:event_selectRuleActionPerformed
@@ -474,21 +478,23 @@ public class CssRuleCreateActionDialog extends javax.swing.JPanel {
     private void addRuleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addRuleButtonActionPerformed
         String ruleType = selectRuleButtonGroup.getSelection().getActionCommand();
         String rule = null;
-        if(ruleType.equals(ELEMENT_TYPE)){
-            rule = (String) selectElementComboBox.getSelectedItem();
-            if(rule.equals(NONE)) rule = null;
-        }else if(ruleType.equals(CLASS_TYPE)){
-            if(!selectClassTextField.getText().trim().equals("")){
-                String rulePrefix = (String) classPrefixComboBox.getSelectedItem();
-                rule = "." + selectClassTextField.getText().trim();
-                if(!rulePrefix.equals(NONE)){
-                    rule = rulePrefix  + rule;
-                }
-            }
-        }else if(ruleType.equals(ELEMENT_ID_TYPE)){
-            if(!selectElementIdTextField.getText().trim().equals("")){
-                rule = "#" + selectElementIdTextField.getText().trim();;
-            }
+        switch (ruleType) {
+            case ELEMENT_TYPE:
+                rule = (String) selectElementComboBox.getSelectedItem();
+                if(rule.equals(NONE)) rule = null;
+                break;
+            case CLASS_TYPE:
+                if(!selectClassTextField.getText().trim().equals("")){
+                    String rulePrefix = (String) classPrefixComboBox.getSelectedItem();
+                    rule = "." + selectClassTextField.getText().trim();
+                    if(!rulePrefix.equals(NONE)){
+                        rule = rulePrefix  + rule;
+                    }
+                }   break;
+            case ELEMENT_ID_TYPE:
+                if(!selectElementIdTextField.getText().trim().equals("")){
+                    rule = "#" + selectElementIdTextField.getText().trim();;
+                }   break;
         }
         if((rule != null) && (!selectedRules.contains(rule))){
             selectedRules.addElement(rule);
@@ -500,21 +506,23 @@ public class CssRuleCreateActionDialog extends javax.swing.JPanel {
     
     private String getRule(String ruleType){
         String rule = null;
-        if(ruleType.equals(ELEMENT_TYPE)){
-            rule = (String) selectElementComboBox.getSelectedItem();
-            if(rule.equals(NONE)) rule = null;
-        }else if(ruleType.equals(CLASS_TYPE)){
-            if(!selectClassTextField.getText().trim().equals("")){
-                String rulePrefix = (String) classPrefixComboBox.getSelectedItem();
-                rule = "." + selectClassTextField.getText().trim();
-                if(!rulePrefix.equals(NONE)){
-                    rule = rulePrefix  + rule;
-                }
-            }
-        }else if(ruleType.equals(ELEMENT_ID_TYPE)){
-            if(!selectElementIdTextField.getText().trim().equals("")){
-                rule = "#" + selectElementIdTextField.getText().trim();;
-            }
+        switch (ruleType) {
+            case ELEMENT_TYPE:
+                rule = (String) selectElementComboBox.getSelectedItem();
+                if(rule.equals(NONE)) rule = null;
+                break;
+            case CLASS_TYPE:
+                if(!selectClassTextField.getText().trim().equals("")){
+                    String rulePrefix = (String) classPrefixComboBox.getSelectedItem();
+                    rule = "." + selectClassTextField.getText().trim();
+                    if(!rulePrefix.equals(NONE)){
+                        rule = rulePrefix  + rule;
+                    }
+                }   break;
+            case ELEMENT_ID_TYPE:
+                if(!selectElementIdTextField.getText().trim().equals("")){
+                    rule = "#" + selectElementIdTextField.getText().trim();;
+                }   break;
         }
         return rule;
     }

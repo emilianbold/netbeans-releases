@@ -63,6 +63,11 @@ public class ReadConfigTask extends CordovaTask {
             setProperty("android.project.package", pkg); //NOI18N       
             setProperty("android.project.package.folder", pkg.replace(".", "/"));//NOI18N
             setProperty("project.name", config.getName()); // NOI18N
+            setProperty("cordova.command",PluginTask.getCordovaCommand());
+            final String path = PluginTask.isWin()?"env.Path":"env.PATH";
+            final String pathKey = PluginTask.isWin()?"Path":"PATH";
+            setProperty("cordova.path.key", pathKey);
+            setProperty("cordova.path.value", getProperty(path));
         } catch (IOException ex) {
             throw new BuildException(ex);
         }

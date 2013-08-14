@@ -46,6 +46,7 @@ import org.netbeans.modules.cordova.platforms.spi.Device;
 import java.io.File;
 import java.io.IOException;
 import org.netbeans.modules.cordova.project.ConfigUtils;
+import org.netbeans.modules.web.clientproject.api.ClientSideModule;
 import org.netbeans.modules.web.clientproject.spi.ClientProjectExtender;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;

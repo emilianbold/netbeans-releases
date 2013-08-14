@@ -59,12 +59,10 @@ import org.netbeans.modules.csl.spi.support.ModificationResult;
 import org.netbeans.modules.csl.spi.support.ModificationResult.Difference;
 import org.netbeans.modules.css.editor.CssProjectSupport;
 import org.netbeans.modules.css.indexing.CssFileModel;
+import org.netbeans.modules.css.indexing.api.CssIndex;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.css.lib.api.NodeType;
 import org.netbeans.modules.css.refactoring.api.Entry;
-import org.netbeans.modules.css.indexing.api.CssIndex;
-import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
-import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.spi.ParseException;
@@ -73,6 +71,8 @@ import org.netbeans.modules.refactoring.api.RenameRefactoring;
 import org.netbeans.modules.refactoring.spi.RefactoringCommit;
 import org.netbeans.modules.refactoring.spi.RefactoringElementsBag;
 import org.netbeans.modules.refactoring.spi.RefactoringPlugin;
+import org.netbeans.modules.refactoring.spi.SimpleRefactoringElementImplementation;
+import org.netbeans.modules.web.common.api.DependenciesGraph;
 import org.netbeans.modules.web.common.api.FileReference;
 import org.netbeans.modules.web.common.api.FileReferenceModification;
 import org.netbeans.modules.web.common.api.LexerUtils;
@@ -258,7 +258,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
                 CssFileModel model = CssFileModel.create(source);
 
-                List<Difference> diffs = new ArrayList<Difference>();
+                List<Difference> diffs = new ArrayList<>();
                 for (Entry entry : model.getImports()) {
                     String imp = entry.getName(); //unquoted
                     FileObject resolvedFileObject = WebUtils.resolve(file, imp);
@@ -304,11 +304,11 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
             Map<FileObject, Collection<FileReference>> source2dest = alldeps.getSource2dest();
             FileObject renamedFolder = context.getFileObject();
 
-            Map<FileObject, CssFileModel> modelsCache = new WeakHashMap<FileObject, CssFileModel>();
-            Set<Entry> refactoredReferenceEntries = new HashSet<Entry>();
+            Map<FileObject, CssFileModel> modelsCache = new WeakHashMap<>();
+            Set<Entry> refactoredReferenceEntries = new HashSet<>();
             //now I need to find out what links go through the given folder
             for (FileObject source : source2dest.keySet()) {
-                List<Difference> diffs = new ArrayList<Difference>();
+                List<Difference> diffs = new ArrayList<>();
                 Collection<FileReference> destinations = source2dest.get(source);
                 for (FileReference dest : destinations) {
                     FileReferenceModification modification = dest.createModification();
@@ -370,7 +370,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
         String elementImage = element.image().toString();
 
         CssFileModel model = CssFileModel.create(context.getParserResult());
-        List<Difference> diffs = new ArrayList<Difference>();
+        List<Difference> diffs = new ArrayList<>();
         CloneableEditorSupport editor = GsfUtilities.findCloneableEditorSupport(context.getFileObject());
         for (Entry entry : model.getHtmlElements()) {
             if (entry.isValidInSourceDocument() && elementImage.equals(entry.getName())) {
@@ -390,7 +390,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
     private void refactor(Lookup lookup, ModificationResult modificationResult, RefactoringElementType type, Collection<FileObject> files, int elementPrefixLenght, CssElementContext.Editor context, CssIndex index, String renameMsgKey) {
         String elementImage = context.getElementName().substring(elementPrefixLenght);
-        List<FileObject> involvedFiles = new LinkedList<FileObject>(files);
+        List<FileObject> involvedFiles = new LinkedList<>(files);
         DependenciesGraph deps = index.getDependencies(context.getFileObject());
         Collection<FileObject> relatedFiles = deps.getAllRelatedFiles();
 
@@ -437,7 +437,7 @@ public class CssRenameRefactoringPlugin implements RefactoringPlugin {
 
                 boolean related = relatedFiles.contains(file);
 
-                List<Difference> diffs = new ArrayList<Difference>();
+                List<Difference> diffs = new ArrayList<>();
                 for (Entry entry : entries) {
                     if (entry.isValidInSourceDocument() && 
                             LexerUtils.equals(elementImage, entry.getName(), type == RefactoringElementType.COLOR, false)) {

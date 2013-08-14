@@ -57,7 +57,7 @@ public class CordovaPanelProvider implements ProjectCustomizer.CompositeCategory
     public Category createCategory(Lookup context) {
             return ProjectCustomizer.Category.create(
                     "phonegap",//NOI18N
-                    "PhoneGap",//NOI18N
+                    "Cordova",//NOI18N
                     null);
     }
 

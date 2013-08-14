@@ -47,8 +47,6 @@ import org.netbeans.modules.css.editor.module.spi.CssEditorModule;
 import org.netbeans.modules.css.editor.module.spi.EditorFeatureContext;
 import org.netbeans.modules.css.lib.api.CssModule;
 import org.netbeans.modules.css.lib.api.properties.PropertyDefinition;
-import org.netbeans.modules.css.editor.module.spi.Utilities;
-import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
 import org.openide.util.lookup.ServiceProvider;
 

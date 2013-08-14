@@ -41,9 +41,16 @@
  */
 package org.netbeans.modules.cordova.project;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
+import java.util.Map;
+import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.filesystems.FileUtil;
@@ -74,5 +81,39 @@ public final class ConfigUtils {
             }
         });
         return config[0];
+    }
+
+    public static void replaceToken(FileObject fo, Map<String, String> map) throws IOException {
+        if (fo == null) {
+            return;
+        }
+        FileLock lock = fo.lock();
+        try {
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(FileUtil.toFile(fo)), Charset.forName("UTF-8")));
+            String line;
+            StringBuilder sb = new StringBuilder();
+            while ((line = reader.readLine()) != null) {
+                for (Map.Entry<String, String> entry : map.entrySet()) {
+                    line = line.replace(entry.getKey(), entry.getValue());
+                }
+                sb.append(line);
+                sb.append("\n");
+            }
+            OutputStreamWriter writer = new OutputStreamWriter(fo.getOutputStream(lock), "UTF-8");
+            try {
+                writer.write(sb.toString());
+            } finally {
+                writer.close();
+                reader.close();
+            }
+        } finally {
+            lock.releaseLock();
+        }
+    }
+
+    public static void replaceTokens(FileObject dir, Map<String, String> map, String... files) throws IOException {
+        for (String file : files) {
+            replaceToken(dir.getFileObject(file), map);
+        }
     }
 }

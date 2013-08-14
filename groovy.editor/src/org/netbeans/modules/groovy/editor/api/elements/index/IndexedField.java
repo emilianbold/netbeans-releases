@@ -87,6 +87,24 @@ public class IndexedField extends IndexedElement {
         return typeName;
     }
 
+    public boolean isInherited() {
+        return inherited;
+    }
+
+    public void setInherited(boolean inherited) {
+        this.inherited = inherited;
+    }
+
+    public boolean isProperty() {
+        if (attributes != null) {
+            int separatorIndex = attributes.indexOf(';');
+            if (separatorIndex != -1) {
+                return Boolean.parseBoolean(attributes.substring(separatorIndex + 1));
+            }
+        }
+        return false;
+    }
+
     @Override
     public boolean equals(Object obj) {
         if (obj == null) {
@@ -116,28 +134,4 @@ public class IndexedField extends IndexedElement {
         hash = 53 * hash + flags;
         return hash;
     }
-
-    public boolean isInherited() {
-        return inherited;
-    }
-
-    public void setInherited(boolean inherited) {
-        this.inherited = inherited;
-    }
-
-    public boolean isProperty() {
-        if (attributes != null) {
-            int separatorIndex = attributes.indexOf(';');
-            if (separatorIndex != -1) {
-                return Boolean.parseBoolean(attributes.substring(separatorIndex + 1));
-            }
-        }
-        return false;
-    }
-
-    // For testsuite
-    public static String decodeFlags(int flags) {
-        return IndexedElement.decodeFlags(flags);
-    }
-
 }

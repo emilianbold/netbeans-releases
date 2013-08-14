@@ -67,7 +67,7 @@ import org.openide.util.NbBundle;
 )
 public class CssProjectSupport {
 
-    private static final WeakHashMap<Project, CssProjectSupport> INSTANCIES = new WeakHashMap<Project, CssProjectSupport>();
+    private static final WeakHashMap<Project, CssProjectSupport> INSTANCIES = new WeakHashMap<>();
 
     public static CssProjectSupport findFor(Source source) {
 	FileObject fo = source.getFileObject();

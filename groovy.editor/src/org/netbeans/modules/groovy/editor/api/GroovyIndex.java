@@ -57,6 +57,7 @@ import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedField;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
@@ -95,10 +96,32 @@ public final class GroovyIndex {
             return EMPTY;
         }
     }
-    
-    public Set<IndexedClass> getClasses(String name, final QuerySupport.Kind kind, boolean includeAll,
-        boolean skipClasses, boolean skipModules) {
-        return getClasses(name, kind, includeAll, skipClasses, skipModules, null);
+
+    /**
+     * Returns all {@link IndexedClass}es that are located in the given package.
+     *
+     * @param packageName package name for which we want to get {@link IndexedClass}es
+     * @return all {@link IndexedClass}es that are located in the given package
+     */
+    public Set<IndexedClass> getClassesFromPackage(String packageName) {
+        Set<IndexedClass> result = new HashSet<>();
+
+        for (IndexedClass indexedClass : getAllClasses()) {
+            String pkgName = GroovyUtils.getPackageName(indexedClass.getFqn());
+            if (packageName.equals(pkgName)) {
+                result.add(indexedClass);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns all available {@link IndexedClass}es.
+     *
+     * @return all available {@link IndexedClass}es
+     */
+    public Set<IndexedClass> getAllClasses() {
+        return getClasses(".*", QuerySupport.Kind.REGEXP);
     }
 
     /**
@@ -110,8 +133,7 @@ public final class GroovyIndex {
      * @param includeAll If true, return multiple IndexedClasses for the same logical
      *   class, one for each declaration point.
      */
-    public Set<IndexedClass> getClasses(String name, final QuerySupport.Kind kind, boolean includeAll,
-        boolean skipClasses, boolean skipModules, Set<String> uniqueClasses) {
+    public Set<IndexedClass> getClasses(String name, final QuerySupport.Kind kind) {
         String classFqn = null;
 
         if (name != null) {
@@ -145,13 +167,6 @@ public final class GroovyIndex {
         }
 
         search(field, name, kind, result);
-
-        // TODO Prune methods to fit my scheme - later make lucene index smarter about how to prune its index search
-        if (includeAll) {
-            uniqueClasses = null;
-        } else if (uniqueClasses == null) {
-            uniqueClasses = new HashSet<>();
-        }
 
         final Set<IndexedClass> classes = new HashSet<>();
 
@@ -222,22 +237,7 @@ public final class GroovyIndex {
                 isClass = (flags & IndexedClass.MODULE) == 0;
             }
 
-            if (skipClasses && isClass) {
-                continue;
-            }
-
-            if (skipModules && !isClass) {
-                continue;
-            }
-
             String fqn = map.getValue(GroovyIndexer.FQN_NAME);
-
-            // Only return a single instance for this signature
-            if (!includeAll) {
-                if (!uniqueClasses.contains(fqn)) { // use a map to point right to the class
-                    uniqueClasses.add(fqn);
-                }
-            }
 
             classes.add(createClass(fqn, simpleName, map));
         }
