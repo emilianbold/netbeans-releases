@@ -819,10 +819,10 @@ public class GlassPane extends JPanel implements GridActionPerformer {
                 Rectangle rect = fromComponentPane(selectionResizingBounds(selComp));
                 boolean w = (rect.x-rw<=x) && (x<=rect.x+rect.width+rw);
                 boolean h = (rect.y-rh<=y) && (y<=rect.y+rect.height+rh);
-                boolean top = w && (rect.y-rh<=y) && (y<=rect.y+rh);
-                boolean bottom = w && (rect.y+rect.height-rh<=y) && (y<=rect.y+rect.height+rh);
-                boolean left = h && (rect.x-rw<=x) && (x<=rect.x+rw);
-                boolean right = h && (rect.x+rect.width-rw<=x) && (x<=rect.x+rect.width+rw);
+                boolean top = w && (rect.y-rh<=y) && (y<=rect.y+2);
+                boolean bottom = w && (rect.y+rect.height-2<=y) && (y<=rect.y+rect.height+rh);
+                boolean left = h && (rect.x-rw<=x) && (x<=rect.x+2);
+                boolean right = h && (rect.x+rect.width-2<=x) && (x<=rect.x+rect.width+rw);
                 if (top) {
                     if (left) {
                         cursor = Cursor.getPredefinedCursor(Cursor.NW_RESIZE_CURSOR);
