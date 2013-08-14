@@ -339,6 +339,10 @@ final class OutputUtils {
                     }
                 }
             }
+            // Is this a @Test(expected = *Exception.class) test method that failed?
+            if(file == null && lineNumStorage[0] == -1 && node instanceof JUnitTestMethodNode) {
+                openTestMethod((JUnitTestMethodNode) node);
+            }
             openFile(file, lineNumStorage[0]);
     }
 
