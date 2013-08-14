@@ -82,7 +82,7 @@ public class JsStructureScannerIssue223112Test extends JsTestBase {
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
         
-        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/structure/issue223602")));
+        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/structure/issue223112")));
         return Collections.singletonMap(
             JS_SOURCE_ID,
             ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))

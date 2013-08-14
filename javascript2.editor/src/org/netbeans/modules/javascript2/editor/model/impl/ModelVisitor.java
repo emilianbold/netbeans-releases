@@ -106,6 +106,7 @@ import org.openide.filesystems.FileObject;
 public class ModelVisitor extends PathNodeVisitor {
 
     private final ModelBuilder modelBuilder;
+    private final OccurrenceBuilder occurrenceBuilder;
     /**
      * Keeps the name of the visited properties
      */
@@ -118,10 +119,11 @@ public class ModelVisitor extends PathNodeVisitor {
     
     private JsObjectImpl fromAN = null;
 
-    public ModelVisitor(JsParserResult parserResult) {
+    public ModelVisitor(JsParserResult parserResult, OccurrenceBuilder occurrenceBuilder) {
         FileObject fileObject = parserResult.getSnapshot().getSource().getFileObject();
         this.modelBuilder = new ModelBuilder(JsFunctionImpl.createGlobal(
                 fileObject, Integer.MAX_VALUE, parserResult.getSnapshot().getMimeType()));
+        this.occurrenceBuilder = occurrenceBuilder;
         this.functionStack = new ArrayList<List<FunctionNode>>();
         this.parserResult = parserResult;
     }
@@ -1547,60 +1549,61 @@ public class ModelVisitor extends PathNodeVisitor {
             // don't process this node.
             return;
         }
-        DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
-        JsObject property = null;
-        JsObject parameter = null;
-        JsObject parent = modelBuilder.getCurrentObject();
-        if (!(parent instanceof JsWith || (parent.getParent() != null && parent.getParent() instanceof JsWith))) {
-            while (scope != null && property == null && parameter == null) {
-                JsFunction function = (JsFunction)scope;
-                property = function.getProperty(name);
-                parameter = function.getParameter(name);
-                scope = scope.getParentScope();
-            }
-            if(parameter != null) {
-                if (property == null) {
-                    property = parameter;
-                } else {
-                    if(property.getJSKind() != JsElement.Kind.VARIABLE) {
-                        property = parameter;
-                    }
-                }
-            }
-        } else {
-            if (!(parent instanceof JsWith) && (parent.getParent() != null && parent.getParent() instanceof JsWith)) {
-                parent = parent.getParent();
-            }
-            property = parent.getProperty(name);
-        }
-
-        if (property != null) {
-
-            // occurence in the doc
-            addDocNameOccurence(((JsObjectImpl)property));
-            addDocTypesOccurence(((JsObjectImpl)property));
-
-            ((JsObjectImpl)property).addOccurrence(range);
-        } else {
-            // it's a new global variable?
-            IdentifierImpl nameIden = ModelElementFactory.create(parserResult, name, range.getStart(), range.getEnd());
-            if (nameIden != null) {
-                JsObjectImpl newObject;
-                if (!(parent instanceof JsWith)) {
-                        parent = modelBuilder.getGlobal();
-                }
-                if (!isFunction) {
-                    newObject = new JsObjectImpl(parent, nameIden, nameIden.getOffsetRange(),
-                            leftSite, parserResult.getSnapshot().getMimeType(), null);
-                } else {
-                    FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-                    newObject = new JsFunctionImpl(fo, parent, nameIden, Collections.EMPTY_LIST,
-                            parserResult.getSnapshot().getMimeType(), null);
-                }
-                newObject.addOccurrence(nameIden.getOffsetRange());
-                parent.addProperty(nameIden.getName(), newObject);
-            }
-        }
+        occurrenceBuilder.addOccurrence(name, range, modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject(), isFunction, leftSite);
+//        DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
+//        JsObject property = null;
+//        JsObject parameter = null;
+//        JsObject parent = modelBuilder.getCurrentObject();
+//        if (!(parent instanceof JsWith || (parent.getParent() != null && parent.getParent() instanceof JsWith))) {
+//            while (scope != null && property == null && parameter == null) {
+//                JsFunction function = (JsFunction)scope;
+//                property = function.getProperty(name);
+//                parameter = function.getParameter(name);
+//                scope = scope.getParentScope();
+//            }
+//            if(parameter != null) {
+//                if (property == null) {
+//                    property = parameter;
+//                } else {
+//                    if(property.getJSKind() != JsElement.Kind.VARIABLE) {
+//                        property = parameter;
+//                    }
+//                }
+//            }
+//        } else {
+//            if (!(parent instanceof JsWith) && (parent.getParent() != null && parent.getParent() instanceof JsWith)) {
+//                parent = parent.getParent();
+//            }
+//            property = parent.getProperty(name);
+//        }
+//
+//        if (property != null) {
+//
+//            // occurence in the doc
+//            addDocNameOccurence(((JsObjectImpl)property));
+//            addDocTypesOccurence(((JsObjectImpl)property));
+//
+//            ((JsObjectImpl)property).addOccurrence(range);
+//        } else {
+//            // it's a new global variable?
+//            IdentifierImpl nameIden = ModelElementFactory.create(parserResult, name, range.getStart(), range.getEnd());
+//            if (nameIden != null) {
+//                JsObjectImpl newObject;
+//                if (!(parent instanceof JsWith)) {
+//                        parent = modelBuilder.getGlobal();
+//                }
+//                if (!isFunction) {
+//                    newObject = new JsObjectImpl(parent, nameIden, nameIden.getOffsetRange(),
+//                            leftSite, parserResult.getSnapshot().getMimeType(), null);
+//                } else {
+//                    FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
+//                    newObject = new JsFunctionImpl(fo, parent, nameIden, Collections.EMPTY_LIST,
+//                            parserResult.getSnapshot().getMimeType(), null);
+//                }
+//                newObject.addOccurrence(nameIden.getOffsetRange());
+//                parent.addProperty(nameIden.getName(), newObject);
+//            }
+//        }
     }
     
     /**
@@ -1678,6 +1681,9 @@ public class ModelVisitor extends PathNodeVisitor {
     private JsObject processLhs(Identifier name, JsObject parent, boolean lastOnLeft) {
         JsObject lObject = null;
         if (name != null) {
+            if ("this".equals(name.getName())) {
+                return null;
+            }
             final String newVarName = name.getName();
             boolean hasParent = parent.getProperty(newVarName) != null ;
             boolean hasGrandParent = parent.getJSKind() == JsElement.Kind.METHOD && parent.getParent().getProperty(newVarName) != null;
@@ -1704,8 +1710,10 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
                 if (lObject == null) {
                     // the object with the name wasn't find yet -> create in global scope
-                    lObject = new JsObjectImpl(model.getGlobalObject(), name,
-                            name.getOffsetRange(), false, parserResult.getSnapshot().getMimeType(), null);
+                    JsObject where = modelBuilder.getCurrentWith() == null ? model.getGlobalObject() : modelBuilder.getCurrentWith();
+                    lObject = new JsObjectImpl( where, name,
+                            name.getOffsetRange(), lastOnLeft, parserResult.getSnapshot().getMimeType(), null);
+                    where.addProperty(name.getName(), lObject);
                 }
             }
         }

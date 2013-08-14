@@ -345,4 +345,9 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
     protected boolean classPathContainsBinaries() {
         return true;
     }
+    
+    @Override
+    protected boolean cleanCacheDir() {
+        return false;
+    }
 }
