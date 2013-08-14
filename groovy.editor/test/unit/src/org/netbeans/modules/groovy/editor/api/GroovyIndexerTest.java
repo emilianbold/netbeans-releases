@@ -100,7 +100,7 @@ public class GroovyIndexerTest extends GroovyTestBase {
     public void testGetClasses() throws Exception {
         GroovyIndex index = initIndex();
         
-        Set<IndexedClass> classes = index.getClasses(".*", QuerySupport.Kind.REGEXP);
+        Set<IndexedClass> classes = index.getAllClasses();
         assertEquals(5, classes.size());
     }
     

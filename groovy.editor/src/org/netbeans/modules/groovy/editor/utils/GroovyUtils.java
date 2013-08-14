@@ -85,6 +85,21 @@ public final class GroovyUtils {
         }
     }
 
+    /**
+     * Gets only package name for the given fully qualified name.
+     *
+     * @param fqn fully qualified name
+     * @return only package name or empty string if the default package is used
+     */
+    public static String getPackageName(String fqn) {
+        // In case of default package
+        if (!fqn.contains(".")) { // NOI18N
+            return ""; // NOI18N
+        } else {
+            return fqn.substring(0, fqn.lastIndexOf(".")); // NOI18N
+        }
+    }
+
     public static boolean isRowWhite(String text, int offset) throws BadLocationException {
         try {
             // Search forwards
