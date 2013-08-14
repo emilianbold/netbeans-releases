@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.editor.EditorUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -67,6 +68,7 @@ import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.*;
+import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import static org.netbeans.modules.javascript2.editor.spi.CompletionContext.EXPRESSION;
 import static org.netbeans.modules.javascript2.editor.spi.CompletionContext.OBJECT_MEMBERS;
@@ -403,8 +405,15 @@ class JsCodeCompletion implements CodeCompletionHandler {
             } else {
                 switch (lastChar) {
                     case '.': //NOI18N
-                        return QueryType.COMPLETION;
+                        if (OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionAfterDot()) {
+                            return QueryType.COMPLETION;
+                        }
                     default:
+                        if (OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionFull()) {
+                            if (!Character.isWhitespace(lastChar)) {
+                                return QueryType.COMPLETION;
+                            }
+                        }
                         return QueryType.NONE;
                 }
             }

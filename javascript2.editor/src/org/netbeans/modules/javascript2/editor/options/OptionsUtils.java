@@ -65,11 +65,15 @@ public final class OptionsUtils {
     public static final String AUTO_COMPLETION_TYPE_RESOLUTION = "codeCompletionTypeResolution"; //NOI18N
     public static final String AUTO_COMPLETION_SMART_QUOTES = "codeCompletionSmartQuotes"; //NOI18N
     public static final String AUTO_STRING_CONCATINATION = "codeCompletionStringAutoConcatination"; //NOI18N
-
+    public static final String AUTO_COMPLETION_FULL = "autoCompletionFull"; // NOI18N
+    public static final String AUTO_COMPLETION_AFTER_DOT = "autoCompletionAfterDot"; // NOI18N
+    
     // default values
     public static final boolean AUTO_COMPLETION_TYPE_RESOLUTION_DEFAULT = true;
     public static final boolean AUTO_COMPLETION_SMART_QUOTES_DEFAULT = true;
     public static final boolean AUTO_STRING_CONCATINATION_DEFAULT = true;
+    public static final boolean AUTO_COMPLETION_FULL_DEFAULT = false;
+    public static final boolean AUTO_COMPLETION_AFTER_DOT_DEFAULT = true;
 
     private final AtomicBoolean inited = new AtomicBoolean(false);
 
@@ -95,6 +99,17 @@ public final class OptionsUtils {
                         AUTO_STRING_CONCATINATION,
                         AUTO_STRING_CONCATINATION_DEFAULT);
             }
+            
+            if (settingName == null || AUTO_COMPLETION_FULL.equals(settingName)) {
+                autoCompletionFull = preferences.getBoolean(
+                        AUTO_COMPLETION_FULL,
+                        AUTO_COMPLETION_FULL_DEFAULT);
+            }
+            if (settingName == null || AUTO_COMPLETION_AFTER_DOT.equals(settingName)) {
+                autoCompletionAfterDot = preferences.getBoolean(
+                        AUTO_COMPLETION_AFTER_DOT,
+                        AUTO_COMPLETION_AFTER_DOT_DEFAULT);
+            }
         }
     };
 
@@ -105,7 +120,9 @@ public final class OptionsUtils {
     private Boolean autoCompletionTypeResolution = null;
     private Boolean autoCompletionSmartQuotes = null;
     private Boolean autoStringConcatination = null;
-
+    private Boolean autoCompletionFull = null;
+    private Boolean autoCompletionAfterDot = null;
+    
     private OptionsUtils(Language<JsTokenId> language) {
         this.mimeType = language.mimeType();
     }
@@ -138,6 +155,27 @@ public final class OptionsUtils {
         lazyInit();
         assert autoStringConcatination != null;
         return autoStringConcatination;
+    }
+    
+    /**
+     * Code Completion after typing.
+     */
+    public boolean autoCompletionFull() {
+        lazyInit();
+        assert autoCompletionFull != null;
+        return autoCompletionFull;
+    }
+
+    /**
+     * Variables after "$".
+     */
+    public boolean autoCompletionAfterDot() {
+        lazyInit();
+        assert autoCompletionAfterDot != null;
+        if (autoCompletionFull()) {
+            return true;
+        }
+        return autoCompletionAfterDot;
     }
 
     private void lazyInit() {
