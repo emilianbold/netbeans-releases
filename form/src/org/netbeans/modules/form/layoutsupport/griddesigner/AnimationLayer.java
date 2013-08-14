@@ -182,7 +182,7 @@ public class AnimationLayer implements ActionListener {
         Dimension oldSize = container.getSize();
         container.setSize(maxContDim);
         containerImage = container.createImage(maxContDim.width, maxContDim.height);
-        if (containerImage != null) { // for some reason the container's peer is null here sometimes...
+        if (containerImage != null) { // should not be null after fix of bug 225537, but just fo sure
             container.paint(containerImage.getGraphics());
         }
         container.setSize(oldSize);

@@ -654,6 +654,16 @@ public class VisualReplicator {
                     if (realValue == FormDesignValue.IGNORED_VALUE) {
                         return; // ignore the value, as it is not a real value
                     }
+                    // Bug 85826: If setting a font from the font chooser that matches the default
+                    // font then use the default font instead (FontUIResource instead of Font) that
+                    // handles better multiple languages.
+                    if (realValue instanceof java.awt.Font && !(realValue instanceof javax.swing.plaf.FontUIResource)) {
+                        Object defaultFont = property.getDefaultValue();
+                        if (defaultFont instanceof javax.swing.plaf.FontUIResource
+                                && realValue.equals(defaultFont)) {
+                            realValue = defaultFont;
+                        }
+                    }
                     try {
                         clonedValue = FormUtils.cloneObject(realValue, property.getPropertyContext().getFormModel());
                     } catch (CloneNotSupportedException ex) {
