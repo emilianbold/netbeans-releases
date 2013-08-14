@@ -101,6 +101,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     private boolean enabled = true;
     private String[] sortedModelUrls;
     private String[] schemeUris;
+    private boolean urlComboEnabled = true;
 
     private enum Scheme {
         FILE("file", NbBundle.getMessage(RemoteRepository.class, "Scheme.FILE")), //NOI18N
@@ -194,6 +195,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     
     public void setEnabled (boolean enabled) {
         this.enabled = enabled;
+        panel.urlComboBox.setEnabled(enabled && urlComboEnabled);
         for (ConnectionSettingsType type : settingTypes) {
             type.setEnabled(enabled);
         }
@@ -331,6 +333,11 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         });
     }
 
+    private void enableUrlCombo (boolean comboEnabled) {
+        urlComboEnabled = comboEnabled;
+        panel.urlComboBox.setEnabled(comboEnabled && enabled);
+    }
+
     private boolean ignoreComboEvents = false;
     private void findComboItem(boolean selectAll, boolean resetFields) {
         final GitURI uri = getURI(false);
@@ -405,7 +412,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
     
     private Map<String, ConnectionSettings> recentConnectionSettings = new HashMap<String, ConnectionSettings>();
     private void initUrlComboValues(final String forPath, final PasswordAuthentication pa) {
-        panel.urlComboBox.setEnabled(false);
+        enableUrlCombo(false);
         Git.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
@@ -460,7 +467,7 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
                         EventQueue.invokeLater(new Runnable() {
                             @Override
                             public void run () {
-                                panel.urlComboBox.setEnabled(enabled);
+                                enableUrlCombo(true);
                                 synchronized (RemoteRepository.this) {
                                     initialized = true;
                                     RemoteRepository.this.notifyAll();
@@ -550,7 +557,6 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         public DefaultConnectionSettingsType () {
             settingsPanel = new UserPasswordPanel();
             this.inputFields = new JComponent[] {
-                panel.urlComboBox,
                 settingsPanel.userTextField,
                 settingsPanel.userPasswordField,
                 settingsPanel.savePasswordCheckBox,
@@ -670,7 +676,6 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         public SSHConnectionSettingsType () {
             settingsPanel = new SSHPanel();
             this.inputFields = new JComponent[] {
-                panel.urlComboBox,
                 settingsPanel.lblUser,
                 settingsPanel.lblPassword,
                 settingsPanel.lblLeaveBlank,
@@ -890,7 +895,6 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         
         public FileConnectionSettingsType () {
             this.inputFields = new JComponent[] {
-                panel.urlComboBox,
                 panel.directoryBrowseButton,
                 panel.proxySettingsButton,
                 panel.repositoryLabel,
@@ -958,7 +962,6 @@ public class RemoteRepository implements DocumentListener, ActionListener, ItemL
         
         public GitConnectionSettingsType () {
             this.inputFields = new JComponent[] {
-                panel.urlComboBox,
                 panel.directoryBrowseButton,
                 panel.proxySettingsButton,
                 panel.repositoryLabel,

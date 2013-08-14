@@ -1583,7 +1583,7 @@ public abstract class HgCommand<T> implements Callable<T> {
             if (!list.isEmpty()) {
                 if (isErrorNoRepository(list.get(0))) {
                     handleError(command, list, NbBundle.getMessage(HgCommand.class, "MSG_NO_REPOSITORY_ERR"), logger);
-                } else if (list.get(0).toLowerCase().contains(HG_ABORT_CANNOT_FOLLOW_NONEXISTENT_FILE)) {
+                } else if (isFollowNotAllowed(list.get(0))) {
                     // nothing
                 } else if (isErrorAbort(list.get(0))) {
                     if (isNoRevStrip(list.get(0))) {
@@ -4448,6 +4448,12 @@ public abstract class HgCommand<T> implements Callable<T> {
 
     protected static boolean isErrorAbort(String msg) {
         return msg.indexOf(HG_ABORT_ERR) > -1; // NOI18N
+    }
+
+    protected static boolean isFollowNotAllowed (String msg) {
+        msg = msg.toLowerCase();
+        return msg.contains(HG_ABORT_CANNOT_FOLLOW_NONEXISTENT_FILE)
+                || msg.contains("cannot follow file not in parent revision"); //NOI18N
     }
 
     public static boolean isErrorAbortPush(String msg) {

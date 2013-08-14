@@ -520,7 +520,6 @@ public class AddTest extends AbstractGitTestCase {
         DirCacheEntry e = repository.readDirCache().getEntry(link.getName());
         assertEquals(FileMode.SYMLINK, e.getFileMode());
         ObjectId id = e.getObjectId();
-        assertEquals(0, e.getLength());
         assertEquals(ts, e.getLastModified() / 1000 * 1000);
         ObjectReader reader = repository.getObjectDatabase().newReader();
         assertTrue(reader.has(e.getObjectId()));

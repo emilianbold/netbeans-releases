@@ -70,7 +70,6 @@ import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.GitModuleConfig;
 import org.netbeans.modules.git.client.GitProgressSupport;
-import org.netbeans.modules.git.utils.GitUtils;
 import org.netbeans.modules.git.utils.WizardStepProgressSupport;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.AsynchronousValidatingPanel;
@@ -117,6 +116,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             panel.rbConfiguredUri,
             panel.rbCreateNew,
             panel.lblRemoteNames,
+            panel.cbPersistRemote,
             panel.cmbRemoteNames
         };
         this.mode = mode;
