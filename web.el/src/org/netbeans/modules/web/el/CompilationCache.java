@@ -50,7 +50,7 @@ import java.util.Map;
  */
 public class CompilationCache {
 
-    private Map<Key, Object> map = new HashMap<Key, Object>();
+    private Map<Key, Object> map = new HashMap<>();
     
     public synchronized Object getOrCache(Key key, ValueProvider<?> valueProvider) {
         Object cached = map.get(key);

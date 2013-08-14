@@ -47,6 +47,7 @@ import java.util.logging.Logger;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
 import org.netbeans.api.annotations.common.NullAllowed;
+import org.netbeans.api.editor.EditorUtilities;
 import org.netbeans.api.lexer.Language;
 import org.netbeans.api.lexer.Token;
 import org.netbeans.api.lexer.TokenHierarchy;
@@ -67,6 +68,7 @@ import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
 import org.netbeans.modules.javascript2.editor.model.*;
 import org.netbeans.modules.javascript2.editor.model.impl.*;
+import org.netbeans.modules.javascript2.editor.options.OptionsUtils;
 import org.netbeans.modules.javascript2.editor.parser.JsParserResult;
 import static org.netbeans.modules.javascript2.editor.spi.CompletionContext.EXPRESSION;
 import static org.netbeans.modules.javascript2.editor.spi.CompletionContext.OBJECT_MEMBERS;
@@ -94,6 +96,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
     private static final List<String> WINDOW_EXPRESSION_CHAIN = Arrays.<String>asList("window", "@pro"); //NOI18N
 
     private boolean caseSensitive;
+    
+    private static final String CHARS_NO_AUTO_COMPLETE = ";,/+-\\:="; //NOI18N
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext ccContext) {
@@ -403,8 +407,15 @@ class JsCodeCompletion implements CodeCompletionHandler {
             } else {
                 switch (lastChar) {
                     case '.': //NOI18N
-                        return QueryType.COMPLETION;
+                        if (OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionAfterDot()) {
+                            return QueryType.COMPLETION;
+                        }
                     default:
+                        if (OptionsUtils.forLanguage(JsTokenId.javascriptLanguage()).autoCompletionFull()) {
+                            if (!Character.isWhitespace(lastChar) && CHARS_NO_AUTO_COMPLETE.indexOf(lastChar) == -1) {
+                                return QueryType.COMPLETION;
+                            }
+                        }
                         return QueryType.NONE;
                 }
             }

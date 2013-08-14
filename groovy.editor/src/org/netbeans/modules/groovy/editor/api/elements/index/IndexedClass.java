@@ -46,7 +46,6 @@ package org.netbeans.modules.groovy.editor.api.elements.index;
 
 import java.util.Set;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.elements.common.IClassElement;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
@@ -69,7 +68,7 @@ public final class IndexedClass extends IndexedElement implements IClassElement 
         this.simpleName = simpleName;
     }
 
-    public static IndexedClass create(GroovyIndex index, String simpleName, String fqn, IndexResult result,
+    public static IndexedClass create(String simpleName, String fqn, IndexResult result,
         String attributes, int flags) {
         IndexedClass c = new IndexedClass(result, fqn, simpleName, attributes, flags);
         return c;

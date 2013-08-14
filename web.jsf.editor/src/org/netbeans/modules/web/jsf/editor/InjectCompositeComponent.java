@@ -72,6 +72,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.netbeans.modules.parsing.spi.ParseException;
+import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
@@ -191,9 +192,12 @@ public class InjectCompositeComponent {
             // issue #232189 - Composite component's NS declaration not inserted on first usage
             FileObject generatedFO = result.iterator().next().getPrimaryFile();
             if (generatedFO != null) {
-                IndexingManager.getDefault().refreshIndexAndWait(
-                        generatedFO.getParent().toURL(),
-                        Collections.singleton(generatedFO.toURL()));
+                WebModule webModule = WebModule.getWebModule(generatedFO);
+                if (webModule != null && webModule.getDocumentBase() != null) {
+                    IndexingManager.getDefault().refreshIndexAndWait(
+                            webModule.getDocumentBase().toURL(),
+                            Collections.singleton(generatedFO.toURL()));
+                }
             }
             final String compName = result.iterator().next().getName();
             //TODO XXX Replace selected text by created component in editor

@@ -91,7 +91,7 @@ public final class ELIndexer extends EmbeddingIndexer {
 
         private final ELParserResult parserResult;
         private final IndexingSupport support;
-        private final List<IndexDocument> documents = new ArrayList<IndexDocument>();
+        private final List<IndexDocument> documents = new ArrayList<>();
 
         public Analyzer(ELParserResult parserResult, IndexingSupport support) {
             this.parserResult = parserResult;
@@ -177,7 +177,7 @@ public final class ELIndexer extends EmbeddingIndexer {
 
         private static synchronized Collection<String> getIndexableMimeTypes() {
             if(INDEXABLE_MIMETYPES == null) {
-                INDEXABLE_MIMETYPES = new ArrayList<String>();
+                INDEXABLE_MIMETYPES = new ArrayList<>();
                 for(ELPlugin plugin : ELPlugin.Query.getELPlugins()) {
                     INDEXABLE_MIMETYPES.addAll(plugin.getMimeTypes());
                 }

@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,59 +37,52 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2010 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.web.el.completion;
+package org.netbeans.modules.css.editor.typinghooks;
 
-import org.netbeans.modules.csl.api.ElementHandle;
-import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.HtmlFormatter;
-import org.netbeans.modules.csl.spi.DefaultCompletionProposal;
+import javax.swing.text.BadLocationException;
+import org.netbeans.api.editor.mimelookup.MimePath;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
+import org.netbeans.spi.editor.typinghooks.DeletedTextInterceptor;
 
 /**
  *
- * @author mfukala@netbeans.org
+ * @author marek
  */
-final class ELVariableCompletionItem extends DefaultCompletionProposal {
+public class CssDeletedTextInterceptor implements DeletedTextInterceptor {
 
-    private final String varName;
-    private final String value;
-
-    public ELVariableCompletionItem(String varName, String value) {
-        this.varName = varName;
-        this.value = value;
+    @Override
+    public boolean beforeRemove(Context context) throws BadLocationException {
+        return false;
     }
 
     @Override
-    public ElementHandle getElement() {
-        return null;
+    public void remove(Context context) throws BadLocationException {
+        if (CssTypedTextInterceptor.justAddedPairOffset == context.getOffset()) {
+            //removed the paired char, remove the pair as well
+            context.getDocument().remove(context.getOffset() - 1, 1);
+        }
+
+        CssTypedTextInterceptor.justAddedPair = 0;
+        CssTypedTextInterceptor.justAddedPairOffset = -1;
     }
 
     @Override
-    public String getName() {
-        return varName;
+    public void afterRemove(Context context) throws BadLocationException {
     }
 
     @Override
-    public ElementKind getKind() {
-        return ElementKind.VARIABLE;
+    public void cancelled(Context context) {
     }
+    
+    @MimeRegistration(mimeType = "text/css", service = DeletedTextInterceptor.Factory.class)
+    public static final class Factory implements DeletedTextInterceptor.Factory {
 
-    @Override
-    public String getLhsHtml(HtmlFormatter formatter) {
-        ElementKind kind = getKind();
-        formatter.name(kind, true);
-        formatter.appendText(getName());
-        formatter.name(kind, false);
-        return formatter.getText();
+        @Override
+        public DeletedTextInterceptor createDeletedTextInterceptor(MimePath mimePath) {
+            return new CssDeletedTextInterceptor();
+        }
+        
     }
-
-    @Override
-    public String getRhsHtml(HtmlFormatter formatter) {
-        formatter.type(true);
-        formatter.appendText(value);
-        formatter.type(false);
-        return formatter.getText();
-    }
-
 }
