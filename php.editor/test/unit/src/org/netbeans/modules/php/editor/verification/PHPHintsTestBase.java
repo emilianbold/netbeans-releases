@@ -57,7 +57,7 @@ import org.openide.filesystems.FileUtil;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class PHPHintsTestBase extends PHPTestBase {
-    private static final String TEST_DIRECTORY = "testfiles/verification/"; //NOI18N
+    protected static final String TEST_DIRECTORY = "testfiles/verification/"; //NOI18N
 
     public PHPHintsTestBase(String testName) {
         super(testName);

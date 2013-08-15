@@ -74,6 +74,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FieldsDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.FinallyClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ForStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.FormalParameter;
@@ -433,6 +434,8 @@ public class FormatVisitor extends DefaultVisitor {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_TRY_LEFT_BRACE, ts.offset()));
             } else if (parent instanceof CatchClause) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH_LEFT_BRACE, ts.offset()));
+            } else if (parent instanceof FinallyClause) {
+                formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FINALLY_LEFT_BRACE, ts.offset()));
             } else if (parent instanceof UseTraitStatement) {
                 formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE, ts.offset()));
             } else {
@@ -522,7 +525,7 @@ public class FormatVisitor extends DefaultVisitor {
                     } else if (parent instanceof SwitchStatement) {
                         formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_SWITCH_RIGHT_BACE, ts.offset()));
                         addFormatToken(formatTokens);
-                    } else if (parent instanceof CatchClause || parent instanceof TryStatement) {
+                    } else if (parent instanceof CatchClause || parent instanceof TryStatement || parent instanceof FinallyClause) {
                         formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH_RIGHT_BRACE, ts.offset()));
                         addFormatToken(formatTokens);
                     } else if (parent instanceof UseTraitStatement) {
@@ -1305,6 +1308,7 @@ public class FormatVisitor extends DefaultVisitor {
     public void visit(TryStatement node) {
         scan(node.getBody());
         scan(node.getCatchClauses());
+        scan(node.getFinallyClause());
     }
 
     @Override
@@ -1695,6 +1699,10 @@ public class FormatVisitor extends DefaultVisitor {
                 break;
             case PHP_CATCH:
                 tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CATCH, ts.offset()));
+                tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
+                break;
+            case PHP_FINALLY:
+                tokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_FINALLY, ts.offset()));
                 tokens.add(new FormatToken(FormatToken.Kind.TEXT, ts.offset(), ts.token().text().toString()));
                 break;
             case T_INLINE_HTML:

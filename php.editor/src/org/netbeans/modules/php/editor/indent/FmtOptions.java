@@ -133,6 +133,7 @@ public final class FmtOptions {
     public static final String SPACE_BEFORE_WHILE = "spaceBeforeWhile"; //NOI18N
     public static final String SPACE_BEFORE_ELSE = "spaceBeforeElse"; //NOI18N
     public static final String SPACE_BEFORE_CATCH = "spaceBeforeCatch"; //NOI18N
+    public static final String SPACE_BEFORE_FINALLY = "spaceBeforeFinally"; //NOI18N
     public static final String SPACE_BEFORE_METHOD_DECL_PAREN = "spaceBeforeMethodDeclParen"; //NOI18N
     public static final String SPACE_BEFORE_METHOD_CALL_PAREN = "spaceBeforeMethodCallParen"; //NOI18N
     public static final String SPACE_BEFORE_IF_PAREN = "spaceBeforeIfParen"; //NOI18N
@@ -158,6 +159,7 @@ public final class FmtOptions {
     public static final String SPACE_BEFORE_SWITCH_LEFT_BRACE = "spaceBeforeSwitchLeftBrace"; //NOI18N
     public static final String SPACE_BEFORE_TRY_LEFT_BRACE = "spaceBeforeTryLeftBrace"; //NOI18N
     public static final String SPACE_BEFORE_CATCH_LEFT_BRACE = "spaceBeforeCatchLeftBrace"; //NOI18N
+    public static final String SPACE_BEFORE_FINALLY_LEFT_BRACE = "spaceBeforeFinallyLeftBrace"; //NOI18N
     public static final String SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE = "spaceBeforeUseTraitBodyLeftBrace"; //NOI18N
     public static final String SPACE_WITHIN_ARRAY_DECL_PARENS = "spaceWithinArrayDeclParens"; //NOI18N
     public static final String SPACE_WITHIN_METHOD_DECL_PARENS = "spaceWithinMethodDeclParens"; //NOI18N
@@ -180,6 +182,7 @@ public final class FmtOptions {
     public static final String PLACE_ELSE_ON_NEW_LINE = "placeElseOnNewLine"; //NOI18N
     public static final String PLACE_WHILE_ON_NEW_LINE = "placeWhileOnNewLine"; //NOI18N
     public static final String PLACE_CATCH_ON_NEW_LINE = "placeCatchOnNewLine"; //NOI18N
+    public static final String PLACE_FINALLY_ON_NEW_LINE = "placeFinallyOnNewLine"; //NOI18N
     public static final String PLACE_NEW_LINE_AFTER_MODIFIERS = "placeNewLineAfterModifiers"; //NOI18N
     public static final String ALIGN_MULTILINE_METHOD_PARAMS = "alignMultilineMethodParams"; //NOI18N
     public static final String ALIGN_MULTILINE_CALL_ARGS = "alignMultilineCallArgs"; //NOI18N
@@ -291,6 +294,7 @@ public final class FmtOptions {
             {SPACE_BEFORE_WHILE, TRUE},
             {SPACE_BEFORE_ELSE, TRUE},
             {SPACE_BEFORE_CATCH, TRUE},
+            {SPACE_BEFORE_FINALLY, TRUE},
             {SPACE_BEFORE_METHOD_DECL_PAREN, FALSE},
             {SPACE_BEFORE_METHOD_CALL_PAREN, FALSE},
             {SPACE_BEFORE_IF_PAREN, TRUE},
@@ -316,6 +320,7 @@ public final class FmtOptions {
             {SPACE_BEFORE_SWITCH_LEFT_BRACE, TRUE},
             {SPACE_BEFORE_TRY_LEFT_BRACE, TRUE},
             {SPACE_BEFORE_CATCH_LEFT_BRACE, TRUE},
+            {SPACE_BEFORE_FINALLY_LEFT_BRACE, TRUE},
             {SPACE_BEFORE_USE_TRAIT_BODY_LEFT_BRACE, TRUE},
             {SPACE_WITHIN_ARRAY_DECL_PARENS, FALSE},
             {SPACE_WITHIN_METHOD_DECL_PARENS, FALSE},
@@ -347,6 +352,7 @@ public final class FmtOptions {
             {PLACE_ELSE_ON_NEW_LINE, FALSE}, //NOI18N
             {PLACE_WHILE_ON_NEW_LINE, FALSE}, //NOI18N
             {PLACE_CATCH_ON_NEW_LINE, FALSE}, //NOI18N
+            {PLACE_FINALLY_ON_NEW_LINE, FALSE}, //NOI18N
             {PLACE_NEW_LINE_AFTER_MODIFIERS, FALSE}, //NOI18N
 
             {GROUP_ALIGNMENT_ARRAY_INIT, FALSE},
