@@ -295,62 +295,6 @@ public final class Model {
                 }
             }
         }
-        
-//        for (TypeUsage typeUsage : withTypes) {
-//            for (TypeUsage rType : ModelUtils.resolveTypeFromSemiType(with, typeUsage)) {
-//                String type = rType.getType();
-//                if (type.startsWith("@exp;")) {
-//                    type = type.substring(5);
-//                }
-//                if (type.contains("@pro;")) {
-//                    type = type.replace("@pro;", ".");
-//                }
-//                JsObject fromType = ModelUtils.findJsObjectByName((JsObject)ModelUtils.getDeclarationScope(with), type);
-//                if (fromType != null) {
-//                    Collection<TypeUsage> assignments = ModelUtils.resolveTypes(fromType.getAssignments(), parserResult);
-//                    for (TypeUsage assignment : assignments) {
-//                        Collection<IndexedElement> properties = jsIndex.getProperties(assignment.getType());
-//                        for (IndexedElement indexedElement : properties) {
-//                            JsObject jsWithProperty = with.getProperty(indexedElement.getName());
-//                            if (jsWithProperty != null) {
-//                                moveProperty(fromType, jsWithProperty);
-//                            }
-//                        }
-//                    }
-//                    
-//                    for (TypeUsage typeFE : ModelUtils.resolveTypes(withTypes, parserResult)) {
-//                        Collection<IndexedElement> properties = jsIndex.getProperties(typeFE.getType());
-//                        for (IndexedElement indexedElement : properties) {
-//                            JsObject jsWithProperty = with.getProperty(indexedElement.getName());
-//                            if (jsWithProperty != null) {
-//                                moveProperty(fromType, jsWithProperty);
-//                            }
-//                        }
-//                    }
-//                    
-//                    String typeName = rType.getType();
-//                    if (!typeName.startsWith("@")) {
-//                        typeName = "@exp;" + typeName;
-//                    } else if (typeName.startsWith("@var")) {
-//                        typeName = "@exp;" + typeName.substring(5);
-//                    }
-//                    List<String> exp = ModelUtils.expressionFromType(new TypeUsageImpl(typeName));
-//                    Collection<TypeUsage> resolveTypeFromExpression2 = ModelUtils.resolveTypeFromExpression(this, jsIndex, exp, typeUsage.getOffset());
-//
-//                    for (TypeUsage typeFE : resolveTypeFromExpression2) {
-//                        Collection<IndexedElement> properties = jsIndex.getProperties(typeFE.getType());
-//                        for (IndexedElement indexedElement : properties) {
-//                            JsObject jsWithProperty = with.getProperty(indexedElement.getName());
-//                            if (jsWithProperty != null) {
-//                                moveProperty(fromType, jsWithProperty);
-//                            }
-//                        }
-//                    }
-//                }
-//
-//            }
-//            
-//        }
             
         boolean hasOuter = with.getOuterWith() != null;
         Collection<? extends JsObject> variables = ModelUtils.getVariables(ModelUtils.getDeclarationScope(with));
