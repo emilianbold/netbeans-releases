@@ -49,7 +49,6 @@ import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
-import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
 import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
@@ -176,29 +175,29 @@ public abstract class PSR1Hint extends HintRule {
 
     }
 
-    public static class TypeNamesHint extends PSR1Hint {
-        private static final String HINT_ID = "PSR1.Hint.Type.Names"; //NOI18N
+    public static class TypeDeclarationHint extends PSR1Hint {
+        private static final String HINT_ID = "PSR1.Hint.Type"; //NOI18N
         private FileObject fileObject;
 
         @Override
         CheckVisitor createVisitor(FileObject fileObject, BaseDocument baseDocument) {
             assert fileObject != null;
             this.fileObject = fileObject;
-            return new TypeNamesVisitor(this, fileObject, baseDocument);
+            return new TypeDeclarationVisitor(this, fileObject, baseDocument);
         }
 
         protected boolean isPhp52() {
             return CodeUtils.isPhp52(fileObject);
         }
 
-        private static final class TypeNamesVisitor extends CheckVisitor {
+        private static final class TypeDeclarationVisitor extends CheckVisitor {
             private static final Pattern PHP52_NAME_PATTERN = Pattern.compile("[A-Z][a-zA-Z0-9_]*[a-zA-Z0-9]+"); //NOI18N
             private static final Pattern PHP53_NAME_PATTERN = Pattern.compile("[A-Z][a-zA-Z0-9]+"); //NOI18N
             private final Pattern currentNamePattern;
 
-            public TypeNamesVisitor(TypeNamesHint typeNamesHint, FileObject fileObject, BaseDocument baseDocument) {
-                super(typeNamesHint, fileObject, baseDocument);
-                currentNamePattern = typeNamesHint.isPhp52() ? PHP52_NAME_PATTERN : PHP53_NAME_PATTERN;
+            public TypeDeclarationVisitor(TypeDeclarationHint typeDeclarationHint, FileObject fileObject, BaseDocument baseDocument) {
+                super(typeDeclarationHint, fileObject, baseDocument);
+                currentNamePattern = typeDeclarationHint.isPhp52() ? PHP52_NAME_PATTERN : PHP53_NAME_PATTERN;
             }
 
             @Override
@@ -216,12 +215,12 @@ public abstract class PSR1Hint extends HintRule {
                 processTypeDeclaration(node);
             }
 
-            @NbBundle.Messages("PSR1TypeNamesHintText=Class names MUST be declared in StudlyCaps (Code written for 5.2.x and before SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on class names).")
+            @NbBundle.Messages("PSR1TypeDeclarationHintText=Type names MUST be declared in StudlyCaps (Code written for 5.2.x and before SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on type names).")
             private void processTypeDeclaration(TypeDeclaration node) {
                 Identifier typeNameNode = node.getName();
                 String typeName = typeNameNode.getName();
                 if (typeName != null && !currentNamePattern.matcher(typeName).matches()) {
-                    createHint(typeNameNode, Bundle.PSR1TypeNamesHintText());
+                    createHint(typeNameNode, Bundle.PSR1TypeDeclarationHintText());
                 }
             }
 
@@ -233,15 +232,15 @@ public abstract class PSR1Hint extends HintRule {
         }
 
         @Override
-        @NbBundle.Messages("PSR1TypeNamesHintDesc=Type names MUST be declared in StudlyCaps (Code written for 5.2.x and before SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on type names).")
+        @NbBundle.Messages("PSR1TypeDeclarationHintDesc=Type names MUST be declared in StudlyCaps (Code written for 5.2.x and before SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on type names).")
         public String getDescription() {
-            return Bundle.PSR1TypeNamesHintDesc();
+            return Bundle.PSR1TypeDeclarationHintDesc();
         }
 
         @Override
-        @NbBundle.Messages("PSR1TypeNamesHintDisp=Type Names")
+        @NbBundle.Messages("PSR1TypeDeclarationHintDisp=Type Names")
         public String getDisplayName() {
-            return Bundle.PSR1TypeNamesHintDisp();
+            return Bundle.PSR1TypeDeclarationHintDisp();
         }
     }
 

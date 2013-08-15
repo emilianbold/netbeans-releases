@@ -332,7 +332,7 @@
                     <folder name="psr1">
                         <attr name="SystemFileSystem.localizingBundle" stringvalue="org.netbeans.modules.php.editor.verification.Bundle"/>
                         <file name="org-netbeans-modules-php-editor-verification-PSR1Hint$ConstantDeclarationHint.instance" />
-                        <file name="org-netbeans-modules-php-editor-verification-PSR1Hint$TypeNamesHint.instance" />
+                        <file name="org-netbeans-modules-php-editor-verification-PSR1Hint$TypeDeclarationHint.instance" />
                         <file name="org-netbeans-modules-php-editor-verification-PSR1Hint$MethodDeclarationHint.instance" />
                     </folder>
                     <folder name="superglobals">

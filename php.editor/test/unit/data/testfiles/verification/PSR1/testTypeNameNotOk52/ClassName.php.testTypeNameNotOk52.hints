@@ -1,4 +1,4 @@
 class class_Name {
       ----------
 HINT:PSR-1 Violation:
-Class names MUST be declared in StudlyCaps (Code written for 5.2.x and before SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on class names).
+Type names MUST be declared in StudlyCaps (Code written for 5.2.x and before SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on type names).

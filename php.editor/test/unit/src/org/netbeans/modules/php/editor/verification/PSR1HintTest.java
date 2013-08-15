@@ -63,23 +63,23 @@ public class PSR1HintTest extends PHPHintsTestBase {
     }
 
     public void testTypeNameOk53() throws Exception {
-        checkHints(new TypeNamesHintStub(PhpVersion.PHP_53), "ClassName.php");
+        checkHints(new TypeDeclarationHintStub(PhpVersion.PHP_53), "ClassName.php");
     }
 
     public void testTypeNameNotOk53() throws Exception {
-        checkHints(new TypeNamesHintStub(PhpVersion.PHP_53), "ClassName.php");
+        checkHints(new TypeDeclarationHintStub(PhpVersion.PHP_53), "ClassName.php");
     }
 
     public void testTypeNameNotOk53_2() throws Exception {
-        checkHints(new TypeNamesHintStub(PhpVersion.PHP_53), "ClassName.php");
+        checkHints(new TypeDeclarationHintStub(PhpVersion.PHP_53), "ClassName.php");
     }
 
     public void testTypeNameOk52() throws Exception {
-        checkHints(new TypeNamesHintStub(PhpVersion.PHP_52), "ClassName.php");
+        checkHints(new TypeDeclarationHintStub(PhpVersion.PHP_52), "ClassName.php");
     }
 
     public void testTypeNameNotOk52() throws Exception {
-        checkHints(new TypeNamesHintStub(PhpVersion.PHP_52), "ClassName.php");
+        checkHints(new TypeDeclarationHintStub(PhpVersion.PHP_52), "ClassName.php");
     }
 
     public void testConstantNameOk_1() throws Exception {
@@ -141,10 +141,10 @@ public class PSR1HintTest extends PHPHintsTestBase {
         return "PSR1/" + getName();
     }
 
-    private static final class TypeNamesHintStub extends PSR1Hint.TypeNamesHint {
+    private static final class TypeDeclarationHintStub extends PSR1Hint.TypeDeclarationHint {
         private final PhpVersion phpVersion;
 
-        public TypeNamesHintStub(PhpVersion phpVersion) {
+        public TypeDeclarationHintStub(PhpVersion phpVersion) {
             this.phpVersion = phpVersion;
         }
 
