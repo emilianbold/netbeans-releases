@@ -238,7 +238,7 @@ public abstract class PSR1Hint extends HintRule {
         }
 
         @Override
-        @NbBundle.Messages("PSR1TypeDeclarationHintDisp=Type Names")
+        @NbBundle.Messages("PSR1TypeDeclarationHintDisp=Type Declaration")
         public String getDisplayName() {
             return Bundle.PSR1TypeDeclarationHintDisp();
         }
