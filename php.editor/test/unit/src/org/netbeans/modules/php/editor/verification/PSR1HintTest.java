@@ -82,6 +82,26 @@ public class PSR1HintTest extends PHPHintsTestBase {
         checkHints(new TypeNamesHintStub(PhpVersion.PHP_52), "ClassName.php");
     }
 
+    public void testConstantNameOk_1() throws Exception {
+        checkHints(new PSR1Hint.ConstantDeclarationHint(), "ClassName.php");
+    }
+
+    public void testConstantNameOk_2() throws Exception {
+        checkHints(new PSR1Hint.ConstantDeclarationHint(), "ClassName.php");
+    }
+
+    public void testConstantNameNotOk_1() throws Exception {
+        checkHints(new PSR1Hint.ConstantDeclarationHint(), "ClassName.php");
+    }
+
+    public void testConstantNameNotOk_2() throws Exception {
+        checkHints(new PSR1Hint.ConstantDeclarationHint(), "ClassName.php");
+    }
+
+    public void testConstantNameNotOk_3() throws Exception {
+        checkHints(new PSR1Hint.ConstantDeclarationHint(), "ClassName.php");
+    }
+
     @Override
     protected void checkHints(Rule hint, String fileName) throws Exception {
         super.checkHints(hint, getTestDir() + "/" + fileName);
