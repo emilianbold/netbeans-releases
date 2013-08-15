@@ -196,6 +196,7 @@ public abstract class PSR1Hint extends HintRule {
             private static final Pattern PHP53_NAME_PATTERN = Pattern.compile("[A-Z][a-zA-Z0-9]+"); //NOI18N
             private final boolean isPhp52;
             private boolean isInNamedNamespaceDeclaration = false;
+            private boolean isDeclaredType = false;
 
             public TypeDeclarationVisitor(TypeDeclarationHint typeDeclarationHint, FileObject fileObject, BaseDocument baseDocument) {
                 super(typeDeclarationHint, fileObject, baseDocument);
@@ -223,8 +224,18 @@ public abstract class PSR1Hint extends HintRule {
                 processTypeDeclaration(node);
             }
 
+            @NbBundle.Messages("PSR1TypeDeclarationMoreTypesHintText=Each type MUST be in a file by itself.")
             private void processTypeDeclaration(TypeDeclaration node) {
                 Identifier typeNameNode = node.getName();
+                if (isDeclaredType) {
+                    createHint(typeNameNode, Bundle.PSR1TypeDeclarationMoreTypesHintText());
+                } else {
+                    isDeclaredType = true;
+                    processFirstDeclaration(typeNameNode);
+                }
+            }
+
+            private void processFirstDeclaration(Identifier typeNameNode) {
                 if (isPhp52) {
                     checkPhp52Violations(typeNameNode);
                 } else {
