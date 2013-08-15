@@ -1296,23 +1296,6 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node enter(WithNode withNode) {
         JsObjectImpl currentObject = modelBuilder.getCurrentObject();
-//        Collection<TypeUsage> originalTypes = ModelUtils.resolveSemiTypeOfExpression(parserResult, withNode.getExpression());
-//        List<TypeUsage> types = new ArrayList(originalTypes);
-//        if (currentObject instanceof JsWith) {
-//            JsWith outerWith = (JsWith) currentObject;
-//            for (TypeUsage type : outerWith.getTypes()) {
-//                for (TypeUsage oType : originalTypes) {
-//                    String typeName = type.getType();
-//                    String alteredName = oType.getType();
-//                    if (alteredName.startsWith("@var;")) {
-//                        alteredName = alteredName.substring(5);
-//                        alteredName = "@pro;" + alteredName;
-//                    }
-//                    typeName = typeName + alteredName;
-//                    types.add(new TypeUsageImpl(typeName, oType.getOffset(), false));
-//                }
-//            }
-//        }
         Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, withNode.getExpression());
         JsWithObjectImpl withObject = new JsWithObjectImpl(currentObject, modelBuilder.getUnigueNameForWithObject(), types, new OffsetRange(withNode.getStart(), withNode.getFinish()), 
                         new OffsetRange(withNode.getExpression().getStart(), withNode.getExpression().getFinish()),parserResult.getSnapshot().getMimeType(), null);
