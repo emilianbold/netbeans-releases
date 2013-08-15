@@ -61,6 +61,7 @@ public class JsfTagFeatureProvider implements TagFeatureProvider {
     private static final String JSTL_CORE = "http://java.sun.com/jsp/jstl/core";
     private static final String JSF_CORE = "http://java.sun.com/jsf/core";
     private static final String JSF_HTML = "http://java.sun.com/jsf/html";
+    private static final String JSF_FACELETS = "http://java.sun.com/jsf/facelets";
     
     private static final String VAR = "var";
     private static final String VALUE = "value";
@@ -103,7 +104,8 @@ public class JsfTagFeatureProvider implements TagFeatureProvider {
 
         FOR_EACH(JSTL_CORE, "forEach", "items", VAR),
         SELECT_ITEMS(JSF_CORE, "selectItems", VALUE, VAR),
-        DATA_TABLE(JSF_HTML, "dataTable", VALUE, VAR);
+        DATA_TABLE(JSF_HTML, "dataTable", VALUE, VAR),
+        REPEAT(JSF_FACELETS, "repeat", VALUE, VAR);
         
         private final String namespace;
         private final String name;
