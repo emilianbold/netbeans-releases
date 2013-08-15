@@ -459,4 +459,8 @@ public class JsStructureScannerTest extends JsTestBase {
     public void testIssue222964() throws Exception {
         checkStructure("testfiles/markoccurences/issue222964/issue222964.js"); 
     }
+    
+    public void testIssue234430() throws Exception {
+        checkStructure("testfiles/structure/issue234430.js");
+    }
 }
