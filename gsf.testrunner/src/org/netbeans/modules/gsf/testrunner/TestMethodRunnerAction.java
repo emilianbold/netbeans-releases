@@ -45,6 +45,7 @@ import java.util.Collection;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
 import org.netbeans.modules.gsf.testrunner.api.TestMethodRunnerProvider;
+import org.netbeans.modules.parsing.api.indexing.IndexingManager;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionReference;
 import org.openide.awt.ActionReferences;
@@ -88,7 +89,8 @@ public class TestMethodRunnerAction extends NodeAction {
 
     @Override
     @NbBundle.Messages({"Search_For_Provider=Searching for provider to handle the test method",
-	"No_Provider_Found=No provider can handle the test method"})
+	"No_Provider_Found=No provider can handle the test method",
+	"Scanning_In_Progress=Scanning in progress, cannot yet identify the name of the test method"})
     protected void performAction(final Node[] activatedNodes) {
         final Collection<? extends TestMethodRunnerProvider> providers = Lookup.getDefault().lookupAll(TestMethodRunnerProvider.class);
 	RequestProcessor RP = new RequestProcessor("TestMethodRunnerAction", 1, true);   // NOI18N
@@ -109,7 +111,8 @@ public class TestMethodRunnerAction extends NodeAction {
 	    public void taskFinished(org.openide.util.Task task) {
 		ph.finish();
 		if(runMethodProvider == null) {
-		    StatusDisplayer.getDefault().setStatusText(Bundle.No_Provider_Found());
+                    boolean isIndexing = IndexingManager.getDefault().isIndexing();
+                    StatusDisplayer.getDefault().setStatusText(isIndexing ? Bundle.Scanning_In_Progress() : Bundle.No_Provider_Found());
 		} else {
 		    runMethodProvider.runTestMethod(activatedNodes[0]);
 		}
