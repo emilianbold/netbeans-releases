@@ -212,14 +212,20 @@ public class SimplifiedJspServlet extends JSPProcessor {
                     buff.add(snapshot.create(blockStart, blockLength, "text/x-java"));
                     buff.add(snapshot.create(");", "text/x-java")); //NOI18N
                 } else {
+                    boolean unfinishedScriptlet = false;
                     if (isUnfinishedScriptletInQueue(tokenSequence)) {
                         // see issue #213963 - we are trying to cut rest of the tag after the caret position
                         int caretOffset = GsfUtilities.getLastKnownCaretOffset(snapshot, null);
                         if (caretOffset - blockStart > 0) {
                             blockLength = Math.min(blockLength, caretOffset - blockStart);
+                            unfinishedScriptlet = true;
                         }
                     }
                     buff.add(snapshot.create(blockStart, blockLength, "text/x-java"));
+                    //https://netbeans.org/bugzilla/show_bug.cgi?id=231452
+                    if(unfinishedScriptlet) {
+                        buff.add(snapshot.create(" ; ", "text/x-java"));
+                    }
                 }
             }
         } while (tokenSequence.moveNext());
