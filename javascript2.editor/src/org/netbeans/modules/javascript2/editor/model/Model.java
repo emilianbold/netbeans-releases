@@ -363,6 +363,10 @@ public final class Model {
             for (Occurrence occurrence : property.getOccurrences()) {
                 newProperty.addOccurrence(occurrence.getOffsetRange());
             }
+            List<JsObject>propertiesToMove = new ArrayList(property.getProperties().values());
+            for (JsObject propOfProperty: propertiesToMove) {
+                moveProperty(newProperty, propOfProperty);
+            }
             // the property needs to be resolved again to handle right occurrences
             resolveLocalTypes(newProperty, parserResult.getDocumentationHolder());
         }
