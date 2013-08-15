@@ -18,14 +18,14 @@ Other names may be trademarks of their respective owners.
      <homeID>ide.welcome</homeID>
      <mapref location="map.xml" />
   </maps>
-<!--
+
   <view>
     <name>TOC</name>
     <label>Table Of Contents</label>
     <type>javax.help.TOCView</type>
     <data>ide-toc.xml</data>
   </view>
--->
+
 <!--
   <view>
     <name>Index</name>
