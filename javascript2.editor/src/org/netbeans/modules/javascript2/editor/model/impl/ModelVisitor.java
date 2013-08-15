@@ -1549,7 +1549,7 @@ public class ModelVisitor extends PathNodeVisitor {
             // don't process this node.
             return;
         }
-        occurrenceBuilder.addOccurrence(name, range, modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject(), isFunction, leftSite);
+        occurrenceBuilder.addOccurrence(name, range, modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject(), modelBuilder.getCurrentWith(), isFunction, leftSite);
 //        DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
 //        JsObject property = null;
 //        JsObject parameter = null;
