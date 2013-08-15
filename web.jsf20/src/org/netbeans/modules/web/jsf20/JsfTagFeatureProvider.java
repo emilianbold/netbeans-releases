@@ -44,6 +44,7 @@ package org.netbeans.modules.web.jsf20;
 import java.util.Collection;
 import java.util.Collections;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsfapi.api.TagFeature;
@@ -52,19 +53,14 @@ import org.openide.util.lookup.ServiceProvider;
 
 /**
  * {@link TagFeatureProvider} for JSF 2.2.
- * 
+ *
  * @author petrpodzimek
  */
 @ServiceProvider(service = TagFeatureProvider.class)
 public class JsfTagFeatureProvider implements TagFeatureProvider {
 
-    private static final String JSTL_CORE = "http://java.sun.com/jsp/jstl/core";
-    private static final String JSF_CORE = "http://java.sun.com/jsf/core";
-    private static final String JSF_HTML = "http://java.sun.com/jsf/html";
-    private static final String JSF_FACELETS = "http://java.sun.com/jsf/facelets";
-    
-    private static final String VAR = "var";
-    private static final String VALUE = "value";
+    private static final String VAR = "var";        //NOI18N
+    private static final String VALUE = "value";    //NOI18N
 
     @Override
     public <T extends TagFeature> Collection<T> getFeatures(final Tag tag, Library library, Class<T> clazz) {
@@ -89,11 +85,13 @@ public class JsfTagFeatureProvider implements TagFeatureProvider {
     }
 
     private IterableTag resolveIterableTag(Library library, Tag tag) {
+        String libraryNamespace = library.getNamespace();
+        if (libraryNamespace == null) {
+            return null;
+        }
         for (IterableTag iterableTag : IterableTag.values()) {
-            if ((library.getNamespace() != null
-                    && iterableTag.getNamespace() != null
-                    && library.getNamespace().equalsIgnoreCase(iterableTag.getNamespace()))
-                || (library.getLegacyNamespace() != null && library.getLegacyNamespace().equalsIgnoreCase(iterableTag.getNamespace()))) {
+            if (iterableTag.getName().equals(tag.getName())
+                    && libraryNamespace.equals(iterableTag.getLibraryInfo().getNamespace())) {
                 return iterableTag;
             }
         }
@@ -102,25 +100,25 @@ public class JsfTagFeatureProvider implements TagFeatureProvider {
 
     private enum IterableTag {
 
-        FOR_EACH(JSTL_CORE, "forEach", "items", VAR),
-        SELECT_ITEMS(JSF_CORE, "selectItems", VALUE, VAR),
-        DATA_TABLE(JSF_HTML, "dataTable", VALUE, VAR),
-        REPEAT(JSF_FACELETS, "repeat", VALUE, VAR);
-        
-        private final String namespace;
+        FOR_EACH(DefaultLibraryInfo.JSTL_CORE, "forEach", "items", VAR),         //NOI18N
+        SELECT_ITEMS(DefaultLibraryInfo.JSF_CORE, "selectItems", VALUE, VAR),    //NOI18N
+        DATA_TABLE(DefaultLibraryInfo.HTML, "dataTable", VALUE, VAR),            //NOI18N
+        REPEAT(DefaultLibraryInfo.FACELETS, "repeat", VALUE, VAR);               //NOI18N
+
+        private final DefaultLibraryInfo libraryInfo;
         private final String name;
         private final String itemsAtribute;
         private final String variableAtribute;
 
-        private IterableTag(String namespace, String name, String itemsAtribute, String variableAtribute) {
-            this.namespace = namespace;
+        private IterableTag(DefaultLibraryInfo libraryInfo, String name, String itemsAtribute, String variableAtribute) {
+            this.libraryInfo = libraryInfo;
             this.name = name;
             this.itemsAtribute = itemsAtribute;
             this.variableAtribute = variableAtribute;
         }
 
-        public String getNamespace() {
-            return namespace;
+        public DefaultLibraryInfo getLibraryInfo() {
+            return libraryInfo;
         }
 
         public String getName() {
