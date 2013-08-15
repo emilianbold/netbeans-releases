@@ -124,7 +124,22 @@ public class DeclarationFinderImpl implements DeclarationFinder {
                         return location;
                     }
                 } 
-            } else {  
+            } else {
+                FileObject fo = object.getFileObject();
+                if (object.isDeclared()) {
+                    if (fo != null) {
+                        if (fo.equals(snapshot.getSource().getFileObject())) {
+                            int docOffset = LexUtilities.getLexerOffset(jsResult, object.getDeclarationName().getOffsetRange().getStart());
+                            if (docOffset > -1) {
+                                return new DeclarationLocation(fo, docOffset);
+                            }
+                        } else {
+                            // TODO we need to solve to translating model offsets to the doc offset for other files?
+                            return new DeclarationLocation(fo, object.getDeclarationName().getOffsetRange().getStart());
+                        }
+                        
+                    }
+                }
                 TokenSequence ts = LexUtilities.getTokenSequence(snapshot, caretOffset, language);
                 if (ts != null) {
                     ts.move(offset);

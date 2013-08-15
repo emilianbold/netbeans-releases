@@ -296,4 +296,8 @@ public class JsWithFastTest extends JsWithBase {
     public void testIssue234381_03() throws Exception {
         checkCompletion("testfiles/with/issue234381.js","var z = ^test() * times;", true);
     }
+    
+    public void testIssue234468_01() throws Exception {
+        checkDeclaration("testfiles/with/issue234381.js", "var z = test() * time^s;", "this.^times = 3;");
+    }
 }
