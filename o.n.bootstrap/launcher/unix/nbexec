@@ -218,7 +218,7 @@ if [ -z "$cachedirspecified" ]; then
    cachedir="${userdir}/var/cache"
 fi
 
-if [ -z "$nosplash" -a -f "${cachedir}/splash.png" ]; then
+if [ -z "$nosplash" -a -f "${cachedir}/splash.png" -a ! -f "${userdir}/lock" ]; then
    jargs="$jargs -splash:\"${cachedir}/splash.png\""
 fi
 
