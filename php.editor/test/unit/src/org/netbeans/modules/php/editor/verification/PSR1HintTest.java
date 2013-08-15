@@ -142,6 +142,10 @@ public class PSR1HintTest extends PHPHintsTestBase {
         checkHints(new PSR1Hint.MethodDeclarationHint(), "ClassName.php");
     }
 
+    public void testMethodMagicOk() throws Exception {
+        checkHints(new PSR1Hint.MethodDeclarationHint(), "ClassName.php");
+    }
+
     @Override
     protected void checkHints(Rule hint, String fileName) throws Exception {
         super.checkHints(hint, getTestDir() + "/" + fileName);
