@@ -46,6 +46,7 @@ package org.netbeans.modules.html.editor;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 import javax.swing.text.AbstractDocument;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
@@ -146,8 +147,8 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                             int to = t3offs + t3.length();
                                             if (tagNameEnd != -1) {
                                                 return new int[]{from, to,
-                                                            from, tagNameEnd,
-                                                            to - 1, to};
+                                                    from, tagNameEnd,
+                                                    to - 1, to};
                                             } else {
                                                 return new int[]{from, to};
                                             }
@@ -191,7 +192,58 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
         if (source == null) {
             return null;
         }
+        //Bug 226625 - HTML comments do not match start and ending tags
+        //no comments in the parse tree -- we need to find the pairs using tokens
+        Document document = context.getDocument();
+        final AtomicReference<int[]> result = new AtomicReference<>();
+        document.render(new Runnable() {
 
+            @Override
+            public void run() {
+                TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
+                TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());
+                if (ts != null) {
+                    int diff = ts.move(context.getSearchOffset());
+                    boolean foundToken;
+                    if (diff == 0) {
+                        if (context.isSearchingBackward()) {
+                            foundToken = ts.movePrevious();
+                        } else {
+                            foundToken = ts.moveNext();
+                        }
+                    } else {
+                        foundToken = ts.moveNext();
+                    }
+                    if (foundToken) {
+                        if (ts.token().id() == HTMLTokenId.BLOCK_COMMENT) {
+                            if (diff <= 4) {
+                                //in <!-- open delimiter
+                                //multiline comments are cut to separated block comment tokens
+                                int lastBlockCommentTokenEnd;
+                                do {
+                                    lastBlockCommentTokenEnd = ts.offset() + ts.token().length();
+                                } while (ts.moveNext() && ts.token().id() == HTMLTokenId.BLOCK_COMMENT);
+                                result.set(new int[]{lastBlockCommentTokenEnd - 3, lastBlockCommentTokenEnd});
+                            } else if (diff >= ts.token().length() - 3) {
+                                //in --> close delimiter
+                                //multiline comments are cut to separated block comment tokens
+                                int firstBlockCommentTokenStart;
+                                do {
+                                    firstBlockCommentTokenStart = ts.offset();
+                                } while (ts.movePrevious() && ts.token().id() == HTMLTokenId.BLOCK_COMMENT);
+                                result.set(new int[]{firstBlockCommentTokenStart, firstBlockCommentTokenStart + 4});
+                            }
+                        }
+                    }
+                }
+            }
+
+        });
+        if(result.get() != null) {
+            return result.get();
+        }
+
+        //searching for elements' pair -- use the parse tree
         final int[][] ret = new int[1][];
         try {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
@@ -215,12 +267,12 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                     if (result == null) {
                         return;
                     }
-                    
+
                     HtmlModel model = HtmlModelFactory.getModel(result.getHtmlVersion());
-                    if(model == null) {
-                        return ;
+                    if (model == null) {
+                        return;
                     }
-                    
+
                     int searchOffsetLocal = searchOffset;
                     while (searchOffsetLocal != context.getLimitOffset()) {
                         int searched = result.getSnapshot().getEmbeddedOffset(searchOffsetLocal);
@@ -243,7 +295,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                     ret[0] = null; //no match
                                 } else {
                                     ret[0] = translate(new int[]{match.from(), match.to()}, result);
-                                    
+
                                 }
 
                             } else if (origin.type() == ElementType.CLOSE_TAG) {
@@ -267,11 +319,12 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                     int f1 = match.from();
                                     int t1 = f1 + match.name().length() + 1; /* +1 == open tag symbol '<' length */
                                     //match the closing '>' symbol
+
                                     int f2 = match.to() - 1; // -1 == close tag symbol '>' length
                                     int t2 = match.to();
 
                                     ret[0] = translate(new int[]{f1, t1, f2, t2}, result);
-                                    
+
                                 }
                             } else if (origin.type() == ElementType.COMMENT) {
                                 if (searched >= origin.from() && searched <= origin.from() + BLOCK_COMMENT_START.length()) {

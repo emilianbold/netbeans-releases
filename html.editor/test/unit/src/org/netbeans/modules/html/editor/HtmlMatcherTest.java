@@ -186,6 +186,35 @@ public class HtmlMatcherTest extends TestBase {
         
     }
     
+      
+    public void testBlockComment() throws Exception {
+        setDocumentText("<!-- comment -->");
+        //               0123456789012345678901234567890123456789
+        //               0         1         2         3
+        BracesMatcher matcher = createMatcher(1, false, 1);
+        assertOrigin(0, 4, matcher);
+        assertMatch(13, 16, matcher);
+        
+        matcher = createMatcher(14, false, 1);
+        assertOrigin(13, 16, matcher);
+        assertMatch(0, 4, matcher);
+        
+    }
+    
+    public void testMultilineBlockComment() throws Exception {
+        setDocumentText("<!-- comment\ncomment line2 -->");
+        //               0123456789012 345678901234567890123456789
+        //               0         1         2         3
+        BracesMatcher matcher = createMatcher(1, false, 1);
+        assertOrigin(0, 4, matcher);
+        assertMatch(27, 30, matcher);
+        
+        matcher = createMatcher(28, false, 1);
+        assertOrigin(27, 30, matcher);
+        assertMatch(0, 4, matcher);
+        
+    }
+    
     //--------------------------------------------------------------------------
     
     private void assertOrigin(int expectedStart, int expectedEnd, BracesMatcher matcher) throws InterruptedException, BadLocationException {
