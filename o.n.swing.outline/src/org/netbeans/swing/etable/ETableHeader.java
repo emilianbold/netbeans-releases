@@ -50,10 +50,12 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.Icon;
 import javax.swing.ImageIcon;
+import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import javax.swing.plaf.UIResource;
+import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.JTableHeader;
 import javax.swing.table.TableCellRenderer;
 import javax.swing.table.TableColumn;
@@ -85,15 +87,26 @@ class ETableHeader extends JTableHeader {
      * Special renderer painting sorting icons and also special icon
      * for the QuickFilter columns.
      */
-    private class ETableHeaderRenderer implements TableCellRenderer, UIResource {
+    private class ETableHeaderRenderer extends DefaultTableCellRenderer implements TableCellRenderer, UIResource {
         
         private TableCellRenderer headerRendererUI;
         private Map<ETableColumn, TableCellRenderer> defaultColumnHeaderRenderers = new HashMap<ETableColumn, TableCellRenderer>();
         
         private ETableHeaderRenderer(TableCellRenderer headerRenderer) {
             this.headerRendererUI = headerRenderer;
+            setName("TableHeader.renderer");    // NOI18N
         }
 
+        @Override
+        public void updateUI() {
+            TableCellRenderer defaultTableHeaderRenderer = headerRendererUI;
+            if (defaultTableHeaderRenderer instanceof JComponent) {
+                ((JComponent) defaultTableHeaderRenderer).updateUI();
+            } else {
+                super.updateUI();
+            }
+        }
+        
         /**
          * Get the table header renderer for the particular column.
          * If the column is {@link ETableColumn}, check createDefaultHeaderRenderer()

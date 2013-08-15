@@ -135,6 +135,37 @@ public class DataFolderPasteTypesTest extends NbTestCase {
         assertEquals( children[0].getNameExt(), "testFile.txt" );
     }
 
+    /**
+     * Test for bug 233673.
+     *
+     * @throws java.io.IOException
+     */
+    public void testJavaFileListWithRelativePaths() throws IOException {
+
+        FileObject testFO = FileUtil.createData(testFileSystem.getRoot(),
+                "absoluteTestFile.txt");
+        File absoluteTestFile = FileUtil.toFile(testFO);
+        File relativeTestFile = new File("relativeFile.txt");
+
+        ArrayList fileList = new ArrayList(2);
+        fileList.add(relativeTestFile);
+        fileList.add(absoluteTestFile);
+        Transferable t = new MockTransferable(
+                new DataFlavor[]{DataFlavor.javaFileListFlavor}, fileList);
+
+        DataFolder.FolderNode node = (DataFolder.FolderNode) folderNode;
+        ArrayList<PasteType> list = new ArrayList<PasteType>();
+        node.createPasteTypes(t, list);
+        assertEquals("Relative path should be skipped", 1, list.size());
+        PasteType paste = (PasteType) list.get(0);
+        paste.paste();
+
+        FileObject[] children = testFileSystem.getRoot().getFileObject(
+                "testDir").getChildren();
+        assertEquals(1, children.length);
+        assertEquals(children[0].getNameExt(), "absoluteTestFile.txt");
+    }
+
     private static class MockTransferable implements Transferable {
         private DataFlavor[] flavors;
         private Object data;

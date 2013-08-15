@@ -92,6 +92,7 @@ class MultiSplitCell {
             if( requiredSize <= 0 || requiredSize >= newSize ) {
                 requiredSize = (int)(newSize * initialSplitWeight + 0.5);
             }
+            requiredSize = Math.max( requiredSize, getMinimumSize() );
             dirty = true;
         }
     }

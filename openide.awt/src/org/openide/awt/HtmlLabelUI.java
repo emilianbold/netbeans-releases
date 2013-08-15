@@ -74,10 +74,10 @@ class HtmlLabelUI extends LabelUI {
 
     /** System property to automatically turn on antialiasing for html strings */
     
-    private static final boolean antialias = Boolean.getBoolean("nb.cellrenderer.antialiasing") // NOI18N
+    static final boolean antialias = Boolean.getBoolean("nb.cellrenderer.antialiasing") // NOI18N
          ||Boolean.getBoolean("swing.aatext") // NOI18N
          ||(isGTK() && gtkShouldAntialias()) // NOI18N
-         || isAqua(); 
+         || isAqua();
     
     private static HtmlLabelUI uiInstance;
     

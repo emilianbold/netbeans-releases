@@ -757,8 +757,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         labelWidth.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWidth.AccessibleContext.accessibleName")); // NOI18N
         labelWidth.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelWidth.AccessibleContext.accessibleDescription")); // NOI18N
 
-        textFieldWidth.setMinimumSize(new java.awt.Dimension(70, 20));
-        textFieldWidth.setPreferredSize(new java.awt.Dimension(70, 20));
+        textFieldWidth.setColumns(8);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 1;
         gridBagConstraints.gridy = 11;
@@ -777,8 +776,7 @@ public class JFXRunPanel extends javax.swing.JPanel implements HelpCtx.Provider,
         labelHeight.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelHeight.AccessibleContext.accessibleName")); // NOI18N
         labelHeight.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(JFXRunPanel.class, "JFXRunPanel.labelHeight.AccessibleContext.accessibleDescription")); // NOI18N
 
-        textFieldHeight.setMinimumSize(new java.awt.Dimension(70, 20));
-        textFieldHeight.setPreferredSize(new java.awt.Dimension(70, 20));
+        textFieldHeight.setColumns(8);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 3;
         gridBagConstraints.gridy = 11;
