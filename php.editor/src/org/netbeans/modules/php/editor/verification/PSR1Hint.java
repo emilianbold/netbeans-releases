@@ -223,25 +223,34 @@ public abstract class PSR1Hint extends HintRule {
                 processTypeDeclaration(node);
             }
 
-            @NbBundle.Messages({
-                "PSR1TypeDeclaration53HintText=Type names MUST be declared in StudlyCaps.",
-                "PSR1TypeDeclaration52HintText=Type names SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on type names.",
-                "PSR1TypeDeclaration53NoNsHintText=Each type MUST be in a namespace of at least one level: a top-level vendor name."
-            })
             private void processTypeDeclaration(TypeDeclaration node) {
                 Identifier typeNameNode = node.getName();
-                String typeName = typeNameNode.getName();
                 if (isPhp52) {
-                    if (typeName != null && !PHP52_NAME_PATTERN.matcher(typeName).matches()) {
-                        createHint(typeNameNode, Bundle.PSR1TypeDeclaration52HintText());
-                    }
+                    checkPhp52Violations(typeNameNode);
                 } else {
-                    if (!isInNamedNamespaceDeclaration) {
-                        createHint(typeNameNode, Bundle.PSR1TypeDeclaration53NoNsHintText());
-                    } else {
-                        if (typeName != null && !PHP53_NAME_PATTERN.matcher(typeName).matches()) {
-                            createHint(typeNameNode, Bundle.PSR1TypeDeclaration53HintText());
-                        }
+                    checkPhp53Violations(typeNameNode);
+                }
+            }
+
+            @NbBundle.Messages("PSR1TypeDeclaration52HintText=Type names SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on type names.")
+            private void checkPhp52Violations(Identifier typeNameNode) {
+                String typeName = typeNameNode.getName();
+                if (typeName != null && !PHP52_NAME_PATTERN.matcher(typeName).matches()) {
+                    createHint(typeNameNode, Bundle.PSR1TypeDeclaration52HintText());
+                }
+            }
+
+            @NbBundle.Messages({
+                "PSR1TypeDeclaration53HintText=Type names MUST be declared in StudlyCaps.",
+                "PSR1TypeDeclaration53NoNsHintText=Each type MUST be in a namespace of at least one level: a top-level vendor name."
+            })
+            private void checkPhp53Violations(Identifier typeNameNode) {
+                String typeName = typeNameNode.getName();
+                if (!isInNamedNamespaceDeclaration) {
+                    createHint(typeNameNode, Bundle.PSR1TypeDeclaration53NoNsHintText());
+                } else {
+                    if (typeName != null && !PHP53_NAME_PATTERN.matcher(typeName).matches()) {
+                        createHint(typeNameNode, Bundle.PSR1TypeDeclaration53HintText());
                     }
                 }
             }
