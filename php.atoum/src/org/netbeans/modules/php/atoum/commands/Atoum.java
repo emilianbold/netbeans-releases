@@ -59,6 +59,7 @@ import org.netbeans.modules.php.api.executable.InvalidPhpExecutableException;
 import org.netbeans.modules.php.api.executable.PhpExecutable;
 import org.netbeans.modules.php.api.executable.PhpExecutableValidator;
 import org.netbeans.modules.php.api.phpmodule.PhpModule;
+import org.netbeans.modules.php.api.phpmodule.PhpOptions;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.atoum.AtoumTestingProvider;
 import org.netbeans.modules.php.atoum.options.AtoumOptions;
@@ -80,6 +81,7 @@ import org.openide.util.Pair;
 
 import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.DEBUG;
 import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.TEST;
+import org.openide.util.Lookup;
 
 /**
  * Represents <tt>atoum</tt> or <tt>mageekguy.atoum.phar</tt>.
@@ -104,6 +106,8 @@ public final class Atoum {
     private static final String BOOTSTRAP_PARAM = "-bf"; // NOI18N
     private static final String CONFIGURATION_PARAM = "-c"; // NOI18N
     private static final String INIT_PARAM = "--init"; // NOI18N
+    private static final String XDEBUG_CONFIG_PARAM = "--xc"; // NOI18N
+    private static final String IDE_KEY_PARAM = "idekey=%s"; // NOI18N
 
     private final String atoumPath;
 
@@ -202,6 +206,10 @@ public final class Atoum {
             params.add(buffer.toString());
             runInfo.resetCustomTests();
         }
+        if (runInfo.getSessionType() == TestRunInfo.SessionType.DEBUG) {
+            params.add(XDEBUG_CONFIG_PARAM);
+            params.add(String.format(IDE_KEY_PARAM, Lookup.getDefault().lookup(PhpOptions.class).getDebuggerSessionId()));
+        }
         File startFile = FileUtil.toFile(runInfo.getStartFile());
         if (startFile.isFile()) {
             params.add(FILE_PARAM);
@@ -214,7 +222,6 @@ public final class Atoum {
             if (runInfo.getSessionType() == TestRunInfo.SessionType.TEST) {
                 return atoum.runAndWait(getDescriptor(), new ParsingFactory(testSession), "Running atoum tests..."); // NOI18N
             }
-            LOGGER.info("Debugging atoum tests is not possible");
             return atoum.debug(runInfo.getStartFile(), getDescriptor(), new ParsingFactory(testSession));
         } catch (CancellationException ex) {
             // canceled
@@ -259,6 +266,8 @@ public final class Atoum {
         return new PhpExecutable(atoumPath)
                 .optionsSubcategory(AtoumOptionsPanelController.OPTIONS_SUB_PATH)
                 .workDir(FileUtil.toFile(testDirectory))
+                .redirectErrorStream(true)
+                .noDebugConfig(true)
                 .displayName(title);
     }
 
@@ -383,6 +392,7 @@ public final class Atoum {
             if (testSuite != null) {
                 LOGGER.log(Level.FINE, "Test suite {0} found, finishing", testSuiteName);
                 testSuite.finish(testSuiteTime);
+                testSuite = null;
             }
         }
 
