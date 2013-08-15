@@ -215,6 +215,27 @@ public class HtmlMatcherTest extends TestBase {
         
     }
     
+    public void testBlockCommentWithPrefix() throws Exception {
+        setDocumentText(" <!-- comment -->");
+        //               0123456789012345678901234567890123456789
+        //               0         1         2         3
+        BracesMatcher matcher = createMatcher(1, true, 1);
+        assertNull(matcher.findOrigin());
+        
+        matcher = createMatcher(1, false, 1);
+        assertOrigin(1, 5, matcher);
+        assertMatch(14, 17, matcher);
+    }
+    
+     public void testBlockCommentBoundary() throws Exception {
+        setDocumentText(" <!-- com\nment -->");
+        //               0123456789 012345678901234567890123456789
+        //               0         1         2         3
+        BracesMatcher matcher = createMatcher(18, true, 2);
+        assertOrigin(15, 18, matcher);
+        assertMatch(1, 5, matcher);
+    }
+    
     //--------------------------------------------------------------------------
     
     private void assertOrigin(int expectedStart, int expectedEnd, BracesMatcher matcher) throws InterruptedException, BadLocationException {

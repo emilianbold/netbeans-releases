@@ -68,6 +68,7 @@ import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.common.api.WebUtils;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcher;
 import org.netbeans.spi.editor.bracesmatching.BracesMatcherFactory;
@@ -187,7 +188,6 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
         }
         //disabling the master matcher cool matching strategy - if forward scanning, decrease the offset by one
 //        final int searchOffset = context.isSearchingBackward() ? context.getSearchOffset() : context.getSearchOffset() + 1;
-        final int searchOffset = context.getSearchOffset();
         final Source source = Source.create(context.getDocument());
         if (source == null) {
             return null;
@@ -200,23 +200,27 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
 
             @Override
             public void run() {
-                TokenHierarchy<Document> th = TokenHierarchy.get(context.getDocument());
-                TokenSequence<HTMLTokenId> ts = th.tokenSequence(HTMLTokenId.language());
+                TokenSequence<HTMLTokenId> ts = Utils.getJoinedHtmlSequence(context.getDocument(), context.getSearchOffset());
                 if (ts != null) {
-                    int diff = ts.move(context.getSearchOffset());
-                    boolean foundToken;
-                    if (diff == 0) {
-                        if (context.isSearchingBackward()) {
-                            foundToken = ts.movePrevious();
+                    int searchOffset = context.getSearchOffset();
+                    while (searchOffset != context.getLimitOffset()) {
+                        int diff = ts.move(searchOffset);
+                        searchOffset = searchOffset + (context.isSearchingBackward() ? -1 : +1);
+
+                        if (diff == 0 && context.isSearchingBackward()) {
+                            //we are searching backward and the offset is at the token boundary
+                            if (!ts.movePrevious()) {
+                                continue;
+                            }
                         } else {
-                            foundToken = ts.moveNext();
+                            if (!ts.moveNext()) {
+                                continue;
+                            }
                         }
-                    } else {
-                        foundToken = ts.moveNext();
-                    }
-                    if (foundToken) {
+
                         if (ts.token().id() == HTMLTokenId.BLOCK_COMMENT) {
-                            if (diff <= 4) {
+                            if (LexerUtils.startsWith(ts.token().text(), BLOCK_COMMENT_START, false, true) 
+                                    && context.getSearchOffset() < ts.offset() + BLOCK_COMMENT_START.length()) {
                                 //in <!-- open delimiter
                                 //multiline comments are cut to separated block comment tokens
                                 int lastBlockCommentTokenEnd;
@@ -224,7 +228,8 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                     lastBlockCommentTokenEnd = ts.offset() + ts.token().length();
                                 } while (ts.moveNext() && ts.token().id() == HTMLTokenId.BLOCK_COMMENT);
                                 result.set(new int[]{lastBlockCommentTokenEnd - 3, lastBlockCommentTokenEnd});
-                            } else if (diff >= ts.token().length() - 3) {
+                            } else if (LexerUtils.endsWith(ts.token().text(), BLOCK_COMMENT_END, false, true)  
+                                    && (context.getSearchOffset() >= ts.offset() + ts.token().length() - BLOCK_COMMENT_END.length())) {
                                 //in --> close delimiter
                                 //multiline comments are cut to separated block comment tokens
                                 int firstBlockCommentTokenStart;
@@ -233,13 +238,14 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
                                 } while (ts.movePrevious() && ts.token().id() == HTMLTokenId.BLOCK_COMMENT);
                                 result.set(new int[]{firstBlockCommentTokenStart, firstBlockCommentTokenStart + 4});
                             }
+                            return;
                         }
                     }
                 }
             }
-
         });
-        if(result.get() != null) {
+
+        if (result.get() != null) {
             return result.get();
         }
 
@@ -249,6 +255,7 @@ public class HtmlBracesMatching implements BracesMatcher, BracesMatcherFactory {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
                 public void run(ResultIterator resultIterator) throws Exception {
+                    int searchOffset = context.getSearchOffset();
                     if (!testMode && MatcherContext.isTaskCanceled()) {
                         return;
                     }
