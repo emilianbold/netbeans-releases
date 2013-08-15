@@ -300,4 +300,13 @@ public class JsWithFastTest extends JsWithBase {
     public void testIssue234468_01() throws Exception {
         checkDeclaration("testfiles/with/issue234381.js", "var z = test() * time^s;", "this.^times = 3;");
     }
+    
+    public void testIssue234380() throws Exception {
+        checkSemantic("testfiles/with/issue234380.js"); 
+        checkStructure("testfiles/with/issue234380.js");
+    }
+    
+    public void testIssue234380_01() throws Exception {
+        checkOccurrences("testfiles/with/issue234380.js","with (this.de^n) {", true);
+    }
 }

@@ -325,6 +325,15 @@ public final class Model {
     }
     
     private void processWithExpressionOccurrences(JsObject jsObject, OffsetRange expRange, List<String> expression) {
+        JsObject parent = jsObject.getParent();
+        if (expression.get(expression.size() - 2).equals("this")) { //NOI18N
+            parent = ModelUtils.findJsObject(this, expRange.getStart());
+            if (parent instanceof JsWith) {
+                parent = parent.getParent();
+            }
+            parent = visitor.resolveThis(parent);
+        }
+        
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot(), expRange.getEnd());
         if (ts == null) {
             return;
@@ -334,7 +343,6 @@ public final class Model {
             return;
         }
         Token<? extends JsTokenId> token = ts.token();
-        JsObject parent = jsObject.getParent();
         for (int i = 0; i < expression.size() - 1; i++) {
             String name = expression.get(i++);
             while ((token.id() != JsTokenId.IDENTIFIER || !(token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name))) && ts.offset() > expRange.getStart() && ts.movePrevious()) {

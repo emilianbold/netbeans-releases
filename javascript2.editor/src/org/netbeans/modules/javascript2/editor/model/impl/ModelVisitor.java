@@ -1702,12 +1702,14 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         return lObject;
     }
+    
+    // TODO move this method to the ModelUtils
     /**
      * 
      * @param where the declaration context, where this is used
      * @return JsObject that should represent this. 
      */
-    private JsObject resolveThis(JsObject where) {
+    public JsObject resolveThis(JsObject where) {
         JsElement.Kind whereKind = where.getJSKind();
         if (canBeSingletonPattern()) {
             JsObject result = resolveThisInSingletonPattern(where);
@@ -1820,7 +1822,7 @@ public class ModelVisitor extends PathNodeVisitor {
         return null;
     }
     
-    private boolean canBeSingletonPattern() {
+    private  boolean canBeSingletonPattern() {
         int pathIndex = 1;
         Node lastNode = getPreviousFromPath(1);
         if (lastNode instanceof FunctionNode && !canBeSingletonPattern(pathIndex)) {
