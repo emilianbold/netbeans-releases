@@ -47,10 +47,16 @@ import java.util.regex.Pattern;
 import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
+import org.netbeans.modules.php.editor.CodeUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.netbeans.modules.php.editor.parser.astnodes.ASTError;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
+import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
+import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -121,6 +127,75 @@ public abstract class PSR1Hint extends HintRule {
             return Bundle.PSR1ConstantHintDisp();
         }
 
+    }
+
+    public static class TypeNamesHint extends PSR1Hint {
+        private static final String HINT_ID = "PSR1.Hint.Type.Names"; //NOI18N
+        private FileObject fileObject;
+
+        @Override
+        CheckVisitor createVisitor(FileObject fileObject, BaseDocument baseDocument) {
+            assert fileObject != null;
+            this.fileObject = fileObject;
+            return new TypeNamesVisitor(this, fileObject, baseDocument);
+        }
+
+        protected boolean isPhp52() {
+            return CodeUtils.isPhp52(fileObject);
+        }
+
+        private static final class TypeNamesVisitor extends CheckVisitor {
+            private static final Pattern PHP52_NAME_PATTERN = Pattern.compile("[A-Z][a-zA-Z0-9_]*[a-zA-Z0-9]+"); //NOI18N
+            private static final Pattern PHP53_NAME_PATTERN = Pattern.compile("[A-Z][a-zA-Z0-9]+"); //NOI18N
+            private final Pattern currentNamePattern;
+
+            public TypeNamesVisitor(TypeNamesHint typeNamesHint, FileObject fileObject, BaseDocument baseDocument) {
+                super(typeNamesHint, fileObject, baseDocument);
+                currentNamePattern = typeNamesHint.isPhp52() ? PHP52_NAME_PATTERN : PHP53_NAME_PATTERN;
+            }
+
+            @Override
+            public void visit(ClassDeclaration node) {
+                processTypeDeclaration(node);
+            }
+
+            @Override
+            public void visit(InterfaceDeclaration node) {
+                processTypeDeclaration(node);
+            }
+
+            @Override
+            public void visit(TraitDeclaration node) {
+                processTypeDeclaration(node);
+            }
+
+            @NbBundle.Messages("PSR1TypeNamesHintText=Class names MUST be declared in StudlyCaps (Code written for 5.2.x and before SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on class names).")
+            private void processTypeDeclaration(TypeDeclaration node) {
+                Identifier typeNameNode = node.getName();
+                String typeName = typeNameNode.getName();
+                if (typeName != null && !currentNamePattern.matcher(typeName).matches()) {
+                    createHint(typeNameNode, Bundle.PSR1TypeNamesHintText());
+                }
+            }
+
+        }
+
+        @Override
+        public String getId() {
+            return HINT_ID;
+        }
+
+        @Override
+        @NbBundle.Messages("PSR1TypeNamesHintDesc=Type names MUST be declared in StudlyCaps (Code written for 5.2.x and before SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on type names).")
+        public String getDescription() {
+            return Bundle.PSR1TypeNamesHintDesc();
+        }
+
+        @Override
+        @NbBundle.Messages("PSR1TypeNamesHintDisp=Type Names")
+        public String getDisplayName() {
+            return Bundle.PSR1TypeNamesHintDisp();
+        }
     }
 
     private abstract static class CheckVisitor extends DefaultVisitor {
