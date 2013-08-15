@@ -645,7 +645,7 @@ public final class ELTypeUtilities {
                     ExecutableElement method = null;
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         Node current = parent.jjtGetChild(i);
-                        if (current instanceof AstDotSuffix || NodeUtil.isMethodCall(current)) {
+                        if (enclosing != null && (current instanceof AstDotSuffix || NodeUtil.isMethodCall(current))) {
                             method = getElementForProperty(info, current, enclosing);
                             if (method == null) {
                                 continue;

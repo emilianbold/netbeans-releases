@@ -44,6 +44,7 @@ package org.netbeans.modules.maven.j2ee;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.maven.model.Build;
@@ -123,7 +124,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
     }
 
     private void performDeploy(
-            ExecutionContext res,
+            final ExecutionContext res,
             boolean debugmode,
             boolean profilemode,
             String clientModuleUri,
@@ -134,7 +135,7 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
         FileUtil.refreshFor(FileUtil.toFile(project.getProjectDirectory()));
         OutputWriter err = res.getInputOutput().getErr();
         OutputWriter out = res.getInputOutput().getOut();
-        J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
+        final J2eeModuleProvider jmp = project.getLookup().lookup(J2eeModuleProvider.class);
         if (jmp == null) {
             err.println();
             err.println();
@@ -167,7 +168,35 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                 mode = Deployment.Mode.PROFILE;
             }
 
-            String clientUrl = Deployment.getDefault().deploy(jmp, mode, clientModuleUri, clientUrlPart, forceRedeploy, new DLogger(out));
+            Callable<Void> debuggerHook = null;
+            if (debugmode) {
+                debuggerHook = new Callable<Void>() {
+
+                    @Override
+                    public Void call() throws Exception {
+                        ServerDebugInfo sdi = jmp.getServerDebugInfo();
+
+                        if (sdi != null) { //fix for bug 57854, this can be null
+                            String h = sdi.getHost();
+                            String transport = sdi.getTransport();
+                            String address;
+
+                            if (transport.equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
+                                address = sdi.getShmemName();
+                            } else {
+                                address = Integer.toString(sdi.getPort());
+                            }
+                            MavenDebugger deb = project.getLookup().lookup(MavenDebugger.class);
+                            deb.attachDebugger(res.getInputOutput(), "Debug Deployed app", transport, h, address); // NOI18N
+                        }
+                        return null;
+                    }
+                };
+
+            }
+
+            String clientUrl = Deployment.getDefault().deploy(jmp, mode, clientModuleUri,
+                    clientUrlPart, forceRedeploy, new DLogger(out), debuggerHook);
             if (clientUrl != null) {
                 FileObject fo = project.getProjectDirectory();
                 boolean show = showInBrowser;
@@ -189,23 +218,6 @@ public class ExecutionChecker implements ExecutionResultChecker, PrerequisitesCh
                     } else {
                         HtmlBrowser.URLDisplayer.getDefault().showURL(url);
                     }
-                }
-            }
-            if (debugmode) {
-                ServerDebugInfo sdi = jmp.getServerDebugInfo();
-
-                if (sdi != null) { //fix for bug 57854, this can be null
-                    String h = sdi.getHost();
-                    String transport = sdi.getTransport();
-                    String address;
-
-                    if (transport.equals(ServerDebugInfo.TRANSPORT_SHMEM)) {
-                        address = sdi.getShmemName();
-                    } else {
-                        address = Integer.toString(sdi.getPort());
-                    }
-                    MavenDebugger deb = project.getLookup().lookup(MavenDebugger.class);
-                    deb.attachDebugger(res.getInputOutput(), "Debug Deployed app", transport, h, address); // NOI18N
                 }
             }
         } catch (Deployment.DeploymentException ex) {
