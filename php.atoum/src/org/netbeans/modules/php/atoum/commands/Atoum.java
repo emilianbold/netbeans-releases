@@ -76,12 +76,12 @@ import org.netbeans.modules.php.spi.testing.run.TestSession;
 import org.netbeans.modules.php.spi.testing.run.TestSuite;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
 
 import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.DEBUG;
 import static org.netbeans.modules.php.spi.testing.run.TestRunInfo.SessionType.TEST;
-import org.openide.util.Lookup;
 
 /**
  * Represents <tt>atoum</tt> or <tt>mageekguy.atoum.phar</tt>.
