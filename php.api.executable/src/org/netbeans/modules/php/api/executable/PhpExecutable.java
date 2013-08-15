@@ -157,6 +157,7 @@ public final class PhpExecutable {
     private Charset outputCharset = null;
     private boolean fileOutputOnly = false;
     private boolean noInfo = false;
+    private boolean noDebugConfig = false;
 
 
     /**
@@ -279,7 +280,7 @@ public final class PhpExecutable {
      * Set error stream redirection.
      * <p>
      * The default value is {@code true} (it means that the error stream is redirected to the standard output).
-     * @param viaAutodetection {@code true} if error stream should be redirected, {@code false} otherwise
+     * @param redirectErrorStream {@code true} if error stream should be redirected, {@code false} otherwise
      * @return the PHP Executable instance itself
      */
     public PhpExecutable redirectErrorStream(boolean redirectErrorStream) {
@@ -382,6 +383,20 @@ public final class PhpExecutable {
      */
     public PhpExecutable noInfo(boolean noInfo) {
         this.noInfo = noInfo;
+        return this;
+    }
+
+    /**
+     * Set no debug config. Normally, debug config is done automatically (set XDEBUG_CONFIG environemnt variable).
+     * Set it to {@code false} if the debug config is done some other way (e.g. using command line parameter).
+     * <p>
+     * The default value is {@code false} (it means debug is configured).
+     * @param noDebugConfig {@code true} for no debug config
+     * @return the PHP Executable instance itself
+     * @since 0.19
+     */
+    public PhpExecutable noDebugConfig(boolean noDebugConfig) {
+        this.noDebugConfig = noDebugConfig;
         return this;
     }
 
@@ -606,10 +621,8 @@ public final class PhpExecutable {
                 return new Cancellable() {
                     @Override
                     public boolean cancel() {
-                        Future<Integer> res = result.get();
-                        if (res != null) {
-                            return res.cancel(true);
-                        }
+                        // debugger calls us, simply return true
+                        // do NOT call cancel on the result otherwise no more process output is written/processed!
                         return true;
                     }
                 };
@@ -688,7 +701,8 @@ public final class PhpExecutable {
             processBuilder = processBuilder.addEnvironmentVariable(variable.getKey(), variable.getValue());
         }
         processBuilder = processBuilder.redirectErrorStream(redirectErrorStream);
-        if (debug) {
+        if (debug
+                && !noDebugConfig) {
             processBuilder = processBuilder.addEnvironmentVariable("XDEBUG_CONFIG", "idekey=" + Lookup.getDefault().lookup(PhpOptions.class).getDebuggerSessionId()); // NOI18N
         }
         return processBuilder;
