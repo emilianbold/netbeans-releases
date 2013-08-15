@@ -60,6 +60,7 @@ import org.netbeans.modules.bugtracking.util.LinkButton;
 import org.netbeans.modules.bugzilla.Bugzilla;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import org.netbeans.modules.bugzilla.repository.NBRepositorySupport;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.HtmlBrowser.URLDisplayer;
@@ -130,7 +131,7 @@ class NBLoginPanel extends javax.swing.JPanel {
 
         passwordField.setText(org.openide.util.NbBundle.getMessage(NBLoginPanel.class, "NBLoginPanel.passwordField.text")); // NOI18N
 
-        errorLabel.setForeground(new java.awt.Color(153, 0, 0));
+        errorLabel.setForeground(BugzillaUtil.getErrorForegroundColor());
         errorLabel.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/netbeans/modules/bugzilla/resources/error.gif"))); // NOI18N
         errorLabel.setText(org.openide.util.NbBundle.getMessage(NBLoginPanel.class, "NBLoginPanel.errorLabel.text")); // NOI18N
 
