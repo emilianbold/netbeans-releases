@@ -360,8 +360,8 @@ public abstract class FormProperty extends Node.Property {
             // set the real value to the target object
             if (realValue != FormDesignValue.IGNORED_VALUE) {
                 setTargetValueInLAFBlock(realValue);
-            }
-            else if (valueSet && defValue != BeanSupport.NO_VALUE) {
+            } else if (valueSet && defValue != BeanSupport.NO_VALUE
+                       && (lastRealValue != null || defValue != null)/* bug 230687 */) {
                 setTargetValueInLAFBlock(defValue);
             }
 
