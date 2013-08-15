@@ -104,7 +104,7 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
         Project project = Templates.getProject(myDescriptor);
         RestSupport support  = project.getLookup().lookup(RestSupport.class);
         if (support != null) {
-            if (support.isEE7() || support.hasJersey2(false)) {
+            if (support.isEE7() || support.hasJersey2(true)) {
                 if (!support.isRestSupportOn()) {
                     // TODO: how is user supposed to "enable" Jax-RS? could IDE do it automatically?
                     myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
@@ -117,6 +117,20 @@ public class RestFilterPanel implements Panel<WizardDescriptor> {
                 }
             }
             
+            // allow to create CORS filter on Java EE6 server with Jersey 1
+            if (support.isEE6() && support.hasJersey1(true) && 
+                    RestSupport.CONFIG_TYPE_IDE.equals(support.getProjectProperty(RestSupport.PROP_REST_CONFIG_TYPE))) {
+                if (!support.isRestSupportOn()) {
+                    // TODO: how is user supposed to "enable" Jax-RS? could IDE do it automatically?
+                    myDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE, 
+                            NbBundle.getMessage(RestFilterPanel.class, 
+                            "ERR_NoRestConfig"));                   // NOI18N 
+                    return false;
+                } else {
+                    return true;
+                }
+            }
+                    
             Object object  = null;
             try {
                 object = MiscUtilities.getRestServletMapping(support.getWebApp());

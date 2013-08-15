@@ -355,6 +355,62 @@ public class MiscUtilities {
         }
     }
 
+    /** Add servlet(3.0) element to web.xml, representing JAX-RS Application with CORS filter
+     * 
+     * @param restSupport RestSupport instance
+     * @param applicationClassName application class name
+     * @param corsFilterName corse filter name
+     */
+    public static void addCORSFilter( RestSupport restSupport, String applicationClassName, String corsFilterName ) {
+        try {
+            assert applicationClassName != null;
+            WebXmlUpdater webXmlUpdater = restSupport.getWebXmlUpdater();
+            FileObject ddFO = webXmlUpdater.getWebXml(true);
+            WebApp webApp = webXmlUpdater.findWebApp();
+            if (ddFO == null || webApp == null) {
+                return;
+            }
+            
+            boolean changed = false;
+            Servlet applicationConfigServlet = getRestServletAdaptorByName(webApp,
+                    applicationClassName);
+            if (applicationConfigServlet == null) {
+                // servlet is missing in the web.xml and so parameter cannot be added
+                try {
+                    applicationConfigServlet = (Servlet) webApp.createBean("Servlet"); //NOI18N
+                    applicationConfigServlet.setServletName(applicationClassName);
+                    webApp.addServlet(applicationConfigServlet);
+                    changed = true;
+                } catch (ClassNotFoundException ex) {}
+                
+            }
+            if (applicationConfigServlet != null) {
+                InitParam initParam = (InitParam) applicationConfigServlet.findBeanByName(
+                        "InitParam", // NOI18N
+                        "ParamName", // NOI18N
+                        RestSupport.CONTAINER_RESPONSE_FILTER);
+                if (initParam == null) {
+                    try {
+                        initParam = (InitParam) applicationConfigServlet
+                                .createBean("InitParam"); // NOI18N
+                        initParam.setParamName(RestSupport.CONTAINER_RESPONSE_FILTER);
+                        initParam.setParamValue(corsFilterName);
+                        applicationConfigServlet.addInitParam(initParam);
+                        changed = true;
+                    }
+                    catch (ClassNotFoundException ex) {
+                    }
+                }
+
+            }
+            if (changed) {
+                webApp.write(ddFO);
+            }
+        }
+        catch (IOException e) {
+            Logger.getLogger(RestSupport.class.getName()).log(Level.WARNING,  null , e);
+        }
+    }
 
     public static ServletMapping25 getRestServletMapping(WebApp webApp) {
         return WebXmlUpdater.getRestServletMapping(webApp);

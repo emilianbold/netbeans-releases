@@ -88,6 +88,7 @@ import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.ModifiersTree;
 import com.sun.source.tree.TypeParameterTree;
 import com.sun.source.tree.VariableTree;
+import org.netbeans.modules.websvc.rest.model.api.RestApplication;
 import org.netbeans.modules.websvc.rest.spi.MiscUtilities;
 
 
@@ -233,9 +234,9 @@ public class OriginResourceIterator implements
         // JAX-RS 2.0 APIs
         boolean hasJaxRs2 = support.isEE7() || support.hasJersey2(true);
 
-        if (!hasJaxRs2 && !support.hasJersey1(true)) {
+        if (!hasJaxRs2) {
             // extend classpath with Jersey if project does not have
-            // JAX-RS 2.0 on its classpath nor Jersey 1.0
+            // JAX-RS 2.0 on its classpath
             extendClasspath(handle, support);
 
             // recheck which jersey version was added:
@@ -253,8 +254,17 @@ public class OriginResourceIterator implements
             // if JAX-RS 1.0 then Jersey specific parms needs to be added to Jersey servlet:
             if (!hasJaxRs2) {
                 assert fqn != null;
-                MiscUtilities.addInitParam(support, RestSupport.CONTAINER_RESPONSE_FILTER,
-                        fqn);
+                if (support.isEE6() && support.hasJersey1(true) && 
+                        RestSupport.CONFIG_TYPE_IDE.equals(support.getProjectProperty(RestSupport.PROP_REST_CONFIG_TYPE))) {
+                    List<RestApplication> apps = support.getRestApplications();
+                    if (apps.size() > 0) {
+                        MiscUtilities.addCORSFilter(support, apps.get(0).getApplicationClass(), fqn);
+                    }
+                    
+                } else {
+                    MiscUtilities.addInitParam(support, RestSupport.CONTAINER_RESPONSE_FILTER,
+                            fqn);
+                }
             }
         }
         
