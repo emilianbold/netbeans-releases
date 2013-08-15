@@ -444,6 +444,7 @@ public class Reformatter implements ReformatTask {
         private boolean continuationIndent;
         private int col;
         private int endPos;
+        private int maxPreservedBlankLines;
         private int lastBlankLines;
         private int lastBlankLinesTokenIndex;
         private Diff lastBlankLinesDiff;
@@ -479,7 +480,8 @@ public class Reformatter implements ReformatTask {
             this.tabSize = cs.getTabSize();
             this.indentSize = cs.getIndentSize();
             this.continuationIndentSize = cs.getContinuationIndentSize();
-            this.expandTabToSpaces =  cs.expandTabToSpaces();
+            this.expandTabToSpaces = cs.expandTabToSpaces();
+            this.maxPreservedBlankLines = insideBlock(path) ? cs.getMaximumBlankLinesInCode() : cs.getMaximumBlankLinesInDeclarations();
             this.lastBlankLines = -1;
             this.lastBlankLinesTokenIndex = -1;
             this.lastBlankLinesDiff = null;
@@ -598,7 +600,7 @@ public class Reformatter implements ReformatTask {
         public Boolean visitCompilationUnit(CompilationUnitTree node, Void p) {
             ExpressionTree pkg = node.getPackageName();
             if (pkg != null) {
-                blankLines(cs.getBlankLinesBeforePackage(), cs.getMaximumBlankLinesInDeclarations());
+                blankLines(cs.getBlankLinesBeforePackage());
                 if (!node.getPackageAnnotations().isEmpty()) {
                     wrapList(cs.wrapAnnotations(), false, false, COMMA, node.getPackageAnnotations());
                     newline();
@@ -613,23 +615,23 @@ public class Reformatter implements ReformatTask {
                 } finally {
                     continuationIndent = old;
                 }
-                blankLines(cs.getBlankLinesAfterPackage(), cs.getMaximumBlankLinesInDeclarations());
+                blankLines(cs.getBlankLinesAfterPackage());
             }
             List<? extends ImportTree> imports = node.getImports();
             if (imports != null && !imports.isEmpty()) {
-                blankLines(cs.getBlankLinesBeforeImports(), cs.getMaximumBlankLinesInDeclarations());
+                blankLines(cs.getBlankLinesBeforeImports());
                 for (ImportTree imp : imports) {
-                    blankLines(0, cs.getMaximumBlankLinesInDeclarations());
+                    newline();
                     scan(imp, p);
                 }
-                blankLines(cs.getBlankLinesAfterImports(), cs.getMaximumBlankLinesInDeclarations());
+                blankLines(cs.getBlankLinesAfterImports());
             }
             boolean semiRead = false;
             for (Tree typeDecl : node.getTypeDecls()) {
                 if (semiRead && typeDecl.getKind() == Tree.Kind.EMPTY_STATEMENT)
                     continue;
                 if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind()))
-                    blankLines(cs.getBlankLinesBeforeClass(), cs.getMaximumBlankLinesInDeclarations());
+                    blankLines(cs.getBlankLinesBeforeClass());
                 scan(typeDecl, p);
                 int index = tokens.index();
                 int c = col;
@@ -641,7 +643,7 @@ public class Reformatter implements ReformatTask {
                     semiRead = false;
                 }
                 if (TreeUtilities.CLASS_TREE_KINDS.contains(typeDecl.getKind()))
-                    blankLines(cs.getBlankLinesAfterClass(), cs.getMaximumBlankLinesInDeclarations());
+                    blankLines(cs.getBlankLinesAfterClass());
             }
             return true;
         }
@@ -680,7 +682,7 @@ public class Reformatter implements ReformatTask {
                             else
                                 space();
                         } else if (afterAnnotation) {
-                            blankLines(0, cs.getMaximumBlankLinesInDeclarations());
+                            newline();
                         }
                         afterAnnotation = false;
                     }
@@ -772,11 +774,11 @@ public class Reformatter implements ReformatTask {
                 }
             }
             if (emptyClass) {
-                blankLines(0, templateEdit ? cs.getMaximumBlankLinesInDeclarations() : 0);
+                newline();
             } else {
                 if (!cs.indentTopLevelClassMembers())
                     indent = old;
-                blankLines(node.getSimpleName().length() == 0 ? cs.getBlankLinesAfterAnonymousClassHeader() : cs.getBlankLinesAfterClassHeader(), cs.getMaximumBlankLinesInDeclarations());
+                blankLines(node.getSimpleName().length() == 0 ? cs.getBlankLinesAfterAnonymousClassHeader() : cs.getBlankLinesAfterClassHeader());
                 JavaTokenId id = null;
                 boolean first = true;
                 boolean semiRead = false;
@@ -797,28 +799,28 @@ public class Reformatter implements ReformatTask {
                                         if (accept(SEMICOLON) == null)
                                             rollback(index, c, d);
                                     } else if (id == SEMICOLON) {
-                                        blankLines(cs.getBlankLinesAfterFields(), cs.getMaximumBlankLinesInDeclarations());
+                                        blankLines(cs.getBlankLinesAfterFields());
                                     } else {
                                         rollback(index, c, d);
-                                        blankLines(cs.getBlankLinesAfterFields(), cs.getMaximumBlankLinesInDeclarations());
+                                        blankLines(cs.getBlankLinesAfterFields());
                                     }
                                 } else {
                                     boolean b = tokens.moveNext();
                                     if (b) {
                                         tokens.movePrevious();
                                         if (!fieldGroup && !first)
-                                            blankLines(cs.getBlankLinesBeforeFields(), cs.getMaximumBlankLinesInDeclarations());
+                                            blankLines(cs.getBlankLinesBeforeFields());
                                         scan(member, p);
                                         if(!fieldGroup)
-                                            blankLines(cs.getBlankLinesAfterFields(), cs.getMaximumBlankLinesInDeclarations());
+                                            blankLines(cs.getBlankLinesAfterFields());
                                     }
                                 }
                                 break;
                             case METHOD:
                                 if (!first)
-                                   blankLines(cs.getBlankLinesBeforeMethods(), cs.getMaximumBlankLinesInDeclarations());
+                                   blankLines(cs.getBlankLinesBeforeMethods());
                                 scan(member, p);
-                                blankLines(cs.getBlankLinesAfterMethods(), cs.getMaximumBlankLinesInDeclarations());
+                                blankLines(cs.getBlankLinesAfterMethods());
                                 break;
                             case BLOCK:
                                 if (semiRead && !((BlockTree)member).isStatic() && ((BlockTree)member).getStatements().isEmpty()) {
@@ -826,7 +828,7 @@ public class Reformatter implements ReformatTask {
                                     continue;
                                 }
                                 if (!first)
-                                   blankLines(cs.getBlankLinesBeforeMethods(), cs.getMaximumBlankLinesInDeclarations());
+                                   blankLines(cs.getBlankLinesBeforeMethods());
                                 int index = tokens.index();
                                 int c = col;
                                 Diff d = diffs.isEmpty() ? null : diffs.getFirst();
@@ -836,14 +838,14 @@ public class Reformatter implements ReformatTask {
                                     rollback(index, c, d);
                                 }
                                 scan(member, p);
-                                blankLines(cs.getBlankLinesAfterMethods(), cs.getMaximumBlankLinesInDeclarations());
+                                blankLines(cs.getBlankLinesAfterMethods());
                                 break;
                             case ANNOTATION_TYPE:
                             case CLASS:
                             case ENUM:
                             case INTERFACE:
                                 if (!first)
-                                    blankLines(cs.getBlankLinesBeforeClass(), cs.getMaximumBlankLinesInDeclarations());
+                                    blankLines(cs.getBlankLinesBeforeClass());
                                 scan(member, p);
                                 index = tokens.index();
                                 c = col;
@@ -854,7 +856,7 @@ public class Reformatter implements ReformatTask {
                                     rollback(index, c, d);
                                     semiRead = false;
                                 }
-                                blankLines(cs.getBlankLinesAfterClass(), cs.getMaximumBlankLinesInDeclarations());
+                                blankLines(cs.getBlankLinesAfterClass());
                                 break;
                         }
                         first = false;
@@ -862,7 +864,7 @@ public class Reformatter implements ReformatTask {
                 }
                 if (lastBlankLinesTokenIndex < 0)
                     newline();
-                blankLines(node.getSimpleName().length() == 0 ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace(), cs.getMaximumBlankLinesInDeclarations());
+                blankLines(node.getSimpleName().length() == 0 ? cs.getBlankLinesBeforeAnonymousClassClosingBrace() : cs.getBlankLinesBeforeClassClosingBrace());
             }
             indent = halfIndent;
             Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
@@ -1024,7 +1026,7 @@ public class Reformatter implements ReformatTask {
                         else
                             space();
                     } else {
-                        blankLines(0, cs.getMaximumBlankLinesInDeclarations());
+                        newline();
                     }
                     afterAnnotation = false;
                 }
@@ -1466,6 +1468,8 @@ public class Reformatter implements ReformatTask {
                     break;
             }
             boolean isEmpty = true;
+            int lastMaxPreservedBlankLines = maxPreservedBlankLines;
+            maxPreservedBlankLines = cs.getMaximumBlankLinesInCode();
             for (StatementTree stat  : node.getStatements()) {
                 if (!isSynthetic(getCurrentPath().getCompilationUnit(), stat)) {
                     isEmpty = false;
@@ -1480,7 +1484,7 @@ public class Reformatter implements ReformatTask {
                                 appendToDiff(getNewlines(1) + getIndent());
                                 col = indent();
                             } else {
-                                blankLines(0, cs.getMaximumBlankLinesInCode());
+                                newline();
                             }
                             oLDiff = lastIndent - indent;
                         } finally {
@@ -1494,13 +1498,13 @@ public class Reformatter implements ReformatTask {
                     } else if (stat.getKind() == Tree.Kind.EMPTY_STATEMENT || stat.getKind() == Tree.Kind.EXPRESSION_STATEMENT && ((ExpressionStatementTree)stat).getExpression().getKind() == Tree.Kind.ERRONEOUS) {
                         spaces(0, true);
                     } else if (!fieldGroup || stat.getKind() != Tree.Kind.VARIABLE) {
-                        blankLines(0, cs.getMaximumBlankLinesInCode());
+                        newline();
                     }
                     scan(stat, p);
                 }
             }
             if (isEmpty) {
-                blankLines(0, templateEdit ? cs.getMaximumBlankLinesInCode() : 0);
+                newline();
             }
             if (node instanceof FakeBlock) {
                 indent = halfIndent;
@@ -1538,7 +1542,7 @@ public class Reformatter implements ReformatTask {
                 lastBlankLinesTokenIndex = -1;
                 lastBlankLinesDiff = null;
             } else {
-                blankLines(0, cs.getMaximumBlankLinesInCode());
+                newline();
                 indent = halfIndent;
                 Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
                 if (diff != null && diff.end == tokens.offset()) {
@@ -1578,6 +1582,7 @@ public class Reformatter implements ReformatTask {
                 col = indent();
                 accept(RBRACE);
             }
+            maxPreservedBlankLines = lastMaxPreservedBlankLines;
             indent = lastIndent = old;
             return true;
         }       
@@ -2206,10 +2211,10 @@ public class Reformatter implements ReformatTask {
                     break;
             }
             for (CaseTree caseTree : node.getCases()) {
-                blankLines(0, cs.getMaximumBlankLinesInCode());
+                newline();
                 scan(caseTree, p);
             }
-            blankLines(0, cs.getMaximumBlankLinesInCode());
+            newline();
             indent = halfIndent;
             Diff diff = diffs.isEmpty() ? null : diffs.getFirst();
             if (diff != null && diff.end == tokens.offset()) {
@@ -2263,7 +2268,7 @@ public class Reformatter implements ReformatTask {
                     }
                     wrapStatement(cs.wrapCaseStatements(), CodeStyle.BracesGenerationStyle.LEAVE_ALONE, 1, stat);
                 } else {
-                    blankLines(0, cs.getMaximumBlankLinesInCode());
+                    newline();
                     scan(stat, p);
                 }
                 first = false;
@@ -3118,17 +3123,17 @@ public class Reformatter implements ReformatTask {
         }
 
         private void newline() {
-            blankLines(0, Integer.MAX_VALUE);
+            blankLines(0);
         }
 
-        private void blankLines(int minCount, int maxCount) {
+        private void blankLines(int count) {
             if (checkWrap != null && col > rightMargin && checkWrap.pos >= lastNewLineOffset) {
                 throw checkWrap;
             }
-            if (bof) {
-                maxCount = minCount;
+            int maxCount = maxPreservedBlankLines;
+            if (bof || maxCount < count) {
+                maxCount = count;
             }
-            int count = maxCount > 0 ? Math.min(minCount, maxCount) : minCount;
             if (lastBlankLinesTokenIndex < 0) {
                 lastBlankLines = count;
                 lastBlankLinesTokenIndex = tokens.index();
@@ -4539,6 +4544,15 @@ public class Reformatter implements ReformatTask {
             }
             return col;
         }
+        
+        private boolean insideBlock(TreePath path) {
+            while (path != null) {
+                if (Tree.Kind.BLOCK == path.getLeaf().getKind())
+                    return true;
+                path = path.getParentPath();
+            }
+            return false;
+        }        
 
         private boolean isEnumerator(VariableTree tree) {
             return (((JCModifiers)tree.getModifiers()).flags & Flags.ENUM) != 0;
