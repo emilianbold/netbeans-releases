@@ -84,7 +84,7 @@ public abstract class PSR1Hint extends HintRule {
 
     public static class ConstantDeclarationHint extends PSR1Hint {
         private static final String HINT_ID = "PSR1.Hint.Constant"; //NOI18N
-        private static final Pattern CONSTANT_PATTERN = Pattern.compile("[A-Z0-9]+[A-Z-0-9_]*[A-Z0-9]+"); //NOI18N
+        private static final Pattern CONSTANT_PATTERN = Pattern.compile("[A-Z0-9]+[A-Z0-9_]*[A-Z0-9]+"); //NOI18N
 
         @Override
         CheckVisitor createVisitor(FileObject fileObject, BaseDocument baseDocument) {
