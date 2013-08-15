@@ -275,4 +275,8 @@ public class JsWithFastTest extends JsWithBase {
     public void testIssue234390_03() throws Exception {
         checkOccurrences("testfiles/with/issue234390.js","this.real^name = name;", true);
     }
+    
+    public void testIssue234400_01() throws Exception {
+        checkCompletion("testfiles/with/issue234400.js","o234400.^name = 10;", true);
+    }
 }
