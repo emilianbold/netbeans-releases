@@ -130,7 +130,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             request.result = jsParserResult;
             request.info = info;
             request.prefix = pref;
-            
+        
+        jsParserResult.getModel().resolve();
         final List<CompletionProposal> resultList = new ArrayList<CompletionProposal>();
         HashMap<String, List<JsElement>> added = new HashMap<String, List<JsElement>>();
         if (ccContext.getQueryType() == QueryType.ALL_COMPLETION) {

@@ -255,7 +255,7 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
         FileObject fileObject = project.getProjectDirectory().getFileObject("nbproject/plugins.properties");
 
         if (fileObject == null) {
-            return Collections.EMPTY_LIST;
+            return new ArrayList<>();
         }
         Properties props = new Properties();
         try (InputStream inputStream = fileObject.getInputStream()) {
