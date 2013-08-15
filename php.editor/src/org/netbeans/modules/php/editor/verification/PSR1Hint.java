@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.NamespaceDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -191,13 +192,20 @@ public abstract class PSR1Hint extends HintRule {
         }
 
         private static final class TypeDeclarationVisitor extends CheckVisitor {
-            private static final Pattern PHP52_NAME_PATTERN = Pattern.compile("[A-Z][a-zA-Z0-9_]*[a-zA-Z0-9]+"); //NOI18N
+            private static final Pattern PHP52_NAME_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*_)+[A-Z][a-zA-Z0-9]+"); //NOI18N
             private static final Pattern PHP53_NAME_PATTERN = Pattern.compile("[A-Z][a-zA-Z0-9]+"); //NOI18N
-            private final Pattern currentNamePattern;
+            private final boolean isPhp52;
+            private boolean isInNamedNamespaceDeclaration = false;
 
             public TypeDeclarationVisitor(TypeDeclarationHint typeDeclarationHint, FileObject fileObject, BaseDocument baseDocument) {
                 super(typeDeclarationHint, fileObject, baseDocument);
-                currentNamePattern = typeDeclarationHint.isPhp52() ? PHP52_NAME_PATTERN : PHP53_NAME_PATTERN;
+                isPhp52 = typeDeclarationHint.isPhp52();
+            }
+
+            @Override
+            public void visit(NamespaceDeclaration node) {
+                isInNamedNamespaceDeclaration = node.getName() != null;
+                super.visit(node);
             }
 
             @Override
@@ -215,12 +223,26 @@ public abstract class PSR1Hint extends HintRule {
                 processTypeDeclaration(node);
             }
 
-            @NbBundle.Messages("PSR1TypeDeclarationHintText=Type names MUST be declared in StudlyCaps (Code written for 5.2.x and before SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on type names).")
+            @NbBundle.Messages({
+                "PSR1TypeDeclaration53HintText=Type names MUST be declared in StudlyCaps.",
+                "PSR1TypeDeclaration52HintText=Type names SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on type names.",
+                "PSR1TypeDeclaration53NoNsHintText=Each type MUST be in a namespace of at least one level: a top-level vendor name."
+            })
             private void processTypeDeclaration(TypeDeclaration node) {
                 Identifier typeNameNode = node.getName();
                 String typeName = typeNameNode.getName();
-                if (typeName != null && !currentNamePattern.matcher(typeName).matches()) {
-                    createHint(typeNameNode, Bundle.PSR1TypeDeclarationHintText());
+                if (isPhp52) {
+                    if (typeName != null && !PHP52_NAME_PATTERN.matcher(typeName).matches()) {
+                        createHint(typeNameNode, Bundle.PSR1TypeDeclaration52HintText());
+                    }
+                } else {
+                    if (!isInNamedNamespaceDeclaration) {
+                        createHint(typeNameNode, Bundle.PSR1TypeDeclaration53NoNsHintText());
+                    } else {
+                        if (typeName != null && !PHP53_NAME_PATTERN.matcher(typeName).matches()) {
+                            createHint(typeNameNode, Bundle.PSR1TypeDeclaration53HintText());
+                        }
+                    }
                 }
             }
 
@@ -232,7 +254,7 @@ public abstract class PSR1Hint extends HintRule {
         }
 
         @Override
-        @NbBundle.Messages("PSR1TypeDeclarationHintDesc=Type names MUST be declared in StudlyCaps (Code written for 5.2.x and before SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on type names).")
+        @NbBundle.Messages("PSR1TypeDeclarationHintDesc=Type names MUST be declared in StudlyCaps (Code written for 5.2.x and before SHOULD use the pseudo-namespacing convention of Vendor_ prefixes on type names). Each type is in a file by itself, and is in a namespace of at least one level: a top-level vendor name.")
         public String getDescription() {
             return Bundle.PSR1TypeDeclarationHintDesc();
         }

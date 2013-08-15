@@ -82,6 +82,18 @@ public class PSR1HintTest extends PHPHintsTestBase {
         checkHints(new TypeDeclarationHintStub(PhpVersion.PHP_52), "ClassName.php");
     }
 
+    public void testTypeNameNotOkNamespace52() throws Exception {
+        checkHints(new TypeDeclarationHintStub(PhpVersion.PHP_52), "ClassName.php");
+    }
+
+    public void testTypeNameNotOkNamespace53() throws Exception {
+        checkHints(new TypeDeclarationHintStub(PhpVersion.PHP_53), "ClassName.php");
+    }
+
+    public void testTypeNameNotOkNamespace53_2() throws Exception {
+        checkHints(new TypeDeclarationHintStub(PhpVersion.PHP_53), "ClassName.php");
+    }
+
     public void testConstantNameOk_1() throws Exception {
         checkHints(new PSR1Hint.ConstantDeclarationHint(), "ClassName.php");
     }
