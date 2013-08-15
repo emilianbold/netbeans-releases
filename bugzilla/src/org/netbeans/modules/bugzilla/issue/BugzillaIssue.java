@@ -1791,7 +1791,7 @@ public class BugzillaIssue {
                     fireDataChanged();
                 }
                 if (syncStateChanged) {
-                    fireSeenChanged(seen, wasSeen());
+                    fireSeenChanged(!seen, seen);
                 }
             }
         }
