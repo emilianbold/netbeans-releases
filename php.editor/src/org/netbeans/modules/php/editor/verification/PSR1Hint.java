@@ -55,6 +55,7 @@ import org.netbeans.modules.php.editor.parser.astnodes.ClassDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.ConstantDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.InterfaceDeclaration;
+import org.netbeans.modules.php.editor.parser.astnodes.MethodDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TraitDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.TypeDeclaration;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
@@ -125,6 +126,52 @@ public abstract class PSR1Hint extends HintRule {
         @NbBundle.Messages("PSR1ConstantHintDisp=Class Constant Declaration")
         public String getDisplayName() {
             return Bundle.PSR1ConstantHintDisp();
+        }
+
+    }
+
+    public static class MethodDeclarationHint extends PSR1Hint {
+        private static final String HINT_ID = "PSR1.Hint.Method"; //NOI18N
+        private static final Pattern CONSTANT_PATTERN = Pattern.compile("([a-z]|__)[a-zA-Z0-9]*"); //NOI18N
+
+        @Override
+        CheckVisitor createVisitor(FileObject fileObject, BaseDocument baseDocument) {
+            return new MethodDeclarationVisitor(this, fileObject, baseDocument);
+        }
+
+        private static final class MethodDeclarationVisitor extends CheckVisitor {
+
+            public MethodDeclarationVisitor(PSR1Hint psr1hint, FileObject fileObject, BaseDocument baseDocument) {
+                super(psr1hint, fileObject, baseDocument);
+            }
+
+            @Override
+            @NbBundle.Messages("PSR1MethodDeclarationHintText=Method names MUST be declared in camelCase().")
+            public void visit(MethodDeclaration node) {
+                Identifier functionNameNode = node.getFunction().getFunctionName();
+                String methodName = functionNameNode.getName();
+                if (methodName != null && !CONSTANT_PATTERN.matcher(methodName).matches()) {
+                    createHint(functionNameNode, Bundle.PSR1MethodDeclarationHintText());
+                }
+            }
+
+        }
+
+        @Override
+        public String getId() {
+            return HINT_ID;
+        }
+
+        @Override
+        @NbBundle.Messages("PSR1MethodDeclarationHintDesc=Method names MUST be declared in camelCase().")
+        public String getDescription() {
+            return Bundle.PSR1MethodDeclarationHintDesc();
+        }
+
+        @Override
+        @NbBundle.Messages("PSR1MethodDeclarationHintDisp=Method Declaration")
+        public String getDisplayName() {
+            return Bundle.PSR1MethodDeclarationHintDisp();
         }
 
     }
