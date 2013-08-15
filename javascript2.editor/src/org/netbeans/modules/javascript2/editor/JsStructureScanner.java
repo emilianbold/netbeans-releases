@@ -99,7 +99,7 @@ public class JsStructureScanner implements StructureScanner {
     }
     
     private List<StructureItem> getEmbededItems(JsParserResult result, JsObject jsObject, List<StructureItem> collectedItems) {
-        Collection<? extends JsObject> properties = jsObject.getProperties().values();
+        Collection<? extends JsObject> properties = new ArrayList(jsObject.getProperties().values());
         boolean countFunctionChild = (jsObject.getJSKind().isFunction() && !jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.CONSTRUCTOR
                 && !containsFunction(jsObject)) 
                 || (ModelUtils.PROTOTYPE.equals(jsObject.getName()) && properties.isEmpty());
