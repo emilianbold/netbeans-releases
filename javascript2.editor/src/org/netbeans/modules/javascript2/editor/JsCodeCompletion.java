@@ -97,7 +97,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
 
     private boolean caseSensitive;
     
-    private static final String CHARS_NO_AUTO_COMPLETE = ";,/+-\\:="; //NOI18N
+    private static final String CHARS_NO_AUTO_COMPLETE = ";,/+-\\:={}[]()"; //NOI18N
 
     @Override
     public CodeCompletionResult complete(CodeCompletionContext ccContext) {

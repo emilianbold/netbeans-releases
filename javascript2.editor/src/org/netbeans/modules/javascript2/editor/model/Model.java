@@ -79,6 +79,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsWithObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
+import org.netbeans.modules.javascript2.editor.model.impl.OccurrenceBuilder;
 import org.netbeans.modules.javascript2.editor.model.impl.ParameterObject;
 import org.netbeans.modules.javascript2.editor.model.impl.TypeUsageImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.UsageBuilder;
@@ -125,7 +126,7 @@ public final class Model {
 
     private final OccurrencesSupport occurrencesSupport;
 
-    private final UsageBuilder usageBuilder;
+    private final OccurrenceBuilder occurrenceBuilder;
     
     private ModelVisitor visitor;
     
@@ -137,19 +138,22 @@ public final class Model {
     Model(JsParserResult parserResult) {
         this.parserResult = parserResult;
         this.occurrencesSupport = new OccurrencesSupport(this);
-        this.usageBuilder = new UsageBuilder();
+        this.occurrenceBuilder = new OccurrenceBuilder(parserResult);
         this.resolveWithObjects = false;
     }
 
     private synchronized ModelVisitor getModelVisitor() {
         if (visitor == null) {
             long start = System.currentTimeMillis();
-            visitor = new ModelVisitor(parserResult);
+            visitor = new ModelVisitor(parserResult, occurrenceBuilder);
             FunctionNode root = parserResult.getRoot();
             if (root != null) {
                 root.accept(visitor);
             }
             long startResolve = System.currentTimeMillis();
+            // create all occurrences
+            occurrenceBuilder.processOccurrences(visitor.getGlobalObject());
+            
             resolveLocalTypes(visitor.getGlobalObject(), parserResult.getDocumentationHolder());
 
             ModelElementFactory elementFactory = ModelElementFactoryAccessor.getDefault().createModelElementFactory();

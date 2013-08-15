@@ -45,6 +45,7 @@
 package org.netbeans.api.visual.laf;
 
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseEvent;
 
 /**
  * This represents input bindings e.g. manages modifiers of actions.
@@ -55,6 +56,7 @@ import java.awt.event.KeyEvent;
 public final class InputBindings {
 
     private int zoomActionModifiers = KeyEvent.CTRL_MASK;
+    private int panActionButton = MouseEvent.BUTTON2;
     
     private InputBindings () {
     }
@@ -75,6 +77,24 @@ public final class InputBindings {
      */
     public void setZoomActionModifiers (int zoomActionModifiers) {
         this.zoomActionModifiers = zoomActionModifiers;
+    }
+
+    /**
+     * Returns mouse button for pan action.
+     * @return the MouseEvent button code
+     * @since 2.40
+     */
+    public int getPanActionButton () {
+        return panActionButton;
+    }
+
+    /**
+     * Sets mouse button for pan action.
+     * @param panActionButton MouseEvent button code
+     * @since 2.40
+     */
+    public void setPanActionButton (int panActionButton) {
+        this.panActionButton = panActionButton;
     }
 
     /**

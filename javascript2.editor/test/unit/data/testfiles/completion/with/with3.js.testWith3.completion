@@ -162,7 +162,7 @@ CLASS      UIEvent                         [PUBLIC]   JS Platform
 CLASS      UserDataHandler                 [PUBLIC]   JS Platform
 CLASS      ViewCSS                         [PUBLIC]   JS Platform
 CLASS      Window                          [PUBLIC]   JS Platform
-CLASS      b                               [PUBLIC]   with1.js
+CLASS      b                               [PUBLIC]   with2.js
 CLASS      prototype                       [PUBLIC]   JS Platform
 CLASS      z                               [PUBLIC]   with3.js
 METHOD     Image(width: Number, height: N  [PUBLIC,   JS Platform

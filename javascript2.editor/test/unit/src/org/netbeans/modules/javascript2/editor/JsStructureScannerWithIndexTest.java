@@ -57,17 +57,17 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Petr Pisl
  */
-public class JsStructureScannerWithIndexTest extends JsTestBase {
+public class JsStructureScannerWithIndexTest extends JsWithBase {
     
     public JsStructureScannerWithIndexTest(String testName) {
         super(testName);
     }
     
-    @Override
-    protected void assertDescriptionMatches(FileObject fileObject,
-            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
-        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
-    }
+//    @Override
+//    protected void assertDescriptionMatches(FileObject fileObject,
+//            String description, boolean includeTestName, String ext, boolean goldenFileInTestFileDir) throws IOException {
+//        super.assertDescriptionMatches(fileObject, description, includeTestName, ext, true);
+//    }
     
     public void testIssue223117() throws Exception {
         checkStructure("testfiles/structure/withIndex/issue223117.js");
@@ -89,8 +89,8 @@ public class JsStructureScannerWithIndexTest extends JsTestBase {
         );
     }
 
-    @Override
-    protected boolean classPathContainsBinaries() {
-        return true;
-    }
+//    @Override
+//    protected boolean classPathContainsBinaries() {
+//        return true;
+//    }
 }

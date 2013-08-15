@@ -42,6 +42,8 @@
 
 package org.netbeans.modules.viewmodel;
 
+import java.util.HashSet;
+import java.util.Set;
 import org.netbeans.spi.viewmodel.ColumnModel;
 
 /**
@@ -54,10 +56,24 @@ final class HyperColumnModel extends ColumnModel {
 
     private ColumnModel main;
     private ColumnModel specific;
+    private final Set<String> ids;
 
     public HyperColumnModel(ColumnModel main, ColumnModel specific) {
         this.main = main;
         this.specific = specific;
+        ids = createAllIDs(main, specific);
+    }
+    
+    private static Set<String> createAllIDs(ColumnModel... cms) {
+        Set<String> allIds = new HashSet<String>();
+        for (ColumnModel cm : cms) {
+            if (cm instanceof HyperColumnModel) {
+                allIds.addAll(((HyperColumnModel) cm).getAllIDs());
+            } else {
+                allIds.add(cm.getID());
+            }
+        }
+        return allIds;
     }
 
     public ColumnModel getMain() {
@@ -86,6 +102,10 @@ final class HyperColumnModel extends ColumnModel {
     @Override
     public Class getType() {
         return specific.getType();
+    }
+    
+    Set<String> getAllIDs() {
+        return ids;
     }
 
 }

@@ -51,6 +51,7 @@ import com.sun.jdi.InvalidTypeException;
 import com.sun.jdi.ObjectReference;
 import com.sun.jdi.ReferenceType;
 import com.sun.jdi.Value;
+import java.awt.EventQueue;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.security.auth.RefreshFailedException;
@@ -253,6 +254,15 @@ public class ObjectFieldVariable extends AbstractObjectVariable
     }
 
     @Override
+    public boolean hasAllTypes() {
+        if (valueSet || valueRetrieved) {
+            return super.hasAllTypes();
+        } else {
+            return false;
+        }
+    }
+    
+    @Override
     protected Value getInnerValue() {
         if (valueSet) {
             return super.getInnerValue();
@@ -267,6 +277,7 @@ public class ObjectFieldVariable extends AbstractObjectVariable
                         logger.fine("STARTED (OFV): "+objectReference+".getValue("+field+")");
                     }
                 }
+                assert !EventQueue.isDispatchThread() : "Debugger communication in AWT Event Queue!";
                 try {
                     if (objectReference == null) {
                         v = ReferenceTypeWrapper.getValue (getTheDeclaringClassType(), field);

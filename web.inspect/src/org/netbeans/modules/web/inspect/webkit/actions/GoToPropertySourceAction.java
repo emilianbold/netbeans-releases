@@ -194,26 +194,29 @@ public class GoToPropertySourceAction extends AbstractAction {
                         Rule modelRule = Utilities.findRuleInStyleSheet(sourceModel, styleSheet, rule);
                         if (modelRule != null) {
                             found[0] = true;
-                            if (!Utilities.goToMetaSource(modelRule)) {
-                                String propertyName = property.getName().trim();
-                                org.netbeans.modules.css.model.api.Property modelProperty =
-                                        findProperty(modelRule, propertyName);
-                                if (modelProperty == null) {
-                                    String shorthandName = property.getShorthandName();
-                                    if (shorthandName != null) {
-                                        modelProperty = findProperty(modelRule, shorthandName);
-                                    }
+                            StyleSheetBody body = rule.getParentStyleSheet();
+                            String styleSheetText = (body == null) ? null : body.getText();
+                            String propertyName = property.getName().trim();
+                            org.netbeans.modules.css.model.api.PropertyDeclaration modelProperty =
+                                    findProperty(modelRule, propertyName);
+                            if (modelProperty == null) {
+                                String shorthandName = property.getShorthandName();
+                                if (shorthandName != null) {
+                                    modelProperty = findProperty(modelRule, shorthandName);
                                 }
-
-                                int snapshotOffset = (modelProperty == null) ?
-                                        modelRule.getStartOffset() : modelProperty.getStartOffset();
-                                final int offset = result.getSnapshot().getOriginalOffset(snapshotOffset);
-                                EventQueue.invokeLater(new Runnable() {
-                                    @Override
-                                    public void run() {
-                                        CSSUtils.openAtOffset(fob, offset);
-                                    }
-                                });
+                            }
+                            int snapshotOffset = (modelProperty == null) ?
+                                    modelRule.getStartOffset() : modelProperty.getPropertyValue().getStartOffset();
+                            final int offset = result.getSnapshot().getOriginalOffset(snapshotOffset);
+                            if (!CSSUtils.goToSourceBySourceMap(fob, sourceModel, styleSheetText, offset)) {
+                                if (!Utilities.goToMetaSource(modelRule)) {
+                                    EventQueue.invokeLater(new Runnable() {
+                                        @Override
+                                        public void run() {
+                                            CSSUtils.openAtOffset(fob, offset);
+                                        }
+                                    });
+                                }
                             }
                         }
                     }
@@ -226,12 +229,13 @@ public class GoToPropertySourceAction extends AbstractAction {
                      * @return property of the given name in the specified rule
                      * or {@code null} if such property cannot be found.
                      */
-                    private org.netbeans.modules.css.model.api.Property findProperty(Rule rule, String propertyName) {
+                    private org.netbeans.modules.css.model.api.PropertyDeclaration findProperty(Rule rule, String propertyName) {
                         for (Declaration declaration : rule.getDeclarations().getDeclarations()) {
-                            org.netbeans.modules.css.model.api.Property modelProperty = declaration.getPropertyDeclaration().getProperty();
+                            org.netbeans.modules.css.model.api.PropertyDeclaration modelPropertyDeclaration = declaration.getPropertyDeclaration();
+                            org.netbeans.modules.css.model.api.Property modelProperty = modelPropertyDeclaration.getProperty();
                             String modelPropertyName = modelProperty.getContent().toString().trim();
                             if (propertyName.equals(modelPropertyName)) {
-                                return modelProperty;
+                                return modelPropertyDeclaration;
                             }
                         }
                         return null;

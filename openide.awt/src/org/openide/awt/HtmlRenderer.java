@@ -560,7 +560,7 @@ public final class HtmlRenderer {
 
         g.setColor(defaultColor);
         g.setFont(f);
-        if (g instanceof Graphics2D) {
+        if (HtmlLabelUI.antialias && g instanceof Graphics2D) {
             ((Graphics2D) g).setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
         }
 
