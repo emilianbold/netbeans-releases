@@ -283,7 +283,7 @@ public class EjbFacadeGenerator implements FacadeGenerator {
             createdFiles.add(remote);
         }
         
-        if ( model != null ){
+        if ( model != null ) {
             Util.generatePrimaryKeyMethod(facade, entityFQN, model);
         }
         
@@ -771,8 +771,15 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         RestGenerationOptions editOptions = new RestGenerationOptions();
         editOptions.setRestMethod(Operation.EDIT);
         editOptions.setReturnType("void");//NOI18N
-        editOptions.setParameterNames(new String[]{"entity"}); //NOI18N
-        editOptions.setParameterTypes(new String[]{entityFQN}); //NOI18N
+        editOptions.setParameterNames(new String[]{"id", "entity"}); //NOI18N
+        editOptions.setPathParams(new String[]{"id", null}); //NOI18N
+        if ( needPathSegment ){
+            editOptions.setParameterTypes(new String[]{"javax.ws.rs.core.PathSegment", entityFQN}); // NOI18N
+        }
+        else {
+            editOptions.setParameterTypes(new String[]{idType, entityFQN}); 
+        }
+        //editOptions.setParameterTypes(new String[]{entityFQN}); //NOI18N
         editOptions.setConsumes(new String[]{"application/xml", 
                 "application/json"}); //NOI18N
         editOptions.setBody("super.edit(entity);"); //NOI18N

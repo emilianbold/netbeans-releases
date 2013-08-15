@@ -47,7 +47,7 @@ import org.netbeans.modules.websvc.rest.codegen.RestMethod;
 public enum Operation implements RestMethod {
 
     CREATE("javax.ws.rs.POST", "create", true ),
-    EDIT("javax.ws.rs.PUT", "edit", true ),
+    EDIT("javax.ws.rs.PUT", "edit", "{id}" ),
     REMOVE("javax.ws.rs.DELETE", "remove", "{id}"),
     FIND("javax.ws.rs.GET", "find", "{id}"),
     FIND_ALL("javax.ws.rs.GET", "findAll", true),
