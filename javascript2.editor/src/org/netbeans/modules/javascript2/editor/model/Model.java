@@ -76,6 +76,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.AnonymousObject;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsWithObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
@@ -171,6 +172,7 @@ public final class Model {
                 }
             }
             long end = System.currentTimeMillis();
+            processWindowsProperties(visitor.getGlobalObject());
             if(LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms. Extending model took {2}", new Object[]{(end - start), (startCallingME - startResolve), (end - startCallingME)}));
             }
@@ -406,7 +408,6 @@ public final class Model {
     
     private void moveProperty (JsObject newParent, JsObject property) {
         JsObject newProperty = newParent.getProperty(property.getName());
-        System.out.println("moving property: " + property.getName() + " to " + newParent.getName());
         if (property.getParent() != null) {
             property.getParent().getProperties().remove(property.getName());
         }
@@ -423,6 +424,22 @@ public final class Model {
         }
     }
     
+    private void processWindowsProperties(JsObject globalObject) {
+        JsObject window = globalObject.getProperty("window");
+        if (window != null) {
+            for (JsObject winProp: window.getProperties().values()) {
+                JsObject globalVar = globalObject.getProperty(winProp.getName());
+                if (globalVar != null) {
+                    globalVar.addOccurrence(winProp.getDeclarationName().getOffsetRange());
+                    for (Occurrence occurrence:  winProp.getOccurrences()) {
+                        globalVar.addOccurrence(occurrence.getOffsetRange());
+                    }
+                    JsObjectImpl.moveOccurrenceOfProperties((JsObjectImpl) winProp, globalVar);
+                }
+            }
+        }
+    }
+
     public JsObject getGlobalObject() {
         return getModelVisitor().getGlobalObject();
     }

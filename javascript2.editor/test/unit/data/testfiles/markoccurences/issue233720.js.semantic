@@ -2,7 +2,7 @@ function |>METHOD:ChartP3<|(|>UNUSED:container<|) {
 
     function |>METHOD:buildData<|(|>UNUSED:records<|) {
         var indexOfBeta = getIndexOfLatestBeta();
-        |>GLOBAL:window<|.console.log(indexOfBeta);
+        |>GLOBAL:window<|.|>GLOBAL:console<|.log(indexOfBeta);
     }
 
     function |>METHOD:getIndexOfLatestBeta<|() { // problem here

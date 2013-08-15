@@ -99,8 +99,7 @@ public class OccurrenceBuilder {
     public void processOccurrences(JsObject global) {
         for (String name : holder.keySet()) {
             Map<OffsetRange, Item> items = holder.get(name);
-            for (OffsetRange range : items.keySet()) {
-                Item item = items.get(range);
+            for (Item item : items.values()) {
                 processOccurrence(global, name, item);
             }
         }
