@@ -107,7 +107,7 @@ public final class NbPlatformCustomizer extends JPanel {
         "CTL_Close=&Close",
         "CTL_NbPlatformManager_Title=NetBeans Platform Manager"
     })
-    public static void showCustomizer() {
+    public static Object showCustomizer() {
         final AtomicBoolean canceled = new AtomicBoolean();
         ProgressUtils.runOffEventDispatchThread(new Runnable() { // #207451
             @Override public void run() {
@@ -129,6 +129,7 @@ public final class NbPlatformCustomizer extends JPanel {
         Dialog dlg = DialogDisplayer.getDefault().createDialog(descriptor);
         dlg.setVisible(true);
         dlg.dispose();
+        return customizer.getSelectedNbPlatform();
     }
     
     private NbPlatformCustomizer() {
@@ -394,4 +395,7 @@ public final class NbPlatformCustomizer extends JPanel {
     private javax.swing.JButton removeButton;
     // End of variables declaration//GEN-END:variables
 
+    private Object getSelectedNbPlatform() {
+        return platformsList.getSelectedValue();
+    }
 }
