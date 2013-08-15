@@ -82,7 +82,7 @@ public class CSSUpdater {
     /**
      * Mapping between url represented by string and StyleSheetHeader
      */
-    private final HashMap<String, StyleSheetHeader> sheetsMap = new HashMap<String, StyleSheetHeader>();
+    private final Map<String, StyleSheetHeader> sheetsMap = new HashMap<String, StyleSheetHeader>();
     private final Map<FileObject, StyleSheetHeader> fobToSheetMap = new HashMap<FileObject,StyleSheetHeader>();
 
     private CSSUpdater() {
