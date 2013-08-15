@@ -700,8 +700,9 @@ public final class CustomizerLibraries extends NbPropertyPanel.Single {
     }//GEN-LAST:event_addToken
     
     private void managePlatforms(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_managePlatforms
-        NbPlatformCustomizer.showCustomizer();
+        Object returnedPlaf = NbPlatformCustomizer.showCustomizer();
         refreshPlatforms();
+        platformValue.setSelectedItem(returnedPlaf);
     }//GEN-LAST:event_managePlatforms
     
     @Messages("CTL_EditModuleDependencyTitle=Edit Module Dependency")
