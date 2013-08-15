@@ -1,0 +1,33 @@
+|Team|                  M (mnemonics)
+========
+Show Changes            W
+Diff            >       D
+Add                     A
+Commit...               M
+Update...               U
+Revert Modifications    R
+Show Annotations        N
+Search History          H
+Conflicts       >       F
+===================
+Ignore          >       I
+Patches         >       P
+===================
+Branch/Tag      >       B
+Queues          >       Q
+Remote          >       E
+Recover         >       V
+===================
+View...                 V
+Properties...           O
+===================
+Shelve Changes  >       S
+Disconnect...           O
+===================
+Other VCS       >       V
+===================
+History         >       T
+Find Tasks...           F
+Report Task...
+Create Build Job...     J
+

@@ -6,7 +6,7 @@ Classes                     C
 Favorites                   v
 Services                    S
 Navigator                   N
-Action Items                A
+Action Items                M
 Tasks                       k
 Output                      O
 Editor                      E
