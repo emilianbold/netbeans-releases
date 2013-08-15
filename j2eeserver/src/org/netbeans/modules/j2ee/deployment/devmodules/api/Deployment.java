@@ -50,7 +50,10 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.logging.Level;
+import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance.Descriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.InstanceListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
@@ -99,7 +102,7 @@ public final class Deployment {
     private Deployment () {
     }
     
-    /*Deploys a web J2EE module to server.
+    /** Deploys a web J2EE module to server.
      * @param clientModuleUrl URL of module within a J2EE Application that 
      * should be used as a client (can be null for standalone modules)
      * <div class="nonnormative">
@@ -152,8 +155,29 @@ public final class Deployment {
     public void resumeDeployOnSave(J2eeModuleProvider jmp) {
         DeployOnSaveManager.getDefault().resumeListening(jmp);
     }    
-    
-    public String deploy (J2eeModuleProvider jmp, Mode mode, String clientModuleUrl, String clientUrlPart, boolean forceRedeploy, Logger logger) throws DeploymentException {
+
+    public String deploy(J2eeModuleProvider jmp, Mode mode, String clientModuleUrl, String clientUrlPart,
+            boolean forceRedeploy, Logger logger) throws DeploymentException {
+        return deploy(jmp, mode, clientModuleUrl, clientUrlPart, forceRedeploy, logger, null);
+    }
+
+    /**
+     * Deploys the module represented by the module provider.
+     *
+     * @param jmp the representation of module to deploy
+     * @param mode the mode we are going to use for the server
+     * @param clientModuleUrl
+     * @param clientUrlPart
+     * @param forceRedeploy whether to use the force to redeploy
+     * @param logger logger where to log progress messages
+     * @param beforeDeploy the hook to be executed just before the actual module deploy
+     * @return the result url where the module is available
+     * @throws org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment.DeploymentException if the deployment fails
+     * @since 1.102
+     */
+    @CheckForNull
+    public String deploy(J2eeModuleProvider jmp, Mode mode, String clientModuleUrl, String clientUrlPart,
+            boolean forceRedeploy, Logger logger, @NullAllowed Callable<Void> beforeDeploy) throws DeploymentException {
         
         DeploymentTarget deploymentTarget = new DeploymentTarget(jmp, clientModuleUrl);
         TargetModule[] modules = null;
@@ -193,6 +217,10 @@ public final class Deployment {
             DeploymentHelper.deployServerLibraries(jmp);
             DeploymentHelper.deployDatasources(jmp);
             DeploymentHelper.deployMessageDestinations(jmp);
+
+            if (beforeDeploy != null) {
+                beforeDeploy.call();
+            }
 
             modules = targetserver.deploy(progress, forceRedeploy);
             // inform the plugin about the deploy action, even if there was
@@ -244,9 +272,7 @@ public final class Deployment {
             LOGGER.log(Level.INFO, null, ex);
             throw new DeploymentException(msg, ex);
         } finally {
-            if (progress != null) {
-                progress.finish();
-            }
+            progress.finish();
         }
     }
 
