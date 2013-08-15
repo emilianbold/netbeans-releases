@@ -50,6 +50,7 @@ import org.apache.maven.project.MavenProject;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
@@ -156,14 +157,14 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
             return profile;
         }
 
+        Profile pomProfile = getProfileFromPOM(project);
+        if (pomProfile != null) {
+            return pomProfile;
+        }
+
         Profile descriptorProfile = getProfileFromDescriptor();
         if (descriptorProfile != null) {
             return descriptorProfile;
-        }
-
-        Profile pomProfile = getProfileFromPOM();
-        if (pomProfile != null) {
-            return pomProfile;
         }
 
         return Profile.JAVA_EE_6_WEB;
@@ -205,11 +206,11 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
     }
 
     // Trying to guess the Java EE version based on the dependency in pom.xml - See issue #230447
-    private Profile getProfileFromPOM() {
+    private Profile getProfileFromPOM(final Project project) {
+        final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
         final String javaEEGroupID = "javax"; //NOI18N
         final String javaEEFullArtifactID = "javaee-api"; //NOI18N
         final String javaEEWebArtifactID = "javaee-web-api"; //NOI18N
-        final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
         final Profile[] result = new Profile[1];
 
         try {
@@ -245,6 +246,14 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
                     }));
                 }
             });
+
+            if (result[0] == null) {
+                // Nothing was found, try to take a look at parent pom if such exists - see #234423
+                Project parentProject = ProjectManager.getDefault().findProject(project.getProjectDirectory().getParent());
+                if (parentProject != null) {
+                    result[0] = getProfileFromPOM(parentProject);
+                }
+            }
         } catch (IOException ex) {
             // Simply do nothing and return null
         }
