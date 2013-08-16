@@ -83,6 +83,18 @@ public class JsWithTest extends JsWithBase {
         checkSemantic("testfiles/with/test02.js");
     }
     
+    public void testIssue234375_01() throws Exception {
+        checkCompletion("testfiles/with/issue234375.js", "g^ // cc doesn't offer Date functions", true);
+    }
+    
+    public void testIssue234375_02() throws Exception {
+        checkCompletion("testfiles/with/issue234375.js", "r^ // this works", true);
+    }
+    
+    public void testIssue234375_03() throws Exception {
+        checkCompletion("testfiles/with/issue234375.js", "p^ // cc doesn't offer e.g. pull() or push()", true);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());

@@ -309,4 +309,13 @@ public class JsWithFastTest extends JsWithBase {
     public void testIssue234380_01() throws Exception {
         checkOccurrences("testfiles/with/issue234380.js","with (this.de^n) {", true);
     }
+    
+    public void testIssue234375() throws Exception {
+        checkSemantic("testfiles/with/issue234375.js"); 
+        checkStructure("testfiles/with/issue234375.js");
+    }
+    
+    public void testIssue234375_01() throws Exception {
+        checkOccurrences("testfiles/with/issue234375.js","console.log(getD^ate());", true);
+    }
 }

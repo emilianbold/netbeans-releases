@@ -1,0 +1,31 @@
+function |>METHOD:Test234375<|() {
+    this.|>FIELD:den<| = new Date();
+    with (this.|>FIELD:den<|) {
+        |>GLOBAL:g<| // cc doesn't offer Date functions
+        |>GLOBAL:console<|.log(getDate());
+    }
+    
+    |>GLOBAL:console<|.log(this.|>FIELD:den<|.getDate());
+    
+    var car = new Car234375();
+    with(car){
+        |>GLOBAL:r<| // this works
+    }
+    
+    var arr = [];
+    with(arr){
+        push(1);
+        |>GLOBAL:p<| // cc doesn't offer e.g. pull() or push()
+    }
+    
+    |>GLOBAL:window<|.|>GLOBAL:console<|.log(arr);
+}
+
+function |>METHOD:Car234375<|(){
+    this.|>FIELD:topSpeed<| = 200;
+    this.|>METHOD:run<| = function (){|>GLOBAL:console<|.log("vrr");};
+    this.|>FIELD:rypadlo<| = false;
+}
+
+
+new Test234375();
