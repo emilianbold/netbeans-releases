@@ -144,6 +144,7 @@ public final class Model {
     }
 
     private synchronized ModelVisitor getModelVisitor() {
+        boolean resolveWindowProperties = false;
         if (visitor == null) {
             long start = System.currentTimeMillis();
             visitor = new ModelVisitor(parserResult, occurrenceBuilder);
@@ -171,18 +172,22 @@ public final class Model {
                     }
                 }
             }
+            resolveWindowProperties = !resolveWithObjects;
             long end = System.currentTimeMillis();
-            processWindowsProperties(visitor.getGlobalObject());
             if(LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms. Extending model took {2}", new Object[]{(end - start), (startCallingME - startResolve), (end - startCallingME)}));
             }
         } else if (resolveWithObjects) {
             long start = System.currentTimeMillis();
             resolveWithObjects = false;
+            resolveWindowProperties = true;
             JsIndex jsIndex = JsIndex.get(parserResult.getSnapshot().getSource().getFileObject());
             processWithObjectIn(visitor.getGlobalObject(), jsIndex);
             long end = System.currentTimeMillis();
             System.out.println("resolving with took: " + (end - start));
+        }
+        if (resolveWindowProperties) {
+            processWindowsProperties(visitor.getGlobalObject());
         }
         return visitor;
     }
