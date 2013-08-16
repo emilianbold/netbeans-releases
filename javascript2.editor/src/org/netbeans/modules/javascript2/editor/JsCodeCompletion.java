@@ -197,7 +197,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     for (IndexedElement indexElement : fromIndex) {
                         addPropertyToMap(request, addedProperties, indexElement);
                     }
-                    completeInWith(request, added);
+                    completeInWith(request, addedProperties);
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
                 case EXPRESSION:
@@ -782,13 +782,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     addObjectPropertiesToCC(localObject, request, addedItems);
                 } 
                 
-                Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(type.getType(), request.prefix);
-                for (IndexedElement indexedElement : indexResults) {
-                    if (!indexedElement.isAnonymous()
-                            && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
-                        addPropertyToMap(request, addedItems, indexedElement);
-                    }
-                }
+                addObjectPropertiesFromIndex(type.getType(), jsIndex, request, addedItems);
             }
         }
     }
