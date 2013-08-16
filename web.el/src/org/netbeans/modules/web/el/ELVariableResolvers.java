@@ -54,6 +54,8 @@ import org.openide.util.Lookup;
  */
 public final class ELVariableResolvers {
 
+    public static final String ATTRS = "attrs"; //NOI18N
+
     private ELVariableResolvers() {
     }
 
