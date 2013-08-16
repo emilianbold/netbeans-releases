@@ -10,6 +10,7 @@ function |>METHOD:Test234375<|() {
     var car = new Car234375();
     with(car){
         |>GLOBAL:r<| // this works
+        |>GLOBAL:console<|.log(run());
     }
     
     var arr = [];

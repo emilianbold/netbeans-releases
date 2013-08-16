@@ -10,6 +10,7 @@ function Test234375() {
     var car = new Car234375();
     with(car){
         r // this works
+        console.log(run());
     }
     
     var arr = [];

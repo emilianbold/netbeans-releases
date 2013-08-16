@@ -318,4 +318,16 @@ public class JsWithFastTest extends JsWithBase {
     public void testIssue234375_01() throws Exception {
         checkOccurrences("testfiles/with/issue234375.js","console.log(getD^ate());", true);
     }
+    
+    public void testIssue234375_02() throws Exception {
+        checkOccurrences("testfiles/with/issue234375.js","console.log(r^un());", true);
+    }
+    
+    public void testIssue234479_01() throws Exception {
+        checkOccurrences("testfiles/with/issue234375.js","console.lo^g(getDate());", true);
+    }
+    
+    public void testIssue234479_02() throws Exception {
+        checkOccurrences("testfiles/with/issue234375.js","conso^le.log(getDate());", true);
+    }
 }
