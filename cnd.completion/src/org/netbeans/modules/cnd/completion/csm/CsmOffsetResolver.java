@@ -56,6 +56,7 @@ import org.netbeans.modules.cnd.api.model.CsmObject;
 import org.netbeans.modules.cnd.api.model.CsmType;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.api.model.CsmParameter;
+import org.netbeans.modules.cnd.api.model.CsmScope;
 import org.netbeans.modules.cnd.api.model.CsmTemplate;
 import org.netbeans.modules.cnd.api.model.CsmTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmVariable;
@@ -167,7 +168,8 @@ public class CsmOffsetResolver {
                     if (CsmStatementResolver.findInnerObject(body, offset, context)) {
                         // if found exact object => return it, otherwise return last found scope
                         CsmObject found = context.getLastObject();
-                        if (!CsmOffsetUtilities.sameOffsets(body, found)) {
+                        CsmScope lastScope = context.getLastScope();
+                        if (!CsmOffsetUtilities.sameOffsets(body, found) && !CsmOffsetUtilities.sameOffsets(lastScope, found)) {
                             lastObj = last = found;
                         }
                     }
