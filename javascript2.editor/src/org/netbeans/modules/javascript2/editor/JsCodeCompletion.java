@@ -197,7 +197,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     for (IndexedElement indexElement : fromIndex) {
                         addPropertyToMap(request, addedProperties, indexElement);
                     }
-                    completeInWith(request, added);
+                    completeInWith(request, addedProperties);
                     JsCompletionItem.Factory.create(addedProperties, request, resultList);
                     break;
                 case EXPRESSION:
