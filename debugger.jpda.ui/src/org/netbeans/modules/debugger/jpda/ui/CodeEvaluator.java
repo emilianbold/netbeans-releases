@@ -79,6 +79,7 @@ import javax.swing.text.Document;
 import org.netbeans.api.debugger.DebuggerEngine;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.DebuggerManagerAdapter;
+import org.netbeans.api.debugger.Properties;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
 import org.netbeans.api.debugger.jpda.JPDADebugger;
 import org.netbeans.api.debugger.jpda.ObjectVariable;
@@ -121,8 +122,8 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
     private Reference<JPDADebugger> debuggerRef = new WeakReference(null);
     private DbgManagerListener dbgManagerListener;
     private TopComponent resultView;
-    private Set<String> editItemsSet = new HashSet<String>();
-    private ArrayList<String> editItemsList = new ArrayList<String>();
+    private ArrayList<String> editItemsList = getPersistentEditItems();
+    private Set<String> editItemsSet = new HashSet<String>(editItemsList);
     private JButton dropDownButton;
 
     private Preferences preferences = NbPreferences.forModule(ContextProvider.class).node(VariablesViewButtons.PREFERENCES_NAME);
@@ -187,6 +188,17 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                 dbgManagerListener
         );
         checkDebuggerState();
+    }
+    
+    private static ArrayList<String> getPersistentEditItems() {
+        return (ArrayList<String>)
+                Properties.getDefault().getProperties("debugger.jpda").         // NOI18N
+                getCollection("EvaluatorItems", new ArrayList());               // NOI18N
+    }
+    
+    private static void storeEditItems(ArrayList<String> items) {
+        Properties.getDefault().getProperties("debugger.jpda").                 // NOI18N
+                setCollection("EvaluatorItems", items);                         // NOI18N
     }
 
     public static RequestProcessor getRequestProcessor() {
@@ -643,6 +655,14 @@ public class CodeEvaluator extends TopComponent implements HelpCtx.Provider,
                     }
                 }
                 recomputeDropDownItems();
+                
+                final ArrayList<String> itemsToStore = new ArrayList<String>(editItemsList);
+                rp.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        storeEditItems(itemsToStore);
+                    }
+                });
             }
         });
     }
