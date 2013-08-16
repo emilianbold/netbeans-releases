@@ -378,8 +378,25 @@ public class MylynSupport {
         return factory;
     }
 
-    void markTaskSeen (ITask task, boolean seen) {
+    void markTaskSeen (final ITask task, boolean seen) {
+        ITask.SynchronizationState syncState = task.getSynchronizationState();
         taskDataManager.setTaskRead(task, seen);
+        if (!seen && syncState == task.getSynchronizationState()
+                && syncState == ITask.SynchronizationState.OUTGOING
+                && task instanceof AbstractTask) {
+            // mylyn does not set to CONFLICT status
+            try {
+                taskList.run(new ITaskListRunnable() {
+                    @Override
+                    public void execute (IProgressMonitor monitor) throws CoreException {
+                        ((AbstractTask) task).setSynchronizationState(ITask.SynchronizationState.CONFLICT);
+                    }
+                });
+                taskList.notifyElementChanged(task);
+            } catch (CoreException ex) {
+                LOG.log(Level.INFO, null, ex);
+            }
+        }
         task.setAttribute(ATTR_TASK_INCOMING_NEW, null);
     }
 
