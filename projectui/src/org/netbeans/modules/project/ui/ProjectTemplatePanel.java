@@ -232,6 +232,9 @@ public class ProjectTemplatePanel implements WizardDescriptor.Panel<WizardDescri
                 int type = 0;   //Empty folder or File folder
                 for (DataObject child : folder.getChildren()) {
                     type = 1;
+                    if (Boolean.TRUE.equals(child.getPrimaryFile().getAttribute("template"))) { // NOI18N
+                        continue;
+                    }
                     if (child.getPrimaryFile().isFolder()) {
                         type = 2;   //Folder folder
                         break;
