@@ -297,6 +297,7 @@ public final class FileReferencesContext extends CsmProgressAdapter {
                     offsets.fileObjectOffsets.add(new Offsets(declaration));
                 }
                 Collections.sort(offsets.fileObjectOffsets);
+                Collections.sort(offsets.fileDeclarationsOffsets);
             }
             return offsets;
         }
@@ -386,7 +387,11 @@ public final class FileReferencesContext extends CsmProgressAdapter {
                     return 0;
                 }
             }
-            return startOffset - o.startOffset;
+            int res = startOffset - o.startOffset;
+            if (res == 0) {
+                res = endOffset - o.endOffset;
+            }
+            return res;
         }
     }
 }
