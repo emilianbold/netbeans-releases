@@ -117,11 +117,7 @@ public class WebModuleImplTest extends JavaEEMavenTestBase {
     }
 
     public void testGetJ2eeProfile_javaEE5FullSpecification() throws IOException {
-        checkJ2eeProfile(Profile.JAVA_EE_5, "javax", "javaee-api", "5.0"); //NOI18N
-    }
-
-    public void testGetJ2eeProfile_javaEE5WebSpecification() throws IOException {
-        checkJ2eeProfile(Profile.JAVA_EE_5, "javax", "javaee-web-api", "5.0"); //NOI18N
+        checkJ2eeProfile(Profile.JAVA_EE_5, "javaee", "javaee-api", "5.0"); //NOI18N
     }
 
     public void testGetJ2eeProfile_javaEE6FullSpecification() throws IOException {
