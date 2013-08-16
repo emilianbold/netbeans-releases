@@ -53,5 +53,7 @@ public interface CssPreprocessorPreferences {
     void setEnabled(Project project, boolean enabled);
     List<Pair<String, String>> getMappings(Project project);
     void setMappings(Project project, List<Pair<String, String>> mappings);
+    String getCompilerOptions(Project project);
+    void setCompilerOptions(Project project, String compilerOptions);
 
 }

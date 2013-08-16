@@ -55,24 +55,24 @@ abstract class BasePreferences {
     BasePreferences() {
     }
 
-    public boolean isConfigured(Project project, String propertyName) {
+    protected boolean isConfigured(Project project, String propertyName) {
         return getPreferences(project).getBoolean(propertyName, false);
     }
 
-    public void setConfigured(Project project, String propertyName, boolean configured) {
+    protected void setConfigured(Project project, String propertyName, boolean configured) {
         getPreferences(project).putBoolean(propertyName, configured);
     }
 
-    public boolean isEnabled(Project project, String propertyName) {
+    protected boolean isEnabled(Project project, String propertyName) {
         return getPreferences(project).getBoolean(propertyName, false);
     }
 
-    public void setEnabled(Project project, String propertyName, boolean enabled) {
+    protected void setEnabled(Project project, String propertyName, boolean enabled) {
         getPreferences(project).putBoolean(propertyName, enabled);
     }
 
     @CheckForNull
-    public List<Pair<String, String>> getMappings(Project project, String propertyName, CssPreprocessorType type) {
+    protected List<Pair<String, String>> getMappings(Project project, String propertyName, CssPreprocessorType type) {
         String mappings = getPreferences(project).get(propertyName, null);
         if (mappings == null) {
             return CssPreprocessorUtils.getDefaultMappings(type);
@@ -80,8 +80,16 @@ abstract class BasePreferences {
         return CssPreprocessorUtils.decodeMappings(mappings);
     }
 
-    public void setMappings(Project project, String propertyName, List<Pair<String, String>> mappings) {
+    protected void setMappings(Project project, String propertyName, List<Pair<String, String>> mappings) {
         getPreferences(project).put(propertyName, CssPreprocessorUtils.encodeMappings(mappings));
+    }
+
+    protected String getCompilerOptions(Project project, String propertyName) {
+        return getPreferences(project).get(propertyName, ""); // NOI18N
+    }
+
+    protected void setCompilerOptions(Project project, String propertyName, String compilerOptions) {
+        getPreferences(project).put(propertyName, compilerOptions);
     }
 
     protected Preferences getPreferences(Project project) {

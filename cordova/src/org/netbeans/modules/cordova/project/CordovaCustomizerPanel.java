@@ -55,6 +55,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Properties;
 import java.util.prefs.Preferences;
+import javax.swing.JLabel;
+import javax.swing.SwingUtilities;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.api.progress.ProgressUtils;
 import org.netbeans.api.project.Project;
@@ -71,6 +73,7 @@ import org.openide.util.EditableProperties;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  *
@@ -81,36 +84,34 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
     private Project project;
     private SourceConfig config;
     private final Category cat;
+    private boolean cordovaReady;
+    
     /**
      * Creates new form CordovaCustomizerPanel
      */
-    public CordovaCustomizerPanel(Project p, Category cat) {
+    @NbBundle.Messages(
+            "LBL_InitializeCordovaPanel=Initializing Cordova Category. Please wait..."
+    )
+    public CordovaCustomizerPanel(Project p, final Category cat) {
         this.project = p;
         this.cat = cat;
-        if (!CordovaPlatform.getDefault().isReady()) {
-            setLayout(new BorderLayout());
-            add(new CordovaNotFound(), BorderLayout.CENTER);
-            validate();
-            CordovaPlatform.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
-                @Override
-                public void propertyChange(PropertyChangeEvent evt) {
-                    if (CordovaPlatform.getDefault().isReady()) {
-                        if (CordovaPlatform.isCordovaProject(project)) {
-                            config = CordovaPerformer.getConfig(project);
-                        }
-                        removeAll();
-                        initControls();
+        setLayout(new BorderLayout());
+        add(new JLabel(Bundle.LBL_InitializeCordovaPanel(), JLabel.CENTER), BorderLayout.CENTER);
+        validate();
+        RequestProcessor.getDefault().post(new Runnable() {
+
+            @Override
+            public void run() {
+                cordovaReady = CordovaPlatform.getDefault().isReady();                
+                SwingUtilities.invokeLater(new Runnable() {
+
+                    @Override
+                    public void run() {
+                        initialize(cat);
                     }
-                }
-            });
-            
-        } else {
-            if (CordovaPlatform.isCordovaProject(project) && CordovaPlatform.getDefault().isReady()) {
-                config = CordovaPerformer.getConfig(project);
+                });
             }
-            initControls();
-        }
-        cat.setStoreListener(this);
+        });
     }
     
 
@@ -366,5 +367,33 @@ public class CordovaCustomizerPanel extends javax.swing.JPanel implements Action
     @Override
     public HelpCtx getHelpCtx() {
         return new HelpCtx("org.netbeans.modules.cordova.project.CordovaCustomizerPanel");
+    }
+
+    public void initialize(Category cat) {
+        removeAll();
+        if (!cordovaReady) {
+            setLayout(new BorderLayout());
+            add(new CordovaNotFound(), BorderLayout.CENTER);
+            validate();
+            CordovaPlatform.getDefault().addPropertyChangeListener(new PropertyChangeListener() {
+                @Override
+                public void propertyChange(PropertyChangeEvent evt) {
+                    if (cordovaReady) {
+                        if (CordovaPlatform.isCordovaProject(project)) {
+                            config = CordovaPerformer.getConfig(project);
+                        }
+                        removeAll();
+                        initControls();
+                    }
+                }
+            });
+            
+        } else {
+            if (CordovaPlatform.isCordovaProject(project) && cordovaReady) {
+                config = CordovaPerformer.getConfig(project);
+            }
+            initControls();
+        }
+        cat.setStoreListener(this);
     }
 }

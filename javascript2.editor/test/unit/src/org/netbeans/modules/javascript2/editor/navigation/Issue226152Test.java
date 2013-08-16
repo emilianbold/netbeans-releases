@@ -76,10 +76,10 @@ public class Issue226152Test  extends JsTestBase{
         checkDeclaration("/testfiles/navigation/226152/issue226152B.js", "cc = new Test22^6152(33);", "issue226152A.js", 9);
     }
 
-    @Override
-    protected boolean cleanCacheDir() {
-        return false;
-    }
+//    @Override
+//    protected boolean cleanCacheDir() {
+//        return false;
+//    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
