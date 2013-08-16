@@ -275,4 +275,25 @@ public class JsWithFastTest extends JsWithBase {
     public void testIssue234390_03() throws Exception {
         checkOccurrences("testfiles/with/issue234390.js","this.real^name = name;", true);
     }
+    
+    public void testIssue234400_01() throws Exception {
+        checkCompletion("testfiles/with/issue234400.js","o234400.^name = 10;", true);
+    }
+    
+    public void testIssue234381() throws Exception {
+        checkSemantic("testfiles/with/issue234381.js"); 
+        checkStructure("testfiles/with/issue234381.js");
+    }
+    
+    public void testIssue234381_01() throws Exception {
+        checkOccurrences("testfiles/with/issue234381.js","var z = test() * ti^mes;", true);
+    }
+    
+    public void testIssue234381_02() throws Exception {
+        checkOccurrences("testfiles/with/issue234381.js","var z = te^st() * times;", true);
+    }
+    
+    public void testIssue234381_03() throws Exception {
+        checkCompletion("testfiles/with/issue234381.js","var z = ^test() * times;", true);
+    }
 }

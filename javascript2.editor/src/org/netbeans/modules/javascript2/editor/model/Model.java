@@ -388,8 +388,21 @@ public final class Model {
         }
     }
 
+    /**
+     * If you need to be sure that the model is fully build, call resolve method before.
+     * @return the gobal object representing the global space of the file
+     */
     public JsObject getGlobalObject() {
         return getModelVisitor().getGlobalObject();
+    }
+    
+    public void resolve() {
+        if (visitor == null) {
+            getModelVisitor();
+        }
+        if (resolveWithObjects) {
+            getModelVisitor();
+        }
     }
 
     public OccurrencesSupport getOccurrencesSupport() {
