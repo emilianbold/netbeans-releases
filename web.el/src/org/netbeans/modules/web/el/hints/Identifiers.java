@@ -42,17 +42,20 @@
 package org.netbeans.modules.web.el.hints;
 
 import com.sun.el.parser.*;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import javax.el.ELException;
 import javax.lang.model.element.Element;
+import org.netbeans.editor.ActionFactory;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.netbeans.modules.web.el.*;
 import org.netbeans.modules.web.el.completion.ELStreamCompletionItem;
+import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.netbeans.modules.web.el.spi.ImplicitObjectType;
 import org.openide.filesystems.FileObject;
 import org.openide.util.NbBundle;
@@ -63,6 +66,11 @@ import org.openide.util.NbBundle;
  * @author Erno Mononen
  */
 public final class Identifiers extends ELRule {
+
+    private static final List<ImplicitObjectType> ALL_NON_RAW_IMPLICIT_TYPES = Arrays.asList(
+            ImplicitObjectType.MAP_TYPE,
+            ImplicitObjectType.OBJECT_TYPE,
+            ImplicitObjectType.SCOPE_TYPE);
 
     private WebModule webModule;
     private FileObject context;
@@ -89,6 +97,7 @@ public final class Identifiers extends ELRule {
     @Override
     protected void run(final CompilationContext info, RuleContext ruleContext, final List<Hint> result) {
         final ELParserResult elResult = (ELParserResult)ruleContext.parserResult;
+        final List<ELVariableResolver.VariableInfo> variables = ELVariableResolvers.getRawObjectProperties(info, ELVariableResolvers.ATTRS, elResult.getSnapshot());
         for (final ELElement each : elResult.getElements()) {
             if (!each.isValid()) {
                 // broken AST, skip
@@ -101,24 +110,22 @@ public final class Identifiers extends ELRule {
                 private boolean finished;
 
                 @Override
-                public void visit(final Node node) throws ELException {
+                public void visit(final Node node) {
                     if (finished) {
                         return;
                     }
                     if (node instanceof AstMapData || node instanceof AstListData) {
                         parent = node;
                     } else if (node instanceof AstIdentifier) {
-                        if (ELTypeUtilities.resolveElement(info, each, node) == null
-                                // issue #232089 - cc.attrs is marked as an Unknown property
-                                || ELTypeUtilities.isRawObjectReference(info, node, false)) {
-                            // currently we can't reliably resolve all identifiers, so 
+                        if (ELTypeUtilities.resolveElement(info, each, node) == null) {
+                            // currently we can't reliably resolve all identifiers, so
                             // if we couldn't resolve the base identifier skip checking properties / methods
                             finished = true;
                         }
                         parent = node;
                     }
                     if (node instanceof AstDotSuffix || NodeUtil.isMethodCall(node)) {
-                        if (!isValidNode(info, each, parent, node)) {
+                        if (!isValidNode(info, each, parent, node, variables)) {
                             Hint hint = new Hint(Identifiers.this,
                                     getMsg(node),
                                     elResult.getFileObject(),
@@ -134,16 +141,16 @@ public final class Identifiers extends ELRule {
         }
     }
 
-    private static boolean isValidNode(CompilationContext info, ELElement element, Node parent, Node node) {
+    private static boolean isValidNode(CompilationContext info, ELElement element, Node parent, Node node, List<ELVariableResolver.VariableInfo> variables) {
         // valid bean's property/method
-        Element resolvedElement = ELTypeUtilities.resolveElement(info, element, node);
+        Element resolvedElement = ELTypeUtilities.resolveElement(info, element, node, Collections.<AstIdentifier, Node>emptyMap(), variables);
         if (resolvedElement != null) {
             return true;
         }
 
         // don't show the hint for implicit objects - it's more useless than helpful to show false warnings (since
         // the implementation class can differ and the many of implicit objects references just some kind of map)
-        if (ELTypeUtilities.isImplicitObjectReference(info, parent, ImplicitObjectType.ALL_TYPES, false)) {
+        if (ELTypeUtilities.isImplicitObjectReference(info, parent, ALL_NON_RAW_IMPLICIT_TYPES, false)) {
             return true;
         }
 

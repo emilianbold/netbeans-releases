@@ -122,4 +122,24 @@ public class IdentifiersTest extends HintTestBase {
         checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/identifiers16.xhtml", null);
     }
 
+    public void testIssue232274_0() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/issue232274_0.xhtml", null);
+    }
+
+    public void testIssue232274_1() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/issue232274_1.xhtml", null);
+    }
+
+    public void testIssue232274_2() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/issue232274_2.xhtml", null);
+    }
+
+    public void testIssue232274_3() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/issue232274_3.xhtml", null);
+    }
+
+    public void testIssue232274_4() throws Exception {
+        checkHints(this, createRule(), "projects/testWebProject/web/hints/identifiers/issue232274_4.xhtml", null);
+    }
+
 }
