@@ -49,6 +49,8 @@ import javax.swing.AbstractListModel;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.netbeans.modules.cordova.updatetask.CordovaPlugin;
 
 /**
@@ -148,6 +150,23 @@ public final class PluginsPanel extends JPanel {
     private void initSelectedPluginsList() {
         assert EventQueue.isDispatchThread();
         selectedPluginsList.setModel(selectedPluginsModel);
+        selectedPluginsModel.addListDataListener(new ListDataListener() {
+
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+                updateButtonsEnabled();
+            }
+
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+                updateButtonsEnabled();
+            }
+
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                updateButtonsEnabled();
+            }
+        });
    }
 
     private boolean isUpdateRunning() {
@@ -318,7 +337,7 @@ public final class PluginsPanel extends JPanel {
 
     private void updateButtonsEnabled() {
         selectSelectedButton.setEnabled(pluginsList.getSelectedIndex()!=-1);
-        deselectSelectedButton.setEnabled(selectedPluginsList.getSelectedIndex()!=-1);
+        deselectSelectedButton.setEnabled(selectedPluginsModel.getSize() > 0 && selectedPluginsList.getSelectedIndex()!=-1);
     }
 
     private static final class PluginsListModel extends AbstractListModel {
