@@ -57,6 +57,7 @@ import java.io.PrintWriter;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.debugger.jpda.InvalidExpressionException;
+import org.netbeans.api.debugger.jpda.JPDAThread;
 import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
 import org.netbeans.modules.debugger.jpda.jdi.ArrayReferenceWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
@@ -133,8 +134,15 @@ public class InvocationExceptionTranslated extends ApplicationException {
                     } catch (InvalidExpressionException ex) {
                         return ex.getMessage();
                     } catch (VMMismatchException vmMismatchEx) {
+                        VirtualMachine ptvm = ((preferredThread != null) ? preferredThread.getThreadReference().virtualMachine() : null);
+                        VirtualMachine ctvm = null;
+                        JPDAThread currentThread = debugger.getCurrentThread();
+                        if (currentThread != null) {
+                            ctvm = ((JPDAThreadImpl) currentThread).getThreadReference().virtualMachine();
+                        }
                         throw Exceptions.attachMessage(vmMismatchEx, "DBG VM = "+debugger.getVirtualMachine()+
-                                                                   ", preferredThread VM = "+preferredThread.getThreadReference().virtualMachine()+
+                                                                   ", preferredThread VM = "+ptvm+
+                                                                   ", currentThread VM = "+ctvm+
                                                                    ", exeption VM = "+exeption.virtualMachine());
                     }
                 }
