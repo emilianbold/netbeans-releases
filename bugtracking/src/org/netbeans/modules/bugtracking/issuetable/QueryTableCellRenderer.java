@@ -359,8 +359,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                             break;
                         case MODIFIED :
                             sb.append("<br>").append(issueModifiedFormat.format(new Object[] { labelModified }, new StringBuffer(), null)); // NOI18N
-                            sb.append(msgModified);
-                            sb.append(p.getRecentChanges());
+                            sb.append(MessageFormat.format(msgModified, p.getRecentChanges()));
                             break;
                     }
                 }
