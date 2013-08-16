@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.css.prep.ui.customizer;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
@@ -59,6 +60,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.LayoutStyle;
 import javax.swing.SwingConstants;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -118,6 +120,10 @@ public class OptionsPanel extends JPanel {
         // ui
         enablePanel(initialEnabled);
         enableRemoveButton();
+        if ("Mac OS X".equals(UIManager.getLookAndFeel().getName())) { //NOI18N
+            mappingsTable.setShowGrid(true);
+            mappingsTable.setGridColor(Color.GRAY);
+        }
         // listeners
         enabledCheckBox.addItemListener(new ItemListener() {
             @Override
