@@ -46,9 +46,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
-import javax.el.ELException;
 import javax.lang.model.element.Element;
-import org.netbeans.editor.ActionFactory;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.HintFix;
 import org.netbeans.modules.csl.api.RuleContext;
@@ -97,7 +95,7 @@ public final class Identifiers extends ELRule {
     @Override
     protected void run(final CompilationContext info, RuleContext ruleContext, final List<Hint> result) {
         final ELParserResult elResult = (ELParserResult)ruleContext.parserResult;
-        final List<ELVariableResolver.VariableInfo> variables = ELVariableResolvers.getRawObjectProperties(info, ELVariableResolvers.ATTRS, elResult.getSnapshot());
+        final List<ELVariableResolver.VariableInfo> variables = ELVariableResolvers.getRawObjectProperties(info, "attrs", elResult.getSnapshot());
         for (final ELElement each : elResult.getElements()) {
             if (!each.isValid()) {
                 // broken AST, skip
