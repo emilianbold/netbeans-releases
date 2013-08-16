@@ -917,7 +917,7 @@ public class JsFormatter implements Formatter {
                 || token.getKind() == FormatToken.Kind.AFTER_BLOCK_START
                 || token.getKind() == FormatToken.Kind.AFTER_CASE
                 || token.getKind() == FormatToken.Kind.ELSE_IF_AFTER_BLOCK_START;
-    }
+            }
 
     private static CodeStyle.WrapStyle getLineWrap(List<FormatToken> tokens, int index,
             FormatContext context, boolean skipWitespace) {
@@ -939,6 +939,16 @@ public class JsFormatter implements Formatter {
     private static CodeStyle.WrapStyle getLineWrap(FormatToken token, FormatContext context) {
         switch (token.getKind()) {
             case AFTER_STATEMENT:
+                // this is special because of possible an typical "something."
+                // dot sanitization see #234385
+                FormatToken check = token.previous();
+                if (check != null && check.getKind() == FormatToken.Kind.BEFORE_DOT) {
+                    return null;
+                }
+                check = token.next();
+                if (check != null && check.getKind() == FormatToken.Kind.BEFORE_DOT) {
+                    return null;
+                }
                 return CodeStyle.get(context).wrapStatement();
             case AFTER_BLOCK_START:
                 // XXX option

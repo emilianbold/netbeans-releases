@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugzilla;
 
+import java.net.URL;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -78,6 +79,7 @@ public class BugzillaConfig {
     public static final int DEFAULT_QUERY_REFRESH = 30;
     public static final int DEFAULT_ISSUE_REFRESH = 15;
     private Map<String, Icon> priorityIcons;
+    private Map<String, URL> priorityIconsURL;
 
     private BugzillaConfig() { }
 
@@ -209,6 +211,18 @@ public class BugzillaConfig {
             priorityIcons.put("P5", ImageUtilities.loadImageIcon("org/netbeans/modules/bugzilla/resources/p5.png", true)); // NOI18N
         }
         return priorityIcons.get(priority);
+    }
+
+    public URL getPriorityIconURL(String priority) {
+        if(priorityIconsURL == null) {
+            priorityIconsURL = new HashMap<>();
+            priorityIconsURL.put("P1", BugzillaConfig.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/p1.png")); // NOI18N
+            priorityIconsURL.put("P2", BugzillaConfig.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/p2.png")); // NOI18N
+            priorityIconsURL.put("P3", BugzillaConfig.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/p3.png")); // NOI18N
+            priorityIconsURL.put("P4", BugzillaConfig.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/p4.png")); // NOI18N
+            priorityIconsURL.put("P5", BugzillaConfig.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/p5.png")); // NOI18N
+        }
+        return priorityIconsURL.get(priority);
     }
 
     /**

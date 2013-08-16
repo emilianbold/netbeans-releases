@@ -50,7 +50,6 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.junit.NbTestCase;
 import org.netbeans.modules.j2ee.common.dd.DDHelper;
 import org.netbeans.modules.maven.api.NbMavenProject;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.filesystems.test.TestFileUtils;
@@ -119,8 +118,6 @@ public abstract class JavaEEMavenTestBase extends NbTestCase {
      * </pre>
      * 
      * For creation of additional files like nb-configuration.xml see MavenTestSupport methods.
-     * Project has set Java EE 6 as a default platform version. For setting up different version use 
-     * {@link MavenProjectSupport#setJ2eeVersion(org.netbeans.api.project.Project, java.lang.String)}
      * 
      * @param projectDir root directory of the project
      * @return created project with structure described above
@@ -173,8 +170,6 @@ public abstract class JavaEEMavenTestBase extends NbTestCase {
      * </pre>
      * 
      * For creation of additional files like nb-configuration.xml see MavenTestSupport methods.
-     * Project has set Java EE 6 as a default platform version. For setting up different version use 
-     * {@link MavenProjectSupport#setJ2eeVersion(org.netbeans.api.project.Project, java.lang.String)}
      * 
      * @param projectDir root directory of the project
      * @return created project with structure described above
@@ -216,8 +211,6 @@ public abstract class JavaEEMavenTestBase extends NbTestCase {
      * </pre>
      * 
      * For creation of additional files like nb-configuration.xml see MavenTestSupport methods.
-     * Project has set Java EE 6 as a default platform version. For setting up different version use 
-     * {@link MavenProjectSupport#setJ2eeVersion(org.netbeans.api.project.Project, java.lang.String)}
      * 
      * @param projectDir root directory of the project
      * @return created project with structure described above
@@ -300,8 +293,6 @@ public abstract class JavaEEMavenTestBase extends NbTestCase {
      * </pre>
      * 
      * For creation of additional files like nb-configuration.xml see MavenTestSupport methods.
-     * Project has set Java EE 6 as a default platform version. For setting up different version use 
-     * {@link MavenProjectSupport#setJ2eeVersion(org.netbeans.api.project.Project, java.lang.String)}
      * 
      * @param projectDir root directory of the project
      * @return created project with structure described above
@@ -343,7 +334,6 @@ public abstract class JavaEEMavenTestBase extends NbTestCase {
         }
         
         Project createdProject = ProjectManager.getDefault().findProject(projectDir);
-        MavenProjectSupport.setJ2eeVersion(createdProject, "1.6"); //NOI18N
 
         return createdProject;
     }
