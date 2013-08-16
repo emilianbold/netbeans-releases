@@ -819,7 +819,11 @@ public final class ELTypeUtilities {
                                     } else {
                                         for (VariableInfo property : variableInfos) {
                                             if (child.getImage().equals(property.name)) {
-                                                propertyType = info.info().getElements().getTypeElement(property.clazz);
+                                                if (property.clazz == null) {
+                                                    propertyType = info.info().getElements().getTypeElement("java.lang.Object"); //NOI18N
+                                                } else {
+                                                    propertyType = info.info().getElements().getTypeElement(property.clazz);
+                                                }
                                             }
                                         }
                                     }
