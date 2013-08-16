@@ -41,121 +41,65 @@
  */
 
 package org.netbeans.modules.analysis.ui;
-import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeEvent;
-import java.beans.PropertyChangeListener;
-import java.beans.PropertyVetoException;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
-import javax.swing.AbstractAction;
-import org.netbeans.spi.editor.hints.ErrorDescription;
-import org.openide.cookies.OpenCookie;
-import org.openide.nodes.FilterNode.Children;
 import org.openide.nodes.Node;
-import org.openide.util.Exceptions;
 
 /**
  *
  * @author lahvac
  */
-public class NextError extends AbstractAction implements PropertyChangeListener {
-
-    private AnalysisResultTopComponent comp;
+public class NextError extends AbstractErrorAction {
 
     public NextError(AnalysisResultTopComponent comp) {
-        this.comp = comp;
-        this.comp.getExplorerManager().addPropertyChangeListener(this);
+        super(comp);
     }
-    
+
     @Override
-    public boolean isEnabled() {
-        if (comp.nodesForNext == null) {
-            return !comp.empty;
+    protected Node findSubsequentNode(Node from) {
+        if (!isUseful(from)) {
+            Node result = findFirstUsableChild(from);
+
+            if (result != null) return result;
         }
 
-        Node node = getNextMeaningfullNode();
-        boolean enabled = node != null;
-        
-        if (node != null) {
-            comp.nodesForNext.add(0, node);
-        }
-        
-        return enabled;
-    }
+        Node parent = from.getParentNode();
 
-    public void actionPerformed(ActionEvent e) {
-        Node node = getNextMeaningfullNode();
-        
-        if (node == null) {
-            //should not happen
-            fireEnabledChanged();
-            return ;
-        }
-        
-        OpenCookie oc = node.getLookup().lookup(OpenCookie.class);
-            
-        assert oc != null;
-        
-        addToSeenNodes(node);
-        
-        try {
-            comp.getExplorerManager().setSelectedNodes(new Node[]{node});
-        } catch (PropertyVetoException ex) {
-            Exceptions.printStackTrace(ex);
-        }
+        while (parent != null) {
+            List<Node> children = Arrays.asList(parent.getChildren().getNodes(true));
+            int index = children.indexOf(from);
 
-        oc.open();
-        fireEnabledChanged();
-    }
-    
-    private Node getNextMeaningfullNode() {
-        if (comp.nodesForNext == null) {
-            comp.nodesForNext = new LinkedList<Node>();
-            comp.nodesForNext.add(comp.getExplorerManager().getRootContext());
-        }
+            for (int i = index + 1; i < children.size(); i++) {
+                Node c = children.get(i);
 
-        List<Node> nodesForNext = comp.nodesForNext;
+                if (isUseful(c)) return c;
 
-        while (!nodesForNext.isEmpty()) {
-            Node top = nodesForNext.remove(0);
+                Node result = findFirstUsableChild(c);
 
-            if (top.getChildren() != Children.LEAF) {
-                nodesForNext.addAll(0, Arrays.asList(top.getChildren().getNodes(true)));
-                continue;
+                if (result != null) return result;
             }
 
-            ErrorDescription ed = top.getLookup().lookup(ErrorDescription.class);
-
-            if (ed != null) {
-                Node[] selected = comp.getExplorerManager().getSelectedNodes();
-
-                if (selected.length == 1 && selected[0] == top) {
-                    addToSeenNodes(top);
-                    continue;
-                }
-                
-                return top;
-            }
+            from = parent;
+            parent = parent.getParentNode();
         }
-        
+
         return null;
     }
 
-    private void addToSeenNodes(Node n) {
-        if (comp.seenNodes == null) {
-            comp.seenNodes = new LinkedList<Node>();
+    private Node findFirstUsableChild(Node parent) {
+        List<Node> deeper = new LinkedList<>();
+
+        deeper.add(parent);
+
+        while (!deeper.isEmpty()) {
+            Node top = deeper.remove(0);
+
+            if (isUseful(top)) return top;
+
+            deeper.addAll(0, Arrays.asList(top.getChildren().getNodes(true)));
         }
 
-        comp.seenNodes.add(0, n);
+        return null;
     }
-    
-    void fireEnabledChanged() {
-        firePropertyChange("enabled", null, isEnabled());
-    }
-
-    public void propertyChange(PropertyChangeEvent evt) {
-        fireEnabledChanged();
-    }
-    
 }
