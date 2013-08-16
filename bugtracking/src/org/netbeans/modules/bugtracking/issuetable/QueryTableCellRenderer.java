@@ -67,6 +67,7 @@ import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.api.Query;
 import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.TextUtils;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 
@@ -84,9 +85,9 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
     private static final int VISIBLE_START_CHARS = 0;
     private static final Icon seenValueIcon = new ImageIcon(ImageUtilities.loadImage("org/netbeans/modules/bugtracking/ui/resources/seen-value.png")); // NOI18N
 
-    private static final MessageFormat issueNewFormat       = getFormat("issueNewFormat");      // NOI18N
-    private static final MessageFormat issueObsoleteFormat  = getFormat("issueObsoleteFormat"); // NOI18N
-    private static final MessageFormat issueModifiedFormat  = getFormat("issueModifiedFormat"); // NOI18N
+    private static final MessageFormat issueNewFormat       = getFormat("issueNewFormat", UIUtils.getTaskNewColor()); //NOI18N
+    private static final MessageFormat issueObsoleteFormat  = getFormat("issueObsoleteFormat", UIUtils.getTaskObsoleteColor()); //NOI18N
+    private static final MessageFormat issueModifiedFormat  = getFormat("issueModifiedFormat", UIUtils.getTaskModifiedColor()); //NOI18N
 
     private static final String labelNew = NbBundle.getMessage(QueryTableCellRenderer.class, "LBL_IssueStatusNew");             // NOI18N
     private static final String labelModified = NbBundle.getMessage(QueryTableCellRenderer.class, "LBL_IssueStatusModified");   // NOI18N
@@ -98,9 +99,9 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
 
     private static Color evenLineColor                      = null;
     private static Color unevenLineColor                    = null;
-    private static final Color newHighlightColor            = new Color(0x00b400);
-    private static final Color modifiedHighlightColor       = new Color(0x0000ff);
-    private static final Color obsoleteHighlightColor       = new Color(0x999999);
+    private static final Color newHighlightColor            = UIUtils.getTaskNewColor();
+    private static final Color modifiedHighlightColor       = UIUtils.getTaskModifiedColor();
+    private static final Color obsoleteHighlightColor       = UIUtils.getTaskObsoleteColor();
 
     static {
         evenLineColor = UIManager.getColor( "nb.bugtracking.table.background" ); //NOI18N
@@ -117,8 +118,9 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
         this.issueTable = issueTable;
     }
 
-    private static MessageFormat getFormat(String key) {
-        String format = NbBundle.getMessage(IssueTable.class, key);
+    private static MessageFormat getFormat (String key, Color c) {
+        String format = NbBundle.getMessage(IssueTable.class, key,
+                new Object[] { UIUtils.getColorString(c), "{0}" }); //NOI18N
         return new MessageFormat(format);
     }
 
@@ -316,6 +318,7 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                 // archived issues
                 style.format     = isSelected ? style.format           : issueObsoleteFormat;
                 style.background = isSelected ? obsoleteHighlightColor : style.background;
+                style.foreground = isSelected ? table.getBackground() : style.foreground;
             } else {
                 status = issue.getStatus();
                 if(status != IssueStatusProvider.Status.SEEN) {
@@ -323,10 +326,12 @@ public class QueryTableCellRenderer extends DefaultTableCellRenderer {
                         case NEW :
                             style.format     = isSelected ? style.format      : issueNewFormat;
                             style.background = isSelected ? newHighlightColor : style.background;
+                            style.foreground = isSelected ? table.getBackground() : style.foreground;
                             break;
                         case MODIFIED :
                             style.format     = isSelected ? style.format           : issueModifiedFormat;
                             style.background = isSelected ? modifiedHighlightColor : style.background;
+                            style.foreground = isSelected ? table.getBackground() : style.foreground;
                             break;
                     }
                 }

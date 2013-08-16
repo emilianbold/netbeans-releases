@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
+import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -85,6 +86,7 @@ import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.bugtracking.util.AttachmentsPanel;
 import org.netbeans.modules.bugtracking.util.NBBugzillaUtils;
 import org.netbeans.modules.bugtracking.util.UIUtils;
+import org.netbeans.modules.bugzilla.BugzillaConfig;
 import org.netbeans.modules.bugzilla.commands.AddAttachmentCommand;
 import org.netbeans.modules.bugzilla.repository.BugzillaConfiguration;
 import org.netbeans.modules.bugzilla.repository.BugzillaRepository;
@@ -179,6 +181,7 @@ public class BugzillaIssue {
     private final PropertyChangeSupport support;
     private NbTask task;
     private String recentChanges = "";
+    private String tooltip = "";
     private NbTaskDataModel model;
     private static final Object MODEL_LOCK = new Object();
     private NbTaskDataModelListener list;
@@ -186,6 +189,10 @@ public class BugzillaIssue {
     private boolean readPending;
     private final TaskDataListenerImpl taskDataListener;
     private final TaskListenerImpl taskListener;
+
+    private static final URL ICON_REMOTE_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/remote.png"); //NOI18N
+    private static final URL ICON_CONFLICT_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/conflict.png"); //NOI18N
+    private static final URL ICON_UNSUBMITTED_PATH = IssuePanel.class.getClassLoader().getResource("org/netbeans/modules/bugzilla/resources/unsubmitted.png"); //NOI18N
 
     public BugzillaIssue (NbTask task, BugzillaRepository repo) {
         this.task = task;
@@ -199,6 +206,7 @@ public class BugzillaIssue {
             }
         });
         updateRecentChanges();
+        updateTooltip();
         MylynSupport mylynSupp = MylynSupport.getInstance();
         taskDataListener = new TaskDataListenerImpl();
         mylynSupp.addTaskDataListener(WeakListeners.create(TaskDataListener.class, taskDataListener, mylynSupp));
@@ -358,7 +366,7 @@ public class BugzillaIssue {
 //    }
 
     public String getTooltip() {
-        return getDisplayName();
+        return tooltip;
     }
 
     public static ColumnDescriptor[] getColumnDescriptors(BugzillaRepository repository) {
@@ -623,9 +631,17 @@ public class BugzillaIssue {
             if (taskDataState != null) {
                 td = taskDataState.getRepositoryData();
                 repositoryDataRef = new SoftReference<TaskData>(td);
-                if (node != null) {
-                    node.fireDataChanged();
-                }
+                EventQueue.invokeLater(new Runnable() {
+                    @Override
+                    public void run () {
+                        if (node != null) {
+                            node.fireDataChanged();
+                        }
+                        if (updateTooltip()) {
+                            fireDataChanged();
+                        }
+                    }
+                });
             }
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.WARNING, null, ex);
@@ -1284,6 +1300,94 @@ public class BugzillaIssue {
         }
     }
 
+    private boolean updateTooltip () {
+        String displayName = getDisplayName();
+        if (displayName.startsWith("#")) { //NOI18N
+            displayName = displayName.replaceFirst("#", ""); //NOI18N
+        }
+        String oldTooltip = tooltip;
+
+        SynchronizationState state = task.getSynchronizationState();
+        URL iconPath = getStateIcon(state);
+        String iconCode = "";
+        if (iconPath != null) {
+            iconCode = "<img src=\"" + iconPath + "\">&nbsp;"; //NOI18N
+        }
+        String stateName = getStateDisplayName(state);
+
+        String priorityLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Priority_Title"); //NOI18N
+        String priority = getRepositoryFieldValue(IssueField.PRIORITY);
+        URL priorityIcon = BugzillaConfig.getInstance().getPriorityIconURL(priority);
+
+        boolean showIssueType = BugzillaUtil.showIssueType(repository);
+        String typeLabel = NbBundle.getMessage(BugzillaIssue.class, showIssueType ? "LBL_Type" : "CTL_Issue_Severity_Title"); //NOI18N
+        String type = showIssueType ? getRepositoryFieldValue(IssueField.ISSUE_TYPE) : getRepositoryFieldValue(IssueField.SEVERITY);
+
+        String productLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Product_Title"); //NOI18N
+        String product = getRepositoryFieldValue(IssueField.PRODUCT);
+
+        String componentLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Component_Title"); //NOI18N
+        String component = getRepositoryFieldValue(IssueField.COMPONENT);
+
+        String assigneeLabel = NbBundle.getMessage(BugzillaIssue.class, "LBL_Assigned"); //NOI18N
+        String assignee = getRepositoryFieldValue(IssueField.ASSIGNED_TO);
+
+        String statusLabel = NbBundle.getMessage(BugzillaIssue.class, "CTL_Issue_Status_Title"); //NOI18N
+        String status = getRepositoryFieldValue(IssueField.STATUS);
+        String resolution = getRepositoryFieldValue(IssueField.RESOLUTION);
+
+        if (resolution != null && !resolution.trim().isEmpty()) {
+            status += "/" + resolution;
+        }
+
+
+        String fieldTable = "<table>" //NOI18N
+            + "<tr><td><b>" + priorityLabel + ":</b></td><td><img src=\"" + priorityIcon + "\">&nbsp;" + priority + "</td><td style=\"padding-left:25px;\"><b>" + typeLabel + ":</b></td><td>" + type + "</td></tr>" //NOI18N
+            + "<tr><td><b>" + productLabel + ":</b></td><td>" + product + "</td><td style=\"padding-left:25px;\"><b>" + componentLabel + ":</b></td><td>" + component + "</td></tr>" //NOI18N
+            + "<tr><td><b>" + assigneeLabel + ":</b></td><td colspan=\"3\">" + assignee + "</td></tr>" //NOI18N
+            + "<tr><td><b>" + statusLabel + ":</b></td><td colspan=\"3\">" + status + "</td></tr>" //NOI18N
+            + "</table>"; //NOI18N
+
+        StringBuilder sb = new StringBuilder("<html>"); //NOI18N
+        sb.append("<b>").append(displayName).append("</b><br>"); //NOI18N
+        if (stateName != null && !stateName.isEmpty()) {
+            sb.append("<p style=\"padding:5px;\">").append(iconCode).append(stateName).append("</p><hr>"); //NOI18N
+
+        }
+        sb.append(fieldTable);
+        sb.append("</html>"); //NOI18N
+        tooltip = sb.toString();
+        return !oldTooltip.equals(tooltip);
+    }
+
+    private URL getStateIcon(SynchronizationState state) {
+        URL iconPath = null;
+        if (state.equals(SynchronizationState.CONFLICT)) {
+            iconPath = ICON_CONFLICT_PATH;
+        } else if (state.equals(SynchronizationState.INCOMING) || state.equals(SynchronizationState.INCOMING_NEW)) {
+            iconPath = ICON_REMOTE_PATH;
+        } else if (state.equals(SynchronizationState.OUTGOING) || state.equals(SynchronizationState.OUTGOING_NEW)) {
+            iconPath = ICON_UNSUBMITTED_PATH;
+        }
+        return iconPath;
+    }
+
+    private String getStateDisplayName(SynchronizationState state) {
+        String displayName = "";
+        if (state.equals(SynchronizationState.CONFLICT)) {
+            displayName = NbBundle.getMessage(BugzillaIssue.class, "LBL_ConflictShort"); //NOI18N;
+        } else if (state.equals(SynchronizationState.INCOMING)) {
+            displayName = NbBundle.getMessage(BugzillaIssue.class, "LBL_RemoteShort"); //NOI18N;
+        } else if (state.equals(SynchronizationState.INCOMING_NEW)) {
+            displayName = NbBundle.getMessage(BugzillaIssue.class, "LBL_RemoteNewShort"); //NOI18N;
+        } else if (state.equals(SynchronizationState.OUTGOING)) {
+            displayName = NbBundle.getMessage(BugzillaIssue.class, "LBL_UnsubmittedShort"); //NOI18N;
+        } else if (state.equals(SynchronizationState.OUTGOING_NEW)) {
+            displayName = NbBundle.getMessage(BugzillaIssue.class, "LBL_UnsubmittedNewShort"); //NOI18N;
+        }
+        return displayName;
+    }
+    
     private boolean updateRecentChanges () {
         String oldChanges = recentChanges;
         recentChanges = "";
@@ -1448,6 +1552,7 @@ public class BugzillaIssue {
             }
         }
         updateRecentChanges();
+        updateTooltip();
         fireDataChanged();
     }
 
@@ -1663,6 +1768,9 @@ public class BugzillaIssue {
                             if (node != null) {
                                 node.fireDataChanged();
                             }
+                            if (updateTooltip()) {
+                                fireDataChanged();
+                            }
                             fireDataChanged();
                             refreshViewData(false);
                         }
@@ -1683,7 +1791,7 @@ public class BugzillaIssue {
                     fireDataChanged();
                 }
                 if (syncStateChanged) {
-                    fireSeenChanged(seen, wasSeen());
+                    fireSeenChanged(!seen, seen);
                 }
             }
         }
