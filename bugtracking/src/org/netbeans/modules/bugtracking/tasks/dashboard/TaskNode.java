@@ -352,6 +352,9 @@ public class TaskNode extends TaskContainerNode implements Comparable<TaskNode>,
         public void propertyChange(PropertyChangeEvent evt) {
             if (evt.getPropertyName().equals(IssueImpl.EVENT_ISSUE_REFRESHED)) {
                 fireContentChanged();
+                if (lblName != null) {
+                    lblName.setToolTipText(task.getTooltip());
+                }
             }
         }
     }

@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.versioning.system.cvss.util;
 
+import java.awt.Color;
 import java.awt.Dialog;
 import java.awt.Frame;
 import java.awt.KeyboardFocusManager;
@@ -541,6 +542,18 @@ public class Utils {
             CvsVersioningSystem.LOG.log(Level.FINER, " containsMetadata returns {0} after {1} millis", new Object[] { ret, System.currentTimeMillis() - t });
         }
         return ret;
+    }
+
+    public static String getColorString (Color c) {
+        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
+    }
+
+    private static String getHex (int i) {
+        String hex = Integer.toHexString(i & 0x000000FF);
+        if (hex.length() == 1) {
+            hex = "0" + hex; //NOI18N
+        }
+        return hex;
     }
 
     /**
