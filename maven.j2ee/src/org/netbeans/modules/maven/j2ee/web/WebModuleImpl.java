@@ -236,7 +236,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
         List<DependencyDesc> javaEE7Full = new ArrayList<>();
 
         // Java EE specification
-        javaEE5.add(new DependencyDesc("javax", "javaee-api", "5.0"));
+        javaEE5.add(new DependencyDesc("javaee", "javaee-api", "5.0"));
         javaEE5.add(new DependencyDesc("javax", "javaee-web-api", "5.0"));
         javaEE6Full.add(new DependencyDesc("javax", "javaee-api", "6.0"));
         javaEE6Web.add(new DependencyDesc("javax", "javaee-web-api", "6.0"));
