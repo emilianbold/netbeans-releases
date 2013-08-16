@@ -242,9 +242,7 @@ final class ProjectProperties {
             final FileObject f = dir().getFileObject(path);
             final FileLock[] _lock = new FileLock[1];
             try {
-                // #161230: don't create empty properties file
-                if (properties != null && (properties.size() >0
-                        || f != null) ) {
+                if (properties != null) {
                     // Supposed to create/modify the file.
                     // Need to use an atomic action - otherwise listeners will first
                     // receive an event that the file has been written to zero length
