@@ -127,8 +127,10 @@ public class HtmlDeclarationFinder implements DeclarationFinder {
                         ResultIterator htmlRi = WebUtils.getResultIterator(resultIterator, "text/html");
                         if (htmlRi != null) {
                             HtmlParserResult result = (HtmlParserResult) htmlRi.getParserResult();
-                            String sourceMimetype = Utils.getWebPageMimeType(result.getSyntaxAnalyzerResult());
-                            DOC_TO_WEB_MIMETYPE_CACHE.put(document, sourceMimetype);
+                            if(result != null) {
+                                String sourceMimetype = Utils.getWebPageMimeType(result.getSyntaxAnalyzerResult());
+                                DOC_TO_WEB_MIMETYPE_CACHE.put(document, sourceMimetype);
+                            }
                         }
                     }
                 });

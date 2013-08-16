@@ -59,6 +59,7 @@ import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
 import static java.lang.Character.MAX_RADIX;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.team.TeamRepositoryPanel;
 import org.netbeans.modules.bugtracking.team.spi.TeamUtil;
@@ -86,6 +87,14 @@ public class RepositoryFormPanel extends JPanel {
     private final List<ChangeListener> listeners = new ArrayList<ChangeListener>(4);
     private final ChangeEvent changeEvent = new ChangeEvent(this);
     private JPanel emptyPanel;
+    private static final Color ERROR_COLOR;
+    static {
+        Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
+        if (c == null) {
+            c = new Color(153, 0, 0);
+        }
+        ERROR_COLOR = c;
+    }
 
     public RepositoryFormPanel() {
         initComponents();
@@ -101,7 +110,7 @@ public class RepositoryFormPanel extends JPanel {
         cardsPanel = new JPanel(new CardLayout());
 
         errorLabel = new JLabel();
-        errorLabel.setForeground(new Color(153, 0, 0));
+        errorLabel.setForeground(ERROR_COLOR);
         errorLabel.setIcon(new ImageIcon(ImageUtilities.loadImage(
                 "org/netbeans/modules/bugtracking/ui/resources/error.gif")));   //NOI18N
         updateErrorMessage(" ");                                        //NOI18N

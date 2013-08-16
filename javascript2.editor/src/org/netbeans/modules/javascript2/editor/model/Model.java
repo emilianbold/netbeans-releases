@@ -76,6 +76,7 @@ import org.netbeans.modules.javascript2.editor.model.impl.AnonymousObject;
 import org.netbeans.modules.javascript2.editor.model.impl.IdentifierImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsFunctionImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.JsObjectImpl;
+import org.netbeans.modules.javascript2.editor.model.impl.JsObjectReference;
 import org.netbeans.modules.javascript2.editor.model.impl.JsWithObjectImpl;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelUtils;
 import org.netbeans.modules.javascript2.editor.model.impl.ModelVisitor;
@@ -143,6 +144,7 @@ public final class Model {
     }
 
     private synchronized ModelVisitor getModelVisitor() {
+        boolean resolveWindowProperties = false;
         if (visitor == null) {
             long start = System.currentTimeMillis();
             visitor = new ModelVisitor(parserResult, occurrenceBuilder);
@@ -170,6 +172,7 @@ public final class Model {
                     }
                 }
             }
+            resolveWindowProperties = !resolveWithObjects;
             long end = System.currentTimeMillis();
             if(LOGGER.isLoggable(Level.FINE)) {
                 LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms. Extending model took {2}", new Object[]{(end - start), (startCallingME - startResolve), (end - startCallingME)}));
@@ -177,10 +180,14 @@ public final class Model {
         } else if (resolveWithObjects) {
             long start = System.currentTimeMillis();
             resolveWithObjects = false;
+            resolveWindowProperties = true;
             JsIndex jsIndex = JsIndex.get(parserResult.getSnapshot().getSource().getFileObject());
             processWithObjectIn(visitor.getGlobalObject(), jsIndex);
             long end = System.currentTimeMillis();
             System.out.println("resolving with took: " + (end - start));
+        }
+        if (resolveWindowProperties) {
+            processWindowsProperties(visitor.getGlobalObject());
         }
         return visitor;
     }
@@ -293,62 +300,6 @@ public final class Model {
                 }
             }
         }
-        
-//        for (TypeUsage typeUsage : withTypes) {
-//            for (TypeUsage rType : ModelUtils.resolveTypeFromSemiType(with, typeUsage)) {
-//                String type = rType.getType();
-//                if (type.startsWith("@exp;")) {
-//                    type = type.substring(5);
-//                }
-//                if (type.contains("@pro;")) {
-//                    type = type.replace("@pro;", ".");
-//                }
-//                JsObject fromType = ModelUtils.findJsObjectByName((JsObject)ModelUtils.getDeclarationScope(with), type);
-//                if (fromType != null) {
-//                    Collection<TypeUsage> assignments = ModelUtils.resolveTypes(fromType.getAssignments(), parserResult);
-//                    for (TypeUsage assignment : assignments) {
-//                        Collection<IndexedElement> properties = jsIndex.getProperties(assignment.getType());
-//                        for (IndexedElement indexedElement : properties) {
-//                            JsObject jsWithProperty = with.getProperty(indexedElement.getName());
-//                            if (jsWithProperty != null) {
-//                                moveProperty(fromType, jsWithProperty);
-//                            }
-//                        }
-//                    }
-//                    
-//                    for (TypeUsage typeFE : ModelUtils.resolveTypes(withTypes, parserResult)) {
-//                        Collection<IndexedElement> properties = jsIndex.getProperties(typeFE.getType());
-//                        for (IndexedElement indexedElement : properties) {
-//                            JsObject jsWithProperty = with.getProperty(indexedElement.getName());
-//                            if (jsWithProperty != null) {
-//                                moveProperty(fromType, jsWithProperty);
-//                            }
-//                        }
-//                    }
-//                    
-//                    String typeName = rType.getType();
-//                    if (!typeName.startsWith("@")) {
-//                        typeName = "@exp;" + typeName;
-//                    } else if (typeName.startsWith("@var")) {
-//                        typeName = "@exp;" + typeName.substring(5);
-//                    }
-//                    List<String> exp = ModelUtils.expressionFromType(new TypeUsageImpl(typeName));
-//                    Collection<TypeUsage> resolveTypeFromExpression2 = ModelUtils.resolveTypeFromExpression(this, jsIndex, exp, typeUsage.getOffset());
-//
-//                    for (TypeUsage typeFE : resolveTypeFromExpression2) {
-//                        Collection<IndexedElement> properties = jsIndex.getProperties(typeFE.getType());
-//                        for (IndexedElement indexedElement : properties) {
-//                            JsObject jsWithProperty = with.getProperty(indexedElement.getName());
-//                            if (jsWithProperty != null) {
-//                                moveProperty(fromType, jsWithProperty);
-//                            }
-//                        }
-//                    }
-//                }
-//
-//            }
-//            
-//        }
             
         boolean hasOuter = with.getOuterWith() != null;
         Collection<? extends JsObject> variables = ModelUtils.getVariables(ModelUtils.getDeclarationScope(with));
@@ -379,6 +330,15 @@ public final class Model {
     }
     
     private void processWithExpressionOccurrences(JsObject jsObject, OffsetRange expRange, List<String> expression) {
+        JsObject parent = jsObject.getParent();
+        if (expression.get(expression.size() - 2).equals("this")) { //NOI18N
+            parent = ModelUtils.findJsObject(this, expRange.getStart());
+            if (parent instanceof JsWith) {
+                parent = parent.getParent();
+            }
+            parent = visitor.resolveThis(parent);
+        }
+        
         TokenSequence<? extends JsTokenId> ts = LexUtilities.getJsTokenSequence(parserResult.getSnapshot(), expRange.getEnd());
         if (ts == null) {
             return;
@@ -388,7 +348,6 @@ public final class Model {
             return;
         }
         Token<? extends JsTokenId> token = ts.token();
-        JsObject parent = jsObject.getParent();
         for (int i = 0; i < expression.size() - 1; i++) {
             String name = expression.get(i++);
             while ((token.id() != JsTokenId.IDENTIFIER || !(token.id() == JsTokenId.IDENTIFIER && token.text().toString().equals(name))) && ts.offset() > expRange.getStart() && ts.movePrevious()) {
@@ -406,7 +365,6 @@ public final class Model {
     
     private void moveProperty (JsObject newParent, JsObject property) {
         JsObject newProperty = newParent.getProperty(property.getName());
-        System.out.println("moving property: " + property.getName() + " to " + newParent.getName());
         if (property.getParent() != null) {
             property.getParent().getProperties().remove(property.getName());
         }
@@ -418,13 +376,46 @@ public final class Model {
             for (Occurrence occurrence : property.getOccurrences()) {
                 newProperty.addOccurrence(occurrence.getOffsetRange());
             }
+            List<JsObject>propertiesToMove = new ArrayList(property.getProperties().values());
+            for (JsObject propOfProperty: propertiesToMove) {
+                moveProperty(newProperty, propOfProperty);
+            }
             // the property needs to be resolved again to handle right occurrences
             resolveLocalTypes(newProperty, parserResult.getDocumentationHolder());
         }
     }
     
+    private void processWindowsProperties(JsObject globalObject) {
+        JsObject window = globalObject.getProperty("window");
+        if (window != null) {
+            for (JsObject winProp: window.getProperties().values()) {
+                JsObject globalVar = globalObject.getProperty(winProp.getName());
+                if (globalVar != null) {
+                    globalVar.addOccurrence(winProp.getDeclarationName().getOffsetRange());
+                    for (Occurrence occurrence:  winProp.getOccurrences()) {
+                        globalVar.addOccurrence(occurrence.getOffsetRange());
+                    }
+                    JsObjectImpl.moveOccurrenceOfProperties((JsObjectImpl) winProp, globalVar);
+                }
+            }
+        }
+    }
+
+    /**
+     * If you need to be sure that the model is fully build, call resolve method before.
+     * @return the gobal object representing the global space of the file
+     */
     public JsObject getGlobalObject() {
         return getModelVisitor().getGlobalObject();
+    }
+    
+    public void resolve() {
+        if (visitor == null) {
+            getModelVisitor();
+        }
+        if (resolveWithObjects) {
+            getModelVisitor();
+        }
     }
 
     public OccurrencesSupport getOccurrencesSupport() {

@@ -118,6 +118,22 @@ public class CommitAction extends ContextAction {
     static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage"; // NOI18N
     static final String KEY_CANCELED_MESSAGE = "commit"; //NOI18N
     private static final String ICON_RESOURCE = "org/netbeans/modules/mercurial/resources/icons/commit.png"; //NOI18N
+    private static final String ERROR_COLOR;
+    private static final String INFO_COLOR;
+    static {
+        Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
+        if (c == null) {
+            ERROR_COLOR = "#CC0000"; //NOI18N
+        } else {
+            ERROR_COLOR = HgUtils.getColorString(c);
+        }
+        c = UIManager.getColor("nb.warningForeground"); //NOI18N
+        if (c == null) {
+            INFO_COLOR = "#002080"; //NOI18N
+        } else {
+            INFO_COLOR = HgUtils.getColorString(c);
+        }
+    }
 
     public CommitAction () {
         super(ICON_RESOURCE);
@@ -465,7 +481,7 @@ public class CommitAction extends ContextAction {
                 String msg = (status == FileInformation.STATUS_VERSIONED_CONFLICT) ?
                         loc.getString("MSG_CommitForm_ErrorConflicts") : // NOI18N
                         loc.getString("MSG_CommitForm_ErrorRemoteChanges"); // NOI18N
-                panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
+                panel.setErrorLabel("<html><font color=\"" + ERROR_COLOR + "\">" + msg + "</font></html>");  // NOI18N
                 errors = true;
             }
             //stickyTags.add(HgUtils.getCopy(fileNode.getFile()));
@@ -474,7 +490,7 @@ public class CommitAction extends ContextAction {
         
         if (!errors && !panel.isUserValid()) {
             String msg = Bundle.MSG_CommitForm_ErrorInvalidAuthor();
-            panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
+            panel.setErrorLabel("<html><font color=\"" + INFO_COLOR + "\">" + msg + "</font></html>");  // NOI18N
             errors = true;
         }
 
@@ -486,9 +502,13 @@ public class CommitAction extends ContextAction {
         dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title"), new Object [] { contentTitle })); // NOI18N
         if (!errors) {
             if (afterMerge.get()) {
-                panel.setErrorLabel(NbBundle.getMessage(CommitAction.class, "CommitPanel.info.merge.allFiles")); //NOI18N
+                panel.setErrorLabel("<html><font color=\"" + INFO_COLOR + "\">" //NOI18N
+                        + NbBundle.getMessage(CommitAction.class, "CommitPanel.info.merge.allFiles") //NOI18N
+                        + "</font></html>"); //NOI18N
             } else if (panel.cbAllFiles.isSelected()) {
-                panel.setErrorLabel(NbBundle.getMessage(CommitAction.class, "CommitPanel.info.closingBranch.allFiles", branchToClose)); //NOI18N
+                panel.setErrorLabel("<html><font color=\"" + INFO_COLOR + "\">" //NOI18N
+                        + NbBundle.getMessage(CommitAction.class, "CommitPanel.info.closingBranch.allFiles", branchToClose) //NOI18N
+                        + "</font></html>"); //NOI18N
             } else {
                 panel.setErrorLabel(""); //NOI18N
             }

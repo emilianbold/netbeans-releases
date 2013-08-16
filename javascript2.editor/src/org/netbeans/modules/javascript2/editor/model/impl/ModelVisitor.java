@@ -1296,23 +1296,6 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node enter(WithNode withNode) {
         JsObjectImpl currentObject = modelBuilder.getCurrentObject();
-//        Collection<TypeUsage> originalTypes = ModelUtils.resolveSemiTypeOfExpression(parserResult, withNode.getExpression());
-//        List<TypeUsage> types = new ArrayList(originalTypes);
-//        if (currentObject instanceof JsWith) {
-//            JsWith outerWith = (JsWith) currentObject;
-//            for (TypeUsage type : outerWith.getTypes()) {
-//                for (TypeUsage oType : originalTypes) {
-//                    String typeName = type.getType();
-//                    String alteredName = oType.getType();
-//                    if (alteredName.startsWith("@var;")) {
-//                        alteredName = alteredName.substring(5);
-//                        alteredName = "@pro;" + alteredName;
-//                    }
-//                    typeName = typeName + alteredName;
-//                    types.add(new TypeUsageImpl(typeName, oType.getOffset(), false));
-//                }
-//            }
-//        }
         Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, withNode.getExpression());
         JsWithObjectImpl withObject = new JsWithObjectImpl(currentObject, modelBuilder.getUnigueNameForWithObject(), types, new OffsetRange(withNode.getStart(), withNode.getFinish()), 
                         new OffsetRange(withNode.getExpression().getStart(), withNode.getExpression().getFinish()),parserResult.getSnapshot().getMimeType(), null);
@@ -1549,7 +1532,7 @@ public class ModelVisitor extends PathNodeVisitor {
             // don't process this node.
             return;
         }
-        occurrenceBuilder.addOccurrence(name, range, modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject(), isFunction, leftSite);
+        occurrenceBuilder.addOccurrence(name, range, modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject(), modelBuilder.getCurrentWith(), isFunction, leftSite);
 //        DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
 //        JsObject property = null;
 //        JsObject parameter = null;
@@ -1719,12 +1702,14 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         return lObject;
     }
+    
+    // TODO move this method to the ModelUtils
     /**
      * 
      * @param where the declaration context, where this is used
      * @return JsObject that should represent this. 
      */
-    private JsObject resolveThis(JsObject where) {
+    public JsObject resolveThis(JsObject where) {
         JsElement.Kind whereKind = where.getJSKind();
         if (canBeSingletonPattern()) {
             JsObject result = resolveThisInSingletonPattern(where);
@@ -1837,7 +1822,7 @@ public class ModelVisitor extends PathNodeVisitor {
         return null;
     }
     
-    private boolean canBeSingletonPattern() {
+    private  boolean canBeSingletonPattern() {
         int pathIndex = 1;
         Node lastNode = getPreviousFromPath(1);
         if (lastNode instanceof FunctionNode && !canBeSingletonPattern(pathIndex)) {

@@ -258,4 +258,76 @@ public class JsWithFastTest extends JsWithBase {
     public void testIssue232792_03() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue232792.js","A.B.getN^ame();", true);
     }
+    
+    public void testIssue234390() throws Exception {
+        checkSemantic("testfiles/with/issue234390.js"); 
+        checkStructure("testfiles/with/issue234390.js");
+    }
+    
+    public void testIssue234390_01() throws Exception {
+        checkOccurrences("testfiles/with/issue234390.js","pe234390.hel^lo();", true);
+    }
+    
+    public void testIssue234390_02() throws Exception {
+        checkOccurrences("testfiles/with/issue234390.js","pe2343^90.hello();", true);
+    }
+    
+    public void testIssue234390_03() throws Exception {
+        checkOccurrences("testfiles/with/issue234390.js","this.real^name = name;", true);
+    }
+    
+    public void testIssue234400_01() throws Exception {
+        checkCompletion("testfiles/with/issue234400.js","o234400.^name = 10;", true);
+    }
+    
+    public void testIssue234381() throws Exception {
+        checkSemantic("testfiles/with/issue234381.js"); 
+        checkStructure("testfiles/with/issue234381.js");
+    }
+    
+    public void testIssue234381_01() throws Exception {
+        checkOccurrences("testfiles/with/issue234381.js","var z = test() * ti^mes;", true);
+    }
+    
+    public void testIssue234381_02() throws Exception {
+        checkOccurrences("testfiles/with/issue234381.js","var z = te^st() * times;", true);
+    }
+    
+    public void testIssue234381_03() throws Exception {
+        checkCompletion("testfiles/with/issue234381.js","var z = ^test() * times;", true);
+    }
+    
+    public void testIssue234468_01() throws Exception {
+        checkDeclaration("testfiles/with/issue234381.js", "var z = test() * time^s;", "this.^times = 3;");
+    }
+    
+    public void testIssue234380() throws Exception {
+        checkSemantic("testfiles/with/issue234380.js"); 
+        checkStructure("testfiles/with/issue234380.js");
+    }
+    
+    public void testIssue234380_01() throws Exception {
+        checkOccurrences("testfiles/with/issue234380.js","with (this.de^n) {", true);
+    }
+    
+    public void testIssue234375() throws Exception {
+        checkSemantic("testfiles/with/issue234375.js"); 
+        checkStructure("testfiles/with/issue234375.js");
+    }
+    
+    public void testIssue234375_01() throws Exception {
+        checkOccurrences("testfiles/with/issue234375.js","console.log(getD^ate());", true);
+    }
+    
+    public void testIssue234375_02() throws Exception {
+        checkOccurrences("testfiles/with/issue234375.js","console.log(r^un());", true);
+    }
+    
+    public void testIssue234479_01() throws Exception {
+        checkOccurrences("testfiles/with/issue234375.js","console.lo^g(getDate());", true);
+    }
+    
+    public void testIssue234479_02() throws Exception {
+        checkOccurrences("testfiles/with/issue234375.js","conso^le.log(getDate());", true);
+    }
 }

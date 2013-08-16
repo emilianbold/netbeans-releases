@@ -85,7 +85,6 @@ import org.netbeans.modules.mylyn.util.commands.GetRepositoryTasksCommand;
 import org.netbeans.modules.mylyn.util.MylynSupport;
 import org.netbeans.modules.mylyn.util.MylynUtils;
 import org.netbeans.modules.mylyn.util.NbTask;
-import org.netbeans.modules.mylyn.util.NbTask.SynchronizationState;
 import org.netbeans.modules.mylyn.util.commands.SimpleQueryCommand;
 import org.netbeans.modules.mylyn.util.commands.SynchronizeTasksCommand;
 import org.netbeans.modules.mylyn.util.UnsubmittedTasksContainer;
@@ -205,7 +204,6 @@ public class BugzillaRepository {
         NbTask task;
         try {
             task = MylynSupport.getInstance().createTask(taskRepository, new TaskMapping(product, component));
-            task.setAttribute(BugzillaIssue.ATTR_NEW_UNREAD, Boolean.TRUE.toString());
             return getIssueForTask(task);
         } catch (CoreException ex) {
             Bugzilla.LOG.log(Level.WARNING, null, ex);
@@ -247,14 +245,8 @@ public class BugzillaRepository {
         return issue;
     }
 
-    public void deleteTask (NbTask task) {
-        assert task.getSynchronizationState() == SynchronizationState.OUTGOING_NEW
-                : "Only new local tasks can be deleted: " + task.getSynchronizationState();
-        if (task.getSynchronizationState() == SynchronizationState.OUTGOING_NEW) {
-            String id = BugzillaIssue.getID(task);
-            task.delete();
-            getCache().removeIssue(id);
-        }
+    public void taskDeleted (String taskId) {
+        getCache().removeIssue(taskId);
     }
 
     public Collection<BugzillaIssue> getUnsubmittedIssues () {

@@ -65,16 +65,18 @@ public class OccurrenceBuilder {
     private static class Item {
         final DeclarationScope scope;
         final JsObject currentParent;
+        final JsWith currentWith;
         final boolean isFunction;
         final boolean leftSite;
         final OffsetRange range;
 
-        public Item(OffsetRange range, DeclarationScope scope, JsObject currentParent, boolean isFunction, boolean leftSite) {
+        public Item(OffsetRange range, DeclarationScope scope, JsObject currentParent, JsWith currentWith, boolean isFunction, boolean leftSite) {
             this.scope = scope;
             this.currentParent = currentParent;
             this.isFunction = isFunction;
             this.leftSite = leftSite;
             this.range = range;
+            this.currentWith = currentWith;
         }
     }
     private final Map<String, Map<OffsetRange, Item>> holder;
@@ -85,22 +87,21 @@ public class OccurrenceBuilder {
         this.parserResult = parserResult;
     }
     
-    public void addOccurrence(String name, OffsetRange range, DeclarationScope whereUsed, JsObject currentParent, boolean isFunction, boolean leftSite) {
+    public void addOccurrence(String name, OffsetRange range, DeclarationScope whereUsed, JsObject currentParent, JsWith inWith, boolean isFunction, boolean leftSite) {
         Map<OffsetRange, Item> items = holder.get(name);
         if (items == null) {
             items = new HashMap<OffsetRange, Item>(1);
             holder.put(name, items);
         }
         if (!items.containsKey(range)) {
-            items.put(range, new Item(range, whereUsed, currentParent, isFunction, leftSite));
+            items.put(range, new Item(range, whereUsed, currentParent, inWith, isFunction, leftSite));
         }
     }
     
     public void processOccurrences(JsObject global) {
         for (String name : holder.keySet()) {
             Map<OffsetRange, Item> items = holder.get(name);
-            for (OffsetRange range : items.keySet()) {
-                Item item = items.get(range);
+            for (Item item : items.values()) {
                 processOccurrence(global, name, item);
             }
         }
@@ -146,25 +147,39 @@ public class OccurrenceBuilder {
             // it's a new global variable?
             IdentifierImpl nameIden = ModelElementFactory.create(parserResult, name, item.range.getStart(), item.range.getEnd());
             if (nameIden != null) {
-                JsObjectImpl newObject;
-                if (!(parent instanceof JsWith)) {
-                        parent = global;
-                }
-                if (!item.isFunction) {
-                    newObject = new JsObjectImpl(parent, nameIden, nameIden.getOffsetRange(),
-                            item.leftSite, parserResult.getSnapshot().getMimeType(), null);
+                if (item.currentWith != null) {
+                    JsObject with = (JsObject)item.currentWith;
+                    property = with.getProperty(name);
+                    if (property != null) {
+                        ((JsObjectImpl)property).addOccurrence(item.range);
+                    } else {
+                        createNewProperty(with, item, nameIden);
+                    }
                 } else {
-                    FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-                    newObject = new JsFunctionImpl(fo, parent, nameIden, Collections.EMPTY_LIST,
-                            parserResult.getSnapshot().getMimeType(), null);
+                    if (!(parent instanceof JsWith)) {
+                            parent = global;
+                    }
+                    createNewProperty(parent, item, nameIden);
                 }
-                newObject.addOccurrence(nameIden.getOffsetRange());
-                parent.addProperty(nameIden.getName(), newObject);
-                addDocNameOccurence(newObject);
-                addDocTypesOccurence(newObject);
             }
         }
 
+    }
+    
+    private void createNewProperty(JsObject parent, Item item, Identifier nameIden) {
+        JsObjectImpl newObject;
+        if (!item.isFunction) {
+            newObject = new JsObjectImpl(parent, nameIden, nameIden.getOffsetRange(),
+                    item.leftSite, parserResult.getSnapshot().getMimeType(), null);
+        } else {
+            FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
+            newObject = new JsFunctionImpl(fo, parent, nameIden, Collections.EMPTY_LIST,
+                    parserResult.getSnapshot().getMimeType(), null);
+        }
+        newObject.addOccurrence(nameIden.getOffsetRange());
+        parent.addProperty(nameIden.getName(), newObject);
+        addDocNameOccurence(newObject);
+        addDocTypesOccurence(newObject);
     }
     
     private void addDocNameOccurence(JsObjectImpl jsObject) {

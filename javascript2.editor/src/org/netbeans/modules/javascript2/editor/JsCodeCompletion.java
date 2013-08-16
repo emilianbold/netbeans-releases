@@ -130,7 +130,8 @@ class JsCodeCompletion implements CodeCompletionHandler {
             request.result = jsParserResult;
             request.info = info;
             request.prefix = pref;
-            
+        
+        jsParserResult.getModel().resolve();
         final List<CompletionProposal> resultList = new ArrayList<CompletionProposal>();
         HashMap<String, List<JsElement>> added = new HashMap<String, List<JsElement>>();
         if (ccContext.getQueryType() == QueryType.ALL_COMPLETION) {
@@ -781,13 +782,7 @@ class JsCodeCompletion implements CodeCompletionHandler {
                     addObjectPropertiesToCC(localObject, request, addedItems);
                 } 
                 
-                Collection<IndexedElement> indexResults = jsIndex.getPropertiesWithPrefix(type.getType(), request.prefix);
-                for (IndexedElement indexedElement : indexResults) {
-                    if (!indexedElement.isAnonymous()
-                            && indexedElement.getModifiers().contains(Modifier.PUBLIC)) {
-                        addPropertyToMap(request, addedItems, indexedElement);
-                    }
-                }
+                addObjectPropertiesFromIndex(type.getType(), jsIndex, request, addedItems);
             }
         }
     }
