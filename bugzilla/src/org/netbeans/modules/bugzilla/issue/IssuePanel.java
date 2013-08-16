@@ -310,8 +310,8 @@ public class IssuePanel extends javax.swing.JPanel implements Scrollable {
         Mutex.EVENT.readAccess(new Runnable() {
             @Override
             public void run () {
-                if (!reloading && isDirty && issue.isMarkedNewUnread()) {
-                    issue.markNewRead();
+                if (!reloading && isDirty) {
+                    issue.markUserChange();
                 }
                 btnSaveChanges.setEnabled(isDirty);
                 if (!isDirty) {
@@ -3072,7 +3072,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
             public void run() {
                 boolean saved = false;
                 try {
-                    saved = issue.saveChanges();
+                    saved = issue.save();
                 } finally {
                     final boolean fSaved = saved;
                     EventQueue.invokeLater(new Runnable() {
@@ -3107,7 +3107,7 @@ private void workedFieldFocusLost(java.awt.event.FocusEvent evt) {//GEN-FIRST:ev
         RP.post(new Runnable() {
             @Override
             public void run() {
-                issue.deleteTask();
+                issue.delete();
             }
         });
     }//GEN-LAST:event_btnDeleteTaskActionPerformed
