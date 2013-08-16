@@ -82,7 +82,9 @@ abstract class BaseProcessor {
 
     protected abstract List<Pair<String, String>> getMappings(Project project);
 
-    protected abstract void compileInternal(Project project, File source, File target);
+    protected abstract String getCompilerOptions(Project project);
+
+    protected abstract void compileInternal(Project project, File source, File target, String compilerOptions);
 
     public void process(Project project, FileObject fileObject, String originalName, String originalExtension) {
         if (!isEnabled(project)) {
@@ -151,7 +153,7 @@ abstract class BaseProcessor {
             // not found
             return;
         }
-        compileInternal(project, file, target);
+        compileInternal(project, file, target, getCompilerOptions(project));
     }
 
     protected void compileReferences(Project project, FileObject fileObject) {

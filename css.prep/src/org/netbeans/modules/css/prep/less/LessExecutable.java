@@ -44,6 +44,7 @@ package org.netbeans.modules.css.prep.less;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
@@ -56,9 +57,11 @@ import org.netbeans.modules.css.prep.util.ExternalExecutable;
 import org.netbeans.modules.css.prep.util.ExternalExecutableValidator;
 import org.netbeans.modules.css.prep.util.FileUtils;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
+import org.netbeans.modules.css.prep.util.StringUtils;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 
 /**
@@ -104,7 +107,7 @@ public final class LessExecutable {
 
     @NbBundle.Messages("Less.compile=LESS (compile)")
     @CheckForNull
-    public void compile(File source, final File target) throws ExecutionException {
+    public void compile(File source, final File target, String compilerOptions) throws ExecutionException {
         assert !EventQueue.isDispatchThread();
         assert source.isFile() : "Not file given: " + source;
         final File targetDir = target.getParentFile();
@@ -116,7 +119,7 @@ public final class LessExecutable {
         }
         try {
             getExecutable(Bundle.Less_compile())
-                    .additionalParameters(getParameters(source, target))
+                    .additionalParameters(getParameters(source, target, compilerOptions))
                     .runAndWait(getDescriptor(new Runnable() {
                 @Override
                 public void run() {
@@ -149,12 +152,17 @@ public final class LessExecutable {
                 .postExecution(postTask);
     }
 
-    private List<String> getParameters(File inputFile, File outputFile) {
+    private List<String> getParameters(File inputFile, File outputFile, String compilerOptions) {
         List<String> params = new ArrayList<>();
         // debug
         boolean debug = CssPrepOptions.getInstance().getLessDebug();
         if (debug) {
             params.add(DEBUG_PARAM);
+        }
+        // compiler options
+        if (StringUtils.hasText(compilerOptions)) {
+            String[] parsedCompilerParams = Utilities.parseParameters(compilerOptions);
+            params.addAll(Arrays.asList(parsedCompilerParams));
         }
         // input
         params.add(inputFile.getAbsolutePath());
