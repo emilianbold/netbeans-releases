@@ -111,6 +111,9 @@ public class DarkMetalTheme extends DefaultMetalTheme {
         UIManager.put( "nb.bugtracking.label.highlight", new Color(71, 71, 75) ); //NOI18N
         UIManager.put( "nb.bugtracking.table.background", new Color(18, 30, 49) ); //NOI18N
         UIManager.put( "nb.bugtracking.table.background.alternate", new Color(13, 22, 36) ); //NOI18N
+        UIManager.put( "nb.bugtracking.new.color", new Color(0, 224, 0) ); //NOI18N
+        UIManager.put( "nb.bugtracking.modified.color", new Color(81, 182, 255) ); //NOI18N
+        UIManager.put( "nb.bugtracking.obsolete.color", new Color(130, 130, 130) ); //NOI18N
 
         UIManager.put( "nb.html.link.foreground", new Color(164,164,255) ); //NOI18N
         UIManager.put( "nb.html.link.foreground.hover", new Color(255,216,0) ); //NOI18N

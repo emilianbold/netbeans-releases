@@ -972,7 +972,12 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
     public void testBug223298_2() throws Exception {
         // Bug 223298 - Wrong recognition of function
         performTest("bug223298.c", 10, 10, "bug223298.c", 6, 1);
-    }    
+    }
+    
+    public void testBug233280() throws Exception {
+        // Bug 233280 - Symbol navigation works incorrectly when a function call is passed through a macro
+        performTest("bug233280.c", 23, 20, "bug233280.c", 6, 1);
+    }
     
     public static class Failed extends HyperlinkBaseTestCase {
 

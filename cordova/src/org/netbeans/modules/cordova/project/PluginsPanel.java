@@ -49,6 +49,8 @@ import javax.swing.AbstractListModel;
 import javax.swing.JPanel;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.ListDataEvent;
+import javax.swing.event.ListDataListener;
 import org.netbeans.modules.cordova.updatetask.CordovaPlugin;
 
 /**
@@ -147,7 +149,24 @@ public final class PluginsPanel extends JPanel {
 
     private void initSelectedPluginsList() {
         assert EventQueue.isDispatchThread();
-        selectedLibrariesList.setModel(selectedPluginsModel);
+        selectedPluginsList.setModel(selectedPluginsModel);
+        selectedPluginsModel.addListDataListener(new ListDataListener() {
+
+            @Override
+            public void intervalAdded(ListDataEvent e) {
+                updateButtonsEnabled();
+            }
+
+            @Override
+            public void intervalRemoved(ListDataEvent e) {
+                updateButtonsEnabled();
+            }
+
+            @Override
+            public void contentsChanged(ListDataEvent e) {
+                updateButtonsEnabled();
+            }
+        });
    }
 
     private boolean isUpdateRunning() {
@@ -169,7 +188,7 @@ public final class PluginsPanel extends JPanel {
         pluginsList.setEnabled(enabled);
         selectSelectedButton.setEnabled(enabled);
         deselectSelectedButton.setEnabled(enabled);
-        selectedLibrariesList.setEnabled(enabled);
+        selectedPluginsList.setEnabled(enabled);
     }
 
 
@@ -189,9 +208,10 @@ public final class PluginsPanel extends JPanel {
         deselectSelectedButton = new javax.swing.JButton();
         selectedLabel = new javax.swing.JLabel();
         selectedLibrariesScrollPane = new javax.swing.JScrollPane();
-        selectedLibrariesList = new javax.swing.JList();
+        selectedPluginsList = new javax.swing.JList();
         pluginsScrollPane = new javax.swing.JScrollPane();
         pluginsList = new javax.swing.JList();
+        jLabel1 = new javax.swing.JLabel();
 
         org.openide.awt.Mnemonics.setLocalizedText(generalInfoLabel, org.openide.util.NbBundle.getMessage(PluginsPanel.class, "PluginsPanel.generalInfoLabel.text")); // NOI18N
 
@@ -213,12 +233,12 @@ public final class PluginsPanel extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(selectedLabel, org.openide.util.NbBundle.getMessage(PluginsPanel.class, "PluginsPanel.selectedLabel.text")); // NOI18N
 
-        selectedLibrariesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+        selectedPluginsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                selectedLibrariesListValueChanged(evt);
+                selectedPluginsListValueChanged(evt);
             }
         });
-        selectedLibrariesScrollPane.setViewportView(selectedLibrariesList);
+        selectedLibrariesScrollPane.setViewportView(selectedPluginsList);
 
         pluginsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
@@ -227,13 +247,15 @@ public final class PluginsPanel extends JPanel {
         });
         pluginsScrollPane.setViewportView(pluginsList);
 
+        org.openide.awt.Mnemonics.setLocalizedText(jLabel1, org.openide.util.NbBundle.getMessage(PluginsPanel.class, "PluginsPanel.jLabel1.text")); // NOI18N
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(generalInfoLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(generalInfoLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 591, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -242,7 +264,7 @@ public final class PluginsPanel extends JPanel {
                                 .addComponent(pluginsFilterTextField))
                             .addGroup(layout.createSequentialGroup()
                                 .addContainerGap()
-                                .addComponent(pluginsScrollPane)))
+                                .addComponent(pluginsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(selectSelectedButton)
@@ -250,8 +272,12 @@ public final class PluginsPanel extends JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(selectedLabel)
-                            .addComponent(selectedLibrariesScrollPane))))
+                            .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))))
                 .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {deselectSelectedButton, selectSelectedButton});
@@ -267,14 +293,15 @@ public final class PluginsPanel extends JPanel {
                     .addComponent(pluginsFilterTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 301, Short.MAX_VALUE)
+                    .addComponent(selectedLibrariesScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 285, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(selectSelectedButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(deselectSelectedButton)
                         .addGap(0, 0, Short.MAX_VALUE))
                     .addComponent(pluginsScrollPane))
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -283,33 +310,34 @@ public final class PluginsPanel extends JPanel {
     }//GEN-LAST:event_selectSelectedButtonActionPerformed
 
     private void deselectSelectedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deselectSelectedButtonActionPerformed
-        selectedPluginsModel.remove(selectedLibrariesList.getSelectedValuesList());
+        selectedPluginsModel.remove(selectedPluginsList.getSelectedValuesList());
     }//GEN-LAST:event_deselectSelectedButtonActionPerformed
 
     private void pluginsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_pluginsListValueChanged
         updateButtonsEnabled();
     }//GEN-LAST:event_pluginsListValueChanged
 
-    private void selectedLibrariesListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_selectedLibrariesListValueChanged
+    private void selectedPluginsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_selectedPluginsListValueChanged
         updateButtonsEnabled();
-    }//GEN-LAST:event_selectedLibrariesListValueChanged
+    }//GEN-LAST:event_selectedPluginsListValueChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton deselectSelectedButton;
     private javax.swing.JLabel generalInfoLabel;
+    private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel librariesLabel;
     private javax.swing.JTextField pluginsFilterTextField;
     private javax.swing.JList pluginsList;
     private javax.swing.JScrollPane pluginsScrollPane;
     private javax.swing.JButton selectSelectedButton;
     private javax.swing.JLabel selectedLabel;
-    private javax.swing.JList selectedLibrariesList;
     private javax.swing.JScrollPane selectedLibrariesScrollPane;
+    private javax.swing.JList selectedPluginsList;
     // End of variables declaration//GEN-END:variables
 
     private void updateButtonsEnabled() {
         selectSelectedButton.setEnabled(pluginsList.getSelectedIndex()!=-1);
-        deselectSelectedButton.setEnabled(selectedLibrariesList.getSelectedIndex()!=-1);
+        deselectSelectedButton.setEnabled(selectedPluginsModel.getSize() > 0 && selectedPluginsList.getSelectedIndex()!=-1);
     }
 
     private static final class PluginsListModel extends AbstractListModel {

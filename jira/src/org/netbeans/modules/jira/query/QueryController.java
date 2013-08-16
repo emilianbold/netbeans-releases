@@ -604,17 +604,14 @@ public class QueryController extends org.netbeans.modules.bugtracking.spi.QueryC
         }
     }
 
+    @NbBundle.Messages({
+        "# {0} - tasks count", "LBL_MatchingIssues=There are {0} tasks matching this query."
+    })
     protected void setIssueCount(final int count) {
         EventQueue.invokeLater(new Runnable() {
             @Override
             public void run() {
-                panel.tableSummaryLabel.setText(
-                    NbBundle.getMessage(
-                        QueryController.class,
-                        NbBundle.getMessage(QueryController.class, "LBL_MATCHINGISSUES"),                           // NOI18N
-                        new Object[] { count }
-                    )
-                );
+                panel.tableSummaryLabel.setText(Bundle.LBL_MatchingIssues(count)); //NOI18N
             }
         });
     }

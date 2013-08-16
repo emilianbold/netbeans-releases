@@ -65,6 +65,7 @@ import org.netbeans.modules.mercurial.ui.diff.DiffSetupSource;
 import org.netbeans.modules.mercurial.ui.diff.ExportDiffAction;
 import org.netbeans.modules.mercurial.ui.diff.Setup;
 import org.netbeans.modules.mercurial.ui.update.RevertModificationsAction;
+import org.netbeans.modules.mercurial.util.HgUtils;
 import org.netbeans.modules.versioning.history.AbstractSummaryView;
 import org.netbeans.modules.versioning.history.AbstractSummaryView.SummaryViewMaster.SearchHighlight;
 import org.netbeans.modules.versioning.util.VCSKenaiAccessor.KenaiUser;
@@ -316,11 +317,11 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
 
     private static SummaryViewMaster createViewSummaryMaster (final SearchHistoryPanel master) {
         final Map<String, String> colors = new HashMap<String, String>();
-        colors.put("A", getColorString(AnnotationColorProvider.getInstance().ADDED_LOCALLY_FILE.getActualColor()));
-        colors.put("C", getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
-        colors.put("R", getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
-        colors.put("M", getColorString(AnnotationColorProvider.getInstance().MODIFIED_LOCALLY_FILE.getActualColor()));
-        colors.put("D", getColorString(AnnotationColorProvider.getInstance().REMOVED_LOCALLY_FILE.getActualColor()));
+        colors.put("A", HgUtils.getColorString(AnnotationColorProvider.getInstance().ADDED_LOCALLY_FILE.getActualColor()));
+        colors.put("C", HgUtils.getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("R", HgUtils.getColorString(AnnotationColorProvider.getInstance().COPIED_LOCALLY_FILE.getActualColor()));
+        colors.put("M", HgUtils.getColorString(AnnotationColorProvider.getInstance().MODIFIED_LOCALLY_FILE.getActualColor()));
+        colors.put("D", HgUtils.getColorString(AnnotationColorProvider.getInstance().REMOVED_LOCALLY_FILE.getActualColor()));
 
         return new SummaryViewMaster() {
 
@@ -619,17 +620,5 @@ final class SummaryView extends AbstractSummaryView implements DiffSetupSource {
     
     private static void exportFileDiff(RepositoryRevision.Event drev) {
         ExportDiffAction.exportDiffFileRevision(drev);
-    }
-
-    private static String getColorString (Color c) {
-        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
-    }
-
-    private static String getHex (int i) {
-        String hex = Integer.toHexString(i & 0x000000FF);
-        if (hex.length() == 1) {
-            hex = "0" + hex; //NOI18N
-        }
-        return hex;
     }
 }

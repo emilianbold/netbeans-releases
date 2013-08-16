@@ -77,7 +77,7 @@ public class JsCodeCompletionWithTest extends JsCodeCompletionBase {
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
-        cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/with")));
+        //cpRoots.add(FileUtil.toFileObject(new File(getDataDir(), "/testfiles/completion/with")));
         return Collections.singletonMap(
             JS_SOURCE_ID,
             ClassPathSupport.createClassPath(cpRoots.toArray(new FileObject[cpRoots.size()]))

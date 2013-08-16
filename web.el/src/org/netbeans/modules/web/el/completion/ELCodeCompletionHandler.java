@@ -178,7 +178,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
                     // fetch information from the JSF editor for resolving beans if necessary for cc:interface elements
                     List<VariableInfo> attrsObjects = Collections.<VariableInfo>emptyList();
                     if (ELTypeUtilities.isRawObjectReference(ccontext, node, false)) {
-                        attrsObjects = ELVariableResolvers.getRawObjectProperties(ccontext, "attrs", context.getParserResult().getSnapshot()); //NOI18N
+                        attrsObjects = ELVariableResolvers.getRawObjectProperties(ccontext, "attrs", context.getParserResult().getSnapshot());
                     }
                     // resolve the element
                     Element resolved = ELTypeUtilities.resolveElement(ccontext, element, nodeToResolve, assignments, attrsObjects);

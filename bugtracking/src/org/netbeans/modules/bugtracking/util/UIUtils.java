@@ -151,6 +151,42 @@ public class UIUtils {
     public static boolean isNimbus() {
         return "Nimbus".equals( UIManager.getLookAndFeel().getID() ); //NOI18N
     }
+    
+    public static String getColorString (Color c) {
+        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
+    }
+
+    public static Color getTaskNewColor () {
+        Color c = UIManager.getColor("nb.bugtracking.new.color"); //NOI18N
+        if (c == null) {
+            c = new Color(0, 180, 0);
+        }
+        return c;
+    }
+
+    public static Color getTaskModifiedColor () {
+        Color c = UIManager.getColor("nb.bugtracking.modified.color"); //NOI18N
+        if (c == null) {
+            c = new Color(0, 0, 255);
+        }
+        return c;
+    }
+
+    public static Color getTaskObsoleteColor () {
+        Color c = UIManager.getColor("nb.bugtracking.obsolete.color"); //NOI18N
+        if (c == null) {
+            c = new Color(153, 153, 153);
+        }
+        return c;
+    }
+
+    private static String getHex (int i) {
+        String hex = Integer.toHexString(i & 0x000000FF);
+        if (hex.length() == 1) {
+            hex = "0" + hex; //NOI18N
+        }
+        return hex;
+    }
 
     private static void keepFocusedComponentVisible(Component component, FocusListener l) {
         component.removeFocusListener(l); // Making sure that it is not added twice

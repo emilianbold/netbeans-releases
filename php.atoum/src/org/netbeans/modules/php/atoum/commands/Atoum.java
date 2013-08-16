@@ -106,7 +106,7 @@ public final class Atoum {
     private static final String BOOTSTRAP_PARAM = "-bf"; // NOI18N
     private static final String CONFIGURATION_PARAM = "-c"; // NOI18N
     private static final String INIT_PARAM = "--init"; // NOI18N
-    private static final String XDEBUG_CONFIG_PARAM = "--xc"; // NOI18N
+    private static final String XDEBUG_CONFIG_PARAM = "-xc"; // NOI18N
     private static final String IDE_KEY_PARAM = "idekey=%s"; // NOI18N
 
     private final String atoumPath;

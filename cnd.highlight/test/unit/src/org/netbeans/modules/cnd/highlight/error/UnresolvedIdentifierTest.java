@@ -371,7 +371,12 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
     public void testBug222883() throws Exception {
         // Bug 222883 - goto labes ("Unable to resolve identifier G_1")
         performStaticTest("bug222883.cpp");
-    }            
+    }
+    
+    public void testBug227266() throws Exception {
+        // Bug 227266 - incorrect error HL
+        performStaticTest("bug227266.cpp");
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS
