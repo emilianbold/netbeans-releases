@@ -1787,7 +1787,7 @@ public class BugzillaIssue {
             if (event.getTask() == task && event.getKind() == TaskEvent.Kind.MODIFIED) {
                 boolean syncStateChanged = event.taskStateChanged();
                 boolean seen = wasSeen();
-                if (updateRecentChanges()) {
+                if (updateRecentChanges() | updateTooltip()) {
                     fireDataChanged();
                 }
                 if (syncStateChanged) {
