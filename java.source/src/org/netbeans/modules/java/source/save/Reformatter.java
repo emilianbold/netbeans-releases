@@ -3148,6 +3148,9 @@ public class Reformatter implements ReformatTask {
             checkWrap = null;
             Token<JavaTokenId> lastToken = null;
             int after = 0;
+            Diff pendingDiff = null;
+            String pendingText = null;
+            int beforeCnt = 0;
             do {
                 if (tokens.offset() >= endPos)
                     return;
@@ -3206,6 +3209,7 @@ public class Reformatter implements ReformatTask {
                                 lastIdx = idx + 1;
                                 maxCount--;
                                 count--;
+                                beforeCnt--;
                             }
                             if ((idx = text.lastIndexOf('\n')) >= 0) { //NOI18N
                                 after = 0;
@@ -3216,7 +3220,12 @@ public class Reformatter implements ReformatTask {
                             if (lastIdx == 0 && count < 0 && after != 1) {
                                 count = 0;
                             }
-                            String ind = after == 3 ? SPACE : getNewlines(count) + getIndent();
+                            if (pendingDiff != null) {
+                                pendingDiff.text = beforeCnt < 0 ? getIndent() : getNewlines(count) + getIndent();
+                                if (!pendingDiff.text.contentEquals(pendingText))
+                                    addDiff(pendingDiff);
+                            }
+                            String ind = after == 3 ? SPACE : pendingDiff == null || beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();
                             if (!ind.contentEquals(text.substring(lastIdx)))
                                 addDiff(new Diff(offset + lastIdx, tokens.offset(), ind));
                             lastToken = null;
@@ -3248,6 +3257,8 @@ public class Reformatter implements ReformatTask {
                                 lastIdx = idx + 1;
                                 maxCount--;
                                 count--;
+                                if (pendingText == null)
+                                    beforeCnt++;
                             }
                             if ((idx = text.lastIndexOf('\n')) >= 0) { //NOI18N
                                 if (idx >= lastIdx)
@@ -3259,9 +3270,8 @@ public class Reformatter implements ReformatTask {
                                 if (!indent.contentEquals(text))
                                     addDiff(new Diff(offset, tokens.offset(), indent));
                             } else if (lastIdx > 0 && lastIdx < lastToken.length()) {
-                                String indent = getIndent();
-                                if (!indent.contentEquals(text.substring(lastIdx)))
-                                    addDiff(new Diff(offset + lastIdx, tokens.offset(), indent));
+                                pendingText = text.substring(lastIdx);
+                                pendingDiff = new Diff(offset + lastIdx, tokens.offset(), null);
                             }
                             lastToken = null;
                         }
@@ -3288,6 +3298,7 @@ public class Reformatter implements ReformatTask {
                                 lastIdx = idx + 1;
                                 maxCount--;
                                 count--;
+                                beforeCnt--;
                             }
                             if ((idx = text.lastIndexOf('\n')) >= 0) { //NOI18N
                                 after = 0;
@@ -3298,7 +3309,12 @@ public class Reformatter implements ReformatTask {
                             if (lastIdx == 0 && count < 0 && after != 1) {
                                 count = 0;
                             }
-                            String indent = after == 3 ? SPACE : getNewlines(count) + getIndent();
+                            if (pendingDiff != null) {
+                                pendingDiff.text = beforeCnt < 0 ? getIndent() : getNewlines(count) + getIndent();
+                                if (!pendingDiff.text.contentEquals(pendingText))
+                                    addDiff(pendingDiff);
+                            }
+                            String indent = after == 3 ? SPACE : pendingDiff == null || beforeCnt < 0 ? getNewlines(count) + getIndent() : getIndent();
                             if (!indent.contentEquals(text.substring(lastIdx)))
                                 addDiff(new Diff(offset + lastIdx, tokens.offset(), indent));
                         } else {
