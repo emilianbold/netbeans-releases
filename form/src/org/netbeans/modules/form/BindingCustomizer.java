@@ -459,21 +459,11 @@ public class BindingCustomizer extends JPanel {
             }
             nullValueCheckBox.setSelected(binding.isNullValueSpecified());
             incompletePathValueCheckBox.setSelected(binding.isIncompletePathValueSpecified());
-            if (binding.isNullValueSpecified()) {
-                oldNullValue = propertyValue(nullValueProperty);
-            }
-            if (binding.isIncompletePathValueSpecified()) {
-                oldIncompletePathValue = propertyValue(incompletePathValueProperty);
-            }
-            if (binding.isConverterSpecified()) {
-                oldConverter = propertyValue(converterProperty);
-            }
-            if (binding.isValidatorSpecified()) {
-                oldValidator = propertyValue(validatorProperty);
-            }
-            if (binding.isNameSpecified()) {
-                oldName = propertyValue(nameProperty);
-            }
+            oldNullValue = propertyValue(nullValueProperty);
+            oldIncompletePathValue = propertyValue(incompletePathValueProperty);
+            oldConverter = propertyValue(converterProperty);
+            oldValidator = propertyValue(validatorProperty);
+            oldName = propertyValue(nameProperty);
         } else {
             sourceCombo.setSelectedIndex(0);
             updateModeCombo.setSelectedIndex(0);
@@ -615,7 +605,18 @@ public class BindingCustomizer extends JPanel {
             String path = bindingDescriptor.getPath();
             FormModel model = bindingComponent.getFormModel();
             FormProperty.ValueWithEditor newName = propertyValue(nameProperty);
-            if ((oldName == null) ? nameProperty.isChanged() : (newName.getValue() != oldName.getValue())) {
+            if ("".equals(newName.getValue())) { // bug 211730 // NOI18N
+                newName = new FormProperty.ValueWithEditor(null, newName.getPropertyEditor());
+                try {
+                    nameProperty.setValue(newName);
+                } catch (IllegalAccessException ex) {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+                } catch (InvocationTargetException ex) {
+                    Logger.getLogger(getClass().getName()).log(Level.INFO, ex.getMessage(), ex);
+                }
+            }
+            if ((oldName == null && newName.getValue() != null)
+                    || (oldName != null && newName.getValue() != oldName.getValue())) {
                 model.fireBindingChanged(bindingComponent, path, BindingProperty.PROP_NAME, oldName, newName);
             }
             FormProperty.ValueWithEditor newNullValue = propertyValue(nullValueProperty);
