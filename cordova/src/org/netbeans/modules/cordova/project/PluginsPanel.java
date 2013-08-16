@@ -147,7 +147,7 @@ public final class PluginsPanel extends JPanel {
 
     private void initSelectedPluginsList() {
         assert EventQueue.isDispatchThread();
-        selectedLibrariesList.setModel(selectedPluginsModel);
+        selectedPluginsList.setModel(selectedPluginsModel);
    }
 
     private boolean isUpdateRunning() {
@@ -169,7 +169,7 @@ public final class PluginsPanel extends JPanel {
         pluginsList.setEnabled(enabled);
         selectSelectedButton.setEnabled(enabled);
         deselectSelectedButton.setEnabled(enabled);
-        selectedLibrariesList.setEnabled(enabled);
+        selectedPluginsList.setEnabled(enabled);
     }
 
 
@@ -189,7 +189,7 @@ public final class PluginsPanel extends JPanel {
         deselectSelectedButton = new javax.swing.JButton();
         selectedLabel = new javax.swing.JLabel();
         selectedLibrariesScrollPane = new javax.swing.JScrollPane();
-        selectedLibrariesList = new javax.swing.JList();
+        selectedPluginsList = new javax.swing.JList();
         pluginsScrollPane = new javax.swing.JScrollPane();
         pluginsList = new javax.swing.JList();
         jLabel1 = new javax.swing.JLabel();
@@ -214,12 +214,12 @@ public final class PluginsPanel extends JPanel {
 
         org.openide.awt.Mnemonics.setLocalizedText(selectedLabel, org.openide.util.NbBundle.getMessage(PluginsPanel.class, "PluginsPanel.selectedLabel.text")); // NOI18N
 
-        selectedLibrariesList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
+        selectedPluginsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
-                selectedLibrariesListValueChanged(evt);
+                selectedPluginsListValueChanged(evt);
             }
         });
-        selectedLibrariesScrollPane.setViewportView(selectedLibrariesList);
+        selectedLibrariesScrollPane.setViewportView(selectedPluginsList);
 
         pluginsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
             public void valueChanged(javax.swing.event.ListSelectionEvent evt) {
@@ -291,16 +291,16 @@ public final class PluginsPanel extends JPanel {
     }//GEN-LAST:event_selectSelectedButtonActionPerformed
 
     private void deselectSelectedButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_deselectSelectedButtonActionPerformed
-        selectedPluginsModel.remove(selectedLibrariesList.getSelectedValuesList());
+        selectedPluginsModel.remove(selectedPluginsList.getSelectedValuesList());
     }//GEN-LAST:event_deselectSelectedButtonActionPerformed
 
     private void pluginsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_pluginsListValueChanged
         updateButtonsEnabled();
     }//GEN-LAST:event_pluginsListValueChanged
 
-    private void selectedLibrariesListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_selectedLibrariesListValueChanged
+    private void selectedPluginsListValueChanged(javax.swing.event.ListSelectionEvent evt) {//GEN-FIRST:event_selectedPluginsListValueChanged
         updateButtonsEnabled();
-    }//GEN-LAST:event_selectedLibrariesListValueChanged
+    }//GEN-LAST:event_selectedPluginsListValueChanged
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton deselectSelectedButton;
@@ -312,13 +312,13 @@ public final class PluginsPanel extends JPanel {
     private javax.swing.JScrollPane pluginsScrollPane;
     private javax.swing.JButton selectSelectedButton;
     private javax.swing.JLabel selectedLabel;
-    private javax.swing.JList selectedLibrariesList;
     private javax.swing.JScrollPane selectedLibrariesScrollPane;
+    private javax.swing.JList selectedPluginsList;
     // End of variables declaration//GEN-END:variables
 
     private void updateButtonsEnabled() {
         selectSelectedButton.setEnabled(pluginsList.getSelectedIndex()!=-1);
-        deselectSelectedButton.setEnabled(selectedLibrariesList.getSelectedIndex()!=-1);
+        deselectSelectedButton.setEnabled(selectedPluginsList.getSelectedIndex()!=-1);
     }
 
     private static final class PluginsListModel extends AbstractListModel {
