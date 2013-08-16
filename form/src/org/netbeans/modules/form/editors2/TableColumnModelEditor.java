@@ -178,35 +178,67 @@ public class TableColumnModelEditor extends PropertyEditorSupport
 
             // columns
             List<FormTableColumn> columns = columnModel.getColumns();
+            String checkColumns = "if (" + getter + ".getColumnCount() > 0) {\n"; // NOI18N
             for (int i=0; i<columns.size(); i++) {
                 FormTableColumn column = columns.get(i);
                 String columnGetter = getter + ".getColumn(" + i + ")"; // NOI18N
                 if (!column.isResizable()) {
+                    if (checkColumns != null) {
+                        code.append(checkColumns);
+                        checkColumns = null;
+                    }
                     code.append(columnGetter).append(".setResizable(").append(Boolean.toString(column.isResizable())).append(");\n"); // NOI18N
                 }
                 if (column.getMinWidth() != -1) {
+                    if (checkColumns != null) {
+                        code.append(checkColumns);
+                        checkColumns = null;
+                    }
                     code.append(columnGetter).append(".setMinWidth(").append(Integer.toString(column.getMinWidth())).append(");\n"); // NOI18N
                 }
                 if (column.getPrefWidth() != -1) {
+                    if (checkColumns != null) {
+                        code.append(checkColumns);
+                        checkColumns = null;
+                    }
                     code.append(columnGetter).append(".setPreferredWidth(").append(Integer.toString(column.getPrefWidth())).append(");\n"); // NOI18N
                 }
                 if (column.getMaxWidth() != -1) {
+                    if (checkColumns != null) {
+                        code.append(checkColumns);
+                        checkColumns = null;
+                    }
                     code.append(columnGetter).append(".setMaxWidth(").append(Integer.toString(column.getMaxWidth())).append(");\n"); // NOI18N
                 }
                 FormProperty prop = column.getTitle();
                 if (prop.isChanged()) {
+                    if (checkColumns != null) {
+                        code.append(checkColumns);
+                        checkColumns = null;
+                    }
                     code.append(columnGetter).append(".setHeaderValue(").append(prop.getJavaInitializationString()).append(");\n"); // NOI18N
                 }
                 prop = column.getEditor();
                 if (prop.isChanged()) {
+                    if (checkColumns != null) {
+                        code.append(checkColumns);
+                        checkColumns = null;
+                    }
                     code.append(columnGetter).append(".setCellEditor(").append(prop.getJavaInitializationString()).append(");\n"); // NOI18N
                 }
                 prop = column.getRenderer();
                 if (prop.isChanged()) {
+                    if (checkColumns != null) {
+                        code.append(checkColumns);
+                        checkColumns = null;
+                    }
                     code.append(columnGetter).append(".setCellRenderer(").append(prop.getJavaInitializationString()).append(");\n"); // NOI18N
                 }
             }
-            
+            if (checkColumns == null) {
+                code.append("}\n"); // NOI18N
+            }
+
             return (code.length() == 0) ? null : code.toString();
         } else {
             return null;
