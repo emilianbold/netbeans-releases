@@ -372,6 +372,13 @@ public final class Model {
             ((JsObjectImpl)property).setParent(newParent);
             newParent.addProperty(property.getName(), property);
         } else {
+            if (property.isDeclared() && !newProperty.isDeclared()) {
+                JsObject tmpProperty = newProperty;
+                newParent.addProperty(property.getName(), property);
+                ((JsObjectImpl)property).setParent(newParent);
+                newProperty = property;
+                property = tmpProperty;
+            }
             JsObjectImpl.moveOccurrenceOfProperties((JsObjectImpl) newProperty, property);
             for (Occurrence occurrence : property.getOccurrences()) {
                 newProperty.addOccurrence(occurrence.getOffsetRange());

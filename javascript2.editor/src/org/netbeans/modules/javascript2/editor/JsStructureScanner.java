@@ -90,6 +90,7 @@ public class JsStructureScanner implements StructureScanner {
         LOGGER.log(Level.FINE, "Structure scanner started at {0} ms", start);
         JsParserResult result = (JsParserResult) info;
         final Model model = result.getModel();
+        model.resolve();
         JsObject globalObject = model.getGlobalObject();
         
         getEmbededItems(result, globalObject, items);
