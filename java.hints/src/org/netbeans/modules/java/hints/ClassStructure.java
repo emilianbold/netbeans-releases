@@ -208,7 +208,7 @@ public class ClassStructure {
         return null;
     }
 
-    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.classMayBeInterface", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.classMayBeInterface", category = "class_structure", enabled = false, suppressWarnings = {"ClassMayBeInterface"}) //NOI18N
+    @Hint(displayName = "#DN_org.netbeans.modules.java.hints.ClassStructure.classMayBeInterface", description = "#DESC_org.netbeans.modules.java.hints.ClassStructure.classMayBeInterface", category = "class_structure", enabled = false, suppressWarnings = {"ClassMayBeInterface"}, options=Options.NO_BATCH) //NOI18N
     @TriggerTreeKind({Tree.Kind.ANNOTATION_TYPE, Tree.Kind.CLASS, Tree.Kind.ENUM, Tree.Kind.INTERFACE})
     public static ErrorDescription classMayBeInterface(HintContext context) {
         final ClassTree cls = (ClassTree) context.getPath().getLeaf();
