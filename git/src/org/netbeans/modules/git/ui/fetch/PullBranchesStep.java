@@ -104,7 +104,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
         "MSG_PullBranchesPanel.warningNoBranchToMerge=No branch to merge selected. Doing a fetch instead.<br>Please note that no merge/rebase will be done.",
         "MSG_PullBranchesPanel.warningMultipleCandidatesToMerge=Cannot merge more than one branch. Doing a fetch instead.<br>Please note that no merge/rebase will be done."
     })
-    protected final void validateBeforeNext () {
+    protected final boolean validateBeforeNext () {
         setValid(true, null);
         if (branches.getSelectedBranches().isEmpty()) {
             setValid(false, new Message(MSG_PullBranchesPanel_errorNoBranchSelected(), true)); //NOI18N
@@ -132,6 +132,7 @@ public class PullBranchesStep extends AbstractWizardPanel implements WizardDescr
             }
             setValid(true, new Message(sb.toString(), info));
         }
+        return isValid();
     }
 
     @Override

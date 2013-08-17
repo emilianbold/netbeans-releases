@@ -125,9 +125,9 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
     }
     
     @Override
-    protected void validateBeforeNext() {
+    protected boolean validateBeforeNext() {
         if (validateNoEmptyFields()) {
-            return;
+            return false;
         }
         GitProgressSupport support = new GitProgressSupport() {
            @Override
@@ -145,7 +145,6 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
                     File[] files = dest.listFiles();
                     if(files != null && files.length > 0) {
                         setValid(false, new Message(NbBundle.getMessage(CloneDestinationStep.class, "MSG_DEST_IS_NOT_EMPTY_ERROR"), false));
-                        return;
                     }
                } finally {
                    setEnabled(true);
@@ -153,6 +152,7 @@ public class CloneDestinationStep extends AbstractWizardPanel implements Documen
            }
        };
        support.start(Git.getInstance().getRequestProcessor(), getDestination(), NbBundle.getMessage(CloneDestinationStep.class, "MSG_VALIDATING_DESTINATION")).waitFinished();
+       return isValid();
     }
 
     private boolean validateNoEmptyFields() throws MissingResourceException {

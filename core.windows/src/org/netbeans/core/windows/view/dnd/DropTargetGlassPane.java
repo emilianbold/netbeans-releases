@@ -140,6 +140,8 @@ public final class DropTargetGlassPane extends JPanel implements DropTargetListe
             //XXX clear?
             return;
         }
+        //#234429 - make sure we're still visible - reseting the global wait cursor hides the glass pane
+        setVisible( true );
         
         if (droppable != null) {
             Rectangle repaintRectangle = null;

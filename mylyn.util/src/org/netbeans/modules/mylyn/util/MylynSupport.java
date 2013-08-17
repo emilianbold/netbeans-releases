@@ -356,6 +356,7 @@ public class MylynSupport {
             task.setSummary(summary);
         }
         taskList.addTask(task, taskList.getUnsubmittedContainer(task.getAttribute(ITasksCoreConstants.ATTRIBUTE_OUTGOING_NEW_REPOSITORY_URL)));
+        task.setAttribute(AbstractNbTaskWrapper.ATTR_NEW_UNREAD, Boolean.TRUE.toString());
         return MylynSupport.getInstance().toNbTask(task);
     }
 

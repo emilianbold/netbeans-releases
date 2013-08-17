@@ -461,7 +461,7 @@ class AST2Bytecode {
         if (opcode <= 177) return 1; // <x>return
         if (opcode <= 184) return 3; // <get/put><static/field> <byte1> <byte2>, invokevirtual, invokespecial, invokestatic
         if (opcode == 185) return 5; // invokeinterface
-        // 186 not used
+        if (opcode == 186) return 5; // invokedynamic
         if (opcode == 187) return 3; // new <byte1> <byte2>
         if (opcode == 188) return 2; // newarray <atype>
         if (opcode == 189) return 3; // anewarray <byte1> <byte2>
