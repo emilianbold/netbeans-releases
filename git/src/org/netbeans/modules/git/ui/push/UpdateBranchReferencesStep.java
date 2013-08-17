@@ -94,11 +94,12 @@ public class UpdateBranchReferencesStep extends AbstractWizardPanel implements W
     }
     
     @Override
-    protected final void validateBeforeNext () {
+    protected final boolean validateBeforeNext () {
         setValid(true, null);
         if (branches.getSelectedBranches().isEmpty()) {
             setValid(true, new Message(NbBundle.getMessage(UpdateBranchReferencesStep.class, "MSG_PushBranchesPanel.errorNoBranchSelected"), true)); //NOI18N
         }
+        return isValid();
     }
 
     @Override
