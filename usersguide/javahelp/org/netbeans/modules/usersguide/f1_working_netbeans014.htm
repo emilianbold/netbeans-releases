@@ -2,25 +2,24 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Options Window: Miscellaneous: CSS Preprocessors</title>
+<title>Manage Keymap Profiles Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.web.common.cssprep.CssPrepOptionsPanelController" name="org.netbeans.modules.web.common.cssprep.CssPrepOptionsPanelController"></a></p>
+<p><a id="org.netbeans.modules.options.keymap.ProfilesPanel" name="org.netbeans.modules.options.keymap.ProfilesPanel"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref16" name="sthref16"></a>
-<h1>Options Window: Miscellaneous: CSS Preprocessors</h1>
+<h1>Manage Keymap Profiles Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You use this panel to specify the options for CSS preprocessors. 
+<p>You use this dialog box to create, remove, import and export keymap profiles. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2271">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG147">
 <param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
-<p>You can access this panel by choosing <b>Tools</b> &gt; <b>Options</b> from the main menu, clicking the <b>Miscellaneous</b> category and then clicking the <b>CSS Preprocessors</b> tab.</p>
-<p>You can set the following action item options:</p>
+<p>This panel contains the following elements.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -34,52 +33,57 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t21" headers="r1c1-t21">
-<p>Sass path</p>
+<p>Profiles</p>
 </td>
 <td align="left" headers="r2c1-t21 r1c2-t21">
-<p>Specify the full path to your Sass installation executable. You can type the path, click Browse to open a file browser dialog box to locate the executable or click Search if you want the IDE to search your local system for the executable.</p>
-<p>If Sass is not installed you can click Install Sass to open the Sass download page in your browser.</p>
+<p>Select a profile from the list. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG150">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t21" headers="r1c1-t21">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Open Output on Error</p>
+<p>Duplicate</p>
 </td>
 <td align="left" headers="r3c1-t21 r1c2-t21">
-<p>When selected the Output window opens when an error is encountered.</p>
+<p>Type in the text field to filter the shortcuts by the name of the command.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t21" headers="r1c1-t21">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Generate extra information (debug)</p>
+<p>Restore Defaults</p>
 </td>
 <td align="left" headers="r4c1-t21 r1c2-t21">
-<p>When selected, additional information is generated for the purpose of debugging.</p>
+<p>Click to restore the selected profile to the default settings. This button is disabled if the selected default has not been modified.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t21" headers="r1c1-t21">
-<p>LESS path</p>
+<p>Delete</p>
 </td>
 <td align="left" headers="r5c1-t21 r1c2-t21">
-<p>Specify the full path to your LESS installation executable. You can type the path, click Browse to open a file browser dialog box to locate the executable or click Search if you want the IDE to search your local system for the executable.</p>
-<p>If LESS is not installed you can click Install LESS to open the LESS download page in your browser.</p>
+<p>Click to delete the selected profile. You cannot delete the default profiles that are included with the IDE.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t21" headers="r1c1-t21">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Open Output on Error</p>
+<p>Export</p>
 </td>
 <td align="left" headers="r6c1-t21 r1c2-t21">
-<p>When selected the Output window opens when an error is encountered.</p>
+<p>Click to save the selected profile as an XML file on your local system.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r7c1-t21" headers="r1c1-t21">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Generate extra information (debug)</p>
+<p>Import</p>
 </td>
 <td align="left" headers="r7c1-t21 r1c2-t21">
-<p>When selected, additional information is generated for the purpose of debugging.</p>
+<p>Click to locate a saved profile on your local system.</p>
 </td>
 </tr>
 </tbody>
@@ -87,14 +91,6 @@
 <br />
 <!-- -->
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2266">
-<param name="text" value="<html><u>&quot;How to Create Cascading Style Sheets&quot;</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG117">

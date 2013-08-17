@@ -8,36 +8,46 @@
 
 <body>
 <p><a id="registering_app_server_weblogic" name="registering_app_server_weblogic"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref628" name="sthref628"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref633" name="sthref633"></a>
 <h1>Registering an Oracle WebLogic Server</h1>
 <a name="BEGIN" id="BEGIN"></a>
+<p>Before you can start developing and deploying applications to an application server, you must register your application server with the IDE.</p>
+<a id="sthref634" name="sthref634"></a>
+<p><b>To register an instance of an Oracle WebLogic server:</b></p>
+<ol>
+<li>
+<p>Choose Tools &gt; Servers, and in the Server Manager, click Add Server.</p>
+<p><b>Note</b>: Alternatively, right-click the Servers node in the Services window and choose Add Server from the pop-up menu.</p>
+<p>The Add Server Instance wizard starts.</p>
+</li>
+<li>
+<p>In the Choose Server pane, do the following:</p>
+<ul>
+<li>Select your application server from the list.</li>
+<li>In the Name field, type a name for the server instance. This name is used to identify the server in the IDE.</li>
+<li>Click Next.</li>
+</ul>
+</li>
+<li>
+<p>In the Server Location pane, use the Browse button to navigate to and select the installation directory of your application server.</p>
+<p><b>Note</b>: The Next button is only enabled when you have selected the correct installation directory.</p>
+</li>
+<li>Click Next.</li>
+<li>
+<p>To define a local server instance, do the following:</p>
+<ul>
+<li>From the Local instances drop-down menu, select a server instance. When you select a server instance, the IDE updates the Domain path, Host, and Port fields.</li>
+<li>Fill in the Username and Password fields. The default username/password is weblogic/weblogic.</li>
+</ul>
+</li>
+<li>Click Finish.</li>
+<li>If you started the Add Server Instance wizard from the Server Manager, click Close in the Server Manager dialog box. The IDE displays a server node for your application server in the Services window under the Servers node.</li>
+</ol>
+<hr><p><b>Related Topics</b></p>
+<p>Registering a GlassFish Application Server</p>
+<p>Registering an External Tomcat Web Server</p>
+<p>Registering a JBoss Application Server</p>
 
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
-<col width="*" />
-<thead>
-<tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t45">Element</th>
-<th align="left" valign="bottom" id="r1c2-t45">Description</th>
-</tr>
-</thead>
-<tbody>
-<tr align="left" valign="top">
-<td align="left" id="r2c1-t45" headers="r1c1-t45"></td>
-<td align="left" headers="r2c1-t45 r1c2-t45"></td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t45" headers="r1c1-t45"></td>
-<td align="left" headers="r3c1-t45 r1c2-t45"></td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t45" headers="r1c1-t45"></td>
-<td align="left" headers="r4c1-t45 r1c2-t45"></td>
-</tr>
-</tbody>
-</table>
-<br />
-<!-- -->
 <!-- -->
 <!-- Start Footer -->
 

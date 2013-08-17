@@ -2,18 +2,24 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Options Window: Miscellaneous: Output</title>
+<title>Options Window: Miscellaneous: Tasks</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="netbeans.optionsDialog.advanced.output" name="netbeans.optionsDialog.advanced.output"></a></p>
+<p><a id="org.netbeans.modules.bugtracking.settings.BugtrackingOptions" name="org.netbeans.modules.bugtracking.settings.BugtrackingOptions"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref21" name="sthref21"></a>
-<h1>Options Window: Miscellaneous: Output</h1>
+<h1>Options Window: Miscellaneous: Tasks</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You use this panel to specify the display options of the Output window. The preview pane at the bottom of the window displays sample text that reflects the changes you make to the settings.</p>
-<p>You can access this panel by choosing <b>Tools</b> &gt; <b>Options</b> from the main menu and clicking the <b>Output</b> tab in the <b>Miscellaneous</b> category of the Options window.</p>
-<p>You can set the following options for Output Window Settings:</p>
+<p>You use this panel to configure general properties for how the Tasks window is synchronized with registered issue trackers.</p>
+<p>You can add issue trackers in the Services window. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG360">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -27,83 +33,42 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t26" headers="r1c1-t26">
-<p>Restore</p>
+<p>Task Repositories</p>
 </td>
 <td align="left" headers="r2c1-t26 r1c2-t26">
-<p>Click Restore to change the IDE's settings for the Output window to the default settings.</p>
+<p>Select an issue tracking system from the list to modify the properties of that tracker. The default issue tracking system is Bugzilla.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t26" headers="r1c1-t26">
-<p>Font</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Opened tasks refresh insterval</p>
 </td>
 <td align="left" headers="r3c1-t26 r1c2-t26">
-<p>Click the Browse button to select the display font.</p>
+<p>Specify how often the IDE checks for changes to open tasks.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t26" headers="r1c1-t26">
-<p>Font Chooser (...)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Opened queries refresh interval</p>
 </td>
 <td align="left" headers="r4c1-t26 r1c2-t26">
-<p>Specify the preferred font family, style, and size.</p>
-<p>Font settings apply to tabs that are not wrapped only. Wrapped tabs always use a fixed-width font family.</p>
+<p>Specify how often the IDE checks open queries for updates.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t26" headers="r1c1-t26">
-<p>Font size</p>
+<p>Tasks synchronize interval</p>
 </td>
 <td align="left" headers="r5c1-t26 r1c2-t26">
-<p>Use the arrows to set the size of the display font or type in the text field.</p>
+<p>Specify how often the tasks in the Tasks window is updated.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t26" headers="r1c1-t26">
-<p>Background Color</p>
+<p>Tasks Limit</p>
 </td>
 <td align="left" headers="r6c1-t26 r1c2-t26">
-<p>Select a background color from the list or select Custom in the list to pick a custom color.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r7c1-t26" headers="r1c1-t26">
-<p>Standard Color</p>
-</td>
-<td align="left" headers="r7c1-t26 r1c2-t26">
-<p>Select a foreground color from the list or select Custom in the list to pick a custom color.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t26" headers="r1c1-t26">
-<p>Error Color</p>
-</td>
-<td align="left" headers="r8c1-t26 r1c2-t26">
-<p>Select a standard error foreground color from the list or select Custom in the list to pick a custom color.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t26" headers="r1c1-t26">
-<p>Link Color</p>
-</td>
-<td align="left" headers="r9c1-t26 r1c2-t26">
-<p>Select a links foreground color from the list or select Custom in the list to pick a custom color.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r10c1-t26" headers="r1c1-t26">
-<p>Important Link Color</p>
-</td>
-<td align="left" headers="r10c1-t26 r1c2-t26">
-<p>Select an important links foreground color from the list or select Custom in the list to pick a custom color.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r11c1-t26" headers="r1c1-t26">
-<p>Link Style</p>
-</td>
-<td align="left" headers="r11c1-t26 r1c2-t26">
-<p>By default, links are underlined. Specify the preferred link style.</p>
+<p>When selected you can limit the number and type of tasks that are displayed in the Tasks window.</p>
 </td>
 </tr>
 </tbody>
@@ -113,8 +78,8 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG117">
-<param name="text" value="<html><u>&quot;Working with the Options Window&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG351">
+<param name="text" value="<html><u>&quot;About Issue Trackers&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

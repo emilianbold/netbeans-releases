@@ -2,59 +2,106 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Options Window: Miscellaneous: Mobile Platforms</title>
+<title>Options Window: Miscellaneous: Files</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.cordova.options.MobilePlatformsPanel" name="org.netbeans.modules.cordova.options.MobilePlatformsPanel"></a></p>
+<p><a id="netbeans.optionsDialog.advanced.files" name="netbeans.optionsDialog.advanced.files"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref20" name="sthref20"></a>
-<h1>Options Window: Miscellaneous: Mobile Platforms</h1>
+<h1>Options Window: Miscellaneous: Files</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You use this panel to specify the mobile platforms for the IDE. You can access this panel by choosing <b>Tools</b> &gt; <b>Options</b> from the main menu, clicking the <b>Miscellaneous</b> category and then clicking the <b>Mobile Platforms</b> tab.</p>
+<p>The IDE categorizes all files by type. The Files tab displays the file types recognized by the IDE, the mime resolver for that type and the location of the file types listed as belonging to that type. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2075">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>You can specify the following elements in this panel:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t25">Value</th>
+<th align="left" valign="bottom" id="r1c1-t25">Element</th>
 <th align="left" valign="bottom" id="r1c2-t25">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t25" headers="r1c1-t25">
-<p>PhoneGap SDK Location</p>
+<p>File Associations</p>
 </td>
 <td align="left" headers="r2c1-t25 r1c2-t25">
-<p>Specifies the location of the local installation of the PhoneGap SDK. You can use the Browse button to locate the folder that contains the SDK on your local system.</p>
-<p>If the SDK is not installed, you can click Download PhoneGap SDK to open the download page for the SDK in your browser.</p>
+<p>This section enables you to specify file types according to the file extension. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2075">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t25" headers="r1c1-t25">
-<p>Android SDK Location</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;File Extension</p>
 </td>
 <td align="left" headers="r3c1-t25 r1c2-t25">
-<p>Specifies the location of the local installation of the Android SDK. You can use the Browse button to locate the folder that contains the SDK on your local system.</p>
-<p>If the SDK is not installed, you can click Download Android SDK to open the download page for the SDK in your browser.</p>
+<p>Specifies name of mime resolver for files of this type.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t25" headers="r1c1-t25">
-<p>iOS Code Sign Identity</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Associated File Type (MIME)</p>
 </td>
 <td align="left" headers="r4c1-t25 r1c2-t25">
-<p>Type the iOS code sign identity in the text field.</p>
+<p>Specifies the related MIME type for the selected file type.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t25" headers="r1c1-t25">
-<p>iOS Provisioning Profile</p>
+<p>Files Ignored by the IDE</p>
 </td>
 <td align="left" headers="r5c1-t25 r1c2-t25">
-<p>Select the iOS provisioning profile from the dropdown list.</p>
+<p>This section enables you to specify the types of files that are ignored based on file name patterns. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2077">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t25" headers="r1c1-t25">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Ignored Files Pattern</p>
+</td>
+<td align="left" headers="r6c1-t25 r1c2-t25">
+<p>Type POSIX-style regular expressions to specify the files you want the IDE to ignore. The IDE includes some default patterns for files that are ignored by default. Click the Default button to restore the default patterns.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t25" headers="r1c1-t25">
+<p>Enable auto-scanning of sources</p>
+</td>
+<td align="left" headers="r7c1-t25 r1c2-t25">
+<p>When selected, the IDE will scan the source code of projects to detect any files that were modified externally. Scanning is triggered when the focus is returned to the IDE, for example when the user returns to the IDE from another application.</p>
+<p>If your sources are only modified from within the IDE, you can probably disable auto-scanning with little risk of encountering problems. Disabling auto-scanning may improve IDE performance if you are working on large projects.</p>
+<p>Auto-scanning is enabled by default.</p>
+<p>For more information about source scanning and other performance-related options, see the following FAQ on the NetBeans wiki.</p>
+<p><code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://wiki.netbeans.org/FaqScanningAndIndexingPerformanceHints">
+<param name="text" value="<html><u>http://wiki.netbeans.org/FaqScanningAndIndexingPerformanceHints</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code></p>
 </td>
 </tr>
 </tbody>
@@ -64,8 +111,8 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2272">
-<param name="text" value="<html><u>&quot;How to Create JavaScript Files&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG117">
+<param name="text" value="<html><u>&quot;Working with the Options Window&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

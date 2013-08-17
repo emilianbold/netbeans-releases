@@ -8,9 +8,11 @@
 
 <body>
 <p><a id="org.netbeans.modules.j2ee.ddloaders.multiview.EntityNode" name="org.netbeans.modules.j2ee.ddloaders.multiview.EntityNode"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref605" name="sthref605"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref608" name="sthref608"></a>
 <h1>ejb-jar.xml Visual Editor: Enterprise Beans: Entity Beans</h1>
 <a name="BEGIN" id="BEGIN"></a>
+<p>The ejb-jar.xml visual editor lets you edit the general for an EJB module. You open the editor by expanding the project's Configuration Files node in the Projects window and double-clicking ejb-jar.xml. The Enterprise Beans section of the General tab contains a section for each of your EJB module's enterprise beans.</p>
+<p>The General section for entity beans lets you set the following general information about the enterprise bean:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -23,36 +25,52 @@
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t28" headers="r1c1-t28"></td>
-<td align="left" headers="r2c1-t28 r1c2-t28"></td>
+<td align="left" id="r2c1-t28" headers="r1c1-t28">
+<p>Name</p>
+</td>
+<td align="left" headers="r2c1-t28 r1c2-t28">
+<p>Specifies the enterprise bean's name. This name is not related to the bean's JNDI name that is specified in the glassfish-ejb-jar.xml deployment descriptor. The name must be unique in the ejb-jar.xml file.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t28" headers="r1c1-t28"></td>
-<td align="left" headers="r3c1-t28 r1c2-t28"></td>
+<td align="left" id="r3c1-t28" headers="r1c1-t28">
+<p>Persistence Type</p>
+</td>
+<td align="left" headers="r3c1-t28 r1c2-t28">
+<p>Specifies whether the bean's persistence is managed by the container or by the bean.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t28" headers="r1c1-t28"></td>
-<td align="left" headers="r4c1-t28 r1c2-t28"></td>
+<td align="left" id="r4c1-t28" headers="r1c1-t28">
+<p>Abstract Schema Name</p>
+</td>
+<td align="left" headers="r4c1-t28 r1c2-t28">
+<p>Specifies the abstract schema that declares the persistent fields and relationships of an entity bean.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t28" headers="r1c1-t28"></td>
-<td align="left" headers="r5c1-t28 r1c2-t28"></td>
+<td align="left" id="r5c1-t28" headers="r1c1-t28">
+<p>Primary Key Field</p>
+</td>
+<td align="left" headers="r5c1-t28 r1c2-t28">
+<p>Specifies the primary key field of the entity bean. The combo box lists all of the CMP fields in your entity bean. A primary key uniquely identifies an entity bean.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t28" headers="r1c1-t28"></td>
-<td align="left" headers="r6c1-t28 r1c2-t28"></td>
+<td align="left" id="r6c1-t28" headers="r1c1-t28">
+<p>Primary Key Class</p>
+</td>
+<td align="left" headers="r6c1-t28 r1c2-t28">
+<p>Displays your primary key's class. You can change the class by going to the entity bean's CMP fields section and entering a new class in the primary key field's Type column. You can also specify a primary key class of an compound key if Multiple (Compound primary key) is selected in the Primary Key field.</p>
+</td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t28" headers="r1c1-t28"></td>
-<td align="left" headers="r7c1-t28 r1c2-t28"></td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r8c1-t28" headers="r1c1-t28"></td>
-<td align="left" headers="r8c1-t28 r1c2-t28"></td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r9c1-t28" headers="r1c1-t28"></td>
-<td align="left" headers="r9c1-t28 r1c2-t28"></td>
+<td align="left" id="r7c1-t28" headers="r1c1-t28">
+<p>Reentrant</p>
+</td>
+<td align="left" headers="r7c1-t28 r1c2-t28">
+<p>Specifies whether the bean is reentrant. Reentrant enterprise beans can handle multiple simultaneous, interleaved, or nested invocations which will not interfere with each other.</p>
+</td>
 </tr>
 </tbody>
 </table>

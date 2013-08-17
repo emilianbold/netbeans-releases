@@ -2,25 +2,24 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Options Window: Miscellaneous: Issue Tracking</title>
+<title>Options Window: Miscellaneous: Diff</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.bugtracking.util.BugtrackingOptions" name="org.netbeans.modules.bugtracking.util.BugtrackingOptions"></a></p>
+<p><a id="org.netbeans.modules.diff.options.DiffOptionsController" name="org.netbeans.modules.diff.options.DiffOptionsController"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref19" name="sthref19"></a>
-<h1>Options Window: Miscellaneous: Issue Tracking</h1>
+<h1>Options Window: Miscellaneous: Diff</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You use this panel to configure general properties for how the IDE interacts with issue trackers. You can access this panel by choosing <b>Tools</b> &gt; <b>Options</b> from the main menu, clicking the <b>Miscellaneous</b> category and then clicking the <b>Issue Tracking</b> tab.</p>
-<p>The default issue tracking system is Bugzilla.</p>
-<p>You can add issue trackers in the Services window. 
+<p>You use this panel to specify the Diff Engine to use when comparing file revisions. If you use an external diff engine you can set diff command options in this panel. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG360">
-<param name="text" value="<html><u>How?</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG2068">
+<param name="text" value="<html><u>More</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
 </p>
+<p>You can select the following diff engine options:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -34,26 +33,19 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t24" headers="r1c1-t24">
-<p>Issue Tracking Systems</p>
+<p>Internal Diff</p>
 </td>
 <td align="left" headers="r2c1-t24 r1c2-t24">
-<p>Select an issue tracking system from the list to modify the properties of that tracker.</p>
+<p>If selected, the IDE uses its internal diff engine. When using the internal diff engine, you can let the engine ignore white spaces and changes in case. The former option is selected by default.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t24" headers="r1c1-t24">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Refresh opened issues (Bugzilla)</p>
+<p>External Diff</p>
 </td>
 <td align="left" headers="r3c1-t24 r1c2-t24">
-<p>Specify how often the IDE checks open issues for changes to the issue.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t24" headers="r1c1-t24">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Refresh opened queries</p>
-</td>
-<td align="left" headers="r4c1-t24 r1c2-t24">
-<p>Specify how often the IDE checks open queries for udates.</p>
+<p>If selected, the IDE uses an external command-line diff executable. You can specify any diff command options (for example, <code>diff -b</code>) to be used when running the diff command from a command-line executable in the IDE. Diff options are not availabe when using the built-in diff engine.</p>
+<p>To use this option, you must have a command-line diff executable installed on your system if you want to compare revisions.</p>
 </td>
 </tr>
 </tbody>
@@ -63,8 +55,8 @@
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG351">
-<param name="text" value="<html><u>&quot;About Issue Trackers&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG117">
+<param name="text" value="<html><u>&quot;Working with the Options Window&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>

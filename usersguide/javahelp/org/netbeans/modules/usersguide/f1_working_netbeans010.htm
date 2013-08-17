@@ -2,16 +2,16 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Editor Options: Spellchecker</title>
+<title>Editor Options: On Save</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="netbeans.optionsDialog.editor.spellchecker" name="netbeans.optionsDialog.editor.spellchecker"></a></p>
+<p><a id="netbeans.optionsDialog.editor.onSave" name="netbeans.optionsDialog.editor.onSave"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref12" name="sthref12"></a>
-<h1>Editor Options: Spellchecker</h1>
+<h1>Editor Options: On Save</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use this tab to specify various options related to the Source Editor spellchecker.</p>
+<p>Use this tab to specify various options that the IDE can perform when a file is saved.</p>
 <p>This panel contains the following elements.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
@@ -26,27 +26,51 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t16" headers="r1c1-t16">
-<p>Use in</p>
+<p>Language</p>
 </td>
 <td align="left" headers="r2c1-t16 r1c2-t16">
-<p>Select the file types for which you want to switch on the checking.</p>
+<p>Select a language or file type from the dropdown list.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t16" headers="r1c1-t16">
-<p>Dictionaries</p>
+<p>Reformat</p>
 </td>
 <td align="left" headers="r3c1-t16 r1c2-t16">
-<p>Lists the dictionaries used for spell checking. You can add and remove dictionaries using the appropriate buttons.</p>
-<p>A dictionary is a file with a list of words where every word is located on a new line. You need to specify the encoding of a dictionary file and for which locale it should be used when adding a dictionary via the Add Dictionary dialog box.</p>
+<p>Select which type of lines that you want the source editor to reformat when you save the file. The default is None.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t16" headers="r1c1-t16">
-<p>Default locale</p>
+<p>Remove Trailing Whitespace From</p>
 </td>
 <td align="left" headers="r4c1-t16 r1c2-t16">
-<p>Specify the locale to be used when there is no other locale is defined for the given dictionary.</p>
+<p>Select which type of lines from which you want the source editor to trailing whitespaces when you save the file. The default is None.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t16" headers="r1c1-t16">
+<p>Use All Languages Settings</p>
+</td>
+<td align="left" headers="r5c1-t16 r1c2-t16">
+<p>When selected the settings specified for All Languages are applied to files of the selected type or language.</p>
+<p>This option is only available when you select a language or file type in the Languages dropdown list.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t16" headers="r1c1-t16">
+<p>Remove Unused Imports</p>
+</td>
+<td align="left" headers="r6c1-t16 r1c2-t16">
+<p>When selected, unused import statements are removed from the code when the file is saved. This option is only available for Java files.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t16" headers="r1c1-t16">
+<p>Organize Imports</p>
+</td>
+<td align="left" headers="r7c1-t16 r1c2-t16">
+<p>When selected, import statements in the code are organized when the file is saved. This option is only available for Java files.</p>
 </td>
 </tr>
 </tbody>
