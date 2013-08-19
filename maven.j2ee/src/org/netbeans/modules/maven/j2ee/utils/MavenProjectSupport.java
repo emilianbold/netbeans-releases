@@ -64,6 +64,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
@@ -132,7 +133,7 @@ public class MavenProjectSupport {
             if (server == null || server.equals(Server.NO_SERVER_SELECTED)) {
                 problems.addReport(createMissingServerReport(project, serverID));
             } else {
-                setServerInstanceID(project, server.getServerInstanceID());
+                JavaEEProjectSettings.setServerInstanceID(project, server.getServerInstanceID());
             }
         }
         
@@ -423,7 +424,7 @@ public class MavenProjectSupport {
      * @param shared whether the returned settings is shared or not
      * @return value read either from preferences or from pom.xml
      */
-    private static String getSettings(Project project, String key, boolean shared) {
+    public static String getSettings(Project project, String key, boolean shared) {
         String value = getPreferences(project, shared).get(key, null);
         if (value == null) {
             value = readSettingsFromPom(project, key);
@@ -515,46 +516,6 @@ public class MavenProjectSupport {
     }
     
     /**
-     * Set browser ID for the given {@link Project}.
-     * 
-     * @param project project for which we want to set new browser
-     * @param browerID browser that we want to set or null if we want to remove current browser
-     */
-    public static void setBrowserID(@NonNull Project project, @NullAllowed String browerID) {
-        Parameters.notNull("project", project);
-
-        Preferences preferences = getPreferences(project, false);
-        
-        if (browerID == null || "".equals(browerID)) {
-            preferences.remove(MavenJavaEEConstants.SELECTED_BROWSER);
-        } else {
-            preferences.put(MavenJavaEEConstants.SELECTED_BROWSER, browerID);
-        }
-        try {
-            preferences.flush();
-        } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
-    /**
-     * Returns selected browser ID for the given {@link Project}.
-     * 
-     * @param project project for which we want to know browserID
-     * @return browserID for the given project or null if the project doesn't have browser
-     */
-    public static String getBrowserID(@NonNull Project project) {
-        Parameters.notNull("project", project);
-        
-        String selectedBrowser = getSettings(project, MavenJavaEEConstants.SELECTED_BROWSER, false);
-        if (selectedBrowser != null) {
-            return selectedBrowser;
-        } else {
-            return BrowserUISupport.getDefaultBrowserChoice(true).getId();
-        }
-    }
-    
-    /**
      * Returns preferences for the given {@link Project}.
      * 
      * @param project for which we want to find {@link Preferences}
@@ -596,7 +557,7 @@ public class MavenProjectSupport {
                             }
                         }
                     }));
-                    MavenProjectSupport.setServerInstanceID(prj, newOne);
+                    JavaEEProjectSettings.setServerInstanceID(prj, newOne);
                 }
             });
         }
