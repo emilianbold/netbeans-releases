@@ -438,7 +438,8 @@ public class NamespaceImpl implements CsmNamespace, MutableDeclarationsContainer
     public static boolean isNamespaceScope(FunctionImpl<?> func) {
         if( ((FileImpl) func.getContainingFile()).isHeaderFile() && ! func.isPureDefinition() ) {
             return true;
-        } else if (func.isStatic()) {
+        } else if (func.isCStyleStatic()) {
+//        } else if (func.isStatic()) {
             return false;
         }
         return true;

@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -2388,7 +2389,8 @@ public class AstRenderer {
         public static CsmScope getScope(CsmScope scope, CsmFile file, boolean _static, boolean definition) {
             // change scope to file for static methods, but only to prevent
             // registration in global namespace
-            if(scope instanceof CsmNamespace) {
+//            if(scope instanceof CsmNamespace) {
+            if(CsmBaseUtilities.isGlobalNamespace(scope)) {
                 if( !NamespaceImpl.isNamespaceScope(file, definition, _static) ) {
                         scope = file;
                 }

@@ -254,6 +254,7 @@ public class OptionsPanel extends JPanel {
         removeButton = new JButton();
         compilerOptionsLabel = new JLabel();
         compilerOptionsTextField = new JTextField();
+        compilerOptionsInfoLabel = new JLabel();
 
         Mnemonics.setLocalizedText(enabledCheckBox, "COMPILATION_ON_SAVE"); // NOI18N
 
@@ -264,6 +265,7 @@ public class OptionsPanel extends JPanel {
             }
         });
 
+        watchLabel.setLabelFor(mappingsTable);
         Mnemonics.setLocalizedText(watchLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.watchLabel.text")); // NOI18N
 
         mappingsScrollPane.setViewportView(mappingsTable);
@@ -282,9 +284,12 @@ public class OptionsPanel extends JPanel {
             }
         });
 
+        compilerOptionsLabel.setLabelFor(compilerOptionsTextField);
         Mnemonics.setLocalizedText(compilerOptionsLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.compilerOptionsLabel.text")); // NOI18N
 
         compilerOptionsTextField.setColumns(20);
+
+        Mnemonics.setLocalizedText(compilerOptionsInfoLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.compilerOptionsInfoLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
@@ -306,7 +311,11 @@ public class OptionsPanel extends JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addComponent(compilerOptionsLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(compilerOptionsTextField))
+                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(compilerOptionsInfoLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(compilerOptionsTextField)))
         );
 
         layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, removeButton});
@@ -321,7 +330,7 @@ public class OptionsPanel extends JPanel {
                 .addComponent(watchLabel)
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(mappingsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                    .addComponent(mappingsScrollPane, GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addButton)
                         .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
@@ -329,7 +338,9 @@ public class OptionsPanel extends JPanel {
                 .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
                     .addComponent(compilerOptionsLabel)
-                    .addComponent(compilerOptionsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(compilerOptionsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(compilerOptionsInfoLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -355,6 +366,7 @@ public class OptionsPanel extends JPanel {
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private JButton addButton;
+    private JLabel compilerOptionsInfoLabel;
     private JLabel compilerOptionsLabel;
     private JTextField compilerOptionsTextField;
     private JButton configureExecutablesButton;
