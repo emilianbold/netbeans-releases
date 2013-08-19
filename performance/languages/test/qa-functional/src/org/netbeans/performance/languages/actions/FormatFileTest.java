@@ -126,7 +126,7 @@ public class FormatFileTest extends PerformanceTestCase {
         testProject = Projects.PHP_PROJECT;
         fileName = "php20kb.php";
         nodePath = "Source Files";
-        expectedTime = 1000;
+        expectedTime = 1500;
         WAIT_AFTER_OPEN = 2000;
         doMeasurement();
     }
