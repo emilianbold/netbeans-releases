@@ -80,7 +80,7 @@ public class JsfIndexer extends EmbeddingIndexer {
     protected void index(Indexable indexable, Result parserResult, Context context) {
         try {
             FileObject fo = parserResult.getSnapshot().getSource().getFileObject();
-            List<IndexDocument> documents = new LinkedList<IndexDocument>();
+            List<IndexDocument> documents = new LinkedList<>();
             IndexingSupport support = IndexingSupport.getInstance(context);
 
             //get JSF models and index them

@@ -131,7 +131,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     @Override
     public List<VariableInfo> getManagedBeans(FileObject target, ResolverContext context) {
         List<FacesManagedBean> beans = getJsfManagedBeans(target, context);
-        List<VariableInfo> result = new ArrayList<VariableInfo>(beans.size());
+        List<VariableInfo> result = new ArrayList<>(beans.size());
         for (FacesManagedBean bean : beans) {
             if(bean.getManagedBeanClass() != null && bean.getManagedBeanName() != null) {
                 result.add(VariableInfo.createResolvedVariable(bean.getManagedBeanName(), bean.getManagedBeanClass()));
@@ -143,7 +143,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     @Override
     public List<VariableInfo> getVariables(Snapshot snapshot, final int offset, ResolverContext context) {
         List<JsfVariableContext> allJsfVariables = getAllJsfVariables(snapshot, offset);
-        List<VariableInfo> result = new ArrayList<VariableInfo>(allJsfVariables.size());
+        List<VariableInfo> result = new ArrayList<>(allJsfVariables.size());
         for (JsfVariableContext jsfVariable : allJsfVariables) {
             //gets the generated expression from the el variables chain, see the JsfVariablesModel for more info
             String expression = jsfVariable.getResolvedExpression();
@@ -157,7 +157,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
 
     @Override
     public List<VariableInfo> getRawObjectProperties(String objectName, Snapshot snapshot, ResolverContext context) {
-        List<VariableInfo> variables = new ArrayList<VariableInfo> (3);
+        List<VariableInfo> variables = new ArrayList<> (3);
         
         //composite component object's properties handling
         if(OBJECT_NAME__CC.equals(objectName)) { //NOI18N
@@ -169,7 +169,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
             variables.add(VARIABLE_INFO__RENDERED);
             final JsfPageModelFactory modelFactory = JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class);
             assert modelFactory != null;
-            final AtomicReference<CompositeComponentModel> ccModelRef = new AtomicReference<CompositeComponentModel>();
+            final AtomicReference<CompositeComponentModel> ccModelRef = new AtomicReference<>();
             try {
                 ParserManager.parse(Collections.singleton(snapshot.getSource()), new UserTask() {
 
@@ -208,7 +208,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
 
     @Override
     public List<VariableInfo> getBeansInScope(String scope, Snapshot snapshot, ResolverContext context) {
-        List<VariableInfo> result = new ArrayList<VariableInfo>();
+        List<VariableInfo> result = new ArrayList<>();
         for (FacesManagedBean bean : getJsfManagedBeans(snapshot.getSource().getFileObject(), context)) {
             if(bean.getManagedBeanClass() != null && bean.getManagedBeanName() == null) {
                 if (scope.equals(bean.getManagedBeanScopeString())) {
@@ -239,7 +239,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     }
 
     private List<JsfVariableContext> getAllJsfVariables(Snapshot snapshot, final int offset) {
-        final List<JsfVariableContext> result = new ArrayList<JsfVariableContext>();
+        final List<JsfVariableContext> result = new ArrayList<>();
         try {
             ParserManager.parse(Collections.singleton(snapshot.getSource()), new UserTask() {
 

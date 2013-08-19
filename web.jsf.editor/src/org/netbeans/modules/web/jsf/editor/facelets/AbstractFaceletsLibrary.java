@@ -105,9 +105,6 @@ public abstract class AbstractFaceletsLibrary extends TagLibraryImpl implements 
              return false;
          }
          AbstractFaceletsLibrary other = (AbstractFaceletsLibrary)obj;
-        if (obj == null) {
-            return false;
-        }
         if (getClass() != obj.getClass()) {
             return false;
         }
