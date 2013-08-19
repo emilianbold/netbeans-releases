@@ -90,6 +90,9 @@ public class Utils {
     }
 
     public static String getFullFormatedDate(Calendar calendar) {
+        if (calendar == null) {
+            return "";
+        }
         return DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(calendar.getTime());
     }
 
