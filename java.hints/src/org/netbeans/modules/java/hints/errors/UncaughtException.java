@@ -244,6 +244,10 @@ public final class UncaughtException implements ErrorRule<Void> {
             TreePath pathRec = path;
             
             while (pathRec != null && pathRec.getLeaf().getKind() != Kind.METHOD) {
+                if (pathRec.getLeaf().getKind() == Kind.LAMBDA_EXPRESSION) {
+                    pathRec = null;
+                    break;
+                }
                 pathRec = pathRec.getParentPath();
             }
             
