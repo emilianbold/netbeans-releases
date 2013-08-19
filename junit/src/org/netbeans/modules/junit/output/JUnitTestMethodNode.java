@@ -46,6 +46,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.gsf.testrunner.api.DiffViewAction;
@@ -83,7 +85,12 @@ public class JUnitTestMethodNode extends TestMethodNode{
         }
 //        FileObject suiteFile = ((JUnitTestcase)testcase).getTestSuite().getSuiteFile();
         FileObject testFO = ((JUnitTestcase)testcase).getClassFileObject();
-        if (testFO != null){
+        if (testFO == null){
+            Logger.getLogger(JUnitTestMethodNode.class.getName()).log(Level.INFO, "Test running process was probably abnormally interrupted. Could not locate FileObject for {0}", testcase.toString());
+            for (Action prefAction : actions) {
+                prefAction.setEnabled(false);
+            }
+        } else {
 	    boolean parameterized = false;
 	    try {
 		String text = testFO.asText();
