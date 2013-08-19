@@ -94,7 +94,7 @@ public class BookmarkHistoryPopupAction extends BaseAction {
 
     @Override
     public void actionPerformed(ActionEvent evt, JTextComponent target) {
-        BookmarkHistoryPopup.get().show(!gotoNext);
+        BookmarkHistoryPopup.get().show(gotoNext);
     }
 
     @Override

@@ -116,7 +116,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
     private BookmarkHistoryPopup() {
     }
     
-    public void show(boolean chooseLastUsedBookmark) {
+    public void show(boolean gotoNext) {
         if (popup != null) { // Refresh in case it already exists
             hide();
         }
@@ -139,7 +139,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
         Rectangle screenBounds = Utilities.getUsableScreenBounds();
         initTable(screenBounds);
         // At least one entry -> select either first or last entry
-        selectEntry(chooseLastUsedBookmark ? 0 : tableModel.getEntryCount() - 1);
+        selectEntry(gotoNext ? (tableModel.getEntryCount() > 2 ? 1: 0) : (tableModel.getEntryCount() > 1 ? tableModel.getEntryCount() - 2 : tableModel.getEntryCount() - 1));
 
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
@@ -318,10 +318,10 @@ public final class BookmarkHistoryPopup implements KeyListener {
         int keyCode = e.getKeyCode();
         if (gotoPreviousKeyStroke != null && gotoPreviousKeyStroke.getKeyCode() == keyCode) {
             e.consume();
-            selectNext();
+            selectPrevious();
         } else if (gotoNextKeyStroke != null && gotoNextKeyStroke.getKeyCode() == keyCode) {
             e.consume();
-            selectPrevious();
+            selectNext();
         } else {
             switch (keyCode) {
                 case KeyEvent.VK_ENTER:
