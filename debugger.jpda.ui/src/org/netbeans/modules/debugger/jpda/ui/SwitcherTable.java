@@ -82,6 +82,7 @@ public class SwitcherTable extends JTable {
     private Color background;
     private Color selForeground;
     private Color selBackground;
+    private int width;
     
     /** Cached preferred size value */
     private Dimension prefSize;
@@ -98,7 +99,7 @@ public class SwitcherTable extends JTable {
      * as possible. Height will be used during the number of row computing.
      */
     public SwitcherTable(SwitcherTableItem[] items) {
-        this(items, 0);
+        this(items, 0, 0);
     }
     
     /**
@@ -106,8 +107,9 @@ public class SwitcherTable extends JTable {
      * computed according to given y coordinate. Height will be used during the
      * number of row computing.
      */
-    public SwitcherTable(SwitcherTableItem[] items, int height) {
+    public SwitcherTable(SwitcherTableItem[] items, int height, int width) {
         super();
+        this.width = width;
         init();
         setModel(new SwitcherTableModel(items, getRowHeight(), height));
         getSelectionModel().clearSelection();
@@ -278,7 +280,8 @@ public class SwitcherTable extends JTable {
                             c.getPreferredSize().width + 1, columnWidth);
                 }
             }
-            columnWidth = Math.min(columnWidth, 250);
+            int maxColumnWidth = (width > 0) ? width/cols : 250;
+            columnWidth = Math.min(columnWidth, maxColumnWidth);
             // Set the same (maximum) widht to all columns
             for (int i = 0; i < cols; i++) {
                 getColumnModel().getColumn(i).setPreferredWidth(columnWidth);
