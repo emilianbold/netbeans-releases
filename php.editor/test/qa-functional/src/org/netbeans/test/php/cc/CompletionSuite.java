@@ -94,7 +94,7 @@ public class CompletionSuite {
                 "testPhp54TraitsSameFile",
                 "testPhp54TraitsDifferentFile")
                 .addTest(testCConEmptyLine.class, "CreateApplication", "Issue141854")
-                .addTest(testCCSorting.class, "CreateApplication", "Issue141880");
+                .addTest(testCodeCompletionInsideQuotes.class, "CreateApplication", "Issue141880");
         return conf.suite();
     }
 }
