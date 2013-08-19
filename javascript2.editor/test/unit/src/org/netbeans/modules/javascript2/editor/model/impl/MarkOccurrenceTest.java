@@ -950,7 +950,15 @@ public class MarkOccurrenceTest extends JsTestBase {
     public void testIssue234392_02() throws Exception {
         checkOccurrences("testfiles/markoccurences/issue234392.js", "window.co^nsole.log(\"text\");", true); 
     }
-
+    
+    public void testIssue234512_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue234512.js", "'Last-Modified': mtim^e", true); 
+    }
+    
+    public void testIssue234512_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue234512.js", "'Content-Type': contentT^ype,", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
