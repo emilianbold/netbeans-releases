@@ -108,27 +108,13 @@ public class MavenProjectRestSupport extends RestSupport {
     
     @Override
     public String getBaseURL() {
-        WebApp webApp = null;
-        try {
-            webApp = getWebApp();
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-        if (webApp != null) {
-            StringBuilder servletNames = new StringBuilder();
-            StringBuilder urlPatterns = new StringBuilder();
-            int i=0;
-            for (ServletMapping mapping : webApp.getServletMapping()) {
-                servletNames.append(i>0 ? ",":"");
-                servletNames.append(mapping.getServletName());
-                urlPatterns.append(i>0 ? ",":"");
-                urlPatterns.append(((ServletMapping25)mapping).getUrlPatterns()[0]);
-                i++;
+        String applicationPath = getApplicationPath();
+        if (applicationPath != null) {
+            if (!applicationPath.startsWith("/")) {
+                applicationPath = "/"+applicationPath;
             }
-            // http://localhost:8084/mavenprojectWeb3/||ServletAdaptor||resources/*
-            return MiscUtilities.getContextRootURL(getProject())+"||"+servletNames+"||"+urlPatterns;
         }
-        return super.getBaseURL();
+        return MiscUtilities.getContextRootURL(getProject())+"||"+applicationPath;            //NOI18N
     }
 
     @Override
