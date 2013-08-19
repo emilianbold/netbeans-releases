@@ -76,7 +76,7 @@ public class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplement
 
     @Override
     public void setProfile(Profile profile) {
-        MavenProjectSupport.setJ2eeVersion(project, profile.toPropertiesString());
+        MavenProjectSupport.setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, profile.toPropertiesString(), true);
     }
 
     @Override
@@ -102,7 +102,7 @@ public class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplement
 
     @Override
     public Profile getProfile() {
-        return Profile.fromPropertiesString(MavenProjectSupport.readJ2eeVersion(project));
+        return Profile.fromPropertiesString(MavenProjectSupport.getSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, true));
     }
 
     @Override

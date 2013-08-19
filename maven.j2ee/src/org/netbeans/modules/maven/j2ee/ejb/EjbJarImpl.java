@@ -60,8 +60,8 @@ import org.netbeans.modules.j2ee.dd.spi.ejb.EjbJarMetadataModelFactory;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.spi.ejbjar.EjbJarImplementation2;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.j2ee.BaseEEModuleImpl;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.openide.ErrorManager;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -94,13 +94,9 @@ public class EjbJarImpl extends BaseEEModuleImpl implements EjbJarImplementation
 
     @Override
     public Profile getJ2eeProfile() {
-        //try to apply the hint if it exists.
-        String version = MavenProjectSupport.readJ2eeVersion(project);
-        if (version != null) {
-            Profile profile = Profile.fromPropertiesString(version);
-            if (profile != null) { // It can happen: #229535
-                return profile;
-            }
+        Profile profile = JavaEEProjectSettings.getProfile(project);
+        if (profile != null) {
+            return profile;
         }
         String ver = getModuleVersion();
         if (EjbJar.VERSION_2_1.equals(ver)) {

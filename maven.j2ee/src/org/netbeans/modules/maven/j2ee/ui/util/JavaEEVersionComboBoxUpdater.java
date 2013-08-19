@@ -59,7 +59,6 @@ import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import static org.netbeans.modules.maven.j2ee.ui.util.Bundle.*;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.j2ee.web.WebModuleImpl;
 import org.netbeans.modules.maven.j2ee.web.WebModuleProviderImpl;
 import org.openide.util.NbBundle.Messages;
@@ -133,7 +132,7 @@ public final class JavaEEVersionComboBoxUpdater extends ComboBoxUpdater<Profile>
 
     @Override
     public Profile getValue() {
-        Profile javaeeProfile = Profile.fromPropertiesString(MavenProjectSupport.readJ2eeVersion(project));
+        Profile javaeeProfile = JavaEEProjectSettings.getProfile(project);
         if (javaeeProfile != null) {
             return javaeeProfile;
         }

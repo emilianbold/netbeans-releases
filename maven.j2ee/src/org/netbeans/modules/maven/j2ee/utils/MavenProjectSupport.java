@@ -370,12 +370,12 @@ public class MavenProjectSupport {
                 
                 FileObject webXml = webModuleImpl.getDeploymentDescriptor();
                 if (webXml == null) {
-                    String j2eeVersion = readJ2eeVersion(project);
-                    webXml = DDHelper.createWebXml(Profile.fromPropertiesString(j2eeVersion), webInf);
+                    Profile profile = JavaEEProjectSettings.getProfile(project);
+                    webXml = DDHelper.createWebXml(profile, webInf);
     
                     // this should never happend if valid j2eeVersion has been parsed - see also issue #214600
-                    assert webXml != null : "DDHelper wasn't able to create deployment descriptor for the J2EE version: " + j2eeVersion
-                            + ", Profile.fromPropertiesString(j2eeVersion) returns: " + Profile.fromPropertiesString(j2eeVersion);
+                    assert webXml != null : "DDHelper wasn't able to create deployment descriptor for the J2EE version: " + profile.toPropertiesString()
+                            + ", Profile.fromPropertiesString(j2eeVersion) returns: " + profile;
                 }
 
             } catch (IOException ex) {
@@ -402,16 +402,6 @@ public class MavenProjectSupport {
      */
     public static String readServerInstanceID(Project project) {
         return getSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
-    }
-
-    /**
-     * Read J2EE version for the given project
-     * 
-     * @param projectfor which we want to get J2EE version
-     * @return J2EE version
-     */
-    public static String readJ2eeVersion(Project project)  {
-        return getSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, true);
     }
 
     /**
@@ -488,10 +478,6 @@ public class MavenProjectSupport {
         }
     }
 
-    public static void setJ2eeVersion(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, true);
-    }
-
     public static void setServerID(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, value, true);
     }
@@ -500,7 +486,7 @@ public class MavenProjectSupport {
         setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, value, false);
     }
     
-    private static void setSettings(Project project, String key, String value, boolean shared) {
+    public static void setSettings(Project project, String key, String value, boolean shared) {
         Preferences preferences = getPreferences(project, shared);
         if (value != null) {
             preferences.put(key, value);

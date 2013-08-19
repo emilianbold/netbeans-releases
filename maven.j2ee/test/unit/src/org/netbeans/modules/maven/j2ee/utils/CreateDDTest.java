@@ -41,6 +41,8 @@
  */
 package org.netbeans.modules.maven.j2ee.utils;
 
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.j2ee.JavaEEMavenTestBase;
 
 /**
@@ -59,7 +61,7 @@ public class CreateDDTest extends JavaEEMavenTestBase {
      ***********************************************************************************************************/
     public void testCreateDDIfRequired_nullServerPassed_webLogic() {
         MavenProjectSupport.setServerID(project, WEBLOGIC);
-        MavenProjectSupport.setJ2eeVersion(project, "1.6"); //NOI18N
+        JavaEEProjectSettings.setProfile(project, Profile.JAVA_EE_6_FULL);
         MavenProjectSupport.createWebXMLIfRequired(project, null);
 
         assertEquals(true, isWebDDpresent(project));
@@ -92,7 +94,7 @@ public class CreateDDTest extends JavaEEMavenTestBase {
      * Calling createDDIfRequired with server passed to the method as a parameter
      ****************************************************************************/
     public void testCreateDDIfRequired_weblogicPassed() {
-        MavenProjectSupport.setJ2eeVersion(project, "1.6"); //NOI18N
+        JavaEEProjectSettings.setProfile(project, Profile.JAVA_EE_6_FULL);
         MavenProjectSupport.createWebXMLIfRequired(project, WEBLOGIC);
         assertEquals(true, isWebDDpresent(project));
     }
