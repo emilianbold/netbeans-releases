@@ -92,7 +92,8 @@ public class WindowsSupport {
                     return Collections.<String, String>emptyMap();
                 }
             } catch (InterruptedException ex) {
-                Logger.getLogger(HostMappingProviderWindows.class.getName()).log(Level.SEVERE, null, ex);
+                Thread.interrupted();
+                Logger.getLogger(HostMappingProviderWindows.class.getName()).log(Level.FINE, null, ex);
             }
 
             BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(file), Charset.forName("Unicode")));//NOI18N
