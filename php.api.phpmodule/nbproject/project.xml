@@ -169,6 +169,7 @@
                 <friend>org.netbeans.modules.php.editor</friend>
                 <friend>org.netbeans.modules.php.fuel</friend>
                 <friend>org.netbeans.modules.php.nette</friend>
+                <friend>org.netbeans.modules.php.nette.tester</friend>
                 <friend>org.netbeans.modules.php.nette2</friend>
                 <friend>org.netbeans.modules.php.phpcsfixer</friend>
                 <friend>org.netbeans.modules.php.phpdoc</friend>
