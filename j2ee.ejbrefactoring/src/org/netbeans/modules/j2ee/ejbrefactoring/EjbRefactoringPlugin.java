@@ -106,7 +106,10 @@ public class EjbRefactoringPlugin implements RefactoringPlugin {
                                 if (el.getModifiers().contains(Modifier.PRIVATE)) {
                                     result[0] = null;
                                 } else {
-                                    result[0] = new Problem(false, getRefactoringWarning());
+                                    String refactoringWarning = getRefactoringWarning();
+                                    if (refactoringWarning != null) {
+                                        result[0] = new Problem(false, refactoringWarning);
+                                    }
                                 }
                             }
 

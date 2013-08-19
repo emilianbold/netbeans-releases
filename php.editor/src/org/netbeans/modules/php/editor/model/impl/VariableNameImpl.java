@@ -459,7 +459,8 @@ class VariableNameImpl extends ScopeImpl implements VariableName {
         }*/
         sb.append(Signature.ITEM_DELIMITER);
         sb.append(getOffset()).append(Signature.ITEM_DELIMITER);
-        sb.append(Signature.ITEM_DELIMITER);
+        sb.append(isDeprecated() ? 1 : 0).append(Signature.ITEM_DELIMITER);
+        sb.append(getFilenameUrl()).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 

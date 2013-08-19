@@ -92,9 +92,8 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
             final NameKind query, final IndexQueryImpl indexQuery, final IndexResult indexResult) {
         String[] values = indexResult.getValues(IDX_FIELD);
         Set<FunctionElement> retval = values.length > 0 ? new HashSet<FunctionElement>() : Collections.<FunctionElement>emptySet();
-        String url = indexResult.getUrl().toString();
         for (String val : values) {
-            final FunctionElement fnc = fromSignature(query, indexQuery, url, Signature.get(val));
+            final FunctionElement fnc = fromSignature(query, indexQuery, Signature.get(val));
             if (fnc != null) {
                 retval.add(fnc);
             }
@@ -102,13 +101,13 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
         return retval;
     }
 
-    public static FunctionElement fromSignature(final NameKind query, IndexQueryImpl indexScopeQuery, String url, Signature sig) {
+    public static FunctionElement fromSignature(final NameKind query, IndexQueryImpl indexScopeQuery, Signature sig) {
         Parameters.notNull("NameKind query: can't be null", query);
         FunctionSignatureParser signParser = new FunctionSignatureParser(sig);
         FunctionElement retval = null;
         if (matchesQuery(query, signParser)) {
             retval = new FunctionElementImpl(signParser.getQualifiedName(),
-                    signParser.getOffset(), url,
+                    signParser.getOffset(), signParser.getFileUrl(),
                     indexScopeQuery,  new ParametersFromSignature(signParser), new ReturnTypesFromSignature(signParser),
                     signParser.isDeprecated());
         }
@@ -167,6 +166,7 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
         sb.append(Separator.SEMICOLON); //NOI18N
         sb.append(getPhpModifiers().toFlags()).append(Separator.SEMICOLON);
         sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
+        sb.append(getFilenameUrl()).append(Separator.SEMICOLON);
         return sb.toString();
     }
 
@@ -230,6 +230,10 @@ public final class FunctionElementImpl extends FullyQualifiedElementImpl impleme
 
         boolean isDeprecated() {
             return signature.integer(6) == 1;
+        }
+
+        String getFileUrl() {
+            return signature.string(7);
         }
     }
 
