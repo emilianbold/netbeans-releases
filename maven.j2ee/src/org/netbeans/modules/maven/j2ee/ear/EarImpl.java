@@ -71,7 +71,6 @@ import org.netbeans.modules.j2ee.dd.api.application.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.common.RootInterface;
 import org.netbeans.modules.j2ee.deployment.common.api.EjbChangeDescriptor;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.RootedEntry;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleChangeReporter;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ModuleListener;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeApplicationImplementation2;
@@ -82,6 +81,7 @@ import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
 import org.netbeans.modules.j2ee.metadata.model.spi.MetadataModelFactory;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation;
 import org.netbeans.modules.j2ee.spi.ejbjar.EarImplementation2;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.NbMavenProject;
@@ -90,7 +90,6 @@ import org.netbeans.modules.maven.embedder.EmbedderFactory;
 import org.netbeans.modules.maven.embedder.NBPluginParameterExpressionEvaluator;
 import org.netbeans.modules.maven.j2ee.EjbChangeDescriptorImpl;
 import org.netbeans.modules.maven.j2ee.ear.model.ApplicationMetadataModelImpl;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.spi.debug.AdditionalDebuggedProjects;
 import org.netbeans.modules.web.api.webmodule.WebModule;
 import org.openide.ErrorManager;
@@ -125,13 +124,12 @@ public class EarImpl implements EarImplementation, EarImplementation2,
 
     @Override
     public Profile getJ2eeProfile() {
-        //try to apply the hint if it exists.
-        String version = MavenProjectSupport.readJ2eeVersion(project);
-        if (version != null) {
-            return Profile.fromPropertiesString(version);
+        Profile profile = JavaEEProjectSettings.getProfile(project);
+        if (profile != null) {
+            return profile;
         }
         if (isApplicationXmlGenerated()) {
-            version = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
+            String version = PluginPropertyUtils.getPluginProperty(project, Constants.GROUP_APACHE_PLUGINS,
                     Constants.PLUGIN_EAR, "version", "generate-application-xml", null); //NOI18N
             // the default version in maven plugin is also 1.3
             //TODO what if the default changes?

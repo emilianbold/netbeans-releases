@@ -41,14 +41,22 @@
  */
 package org.netbeans.modules.maven.j2ee;
 
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.javaee.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.Exceptions;
 
 /**
+ * Implementation of {@link JavaEEProjectSettingsImplementation}.
+ *
+ * Client shouldn't use this class directly, but access it via {@link JavaEEProjectSettings}.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
@@ -56,7 +64,8 @@ import org.netbeans.spi.project.ProjectServiceProvider;
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
 })
 public class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplementation {
 
@@ -68,31 +77,47 @@ public class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplement
 
     @Override
     public void setProfile(Profile profile) {
-        MavenProjectSupport.setJ2eeVersion(project, profile.toPropertiesString());
-    }
-
-    @Override
-    public Profile getProfile() {
-        return Profile.fromPropertiesString(MavenProjectSupport.readJ2eeVersion(project));
+        MavenProjectSupport.setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, profile.toPropertiesString(), true);
     }
 
     @Override
     public void setBrowserID(String browserID) {
-        MavenProjectSupport.setBrowserID(project, browserID);
-    }
+        Preferences preferences = MavenProjectSupport.getPreferences(project, false);
 
-    @Override
-    public String getBrowserID() {
-        return MavenProjectSupport.getBrowserID(project);
+        if (browserID == null || "".equals(browserID)) {
+            preferences.remove(MavenJavaEEConstants.SELECTED_BROWSER);
+        } else {
+            preferences.put(MavenJavaEEConstants.SELECTED_BROWSER, browserID);
+        }
+        try {
+            preferences.flush();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     @Override
     public void setServerInstanceID(String serverInstanceID) {
-        MavenProjectSupport.setServerInstanceID(project, serverInstanceID);
+        MavenProjectSupport.setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, serverInstanceID, false);
+    }
+
+    @Override
+    public Profile getProfile() {
+        return Profile.fromPropertiesString(MavenProjectSupport.getSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, true));
+    }
+
+    @Override
+    public String getBrowserID() {
+        String selectedBrowser = MavenProjectSupport.getSettings(project, MavenJavaEEConstants.SELECTED_BROWSER, false);
+        if (selectedBrowser != null) {
+            return selectedBrowser;
+        } else {
+            return BrowserUISupport.getDefaultBrowserChoice(true).getId();
+        }
     }
 
     @Override
     public String getServerInstanceID() {
-        return MavenProjectSupport.readServerInstanceID(project);
+        return MavenProjectSupport.getSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
     }
 }
