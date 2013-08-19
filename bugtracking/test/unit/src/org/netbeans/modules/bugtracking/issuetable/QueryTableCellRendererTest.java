@@ -60,7 +60,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.netbeans.modules.bugtracking.*;
-import org.netbeans.modules.bugtracking.IssueImpl;
 import org.netbeans.modules.bugtracking.QueryImpl;
 import org.netbeans.modules.bugtracking.RepositoryImpl;
 import org.netbeans.modules.bugtracking.issuetable.QueryTableCellRenderer.TableCellStyle;
@@ -69,7 +68,7 @@ import org.netbeans.modules.bugtracking.issuetable.IssueNode.IssueProperty;
 import org.netbeans.modules.bugtracking.spi.*;
 import org.netbeans.modules.bugtracking.cache.IssueCache;
 import org.netbeans.modules.bugtracking.cache.IssueCache.IssueAccessor;
-import org.openide.nodes.Node;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.nodes.Node.Property;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -110,9 +109,9 @@ public class QueryTableCellRendererTest {
         RendererRepository rendererRepository = new RendererRepository();
         RendererQuery rendererQuery = new RendererQuery(rendererRepository);
 
-        MessageFormat issueNewFormat       = getFormat("issueNewFormat");      // NOI18N
-        MessageFormat issueObsoleteFormat  = getFormat("issueObsoleteFormat"); // NOI18N
-        MessageFormat issueModifiedFormat  = getFormat("issueModifiedFormat"); // NOI18N
+        MessageFormat issueNewFormat       = getFormat("issueNewFormat", UIUtils.getTaskNewColor());           // NOI18N
+        MessageFormat issueObsoleteFormat  = getFormat("issueObsoleteFormat", UIUtils.getTaskObsoleteColor()); // NOI18N
+        MessageFormat issueModifiedFormat  = getFormat("issueModifiedFormat", UIUtils.getTaskModifiedColor()); // NOI18N
 
         Color newHighlightColor            = new Color(0x00b400);
         Color modifiedHighlightColor       = new Color(0x0000ff);
@@ -163,7 +162,7 @@ public class QueryTableCellRendererTest {
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(issueObsoleteFormat, result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#999999\"><s>Archived</s></font>- this task doesn't belong to the query anymore</html>", result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#999999\"><s>Archived</s></font> - this task doesn't belong to the query anymore</html>", result.getTooltip());
 
         // obsolete issue, selected
         rendererQuery.containsIssue = false;
@@ -175,7 +174,7 @@ public class QueryTableCellRendererTest {
         assertEquals(obsoleteHighlightColor, result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(defaultStyle.getFormat(), result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#999999\"><s>Archived</s></font>- this task doesn't belong to the query anymore</html>", result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#999999\"><s>Archived</s></font> - this task doesn't belong to the query anymore</html>", result.getTooltip());
 
         // modified issue, not selected
         rendererQuery.containsIssue = true;
@@ -188,7 +187,7 @@ public class QueryTableCellRendererTest {
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(issueModifiedFormat, result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#0000FF\">Modified</font>- this task is modified - changed</html>", result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#0000ff\">Modified</font> - this task is modified - changed</html>", result.getTooltip());
 
 
         // modified issue, selected
@@ -202,7 +201,7 @@ public class QueryTableCellRendererTest {
         assertEquals(modifiedHighlightColor, result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(null, result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#0000FF\">Modified</font>- this task is modified - changed</html>", result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#0000ff\">Modified</font> - this task is modified - changed</html>", result.getTooltip());
 
         // new issue, not selected
         rendererQuery.containsIssue = true;
@@ -215,7 +214,7 @@ public class QueryTableCellRendererTest {
         assertEquals(defaultStyle.getBackground(), result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(issueNewFormat, result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#00b400\">New</font>- this task is new</html>", result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#00b400\">New</font> - this task is new</html>", result.getTooltip());
 
 
         // new issue, selected
@@ -229,7 +228,7 @@ public class QueryTableCellRendererTest {
         assertEquals(newHighlightColor, result.getBackground());
         assertEquals(defaultStyle.getForeground(), result.getForeground());
         assertEquals(null, result.getFormat());
-        assertEquals("<html>some value<br><font color=\"#00b400\">New</font>- this task is new</html>", result.getTooltip());
+        assertEquals("<html>some value<br><font color=\"#00b400\">New</font> - this task is new</html>", result.getTooltip());
 
     }
 
@@ -273,8 +272,9 @@ public class QueryTableCellRendererTest {
         assertTrue(evenBackground.equals(new Color(0xf3f6fd)) || unevenBackground.equals(new Color(0xf3f6fd)));
     }
 
-    private static MessageFormat getFormat(String key) {
-        String format = NbBundle.getMessage(IssueTable.class, key);
+    private static MessageFormat getFormat (String key, Color c) {
+        String format = NbBundle.getMessage(IssueTable.class, key,
+                new Object[] { UIUtils.getColorString(c), "{0}" }); //NOI18N
         return new MessageFormat(format);
     }
 

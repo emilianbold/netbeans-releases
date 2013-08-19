@@ -74,7 +74,6 @@ public class QueryPanel extends javax.swing.JPanel {
     final ExpandablePanel byDetails;
     final ExpandablePanel byPeople;
     final ExpandablePanel byLastChange;
-    private static final Color ERROR_COLOR = new Color(153,0,0);
     private final Color defaultTextColor;
 
     /** Creates new form QueryPanel */
@@ -1358,7 +1357,7 @@ public class QueryPanel extends javax.swing.JPanel {
                 tableSummaryLabel.setVisible(false);
                 tableFieldsPanel.setVisible(false);
                 if (text != null) {
-                    noContentLabel.setForeground(ERROR_COLOR);
+                    noContentLabel.setForeground(BugzillaUtil.getErrorForegroundColor());
                     noContentLabel.setText(text);
                 }
             }

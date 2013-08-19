@@ -73,10 +73,10 @@ public class JsStructureScannerSemiTypes extends JsTestBase {
         checkStructure("testfiles/structure/semitypes/semiTypes.js");
     }
 
-    @Override
-    protected boolean cleanCacheDir() {
-        return false;
-    }
+//    @Override
+//    protected boolean cleanCacheDir() {
+//        return false;
+//    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

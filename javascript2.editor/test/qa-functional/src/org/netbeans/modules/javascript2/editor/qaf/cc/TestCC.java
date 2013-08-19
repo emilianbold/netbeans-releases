@@ -47,7 +47,6 @@ import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jellytools.modules.editor.CompletionJListOperator;
 import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.modules.javascript2.editor.qaf.GeneralJavaScript;
-import org.openide.util.Exceptions;
 
 /**
  *
@@ -89,7 +88,7 @@ public class TestCC extends GeneralJavaScript {
 
         TestCC.currentFile = "cc.js";
         EditorOperator eo = createWebFile("cc", TEST_BASE_NAME + "_" + NAME_ITERATOR, "JavaScript File");
-        eo.setCaretPositionToLine(5);
+        eo.setCaretPositionToLine(6);
         type(eo, "function Foo(){\n this.x=1; \n var foo = 2;");
         eo.setCaretPosition("}", false);
         type(eo, "\n Foo.prototype.add = function(i){\n this.x+=y;");

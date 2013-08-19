@@ -67,7 +67,6 @@ import javax.swing.JButton;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JSeparator;
 import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.border.BevelBorder;
@@ -81,6 +80,7 @@ import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableColumnModel;
 import javax.swing.table.TableModel;
+import org.netbeans.api.db.explorer.node.BaseNode;
 import org.netbeans.lib.ddl.DDLException;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
@@ -88,9 +88,12 @@ import org.openide.NotifyDescriptor;
 import org.openide.util.NbBundle;
 import org.netbeans.lib.ddl.impl.Specification;
 import org.netbeans.lib.ddl.util.PListReader;
+import org.netbeans.modules.db.explorer.DatabaseConnection;
 import org.netbeans.modules.db.explorer.DbUtilities;
+import org.netbeans.modules.db.explorer.node.TableNode;
 import org.openide.NotificationLineSupport;
 import org.openide.awt.Mnemonics;
+import org.openide.nodes.Node;
 import org.openide.util.HelpCtx;
 
 public class CreateTableDialog {
@@ -99,6 +102,7 @@ public class CreateTableDialog {
     JTable table;
     JButton addbtn, delbtn, editBtn, upBtn, downBtn;
     Specification spec;
+    private final BaseNode tablesNode;
     private DialogDescriptor descriptor = null;
     private NotificationLineSupport statusLine;
 
@@ -127,8 +131,12 @@ public class CreateTableDialog {
         return dlgtab;
     }
 
-    public CreateTableDialog(final Specification spe, final String schema) {
-        spec = spe;
+    public CreateTableDialog(final BaseNode node, final String schema) {
+        DatabaseConnection connection = node.getLookup().lookup(DatabaseConnection.class);
+                
+        spec = connection.getConnector().getDatabaseSpecification();
+        tablesNode = node;
+        
         try {
             JLabel label;
             JPanel pane = new JPanel();
@@ -159,7 +167,7 @@ public class CreateTableDialog {
             constr.gridx = 1;
             constr.gridy = 0;
             constr.insets = new java.awt.Insets (2, 2, 2, 2);
-            dbnamefield = new JTextField(NbBundle.getMessage (CreateTableDialog.class, "CreateTableUntitledName"), 10); // NOI18N
+            dbnamefield = new JTextField(getTableUntitledName(), 10); 
             dbnamefield.setToolTipText(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableNameTextFieldA11yDesc"));
             dbnamefield.getAccessibleContext().setAccessibleName(NbBundle.getMessage (CreateTableDialog.class, "ACS_CreateTableNameTextFieldA11yName"));
             label.setLabelFor(dbnamefield);
@@ -404,13 +412,33 @@ public class CreateTableDialog {
      * @param schema DB schema to create table in
      * @return true if new table successfully created, false if cancelled
      */
-    public static boolean showDialogAndCreate(final Specification spec, final String schema) {
-        final CreateTableDialog dlg = new CreateTableDialog(spec, schema);
+    public static boolean showDialogAndCreate(final BaseNode node, final String schema) {                
+        final CreateTableDialog dlg = new CreateTableDialog(node, schema);
         dlg.dialog.setVisible(true);
         if (dlg.descriptor.getValue() == DialogDescriptor.OK_OPTION) {
             return true;
         }
         return false;
+    }
+    
+    private String getTableUntitledName() {
+        final String nameBase = NbBundle.getMessage (CreateTableDialog.class, "CreateTableUntitledName"); // NOI18N
+        String name = nameBase;
+        int counter = 1;        
+        boolean existsSameTableName;
+        
+        do {
+            existsSameTableName = false;
+            for(Node node : tablesNode.getChildNodes()) {
+                if (node instanceof TableNode && node.getName().equalsIgnoreCase(name)) {
+                    counter++;
+                    name = nameBase + counter;
+                    existsSameTableName = true;
+                }
+            }
+        } while(existsSameTableName);       
+        
+        return name;
     }
 
     private String getTableName() {

@@ -191,8 +191,11 @@ public class PushAction extends SingleRepositoryAction {
                         if (isCanceled()) {
                             return;
                         }
-                        config = GitUtils.prepareConfig(config, remoteNameToUpdate, target,
-                                Arrays.asList(new String[] { GitUtils.getGlobalRefSpec(remoteNameToUpdate) }));
+                        List<String> refsToAdd = fetchRefSpecs;
+                        if (config == null) {
+                            refsToAdd = Arrays.asList(GitUtils.getGlobalRefSpec(remoteNameToUpdate));
+                        }
+                        config = GitUtils.prepareConfig(config, remoteNameToUpdate, target, refsToAdd);
                         client.setRemote(config, getProgressMonitor());
                         if (isCanceled()) {
                             return;

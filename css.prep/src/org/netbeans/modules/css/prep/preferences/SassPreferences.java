@@ -54,6 +54,7 @@ public final class SassPreferences extends BasePreferences implements CssPreproc
     private static final String CONFIGURED = "sass.configured"; // NOI18N
     private static final String ENABLED = "sass.enabled"; // NOI18N
     private static final String MAPPINGS = "sass.mappings"; // NOI18N
+    private static final String COMPILER_OPTIONS = "sass.compiler.options"; // NOI18N
 
     private static final SassPreferences INSTANCE = new SassPreferences();
 
@@ -93,6 +94,16 @@ public final class SassPreferences extends BasePreferences implements CssPreproc
     @Override
     public void setMappings(Project project, List<Pair<String, String>> mappings) {
         setMappings(project, MAPPINGS, mappings);
+    }
+
+    @Override
+    public String getCompilerOptions(Project project) {
+        return getCompilerOptions(project, COMPILER_OPTIONS);
+    }
+
+    @Override
+    public void setCompilerOptions(Project project, String compilerOptions) {
+        setCompilerOptions(project, COMPILER_OPTIONS, compilerOptions);
     }
 
 }

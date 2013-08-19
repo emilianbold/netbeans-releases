@@ -272,7 +272,7 @@ public class CodeCompletionPanel extends JPanel {
         }
     }
 
-    private final class DefaultRadioButtonListener implements ItemListener {
+    private final class DefaultRadioButtonListener implements ItemListener, Serializable {
         @Override
         public void itemStateChanged(ItemEvent e) {
             if (e.getStateChange() == ItemEvent.SELECTED) {

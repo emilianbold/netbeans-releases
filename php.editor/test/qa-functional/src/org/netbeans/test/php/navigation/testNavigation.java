@@ -134,7 +134,7 @@ public class testNavigation extends navigation
   {
     startTest( );
 
-    GoToLine( 100, 17 );
+    GoToLine( 100, 18 );
 
     endTest( );
   }

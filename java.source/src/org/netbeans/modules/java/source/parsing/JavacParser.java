@@ -1069,6 +1069,10 @@ public class JavacParser extends Parser {
             final JavacTrees jt = JavacTrees.instance(task);
             final int origStartPos = (int) jt.getSourcePositions().getStartPosition(cu, orig.getBody());
             final int origEndPos = (int) jt.getSourcePositions().getEndPosition(cu, orig.getBody());
+            if (origStartPos < 0) {
+                LOGGER.log(Level.WARNING, "Javac returned startpos: {0} < 0", new Object[]{origStartPos});  //NOI18N
+                return false;
+            }
             if (origStartPos > origEndPos) {
                 LOGGER.log(Level.WARNING, "Javac returned startpos: {0} > endpos: {1}", new Object[]{origStartPos, origEndPos});  //NOI18N
                 return false;

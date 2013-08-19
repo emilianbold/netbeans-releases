@@ -96,11 +96,12 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
     }
 
     @Override
-    protected final void validateBeforeNext () {
+    protected final boolean validateBeforeNext () {
         waitPopulated();
+        boolean valid = false;
         try {
             branches = null;
-            if(!validateRepository()) return;
+            if(!validateRepository()) return false;
 
             final File tempRepository = Utils.getTempFolder();
             GitURI uri = repository.getURI();
@@ -111,6 +112,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
                 task.waitFinished();
                 GitModuleConfig.getDefault().removeConnectionSettings(repository.getURI());
                 final Message message = support.message;
+                valid = isValid();
                 if (message != null) {
                     EventQueue.invokeLater(new Runnable() {
                         @Override
@@ -124,6 +126,7 @@ public class RepositoryStep extends AbstractWizardPanel implements ActionListene
             support = null;
             repository.setEnabled(true);
         }
+        return valid;
     }
 
     void waitPopulated () {

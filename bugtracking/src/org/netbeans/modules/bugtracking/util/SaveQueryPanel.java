@@ -52,6 +52,7 @@ import java.awt.Color;
 import java.awt.Image;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
+import javax.swing.UIManager;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.openide.DialogDescriptor;
@@ -68,7 +69,14 @@ public class SaveQueryPanel extends javax.swing.JPanel implements DocumentListen
     private static JButton ok;
     private DialogDescriptor descriptor;
     private QueryNameValidator validator;
-    private static final Color ERROR_COLOR = new Color(153,0,0);
+    private static final Color ERROR_COLOR;
+    static {
+        Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
+        if (c == null) {
+            c = new Color(153, 0, 0);
+        }
+        ERROR_COLOR = c;
+    }
 
     /** Creates new form SavePanel */
     private SaveQueryPanel() {

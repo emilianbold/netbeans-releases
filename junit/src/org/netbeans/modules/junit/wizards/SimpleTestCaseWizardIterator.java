@@ -288,7 +288,15 @@ public class SimpleTestCaseWizardIterator
           NbBundle.getMessage(EmptyTestCaseWizardIterator.class,"LBL_panel_ChooseClass")};
 
         ((javax.swing.JComponent)getClassChooserPanel().getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_DATA, panelNames); 
-        ((javax.swing.JComponent)getClassChooserPanel().getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(0)); 
+        ((javax.swing.JComponent)getClassChooserPanel().getComponent()).putClientProperty(WizardDescriptor.PROP_CONTENT_SELECTED_INDEX, new Integer(0));
+        if(targetFolder == null) {
+            // No test folders yet? Let's try one more time.
+            try {
+                targetFolder = wiz.getTargetFolder();
+            } catch (IOException ex1) {
+                Exceptions.printStackTrace(ex1);
+            }
+        }
 	((SimpleTestStepLocation) getClassChooserPanel()).selectLocation(targetFolder.getPrimaryFile());
     }
 

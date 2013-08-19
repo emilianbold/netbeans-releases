@@ -64,6 +64,7 @@ import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ImplicitObject;
 import org.netbeans.modules.web.el.spi.ImplicitObjectType;
 import static org.netbeans.modules.web.el.spi.ImplicitObjectType.OBJECT_TYPE;
+import static org.netbeans.modules.web.el.spi.ImplicitObjectType.RAW;
 import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
 import org.netbeans.spi.java.classpath.ClassPathProvider;
@@ -93,7 +94,7 @@ public class ELTestBaseForTestProject extends ELTestBase {
 
         //disable info exceptions from j2eeserver
         Logger.getLogger("org.netbeans.modules.j2ee.deployment.impl.ServerRegistry").setLevel(Level.SEVERE);
-        
+
         this.projectFo = getTestFile("projects/testWebProject");
         assertNotNull(projectFo);
         this.srcFo = getTestFile("projects/testWebProject/src");
@@ -107,10 +108,10 @@ public class ELTestBaseForTestProject extends ELTestBase {
         Map<String, ClassPath> cps = new HashMap<String, ClassPath>();
 
         //depend also on the java library
-        cps.put(ClassPath.COMPILE, 
+        cps.put(ClassPath.COMPILE,
                 ClassPathSupport.createProxyClassPath(
-                    createServletAPIClassPath()));
-        
+                createServletAPIClassPath()));
+
         cps.put(ClassPath.EXECUTE, createServletAPIClassPath());
         cps.put(ClassPath.SOURCE, ClassPathSupport.createClassPath(new FileObject[]{srcFo, webFo}));
         cps.put(ClassPath.BOOT, createBootClassPath());
@@ -151,7 +152,7 @@ public class ELTestBaseForTestProject extends ELTestBase {
     }
 
     private static class ProjectInfo {
-        
+
         private ClassPathProvider cpp;
         private Sources sources;
 
@@ -167,7 +168,6 @@ public class ELTestBaseForTestProject extends ELTestBase {
         public Sources getSources() {
             return sources;
         }
-
     }
 
     public static class TestFaceletPlugin extends ELPlugin {
@@ -191,7 +191,8 @@ public class ELTestBaseForTestProject extends ELTestBase {
         @Override
         public Collection<ImplicitObject> getImplicitObjects(FileObject file) {
             List<ImplicitObject> implObjects = new ArrayList<ImplicitObject>(9);
-            implObjects.add( new JsfImplicitObject("request", "javax.servlet.http.HttpServletRequest", OBJECT_TYPE) ); //NOI18N
+            implObjects.add(new JsfImplicitObject("request", "javax.servlet.http.HttpServletRequest", OBJECT_TYPE)); //NOI18N
+            implObjects.add(new JsfImplicitObject("cc", "javax.faces.component.UIComponent", RAW)); //NOI18N
             return implObjects;
         }
 
@@ -209,7 +210,6 @@ public class ELTestBaseForTestProject extends ELTestBase {
         public List<Function> getFunctions(FileObject file) {
             return Collections.emptyList();
         }
-
     }
 
     public final class TestVariableResolver implements ELVariableResolver {
@@ -244,23 +244,22 @@ public class ELTestBaseForTestProject extends ELTestBase {
 
         @Override
         public List<VariableInfo> getRawObjectProperties(String name, Snapshot snapshot, ResolverContext context) {
-            return Collections.emptyList();
+            return Arrays.asList(VariableInfo.createResolvedVariable("muj", "java.lang.String"), VariableInfo.createVariable("jiny"));
         }
-
     }
 
     private static class TestMultiProjectFactory implements ProjectFactory {
 
         private Map<FileObject, ProjectInfo> projects;
 
-        public  TestMultiProjectFactory(Map<FileObject, ProjectInfo> projects) {
+        public TestMultiProjectFactory(Map<FileObject, ProjectInfo> projects) {
             this.projects = projects;
         }
 
         @Override
         public Project loadProject(FileObject projectDirectory, ProjectState state) throws IOException {
             ProjectInfo pi = projects.get(projectDirectory);
-            return pi != null ? new TestProject(projectDirectory, state, pi.getCpp(), pi.getSources() ) : null;
+            return pi != null ? new TestProject(projectDirectory, state, pi.getCpp(), pi.getSources()) : null;
         }
 
         @Override
@@ -321,6 +320,5 @@ public class ELTestBaseForTestProject extends ELTestBase {
         public String getClazz() {
             return clazz;
         }
-
     }
 }

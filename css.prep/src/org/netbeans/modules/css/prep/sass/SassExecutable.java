@@ -153,7 +153,7 @@ public final class SassExecutable {
 
     @NbBundle.Messages("Sass.compile=Sass (compile)")
     @CheckForNull
-    public void compile(File source, final File target) throws ExecutionException {
+    public void compile(File source, final File target, List<String> compilerOptions) throws ExecutionException {
         assert !EventQueue.isDispatchThread();
         assert source.isFile() : "Not file given: " + source;
         final File targetDir = target.getParentFile();
@@ -165,7 +165,7 @@ public final class SassExecutable {
         }
         try {
             getExecutable(Bundle.Sass_compile())
-                    .additionalParameters(getParameters(source, target))
+                    .additionalParameters(getParameters(source, target, compilerOptions))
                     .runAndWait(getDescriptor(new Runnable() {
                 @Override
                 public void run() {
@@ -206,7 +206,7 @@ public final class SassExecutable {
                 .showProgress(false);
     }
 
-    private List<String> getParameters(File inputFile, File outputFile) {
+    private List<String> getParameters(File inputFile, File outputFile, List<String> compilerOptions) {
         List<String> params = new ArrayList<>();
         // debug
         boolean debug = CssPrepOptions.getInstance().getSassDebug();
@@ -218,6 +218,8 @@ public final class SassExecutable {
                 params.add(SOURCEMAP_PARAM);
             }
         }
+        // compiler options
+        params.addAll(compilerOptions);
         // input
         params.add(inputFile.getAbsolutePath());
         // output
