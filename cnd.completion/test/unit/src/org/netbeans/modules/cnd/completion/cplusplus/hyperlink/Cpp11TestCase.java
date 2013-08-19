@@ -199,4 +199,12 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         // Bug 224399 - Error parsing decltype in function arguments 
         performTest("bug224399.cpp", 14, 9, "bug224399.cpp", 4, 5);      
     }
+    
+    public void testBug224032() throws Exception {
+        // Bug 224032 - decltype. Unexpected tokens.
+        performTest("bug224032.cpp", 13, 22, "bug224032.cpp", 5, 5);
+        performTest("bug224032.cpp", 14, 39, "bug224032.cpp", 7, 3);
+        performTest("bug224032.cpp", 17, 32, "bug224032.cpp", 8, 5);
+        performTest("bug224032.cpp", 18, 32, "bug224032.cpp", 5, 5);
+    }
 }
