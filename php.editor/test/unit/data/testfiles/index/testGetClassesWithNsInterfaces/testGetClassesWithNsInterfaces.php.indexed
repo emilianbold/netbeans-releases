@@ -2,7 +2,7 @@
 
 Document 0
 Searchable Keys:
-  clz : nonsclassname;NoNsClassName;132;;No\Ns;NsInterfaceName|\NsFoo\NsBar\NsInterfaceName;1;;0;
+  clz : nonsclassname;NoNsClassName;132;;No\Ns;NsInterfaceName|\NsFoo\NsBar\NsInterfaceName;1;;0;<TESTURL>/testGetClassesWithNsInterfaces.php;
   superiface : nsinterfacename;NsInterfaceName;NsFoo\NsBar
   top : nonsclassname
 
@@ -27,7 +27,7 @@ Not Searchable Keys:
 
 Document 2
 Searchable Keys:
-  iface : nsinterfacename;NsInterfaceName;44;;NsFoo\NsBar;0;
+  iface : nsinterfacename;NsInterfaceName;44;;NsFoo\NsBar;0;<TESTURL>/testGetClassesWithNsInterfaces.php;
   top : nsinterfacename
 
 Not Searchable Keys:
@@ -35,8 +35,8 @@ Not Searchable Keys:
 
 Document 3
 Searchable Keys:
-  ns : ns;Ns;No;
-  ns : nsbar;NsBar;NsFoo;
+  ns : ns;Ns;No;0;<TESTURL>/testGetClassesWithNsInterfaces.php;
+  ns : nsbar;NsBar;NsFoo;0;<TESTURL>/testGetClassesWithNsInterfaces.php;
   top : no\ns
   top : nsfoo\nsbar
 
