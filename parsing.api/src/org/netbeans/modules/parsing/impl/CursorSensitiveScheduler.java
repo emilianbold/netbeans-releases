@@ -66,7 +66,6 @@ public class CursorSensitiveScheduler extends CurrentEditorTaskScheduler {
     private JTextComponent  currentEditor;
     private CaretListener   caretListener;
     private Document        currentDocument;
-    private Source          source;
 
     
     protected void setEditor (JTextComponent editor) {
@@ -80,12 +79,11 @@ public class CursorSensitiveScheduler extends CurrentEditorTaskScheduler {
             Document document = editor.getDocument ();
             if (currentDocument == document) return;
             currentDocument = document;
-            source = Source.create (currentDocument);
+            final Source source = Source.create (currentDocument);
             schedule (source, new CursorMovedSchedulerEvent (this, editor.getCaret ().getDot (), editor.getCaret ().getMark ()) {});
         }
         else {
             currentDocument = null;
-            source = null;
             schedule(null, null);
         }
     }
@@ -99,7 +97,7 @@ public class CursorSensitiveScheduler extends CurrentEditorTaskScheduler {
     protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
         final JTextComponent ce = currentEditor;
         final Caret caret = ce != null ? ce.getCaret() : null;
-        final Source s = source;
+        final Source s = getSource();
         if (event.getModifiedSource() == s && caret != null) {
             return new CursorMovedSchedulerEvent(this, caret.getDot(), caret.getMark()) { };
         }
