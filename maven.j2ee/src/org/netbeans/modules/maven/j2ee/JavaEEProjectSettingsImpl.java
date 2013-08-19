@@ -41,13 +41,17 @@
  */
 package org.netbeans.modules.maven.j2ee;
 
+import java.util.prefs.BackingStoreException;
+import java.util.prefs.Preferences;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.javaee.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
+import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
+import org.openide.util.Exceptions;
 
 /**
  * Implementation of {@link JavaEEProjectSettingsImplementation}.
@@ -77,7 +81,18 @@ public class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplement
 
     @Override
     public void setBrowserID(String browserID) {
-        MavenProjectSupport.setBrowserID(project, browserID);
+        Preferences preferences = MavenProjectSupport.getPreferences(project, false);
+
+        if (browserID == null || "".equals(browserID)) {
+            preferences.remove(MavenJavaEEConstants.SELECTED_BROWSER);
+        } else {
+            preferences.put(MavenJavaEEConstants.SELECTED_BROWSER, browserID);
+        }
+        try {
+            preferences.flush();
+        } catch (BackingStoreException ex) {
+            Exceptions.printStackTrace(ex);
+        }
     }
 
     @Override
@@ -92,7 +107,12 @@ public class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplement
 
     @Override
     public String getBrowserID() {
-        return MavenProjectSupport.getBrowserID(project);
+        String selectedBrowser = MavenProjectSupport.getSettings(project, MavenJavaEEConstants.SELECTED_BROWSER, false);
+        if (selectedBrowser != null) {
+            return selectedBrowser;
+        } else {
+            return BrowserUISupport.getDefaultBrowserChoice(true).getId();
+        }
     }
 
     @Override

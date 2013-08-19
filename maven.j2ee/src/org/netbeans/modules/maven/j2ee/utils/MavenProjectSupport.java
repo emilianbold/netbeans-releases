@@ -424,7 +424,7 @@ public class MavenProjectSupport {
      * @param shared whether the returned settings is shared or not
      * @return value read either from preferences or from pom.xml
      */
-    private static String getSettings(Project project, String key, boolean shared) {
+    public static String getSettings(Project project, String key, boolean shared) {
         String value = getPreferences(project, shared).get(key, null);
         if (value == null) {
             value = readSettingsFromPom(project, key);
@@ -512,46 +512,6 @@ public class MavenProjectSupport {
             preferences.sync();
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
-        }
-    }
-    
-    /**
-     * Set browser ID for the given {@link Project}.
-     * 
-     * @param project project for which we want to set new browser
-     * @param browerID browser that we want to set or null if we want to remove current browser
-     */
-    public static void setBrowserID(@NonNull Project project, @NullAllowed String browerID) {
-        Parameters.notNull("project", project);
-
-        Preferences preferences = getPreferences(project, false);
-        
-        if (browerID == null || "".equals(browerID)) {
-            preferences.remove(MavenJavaEEConstants.SELECTED_BROWSER);
-        } else {
-            preferences.put(MavenJavaEEConstants.SELECTED_BROWSER, browerID);
-        }
-        try {
-            preferences.flush();
-        } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
-    /**
-     * Returns selected browser ID for the given {@link Project}.
-     * 
-     * @param project project for which we want to know browserID
-     * @return browserID for the given project or null if the project doesn't have browser
-     */
-    public static String getBrowserID(@NonNull Project project) {
-        Parameters.notNull("project", project);
-        
-        String selectedBrowser = getSettings(project, MavenJavaEEConstants.SELECTED_BROWSER, false);
-        if (selectedBrowser != null) {
-            return selectedBrowser;
-        } else {
-            return BrowserUISupport.getDefaultBrowserChoice(true).getId();
         }
     }
     
