@@ -87,7 +87,7 @@ abstract class BaseProcessor {
 
     protected abstract String getCompilerOptions(Project project);
 
-    protected abstract void compileInternal(Project project, File source, File target, String compilerOptions);
+    protected abstract void compileInternal(Project project, File source, File target, List<String> compilerOptions);
 
     public void process(Project project, FileObject fileObject, String originalName, String originalExtension) {
         if (!isEnabled(project)) {
@@ -160,7 +160,7 @@ abstract class BaseProcessor {
             // not found
             return;
         }
-        compileInternal(project, file, target, getCompilerOptions(project));
+        compileInternal(project, file, target, CssPreprocessorUtils.parseCompilerOptions(getCompilerOptions(project), getWebRoot(project, fileObject)));
     }
 
     protected void compileReferences(Project project, FileObject fileObject) {

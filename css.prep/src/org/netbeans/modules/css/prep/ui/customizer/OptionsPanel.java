@@ -42,24 +42,13 @@
 package org.netbeans.modules.css.prep.ui.customizer;
 
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.EventQueue;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
-import javax.swing.GroupLayout;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTable;
-import javax.swing.JTextField;
-import javax.swing.LayoutStyle;
-import javax.swing.SwingConstants;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
@@ -245,59 +234,64 @@ public class OptionsPanel extends JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        enabledCheckBox = new JCheckBox();
-        configureExecutablesButton = new JButton();
-        watchLabel = new JLabel();
-        mappingsScrollPane = new JScrollPane();
-        mappingsTable = new JTable();
-        addButton = new JButton();
-        removeButton = new JButton();
-        compilerOptionsLabel = new JLabel();
-        compilerOptionsTextField = new JTextField();
+        enabledCheckBox = new javax.swing.JCheckBox();
+        configureExecutablesButton = new javax.swing.JButton();
+        watchLabel = new javax.swing.JLabel();
+        mappingsScrollPane = new javax.swing.JScrollPane();
+        mappingsTable = new javax.swing.JTable();
+        addButton = new javax.swing.JButton();
+        removeButton = new javax.swing.JButton();
+        compilerOptionsLabel = new javax.swing.JLabel();
+        compilerOptionsTextField = new javax.swing.JTextField();
+        compilerOptionsInfoLabel = new javax.swing.JLabel();
 
-        Mnemonics.setLocalizedText(enabledCheckBox, "COMPILATION_ON_SAVE"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(enabledCheckBox, "COMPILATION_ON_SAVE"); // NOI18N
 
-        Mnemonics.setLocalizedText(configureExecutablesButton, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.configureExecutablesButton.text")); // NOI18N
-        configureExecutablesButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+        org.openide.awt.Mnemonics.setLocalizedText(configureExecutablesButton, org.openide.util.NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.configureExecutablesButton.text")); // NOI18N
+        configureExecutablesButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 configureExecutablesButtonActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(watchLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.watchLabel.text")); // NOI18N
+        watchLabel.setLabelFor(mappingsTable);
+        org.openide.awt.Mnemonics.setLocalizedText(watchLabel, org.openide.util.NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.watchLabel.text")); // NOI18N
 
         mappingsScrollPane.setViewportView(mappingsTable);
 
-        Mnemonics.setLocalizedText(addButton, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.addButton.text")); // NOI18N
-        addButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+        org.openide.awt.Mnemonics.setLocalizedText(addButton, org.openide.util.NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.addButton.text")); // NOI18N
+        addButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 addButtonActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(removeButton, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.removeButton.text")); // NOI18N
-        removeButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent evt) {
+        org.openide.awt.Mnemonics.setLocalizedText(removeButton, org.openide.util.NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.removeButton.text")); // NOI18N
+        removeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
                 removeButtonActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(compilerOptionsLabel, NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.compilerOptionsLabel.text")); // NOI18N
+        compilerOptionsLabel.setLabelFor(compilerOptionsTextField);
+        org.openide.awt.Mnemonics.setLocalizedText(compilerOptionsLabel, org.openide.util.NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.compilerOptionsLabel.text")); // NOI18N
 
         compilerOptionsTextField.setColumns(20);
 
-        GroupLayout layout = new GroupLayout(this);
+        org.openide.awt.Mnemonics.setLocalizedText(compilerOptionsInfoLabel, org.openide.util.NbBundle.getMessage(OptionsPanel.class, "OptionsPanel.compilerOptionsInfoLabel.text")); // NOI18N
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addComponent(enabledCheckBox)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED, GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(configureExecutablesButton))
             .addGroup(layout.createSequentialGroup()
-                .addComponent(mappingsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.TRAILING)
+                .addComponent(mappingsScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addComponent(addButton)
                     .addComponent(removeButton)))
             .addGroup(layout.createSequentialGroup()
@@ -305,31 +299,37 @@ public class OptionsPanel extends JPanel {
                 .addGap(0, 0, Short.MAX_VALUE))
             .addGroup(layout.createSequentialGroup()
                 .addComponent(compilerOptionsLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(compilerOptionsTextField))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(compilerOptionsInfoLabel)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(compilerOptionsTextField)))
         );
 
-        layout.linkSize(SwingConstants.HORIZONTAL, new Component[] {addButton, removeButton});
+        layout.linkSize(javax.swing.SwingConstants.HORIZONTAL, new java.awt.Component[] {addButton, removeButton});
 
         layout.setVerticalGroup(
-            layout.createParallelGroup(GroupLayout.Alignment.LEADING)
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(enabledCheckBox)
                     .addComponent(configureExecutablesButton))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.UNRELATED)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(watchLabel)
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-                    .addComponent(mappingsScrollPane, GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(mappingsScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 87, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(addButton)
-                        .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(removeButton)))
-                .addPreferredGap(LayoutStyle.ComponentPlacement.RELATED)
-                .addGroup(layout.createParallelGroup(GroupLayout.Alignment.BASELINE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(compilerOptionsLabel)
-                    .addComponent(compilerOptionsTextField, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(compilerOptionsTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(compilerOptionsInfoLabel))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -354,15 +354,16 @@ public class OptionsPanel extends JPanel {
     }//GEN-LAST:event_configureExecutablesButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private JButton addButton;
-    private JLabel compilerOptionsLabel;
-    private JTextField compilerOptionsTextField;
-    private JButton configureExecutablesButton;
-    private JCheckBox enabledCheckBox;
-    private JScrollPane mappingsScrollPane;
-    private JTable mappingsTable;
-    private JButton removeButton;
-    private JLabel watchLabel;
+    private javax.swing.JButton addButton;
+    private javax.swing.JLabel compilerOptionsInfoLabel;
+    private javax.swing.JLabel compilerOptionsLabel;
+    private javax.swing.JTextField compilerOptionsTextField;
+    private javax.swing.JButton configureExecutablesButton;
+    private javax.swing.JCheckBox enabledCheckBox;
+    private javax.swing.JScrollPane mappingsScrollPane;
+    private javax.swing.JTable mappingsTable;
+    private javax.swing.JButton removeButton;
+    private javax.swing.JLabel watchLabel;
     // End of variables declaration//GEN-END:variables
 
     //~ Inner classes

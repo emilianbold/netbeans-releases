@@ -42,15 +42,14 @@
 package org.netbeans.modules.css.prep.util;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.css.prep.CssPreprocessorType;
 import org.netbeans.modules.css.prep.preferences.CssPreprocessorPreferences;
@@ -63,6 +62,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
 import org.openide.util.Pair;
+import org.openide.util.Utilities;
 
 public final class CssPreprocessorUtils {
 
@@ -70,6 +70,8 @@ public final class CssPreprocessorUtils {
 
     static final String MAPPINGS_DELIMITER = ","; // NOI18N
     static final String MAPPING_DELIMITER = ":"; // NOI18N
+
+    private static final String WEB_ROOT_PARAM = "${web.root}"; // NOI18N
 
 
     private CssPreprocessorUtils() {
@@ -134,6 +136,22 @@ public final class CssPreprocessorUtils {
             result.add(Pair.of(paths.get(0), paths.get(1)));
         }
         return result;
+    }
+
+    public static List<String> parseCompilerOptions(@NullAllowed String compilerOptions, @NullAllowed FileObject webRoot) {
+        if (webRoot == null
+                || !StringUtils.hasText(compilerOptions)) {
+            return Collections.emptyList();
+        }
+        String[] parsedCompilerParams = Utilities.parseParameters(processCompilerOptions(compilerOptions, webRoot));
+        return Arrays.asList(parsedCompilerParams);
+    }
+
+    private static String processCompilerOptions(String compilerOptions, FileObject webRoot) {
+        if (compilerOptions.indexOf(WEB_ROOT_PARAM) == -1) {
+            return compilerOptions;
+        }
+        return compilerOptions.replace(WEB_ROOT_PARAM, FileUtil.toFile(webRoot).getAbsolutePath());
     }
 
     @CheckForNull
