@@ -80,7 +80,7 @@ public final class TagImpl extends GenericTag {
     @Override
     public Collection<Attribute> getAttributes() {
         //merge with default attributes
-        Collection<Attribute> all = new ArrayList<Attribute>(super.getAttributes());
+        Collection<Attribute> all = new ArrayList<>(super.getAttributes());
         all.addAll(attrs.values());
         return all;
     }

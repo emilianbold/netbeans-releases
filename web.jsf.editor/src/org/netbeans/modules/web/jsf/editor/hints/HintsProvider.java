@@ -68,7 +68,7 @@ public abstract class HintsProvider {
      * Gets the actual Source's (document/file) source code.
      */
     protected CharSequence getSourceText(Source source) {
-        final AtomicReference<CharSequence> sourceTextRef = new AtomicReference<CharSequence>();
+        final AtomicReference<CharSequence> sourceTextRef = new AtomicReference<>();
         try {
             ParserManager.parse(Collections.singleton(source), new UserTask() {
 
