@@ -50,6 +50,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
@@ -133,7 +134,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
         changeServer(serverCBox);
         changeContextPath();
         
-        MavenProjectSupport.setBrowserID(project, browserModel.getSelectedBrowserId());
+        JavaEEProjectSettings.setBrowserID(project, browserModel.getSelectedBrowserId());
     }
     
     private void initValues() {
@@ -245,7 +246,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
     }
 
     private JComboBox<WebBrowser> createBrowserComboBox() {
-        String selectedBrowser = MavenProjectSupport.getBrowserID(project);
+        String selectedBrowser = JavaEEProjectSettings.getBrowserID(project);
         browserModel = BrowserUISupport.createBrowserModel(selectedBrowser, true);
         browserCBox = BrowserUISupport.createBrowserPickerComboBox(browserModel.getSelectedBrowserId(), true, false, browserModel);
         browserCBox.setModel(browserModel);

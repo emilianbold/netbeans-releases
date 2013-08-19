@@ -48,10 +48,10 @@ import javax.swing.JComboBox;
 import javax.swing.JLabel;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.netbeans.modules.maven.j2ee.ExecutionChecker;
 import org.netbeans.modules.maven.j2ee.utils.Server;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 
 /**
  *
@@ -97,14 +97,14 @@ public final class ServerComboBoxUpdater extends ComboBoxUpdater<Server> {
     @Override
     public void setValue(Server newServer) {
         if (newServer == null) {
-            MavenProjectSupport.setServerInstanceID(project, defaultValue.getServerInstanceID());
+            JavaEEProjectSettings.setServerInstanceID(project, defaultValue.getServerInstanceID());
         } else {
             String serverID = newServer.getServerInstanceID();
 
             if (ExecutionChecker.DEV_NULL.equals(serverID)) {
-                MavenProjectSupport.setServerInstanceID(project, null);
+                JavaEEProjectSettings.setServerInstanceID(project, null);
             } else {
-                MavenProjectSupport.setServerInstanceID(project, serverID);
+                JavaEEProjectSettings.setServerInstanceID(project, serverID);
             }
         }
     }
