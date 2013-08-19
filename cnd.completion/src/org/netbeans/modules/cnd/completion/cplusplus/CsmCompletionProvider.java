@@ -137,7 +137,7 @@ public class CsmCompletionProvider implements CompletionProvider {
     }
     
     public static CsmCompletionQuery createCompletionResolver(CsmFile csmFile, CompletionResolver.QueryScope queryScope, FileReferencesContext fileReferencesContext) {
-        return new NbCsmCompletionQuery(csmFile, queryScope, fileReferencesContext, false);
+        return new NbCsmCompletionQuery(csmFile, queryScope, fileReferencesContext, true);
     }
 
     static final class Query extends AsyncCompletionQuery {
