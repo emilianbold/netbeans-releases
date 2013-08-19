@@ -48,6 +48,7 @@ import com.sun.source.util.TreePath;
 import java.io.IOException;
 import java.util.*;
 import javax.lang.model.element.*;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.classpath.ClassPath;
@@ -125,7 +126,7 @@ public final class ExtractInterfaceRefactoringPlugin extends JavaRefactoringPlug
         Problem result = null;
         String newName = refactoring.getInterfaceName();
         TypeMirror parsedType = javac.getTreeUtilities().parseType(newName, classHandle.resolve(javac));
-        if(parsedType != null) {
+        if(parsedType != null && parsedType.getKind() != TypeKind.ERROR) {
             result = createProblem(result, true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ClassClash", newName, pkgName)); // NOI18N
             return result;
         }
