@@ -52,7 +52,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -80,12 +79,10 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
-import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Parameters;
 
 /**
  * Provides a various methods to help with typical Maven Projects requirements
@@ -253,7 +250,7 @@ public class MavenProjectSupport {
             return new String[] {sc.getServerInstanceId(), null};
         }
 
-        String serverID = readServerInstanceID(project);
+        String serverID = JavaEEProjectSettings.getServerInstanceID(project);
         String serverType = readServerID(project);
         
         return new String[]{serverID, serverType};
@@ -393,16 +390,6 @@ public class MavenProjectSupport {
     public static String readServerID(Project project) {
         return getSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
     }
-    
-    /**
-     * Read server instance ID for the given project
-     * 
-     * @param project project for which we want to get server ID
-     * @return server ID
-     */
-    public static String readServerInstanceID(Project project) {
-        return getSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
-    }
 
     /**
      * Tries to retrieve settings for the given project. At first the implementation uses project
@@ -480,10 +467,6 @@ public class MavenProjectSupport {
 
     public static void setServerID(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, value, true);
-    }
-
-    public static void setServerInstanceID(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, value, false);
     }
     
     public static void setSettings(Project project, String key, String value, boolean shared) {

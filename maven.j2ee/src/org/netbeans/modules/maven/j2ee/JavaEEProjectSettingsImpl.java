@@ -64,7 +64,8 @@ import org.openide.util.Exceptions;
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
     "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
+    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
 })
 public class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplementation {
 
@@ -97,7 +98,7 @@ public class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplement
 
     @Override
     public void setServerInstanceID(String serverInstanceID) {
-        MavenProjectSupport.setServerInstanceID(project, serverInstanceID);
+        MavenProjectSupport.setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, serverInstanceID, false);
     }
 
     @Override
@@ -117,6 +118,6 @@ public class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplement
 
     @Override
     public String getServerInstanceID() {
-        return MavenProjectSupport.readServerInstanceID(project);
+        return MavenProjectSupport.getSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
     }
 }
