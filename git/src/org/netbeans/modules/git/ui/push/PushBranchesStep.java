@@ -95,7 +95,7 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
     }
     
     @Override
-    protected final void validateBeforeNext () {
+    protected final boolean validateBeforeNext () {
         setValid(true, null);
         if (localObjects.getSelectedBranches().isEmpty()) {
             setValid(false, new Message(NbBundle.getMessage(PushBranchesStep.class, "MSG_PushBranchesPanel.errorNoBranchSelected"), false)); //NOI18N
@@ -107,6 +107,7 @@ public class PushBranchesStep extends AbstractWizardPanel implements WizardDescr
                 setValid(true, new Message(msgDeletedBranches, true));
             }
         }
+        return isValid();
     }
 
     @Override

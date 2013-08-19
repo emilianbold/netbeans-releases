@@ -104,7 +104,7 @@ public final class LessExecutable {
 
     @NbBundle.Messages("Less.compile=LESS (compile)")
     @CheckForNull
-    public void compile(File source, final File target) throws ExecutionException {
+    public void compile(File source, final File target, List<String> compilerOptions) throws ExecutionException {
         assert !EventQueue.isDispatchThread();
         assert source.isFile() : "Not file given: " + source;
         final File targetDir = target.getParentFile();
@@ -116,7 +116,7 @@ public final class LessExecutable {
         }
         try {
             getExecutable(Bundle.Less_compile())
-                    .additionalParameters(getParameters(source, target))
+                    .additionalParameters(getParameters(source, target, compilerOptions))
                     .runAndWait(getDescriptor(new Runnable() {
                 @Override
                 public void run() {
@@ -149,13 +149,15 @@ public final class LessExecutable {
                 .postExecution(postTask);
     }
 
-    private List<String> getParameters(File inputFile, File outputFile) {
+    private List<String> getParameters(File inputFile, File outputFile, List<String> compilerOptions) {
         List<String> params = new ArrayList<>();
         // debug
         boolean debug = CssPrepOptions.getInstance().getLessDebug();
         if (debug) {
             params.add(DEBUG_PARAM);
         }
+        // compiler options
+        params.addAll(compilerOptions);
         // input
         params.add(inputFile.getAbsolutePath());
         // output

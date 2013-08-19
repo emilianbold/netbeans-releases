@@ -221,7 +221,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
     }
 
     @Override
-    protected final void validateBeforeNext () {
+    protected final boolean validateBeforeNext () {
         boolean valid = true;
         Message msg = null;
         final boolean newRepositorySpecification = panel.rbCreateNew.isSelected();
@@ -283,6 +283,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
             if (message[0] != null) {
                 setValid(false, message[0]);
             }
+            valid = isValid();
             //enable input
             EventQueue.invokeLater(new Runnable() {
                 @Override
@@ -295,6 +296,7 @@ public class SelectUriStep extends AbstractWizardPanel implements ActionListener
                 }
             });
         }
+        return valid;
     }
 
     @Override

@@ -43,6 +43,7 @@ package org.netbeans.modules.web.jsf.editor.completion;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -215,8 +216,10 @@ public class JsfDocumentation implements HelpResolver {
             String strContent = content.toString();
             HELP_FILES_CACHE.put(filePath, strContent);
             return strContent;
+        } catch (FileNotFoundException fnfe) {
+            LOGGER.log(Level.INFO, "Document at this link is not available: {0}", filePath);
         } catch (IOException ex) {
-            Logger.getLogger(JsfDocumentation.class.getName()).log(Level.WARNING, null, ex);
+            LOGGER.log(Level.WARNING, null, ex);
         }
 
         return null;

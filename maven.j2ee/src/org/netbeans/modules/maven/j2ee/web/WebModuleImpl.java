@@ -45,11 +45,16 @@ package org.netbeans.modules.maven.j2ee.web;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.apache.maven.project.MavenProject;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import org.netbeans.modules.j2ee.dd.api.web.WebAppMetadata;
@@ -156,14 +161,14 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
             return profile;
         }
 
+        Profile pomProfile = getProfileFromPOM(project);
+        if (pomProfile != null) {
+            return pomProfile;
+        }
+
         Profile descriptorProfile = getProfileFromDescriptor();
         if (descriptorProfile != null) {
             return descriptorProfile;
-        }
-
-        Profile pomProfile = getProfileFromPOM();
-        if (pomProfile != null) {
-            return pomProfile;
         }
 
         return Profile.JAVA_EE_6_WEB;
@@ -204,11 +209,86 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
         return null;
     }
 
+    /**
+     * {@link List} containing Java EE implementations described by {@link DependencyDesc}.
+     *
+     * Fore more information see this <a href="https://netbeans.org/bugzilla/show_bug.cgi?id=230447">link</a>.
+     * <p>
+     * In more detail:
+     * <ul>
+     *   GlassFish:
+     *   <li>2.X supports Java EE 5</li>
+     *   <li>3.X supports Java EE 6</li>
+     *   <li>4.X supports Java EE 7</li>
+     *   WebLogic:
+     *   <li>10.X supports Java EE 5</li>
+     *   <li>12.X supports Java EE 6</li>
+     *   <li>No support for Java EE 7 yet</li>
+     * </ul>
+     * </p>
+     */
+    private static Map<Profile, List<DependencyDesc>> javaEEMap = new HashMap<>();
+    static {
+        List<DependencyDesc> javaEE5 = new ArrayList<>();
+        List<DependencyDesc> javaEE6Web = new ArrayList<>();
+        List<DependencyDesc> javaEE6Full = new ArrayList<>();
+        List<DependencyDesc> javaEE7Web = new ArrayList<>();
+        List<DependencyDesc> javaEE7Full = new ArrayList<>();
+
+        // Java EE specification
+        javaEE5.add(new DependencyDesc("javaee", "javaee-api", "5.0"));
+        javaEE5.add(new DependencyDesc("javax", "javaee-web-api", "5.0"));
+        javaEE6Full.add(new DependencyDesc("javax", "javaee-api", "6.0"));
+        javaEE6Web.add(new DependencyDesc("javax", "javaee-web-api", "6.0"));
+        javaEE7Full.add(new DependencyDesc("javax", "javaee-api", "7.0"));
+        javaEE7Web.add(new DependencyDesc("javax", "javaee-web-api", "7.0"));
+
+        // GlassFish implementations
+        javaEE5.add(new DependencyDesc("org.glassfish.main.extras", "glassfish-embedded-all", "2"));
+        javaEE5.add(new DependencyDesc("org.glassfish.main.extras", "glassfish-embedded-web", "2"));
+        javaEE6Full.add(new DependencyDesc("org.glassfish.main.extras", "glassfish-embedded-all", "3"));
+        javaEE6Web.add(new DependencyDesc("org.glassfish.main.extras", "glassfish-embedded-web", "3"));
+        javaEE7Full.add(new DependencyDesc("org.glassfish.main.extras", "glassfish-embedded-all", "4"));
+        javaEE7Web.add(new DependencyDesc("org.glassfish.main.extras", "glassfish-embedded-web", "4"));
+
+        // WebLogic implementations
+        javaEE5.add(new DependencyDesc("weblogic", "weblogic", "10"));
+        javaEE6Full.add(new DependencyDesc("weblogic", "weblogic", "12"));
+
+        // JBoss implementations
+        javaEE5.add(new DependencyDesc("org.jboss.spec", "jboss-javaee-5.0", null));
+        javaEE5.add(new DependencyDesc("org.jboss.spec", "jboss-javaee-all-5.0", null));
+        javaEE6Full.add(new DependencyDesc("org.jboss.spec", "jboss-javaee-6.0", null));
+        javaEE6Full.add(new DependencyDesc("org.jboss.spec", "jboss-javaee-all-6.0", null));
+        javaEE6Web.add(new DependencyDesc("org.jboss.spec", "jboss-javaee-web-6.0", null));
+
+        javaEEMap.put(Profile.JAVA_EE_5, javaEE5);
+        javaEEMap.put(Profile.JAVA_EE_6_WEB, javaEE6Web);
+        javaEEMap.put(Profile.JAVA_EE_6_FULL, javaEE6Full);
+        javaEEMap.put(Profile.JAVA_EE_7_WEB, javaEE7Web);
+        javaEEMap.put(Profile.JAVA_EE_7_FULL, javaEE7Full);
+    }
+
+    private static class DependencyDesc {
+
+        private final String groupID;
+        private final String artifactID;
+        private final String version;
+
+
+        public DependencyDesc(
+                String groupID,
+                String artifactID,
+                String version) {
+
+            this.groupID = groupID;
+            this.artifactID = artifactID;
+            this.version = version;
+        }
+    }
+
     // Trying to guess the Java EE version based on the dependency in pom.xml - See issue #230447
-    private Profile getProfileFromPOM() {
-        final String javaEEGroupID = "javax"; //NOI18N
-        final String javaEEFullArtifactID = "javaee-api"; //NOI18N
-        final String javaEEWebArtifactID = "javaee-web-api"; //NOI18N
+    private Profile getProfileFromPOM(final Project project) {
         final FileObject pom = project.getProjectDirectory().getFileObject("pom.xml"); //NOI18N
         final Profile[] result = new Profile[1];
 
@@ -221,30 +301,30 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
 
                         @Override
                         public void performOperation(POMModel model) {
-                            Dependency javaEEDependency = ModelUtils.checkModelDependency(model, javaEEGroupID, javaEEWebArtifactID, false);
-                            if (javaEEDependency != null) {
-                                result[0] = findJavaEEProfile(javaEEDependency);
-                            }
-
-                            Dependency javaEEFullDependency = ModelUtils.checkModelDependency(model, javaEEGroupID, javaEEFullArtifactID, false);
-                            if (javaEEFullDependency != null) {
-                                result[0] = findJavaEEProfile(javaEEFullDependency);
-                            }
-                        }
-
-                        private Profile findJavaEEProfile(Dependency javaEEDependency) {
-                            if (javaEEDependency != null && javaEEDependency.getVersion() != null) {
-                                switch (javaEEDependency.getVersion()) {
-                                    case "5.0": return Profile.JAVA_EE_5;     //NOI18N
-                                    case "6.0": return Profile.JAVA_EE_6_WEB; //NOI18N
-                                    case "7.0": return Profile.JAVA_EE_7_WEB; //NOI18N
+                            for (Map.Entry<Profile, List<DependencyDesc>> entry : javaEEMap.entrySet()) {
+                                for (DependencyDesc dependencyDesc : entry.getValue()) {
+                                    Dependency dependency = ModelUtils.checkModelDependency(model, dependencyDesc.groupID, dependencyDesc.artifactID, false);
+                                    if (dependency != null) {
+                                        String version = dependency.getVersion();
+                                        if (dependencyDesc.version == null || (version != null && version.startsWith(dependencyDesc.version))) {
+                                            result[0] = entry.getKey();
+                                            return;
+                                        }
+                                    }
                                 }
                             }
-                            return null;
                         }
                     }));
                 }
             });
+
+            if (result[0] == null) {
+                // Nothing was found, try to take a look at parent pom if such exists - see #234423
+                Project parentProject = ProjectManager.getDefault().findProject(project.getProjectDirectory().getParent());
+                if (parentProject != null) {
+                    result[0] = getProfileFromPOM(parentProject);
+                }
+            }
         } catch (IOException ex) {
             // Simply do nothing and return null
         }

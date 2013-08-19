@@ -197,6 +197,14 @@ public class SettingsPanel extends javax.swing.JPanel {
         comIndex.addActionListener(listener);
         completer = new TextValueCompleter(getGlobalOptions(), txtOptions, " "); //NOI18N
         cbProjectNodeNameMode.addActionListener(listener);
+        cbAlwaysShow.addActionListener(listener);
+        cbCollapseSuccessFolds.addActionListener(listener);
+        cbReuse.addActionListener(listener);
+        cbSkipTests.addActionListener(listener);
+        comBinaries.addActionListener(listener);
+        comJavadoc.addActionListener(listener);
+        comSource.addActionListener(listener);
+        txtOptions.getDocument().addDocumentListener(new DocumentListenerImpl());
         txtProjectNodeNameCustomPattern.setVisible(false);
         txtProjectNodeNameCustomPattern.getDocument().addDocumentListener(new DocumentListenerImpl());
         lstCategory.setSelectedIndex(0);

@@ -47,7 +47,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.mylyn.internal.tasks.core.TaskContainerDelta;
 import org.eclipse.mylyn.tasks.core.ITask;
-import org.netbeans.modules.bugtracking.spi.IssueStatusProvider;
 import org.netbeans.modules.mylyn.util.internal.TaskListener;
 import org.openide.util.WeakListeners;
 
@@ -145,21 +144,6 @@ public final class NbTask {
         return delegate.isCompleted();
     }
 
-    public IssueStatusProvider.Status getNbStatus () {
-        switch (delegate.getSynchronizationState()) {
-            case CONFLICT:
-            case INCOMING:
-                return IssueStatusProvider.Status.MODIFIED;
-            case INCOMING_NEW:
-                return IssueStatusProvider.Status.NEW;
-            case OUTGOING:
-            case OUTGOING_NEW:
-            case SYNCHRONIZED:
-                return IssueStatusProvider.Status.SEEN;
-        }
-        return null;
-    }
-
     public void setSummary (String summary) {
         delegate.setSummary(summary);
     }
@@ -218,6 +202,10 @@ public final class NbTask {
     
     public NbTaskDataState getTaskDataState () throws CoreException {
         return MylynSupport.getInstance().getTaskDataState(this);
+    }
+
+    boolean isNew () {
+        return syncState == SynchronizationState.OUTGOING_NEW;
     }
 
     public static enum SynchronizationState {

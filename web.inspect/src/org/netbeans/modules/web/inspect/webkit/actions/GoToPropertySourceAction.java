@@ -99,6 +99,9 @@ public class GoToPropertySourceAction extends AbstractAction {
             org.netbeans.modules.web.webkit.debugging.api.css.Rule rule =
                     lookup.lookup(org.netbeans.modules.web.webkit.debugging.api.css.Rule.class);
             Property property = lookup.lookup(Property.class);
+            Node parent = node.getParentNode();
+            Property shorthandProperty = parent.getLookup().lookup(Property.class);
+            String shorthand = (shorthandProperty == null) ? null : shorthandProperty.getName();
             Resource resource = lookup.lookup(Resource.class);
             FileObject fob = resource.toFileObject();
             if (fob == null || fob.isFolder() /* issue 233463 */) {
@@ -110,7 +113,7 @@ public class GoToPropertySourceAction extends AbstractAction {
             }
             try {
                 Source source = Source.create(fob);
-                ParserManager.parse(Collections.singleton(source), new GoToPropertySourceAction.GoToPropertyTask(fob, rule, property));
+                ParserManager.parse(Collections.singleton(source), new GoToPropertySourceAction.GoToPropertyTask(fob, rule, property, shorthand));
             } catch (ParseException ex) {
                 Logger.getLogger(GoToRuleSourceAction.class.getName()).log(Level.INFO, null, ex);
             }
@@ -169,6 +172,8 @@ public class GoToPropertySourceAction extends AbstractAction {
         private final org.netbeans.modules.web.webkit.debugging.api.css.Rule rule;
         /** Property to jump to. */
         private final Property property;
+        /** Name of the shorthand property that corresponds to the property to jump to. */
+        private final String shorthand;
 
         /**
          * Creates a new {@code GoToPropertyTask}.
@@ -176,11 +181,13 @@ public class GoToPropertySourceAction extends AbstractAction {
          * @param fob file to jump into.
          * @param rule rule to jump into.
          * @param property property to jump to.
+         * @param shorthand name of the shorthand property that corresponds to the property to jump to.
          */
-        GoToPropertyTask(FileObject fob, org.netbeans.modules.web.webkit.debugging.api.css.Rule rule, Property property) {
+        GoToPropertyTask(FileObject fob, org.netbeans.modules.web.webkit.debugging.api.css.Rule rule, Property property, String shorthand) {
             this.fob = fob;
             this.rule = rule;
             this.property = property;
+            this.shorthand = shorthand;
         }
 
         @Override
@@ -199,11 +206,8 @@ public class GoToPropertySourceAction extends AbstractAction {
                             String propertyName = property.getName().trim();
                             org.netbeans.modules.css.model.api.PropertyDeclaration modelProperty =
                                     findProperty(modelRule, propertyName);
-                            if (modelProperty == null) {
-                                String shorthandName = property.getShorthandName();
-                                if (shorthandName != null) {
-                                    modelProperty = findProperty(modelRule, shorthandName);
-                                }
+                            if ((modelProperty == null) && (shorthand != null)) {
+                                modelProperty = findProperty(modelRule, shorthand);
                             }
                             int snapshotOffset = (modelProperty == null) ?
                                     modelRule.getStartOffset() : modelProperty.getPropertyValue().getStartOffset();

@@ -96,10 +96,10 @@ public class JsCodeCompletionBase extends JsTestBase {
         OpenProjects.getDefault().getOpenProjects();
     }
 
-    @Override
-    protected boolean cleanCacheDir() {
-        return false;
-    }
+//    @Override
+//    protected boolean cleanCacheDir() {
+//        return false;
+//    }
 
     public static final class IFL extends InstalledFileLocator {
 

@@ -116,7 +116,25 @@ is the proper place.
     <!-- ACTUAL CHANGES BEGIN HERE: -->
 
     <changes>
-    
+
+        <change id="beforeDeploymentHook">
+    	    <api name="devmodules"/>
+            <summary>
+                Provide a way to execute custom code just before actual deployment.
+            </summary>
+            <version major="1" minor="102"/>
+            <date day="16" month="8" year="2013"/>
+            <author login="phejl"/>
+            <compatibility binary="compatible" source="compatible" semantic="compatible" addition="yes"/>
+            <description>
+               <p>
+                   Additional Callable parameter allows execution of
+                   custom code just before the actual deployment.
+               </p>
+            </description>
+            <class package="org.netbeans.modules.j2ee.deployment.devmodules.api" name="Deployment"/>
+            <issue number="234194"/>
+       </change>
         <!-- not used for 7.3
         <change id="deployOnSaveListeners">
     	    <api name="devmodules"/>

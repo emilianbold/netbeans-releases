@@ -64,6 +64,7 @@ import org.openide.DialogDescriptor;
 import org.openide.util.HelpCtx;
 import java.awt.EventQueue;
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.util.prefs.Preferences;
 import javax.swing.LayoutStyle.ComponentPlacement;
 import javax.swing.LayoutStyle;
@@ -106,6 +107,7 @@ import static javax.swing.SwingConstants.SOUTH;
 import static javax.swing.SwingConstants.WEST;
 import static javax.swing.SwingConstants.EAST;
 import static javax.swing.LayoutStyle.ComponentPlacement.RELATED;
+import javax.swing.UIManager;
 import org.openide.awt.TabbedPaneFactory;
 
 /**
@@ -138,6 +140,15 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
     private final Map<String, VCSCommitFilter> filters = new LinkedHashMap<String, VCSCommitFilter>();
     private final VCSCommitDiffProvider diffProvider;
     private final VCSCommitPanelModifier modifier;
+    private static final String ERROR_COLOR;
+    static {
+        Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
+        if (c == null) {
+            ERROR_COLOR = "#990000"; //NOI18N
+        } else {
+            ERROR_COLOR = getColorString(c);
+        }
+    }
 
     /** Creates new form CommitPanel */
     public VCSCommitPanel(VCSCommitTable table, VCSCommitParameters parameters, Preferences preferences, Collection<? extends VCSHook> hooks, VCSHookContext hooksContext, List<VCSCommitFilter> filters, VCSCommitDiffProvider diffProvider) {
@@ -183,7 +194,7 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
     }
     
     public void setErrorLabel(String htmlErrorLabel) {
-        errorLabel.setText("<html><font color=\"#990000\">" + htmlErrorLabel + "</font></html>"); // NOI18N
+        errorLabel.setText("<html><font color=\"" + ERROR_COLOR + "\">" + htmlErrorLabel + "</font></html>"); //NOI18N
         errorLabel.setVisible(!htmlErrorLabel.isEmpty());
     }    
 
@@ -560,6 +571,18 @@ public abstract class VCSCommitPanel<F extends VCSFileNode> extends AutoResizing
 
     VCSCommitPanelModifier getModifier () {
         return modifier;
+    }
+
+    private static String getColorString (Color c) {
+        return "#" + getHex(c.getRed()) + getHex(c.getGreen()) + getHex(c.getBlue()); //NOI18N
+    }
+
+    private static String getHex (int i) {
+        String hex = Integer.toHexString(i & 0x000000FF);
+        if (hex.length() == 1) {
+            hex = "0" + hex; //NOI18N
+        }
+        return hex;
     }
       
 }

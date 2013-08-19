@@ -50,10 +50,13 @@ import org.openide.util.WeakSet;
 import java.io.IOException;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.masterfs.filebasedfs.utils.FSException;
 
 public final class MutualExclusionSupport<K> {
@@ -106,8 +109,18 @@ public final class MutualExclusionSupport<K> {
         return retVal;
     }
     private boolean addStack(IOException x, Set<Closeable> unexpectedCounter, Set<Closeable> expectedCounter) {
-        addStack(x, unexpectedCounter);
-        addStack(x, expectedCounter);
+        try {
+            addStack(x, unexpectedCounter);
+            addStack(x, expectedCounter);
+        } catch (IllegalArgumentException e) { // #233546
+            Logger log = Logger.getLogger(MutualExclusionSupport.class.getName());
+            log.log(Level.WARNING, "Cannot add stack to exception: " //NOI18N
+                    + "unexpectedCounter: {0}, expectedCounter: {1}", //NOI18N
+                    new Object[]{Arrays.toString(unexpectedCounter.toArray()),
+                        Arrays.toString(expectedCounter.toArray())});
+            log.log(Level.INFO, null, e);
+            log.log(Level.INFO, "Exception x", x); //NOI18N
+        }
         return true;
     }
     private void addStack(IOException x, Set<Closeable> cs) {

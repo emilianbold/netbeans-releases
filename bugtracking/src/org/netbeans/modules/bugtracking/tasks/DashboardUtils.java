@@ -53,7 +53,6 @@ import java.util.Map;
 import java.util.Map.Entry;
 import javax.swing.JButton;
 import javax.swing.JComponent;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.modules.bugtracking.IssueImpl;
@@ -67,6 +66,7 @@ import org.netbeans.modules.bugtracking.tasks.dashboard.DashboardViewer;
 import org.netbeans.modules.bugtracking.tasks.dashboard.RepositoryNode;
 import org.netbeans.modules.bugtracking.tasks.dashboard.TaskNode;
 import org.netbeans.modules.bugtracking.ui.issue.IssueAction;
+import org.netbeans.modules.bugtracking.util.UIUtils;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.actions.FindAction;
@@ -83,6 +83,8 @@ public class DashboardUtils {
     private final static int VISIBLE_START_CHARS = 5;
     private final static String BOLD_START_SUBSTITUTE = "$$$BOLD_START$$$"; //NOI18
     private final static String BOLD_END_SUBSTITUTE = "$$$BOLD_END$$$"; //NOI18
+    private static final String newColor = UIUtils.getColorString(UIUtils.getTaskNewColor());
+    private static final String modifiedColor = UIUtils.getColorString(UIUtils.getTaskModifiedColor());
 
     public static String getCategoryDisplayText(CategoryNode categoryNode) {
         String categoryName = categoryNode.getCategory().getName();
@@ -181,9 +183,9 @@ public class DashboardUtils {
 
     private static String getTaskAnotatedText(String text, IssueStatusProvider.Status status, boolean hasFocus, boolean isHTML) {
         if (status == IssueStatusProvider.Status.NEW && !hasFocus) {
-            text = "<html><font color=\"green\">" + text + "</font></html>"; //NOI18N
+            text = "<html><font color=\"" + newColor + "\">" + text + "</font></html>"; //NOI18N
         } else if (status == IssueStatusProvider.Status.MODIFIED && !hasFocus) {
-            text = "<html><font color=\"blue\">" + text + "</font></html>"; //NOI18N
+            text = "<html><font color=\"" + modifiedColor + "\">" + text + "</font></html>"; //NOI18N
         } else if (isHTML) {
             text = "<html>" + text + "</html>"; //NOI18N
         }

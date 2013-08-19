@@ -45,6 +45,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.Map;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import org.netbeans.api.project.FileOwnerQuery;
@@ -81,7 +82,8 @@ public class CSSUpdater {
     /**
      * Mapping between url represented by string and StyleSheetHeader
      */
-    private final HashMap<String, StyleSheetHeader> sheetsMap = new HashMap<String, StyleSheetHeader>();
+    private final Map<String, StyleSheetHeader> sheetsMap = new HashMap<String, StyleSheetHeader>();
+    private final Map<FileObject, StyleSheetHeader> fobToSheetMap = new HashMap<FileObject,StyleSheetHeader>();
 
     private CSSUpdater() {
     }
@@ -101,7 +103,7 @@ public class CSSUpdater {
      * Start listening on CSS. Propagate changes to given webkit.
      * @param webKit 
      */
-    synchronized void start(WebKitDebugging webKit) {
+    synchronized void start(WebKitDebugging webKit, Project project) {
         assert webKit !=null : "webKit allready assigned"; // NOI18N
         this.webKit = webKit;
         for (StyleSheetHeader header : webKit.getCSS().getAllStyleSheets()) {
@@ -113,6 +115,13 @@ public class CSSUpdater {
                     url = new URL(url.getProtocol(), url.getHost(), url.getPort(), url.getPath());
                 }
                 sheetsMap.put(url.toString(), header);
+
+                if (project != null) {
+                    FileObject fob = ServerURLMapping.fromServer(project, url);
+                    if (fob != null) {
+                        fobToSheetMap.put(fob, header);
+                    }
+                }
                 
                 //TODO: hack to workaround #221791
                 if (WebUtils.getLocalhostInetAddress().equals(InetAddress.getByName(url.getHost()))) {
@@ -132,6 +141,7 @@ public class CSSUpdater {
     synchronized void stop() {
         this.webKit = null;
         sheetsMap.clear();
+        fobToSheetMap.clear();
     }
 
     /**
@@ -160,6 +170,9 @@ public class CSSUpdater {
             return; // Issue 225630
         }
         StyleSheetHeader header = sheetsMap.get(serverUrl.toString());
+        if (header == null) {
+            header = fobToSheetMap.get(fileObject);
+        }
         if (header != null) {
             webKit.getCSS().setStyleSheetText(header.getStyleSheetId(), content);
         }

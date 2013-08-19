@@ -164,7 +164,7 @@ public class EarImpl implements EarImplementation, EarImplementation2,
         }
         // hardwire?
 //        System.out.println("eariml: getj2eepaltform");
-        return Profile.J2EE_14;
+        return Profile.JAVA_EE_5;
     }
 
     @Override

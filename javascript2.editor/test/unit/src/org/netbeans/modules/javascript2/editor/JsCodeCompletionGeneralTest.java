@@ -346,8 +346,8 @@ public class JsCodeCompletionGeneralTest extends JsCodeCompletionBase {
         return true;
     }
     
-    @Override
-    protected boolean cleanCacheDir() {
-        return false;
-    }
+//    @Override
+//    protected boolean cleanCacheDir() {
+//        return false;
+//    }
 }
