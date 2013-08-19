@@ -155,6 +155,31 @@ public class HtmlHintsProvider implements HintsProvider {
      */
     @Override
     public void computeSuggestions(HintsManager manager, RuleContext context, List<Hint> suggestions, int caretOffset) {
+        int errorType = 0;
+        if (context instanceof HtmlErrorFilterContext) {
+            errorType = ((HtmlErrorFilterContext) context).isOnlyBadging() ? 2 : 1;
+        }
+        HtmlParserResult result = (HtmlParserResult) context.parserResult;
+        SyntaxAnalyzerResult saresult = result.getSyntaxAnalyzerResult();
+        
+        if (isErrorCheckingEnabled(saresult)) {
+            HtmlRuleContext htmlRuleContext = new HtmlRuleContext(result, saresult, Collections.<HintFix>emptyList());
+
+            for (org.netbeans.modules.html.editor.hints.HtmlRule rule : getSortedRules(manager, context, true)) { //line hints
+                //skip the rule if we are called from the tasklist,
+                //the rule is not supposed to show in tasklist and is not badging
+                if(errorType > 0 && !rule.showInTasklist() && !(rule instanceof ErrorBadgingRule)) {
+                    continue;
+                }
+                // do not run regular rules when only error badging, or vice versa
+                if ((errorType == 2) != (rule instanceof ErrorBadgingRule)) {
+                    continue;
+                }
+                if(manager.isEnabled(rule)) {
+                    rule.run(htmlRuleContext, suggestions);
+                }
+            }
+        }
     }
 
     /**
@@ -254,7 +279,7 @@ public class HtmlHintsProvider implements HintsProvider {
         //now process the non-fatal errors
         if (isErrorCheckingEnabled(saresult)) {
 
-            for (org.netbeans.modules.html.editor.hints.HtmlRule rule : getSortedRules(manager, context)) {
+            for (org.netbeans.modules.html.editor.hints.HtmlRule rule : getSortedRules(manager, context, false)) {
                 LOG.log(Level.FINE, "checking rule {0}", rule.getDisplayName());
                 //skip the rule if we are called from the tasklist,
                 //the rule is not supposed to show in tasklist and is not badging
@@ -306,10 +331,10 @@ public class HtmlHintsProvider implements HintsProvider {
 
     }
 
-    /* test */ static List<? extends org.netbeans.modules.html.editor.hints.HtmlRule> getSortedRules(HintsManager manager, RuleContext context) {
-        Map<?, List<? extends AstRule>> allHints = manager.getHints(false, context);
-        List<? extends org.netbeans.modules.html.editor.hints.HtmlRule> ids =
-                (List<? extends org.netbeans.modules.html.editor.hints.HtmlRule>) allHints.get(org.netbeans.modules.html.editor.hints.HtmlRule.Kinds.DEFAULT);
+    /* test */ static List<? extends org.netbeans.modules.html.editor.hints.HtmlRule> getSortedRules(HintsManager manager, RuleContext context, boolean lineContext) {
+        Map<?, List<? extends AstRule>> allHints = manager.getHints(lineContext, context);
+        List<? extends org.netbeans.modules.html.editor.hints.HtmlRule> ids
+                = (List<? extends org.netbeans.modules.html.editor.hints.HtmlRule>) allHints.get(org.netbeans.modules.html.editor.hints.HtmlRule.Kinds.DEFAULT);
         if (ids == null) {
             return Collections.<org.netbeans.modules.html.editor.hints.HtmlRule>emptyList();
         }
