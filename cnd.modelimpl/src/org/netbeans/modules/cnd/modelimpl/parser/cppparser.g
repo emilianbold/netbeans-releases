@@ -3658,9 +3658,7 @@ condition_expression
 protected 
 condition_declaration {int ts = tsInvalid;}
     :
-        cv_qualifier_seq (LITERAL_typename)?
-        ts=type_specifier[dsInvalid, false]
-        (postfix_cv_qualifier)? 
+        declaration_specifiers[true, false]  
         declarator[declStatement, 0]
         (   ASSIGNEQUAL assignment_expression
         |   array_initializer 

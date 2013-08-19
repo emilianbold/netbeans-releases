@@ -979,6 +979,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug233280.c", 23, 20, "bug233280.c", 6, 1);
     }
     
+    public void testBug233836() throws Exception { 
+        // Bug 233836 - Templated typedef breaks resolving in if() statement object declaration
+        performTest("bug233836.cpp", 7, 20, "bug233836.cpp", 7, 12);        
+    }
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override
