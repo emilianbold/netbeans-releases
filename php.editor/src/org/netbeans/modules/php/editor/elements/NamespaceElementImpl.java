@@ -78,9 +78,8 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
     public static Set<NamespaceElement> fromSignature(final NameKind query, final IndexQueryImpl indexQuery, final IndexResult indexResult) {
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<NamespaceElement> retval = new HashSet<>();
-        String url = indexResult.getUrl().toString();
         for (final String val : values) {
-            final NamespaceElement namespace = fromSignature(query, indexQuery, url, Signature.get(val));
+            final NamespaceElement namespace = fromSignature(query, indexQuery, Signature.get(val));
             if (namespace != null) {
                 retval.add(namespace);
             }
@@ -88,12 +87,12 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
         return retval;
     }
 
-    public static NamespaceElement fromSignature(final NameKind query, IndexQueryImpl indexScopeQuery, String url, Signature sig) {
+    public static NamespaceElement fromSignature(final NameKind query, IndexQueryImpl indexScopeQuery, Signature sig) {
         final NamespaceSignatureParser signParser = new NamespaceSignatureParser(sig);
         NamespaceElement retval = null;
         if (matchesQuery(query, signParser)) {
                 retval = new NamespaceElementImpl(signParser.getQualifiedName(),
-                0, url,
+                0, signParser.getFileUrl(),
                 indexScopeQuery, signParser.isDeprecated());
         }
         return retval;
@@ -126,6 +125,7 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
         sb.append(name).append(Separator.SEMICOLON);
         sb.append(namespaceName).append(Separator.SEMICOLON);
         sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
+        sb.append(getFilenameUrl()).append(Separator.SEMICOLON);
         checkSignature(sb);
         return sb.toString();
     }
@@ -160,6 +160,10 @@ public class NamespaceElementImpl extends FullyQualifiedElementImpl implements N
 
         boolean isDeprecated() {
             return signature.integer(3) == 1;
+        }
+
+        String getFileUrl() {
+            return signature.string(4);
         }
     }
 
