@@ -138,68 +138,82 @@ class NbLikeEditorKit extends DefaultEditorKit implements Callable<Void> {
         
         private void insOrRemoveOrRunnable (int offset, String str, AttributeSet set, int len, boolean insert, Runnable run) 
         throws BadLocationException {
-            boolean alreadyInsideWrite = getCurrentWriter () == Thread.currentThread ();
-            if (alreadyInsideWrite) {
-                if (run != null) {
-                    run.run ();
-                } else {
-                    assertOffset (offset);
-                    if (!modifiable) {
-                        throw new BadLocationException("Document modification vetoed", offset);
-                    }
-                    if (insert) {
-                        super.insertString (offset, str, set);
-                    } else {
-                        super.remove(offset, len);
-                    }
-                }
-                return;
-            }
-            
-            Object o = getProperty ("modificationListener");
-            
+            // Current implementation does not require the document to fire VetoableChangeListener from runAtomic()
+            // and since Doc allows DoucmentFilter attaching (PlainDocument extends AbstractDocument)
+            // there is no need to do any extra things.
             if (run != null) {
-                boolean canBeModified = notifyModified(o); // Need to notify before acquiring write-lock (that will span the whole runnable)
-                writeLock ();
-                modifiable = canBeModified;
-                int prevChanges = changes;
-                try {
-                    run.run ();
-                } finally {
-                    writeUnlock ();
-                }
-                if (changes == prevChanges) { // No changes => property chane with Boolean.FALSE
-                    if (o instanceof VetoableChangeListener) {
-                        VetoableChangeListener l = (VetoableChangeListener)o;
-                        try {
-                            l.vetoableChange (new java.beans.PropertyChangeEvent (this, "modified", null, Boolean.FALSE));
-                        } catch (java.beans.PropertyVetoException ignore) {
-                        }
-                    }
-                }
+                run.run();
             } else {
-                assertOffset (offset);
-                modifiable = notifyModified (o);
-                try {
-                    if (!modifiable) {
-                        throw new BadLocationException("Document modification vetoed", offset);
-                    }
-                    if (insert) {
-                        super.insertString (offset, str, set);
-                    } else {
-                        super.remove(offset, len);
-                    }
-                } catch (BadLocationException ex) {
-                    if (o instanceof VetoableChangeListener) {
-                        VetoableChangeListener l = (VetoableChangeListener)o;
-                        try {
-                            l.vetoableChange (new java.beans.PropertyChangeEvent (this, "modified", null, Boolean.FALSE));
-                        } catch (java.beans.PropertyVetoException ignore) {
-                        }
-                    }
-                    throw ex;
+                if (insert) {
+                    super.insertString(offset, str, set);
+                } else {
+                    super.remove(offset, len);
                 }
             }
+            return;
+            
+//            boolean alreadyInsideWrite = getCurrentWriter () == Thread.currentThread ();
+//            if (alreadyInsideWrite) {
+//                if (run != null) {
+//                    run.run ();
+//                } else {
+//                    assertOffset (offset);
+//                    if (!modifiable) {
+//                        throw new BadLocationException("Document modification vetoed", offset);
+//                    }
+//                    if (insert) {
+//                        super.insertString (offset, str, set);
+//                    } else {
+//                        super.remove(offset, len);
+//                    }
+//                }
+//                return;
+//            }
+//            
+//            Object o = getProperty ("modificationListener");
+//            
+//            if (run != null) {
+//                boolean canBeModified = notifyModified(o); // Need to notify before acquiring write-lock (that will span the whole runnable)
+//                writeLock ();
+//                modifiable = canBeModified;
+//                int prevChanges = changes;
+//                try {
+//                    run.run ();
+//                } finally {
+//                    writeUnlock ();
+//                }
+//                if (changes == prevChanges) { // No changes => property chane with Boolean.FALSE
+//                    if (o instanceof VetoableChangeListener) {
+//                        VetoableChangeListener l = (VetoableChangeListener)o;
+//                        try {
+//                            l.vetoableChange (new java.beans.PropertyChangeEvent (this, "modified", null, Boolean.FALSE));
+//                        } catch (java.beans.PropertyVetoException ignore) {
+//                        }
+//                    }
+//                }
+//            } else {
+//                assertOffset (offset);
+//                modifiable = notifyModified (o);
+//                try {
+//                    if (!modifiable) {
+//                        throw new BadLocationException("Document modification vetoed", offset);
+//                    }
+//                    if (insert) {
+//                        super.insertString (offset, str, set);
+//                    } else {
+//                        super.remove(offset, len);
+//                    }
+//                } catch (BadLocationException ex) {
+//                    if (o instanceof VetoableChangeListener) {
+//                        VetoableChangeListener l = (VetoableChangeListener)o;
+//                        try {
+//                            l.vetoableChange (new java.beans.PropertyChangeEvent (this, "modified", null, Boolean.FALSE));
+//                        } catch (java.beans.PropertyVetoException ignore) {
+//                        }
+//                    }
+//                    throw ex;
+//                }
+//            }
         }
         
         private void assertOffset (int offset) throws BadLocationException {

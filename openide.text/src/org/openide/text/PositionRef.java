@@ -317,7 +317,7 @@ public final class PositionRef extends Object implements Serializable {
          * pass sweep of the data structure (inlined in the code).
          * @param toMemory puts positions to memory if <code>true</code>,
          * from memory if <code>false</code> */
-        private void processPositions(final boolean toMemory) {
+        void processPositions(final boolean toMemory) {
             // clear the queue, we'll do the sweep inline anyway
             while (queue.poll() != null)
                 ;
