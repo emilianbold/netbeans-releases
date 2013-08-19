@@ -155,16 +155,12 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
         
         private void onException(IOException e) {
             synchronized (cacheLock) {
-                nameToFileCache.remove(new Filter<ConcurrentFileRWAccess>() {
-                    @Override
-                    public boolean accept(ConcurrentFileRWAccess value) {
-                        return value == ConcurrentFileRWAccess.this;
-                    }
-                });
+                nameToFileCache.remove(new CacheFilterImpl(this));
             }
         }
-    }
 
+    }
+    
     private static final class Lock {}
 
     private final Object cacheLock = new Lock();
@@ -271,6 +267,9 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
                             putFile(fileName, aFile);
                         }
                     }
+                } else if (!aFile.isValid()) {
+                    nameToFileCache.remove(new CacheFilterImpl(aFile));
+                    continue;
                 } else {
                     if( readOnly ) {
                         readHitCnt++;
@@ -512,5 +511,24 @@ public class FilesAccessStrategyImpl implements FilesAccessStrategy {
     
     private void ls(File file) {
         System.err.printf("\tFile: %s\n\tExists: %b\n\tLength: %d\n\tModified: %s\n\n", file.getAbsolutePath(), file.exists(), file.length(), new Date(file.lastModified()));
+    }
+    
+    private static class CacheFilterImpl implements Filter<ConcurrentFileRWAccess> {
+
+        private final ConcurrentFileRWAccess value;
+
+        public CacheFilterImpl(ConcurrentFileRWAccess value) {
+            this.value = value;
+        }
+
+        @Override
+        public boolean accept(ConcurrentFileRWAccess v) {
+            return v == this.value;
+        }
+
+        @Override
+        public String toString() {
+            return "Filter:" + value; // NOI18N
+        }
     }
 }
