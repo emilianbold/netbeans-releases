@@ -73,6 +73,7 @@ import java.util.HashSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.modules.java.j2seplatform.platformdefinition.Util;
 import org.netbeans.spi.project.libraries.LibraryImplementation3;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
@@ -340,7 +341,7 @@ public final class J2SELibraryTypeProvider implements LibraryTypeProvider {
             final List<URL> checkedResources = new ArrayList<URL>(resources.size());
             for (URL u : resources) {
                 final String surl = u.toString();
-                if (!surl.endsWith("/")) {              //NOI18N
+                if (!Util.isRemote(u) && !surl.endsWith("/")) {              //NOI18N
                     try {
                         if (FileUtil.isArchiveFile(u)) {
                             LOG.warning(String.format("Wrong Classpath entry %s in Library: %s", u.toString(), libName==null? "" : libName));   //NOI18N
