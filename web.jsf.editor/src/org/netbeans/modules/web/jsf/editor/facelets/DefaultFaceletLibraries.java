@@ -103,7 +103,7 @@ public class DefaultFaceletLibraries {
 
     public synchronized Map<String, FaceletsLibraryDescriptor> getLibrariesDescriptors() {
         if(librariesDescriptors == null) {
-            librariesDescriptors = new HashMap<String, FaceletsLibraryDescriptor>();
+            librariesDescriptors = new HashMap<>();
             parseLibraries();
         }
         return librariesDescriptors;
@@ -134,7 +134,7 @@ public class DefaultFaceletLibraries {
     }
 
      private static Collection<FileObject> findLibraryDescriptors(FileObject classpathRoot, String suffix) {
-        Collection<FileObject> files = new ArrayList<FileObject>();
+        Collection<FileObject> files = new ArrayList<>();
         Enumeration<? extends FileObject> fos = classpathRoot.getChildren(true); //scan all files in the jar
         while (fos.hasMoreElements()) {
             FileObject file = fos.nextElement();
@@ -151,7 +151,7 @@ public class DefaultFaceletLibraries {
 
     protected synchronized static Map<String, Library> getJsf22FaceletPseudoLibraries(FaceletsLibrarySupport support) {
         if (jsf22FaceletPseudoLibraries == null) {
-            jsf22FaceletPseudoLibraries = new HashMap<String, Library>(2);
+            jsf22FaceletPseudoLibraries = new HashMap<>(2);
             jsf22FaceletPseudoLibraries.put(DefaultLibraryInfo.JSF.getLegacyNamespace(), new JsfFaceletPseudoLibrary(support, DefaultLibraryInfo.JSF));
             jsf22FaceletPseudoLibraries.put(DefaultLibraryInfo.PASSTHROUGH.getLegacyNamespace(), new JsfFaceletPseudoLibrary(support, DefaultLibraryInfo.PASSTHROUGH));
         }

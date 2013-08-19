@@ -109,13 +109,13 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
     @Override
     public Map<String, ? extends NamedComponent> getComponentsMap() {
         //add the composite components to the class components
-        Map<String, NamedComponent> all = new HashMap<String, NamedComponent>(super.getComponentsMap());
+        Map<String, NamedComponent> all = new HashMap<>(super.getComponentsMap());
         all.putAll(getCompositeComponentsMap());
         return all;
     }
 
     private Map<String, CompositeComponent> getCompositeComponentsMap() {
-        Map<String, CompositeComponent> ccomponents = new HashMap<String, CompositeComponent>();
+        Map<String, CompositeComponent> ccomponents = new HashMap<>();
         Collection<String> componentNames = index().getCompositeLibraryComponents(getLibraryName());
         for (String compName : componentNames) {
             CompositeComponent comp = new CompositeComponent(compName);
@@ -130,7 +130,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
     private String generateVirtualLibraryPrefix() {
         StringTokenizer st = new StringTokenizer(getLibraryName(), "/"); //NOI18N
-        LinkedList<String> tokens = new LinkedList<String>();
+        LinkedList<String> tokens = new LinkedList<>();
         while (st.hasMoreTokens()) {
             tokens.add(st.nextToken());
         }
@@ -165,7 +165,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
         @Override
         public Map<String, Tag> getTags() {
-            Map<String, Tag> map = new HashMap<String, Tag>();
+            Map<String, Tag> map = new HashMap<>();
             Collection<CompositeComponent> components = getCompositeComponentsMap().values();
             for (CompositeComponent cc : components) {
                 map.put(cc.getName(), new LazyLoadingTag(cc));
@@ -200,8 +200,8 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 }
                 String relativePath = model.getRelativePath();
 
-                attrs = new HashMap<String, Attribute>();
-                String msgNoTld = NbBundle.getBundle(CompositeComponentLibrary.class).getString("MSG_NO_DESCRIPTOR"); //NOI18N
+                attrs = new HashMap<>();
+                String msgNoTld = NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_NO_DESCRIPTOR"); //NOI18N
                 for (Map<String, String> attrsMap : model.getExistingInterfaceAttributes()) {
                     String attrname = attrsMap.get("name"); //NOI18N
                     boolean required = Boolean.parseBoolean(attrsMap.get("required")); //NOI18N
@@ -289,7 +289,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
                 sb.append("</table>"); //NOI18N
 
                 if (includeNoDescriptorMsg) {
-                    String msgNoDescriptor = NbBundle.getBundle(CompositeComponentLibrary.class).getString("MSG_NO_DESCRIPTOR"); //NOI18N
+                    String msgNoDescriptor = NbBundle.getMessage(CompositeComponentLibrary.class, "MSG_NO_DESCRIPTOR"); //NOI18N
                     sb.append("<p style=\"color: red\">").append(msgNoDescriptor).append("</p>");
                 } //NOI18N
 
@@ -317,7 +317,7 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             public Collection<Attribute> getAttributes() {
                 load();
                 //merge with default attributes
-                Collection<Attribute> all = new ArrayList<Attribute>(super.getAttributes());
+                Collection<Attribute> all = new ArrayList<>(super.getAttributes());
                 all.addAll(attrs.values());
                 return all;
             }

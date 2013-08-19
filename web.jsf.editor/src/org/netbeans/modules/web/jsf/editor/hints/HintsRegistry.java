@@ -67,14 +67,14 @@ public class HintsRegistry {
     private final Collection<HintsProvider> PROVIDERS;
 
     private HintsRegistry() {
-        PROVIDERS = new ArrayList<HintsProvider>();
+        PROVIDERS = new ArrayList<>();
         //init providers
         PROVIDERS.add(new ComponentUsagesChecker());
         PROVIDERS.add(new LibraryDeclarationChecker());
     }
 
     public List<Hint> gatherHints(RuleContext context) {
-        List<Hint> hints = new ArrayList<Hint>();
+        List<Hint> hints = new ArrayList<>();
         for(HintsProvider provider : PROVIDERS) {
             hints.addAll(provider.compute(context));
         }

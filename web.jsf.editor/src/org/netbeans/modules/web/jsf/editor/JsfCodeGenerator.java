@@ -53,14 +53,15 @@ public class JsfCodeGenerator {
 
     public static class Factory implements CodeGenerator.Factory {
 
+        @Override
         public List<? extends CodeGenerator> create(Lookup context) {
 
             JTextComponent component = context.lookup(JTextComponent.class);
-            List<CodeGenerator> generators = new ArrayList<CodeGenerator>();
-	    generators.add(new InjectCompositeComponent.InjectCCCodeGen());
+            List<CodeGenerator> generators = new ArrayList<>();
+            generators.add(new InjectCompositeComponent.InjectCCCodeGen());
 
-	    //add palette items
-            for(PaletteItem item : PaletteItemsProvider.getPaletteItems()) {
+            //add palette items
+            for (PaletteItem item : PaletteItemsProvider.getPaletteItems()) {
                 generators.add(new PaletteCodeGenerator(component, item));
             }
             return generators;
@@ -77,10 +78,12 @@ public class JsfCodeGenerator {
             this.item = item;
         }
 
+        @Override
         public String getDisplayName() {
             return item.getDisplayName();
         }
 
+        @Override
         public void invoke() {
             item.insert(component);
         }

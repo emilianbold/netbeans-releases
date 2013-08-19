@@ -106,13 +106,7 @@ public class InjectCompositeComponent {
 
             instantiateTemplate(project, fileObject, document, from, to);
 
-        } catch (ParseException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (DataObjectNotFoundException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (IOException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (BadLocationException ex) {
+        } catch (ParseException | BadLocationException | IOException ex) {
             Exceptions.printStackTrace(ex);
         }
     }
@@ -123,18 +117,22 @@ public class InjectCompositeComponent {
                 context.parserResult.getSnapshot().getSource().getFileObject(),
                 new OffsetRange(from, to),
                 Collections.<HintFix>singletonList(new HintFix() {
+            @Override
             public String getDescription() {
                 return NbBundle.getMessage(InjectCompositeComponent.class, "MSG_InjectCompositeComponentSelectionHintDescription"); //NOI18N
             }
 
+            @Override
             public void implement() throws Exception {
                 inject(context.doc, from, to);
             }
 
+            @Override
             public boolean isSafe() {
                 return true;
             }
 
+            @Override
             public boolean isInteractive() {
                 return true;
             }
@@ -159,7 +157,7 @@ public class InjectCompositeComponent {
         final Logger logger = Logger.getLogger(InjectCompositeComponent.class.getSimpleName());
         final JsfSupportImpl jsfs = JsfSupportImpl.findFor(file);
         if (jsfs == null) {
-            logger.warning("Cannot find JsfSupport instance for file " + file.getPath()); //NOI18N
+            logger.log(Level.WARNING, "Cannot find JsfSupport instance for file {0}", file.getPath()); //NOI18N
             return;
         }
 
@@ -170,7 +168,7 @@ public class InjectCompositeComponent {
 
         //get list of used declarations, which needs to be passed to the wizard
         Source source = Source.create(document);
-        final AtomicReference<Map<String, String>> declaredPrefixes = new AtomicReference<Map<String, String>>();
+        final AtomicReference<Map<String, String>> declaredPrefixes = new AtomicReference<>();
         ParserManager.parse(Collections.singleton(source), new UserTask() {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
@@ -207,6 +205,7 @@ public class InjectCompositeComponent {
             indent.lock();
             try {
                 doc.runAtomic(new Runnable() {
+                    @Override
                     public void run() {
                         try {
                             doc.remove(startOffset, endOffset - startOffset);
@@ -330,7 +329,7 @@ public class InjectCompositeComponent {
     private static class SnippetContext {
 
         private boolean valid;
-        private Map<String, String> relatedDeclarations = new HashMap<String, String>();
+        private Map<String, String> relatedDeclarations = new HashMap<>();
 
         public void setValid(boolean valid) {
             this.valid = valid;
@@ -340,7 +339,9 @@ public class InjectCompositeComponent {
             relatedDeclarations.put(uri, prefix);
         }
 
-        /** uri2prefix map of related declarations */
+        /**
+         * uri2prefix map of related declarations
+         */
         public Map<String, String> getDeclarations() {
             return relatedDeclarations;
         }
@@ -352,18 +353,22 @@ public class InjectCompositeComponent {
 
     private static class InjectCCSelectionRule implements SelectionRule {
 
+        @Override
         public boolean appliesTo(RuleContext context) {
             return true;
         }
 
+        @Override
         public String getDisplayName() {
             return null;
         }
 
+        @Override
         public boolean showInTasklist() {
             return false;
         }
 
+        @Override
         public HintSeverity getDefaultSeverity() {
             return HintSeverity.CURRENT_LINE_WARNING; //???
         }
@@ -371,10 +376,12 @@ public class InjectCompositeComponent {
 
     public static class InjectCCCodeGen implements CodeGenerator {
 
+        @Override
         public String getDisplayName() {
             return NbBundle.getMessage(InjectCompositeComponent.class, "MSG_InjectCompositeComponentHint"); //NOI18N
         }
 
+        @Override
         public void invoke() {
             JTextComponent textComponent = EditorRegistry.lastFocusedComponent();
             Document doc = textComponent.getDocument();

@@ -213,10 +213,12 @@ public class ModelVisitor extends PathNodeVisitor {
                 onLeftSite = bNode.tokenType() == TokenType.ASSIGN && bNode.lhs().equals(accessNode);       
             }
             if (property != null) {
+                OffsetRange range = new OffsetRange(accessNode.getProperty().getStart(), accessNode.getProperty().getFinish());
                 if(onLeftSite && !property.isDeclared()) {
                     property.setDeclared(true);
+                    property.setDeclarationName(new IdentifierImpl(property.getName(), range));
                 }
-                property.addOccurrence(new OffsetRange(accessNode.getProperty().getStart(), accessNode.getProperty().getFinish()));
+                property.addOccurrence(range);
             } else {
                 Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getProperty());
                 if (name != null) {
@@ -646,6 +648,9 @@ public class ModelVisitor extends PathNodeVisitor {
             int end = functionNode.getIdent().getFinish();
             if(end == 0) {
                 end = parserResult.getSnapshot().getText().length();
+            }
+            if ((modelBuilder.getCurrentDeclarationScope()).getProperty(functionNode.getIdent().getName()) != null) {
+                return null;
             }
             name.add(new IdentifierImpl(functionNode.getIdent().getName(), new OffsetRange(start, end)));
             if (pathSize > 2 && getPath().get(pathSize - 2) instanceof FunctionNode) {

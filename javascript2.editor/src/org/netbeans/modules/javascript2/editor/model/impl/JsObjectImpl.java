@@ -55,7 +55,7 @@ import org.netbeans.modules.javascript2.editor.model.*;
 public class JsObjectImpl extends JsElementImpl implements JsObject {
 
     final protected HashMap<String, JsObject> properties = new HashMap<String, JsObject>();
-    final private Identifier declarationName;
+    private Identifier declarationName;
     private JsObject parent;
     final private List<Occurrence> occurrences = new ArrayList<Occurrence>();
     final private NavigableMap<Integer, Collection<TypeUsage>> assignments = new TreeMap<Integer, Collection<TypeUsage>>();
@@ -100,6 +100,10 @@ public class JsObjectImpl extends JsElementImpl implements JsObject {
     @Override
     public Identifier getDeclarationName() {
         return declarationName;
+    }
+    
+    public void setDeclarationName(Identifier declaration) {
+        declarationName = declaration;
     }
 
     @Override
