@@ -54,6 +54,7 @@ import javax.swing.ListCellRenderer;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.customizer.support.ComboBoxUpdater;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
@@ -171,13 +172,11 @@ public final class JavaEEVersionComboBoxUpdater extends ComboBoxUpdater<Profile>
             }
         }
 
-        final String profileValue;
         if (profile != null) {
-            profileValue = profile.toPropertiesString();
+            JavaEEProjectSettings.setProfile(project, profile);
         } else {
             // If value is null, it means the default value was set --> see ComboBoxUpdater implementation for more details
-            profileValue = defaultValue.toPropertiesString();
+            JavaEEProjectSettings.setProfile(project, defaultValue);
         }
-        MavenProjectSupport.setJ2eeVersion(project, profileValue);
     }
 }

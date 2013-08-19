@@ -64,6 +64,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
@@ -132,7 +133,7 @@ public class MavenProjectSupport {
             if (server == null || server.equals(Server.NO_SERVER_SELECTED)) {
                 problems.addReport(createMissingServerReport(project, serverID));
             } else {
-                setServerInstanceID(project, server.getServerInstanceID());
+                JavaEEProjectSettings.setServerInstanceID(project, server.getServerInstanceID());
             }
         }
         
@@ -596,7 +597,7 @@ public class MavenProjectSupport {
                             }
                         }
                     }));
-                    MavenProjectSupport.setServerInstanceID(prj, newOne);
+                    JavaEEProjectSettings.setServerInstanceID(prj, newOne);
                 }
             });
         }
