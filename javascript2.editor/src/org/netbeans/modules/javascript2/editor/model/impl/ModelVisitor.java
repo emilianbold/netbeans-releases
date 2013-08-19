@@ -647,6 +647,9 @@ public class ModelVisitor extends PathNodeVisitor {
             if(end == 0) {
                 end = parserResult.getSnapshot().getText().length();
             }
+            if ((modelBuilder.getCurrentDeclarationScope()).getProperty(functionNode.getIdent().getName()) != null) {
+                return null;
+            }
             name.add(new IdentifierImpl(functionNode.getIdent().getName(), new OffsetRange(start, end)));
             if (pathSize > 2 && getPath().get(pathSize - 2) instanceof FunctionNode) {
                 isPrivate = true;
