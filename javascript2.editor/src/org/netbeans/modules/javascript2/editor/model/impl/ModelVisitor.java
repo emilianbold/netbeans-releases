@@ -213,10 +213,12 @@ public class ModelVisitor extends PathNodeVisitor {
                 onLeftSite = bNode.tokenType() == TokenType.ASSIGN && bNode.lhs().equals(accessNode);       
             }
             if (property != null) {
+                OffsetRange range = new OffsetRange(accessNode.getProperty().getStart(), accessNode.getProperty().getFinish());
                 if(onLeftSite && !property.isDeclared()) {
                     property.setDeclared(true);
+                    property.setDeclarationName(new IdentifierImpl(property.getName(), range));
                 }
-                property.addOccurrence(new OffsetRange(accessNode.getProperty().getStart(), accessNode.getProperty().getFinish()));
+                property.addOccurrence(range);
             } else {
                 Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getProperty());
                 if (name != null) {

@@ -959,6 +959,14 @@ public class MarkOccurrenceTest extends JsTestBase {
         checkOccurrences("testfiles/markoccurences/issue234512.js", "'Content-Type': contentT^ype,", true); 
     }
     
+    public void testIssue223057_01() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue223057.js", "a.url = container.nam^e;", true); 
+    }
+    
+    public void testIssue223057_02() throws Exception {
+        checkOccurrences("testfiles/markoccurences/issue223057.js", "a.url = contain^er.name;", true); 
+    }
+    
    private String getTestName() {
         String name = getName();
         int indexOf = name.indexOf("_");
