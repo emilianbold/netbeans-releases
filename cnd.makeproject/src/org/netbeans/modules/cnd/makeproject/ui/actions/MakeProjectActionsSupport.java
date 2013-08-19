@@ -55,13 +55,17 @@ import org.openide.util.NbBundle;
  */
 public class MakeProjectActionsSupport {
     private static final ResourceBundle bundle = NbBundle.getBundle(MakeLogicalViewProvider.class);
-    
+
     public static Action batchBuildAction() {
         return ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BATCH_BUILD, bundle.getString("LBL_BatchBuildAction_Name"), null); // NOI18N
     }
     
     public static Action buildPackageAction() {
         return ProjectSensitiveActions.projectCommandAction(MakeActionProvider.COMMAND_BUILD_PACKAGE, bundle.getString("LBL_BuildPackagesAction_Name"), null); // NOI18N        
+    }
+    
+    public static Action runAction() {
+        return ProjectSensitiveActions.projectCommandAction(ActionProvider.COMMAND_RUN, bundle.getString("LBL_RunAction_Name"), null); // NOI18N
     }
     
     public static Action debugAction() {

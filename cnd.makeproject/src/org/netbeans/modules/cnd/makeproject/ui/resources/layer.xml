@@ -319,12 +319,12 @@ made subject to such option by the copyright holder.
             <file name="org-netbeans-modules-cnd-makeproject-ui-actions-BuildPackageAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.buildPackageAction"/>            
             </file>                           
-            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-DebugAction.instance">
+<!--            <file name="org-netbeans-modules-cnd-makeproject-ui-actions-DebugAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.debugAction"/>            
             </file>                           
             <file name="org-netbeans-modules-cnd-makeproject-ui-actions-StepIntoAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.stepIntoAction"/>            
-            </file>                                       
+            </file>                                       -->
             <file name="org-netbeans-modules-cnd-makeproject-ui-actions-TestAction.instance">
                 <attr name="instanceCreate" methodvalue="org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport.testAction"/>            
             </file>                           
@@ -812,10 +812,10 @@ made subject to such option by the copyright holder.
                     <attr name="instanceClass" stringvalue="javax.swing.JSeparator"/>
                     <attr name="position" intvalue="1200"/>
                 </file>                
-                <file name="org-netbeans-modules-project-ui-RunProject.shadow">
+<!--                <file name="org-netbeans-modules-project-ui-RunProject.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-project-ui-RunProject.instance"/>
                     <attr name="position" intvalue="1300"/>
-                </file>                
+                </file>                -->
                 <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-RunAsAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-launchers-actions-RunAsAction.instance"/>
                     <attr name="position" intvalue="1350"/>                                        
