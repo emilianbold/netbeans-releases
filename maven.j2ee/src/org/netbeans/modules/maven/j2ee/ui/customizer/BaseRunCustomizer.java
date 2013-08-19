@@ -49,6 +49,7 @@ import javax.swing.event.AncestorEvent;
 import javax.swing.event.AncestorListener;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.customizer.support.CheckBoxUpdater;
@@ -88,10 +89,10 @@ public abstract class BaseRunCustomizer extends JPanel implements ApplyChangesCu
         // User is trying to set <No Server> option
         if (ExecutionChecker.DEV_NULL.equals(selectedServer.getServerInstanceID())) {
             MavenProjectSupport.setServerID(project, null);
-            MavenProjectSupport.setServerInstanceID(project, null);
+            JavaEEProjectSettings.setServerInstanceID(project, null);
         } else {
             MavenProjectSupport.setServerID(project, selectedServer.getServerID());
-            MavenProjectSupport.setServerInstanceID(project, selectedServer.getServerInstanceID());
+            JavaEEProjectSettings.setServerInstanceID(project, selectedServer.getServerInstanceID());
         }
 
         MavenProjectSupport.changeServer(project, false);

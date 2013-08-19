@@ -150,9 +150,8 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<MethodElement> retval = values.length > 0
                 ? new HashSet<MethodElement>() : Collections.<MethodElement>emptySet();
-        String url = indexResult.getUrl().toString();
         for (String val : values) {
-            final MethodElement method = fromSignature(type, query, indexQuery, url, Signature.get(val));
+            final MethodElement method = fromSignature(type, query, indexQuery, Signature.get(val));
             if (method != null) {
                 retval.add(method);
             }
@@ -161,13 +160,13 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
     }
 
     private static MethodElement fromSignature(final TypeElement type, final NameKind query,
-            final IndexQueryImpl indexScopeQuery, final String url, final Signature sig) {
+            final IndexQueryImpl indexScopeQuery, final Signature sig) {
         Parameters.notNull("NameKind query: can't be null", query);
         final MethodSignatureParser signParser = new MethodSignatureParser(sig);
         MethodElement retval = null;
         if (matchesQuery(query, signParser)) {
             retval = new MethodElementImpl(type, signParser.getMethodName(), false,
-                    signParser.getOffset(), signParser.getFlags(), url,
+                    signParser.getOffset(), signParser.getFlags(), signParser.getFileUrl(),
                     indexScopeQuery, new ParametersFromSignature(signParser), new ReturnTypesFromSignature(signParser), signParser.isDeprecated());
         }
         return retval;
@@ -298,6 +297,7 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
         sb.append(Separator.SEMICOLON); //NOI18N
         sb.append(getPhpModifiers().toFlags()).append(Separator.SEMICOLON);
         sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
+        sb.append(getFilenameUrl()).append(Separator.SEMICOLON);
         return sb.toString();
     }
 
@@ -366,6 +366,10 @@ public final class MethodElementImpl extends PhpElementImpl implements MethodEle
 
         boolean isDeprecated() {
             return signature.integer(6) == 1;
+        }
+
+        String getFileUrl() {
+            return signature.string(7);
         }
     }
 

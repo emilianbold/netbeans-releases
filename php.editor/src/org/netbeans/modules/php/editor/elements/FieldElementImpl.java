@@ -104,9 +104,8 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<FieldElement> retval = values.length > 0
                 ? new HashSet<FieldElement>() : Collections.<FieldElement>emptySet();
-        String url = indexResult.getUrl().toString();
         for (String val : values) {
-            final FieldElement field = fromSignature(type, query, indexQuery, url, Signature.get(val));
+            final FieldElement field = fromSignature(type, query, indexQuery, Signature.get(val));
             if (field != null) {
                 retval.add(field);
             }
@@ -115,13 +114,13 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
     }
 
     public static FieldElement fromSignature(final TypeElement type, final NameKind query,
-            final IndexQueryImpl indexScopeQuery, final String url, final Signature sig) {
+            final IndexQueryImpl indexScopeQuery, final Signature sig) {
         Parameters.notNull("query", query); //NOI18N
         final FieldSignatureParser signParser = new FieldSignatureParser(sig);
         FieldElement retval = null;
         if (matchesQuery(query, signParser)) {
             retval = new FieldElementImpl(type, signParser.getFieldName(),
-                    signParser.getOffset(), signParser.getFlags(), url,
+                    signParser.getOffset(), signParser.getFlags(), signParser.getFileUrl(),
                     indexScopeQuery, signParser.getTypes(), signParser.getFQTypes(), signParser.isDeprecated());
 
         }
@@ -197,6 +196,7 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
         }
         sb.append(Separator.SEMICOLON); //NOI18N
         sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
+        sb.append(getFilenameUrl()).append(Separator.SEMICOLON);
         checkSignature(sb);
         return sb.toString();
     }
@@ -313,6 +313,10 @@ public final class FieldElementImpl extends PhpElementImpl implements FieldEleme
 
         boolean isDeprecated() {
             return signature.integer(6) == 1;
+        }
+
+        String getFileUrl() {
+            return signature.string(7);
         }
     }
 }

@@ -52,7 +52,6 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.SwingUtilities;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -64,6 +63,7 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerManager;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.api.problem.ProblemReport;
@@ -79,12 +79,10 @@ import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.POMModel;
 import org.netbeans.modules.maven.model.pom.Properties;
-import org.netbeans.modules.web.browser.api.BrowserUISupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
-import org.openide.util.Parameters;
 
 /**
  * Provides a various methods to help with typical Maven Projects requirements
@@ -132,7 +130,7 @@ public class MavenProjectSupport {
             if (server == null || server.equals(Server.NO_SERVER_SELECTED)) {
                 problems.addReport(createMissingServerReport(project, serverID));
             } else {
-                setServerInstanceID(project, server.getServerInstanceID());
+                JavaEEProjectSettings.setServerInstanceID(project, server.getServerInstanceID());
             }
         }
         
@@ -252,7 +250,7 @@ public class MavenProjectSupport {
             return new String[] {sc.getServerInstanceId(), null};
         }
 
-        String serverID = readServerInstanceID(project);
+        String serverID = JavaEEProjectSettings.getServerInstanceID(project);
         String serverType = readServerID(project);
         
         return new String[]{serverID, serverType};
@@ -369,12 +367,12 @@ public class MavenProjectSupport {
                 
                 FileObject webXml = webModuleImpl.getDeploymentDescriptor();
                 if (webXml == null) {
-                    String j2eeVersion = readJ2eeVersion(project);
-                    webXml = DDHelper.createWebXml(Profile.fromPropertiesString(j2eeVersion), webInf);
+                    Profile profile = JavaEEProjectSettings.getProfile(project);
+                    webXml = DDHelper.createWebXml(profile, webInf);
     
                     // this should never happend if valid j2eeVersion has been parsed - see also issue #214600
-                    assert webXml != null : "DDHelper wasn't able to create deployment descriptor for the J2EE version: " + j2eeVersion
-                            + ", Profile.fromPropertiesString(j2eeVersion) returns: " + Profile.fromPropertiesString(j2eeVersion);
+                    assert webXml != null : "DDHelper wasn't able to create deployment descriptor for the J2EE version: " + profile.toPropertiesString()
+                            + ", Profile.fromPropertiesString(j2eeVersion) returns: " + profile;
                 }
 
             } catch (IOException ex) {
@@ -392,26 +390,6 @@ public class MavenProjectSupport {
     public static String readServerID(Project project) {
         return getSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, true);
     }
-    
-    /**
-     * Read server instance ID for the given project
-     * 
-     * @param project project for which we want to get server ID
-     * @return server ID
-     */
-    public static String readServerInstanceID(Project project) {
-        return getSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, false);
-    }
-
-    /**
-     * Read J2EE version for the given project
-     * 
-     * @param projectfor which we want to get J2EE version
-     * @return J2EE version
-     */
-    public static String readJ2eeVersion(Project project)  {
-        return getSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, true);
-    }
 
     /**
      * Tries to retrieve settings for the given project. At first the implementation uses project
@@ -423,7 +401,7 @@ public class MavenProjectSupport {
      * @param shared whether the returned settings is shared or not
      * @return value read either from preferences or from pom.xml
      */
-    private static String getSettings(Project project, String key, boolean shared) {
+    public static String getSettings(Project project, String key, boolean shared) {
         String value = getPreferences(project, shared).get(key, null);
         if (value == null) {
             value = readSettingsFromPom(project, key);
@@ -487,19 +465,11 @@ public class MavenProjectSupport {
         }
     }
 
-    public static void setJ2eeVersion(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, true);
-    }
-    
     public static void setServerID(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, value, true);
     }
     
-    public static void setServerInstanceID(Project project, String value) {
-        setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, value, false);
-    }
-    
-    private static void setSettings(Project project, String key, String value, boolean shared) {
+    public static void setSettings(Project project, String key, String value, boolean shared) {
         Preferences preferences = getPreferences(project, shared);
         if (value != null) {
             preferences.put(key, value);
@@ -511,46 +481,6 @@ public class MavenProjectSupport {
             preferences.sync();
         } catch (BackingStoreException ex) {
             Exceptions.printStackTrace(ex);
-        }
-    }
-    
-    /**
-     * Set browser ID for the given {@link Project}.
-     * 
-     * @param project project for which we want to set new browser
-     * @param browerID browser that we want to set or null if we want to remove current browser
-     */
-    public static void setBrowserID(@NonNull Project project, @NullAllowed String browerID) {
-        Parameters.notNull("project", project);
-
-        Preferences preferences = getPreferences(project, false);
-        
-        if (browerID == null || "".equals(browerID)) {
-            preferences.remove(MavenJavaEEConstants.SELECTED_BROWSER);
-        } else {
-            preferences.put(MavenJavaEEConstants.SELECTED_BROWSER, browerID);
-        }
-        try {
-            preferences.flush();
-        } catch (BackingStoreException ex) {
-            Exceptions.printStackTrace(ex);
-        }
-    }
-    
-    /**
-     * Returns selected browser ID for the given {@link Project}.
-     * 
-     * @param project project for which we want to know browserID
-     * @return browserID for the given project or null if the project doesn't have browser
-     */
-    public static String getBrowserID(@NonNull Project project) {
-        Parameters.notNull("project", project);
-        
-        String selectedBrowser = getSettings(project, MavenJavaEEConstants.SELECTED_BROWSER, false);
-        if (selectedBrowser != null) {
-            return selectedBrowser;
-        } else {
-            return BrowserUISupport.getDefaultBrowserChoice(true).getId();
         }
     }
     
@@ -596,7 +526,7 @@ public class MavenProjectSupport {
                             }
                         }
                     }));
-                    MavenProjectSupport.setServerInstanceID(prj, newOne);
+                    JavaEEProjectSettings.setServerInstanceID(prj, newOne);
                 }
             });
         }

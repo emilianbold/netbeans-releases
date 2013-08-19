@@ -62,6 +62,7 @@ import org.netbeans.modules.j2ee.api.ejbjar.EjbJar;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.api.customizer.ModelHandle2;
 import org.netbeans.modules.maven.api.execute.RunConfig;
@@ -187,7 +188,7 @@ public class SelectAppServerPanel extends javax.swing.JPanel {
     }
 
     private static void persistServer(Project project, final String iID, final String sID, final Project targetPrj) {
-        MavenProjectSupport.setServerInstanceID(project, iID);
+        JavaEEProjectSettings.setServerInstanceID(project, iID);
         MavenProjectSupport.setServerID(project, sID);
 
         // We want to initiate context path to default value if there isn't related deployment descriptor yet

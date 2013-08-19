@@ -89,9 +89,8 @@ public final class InterfaceElementImpl extends TypeElementImpl implements Inter
             final IndexQueryImpl indexScopeQuery, final IndexResult indexResult) {
         String[] values = indexResult.getValues(IDX_FIELD);
         Set<InterfaceElement> retval = values.length > 0 ? new HashSet<InterfaceElement>() : Collections.<InterfaceElement>emptySet();
-        String url = indexResult.getUrl().toString();
         for (String val : values) {
-            final InterfaceElement iface = fromSignature(query, indexScopeQuery, url, Signature.get(val));
+            final InterfaceElement iface = fromSignature(query, indexScopeQuery, Signature.get(val));
             if (iface != null) {
                 retval.add(iface);
             }
@@ -100,14 +99,14 @@ public final class InterfaceElementImpl extends TypeElementImpl implements Inter
     }
 
     private static InterfaceElement fromSignature(final NameKind query, final IndexQueryImpl indexScopeQuery,
-            final String url, final Signature signature) {
+            final Signature signature) {
         Parameters.notNull("query", query); //NOI18N
         InterfaceSignatureParser signParser = new InterfaceSignatureParser(signature);
         InterfaceElement retval = null;
         if (matchesQuery(query, signParser)) {
             retval = new InterfaceElementImpl(signParser.getQualifiedName(), signParser.getOffset(),
                     signParser.getSuperInterfaces(), signParser.getFQSuperInterfaces(),
-                    url, indexScopeQuery, signParser.isDeprecated());
+                    signParser.getFileUrl(), indexScopeQuery, signParser.isDeprecated());
         }
         return retval;
     }
@@ -148,6 +147,7 @@ public final class InterfaceElementImpl extends TypeElementImpl implements Inter
         QualifiedName namespaceName = getNamespaceName();
         sb.append(namespaceName.toString()).append(Separator.SEMICOLON); //NOI18N
         sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
+        sb.append(getFilenameUrl()).append(Separator.SEMICOLON);
         checkInterfaceSignature(sb);
         return sb.toString();
     }
@@ -254,6 +254,10 @@ public final class InterfaceElementImpl extends TypeElementImpl implements Inter
 
         boolean isDeprecated() {
             return signature.integer(5) == 1;
+        }
+
+        String getFileUrl() {
+            return signature.string(6);
         }
     }
 }

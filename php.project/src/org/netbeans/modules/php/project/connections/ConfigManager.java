@@ -53,6 +53,7 @@ import java.util.TreeMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.event.ChangeListener;
+import org.netbeans.modules.php.api.util.StringUtils;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
 
@@ -250,6 +251,15 @@ public final class ConfigManager {
             String retval = getValue(PROP_DISPLAY_NAME);
             retval = retval != null ? retval : getName();
             return retval != null ? retval : NbBundle.getMessage(ConfigManager.class, "LBL_DefaultConfiguration");
+        }
+
+        public void setDisplayName(String displayName) {
+            if (!StringUtils.hasText(displayName)
+                    || displayName.equals(name)) {
+                putValue(PROP_DISPLAY_NAME, null);
+            } else {
+                putValue(PROP_DISPLAY_NAME, displayName);
+            }
         }
 
         public boolean isDefault() {

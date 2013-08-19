@@ -122,6 +122,7 @@ public class JsfVariableContext implements Comparable {
         return hash;
     }
 
+    @Override
     public int compareTo(Object o) {
         final JsfVariableContext c = (JsfVariableContext)o;
 
