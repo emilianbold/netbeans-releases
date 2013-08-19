@@ -43,12 +43,16 @@ package org.netbeans.modules.maven.j2ee;
 
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.javaee.project.spi.JavaEEProjectSettingsImplementation;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.spi.project.ProjectServiceProvider;
 
 /**
+ * Implementation of {@link JavaEEProjectSettingsImplementation}.
+ *
+ * Client shouldn't use this class directly, but access it via {@link JavaEEProjectSettings}.
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
