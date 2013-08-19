@@ -65,6 +65,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void test234573() throws Exception {
+        // #234573 - unresolved usage of static namespace functions
+        performStaticTest("namespace234573.cpp");
+    }
+    
     public void test218303() throws Exception {
         // #218303 - Unresolved identifiers in preprocessor directives with alternative tokens
         performStaticTest("iz218303.cpp");
