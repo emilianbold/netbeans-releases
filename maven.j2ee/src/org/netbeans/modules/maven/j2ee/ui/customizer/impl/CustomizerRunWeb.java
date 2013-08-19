@@ -246,7 +246,7 @@ public class CustomizerRunWeb extends BaseRunCustomizer {
     }
 
     private JComboBox<WebBrowser> createBrowserComboBox() {
-        String selectedBrowser = MavenProjectSupport.getBrowserID(project);
+        String selectedBrowser = JavaEEProjectSettings.getBrowserID(project);
         browserModel = BrowserUISupport.createBrowserModel(selectedBrowser, true);
         browserCBox = BrowserUISupport.createBrowserPickerComboBox(browserModel.getSelectedBrowserId(), true, false, browserModel);
         browserCBox.setModel(browserModel);

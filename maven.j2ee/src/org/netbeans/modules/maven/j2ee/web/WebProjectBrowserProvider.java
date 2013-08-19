@@ -113,7 +113,7 @@ public class WebProjectBrowserProvider implements ProjectBrowserProvider {
 
     @Override
     public WebBrowser getActiveBrowser() {
-        String selectedBrowser = MavenProjectSupport.getBrowserID(project);
+        String selectedBrowser = JavaEEProjectSettings.getBrowserID(project);
         if (selectedBrowser == null) {
             return null;
         } else {

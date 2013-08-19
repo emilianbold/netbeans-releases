@@ -491,11 +491,11 @@ public class MavenProjectSupport {
     public static void setJ2eeVersion(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_J2EE_VERSION, value, true);
     }
-    
+
     public static void setServerID(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER, value, true);
     }
-    
+
     public static void setServerInstanceID(Project project, String value) {
         setSettings(project, MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID, value, false);
     }
