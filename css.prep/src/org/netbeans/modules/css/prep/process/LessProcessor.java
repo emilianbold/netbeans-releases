@@ -90,7 +90,7 @@ public final class LessProcessor extends BaseProcessor {
     }
 
     @Override
-    protected void compileInternal(Project project, File source, File target, String compilerOptions) {
+    protected void compileInternal(Project project, File source, File target, List<String> compilerOptions) {
         LessExecutable less = getLess(project);
         if (less == null) {
             return;

@@ -44,7 +44,6 @@ package org.netbeans.modules.css.prep.sass;
 import java.awt.EventQueue;
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CancellationException;
@@ -63,12 +62,10 @@ import org.netbeans.modules.css.prep.util.ExternalExecutable;
 import org.netbeans.modules.css.prep.util.ExternalExecutableValidator;
 import org.netbeans.modules.css.prep.util.FileUtils;
 import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
-import org.netbeans.modules.css.prep.util.StringUtils;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.web.common.api.Version;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
-import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 
@@ -156,7 +153,7 @@ public final class SassExecutable {
 
     @NbBundle.Messages("Sass.compile=Sass (compile)")
     @CheckForNull
-    public void compile(File source, final File target, String compilerOptions) throws ExecutionException {
+    public void compile(File source, final File target, List<String> compilerOptions) throws ExecutionException {
         assert !EventQueue.isDispatchThread();
         assert source.isFile() : "Not file given: " + source;
         final File targetDir = target.getParentFile();
@@ -209,7 +206,7 @@ public final class SassExecutable {
                 .showProgress(false);
     }
 
-    private List<String> getParameters(File inputFile, File outputFile, String compilerOptions) {
+    private List<String> getParameters(File inputFile, File outputFile, List<String> compilerOptions) {
         List<String> params = new ArrayList<>();
         // debug
         boolean debug = CssPrepOptions.getInstance().getSassDebug();
@@ -222,10 +219,7 @@ public final class SassExecutable {
             }
         }
         // compiler options
-        if (StringUtils.hasText(compilerOptions)) {
-            String[] parsedCompilerParams = Utilities.parseParameters(compilerOptions);
-            params.addAll(Arrays.asList(parsedCompilerParams));
-        }
+        params.addAll(compilerOptions);
         // input
         params.add(inputFile.getAbsolutePath());
         // output
