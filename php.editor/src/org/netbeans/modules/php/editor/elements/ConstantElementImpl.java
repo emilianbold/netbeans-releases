@@ -87,9 +87,8 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<ConstantElement> retval = values.length > 0
                 ? new HashSet<ConstantElement>() : Collections.<ConstantElement>emptySet();
-        String url = indexResult.getUrl().toString();
         for (String val : values) {
-            ConstantElement constant = fromSignature(query, indexQuery, url, Signature.get(val));
+            ConstantElement constant = fromSignature(query, indexQuery, Signature.get(val));
             if (constant != null) {
                 retval.add(constant);
             }
@@ -98,7 +97,7 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
     }
 
     private static ConstantElement fromSignature(final NameKind query,
-            final IndexQueryImpl indexScopeQuery, final String url, final Signature sig) {
+            final IndexQueryImpl indexScopeQuery, final Signature sig) {
         ConstantSignatureParser signParser = new ConstantSignatureParser(sig);
         ConstantElement retval = null;
         if (matchesQuery(query, signParser)) {
@@ -106,7 +105,7 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
                     signParser.getQualifiedName(),
                     signParser.getValue(),
                     signParser.getOffset(),
-                    url,
+                    signParser.getFileUrl(),
                     indexScopeQuery,
                     signParser.isDeprecated());
         }
@@ -150,6 +149,7 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
         sb.append(namespaceName.toString()).append(Separator.SEMICOLON); //NOI18N
         sb.append(getValue()).append(Separator.SEMICOLON); //NOI18N
         sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
+        sb.append(getFilenameUrl()).append(Separator.SEMICOLON);
         checkConstantSignature(sb);
         return sb.toString();
     }
@@ -193,6 +193,10 @@ public final class ConstantElementImpl extends FullyQualifiedElementImpl impleme
 
         boolean isDeprecated() {
             return signature.integer(5) == 1;
+        }
+
+        String getFileUrl() {
+            return signature.string(6);
         }
     }
 }

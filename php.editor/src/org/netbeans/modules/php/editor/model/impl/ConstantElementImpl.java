@@ -93,6 +93,8 @@ class ConstantElementImpl extends ModelElementImpl implements ConstantElement, F
         QualifiedName qualifiedName = namespaceScope.getQualifiedName();
         sb.append(qualifiedName.toString()).append(Signature.ITEM_DELIMITER);
         sb.append(getValue() != null ? Signature.encodeItem(getValue()) : "?").append(Signature.ITEM_DELIMITER); //NOI18N
+        sb.append(isDeprecated() ? 1 : 0).append(Signature.ITEM_DELIMITER);
+        sb.append(getFilenameUrl()).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 

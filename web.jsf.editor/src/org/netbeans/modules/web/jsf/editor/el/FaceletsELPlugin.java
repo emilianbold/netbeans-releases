@@ -100,7 +100,7 @@ public class FaceletsELPlugin extends ELPlugin {
         }
 
         if(IMPL_OBJECTS == null) {
-            IMPL_OBJECTS = new ArrayList<ImplicitObject>(9);
+            IMPL_OBJECTS = new ArrayList<>(9);
 
             IMPL_OBJECTS.addAll(getScopeObjects());
 
@@ -144,7 +144,7 @@ public class FaceletsELPlugin extends ELPlugin {
      * @return the implicit scope objects, i.e. {@code requestScope, sessionScope} etc.
      */
     private static Collection<ImplicitObject> getScopeObjects() {
-        Collection<ImplicitObject> result = new ArrayList<ImplicitObject>(5);
+        Collection<ImplicitObject> result = new ArrayList<>(5);
         result.add(new JsfImplicitObject("sessionScope", "java.util.Map", SCOPE_TYPE)); // NOI18N
         result.add(new JsfImplicitObject("applicationScope", "java.util.Map", SCOPE_TYPE)); // NOI18N
         result.add(new JsfImplicitObject("requestScope", "java.util.Map", SCOPE_TYPE)); // NOI18N
@@ -155,8 +155,8 @@ public class FaceletsELPlugin extends ELPlugin {
 
     @Override
     public List<Function> getFunctions(FileObject file) {
-        List<Function> functions =  new ArrayList<Function>();
-        final Map<String, String> namespaces = new HashMap<String, String>();
+        List<Function> functions =  new ArrayList<>();
+        final Map<String, String> namespaces = new HashMap<>();
 
         try {
             Source source = Source.create(file);
@@ -186,7 +186,7 @@ public class FaceletsELPlugin extends ELPlugin {
     }
 
      private static List<Function> getFunctionsFromDescriptor(FaceletsLibraryDescriptor descriptor, String prefix) {
-        List<Function> functions = new ArrayList<Function>();
+        List<Function> functions = new ArrayList<>();
         for (Map.Entry<String, org.netbeans.modules.web.jsfapi.api.Function> entry : descriptor.getFunctions().entrySet()) {
             org.netbeans.modules.web.jsfapi.api.Function function = entry.getValue();
             functions.add(new Function(
@@ -205,7 +205,7 @@ public class FaceletsELPlugin extends ELPlugin {
     }
 
     private static List<String> getParametersForSignature(String signature) {
-        List<String> params = new ArrayList<String>();
+        List<String> params = new ArrayList<>();
         String paramString = signature.substring(signature.indexOf("(") + 1, signature.indexOf(")")); //NOI18N
         for (String param : paramString.split(",")) { //NOI18N
             params.add(getSimpleNameForType(param.trim()));

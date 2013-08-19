@@ -46,7 +46,6 @@ import java.io.InputStream;
 import java.util.Map;
 import java.util.TreeMap;
 import org.netbeans.modules.web.common.taginfo.LibraryMetadata;
-import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
 import org.openide.util.Exceptions;
 
@@ -60,7 +59,7 @@ import org.openide.util.Exceptions;
  * since DefaultFaceletLibraries provides basically the same info
  */
 public class FaceletsLibraryMetadata {
-    private static Map<String, LibraryMetadata> libMap = new TreeMap<String, LibraryMetadata>();
+    private static Map<String, LibraryMetadata> libMap = new TreeMap<>();
 
     static {
         loadLib("composite");  //NOI18N

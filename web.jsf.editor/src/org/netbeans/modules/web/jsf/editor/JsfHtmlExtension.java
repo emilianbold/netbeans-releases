@@ -102,7 +102,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights(HtmlParserResult result, SchedulerEvent event) {
-        final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<OffsetRange, Set<ColoringAttributes>>();
+        final Map<OffsetRange, Set<ColoringAttributes>> highlights = new HashMap<>();
 
         //highlight JSF tags
         highlightJsfTags(result, highlights);
@@ -221,11 +221,11 @@ public class JsfHtmlExtension extends HtmlExtension {
             return Collections.emptyList();
         }
         Map<String, Library> libs = jsfs.getLibraries();
-        Set<Library> librariesSet = new HashSet<Library>(libs.values());
+        Set<Library> librariesSet = new HashSet<>(libs.values());
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
-        List<CompletionItem> items = new ArrayList<CompletionItem>();
+        List<CompletionItem> items = new ArrayList<>();
 
         int colonIndex = context.getPrefix().indexOf(':');
         if (colonIndex == -1) {
@@ -291,7 +291,7 @@ public class JsfHtmlExtension extends HtmlExtension {
     }
 
     private Collection<CompletionItem> queryLibrary(CompletionContext context, Library lib, String nsPrefix, boolean undeclared, boolean isJsf22Plus) {
-        Collection<CompletionItem> items = new ArrayList<CompletionItem>();
+        Collection<CompletionItem> items = new ArrayList<>();
         for (LibraryComponent component : lib.getComponents()) {
             if (!(component instanceof AbstractFaceletsLibrary.Function)) {
                 items.add(JsfCompletionItem.createTag(context.getCCItemStartOffset(), component, nsPrefix, undeclared, isJsf22Plus));
@@ -313,7 +313,7 @@ public class JsfHtmlExtension extends HtmlExtension {
         //uri to prefix map
         Map<String, String> declaredNS = result.getNamespaces();
 
-        List<CompletionItem> items = new ArrayList<CompletionItem>();
+        List<CompletionItem> items = new ArrayList<>();
 
         Element queriedNode = context.getCurrentNode();
         if (queriedNode.type() != ElementType.OPEN_TAG) {
@@ -341,7 +341,7 @@ public class JsfHtmlExtension extends HtmlExtension {
             if (tag != null) {
                 Collection<Attribute> attrs = tag.getAttributes();
                 //TODO resolve help
-                Collection<String> existingAttrNames = new ArrayList<String>();
+                Collection<String> existingAttrNames = new ArrayList<>();
                 for (org.netbeans.modules.html.editor.lib.api.elements.Attribute a : ot.attributes()) {
                     existingAttrNames.add(a.name().toString());
                 }
@@ -379,7 +379,7 @@ public class JsfHtmlExtension extends HtmlExtension {
 
     @Override
     public List<CompletionItem> completeAttributeValue(CompletionContext context) {
-        List<CompletionItem> items = new ArrayList<CompletionItem>();
+        List<CompletionItem> items = new ArrayList<>();
 
         JsfSupportImpl jsfs = JsfSupportImpl.findFor(context.getResult().getSnapshot().getSource());
         String ns = ElementUtils.getNamespace(context.getCurrentNode());

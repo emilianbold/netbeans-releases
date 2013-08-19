@@ -85,7 +85,7 @@ public class HtmlHintsProviderTest extends TestBase {
                 
             }
         });
-        List<? extends HtmlRule> rules = HtmlHintsProvider.getSortedRules(manager, rc);
+        List<? extends HtmlRule> rules = HtmlHintsProvider.getSortedRules(manager, rc, false);
         //check if the last one is the "All Other" rule
         int rulesNum = 22;
         

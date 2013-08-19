@@ -112,7 +112,7 @@ public class JsfIndexSupport {
                 sb.append(Integer.toString((b[i] & 0xff) + 0x100, 16).substring(1));
             }
             return sb.toString();
-        } catch (Exception /*IOException, NoSuchAlgorithmException*/ e) {
+        } catch (NoSuchAlgorithmException | IOException e) {
             //no-op
             return "n/a"; //NOI18N
         }
