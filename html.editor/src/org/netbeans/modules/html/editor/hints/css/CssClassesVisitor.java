@@ -43,13 +43,10 @@ package org.netbeans.modules.html.editor.hints.css;
 
 import java.io.IOException;
 import java.util.*;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.Rule;
-import org.netbeans.modules.css.indexing.api.CssIndex;
-import org.netbeans.modules.css.refactoring.api.RefactoringElementType;
 import org.netbeans.modules.html.editor.hints.EmbeddingUtil;
 import org.netbeans.modules.html.editor.hints.HtmlRuleContext;
 import org.netbeans.modules.html.editor.lib.api.elements.*;
@@ -113,6 +110,7 @@ public class CssClassesVisitor implements ElementVisitor {
         }
     }
 
+    @NbBundle.Messages("MissingCssClass=Class {0} not found")
     private void processElements(Attribute attribute, CssElementType elementType) {
         CharSequence value = attribute.unquotedValue();
         if (value == null) {
@@ -149,7 +147,7 @@ public class CssClassesVisitor implements ElementVisitor {
             if (referredFilesWithTheId.isEmpty()) {
                 //unknown id
                 hints.add(new MissingCssElement(rule,
-                        NbBundle.getMessage(CssClassesVisitor.class, "MSG_MissingCssClass", token),
+                        Bundle.MissingCssClass(token),
                         context,
                         getAttributeValueOffsetRange(attribute, context),
                         new HintContext(token)));
