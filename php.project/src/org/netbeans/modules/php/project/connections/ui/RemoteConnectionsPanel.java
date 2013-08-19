@@ -65,6 +65,8 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.plaf.UIResource;
@@ -94,7 +96,7 @@ import org.openide.util.TaskListener;
  */
 @org.netbeans.api.annotations.common.SuppressWarnings("SE_BAD_FIELD_STORE")
 public final class RemoteConnectionsPanel extends JPanel implements ChangeListener, HelpCtx.Provider {
-    private static final long serialVersionUID = -286975118754121236L;
+    private static final long serialVersionUID = -6457687532146576878L;
 
     private static final RequestProcessor TEST_CONNECTION_RP = new RequestProcessor("Test Remote Connection", 1); // NOI18N
 
@@ -116,7 +118,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
 
         // init
         configList.setModel(configListModel);
-        configList.setCellRenderer(new ConfigListRenderer());
+        configList.setCellRenderer(new ConfigListRenderer(remoteConnections));
 
         setEnabledRemoveButton();
 
@@ -195,6 +197,23 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
             @Override
             public void actionPerformed(ActionEvent e) {
                 removeConfig();
+            }
+        });
+        nameTextField.getDocument().addDocumentListener(new DocumentListener() {
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                processChange();
+            }
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                processChange();
+            }
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                processChange();
+            }
+            private void processChange() {
+                displayNameChanged();
             }
         });
     }
@@ -284,6 +303,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
     }
 
     private void storeActiveConfig(Configuration cfg) {
+        cfg.setDisplayName(nameTextField.getText());
         configurationPanel.store(cfg);
     }
 
@@ -291,10 +311,8 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         configurationPanel.removeChangeListener(this);
 
         String name = null;
-        String type = null;
         Configuration configuration = (Configuration) configList.getSelectedValue();
         if (configuration != null) {
-            type = remoteConnections.getConfigurationType(configuration);
             name = configuration.getDisplayName();
 
             configurationPanel = getConfigurationPanel(configuration);
@@ -311,15 +329,19 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
 
         if (configuration != null) {
             assert name != null : "Name must be found for config " + configuration.getDisplayName();
-            assert type != null : "Type must be found for config " + configuration.getDisplayName();
 
-            nameTextField.setText(NbBundle.getMessage(RemoteConnectionsPanel.class, "TXT_NameType", name, type));
+            setConfigurationName(name);
         }
         Component innerPanel = configurationPanel.getComponent();
         configurationPanelHolder.setPreferredSize(innerPanel.getPreferredSize());
         configurationPanelHolder.add(innerPanel, BorderLayout.CENTER);
         configurationPanelHolder.revalidate();
         configurationPanelHolder.repaint();
+    }
+
+    private void setConfigurationName(String name) {
+        nameTextField.setText(name);
+        nameTextField.setEditable(name != null);
     }
 
     private RemoteConfigurationPanel getConfigurationPanel(Configuration configuration) {
@@ -358,7 +380,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
     }
 
     private void resetFields() {
-        nameTextField.setText(" "); // NOI18N
+        setConfigurationName(null);
 
         configurationPanelHolder.removeAll();
         configurationPanelHolder.revalidate();
@@ -415,6 +437,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         removeButton.setEnabled(enabled);
     }
 
+    @NbBundle.Messages("RemoteConnectionsPanel.warning.name.empty=Default name will be used.")
     void validateActiveConfig() {
         boolean valid = isValidConfiguration();
         String error = getError();
@@ -426,7 +449,14 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
             return;
         }
 
-        setWarning(getWarning());
+        String warning = getWarning();
+        if (warning != null) {
+            setWarning(warning);
+        } else {
+            if (!StringUtils.hasText(nameTextField.getText())) {
+                setWarning(Bundle.RemoteConnectionsPanel_warning_name_empty());
+            }
+        }
 
         // check whether all the configs are errorless
         checkAllConfigs();
@@ -515,6 +545,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
         org.openide.awt.Mnemonics.setLocalizedText(nameLabel, org.openide.util.NbBundle.getMessage(RemoteConnectionsPanel.class, "LBL_Name")); // NOI18N
 
         nameTextField.setEditable(false);
+        nameTextField.setColumns(30);
 
         configurationPanelScrollPane.setBorder(null);
 
@@ -552,16 +583,16 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(separator, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(nameLabel)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(nameTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 449, Short.MAX_VALUE))
+                    .addComponent(configurationPanelScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(testConnectionButton)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(configureProxyButton)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(configurationPanelScrollPane, javax.swing.GroupLayout.DEFAULT_SIZE, 506, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(nameLabel)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(nameTextField)))
                 .addContainerGap())
         );
 
@@ -634,6 +665,10 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
     private javax.swing.JButton testConnectionButton;
     // End of variables declaration//GEN-END:variables
 
+    void displayNameChanged() {
+        stateChanged(null);
+    }
+
     @Override
     public void stateChanged(ChangeEvent e) {
         Configuration cfg = getSelectedConfiguration();
@@ -656,20 +691,30 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
 
         private static final long serialVersionUID = 468768321568787L;
 
+        private final RemoteConnections remoteConnections;
 
-        public ConfigListRenderer() {
+
+        private ConfigListRenderer(RemoteConnections remoteConnections) {
+            assert remoteConnections != null;
+            this.remoteConnections = remoteConnections;
             setOpaque(true);
         }
 
+        @NbBundle.Messages({
+            "# {0} - connection name",
+            "# {1} - connection type (FTP/SFTP)",
+            "ConfigListRenderer.item.label={0} [{1}]",
+        })
         @Override
-        public Component getListCellRendererComponent(JList<? extends ConfigManager.Configuration> list, ConfigManager.Configuration value, int index, boolean isSelected, boolean cellHasFocus) {
+        public Component getListCellRendererComponent(JList<? extends ConfigManager.Configuration> list, ConfigManager.Configuration value,
+                int index, boolean isSelected, boolean cellHasFocus) {
             setName("ComboBox.listRenderer"); // NOI18N
             Color errorColor = UIManager.getColor("nb.errorForeground"); // NOI18N
             boolean cfgValid = true;
             if (value != null) {
                 ConfigManager.Configuration cfg = value;
-                setText(cfg.getDisplayName());
                 cfgValid = cfg.isValid();
+                setText(Bundle.ConfigListRenderer_item_label(cfg.getDisplayName(), remoteConnections.getConfigurationType(cfg)));
             }
             setIcon(null);
             if (isSelected) {

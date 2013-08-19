@@ -310,8 +310,19 @@ public final class RemoteConnections {
                 Preferences node = remoteConnectionsPreferences.node(name);
                 for (String propertyName : configuration.getPropertyNames()) {
                     String value = configuration.getValue(propertyName);
+                    if (propertyName.equals(ConfigManager.PROP_DISPLAY_NAME)) {
+                        // display name
+                        if (value != null) {
+                            // save it
+                            node.put(propertyName, value);
+                        } else {
+                            // remove it
+                            node.remove(propertyName);
+                        }
+                        continue;
+                    }
                     if (value == null) {
-                        // e.g. display name
+                        // unknown property (e.g. knownHostsFile for FTP config => null value)
                         continue;
                     }
                     if (remoteConfiguration.saveProperty(propertyName, value)) {
