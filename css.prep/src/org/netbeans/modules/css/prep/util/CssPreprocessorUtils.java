@@ -139,16 +139,16 @@ public final class CssPreprocessorUtils {
     }
 
     public static List<String> parseCompilerOptions(@NullAllowed String compilerOptions, @NullAllowed FileObject webRoot) {
-        if (webRoot == null
-                || !StringUtils.hasText(compilerOptions)) {
+        if (!StringUtils.hasText(compilerOptions)) {
             return Collections.emptyList();
         }
         String[] parsedCompilerParams = Utilities.parseParameters(processCompilerOptions(compilerOptions, webRoot));
         return Arrays.asList(parsedCompilerParams);
     }
 
-    private static String processCompilerOptions(String compilerOptions, FileObject webRoot) {
-        if (compilerOptions.indexOf(WEB_ROOT_PARAM) == -1) {
+    private static String processCompilerOptions(String compilerOptions, @NullAllowed FileObject webRoot) {
+        if (webRoot == null
+                || compilerOptions.indexOf(WEB_ROOT_PARAM) == -1) {
             return compilerOptions;
         }
         return compilerOptions.replace(WEB_ROOT_PARAM, FileUtil.toFile(webRoot).getAbsolutePath());
