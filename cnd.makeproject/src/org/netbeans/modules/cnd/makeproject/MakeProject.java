@@ -1447,7 +1447,6 @@ public final class MakeProject implements Project, MakeProjectListener {
             }
             LOGGER.log(Level.FINE, "on project close MakeProject@{0} {1}", new Object[]{System.identityHashCode(MakeProject.this), helper.getProjectDirectory()}); // NOI18N
             helper.removeMakeProjectListener(this);
-            save();            
             MakeOptions.getInstance().removePropertyChangeListener(indexerListener);
             MakeProjectFileProviderFactory.removeSearchBase(this);
             // project is in closed state
