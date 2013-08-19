@@ -127,12 +127,17 @@ public class CsmCompletionProvider implements CompletionProvider {
         return null;
     }
 
-    public static CsmCompletionQuery getCompletionQuery() {
-        return new NbCsmCompletionQuery(null, CompletionResolver.QueryScope.GLOBAL_QUERY, null);
+    private static NbCsmCompletionQuery getCompletionQuery(CompletionResolver.QueryScope scope) {
+        return new NbCsmCompletionQuery(null, scope, null, false);
     }
 
-    public static CsmCompletionQuery getCompletionQuery(CsmFile csmFile, CompletionResolver.QueryScope queryScope, FileReferencesContext fileReferencesContext) {
-        return new NbCsmCompletionQuery(csmFile, queryScope, fileReferencesContext);
+    /** for tests */
+    public static CsmCompletionQuery getTestCompletionQuery(CsmFile csmFile, CompletionResolver.QueryScope scope) {
+        return new NbCsmCompletionQuery(csmFile, scope, null, false);
+    }
+    
+    public static CsmCompletionQuery createCompletionResolver(CsmFile csmFile, CompletionResolver.QueryScope queryScope, FileReferencesContext fileReferencesContext) {
+        return new NbCsmCompletionQuery(csmFile, queryScope, fileReferencesContext, false);
     }
 
     static final class Query extends AsyncCompletionQuery {
@@ -274,7 +279,7 @@ public class CsmCompletionProvider implements CompletionProvider {
             boolean hide = (caretOffset <= queryAnchorOffset) && (filterPrefix == null);
             if (!hide) {
                 creationCaretOffset = caretOffset;
-                NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
+                NbCsmCompletionQuery query = getCompletionQuery(queryScope);
                 NbCsmCompletionQuery.CsmCompletionResult res = query.query(component, caretOffset, true);
                 if (res == null || (res.getItems().isEmpty() && (queryScope == CompletionResolver.QueryScope.SMART_QUERY))) {
                     // switch to global context
@@ -284,7 +289,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                     queryScope = CompletionResolver.QueryScope.GLOBAL_QUERY;
                     if (res == null || res.isSimpleVariableExpression()) {
                         // try once more for non dereferenced expressions
-                        query = (NbCsmCompletionQuery) getCompletionQuery(null, queryScope, null);
+                        query = getCompletionQuery(queryScope);
                         res = query.query(component, caretOffset, true);
                     }
                     if (TRACE) {
@@ -339,7 +344,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                     if (queryResult == null || !isCppIdentifierPart(filterPrefix)) {
                         filterPrefix = null;
                     } else {
-                        Collection items = getFilteredData(queryResult.getItems(), filterPrefix);
+                        Collection<?> items = getFilteredData(queryResult.getItems(), filterPrefix);
                         if (items.isEmpty()) {
                             filterPrefix = null;
                         }
@@ -435,7 +440,7 @@ public class CsmCompletionProvider implements CompletionProvider {
         protected void query(CompletionResultSet resultSet, Document doc, int caretOffset) {
             Position oldPos = queryMethodParamsStartPos;
             queryMethodParamsStartPos = null;
-            NbCsmCompletionQuery query = (NbCsmCompletionQuery) getCompletionQuery();
+            NbCsmCompletionQuery query = getCompletionQuery(CompletionResolver.QueryScope.GLOBAL_QUERY);
             BaseDocument bdoc = (BaseDocument) doc;
             //NbCsmCompletionQuery.CsmCompletionResult res = null;// (NbCsmCompletionQuery.CsmCompletionResult)query.tipQuery(component, caretOffset, bdoc.getSyntaxSupport(), false);
 //            NbCsmCompletionQuery query = new NbCsmCompletionQuery();
@@ -445,7 +450,7 @@ public class CsmCompletionProvider implements CompletionProvider {
                 List<List<String>> list = new ArrayList<List<String>>();
                 int idx = -1;
                 boolean checked = false;
-                for (Iterator it = res.getItems().iterator(); it.hasNext();) {
+                for (Iterator<?> it = res.getItems().iterator(); it.hasNext();) {
                     Object o = it.next();
                     if (o instanceof CsmResultItem.ConstructorResultItem) {
                         CsmResultItem.ConstructorResultItem item = (CsmResultItem.ConstructorResultItem) o;

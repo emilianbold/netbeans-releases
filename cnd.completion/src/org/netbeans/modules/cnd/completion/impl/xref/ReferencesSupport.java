@@ -465,7 +465,7 @@ public final class ReferencesSupport {
         }
         if (csmObject == null) {
             // try with code completion engine
-            Collection<CsmObject> objs = CompletionUtilities.findItemsReferencedAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile, queryScope, fileReferencesContext), offset);
+            Collection<CsmObject> objs = CompletionUtilities.findItemsReferencedAtCaretPos(null, doc, CsmCompletionProvider.createCompletionResolver(csmFile, queryScope, fileReferencesContext), offset);
             csmObject = extractBestReferencedObject(objs, csmObject);
         }
         return csmObject;

@@ -62,6 +62,6 @@ public final class CsmTypeResolverImpl implements CsmTypeResolverImplementation 
     }    
     
     private static CsmCompletionQuery getCompletionQuery(CsmExpression expression) {
-        return new NbCsmCompletionQuery(expression.getContainingFile(), CompletionResolver.QueryScope.GLOBAL_QUERY, null);
+        return CsmCompletionProvider.createCompletionResolver(expression.getContainingFile(), CompletionResolver.QueryScope.GLOBAL_QUERY, null);
     }    
 }
