@@ -203,14 +203,18 @@ final class DocumentOpenClose {
                     // due to docRef GC might already be scheduled or not yet.
                     // Anyway ensure closing task gets scheduled before opening task (by passing false).
                     closeImplLA(null, false);
-                    initLoadTaskLA(false);
+                    if (activeOpen == null) {
+                        initLoadTaskLA(false);
+                    }
                     load = activeOpen;
                     task = activeOpenTask;
                     break;
                 case CLOSED:
                     boolean synchronousOpenTaskRun = firingCloseDocument && RP.isRequestProcessorThread();
                     try {
-                        initLoadTaskLA(synchronousOpenTaskRun);
+                        if (activeOpen == null) {
+                            initLoadTaskLA(synchronousOpenTaskRun);
+                        }
                         load = activeOpen;
                         task = activeOpenTask;
                     } finally {
@@ -399,12 +403,13 @@ final class DocumentOpenClose {
         assert (activeOpen == null) : "Open task already inited."; // NOI18N
         activeOpen = new DocumentLoad(!synchronousTaskRun);
         activeOpenTask = RP.create(activeOpen);
-        if (synchronousTaskRun) {
-            // RP task runs synchronously when waitFinished() is called from RP trhead
-            activeOpenTask.schedule(0);
-        } else {
-            activeOpenTask.schedule(0);
-        }
+        // Btw RP task runs synchronously when waitFinished() is called from RP thread
+        // so openDocument() done from closeDocument() processing (in RP thread)
+        // is handled in the same way like a regular open from non-RP thread.
+        activeOpenTask.schedule(0);
+        // In addition to activeOpenTask schedule a DocumentOpenFire task so that
+        // activeOpenTask gets truly finished before actual firing gets done.
+        RP.create(new DocumentOpenFire(activeOpen)).schedule(0);
     }
     
     private void initReloadTaskLA(StyledDocument reloadDoc) { // Lock acquired mandatory
@@ -662,11 +667,6 @@ final class DocumentOpenClose {
                             }
                         }
                     }
-
-                    // Fire outside of "synchronized (lock)"
-                    if (loadSuccess && !reload) {
-                        ces.fireDocumentChange(loadDoc, false);
-                    }
                 }
             }
         }
@@ -821,7 +821,14 @@ final class DocumentOpenClose {
             // finished reloading. There does not seem to be a good way for possible tests to sync
             // on finished reloading so currently they have to only wait for certain amount of time.
         }
-        
+
+        void fireDocumentChange() {
+            // Fire outside of "synchronized (lock)"
+            if (loadSuccess) {
+                ces.fireDocumentChange(loadDoc, false);
+            }
+        }
+
         @Override
         public String toString() {
             StringBuilder sb = new StringBuilder(200);
@@ -834,6 +841,25 @@ final class DocumentOpenClose {
                 }
             }
             return sb.toString();
+        }
+        
+    }
+    
+    /**
+     * A task that allows DocumentLoad task to become finished before actual firing gets done.
+     */
+    private static final class DocumentOpenFire implements Runnable {
+        
+        final DocumentLoad documentOpen;
+        
+        public DocumentOpenFire(DocumentLoad documentOpen) {
+            this.documentOpen = documentOpen;
+        }
+        
+        @Override
+        public void run() {
+            assert (!documentOpen.reload) : "This task should not be posted for reloads."; // NOI18N
+            documentOpen.fireDocumentChange();
         }
         
     }
