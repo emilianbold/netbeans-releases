@@ -216,11 +216,11 @@ public abstract class OnlineSites implements SiteTemplateImplementation {
     @ServiceProvider(service=SiteTemplateImplementation.class, position=400)
     public static class SiteTwitterBootstrap extends OnlineSites {
 
-        @NbBundle.Messages({"SiteTwitterBootstrap.name=Twitter Bootstrap",
-                "SiteTwitterBootstrap.description=Site template from twitter.github.com/bootstrap"})
+        @NbBundle.Messages({"SiteTwitterBootstrap.name=Twitter Bootstrap 2.3.2",
+                "SiteTwitterBootstrap.description=Site template from getbootstrap.com/2.3.2"})
         public SiteTwitterBootstrap() {
             super("TWITTER", Bundle.SiteTwitterBootstrap_name(), Bundle.SiteTwitterBootstrap_description(), // NOI18N
-                    "http://twitter.github.com/bootstrap/assets/bootstrap.zip", // NOI18N
+                    "http://getbootstrap.com/2.3.2/assets/bootstrap.zip", // NOI18N
                     new File(SiteHelper.getJsLibsDirectory(), "twitter-bootstrap.zip")); // NOI18N
         }
 
