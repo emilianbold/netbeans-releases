@@ -87,7 +87,7 @@ public class FaceletsInputTextTagValueProvider implements InputTextTagValueProvi
             if (doc == null) {
                 return null; //should not normally happen
             }
-            final AtomicReference<HtmlParsingResult> result = new AtomicReference<HtmlParsingResult>();
+            final AtomicReference<HtmlParsingResult> result = new AtomicReference<>();
             Source source = Source.create(doc);
             ParserManager.parse(Collections.singleton(source), new UserTask() {
                 @Override
@@ -113,7 +113,7 @@ public class FaceletsInputTextTagValueProvider implements InputTextTagValueProvi
                 String tagName = new StringBuilder().append(htmlLibPrefix).append('.').append(INPUT_TEXT_TAG_NAME).toString();
                 Collection<OpenTag> foundNodes = findValue(hresult.root(htmlNs).children(), tagName, new ArrayList<OpenTag>());
 
-                Map<String, String> map = new HashMap<String, String>();
+                Map<String, String> map = new HashMap<>();
                 for (OpenTag node : foundNodes) {
                     Attribute attr = node.getAttribute(VALUE_ATTR_NAME);
                     if(attr != null) {

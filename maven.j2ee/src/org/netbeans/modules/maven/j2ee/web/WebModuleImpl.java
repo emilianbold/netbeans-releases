@@ -66,13 +66,13 @@ import org.netbeans.modules.j2ee.deployment.common.api.ConfigurationException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleImplementation2;
 import org.netbeans.modules.j2ee.metadata.model.api.MetadataModel;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.api.FileUtilities;
 import org.netbeans.modules.maven.api.ModelUtils;
 import org.netbeans.modules.maven.api.PluginPropertyUtils;
 import org.netbeans.modules.maven.api.classpath.ProjectSourcesClassPathProvider;
 import org.netbeans.modules.maven.j2ee.BaseEEModuleImpl;
-import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.netbeans.modules.maven.model.ModelOperation;
 import org.netbeans.modules.maven.model.Utilities;
 import org.netbeans.modules.maven.model.pom.Dependency;
@@ -156,7 +156,7 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
 
     @Override
     public Profile getJ2eeProfile() {
-        Profile profile = getProfileFromProject();
+        Profile profile = JavaEEProjectSettings.getProfile(project);
         if (profile != null) {
             return profile;
         }
@@ -172,14 +172,6 @@ public class WebModuleImpl extends BaseEEModuleImpl implements WebModuleImplemen
         }
 
         return Profile.JAVA_EE_6_WEB;
-    }
-
-    private Profile getProfileFromProject() {
-        String version = MavenProjectSupport.readJ2eeVersion(project);
-        if (version != null) {
-            return Profile.fromPropertiesString(version);
-        }
-        return null;
     }
 
     private Profile getProfileFromDescriptor() {

@@ -101,9 +101,9 @@ public class TldProxyLibraryDescriptor implements LibraryDescriptor {
         Map<String, Tag> s = source.getTags();
         Map<String, Tag> t = tld.getTags();
 
-        Map<String, Tag> result = new HashMap<String, Tag>();
+        Map<String, Tag> result = new HashMap<>();
 
-        Collection<String> allTagNames = new HashSet<String>();
+        Collection<String> allTagNames = new HashSet<>();
         allTagNames.addAll(s.keySet());
         allTagNames.addAll(t.keySet());
         for(String tagName : allTagNames) {
@@ -121,14 +121,14 @@ public class TldProxyLibraryDescriptor implements LibraryDescriptor {
         try {
             InputStream is = file.getFile().getInputStream();
             tld = parseTLD(is);
-        } catch (Exception ex) {
+        } catch (ParserConfigurationException | SAXException | IOException ex) {
             Exceptions.printStackTrace(ex);
         }
 
     }
 
     protected LibraryDescriptor parseTLD(InputStream content) throws ParserConfigurationException, SAXException, IOException {
-        final Map<String, Tag> tags = new HashMap<String, Tag>();
+        final Map<String, Tag> tags = new HashMap<>();
         DocumentBuilderFactory docBuilderFactory = DocumentBuilderFactory.newInstance();
         DocumentBuilder docBuilder = docBuilderFactory.newDocumentBuilder();
         InputSource is = new InputSource(content); //the ecoding should be autodetected
@@ -149,7 +149,7 @@ public class TldProxyLibraryDescriptor implements LibraryDescriptor {
                 String tagName = getTextContent(tag, "name"); //NOI18N
                 String tagDescription = getTextContent(tag, "description"); //NOI18N
  
-                Map<String, Attribute> attrs = new HashMap<String, Attribute>();
+                Map<String, Attribute> attrs = new HashMap<>();
                 //find attributes
                 for (Node attrNode : FaceletsLibraryDescriptor.getNodesByName(tag, "attribute")) { //NOI18N
                     String aName = getTextContent(attrNode, "name"); //NOI18N

@@ -49,6 +49,7 @@ import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 
 /**
  *
@@ -66,10 +67,10 @@ public final class ServerUtils {
     public static void setServer(Project project, Server server) {
         if (server == Server.NO_SERVER_SELECTED) {
             MavenProjectSupport.setServerID(project, null);
-            MavenProjectSupport.setServerInstanceID(project, null);
+            JavaEEProjectSettings.setServerInstanceID(project, null);
         } else {
             MavenProjectSupport.setServerID(project, server.getServerID());
-            MavenProjectSupport.setServerInstanceID(project, server.getServerInstanceID());
+            JavaEEProjectSettings.setServerInstanceID(project, server.getServerInstanceID());
         }
     }
 
@@ -81,7 +82,7 @@ public final class ServerUtils {
      */
     public static Server findServer(Project project) {
         final Type moduleType = getModuleType(project);
-        final String instanceID = MavenProjectSupport.readServerInstanceID(project);
+        final String instanceID = JavaEEProjectSettings.getServerInstanceID(project);
         if (instanceID != null) {
             return findServerByInstance(moduleType, instanceID);
         }

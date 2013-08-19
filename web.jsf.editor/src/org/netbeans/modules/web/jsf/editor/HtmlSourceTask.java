@@ -142,7 +142,7 @@ public final class HtmlSourceTask extends ParserResultTask<HtmlParserResult> {
             //supposed to represent a css class. The map is then put into the document's
             //input attributes and then html lexer takes this information into account
             //when lexing the html code
-            Map<String, Collection<String>> cssClassTagAttrMap = new HashMap<String, Collection<String>>();
+            Map<String, Collection<String>> cssClassTagAttrMap = new HashMap<>();
             Library lib = sup.getLibrary(DefaultLibraryInfo.HTML.getNamespace());
             if (lib != null) {
                 Collection<? extends LibraryComponent> components = lib.getComponents();

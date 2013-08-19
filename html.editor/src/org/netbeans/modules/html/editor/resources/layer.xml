@@ -488,6 +488,9 @@ made subject to such option by the copyright holder.
                         <file name="org-netbeans-modules-html-editor-hints-css-MissingClassRule.instance">
                             <attr name="position" intvalue="20"/>                            
                         </file>
+                        <file name="org-netbeans-modules-html-editor-hints-css-MissingClassRuleInApp.instance">
+                            <attr name="position" intvalue="30"/>                            
+                        </file>
                     </folder>
                     
                     <folder name="general">

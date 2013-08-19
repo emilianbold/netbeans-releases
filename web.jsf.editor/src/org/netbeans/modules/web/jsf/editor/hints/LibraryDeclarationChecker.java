@@ -81,7 +81,6 @@ import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.jsf.editor.JsfSupportImpl;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
-import org.netbeans.modules.web.jsf.editor.facelets.DefaultFaceletLibraries;
 import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
@@ -98,7 +97,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
     @Override
     public List<Hint> compute(RuleContext context) {
-        List<Hint> hints = new ArrayList<Hint>();
+        List<Hint> hints = new ArrayList<>();
 
         checkLibraryDeclarations(hints, context);
 
@@ -123,7 +122,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
         //find all usages of composite components tags for this page
         Collection<String> declaredNamespaces = result.getNamespaces().keySet();
-        final Collection<Library> declaredLibraries = new ArrayList<Library>();
+        final Collection<Library> declaredLibraries = new ArrayList<>();
         final JsfSupportImpl jsfSupport = JsfSupportImpl.findFor(context.parserResult.getSnapshot().getSource());
         Map<String, Library> libs = Collections.emptyMap();
         if (jsfSupport != null) {
@@ -134,7 +133,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         //a.take the html AST & the AST for undeclared components
         //b.search for nodes with xmlns attribute
         //ugly, grr, the whole namespace support needs to be fixed
-        final Map<String, Attribute> namespace2Attribute = new HashMap<String, Attribute>();
+        final Map<String, Attribute> namespace2Attribute = new HashMap<>();
         Node root = result.root();
         if (root.children().isEmpty()) {
             Node faceletsRoot = result.root(DefaultLibraryInfo.FACELETS.getLegacyNamespace());
@@ -144,7 +143,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
         final String jsfNsPrefix = NamespaceUtils.getForNs(result.getNamespaces(), DefaultLibraryInfo.JSF.getNamespace());
         final String passthroughNsPrefix = NamespaceUtils.getForNs(result.getNamespaces(), DefaultLibraryInfo.PASSTHROUGH.getNamespace());
         final boolean[] jsfUsage = new boolean[1];
-        final List<Named> wrongJsfNsUsages = new ArrayList<Named>();
+        final List<Named> wrongJsfNsUsages = new ArrayList<>();
 
         // collects all prefixes with prefix xmlns (namespaces) and jsf (JSF2.2 prefix definable for any HTML element)
         ElementVisitor prefixCollector = new ElementVisitor() {
@@ -195,7 +194,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                     Set<Named> undeclaredNodes = parseForUndeclaredElements(result, openTag);
 
                     //3. check for undeclared components
-                    List<HintFix> fixes = new ArrayList<HintFix>();
+                    List<HintFix> fixes = new ArrayList<>();
                     Set<Library> libs = getLibsByPrefixes(context, getUndeclaredNamespaces(undeclaredNodes));
                     for (Library lib : libs) {
                         FixLibDeclaration fix = new FixLibDeclaration(context.doc, lib.getDefaultPrefix(), lib, jsfSupport.isJsf22Plus());
@@ -209,7 +208,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                                 NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT", undeclaredEntry.image()), //NOI18N
                                 context.parserResult.getSnapshot().getSource().getFileObject(),
                                 JsfUtils.createOffsetRange(snapshot, docText, undeclaredEntry.from(), undeclaredEntry.from() + undeclaredEntry.name().length() + 1 /* "<".length */),
-                                new ArrayList<HintFix>(fixes), DEFAULT_ERROR_HINT_PRIORITY));
+                                new ArrayList<>(fixes), DEFAULT_ERROR_HINT_PRIORITY));
 
                         //put the hint to the close tag as well
                         CloseTag matchingCloseTag = openTag.matchingCloseTag();
@@ -218,7 +217,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
                                     NbBundle.getMessage(HintsProvider.class, "MSG_UNDECLARED_COMPONENT", openTag.name().toString()), //NOI18N
                                     context.parserResult.getSnapshot().getSource().getFileObject(),
                                     JsfUtils.createOffsetRange(snapshot, docText, matchingCloseTag.from(), matchingCloseTag.to()),
-                                    new ArrayList<HintFix>(fixes), DEFAULT_ERROR_HINT_PRIORITY));
+                                    new ArrayList<>(fixes), DEFAULT_ERROR_HINT_PRIORITY));
                         }
                         // apply the fixed only once, to prevent fixes duplication
                         fixes.clear();
@@ -255,7 +254,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
             final boolean declaredPassthroughOrJsf = NamespaceUtils.containsNsOf(declaredNamespaces, DefaultLibraryInfo.JSF)
                     || NamespaceUtils.containsNsOf(declaredNamespaces, DefaultLibraryInfo.PASSTHROUGH);
             final boolean[] passthroughUsage = new boolean[1];
-            final Collection<OffsetRange> ranges = new ArrayList<OffsetRange>();
+            final Collection<OffsetRange> ranges = new ArrayList<>();
             for (Library lib : declaredLibraries) {
                 Node rootNode = result.root(lib.getNamespace());
                 if (lib.getLegacyNamespace() != null && (rootNode == null || rootNode.children().isEmpty())) {
@@ -367,7 +366,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
     }
 
     private static Set<String> getUndeclaredNamespaces(Set<Named> undeclaredEntries) {
-        Set<String> undeclaredNamespaces = new HashSet<String>();
+        Set<String> undeclaredNamespaces = new HashSet<>();
         for (Named named : undeclaredEntries) {
             undeclaredNamespaces.add(named.namespacePrefix().toString());
         }
@@ -418,7 +417,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
     }
     
     private static Collection<PositionRange> createPositionRanges(RuleContext context, Collection<OffsetRange> offsetRanges) throws BadLocationException {
-        Collection<PositionRange> ranges = new ArrayList<PositionRange>();
+        Collection<PositionRange> ranges = new ArrayList<>();
         for(OffsetRange offsetRange : offsetRanges) {
             ranges.add(createPositionRange(context, offsetRange));
         }
@@ -426,12 +425,12 @@ public class LibraryDeclarationChecker extends HintsProvider {
     }
     
     private static Set<Library> getLibsByPrefixes(RuleContext context, Set<String> prefixes){
-        Set<Library> libs = new HashSet<Library>();
+        Set<Library> libs = new HashSet<>();
         JsfSupportImpl sup = JsfSupportImpl.findFor(context.parserResult.getSnapshot().getSource());
 
         if (sup != null){
             //eliminate the library duplicities - see the sup.getLibraries() doc
-            for (Library lib : new HashSet<Library>(sup.getLibraries().values())){
+            for (Library lib : new HashSet<>(sup.getLibraries().values())){
                 if (prefixes.contains(lib.getDefaultPrefix())){
                     libs.add(lib);
                 }
@@ -479,7 +478,7 @@ public class LibraryDeclarationChecker extends HintsProvider {
 
     private static class RemoveUnusedLibrariesDeclarationHintFix implements HintFix {
 
-        protected Collection<PositionRange> ranges = new ArrayList<PositionRange>();
+        protected Collection<PositionRange> ranges = new ArrayList<>();
         protected BaseDocument document;
 
         public RemoveUnusedLibrariesDeclarationHintFix(BaseDocument document, Collection<PositionRange> ranges) {
