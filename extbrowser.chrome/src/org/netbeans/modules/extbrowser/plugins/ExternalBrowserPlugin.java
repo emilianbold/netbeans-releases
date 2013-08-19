@@ -164,7 +164,10 @@ public final class ExternalBrowserPlugin {
             @Override
             public void run() {
                 tab.init();
-                server.sendMessage(tab.keyForFeature(FEATURE_ROS), createReloadMessage(tab.tabID, url));
+                SelectionKey k = tab.keyForFeature(FEATURE_ROS);
+                if (k != null) {
+                    server.sendMessage(k, createReloadMessage(tab.tabID, url));
+                }
             }
         });
     }
@@ -175,24 +178,36 @@ public final class ExternalBrowserPlugin {
             public void run() {
                 tab.deinitialize();
                 if (closeTab) {
-                    server.sendMessage(tab.keyForFeature(FEATURE_ROS), createCloseTabMessage(tab.tabID));
+                    SelectionKey k = tab.keyForFeature(FEATURE_ROS);
+                    if (k != null) {
+                        server.sendMessage(k, createCloseTabMessage(tab.tabID));
+                    }
                 }
             }
         });
     }
     
     public void attachWebKitDebugger(BrowserTabDescriptor tab) {
-        server.sendMessage(tab.keyForFeature(FEATURE_ROS), createAttachDebuggerMessage(tab.tabID));
+        SelectionKey k = tab.keyForFeature(FEATURE_ROS);
+        if (k != null) {
+            server.sendMessage(k, createAttachDebuggerMessage(tab.tabID));
+        }
     }
 
     public void detachWebKitDebugger(BrowserTabDescriptor tab) {
         if (tab != null) {
-            server.sendMessage(tab.keyForFeature(FEATURE_ROS), createDetachDebuggerMessage(tab.tabID));
+            SelectionKey k = tab.keyForFeature(FEATURE_ROS);
+            if (k != null) {
+                server.sendMessage(k, createDetachDebuggerMessage(tab.tabID));
+            }
         }
     }
 
     public void sendWebKitDebuggerCommand(BrowserTabDescriptor tab, JSONObject command) {
-        server.sendMessage(tab.keyForFeature(FEATURE_ROS), createDebuggerCommandMessage(tab.tabID, command));
+        SelectionKey k = tab.keyForFeature(FEATURE_ROS);
+        if (k != null) {
+            server.sendMessage(k, createDebuggerCommandMessage(tab.tabID, command));
+        }
     }
     
     public void addMessageListener(MessageListener listener){
@@ -333,6 +348,7 @@ public final class ExternalBrowserPlugin {
         }
 
         private void handleInit( Message message , SelectionKey key ){
+            assert key != null : message;
             String version = (String)message.getValue().get(VERSION);
             String url = (String)message.getValue().get(URL);
             int tabId = message.getTabId();
