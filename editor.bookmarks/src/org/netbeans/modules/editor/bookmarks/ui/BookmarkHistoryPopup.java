@@ -224,6 +224,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
         table.setShowGrid(false);
         table.setCellSelectionEnabled(true);
         table.setAutoscrolls(false);
+        table.setRowHeight(table.getRowHeight() + 4); // +4 for icon
         // Get Graphics resp. FontRenderContext from an off-screen image
         BufferedImage image = new BufferedImage(4, 4, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
@@ -236,7 +237,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
             int stringWidth = fm.stringWidth(value);
             maxWidth = Math.max(maxWidth, stringWidth);
         }
-        maxWidth += 16; // Add icon width
+        maxWidth += 25; // Add icon width
         maxWidth += 12; // Add extra space occupied by cell borders? etc.
         int columnEntryCount = maxBounds.height / maxHeight;
         int columnCount = tableModel.setColumnEntryCount(columnEntryCount);
