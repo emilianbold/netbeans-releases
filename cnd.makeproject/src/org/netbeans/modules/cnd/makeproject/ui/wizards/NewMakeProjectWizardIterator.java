@@ -45,6 +45,7 @@ package org.netbeans.modules.cnd.makeproject.ui.wizards;
 
 import java.awt.Component;
 import java.io.IOException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -81,6 +82,7 @@ import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.URLMapper;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
 
@@ -479,6 +481,14 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             FileObject dir = dirF.getFileObject();
             resultSet.add(dir);
         }
+        
+        String resource = "/org/netbeans/modules/cnd/makeproject/launchers/resources/simple-launcher.template"; // NOI18N
+
+        URL url = MakeConfiguration.class.getResource(resource);
+        FileObject fo = URLMapper.findFileObject(url);
+
+        fo.copy(dirF.getFileObject().getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER), "launcher", "properties"); // NOI18N
+        
         return resultSet;
     }
     private transient int index;
