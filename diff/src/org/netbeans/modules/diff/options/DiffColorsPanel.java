@@ -133,6 +133,7 @@ public class DiffColorsPanel extends javax.swing.JPanel implements ActionListene
     
     public void cancel () {
         changed = false;
+        categories = null;
     }
     
     public void applyChanges() {
