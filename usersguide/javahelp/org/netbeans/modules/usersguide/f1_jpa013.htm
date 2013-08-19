@@ -2,23 +2,24 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Hibernate Mapping Wizard: Select Mapping Class</title>
+<title>Hibernate Configuration Wizard: Select Data Source</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.hibernate.wizards.HibernateMappingWizardDescriptor" name="org.netbeans.modules.hibernate.wizards.HibernateMappingWizardDescriptor"></a></p>
+<p><a id="org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardDescriptor" name="org.netbeans.modules.hibernate.wizards.HibernateConfigurationWizardDescriptor"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref676" name="sthref676"></a>
-<h1>Hibernate Mapping Wizard: Select Mapping Class</h1>
+<h1>Hibernate Configuration Wizard: Select Data Source</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Hibernate Mapping wizard generates a single mapping file for a specified class. After you create the mapping file you need to edit the mapping file in the XML editor to map the fields in the class to the corresponding columns in the table. You can use the IDE's code completion feature to help you edit the mapping file.</p>
-<p>The Select Mapping Class page of the wizard enables you to specify the class that you want to map, the Hibernate configuration file and the table that you want to map to the class.</p>
-<p>You must have the following to complete this wizard:</p>
-<ul>
-<li>Database connection for the database that is registered with the IDE (database must be running).</li>
-<li>Hibernate configuration file that is named <code>hibernate.cfg.xml</code>.</li>
-</ul>
-<p>In this page you specify the following details:</p>
+<p>Use to create a Hibernate configuration file based on a data source that is registered with the IDE. The Hibernate configuration file contains the database connection details enabling the application to connect to a database and information about the location of Hibernate mapping files. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1199">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>In this panel of the wizard you specify the following item.</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -32,38 +33,22 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t11" headers="r1c1-t11">
-<p>Class to Map</p>
+<p>Database Connection</p>
 </td>
 <td align="left" headers="r2c1-t11 r1c2-t11">
-<p>Type the name of the class you want to map or click the Browse button to locate the class.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t11" headers="r1c1-t11">
-<p>Configuration File</p>
-</td>
-<td align="left" headers="r3c1-t11 r1c2-t11">
-<p>Select the hibernate.cfg.xml configuration file in the dropdown list (if not already selected).</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r4c1-t11" headers="r1c1-t11">
-<p>Database Table</p>
-</td>
-<td align="left" headers="r4c1-t11 r1c2-t11">
-<p>Select the database table that you want to map to the selected class.</p>
+<p>Select a connection from the Database Connection dropdown list. You can select an existing, registered connection or select New Database Connection in the dropdown list to open the New Database Connection wizard.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>When you click Finish, the IDE generates the mapping file and adds the <code>&lt;mapping resource&gt;</code> element to the <code>hibernate.cfg.xml</code> configuration file.</p>
+<p>After you create the configuration file you can edit the file in the XML editor if you need to change the database connection details. You can have multiple Hibernate configuration files, but the default name for the configuration file used by Hibernate is <code>hibernate.cfg.xml</code>.</p>
 <hr><p><b>Related Topics</b></p>
 <p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1351">
-<param name="text" value="<html><u>&quot;About Developing with Java Persistence&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1198">
+<param name="text" value="<html><u>&quot;How to Create the Hibernate Configuration File&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
