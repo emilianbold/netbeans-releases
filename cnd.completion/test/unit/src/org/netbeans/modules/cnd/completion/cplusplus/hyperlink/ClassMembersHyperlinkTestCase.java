@@ -1091,11 +1091,16 @@ public class ClassMembersHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug224062.cpp", 25, 22, "bug224062.cpp", 11, 1);
         performTest("bug224062.cpp", 25, 62, "bug224062.cpp", 14, 3);
     }
-    
+        
     public void testBug232033() throws Exception {
         // Bug 232033 - StringStream.fail() marked as error.
         performTest("bug232033.cpp", 15, 21, "bug232033.cpp", 3, 9);
     }
+    
+    public void testBug234667() throws Exception {
+        // Bug 234667 - Unresolved method in nested struct
+        performTest("bug234667.cpp", 10, 48, "bug234667.cpp", 4, 13);
+    }    
     
     public static class Failed extends HyperlinkBaseTestCase {
 
