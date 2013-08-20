@@ -693,6 +693,7 @@ elementSubsequent
     : 
     (
         {isScssSource()}? sass_extend_only_selector
+        | {isLessSource()}? less_selector_interpolation // @{var} { ... }
     	| cssId
     	| cssClass
         | slAttribute
@@ -702,7 +703,13 @@ elementSubsequent
     
 //Error Recovery: Allow the parser to enter the cssId rule even if there's just hash char.
 cssId
-    : HASH | ( HASH_SYMBOL NAME )
+    : HASH 
+      | 
+        ( HASH_SYMBOL 
+            ( NAME 
+              | {isLessSource()}? less_selector_interpolation // #@{var} { ... }
+            ) 
+        )
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -710,7 +717,12 @@ cssId
     }
 
 cssClass
-    : DOT ( IDENT | GEN  )
+    : DOT 
+        ( 
+            IDENT 
+            | GEN  
+            | {isLessSource()}? less_selector_interpolation // .@{var} { ... }
+        )
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -865,6 +877,8 @@ term
         | RESOLUTION
         | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
         | STRING
+        | {isLessSource()}? TILDE STRING //escaped less string
+        | {isLessSource()}? LESS_JS_STRING
         | GEN
         | URI
         | hexColor
@@ -1137,6 +1151,11 @@ less_fn_name
 less_condition_operator
     :
     GREATER | GREATER_OR_EQ | OPEQ | LESS | LESS_OR_EQ
+    ;
+    
+less_selector_interpolation
+    :
+    AT_SIGN LBRACE ws? IDENT ws? RBRACE
     ;
 
 //SCSS interpolation expression, e.g. #{$vert}
@@ -1641,6 +1660,13 @@ STRING          : '\'' ( ~('\n'|'\r'|'\f'|'\'') )*
                         | { $type = INVALID; }
                     )
                 ;
+                
+LESS_JS_STRING  : '`' ( ~('\n'|'\r'|'\f'|'`') )* 
+                    (
+                          '`'
+                        | { $type = INVALID; }
+                    )
+                    ;
 
 
 ONLY 		: 'ONLY';
@@ -1706,7 +1732,8 @@ SASS_RETURN         : '@RETURN';
 SASS_EACH           : '@EACH';
 SASS_WHILE          : '@WHILE';
 
-AT_IDENT	    : '@' NMCHAR+;	
+AT_SIGN             : '@';
+AT_IDENT	    : AT_SIGN NMCHAR+;	
 
 SASS_VAR            : '$' NMCHAR+;
 SASS_DEFAULT        : '!DEFAULT';

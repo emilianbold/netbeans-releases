@@ -127,16 +127,16 @@ public class Css3ParserTest extends CssTestBase {
         //recovery before entering declaration rule, the Parser.syncToIdent() is used to skip until ident is found
 
         String code = "a {\n"
-                + " @ color: red; \n"
+                + " % color: red; \n"
                 + " background: red; \n"
                 + "}";
 
         CssParserResult res = TestUtil.parse(code);
-//        TestUtil.dumpResult(res);
+        TestUtil.dumpResult(res);
 
         assertResult(res, 1);
 
-        //the garbage char @ is skipped by Parser.syncToIdent()
+        //the garbage char % is skipped by Parser.syncToIdent()
         assertNotNull(NodeUtil.query(res.getParseTree(),
                 TestUtil.bodysetPath + "rule/declarations/declaration|0/propertyDeclaration/property/color"));
         assertNotNull(NodeUtil.query(res.getParseTree(),
@@ -501,8 +501,8 @@ public class Css3ParserTest extends CssTestBase {
         assertNotNull(error);
 
         assertEquals(4, error.from());
-        assertEquals(6, error.to());
-        assertEquals("$@", error.image().toString());
+        assertEquals(5, error.to());
+        assertEquals("$", error.image().toString());
 
     }
 
