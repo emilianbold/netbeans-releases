@@ -48,6 +48,8 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.StringTokenizer;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
@@ -61,6 +63,7 @@ import org.openide.util.NbBundle;
  * @author marekfukala
  */
 public class CompositeComponentLibrary extends FaceletsLibrary {
+    private static final Logger LOG = Logger.getLogger(CompositeComponentLibrary.class.getName());
 
     /**
      * Name of the folder/s where the composite library components are located. 
@@ -163,6 +166,8 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
 
     protected class CCVirtualLibraryDescriptor implements LibraryDescriptor {
 
+        protected final Map<CompositeComponent, CompositeComponentModel> modelsCache = new HashMap<>();
+
         @Override
         public Map<String, Tag> getTags() {
             Map<String, Tag> map = new HashMap<>();
@@ -194,9 +199,17 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
             }
 
             private synchronized void load() {
-                CompositeComponentModel model = cc.getComponentModel();
+                CompositeComponentModel model = modelsCache.get(cc);
                 if (model == null) {
-                    return;
+                    model = cc.getComponentModel();
+                    if (model != null) {
+                        LOG.log(Level.FINE, "CompositeComponentModel for {0} not cached yet, loaded from index.", cc.getName());
+                        modelsCache.put(cc, model);
+                    } else {
+                        return;
+                    }
+                } else if (LOG.isLoggable(Level.FINE)) {
+                    LOG.log(Level.FINE, "Using the cached CompositeComponentModel for component: {0}.", cc.getName());
                 }
                 String relativePath = model.getRelativePath();
 
