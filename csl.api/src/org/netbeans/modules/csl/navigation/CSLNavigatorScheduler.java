@@ -64,8 +64,7 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service=Scheduler.class)
 public class CSLNavigatorScheduler extends Scheduler {
 
-    private RequestProcessor requestProcessor;
-    private Source source;
+    private RequestProcessor requestProcessor; 
 
     public CSLNavigatorScheduler () {
         ClassMemberNavigatorSourceFactory.getInstance().addPropertyChangeListener (new AListener ());
@@ -83,14 +82,13 @@ public class CSLNavigatorScheduler extends Scheduler {
                 if (f != null && f.getContext() != null) {
                     final FileObject fileObject = f.getContext().lookup(FileObject.class);
                     if (fileObject != null && fileObject.isValid() && Util.canBeParsed(fileObject.getMIMEType())) {
-                        source = Source.create (fileObject);
+                        final Source source = Source.create (fileObject);
                         if (source != null) {
                             schedule (source, new SchedulerEvent (CSLNavigatorScheduler.this) {});
                             return;
                         }
                     }
                 }
-                source = null;
                 schedule(null, null);
             }
         });
@@ -103,7 +101,7 @@ public class CSLNavigatorScheduler extends Scheduler {
 
     @Override
     protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
-        if (event.getModifiedSource () == source)
+        if (event.getModifiedSource () == getSource())
             return new SchedulerEvent (this) {};
         return null;
     }

@@ -161,7 +161,8 @@ public final class RefactoringContextActionsProvider
                     DataFolder dobj = DataFolder.findFolder(fo);
                     List<FileObject> children = Arrays.asList(fo.getChildren());
                     children = FileUtil.getOrder(children, false);
-                    JMenu subMenu = new JMenu(dobj.getName());
+                    final String displayName = (String) fo.getAttribute("displayName"); //NOI18N
+                    JMenu subMenu = new JMenu(displayName != null? displayName : dobj.getName());
                     for (JComponent jComponent : retrieveMenuItems(children, context)) {
                         subMenu.add(jComponent);
                     }

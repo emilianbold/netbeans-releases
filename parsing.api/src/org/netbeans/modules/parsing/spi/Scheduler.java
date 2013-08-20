@@ -42,6 +42,11 @@
 
 package org.netbeans.modules.parsing.spi;
 
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.impl.CurrentDocumentScheduler;
 import org.netbeans.modules.parsing.impl.CursorSensitiveScheduler;
@@ -49,9 +54,13 @@ import org.netbeans.modules.parsing.impl.SchedulerAccessor;
 import org.netbeans.modules.parsing.impl.SelectedNodesScheduler;
 import org.netbeans.modules.parsing.impl.SourceAccessor;
 import org.netbeans.modules.parsing.impl.SourceCache;
+import org.openide.filesystems.FileObject;
+import org.openide.loaders.DataObject;
+import org.openide.loaders.DataObjectNotFoundException;
 
 import org.openide.util.RequestProcessor;
 import org.openide.util.RequestProcessor.Task;
+import org.openide.util.WeakListeners;
 
 
 /**
@@ -73,13 +82,35 @@ public abstract class Scheduler {
      * Default reparse delay
      */
     public static final int DEFAULT_REPARSE_DELAY = 500;
+
+    private static final Logger LOG = Logger.getLogger(Scheduler.class.getName());
+
+    private final PropertyChangeListener listener = new PropertyChangeListener() {
+        @Override
+        public void propertyChange(PropertyChangeEvent evt) {
+            if (DataObject.PROP_PRIMARY_FILE.equals(evt.getPropertyName())) {
+                final DataObject dobj = (DataObject) evt.getSource();
+                final Source newSource = Source.create(dobj.getPrimaryFile());
+                if (newSource != null) {
+                    LOG.log(
+                        Level.FINE,
+                        "Rescheduling {0} due to change of primary file.",  //NOI18N
+                        dobj.getPrimaryFile());
+                    schedule(newSource, new SchedulerEvent(newSource));
+                }
+            }
+        }
+    };
     
     /**
      * May be changed by unit test
      */
     int                     reparseDelay = DEFAULT_REPARSE_DELAY;
-    
+
+    //@GuardedBy("this")
     private Source          source;
+    //@GuardedBy("this")
+    private PropertyChangeListener wlistener;
     
     /**
      * This implementations of {@link Scheduler} reschedules all tasks when:
@@ -142,15 +173,39 @@ public abstract class Scheduler {
         if (requestProcessor == null) {
             requestProcessor = new RequestProcessor ();
         }        
-        if (this.source != source && this.source != null) {
-            final SourceCache cache = SourceAccessor.getINSTANCE().getCache(this.source);
-            cache.unscheduleTasks(Scheduler.this.getClass());
+        if (this.source != source) {
+            if (this.source != null) {
+                final SourceCache cache = SourceAccessor.getINSTANCE().getCache(this.source);
+                cache.unscheduleTasks(Scheduler.this.getClass());
+                if (wlistener != null) {
+                    final FileObject fo = this.source.getFileObject();
+                    if (fo != null) {
+                        try {
+                            final DataObject dobj = DataObject.find(fo);
+                            dobj.removePropertyChangeListener(wlistener);
+                        } catch (DataObjectNotFoundException nfe) {
+                            //No DataObject for file - ignore
+                        }
+                    }
+                }
+            }
+            this.source = source;
+            if (source != null) {
+                final FileObject fo = source.getFileObject();
+                if (fo != null) {
+                    try {
+                        final DataObject dobj = DataObject.find(fo);
+                        wlistener = WeakListeners.propertyChange(listener, dobj);
+                        dobj.addPropertyChangeListener(wlistener);
+                    } catch (DataObjectNotFoundException ex) {
+                        //No DataObject for file - ignore
+                    }
+                }
+            }
         }
         if (source == null) {
-            this.source = null;
-            return ;
+            return;
         }
-        this.source = source;
         task = requestProcessor.create (new Runnable () {
             @Override
             public void run () {
@@ -161,6 +216,18 @@ public abstract class Scheduler {
             }
         });
         task.schedule (reparseDelay);
+    }
+
+    /**
+     * Returns active {@link Source}.
+     * The {@link Scheduler} subclasses should use this method to obtain the active
+     * {@link Source} rather than caching the {@link Source} them self.
+     * @return the {@link Source} currently handled by scheduler.
+     * @since 1.69
+     */
+    @CheckForNull
+    protected final synchronized Source getSource() {
+        return this.source;
     }
 
     protected abstract SchedulerEvent createSchedulerEvent (SourceModificationEvent event);

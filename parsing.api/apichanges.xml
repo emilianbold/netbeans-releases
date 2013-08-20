@@ -110,6 +110,21 @@ is the proper place.
 <!-- ACTUAL CHANGES BEGIN HERE: -->
 
   <changes>
+      <change id="Scheduler.getSource">
+          <api name="ParsingAPI"/>
+          <summary>Added <code>Sheduler.getSource</code> method for obtaining the active source</summary>
+          <version major="1" minor="69"/>
+          <date day="19" month="8" year="2013"/>
+          <author login="tzezula"/>
+          <compatibility source="compatible" binary="compatible" semantic="compatible" addition="yes"/>
+          <description>
+              <p>Added protected final method <code>Schedulter.getSource</code> allowing <code>Scheduler</code> subclasses
+              to obtain the active <code>Source</code> rather than caching it itself.
+              </p>
+          </description>
+          <class package="org.netbeans.modules.parsing.spi" name="Scheduler"/>
+          <issue number="199357"/>
+      </change>
       <change id="EmbeddingIndexer.refresh">
           <api name="ParsingAPI"/>
           <summary>Allow refresh of <code>EmbeddingIndexer</code></summary>

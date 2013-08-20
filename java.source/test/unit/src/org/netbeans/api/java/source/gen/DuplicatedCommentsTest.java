@@ -72,8 +72,8 @@ public class DuplicatedCommentsTest extends GeneratorTestMDRCompat {
 //        suite.addTest(new DuplicatedCommentsTest("testLineAtTopLevel"));
         return suite;
     }
-
-    public void testLineAtTopLevel() throws Exception {
+    
+    public void testLineAtTopLevela() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, 
             "package tohle;\n" +
@@ -122,6 +122,84 @@ public class DuplicatedCommentsTest extends GeneratorTestMDRCompat {
                 workingCopy.rewrite(cut, copy);
             }
             
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+
+    public void testLineAtTopLevelb() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile, 
+            "package tohle;\n" +
+            "\n" +
+            "/**\n" +
+            " * Alois\n" +
+            " */\n" +
+            "// XXX:\n" +
+            "public class OldClass {\n" +
+            "    \n" +
+            "}\n");
+        String golden = 
+            "package tohle;\n" +
+            "\n" +
+            "/**\n" +
+            " * Alois\n" +
+            " */\n" +
+            "// XXX:\n" +
+            "public class NewClass {\n" +
+            "    \n" +
+            "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                Tree type = workingCopy.getCompilationUnit().getTypeDecls().get(0);
+                workingCopy.rewrite(type, make.setLabel(type, "NewClass"));
+            }
+        };
+        testSource.runModificationTask(task).commit();
+        String res = TestUtilities.copyFileToString(testFile);
+        System.err.println(res);
+        assertEquals(golden, res);
+    }
+    
+    public void testLineAtMethoda() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package tohle;\n"
+                + "\n"
+                + "public class OldClass {\n"
+                + "    /**\n"
+                + "     * Alois\n"
+                + "     */\n"
+                + "    // XXX:\n"
+                + "    public void foo() {\n"
+                + "    }\n"
+                + "}\n");
+        String golden
+                = "package tohle;\n"
+                + "\n"
+                + "public class OldClass {\n"
+                + "    /**\n"
+                + "     * Alois\n"
+                + "     */\n"
+                + "    // XXX:\n"
+                + "    public void bar() {\n"
+                + "    }\n"
+                + "}\n";
+        JavaSource testSource = JavaSource.forFileObject(FileUtil.toFileObject(testFile));
+        Task task = new Task<WorkingCopy>() {
+
+            public void run(WorkingCopy workingCopy) throws java.io.IOException {
+                workingCopy.toPhase(Phase.RESOLVED);
+                TreeMaker make = workingCopy.getTreeMaker();
+                Tree foo = ((ClassTree)workingCopy.getCompilationUnit().getTypeDecls().get(0)).getMembers().get(1);
+                workingCopy.rewrite(foo, make.setLabel(foo, "bar"));
+            }
         };
         testSource.runModificationTask(task).commit();
         String res = TestUtilities.copyFileToString(testFile);
