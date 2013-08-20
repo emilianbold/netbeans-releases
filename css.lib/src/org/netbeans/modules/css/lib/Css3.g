@@ -865,6 +865,7 @@ term
         | RESOLUTION
         | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
         | STRING
+        | LESS_JS_STRING
         | GEN
         | URI
         | hexColor
@@ -1641,6 +1642,13 @@ STRING          : '\'' ( ~('\n'|'\r'|'\f'|'\'') )*
                         | { $type = INVALID; }
                     )
                 ;
+                
+LESS_JS_STRING  : '`' ( ~('\n'|'\r'|'\f'|'`') )* 
+                    (
+                          '`'
+                        | { $type = INVALID; }
+                    )
+                    ;
 
 
 ONLY 		: 'ONLY';

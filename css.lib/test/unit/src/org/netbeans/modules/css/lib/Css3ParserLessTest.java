@@ -531,5 +531,9 @@ public class Css3ParserLessTest extends CssTestBase {
         
         assertParses(".mx(@each) {}");
     }
+    
+    public void testExpressionWithLessJavascript() {
+        assertParses("@var: `\"hello\".toUpperCase() + '!'`;");
+    }
 
 }
