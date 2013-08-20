@@ -554,4 +554,13 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "    color: black;\n"
                 + "}");
     }
+
+    public void testVariableAsMediaQuery() {
+        assertParses("@singleQuery: \"(max-width: 500px)\";\n"
+                + "@media screen, @singleQuery {\n"
+                + "  set {\n"
+                + "    padding: 3 3 3 3;\n"
+                + "  }\n"
+                + "}");
+    }
 }

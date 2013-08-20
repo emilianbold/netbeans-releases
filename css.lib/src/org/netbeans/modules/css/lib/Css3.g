@@ -407,8 +407,10 @@ mediaQueryList
  ;
  
 mediaQuery
- : (mediaQueryOperator ws? )?  mediaType ( ws? AND ws? mediaExpression )*
- | mediaExpression ( ws? AND ws? mediaExpression )*
+ : 
+    (mediaQueryOperator ws? )?  mediaType ( ws? AND ws? mediaExpression )*
+    | mediaExpression ( ws? AND ws? mediaExpression )*
+    | {isLessSource()}? cp_variable
  ;
  
 mediaQueryOperator
