@@ -1,4 +1,4 @@
-// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-08-20 11:51:36
+// $ANTLR 3.3 Nov 30, 2010 12:50:56 /Volumes/Mercurial/web-main/css.lib/src/org/netbeans/modules/css/lib/Css3.g 2013-08-20 12:22:58
 
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
@@ -99,27 +99,27 @@ public class Css3Lexer extends Lexer {
     public static final int SOLIDUS=48;
     public static final int MINUS=49;
     public static final int PLUS=50;
-    public static final int GREATER=51;
-    public static final int TILDE=52;
-    public static final int HASH_SYMBOL=53;
-    public static final int HASH=54;
-    public static final int DOT=55;
-    public static final int LBRACKET=56;
-    public static final int DCOLON=57;
-    public static final int SASS_EXTEND_ONLY_SELECTOR=58;
-    public static final int STAR=59;
-    public static final int PIPE=60;
-    public static final int NAME=61;
-    public static final int LESS_AND=62;
-    public static final int OPEQ=63;
-    public static final int INCLUDES=64;
-    public static final int DASHMATCH=65;
-    public static final int BEGINS=66;
-    public static final int ENDS=67;
-    public static final int CONTAINS=68;
-    public static final int RBRACKET=69;
-    public static final int SASS_VAR=70;
-    public static final int IMPORTANT_SYM=71;
+    public static final int IMPORTANT_SYM=51;
+    public static final int GREATER=52;
+    public static final int TILDE=53;
+    public static final int HASH_SYMBOL=54;
+    public static final int HASH=55;
+    public static final int DOT=56;
+    public static final int LBRACKET=57;
+    public static final int DCOLON=58;
+    public static final int SASS_EXTEND_ONLY_SELECTOR=59;
+    public static final int STAR=60;
+    public static final int PIPE=61;
+    public static final int NAME=62;
+    public static final int LESS_AND=63;
+    public static final int OPEQ=64;
+    public static final int INCLUDES=65;
+    public static final int DASHMATCH=66;
+    public static final int BEGINS=67;
+    public static final int ENDS=68;
+    public static final int CONTAINS=69;
+    public static final int RBRACKET=70;
+    public static final int SASS_VAR=71;
     public static final int NUMBER=72;
     public static final int LENGTH=73;
     public static final int EMS=74;

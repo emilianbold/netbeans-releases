@@ -632,7 +632,7 @@ declaration
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
     | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration 
     | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI|RBRACE)* LBRACE))=>cp_mixin_declaration 
-    | (cp_mixin_call)=>cp_mixin_call 
+    | (cp_mixin_call)=>cp_mixin_call (ws? IMPORTANT_SYM)?
     | (selectorsGroup ws? LBRACE)=>rule 
     | {isCssPreprocessorSource()}? at_rule 
     | {isScssSource()}? sass_control 

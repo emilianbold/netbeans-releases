@@ -563,7 +563,7 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "  }\n"
                 + "}");
     }
-    
+
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c4 / case 1
     public void testFunctionInMixinCall() {
         assertParses("#anid {\n"
@@ -572,7 +572,7 @@ public class Css3ParserLessTest extends CssTestBase {
                 + " border: 0;"
                 + "}");
     }
-    
+
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c4 / case 1
     public void testMixinCallWithWSSeparatedValues() {
         assertParses("#anid {\n"
@@ -581,13 +581,18 @@ public class Css3ParserLessTest extends CssTestBase {
                 + " padding: 0;\n"
                 + "}");
     }
-    
+
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c4 / case 2
     public void testCommaInSelectorsGroup() {
         assertParses(".dbx-clone, .dbx-clone .dbx-handle-cursor {\n"
                 + "    cursor: move !important; \n"
                 + "}");
     }
-    
-        
+
+    public void testImportantSymbolInMixinCall() {
+        assertParses(".important {\n"
+                + "  .mixin(2) !important; \n"
+                + "} ");
+    }
+
 }
