@@ -45,6 +45,7 @@
 package org.netbeans.modules.tomcat5;
 
 import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
@@ -54,6 +55,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.WeakHashMap;
+import java.util.jar.JarFile;
+import java.util.jar.Manifest;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.enterprise.deploy.shared.factories.DeploymentFactoryManager;
@@ -236,11 +239,63 @@ public final class TomcatFactory implements DeploymentFactory {
     public static TomcatVersion getTomcatVersion(File catalinaHome) throws IllegalStateException {
         String version = null;
         try {
+            // TODO we might use fallback as primary check - it might be faster
+            // than loading jars and executing code in JVM
             version = getTomcatVersionString(catalinaHome);
         } catch (IllegalStateException ex) {
             LOGGER.log(Level.INFO, null, ex);
-            return TomcatVersion.TOMCAT_50;
+            return getTomcatVersionFallback(catalinaHome);
+        } catch (UnsupportedClassVersionError err) {
+            LOGGER.log(Level.INFO, null, err);
+            return getTomcatVersionFallback(catalinaHome);
         }
+        return getTomcatVersion(version, TomcatVersion.TOMCAT_50);
+    }
+
+    private static TomcatVersion getTomcatVersionFallback(File catalinaHome) throws IllegalStateException {
+        File lib = new File(catalinaHome, "common" + File.separator + "lib"); // NOI18N
+        if (lib.isDirectory()) {
+            // 5 or 5.5
+            File tasks = new File(catalinaHome, "bin" + File.separator + "catalina-tasks.xml"); // NOI18N
+            if (tasks.isFile()) {
+                // 5.5
+                return TomcatVersion.TOMCAT_55;
+            }
+            return TomcatVersion.TOMCAT_50;
+        } else {
+            // 6 or 7 or 8
+            File bootstrapJar = new File(catalinaHome, "bin" + File.separator + "bootstrap.jar"); // NOI18N
+            if (!bootstrapJar.exists()) {
+                return null;
+            }
+            try {
+                JarFile jar = new JarFile(bootstrapJar);
+                try {
+                    Manifest manifest = jar.getManifest();
+                    String specificationVersion = null;
+                    if (manifest != null) {
+                        specificationVersion = manifest.getMainAttributes()
+                                .getValue("Specification-Version"); // NOI18N
+                    }
+                    if (specificationVersion != null) { // NOI18N
+                        specificationVersion = specificationVersion.trim();
+                        return getTomcatVersion(specificationVersion, TomcatVersion.TOMCAT_55);
+                    }
+                } finally {
+                    try {
+                        jar.close();
+                    } catch (IOException ex) {
+                        LOGGER.log(Level.FINEST, null, ex);
+                    }
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.FINE, null, e);
+            }
+        }
+        return TomcatVersion.TOMCAT_50;
+    }
+
+    private static TomcatVersion getTomcatVersion(String version, TomcatVersion defaultVersion) throws IllegalStateException {
         if (version.startsWith("5.5.")) { // NOI18N
             return TomcatVersion.TOMCAT_55;
         } else if (version.startsWith("6.")) { // NOI18N
@@ -248,9 +303,9 @@ public final class TomcatFactory implements DeploymentFactory {
         } else if (version.startsWith("7.")) { // NOI18N
             return TomcatVersion.TOMCAT_70;
         }
-        return TomcatVersion.TOMCAT_50;
-    }    
-    
+        return defaultVersion;
+    }
+
     private static TomcatVersion getTomcatVersion(String uri) throws IllegalStateException {
         if (uri.startsWith(TOMCAT_URI_PREFIX_70)) {
             return TomcatVersion.TOMCAT_70;

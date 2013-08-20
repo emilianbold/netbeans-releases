@@ -268,7 +268,11 @@ public enum CssTokenId implements TokenId {
     
     PERCENTAGE_SYMBOL(Css3Lexer.PERCENTAGE_SYMBOL, OTHERS ),
     
-    EXCLAMATION_MARK(Css3Lexer.EXCLAMATION_MARK, OTHERS)
+    EXCLAMATION_MARK(Css3Lexer.EXCLAMATION_MARK, OTHERS),
+    
+    LESS_JS_STRING(Css3Lexer.LESS_JS_STRING, STRINGS),
+    
+    AT_SIGN(Css3Lexer.AT_SIGN, AT_RULE_SYMBOL);
     
     ;
     
