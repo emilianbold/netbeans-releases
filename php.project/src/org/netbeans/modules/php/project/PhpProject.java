@@ -1381,7 +1381,7 @@ public final class PhpProject implements Project {
 
         public void reload(FileObject file) {
             if (canReload(file)) {
-                reloadTask.schedule(100);
+                reloadTask.schedule(200);
             }
         }
 
@@ -1393,7 +1393,7 @@ public final class PhpProject implements Project {
                 return;
             }
             // #226884, 227281 - wait till copysupport finishes
-            if (!project.getCopySupport().waitFinished(Bundle.ClientSideDevelopmentSupport_reload_copySupportRunning(), 900, getCustomizerButton())) {
+            if (!project.getCopySupport().waitFinished(Bundle.ClientSideDevelopmentSupport_reload_copySupportRunning(), 5000, getCustomizerButton())) {
                 return;
             }
             support.reload();
