@@ -1963,7 +1963,12 @@ abstract public class CsmCompletionQuery {
                     if(typ == null) {
                         boolean oldFindType = findType;
                         findType = true;
+                        boolean oldStaticOnly = staticOnly;
+                        if (kind == ExprKind.SCOPE) {
+                            staticOnly = true;
+                        }
                         resolveExp(item.getParameter(0), first);
+                        staticOnly = oldStaticOnly;
                         typ = lastType;
                         findType = oldFindType;
                     }
@@ -2523,7 +2528,7 @@ abstract public class CsmCompletionQuery {
                                                 }
                                             } else if (previousType != null) {
                                                 // can be default constructor
-                                                if (kind == ExprKind.SCOPE && previousType.getArrayDepth() == 0) {
+                                                if ((staticOnly || kind == ExprKind.SCOPE) && previousType.getArrayDepth() == 0) {
                                                     lastType = findNestedType(previousType, mtdName, endOffset);
                                                     returnImmediately = (lastType == null); // do not return if type is resolved
                                                 }
@@ -2562,7 +2567,7 @@ abstract public class CsmCompletionQuery {
                             if (mtdList == null || mtdList.isEmpty()) {
                                 // If we have not found method and (lastType != null) it could be default constructor.
                                 if (!isConstructor) {
-                                    if (first || kind == ExprKind.SCOPE) {
+                                    if (first || staticOnly || kind == ExprKind.SCOPE) {
                                         // It could be default constructor call without "new"
                                         CsmClassifier cls = null;
                                         //cls = sup.getClassFromName(CsmCompletionQuery.this.getFinder(), mtdName, true);
