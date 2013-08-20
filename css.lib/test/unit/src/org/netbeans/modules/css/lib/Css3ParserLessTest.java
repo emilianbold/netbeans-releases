@@ -601,4 +601,15 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "}");
     }
 
+    public void testNestedSelectorConcatenation() {
+        assertParses(".child, .sibling {\n"
+                + "    .parent & {\n"
+                + "        color: black;\n"
+                + "    }\n"
+                + "    & + & {\n"
+                + "        color: red;\n"
+                + "    }\n"
+                + "}");
+    }
+
 }
