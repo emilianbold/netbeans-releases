@@ -160,6 +160,9 @@ public class OrganizeMembers {
                     break;
                 case BLOCK:
                     member = maker.Block(((BlockTree)tree).getStatements(), ((BlockTree)tree).isStatic());
+                    GeneratorUtilities gu = GeneratorUtilities.get(copy);
+                    gu.copyComments(tree, member, true);
+                    gu.copyComments(tree, member, false);
                     break;
                 default:
                     member = tree;    
