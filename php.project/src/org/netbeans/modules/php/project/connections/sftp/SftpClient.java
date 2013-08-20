@@ -179,7 +179,7 @@ public class SftpClient implements RemoteClient {
             PASSWORDS.remove(configuration.hashCode());
             PASSPHRASES.remove(configuration.hashCode());
             MESSAGES.remove(configuration.hashCode());
-            disconnect();
+            disconnect(true);
             LOGGER.log(Level.FINE, "Exception while connecting", exc);
             throw new RemoteException(NbBundle.getMessage(SftpClient.class, "MSG_CannotConnect", configuration.getHost()), exc);
         }
@@ -233,10 +233,15 @@ public class SftpClient implements RemoteClient {
     }
 
     @Override
-    public void disconnect() throws RemoteException {
+    public void disconnect(boolean force) throws RemoteException {
         if (sftpSession == null) {
             // nothing to do
             LOGGER.log(Level.FINE, "Remote client not created yet => nothing to do");
+            return;
+        }
+        if (!force
+                && sftpSession.getServerAliveInterval() > 0) {
+            LOGGER.log(Level.FINE, "Keep-alive running and disconnecting not forced -> do nothing");
             return;
         }
         LOGGER.log(Level.FINE, "Remote client trying to disconnect");

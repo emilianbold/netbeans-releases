@@ -238,7 +238,7 @@ public final class RemoteConnectionsPanel extends JPanel implements ChangeListen
             exception = ex;
         } finally {
             try {
-                client.disconnect();
+                client.disconnect(true);
             } catch (RemoteException ex) {
                 // ignored
             }

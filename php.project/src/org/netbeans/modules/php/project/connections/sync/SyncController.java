@@ -233,7 +233,7 @@ public final class SyncController implements Cancellable {
 
     void disconnect() {
         try {
-            remoteClient.disconnect();
+            remoteClient.disconnect(true);
         } catch (RemoteException ex) {
             LOGGER.log(Level.INFO, null, ex);
         }
