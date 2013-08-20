@@ -209,7 +209,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (directory) {
             res = ProcessUtils.execute(getExecutionEnvironment(), "mkdir", path); //NOI18N
         } else {
-            String script = String.format("ls \"%s\" || touch \"%s\"", name, name); // NOI18N
+            String script = String.format("ls ./\"%s\" || touch ./\"%s\"", name, name); // NOI18N
             res = ProcessUtils.executeInDir(getPath(), getExecutionEnvironment(), "sh", "-c", script); // NOI18N
             if (res.isOK() && res.error.length() == 0) {
                 creationFalure(name, directory, orig);
