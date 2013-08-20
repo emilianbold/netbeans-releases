@@ -63,30 +63,25 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class IndexedElement extends GroovyElement {
 
-    protected IndexResult result;
-    protected final String classFqn;
+    protected final IndexResult result;
     protected final String attributes;
+    protected final int flags;
     protected Set<Modifier> modifiers;
-    protected int flags;
     private Document document;
 
-    protected IndexedElement(IndexResult result, String classFqn, String attributes, int flags) {
+    protected IndexedElement(IndexResult result, String in, String attributes, int flags) {
+        super(in);
         this.result = result;
         this.attributes = attributes;
-        this.classFqn = classFqn;
         this.flags = flags;
     }
 
+    @Override
     public abstract String getSignature();
 
     @Override
     public String toString() {
         return getSignature();
-    }
-
-    @Override
-    public String getIn() {
-        return classFqn;
     }
 
     public Document getDocument() throws IOException {
