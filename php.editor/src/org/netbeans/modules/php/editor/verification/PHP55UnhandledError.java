@@ -79,7 +79,7 @@ public class PHP55UnhandledError extends UnhandledErrorRule {
         }
     }
 
-    private static  boolean appliesTo(FileObject fobj) {
+    private static boolean appliesTo(FileObject fobj) {
         return !CodeUtils.isPhp55(fobj);
     }
 

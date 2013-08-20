@@ -140,6 +140,10 @@ public final class CodeUtils {
     public static boolean isPhp55(FileObject file) {
         Parameters.notNull("file", file);
         boolean result = false;
+        PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
+        if (forFileObject.getPhpVersion() == PhpLanguageProperties.PhpVersion.PHP_55) {
+            result = true;
+        }
         return result;
     }
 
