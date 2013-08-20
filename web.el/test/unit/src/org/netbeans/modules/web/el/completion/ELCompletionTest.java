@@ -51,6 +51,20 @@ import org.netbeans.modules.web.el.ELTestBaseForTestProject;
  */
 public class ELCompletionTest extends ELTestBaseForTestProject {
 
+    private static final List<String> LIST_METHODS_JDK7 = Arrays.asList("add", "addAll", "clear", "contains", "containsAll",
+            "equals", "get", "hashCode", "indexOf", "iterator", "lastIndexOf" , "listIterator", "remove", "removeAll",
+            "retainAll", "set", "size", "subList", "toArray",
+            // stream is not JDK7 method but it's supported by EL for jdk7
+            "stream()");
+
+    private static final List<String> STRING_METHODS_JDK7 = Arrays.asList("charAt", "codePointAt", "codePointBefore",
+            "codePointCount", "compareTo", "compareToIgnoreCase", "concat", "contains", "contentEquals", "endsWith",
+            "equals", "equalsIgnoreCase", "getBytes", "getBytes", "getBytes", "getChars", "hashCode", "indexOf",
+            "intern", "lastIndexOf", "length", "matches", "offsetByCodePoints", "regionMatches", "replace",
+            "replaceAll", "replaceFirst", "split", "startsWith", "subSequence", "substring", "toCharArray",
+            "toLowerCase", "toString", "toUpperCase", "trim", "bytes");
+
+
     public ELCompletionTest(String name) {
         super(name);
     }
@@ -64,23 +78,23 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
     }
 
     public void testCompletionForList01() throws Exception {
-        checkCompletion("projects/testWebProject/web/completion/completion02.xhtml", "#{bean.myList.^}", false);
+        checkCompletion("projects/testWebProject/web/completion/completion02.xhtml", "#{bean.myList.^}", false, LIST_METHODS_JDK7);
     }
 
     public void testCompletionForList02() throws Exception {
-        checkCompletion("projects/testWebProject/web/completion/completion18.xhtml", "#{bean.myList[^}", false);
+        checkCompletion("projects/testWebProject/web/completion/completion18.xhtml", "#{bean.myList[^}", false, LIST_METHODS_JDK7);
     }
 
     public void testCompletionForList03() throws Exception {
-        checkCompletion("projects/testWebProject/web/completion/completion19.xhtml", "#{bean.myList['^}", false);
+        checkCompletion("projects/testWebProject/web/completion/completion19.xhtml", "#{bean.myList['^}", false, LIST_METHODS_JDK7);
     }
 
     public void testCompletionForList04() throws Exception {
-        checkCompletion("projects/testWebProject/web/completion/completion20.xhtml", "#{bean.myList['^']}", false);
+        checkCompletion("projects/testWebProject/web/completion/completion20.xhtml", "#{bean.myList['^']}", false, LIST_METHODS_JDK7);
     }
 
     public void testCompletionForString() throws Exception {
-        checkCompletion("projects/testWebProject/web/completion/completion03.xhtml", "#{bean.myString.^}", false);
+        checkCompletion("projects/testWebProject/web/completion/completion03.xhtml", "#{bean.myString.^}", false, STRING_METHODS_JDK7);
     }
 
     public void testCompletionForStaticIterableElement() throws Exception {

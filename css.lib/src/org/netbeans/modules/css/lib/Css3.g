@@ -407,8 +407,10 @@ mediaQueryList
  ;
  
 mediaQuery
- : (mediaQueryOperator ws? )?  mediaType ( ws? AND ws? mediaExpression )*
- | mediaExpression ( ws? AND ws? mediaExpression )*
+ : 
+    (mediaQueryOperator ws? )?  mediaType ( ws? AND ws? mediaExpression )*
+    | mediaExpression ( ws? AND ws? mediaExpression )*
+    | {isLessSource()}? cp_variable
  ;
  
 mediaQueryOperator
@@ -630,7 +632,7 @@ declaration
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
     | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration 
     | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI|RBRACE)* LBRACE))=>cp_mixin_declaration 
-    | (cp_mixin_call)=>cp_mixin_call 
+    | (cp_mixin_call)=>cp_mixin_call (ws? IMPORTANT_SYM)?
     | (selectorsGroup ws? LBRACE)=>rule 
     | {isCssPreprocessorSource()}? at_rule 
     | {isScssSource()}? sass_control 
@@ -693,6 +695,7 @@ elementSubsequent
     : 
     (
         {isScssSource()}? sass_extend_only_selector
+        | {isLessSource()}? less_selector_interpolation // @{var} { ... }
     	| cssId
     	| cssClass
         | slAttribute
@@ -702,7 +705,13 @@ elementSubsequent
     
 //Error Recovery: Allow the parser to enter the cssId rule even if there's just hash char.
 cssId
-    : HASH | ( HASH_SYMBOL NAME )
+    : HASH 
+      | 
+        ( HASH_SYMBOL 
+            ( NAME 
+              | {isLessSource()}? less_selector_interpolation // #@{var} { ... }
+            ) 
+        )
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -710,7 +719,12 @@ cssId
     }
 
 cssClass
-    : DOT ( IDENT | GEN  )
+    : DOT 
+        ( 
+            IDENT 
+            | GEN  
+            | {isLessSource()}? less_selector_interpolation // .@{var} { ... }
+        )
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -865,6 +879,8 @@ term
         | RESOLUTION
         | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
         | STRING
+        | {isLessSource()}? TILDE STRING //escaped less string
+        | {isLessSource()}? LESS_JS_STRING
         | GEN
         | URI
         | hexColor
@@ -1115,9 +1131,7 @@ less_condition
     (NOT ws?)?
     LPAREN ws? 
         (
-            less_function_in_condition ws?
-            |
-            ( cp_variable (ws? less_condition_operator ws? cp_math_expression)?)  
+             (cp_variable | less_function_in_condition) ws? (less_condition_operator ws? cp_math_expression)?
         )        
     RPAREN
     ;
@@ -1137,6 +1151,11 @@ less_fn_name
 less_condition_operator
     :
     GREATER | GREATER_OR_EQ | OPEQ | LESS | LESS_OR_EQ
+    ;
+    
+less_selector_interpolation
+    :
+    AT_SIGN LBRACE ws? IDENT ws? RBRACE
     ;
 
 //SCSS interpolation expression, e.g. #{$vert}
@@ -1641,6 +1660,13 @@ STRING          : '\'' ( ~('\n'|'\r'|'\f'|'\'') )*
                         | { $type = INVALID; }
                     )
                 ;
+                
+LESS_JS_STRING  : '`' ( ~('\n'|'\r'|'\f'|'`') )* 
+                    (
+                          '`'
+                        | { $type = INVALID; }
+                    )
+                    ;
 
 
 ONLY 		: 'ONLY';
@@ -1706,7 +1732,8 @@ SASS_RETURN         : '@RETURN';
 SASS_EACH           : '@EACH';
 SASS_WHILE          : '@WHILE';
 
-AT_IDENT	    : '@' NMCHAR+;	
+AT_SIGN             : '@';
+AT_IDENT	    : AT_SIGN NMCHAR+;	
 
 SASS_VAR            : '$' NMCHAR+;
 SASS_DEFAULT        : '!DEFAULT';
