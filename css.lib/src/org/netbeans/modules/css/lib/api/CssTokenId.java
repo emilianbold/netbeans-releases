@@ -270,7 +270,9 @@ public enum CssTokenId implements TokenId {
     
     EXCLAMATION_MARK(Css3Lexer.EXCLAMATION_MARK, OTHERS),
     
-    LESS_JS_STRING(Css3Lexer.LESS_JS_STRING, STRINGS)
+    LESS_JS_STRING(Css3Lexer.LESS_JS_STRING, STRINGS),
+    
+    AT_SIGN(Css3Lexer.AT_SIGN, AT_RULE_SYMBOL);
     
     ;
     

@@ -540,6 +540,18 @@ public class Css3ParserLessTest extends CssTestBase {
         assertParses(".class {\n"
                 + "  filter: ~\"ms:alwaysHasItsOwnSyntax.For.Stuff()\";\n"
                 + "}");
-        
+
+    }
+
+    public void testSelectorInterpolation() {
+        assertParses(".@{name} {\n"
+                + "    color: black;\n"
+                + "}");
+        assertParses("#@{name} {\n"
+                + "    color: black;\n"
+                + "}");
+        assertParses("@{name} {\n"
+                + "    color: black;\n"
+                + "}");
     }
 }
