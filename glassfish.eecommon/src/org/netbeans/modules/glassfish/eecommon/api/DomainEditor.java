@@ -46,16 +46,21 @@ package org.netbeans.modules.glassfish.eecommon.api;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.StringReader;
+import java.nio.charset.Charset;
+import java.text.MessageFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Vector;
-
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.transform.OutputKeys;
@@ -63,7 +68,7 @@ import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.stream.StreamResult;
-
+import org.openide.util.Exceptions;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -75,7 +80,8 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 public class DomainEditor {
-    
+
+    private static final Logger LOGGER = Logger.getLogger("glassfish-eecommon");
     private static final String HTTP_PROXY_HOST = "-Dhttp.proxyHost=";
     private static final String HTTP_PROXY_PORT = "-Dhttp.proxyPort=";
     private static final String HTTPS_PROXY_HOST = "-Dhttps.proxyHost=";
@@ -111,6 +117,7 @@ public class DomainEditor {
     static private String CONST_JDBC = "jdbc-resource"; // NOI18N
     static private String CONST_CP = "jdbc-connection-pool"; // NOI18N
     static private String CONST_AO = "admin-object-resource"; // NOI18N
+    static private String XML_ENTITY = "<?xml version=\"1.0\" encoding=\"{0}\"?>";
     
     private String dmLoc;
     private String dmName;
@@ -197,7 +204,9 @@ public class DomainEditor {
             // Find the "java-config" element
             NodeList javaConfigNodeList = domainDoc.getElementsByTagName("java-config");
             if (javaConfigNodeList == null || javaConfigNodeList.getLength() == 0) {
-                System.err.println("ConfigFilesUtils: cannot find 'java-config' section in domain config file " + domainPath);
+                LOGGER.log(Level.INFO,
+                        "Cannot find 'java-config' section in domain config file {0}",
+                        domainPath);
                 return false;
             }
             
@@ -334,24 +343,41 @@ public class DomainEditor {
      * @param domainScriptFilePath Path to domain.xml
      */
     private Document loadDomainScriptFile(String domainScriptFilePath) {
+        InputStreamReader reader = null;
         try {
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             dbFactory.setValidating(false);
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            
-            dBuilder.setEntityResolver(new InnerResolver()); // EntityResolver() { //sic
-            
-            return dBuilder.parse(new File(domainScriptFilePath));
+            dBuilder.setEntityResolver(new InnerResolver());
+            reader = new FileReader(new File(domainScriptFilePath));
+            InputSource source = new InputSource(reader);
+            return dBuilder.parse(source);
         } catch (Exception e) {
-            System.err.println("ConfigFilesUtils: unable to parse domain config file " + domainScriptFilePath);
+            LOGGER.log(Level.WARNING,
+                    "Unable to parse domain config file {0}",
+                    domainScriptFilePath);
             return null;
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException ex) {
+                    LOGGER.log(Level.INFO, "Cannot close reader for {0}: {1}",
+                            new String[] {domainScriptFilePath, ex.getLocalizedMessage()});
+                }
+            }
         }
     }
 
     static class InnerResolver implements EntityResolver {
+        private final Charset charset;
+        InnerResolver() {
+            charset = Charset.defaultCharset();
+        }
         @Override
         public InputSource resolveEntity(String publicId, String systemId) throws SAXException, IOException {
-            StringReader reader = new StringReader("<?xml version=\"1.0\" encoding=\"UTF-8\"?>"); // NOI18N
+            String xmlEntity = MessageFormat.format(XML_ENTITY, charset.name());
+            StringReader reader = new StringReader(xmlEntity);
             InputSource source = new InputSource(reader);
             source.setPublicId(publicId);
             source.setSystemId(systemId);
@@ -369,8 +395,9 @@ public class DomainEditor {
     private boolean saveDomainScriptFile(Document domainScriptDocument, String domainScriptFilePath, boolean indent) {
         boolean result = false;
         OutputStreamWriter domainXmlWriter = null;
+        final Charset charset = Charset.defaultCharset();
         try {
-            domainXmlWriter = new OutputStreamWriter(new FileOutputStream(domainScriptFilePath),"UTF-8");
+            domainXmlWriter = new OutputStreamWriter(new FileOutputStream(domainScriptFilePath), charset.name());
             try {
                 TransformerFactory transformerFactory = TransformerFactory.newInstance();
                 Transformer transformer = transformerFactory.newTransformer();
@@ -394,11 +421,15 @@ public class DomainEditor {
                 transformer.transform(domSource, streamResult);
                 result = true;
             } catch (Exception e) {
-                System.err.println("ConfigFilesUtils: Unable to save domain config file " + domainScriptFilePath);
+                LOGGER.log(Level.WARNING,
+                        "Unable to save domain config file {0}",
+                        domainScriptFilePath);
                 result = false;
             }
         } catch (IOException ioex) {
-            System.err.println("ConfigFilesUtils: cannot create output stream for domain config file " + domainScriptFilePath);
+            LOGGER.log(Level.INFO,
+                    "Cannot create output stream for domain config file {0}",
+                    domainScriptFilePath);
             result = false;
         } finally {
             try { 
@@ -406,7 +437,9 @@ public class DomainEditor {
                     domainXmlWriter.close(); 
                 }
             } catch (IOException ioex2) {
-                System.err.println("SunAS8IntegrationProvider: cannot close output stream for " + domainScriptFilePath); 
+                LOGGER.log(Level.INFO,
+                        "Cannot close output stream for {0}",
+                        domainScriptFilePath);
             }
         }
         
@@ -588,7 +621,9 @@ public class DomainEditor {
         Map<String,Node> cpMap = getConnPoolsNodeMap(domainDoc);
         if(! cpMap.containsKey(SAMPLE_CONNPOOL)){
             if (cpMap.isEmpty()) {
-                System.err.println("Cannot create sample datasource :" + SAMPLE_DATASOURCE); //N0I18N
+                LOGGER.log(Level.INFO,
+                        "Cannot create sample datasource {0}",
+                        SAMPLE_DATASOURCE);
                 return false;
             }
             Node oldNode = cpMap.values().iterator().next();
