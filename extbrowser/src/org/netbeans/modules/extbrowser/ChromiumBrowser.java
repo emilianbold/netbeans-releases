@@ -56,6 +56,7 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
     private static final long serialVersionUID = -2700536003661091286L;
     
     private static final String CHROMIUM_PATH = "/usr/bin/chromium-browser";    // NOI18N
+    private static final String CHROMIUM_PATH2 = "/usr/bin/chromium";    // NOI18N
 
     /** Creates new ExtWebBrowser */
     public ChromiumBrowser() {
@@ -67,6 +68,9 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
         File file = null;
         if (Utilities.isUnix() && !Utilities.isMac()) {
             file = new File(CHROMIUM_PATH);
+            if (!file.exists()) {
+                file = new File(CHROMIUM_PATH2);
+            }
         } else if (Utilities.isWindows()) {
             file = getLocalAppPath();
         }
@@ -116,6 +120,9 @@ public class ChromiumBrowser extends ExtWebBrowser implements PropertyChangeList
         File file = null;
         if (Utilities.isUnix() && !Utilities.isMac()) {
             file = new File(CHROMIUM_PATH);
+            if (!file.exists()) {
+                file = new File(CHROMIUM_PATH2);
+            }
         } else if (Utilities.isWindows()) {
             file = getLocalAppPath();
         }
