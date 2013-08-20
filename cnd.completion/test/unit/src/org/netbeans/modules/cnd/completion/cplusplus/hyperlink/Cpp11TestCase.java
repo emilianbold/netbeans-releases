@@ -207,4 +207,10 @@ public class Cpp11TestCase extends HyperlinkBaseTestCase {
         performTest("bug224032.cpp", 17, 32, "bug224032.cpp", 8, 5);
         performTest("bug224032.cpp", 18, 32, "bug224032.cpp", 5, 5);
     }
+    
+    
+    public void testBug234640() throws Exception {
+        // Bug 234640 - parser fails on decltype
+        performTest("bug234640.cpp", 12, 12, "bug234640.cpp", 7, 9);
+    }    
 }
