@@ -626,4 +626,13 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "}");
     }
 
+//    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c10 / case#18
+//    public void testMixinCallAsSelector() {
+//        assertParses(".x { #gradient > .vertical(#f5f5f5, #eeeeee); }");
+//        
+//        assertParses(".subnav-fixed {\n"
+//                + "#gradient > .vertical(#f5f5f5, #eeeeee);\n"
+//                + "}");
+//    }
+
 }
