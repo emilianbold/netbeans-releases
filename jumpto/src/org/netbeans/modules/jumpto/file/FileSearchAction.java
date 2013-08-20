@@ -944,6 +944,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             fileNameFormatter = HighlightingNameFormatter.createBoldFormatter();
             nameDocument.addDocumentListener(this);
             caseSensitive.addActionListener(this);
+            jlName.setOpaque(true);
         }
 
         public @Override Component getListCellRendererComponent( JList list,
@@ -967,12 +968,14 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
             resetName();
             if ( isSelected ) {
                 jlName.setForeground(fgSelectionColor);
+                jlName.setBackground( bgSelectionColor );
                 jlPath.setForeground(fgSelectionColor);
                 jlPrj.setForeground(fgSelectionColor);
                 rendererComponent.setBackground(bgSelectionColor);
             }
             else {
                 jlName.setForeground(fgColor);
+                jlName.setBackground(bgColor);
                 jlPath.setForeground(fgColorLighter);
                 jlPrj.setForeground(fgColor);
                 rendererComponent.setBackground( index % 2 == 0 ? bgColor : bgColorDarker );
@@ -1055,7 +1058,7 @@ public class FileSearchAction extends AbstractAction implements FileSearchPanel.
         private void resetName() {
             ((HtmlRenderer.Renderer)jlName).reset();
             jlName.setFont(jList.getFont());
-            jlName.setOpaque(false);
+            jlName.setOpaque(true);
             ((HtmlRenderer.Renderer)jlName).setHtml(true);
             ((HtmlRenderer.Renderer)jlName).setRenderStyle(HtmlRenderer.STYLE_TRUNCATE);
         }

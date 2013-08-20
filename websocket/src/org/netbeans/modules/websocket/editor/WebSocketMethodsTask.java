@@ -348,6 +348,11 @@ public class WebSocketMethodsTask implements CancellableTask<CompilationInfo> {
                             ModifiersTree modifiers = maker.Modifiers(EnumSet
                                     .of(Modifier.PUBLIC), Collections
                                     .<AnnotationTree> singletonList(annotation));
+                            ModifiersTree parMods = maker.Modifiers(
+                                    Collections.<Modifier>emptySet(),
+                                    Collections.<AnnotationTree>emptyList());
+                            VariableTree par1 = maker.Variable(parMods, "t",
+                                    maker.QualIdent("java.lang.Throwable"), null);
                             MethodTree method = maker.Method(
                                     modifiers,
                                     getMethodName(),
@@ -358,7 +363,7 @@ public class WebSocketMethodsTask implements CancellableTask<CompilationInfo> {
                                      * provided in the method signature :
                                      * javax.websocket.Session
                                      */
-                                    Collections.<VariableTree> emptyList(),
+                                    Collections.<VariableTree> singletonList(par1),
                                     Collections.<ExpressionTree> emptyList(),
                                     "{}", null);
                             ClassTree newTree = maker.addClassMember(classTree,

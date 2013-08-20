@@ -116,7 +116,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
     private BookmarkHistoryPopup() {
     }
     
-    public void show(boolean chooseLastUsedBookmark) {
+    public void show(boolean gotoNext) {
         if (popup != null) { // Refresh in case it already exists
             hide();
         }
@@ -139,7 +139,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
         Rectangle screenBounds = Utilities.getUsableScreenBounds();
         initTable(screenBounds);
         // At least one entry -> select either first or last entry
-        selectEntry(chooseLastUsedBookmark ? 0 : tableModel.getEntryCount() - 1);
+        selectEntry(gotoNext ? (tableModel.getEntryCount() > 2 ? 1: 0) : (tableModel.getEntryCount() > 1 ? tableModel.getEntryCount() - 2 : tableModel.getEntryCount() - 1));
 
         JPanel panel = new JPanel();
         panel.setLayout(new GridBagLayout());
@@ -224,6 +224,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
         table.setShowGrid(false);
         table.setCellSelectionEnabled(true);
         table.setAutoscrolls(false);
+        table.setRowHeight(table.getRowHeight() + 4); // +4 for icon
         // Get Graphics resp. FontRenderContext from an off-screen image
         BufferedImage image = new BufferedImage(4, 4, BufferedImage.TYPE_INT_RGB);
         Graphics2D g = (Graphics2D) image.getGraphics();
@@ -236,7 +237,7 @@ public final class BookmarkHistoryPopup implements KeyListener {
             int stringWidth = fm.stringWidth(value);
             maxWidth = Math.max(maxWidth, stringWidth);
         }
-        maxWidth += 16; // Add icon width
+        maxWidth += 25; // Add icon width
         maxWidth += 12; // Add extra space occupied by cell borders? etc.
         int columnEntryCount = maxBounds.height / maxHeight;
         int columnCount = tableModel.setColumnEntryCount(columnEntryCount);
@@ -317,10 +318,10 @@ public final class BookmarkHistoryPopup implements KeyListener {
         int keyCode = e.getKeyCode();
         if (gotoPreviousKeyStroke != null && gotoPreviousKeyStroke.getKeyCode() == keyCode) {
             e.consume();
-            selectNext();
+            selectPrevious();
         } else if (gotoNextKeyStroke != null && gotoNextKeyStroke.getKeyCode() == keyCode) {
             e.consume();
-            selectPrevious();
+            selectNext();
         } else {
             switch (keyCode) {
                 case KeyEvent.VK_ENTER:

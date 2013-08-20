@@ -81,8 +81,8 @@ public final class BreadCrumbsScheduler extends Scheduler {
         SwingUtilities.invokeLater(new Runnable() {
             @Override
             public void run() {
-                if (currentEditor == null || source == null) return;
-                schedule (source, new CursorMovedSchedulerEvent (this, currentEditor.getCaret ().getDot (), currentEditor.getCaret ().getMark ()) {});
+                if (currentEditor == null || getSource() == null) return;
+                schedule (getSource(), new CursorMovedSchedulerEvent (this, currentEditor.getCaret ().getDot (), currentEditor.getCaret ().getMark ()) {});
             }
         });
     }
@@ -98,7 +98,6 @@ public final class BreadCrumbsScheduler extends Scheduler {
     private JTextComponent  currentEditor;
     private CaretListener   caretListener;
     private Document        currentDocument;
-    private Source          source;
 
     
     protected void setEditor (JTextComponent editor) {
@@ -112,12 +111,11 @@ public final class BreadCrumbsScheduler extends Scheduler {
             Document document = editor.getDocument ();
             if (currentDocument == document) return;
             currentDocument = document;
-            source = Source.create (currentDocument);
+            final Source source = Source.create (currentDocument);
             schedule (source, new CursorMovedSchedulerEvent (this, editor.getCaret ().getDot (), editor.getCaret ().getMark ()) {});
         }
         else {
             currentDocument = null;
-            source = null;
             schedule(null, null);
         }
     }
@@ -131,7 +129,7 @@ public final class BreadCrumbsScheduler extends Scheduler {
     protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
         final JTextComponent ce = currentEditor;
         final Caret caret = ce != null ? ce.getCaret() : null;
-        final Source s = source;
+        final Source s = getSource();
         if (event.getModifiedSource() == s && caret != null) {
             return new CursorMovedSchedulerEvent(this, caret.getDot(), caret.getMark()) { };
         }

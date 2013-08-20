@@ -64,6 +64,7 @@ import junit.framework.AssertionFailedError;
 import junit.framework.Test;
 import junit.framework.TestSuite;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.junit.RandomlyFails;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
 import org.openide.util.Task;
@@ -85,7 +86,6 @@ implements CloneableEditorSupport.Env {
 
     static {
         System.setProperty("org.openide.windows.DummyWindowManager.VISIBLE", "false");
-        System.setProperty("assertgc.paths", "0");
     }
     /** the support to work with */
     private CloneableEditorSupport support;
@@ -106,6 +106,8 @@ implements CloneableEditorSupport.Env {
         doc.remove(0, doc.getLength());
 
         support.saveDocument();
+        
+        doc.getProperty(Object.class);
 
         assertEquals("Saved ok and empty", "", content);
     }
@@ -150,6 +152,7 @@ implements CloneableEditorSupport.Env {
 
     }
     
+    @RandomlyFails // http://deadlock.netbeans.org/hudson/job/NB-Core-Build/9880/testReport/
     public void testDocumentIsNotGCedIfOpenedInEditor () throws Exception {
         content = "Ahoj\nMyDoc";
         javax.swing.text.Document doc = support.openDocument ();
@@ -396,7 +399,7 @@ implements CloneableEditorSupport.Env {
         assertTrue("CES.saveDocument() did not execute a runnable in \"beforeSaveRunnable\" document property",
                 processed[0]);
     }
-
+    
     public void testPrepareDocument() throws Exception {
         content = "Ahoj\nMyDoc";
         Task task = support.prepareDocument();

@@ -270,7 +270,7 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
      * Each insertString() or remove() will generate BadLocationException.
      * If no veto is fired or no listener is present then this variable is true.
      */
-    boolean modifiable;
+    boolean modifiable = true;
 
     /* Was the document initialized by reading? */
     protected boolean inited;
@@ -1691,52 +1691,51 @@ public class BaseDocument extends AbstractDocument implements AtomicLockDocument
         atomicLockImpl(); // Need to be outside synchronized(this) due to VetoableChangeListener firing
     }
     
-    final void atomicLockImpl () {
-        boolean alreadyAtomicLocker;
-        boolean modifiableChanged = false;
-        synchronized (this) {
-            if (runExclusiveDepth > 0) {
-                throw new IllegalStateException(
-                        "Document modifications or atomic locking not allowed in runExclusive()"); // NOI18N
-            }
-            alreadyAtomicLocker = Thread.currentThread() == getCurrentWriter() && atomicDepth > 0;
-            if (alreadyAtomicLocker) {
-                atomicDepth++;
-            }
+    final synchronized void atomicLockImpl () {
+        if (runExclusiveDepth > 0) {
+            throw new IllegalStateException(
+                    "Document modifications or atomic locking not allowed in runExclusive()"); // NOI18N
+        }
+        boolean alreadyAtomicLocker = Thread.currentThread() == getCurrentWriter() && atomicDepth > 0;
+        if (alreadyAtomicLocker) {
+            atomicDepth++;
         }
         if (!alreadyAtomicLocker) {
-            // Fire VetoableChangeListener outside Document lock
-            VetoableChangeListener l = (VetoableChangeListener) getProperty(MODIFICATION_LISTENER_PROP);
-            boolean modifiableLocal = true;
-            if (l != null) {
-                try {
-                    // Notify modification by Boolean.TRUE
-                    l.vetoableChange(new PropertyChangeEvent(this, "modified", null, Boolean.TRUE));
-                } catch (java.beans.PropertyVetoException ex) {
-                    modifiableLocal = false;
-                }
-            }
+            // Starting with openide.text v 6.58 it is no longer necessary to fire vetoable change listener
+            // since the BaseDocument extends AbstractDocument and so the openide.text installs
+            // a document filter which possibly prevents modifications on readonly files.
+//            // Fire VetoableChangeListener outside Document lock
+//            VetoableChangeListener l = (VetoableChangeListener) getProperty(MODIFICATION_LISTENER_PROP);
+//            boolean modifiableLocal = true;
+//            if (l != null) {
+//                try {
+//                    // Notify modification by Boolean.TRUE
+//                    l.vetoableChange(new PropertyChangeEvent(this, "modified", null, Boolean.TRUE));
+//                } catch (java.beans.PropertyVetoException ex) {
+//                    modifiableLocal = false;
+//                }
+//            }
             // Acquire writeLock() and increment atomicDepth
             synchronized (this) {
                 extWriteLock();
                 atomicDepth++;
                 if (atomicDepth == 1) { // lock really started
-                    Object o = getProperty(EDITABLE_PROP);
-                    if (o == null) {
-                        o = Boolean.TRUE;
-                    }
-                    modifiableChanged = modifiable != modifiableLocal || 
-                            o != modifiableLocal;                
-                    modifiable = modifiableLocal;
+//                    Object o = getProperty(EDITABLE_PROP);
+//                    if (o == null) {
+//                        o = Boolean.TRUE;
+//                    }
+//                    modifiableChanged = modifiable != modifiableLocal || 
+//                            o != modifiableLocal;                
+//                    modifiable = modifiableLocal;
                     fireAtomicLock(atomicLockEventInstance);
                     // Copy the listener list - will be used for firing undo
                     atomicLockListenerList = listenerList.getListenerList();
                 }
             }
         }
-        if (modifiableChanged) {
-            putProperty(EDITABLE_PROP, modifiable);
-        }
+//        if (modifiableChanged) {
+//            putProperty(EDITABLE_PROP, modifiable);
+//        }
     }
 
     /** 
