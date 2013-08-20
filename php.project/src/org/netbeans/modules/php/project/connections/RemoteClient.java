@@ -197,7 +197,7 @@ public final class RemoteClient implements Cancellable {
         // cd to base remote directory
         if (!cdBaseRemoteDirectory()) {
             if (remoteClient.isConnected()) {
-                disconnect();
+                disconnect(true);
             }
             throw new RemoteException(NbBundle.getMessage(RemoteClient.class, "MSG_CannotChangeDirectory", baseRemoteDirectory), remoteClient.getReplyString());
         }
@@ -209,8 +209,8 @@ public final class RemoteClient implements Cancellable {
         }
     }
 
-    public synchronized void disconnect() throws RemoteException {
-        remoteClient.disconnect();
+    public synchronized void disconnect(boolean force) throws RemoteException {
+        remoteClient.disconnect(force);
     }
 
     public boolean isCancelled() {

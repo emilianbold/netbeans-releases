@@ -70,7 +70,7 @@ public final class TwigOptions {
     }
 
     public ToggleBlockCommentAction.ToggleCommentType getToggleCommentType() {
-        String toggleCommentName = getPreferences().get(TOGGLE_COMMENT, ToggleBlockCommentAction.ToggleCommentType.LINE_BY_TWIG.name());
+        String toggleCommentName = getPreferences().get(TOGGLE_COMMENT, ToggleBlockCommentAction.ToggleCommentType.AS_TWIG_EVERYWHERE.name());
         return ToggleBlockCommentAction.ToggleCommentType.valueOf(toggleCommentName);
     }
 

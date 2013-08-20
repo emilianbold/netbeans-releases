@@ -83,13 +83,13 @@ public class ToggleBlockCommentAction extends BaseAction {
                 target.getToolkit().beep();
                 return;
             }
-            final int caretOffset = Utilities.isSelectionShowing(target) ? target.getSelectionStart() : target.getCaretPosition();
+            final Positions positions = Positions.create(target);
             final BaseDocument doc = (BaseDocument) target.getDocument();
             doc.runAtomic(new Runnable() {
 
                 @Override
                 public void run() {
-                    performCustomAction(doc, caretOffset, processedHere);
+                    performCustomAction(doc, positions, processedHere);
                 }
             });
             if (!processedHere.get()) {
@@ -98,10 +98,10 @@ public class ToggleBlockCommentAction extends BaseAction {
         }
     }
 
-    private void performCustomAction(BaseDocument baseDocument, int caretOffset, AtomicBoolean processedHere) {
+    private void performCustomAction(BaseDocument baseDocument, Positions positions, AtomicBoolean processedHere) {
         ToggleCommentType toggleCommentType = TwigOptions.getInstance().getToggleCommentType();
         try {
-            toggleCommentType.comment(baseDocument, caretOffset, processedHere);
+            toggleCommentType.comment(baseDocument, positions, processedHere);
         } catch (BadLocationException ex) {
             LOGGER.log(Level.WARNING, null, ex);
         }
@@ -119,14 +119,14 @@ public class ToggleBlockCommentAction extends BaseAction {
     }
 
     public static enum ToggleCommentType {
-        LINE_BY_TWIG {
+        AS_TWIG_EVERYWHERE {
 
             @Override
-            void comment(BaseDocument baseDocument, int caretOffset, AtomicBoolean processedHere) throws BadLocationException {
-                TokenSequence<? extends TwigTokenId> ts = TwigLexerUtils.getTwigMarkupTokenSequence(baseDocument, caretOffset);
+            void comment(BaseDocument baseDocument, Positions positions, AtomicBoolean processedHere) throws BadLocationException {
+                TokenSequence<? extends TwigTokenId> ts = TwigLexerUtils.getTwigMarkupTokenSequence(baseDocument, positions.getStart());
                 Token<? extends TwigTokenId> token = null;
                 if (ts != null) {
-                    ts.move(caretOffset);
+                    ts.move(positions.getStart());
                     ts.moveNext();
                     ts.movePrevious();
                     token = ts.token();
@@ -134,23 +134,22 @@ public class ToggleBlockCommentAction extends BaseAction {
                 if (token != null && isInComment(token.id())) {
                     uncommentToken(ts, baseDocument);
                 } else {
-                    baseDocument.insertString(Utilities.getRowStart(baseDocument, caretOffset), TwigTopLexer.OPEN_COMMENT, null);
-                    baseDocument.insertString(Utilities.getRowEnd(baseDocument, caretOffset), TwigTopLexer.CLOSE_COMMENT, null);
+                    positions.comment(baseDocument);
                 }
                 processedHere.set(true);
             }
         },
 
-        FOCUSED_TWIG_PART {
+        LANGUAGE_SENSITIVE {
 
             @Override
-            void comment(BaseDocument baseDocument, int caretOffset, AtomicBoolean processedHere) throws BadLocationException {
-                TokenSequence<? extends TwigTokenId> ts = TwigLexerUtils.getTwigMarkupTokenSequence(baseDocument, caretOffset);
+            void comment(BaseDocument baseDocument, Positions positions, AtomicBoolean processedHere) throws BadLocationException {
+                TokenSequence<? extends TwigTokenId> ts = TwigLexerUtils.getTwigMarkupTokenSequence(baseDocument, positions.getStart());
                 if (ts == null) {
                     processedHere.set(false);
                     return;
                 }
-                ts.move(caretOffset);
+                ts.move(positions.getStart());
                 ts.moveNext();
                 ts.movePrevious();
                 Token<? extends TwigTokenId> token = ts.token();
@@ -166,7 +165,7 @@ public class ToggleBlockCommentAction extends BaseAction {
             }
         };
 
-        abstract void comment(BaseDocument baseDocument, int caretOffset, AtomicBoolean processedHere) throws BadLocationException;
+        abstract void comment(BaseDocument baseDocument, Positions positions, AtomicBoolean processedHere) throws BadLocationException;
 
         protected void uncommentToken(TokenSequence<? extends TwigTokenId> ts, BaseDocument baseDocument) throws BadLocationException {
             int start = ts.offset();
@@ -249,6 +248,48 @@ public class ToggleBlockCommentAction extends BaseAction {
         @Override
         public void insertAfter(BaseDocument baseDocument) throws BadLocationException {
             baseDocument.insertString(offset + token.text().length(), TwigTopLexer.CLOSE_COMMENT, null);
+        }
+
+    }
+
+    private static final class Positions {
+        private final int start;
+        private final int end;
+
+        public static Positions create(JTextComponent target) {
+            boolean isSelection = Utilities.isSelectionShowing(target);
+            int start = isSelection ? target.getSelectionStart() : target.getCaretPosition();
+            int end = isSelection ? target.getSelectionEnd() : target.getCaretPosition();
+            return new Positions(start, end, isSelection);
+        }
+        private final boolean isSelection;
+
+        private Positions(int start, int end, boolean isSelection) {
+            this.start = start;
+            this.end = end;
+            this.isSelection = isSelection;
+        }
+
+        public int getStart() {
+            return start;
+        }
+
+        public int getEnd() {
+            return end;
+        }
+
+        public void comment(BaseDocument baseDocument) throws BadLocationException {
+            int offsetCommentStart;
+            int offsetCommentEnd;
+            if (isSelection) {
+                offsetCommentStart = getStart();
+                offsetCommentEnd = getEnd();
+            } else {
+                offsetCommentStart = Utilities.getRowStart(baseDocument, getStart());
+                offsetCommentEnd = Utilities.getRowEnd(baseDocument, getEnd());
+            }
+            baseDocument.insertString(offsetCommentStart, TwigTopLexer.OPEN_COMMENT, null);
+            baseDocument.insertString(offsetCommentEnd + TwigTopLexer.OPEN_COMMENT.length(), TwigTopLexer.CLOSE_COMMENT, null);
         }
 
     }
