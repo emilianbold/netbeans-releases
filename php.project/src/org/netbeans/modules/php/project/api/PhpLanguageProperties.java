@@ -87,12 +87,17 @@ public final class PhpLanguageProperties {
 
         // order is important! from oldest to newest, see #getDefault()
         PHP_5(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_5"), false), // NOI18N
-        PHP_53(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_53"), true), // NOI18N
-        PHP_54(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_54"), true); // NOI18N
+        PHP_53(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_53")), // NOI18N
+        PHP_54(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_54")), // NOI18N
+        PHP_55(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_55")); // NOI18N
 
         private final String displayName;
         private final boolean namespaces;
 
+
+        PhpVersion(String displayName) {
+            this(displayName, true);
+        }
 
         PhpVersion(String displayName, boolean namespaces) {
             assert displayName != null;
