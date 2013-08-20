@@ -865,7 +865,8 @@ term
         | RESOLUTION
         | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
         | STRING
-        | LESS_JS_STRING
+        | {isLessSource()}? TILDE STRING //escaped less string
+        | {isLessSource()}? LESS_JS_STRING
         | GEN
         | URI
         | hexColor

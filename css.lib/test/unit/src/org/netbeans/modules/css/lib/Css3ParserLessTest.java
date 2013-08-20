@@ -528,12 +528,18 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "div{\n"
                 + "  .transform(rotate(90));\n"
                 + "}");
-        
+
         assertParses(".mx(@each) {}");
     }
-    
+
     public void testExpressionWithLessJavascript() {
         assertParses("@var: `\"hello\".toUpperCase() + '!'`;");
     }
 
+    public void testEscapedContent() {
+        assertParses(".class {\n"
+                + "  filter: ~\"ms:alwaysHasItsOwnSyntax.For.Stuff()\";\n"
+                + "}");
+        
+    }
 }
