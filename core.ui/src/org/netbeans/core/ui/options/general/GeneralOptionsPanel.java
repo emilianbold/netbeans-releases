@@ -275,7 +275,7 @@ public class GeneralOptionsPanel extends JPanel implements ActionListener {
 
         jPanel1.setLayout(new java.awt.GridBagLayout());
 
-        org.openide.awt.Mnemonics.setLocalizedText(lblLearnMore, "<html><font color=\"#0000FF\" <u>Learn more</u></font></html>"); // NOI18N
+        org.openide.awt.Mnemonics.setLocalizedText(lblLearnMore, org.openide.util.NbBundle.getMessage(GeneralOptionsPanel.class, "CTL_Learn_More")); // NOI18N
         lblLearnMore.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseEntered(java.awt.event.MouseEvent evt) {
                 lblLearnMoreMouseEntered(evt);
