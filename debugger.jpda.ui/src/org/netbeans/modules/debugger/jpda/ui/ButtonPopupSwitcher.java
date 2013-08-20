@@ -120,14 +120,17 @@ final class ButtonPopupSwitcher
         // get rid of the effect when popup seems to be higher that screen height
         int gap = (y == 0 ? 10 : 5);
         int height = 0;
+        int width = 0;
 
         int leftD = x - screenRect.x;
         int rightD = screenRect.x + screenRect.width - x;
         if (leftD < rightD / 2) {
             xOrient = 1;
+            width = rightD;
             cornerX = x + 1;
         } else {
             xOrient = -1;
+            width = leftD + ownerWidth;
             cornerX = x + ownerWidth;
         }
         int topD = y - screenRect.y;
@@ -142,7 +145,7 @@ final class ButtonPopupSwitcher
             height = screenRect.height - cornerY - gap;
         }
 
-        this.pTable = new SwitcherTable(items, height);
+        this.pTable = new SwitcherTable(items, height, width);
         this.x = cornerX - (xOrient == -1 ? (int) pTable.getPreferredSize().getWidth() : 0);
         this.y = cornerY - (yOrient == -1 ? (int) pTable.getPreferredSize().getHeight() : 0);
     }
