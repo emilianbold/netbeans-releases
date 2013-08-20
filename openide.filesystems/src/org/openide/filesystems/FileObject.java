@@ -902,7 +902,11 @@ public abstract class FileObject extends Object implements Serializable, Lookup.
             @Override
             public FileObject process(FileObject fo, Collection<FileObject> toAdd) {
                 if (rec && fo.isFolder()) {
-                    toAdd.addAll(Arrays.asList(fo.getChildren()));
+                    for (FileObject child : fo.getChildren()) {
+                        if (!FileUtil.isRecursiveSymlink(child)) { // #218795
+                            toAdd.add(child);
+                        }
+                    }
                 }
 
                 return fo;

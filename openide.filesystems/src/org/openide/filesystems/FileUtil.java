@@ -53,12 +53,14 @@ import java.io.OutputStream;
 import java.io.SyncFailedException;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
-import java.lang.ref.WeakReference;
 import java.lang.reflect.Method;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLStreamHandler;
+import java.nio.file.Files;
+import java.nio.file.InvalidPathException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2327,5 +2329,50 @@ public final class FileUtil extends Object {
     private static boolean isArchiveFile (final String path) {
         int index = path.lastIndexOf('.');  //NOI18N
         return (index != -1) && (index > path.lastIndexOf('/') + 1);    //NOI18N
+    }
+
+    /**
+     * Check whether this file is a symbolic link that targets to a folder
+     * higher in the path. Such link, in case of recursive folder traversing,
+     * would cause infinite recursion. The method should not be called from
+     * Event Dispatch Thread.
+     *
+     * @param fileObject FileObject to check.
+     * @return True if the file is a link that could cause infinite recursion,
+     * false otherwise.
+     */
+    static boolean isRecursiveSymlink(FileObject fileObject) {
+        File file = toFile(fileObject);
+        if (file == null) {
+            return false;
+        }
+        Path path;
+        try {
+            path = file.toPath();
+        } catch (RuntimeException e) {
+            LOG.log(Level.INFO, "Cannot get path for {0}", file);       //NOI18N
+            LOG.log(Level.FINE, null, e);
+            return false;
+        }
+        try {
+            if (Files.isSymbolicLink(path)) {
+                try {
+                    Path target = Files.readSymbolicLink(path).toRealPath();
+                    for (Path ancestor = path.getParent().toRealPath();
+                            ancestor != null; ancestor = ancestor.getParent()) {
+                        if (target.equals(ancestor)) {
+                            return true;
+                        }
+                    }
+                } catch (IOException ex) {
+                    LOG.log(Level.INFO, "Cannot read symbolic link {0}",//NOI18N
+                            path);
+                    LOG.log(Level.FINE, null, ex);
+                }
+            }
+        } catch (SecurityException e) {
+            LOG.log(Level.INFO, null, e);
+        }
+        return false;
     }
 }

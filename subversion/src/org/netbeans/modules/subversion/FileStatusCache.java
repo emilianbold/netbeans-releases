@@ -1064,18 +1064,25 @@ public class FileStatusCache {
         
         // ignored status applies to whole subtrees
         boolean exists = file.exists();
-        if(exists && Utilities.isMac()) {
+        File parent = file.getParentFile();
+        if (parent == null) {
+            LOG.log(Level.WARNING, "createMissingEntryFileInformation for root folder: {0}, isManaged={1}", //NOI18N
+                    new Object[] { file, SvnUtils.isManaged(file) });
+        }
+        if(exists && Utilities.isMac() && parent != null) {
             // handle case on mac, "fileA".exists() is the same as "filea".exists but svn client understands the difference
-            File[] files = file.getParentFile().listFiles(new FilenameFilter() {
+            File[] files = parent.listFiles(new FilenameFilter() {
                 @Override
                 public boolean accept (File dir, String name) {
                     return name.equals(file.getName());
                 }
             });
-            exists = file != null && files.length > 0;
+            exists = files != null && files.length > 0;
         } 
         boolean isDirectory = exists && file.isDirectory();
-        int parentStatus = getStatus(file.getParentFile()).getStatus();
+        int parentStatus = parent == null
+                ? FileInformation.STATUS_NOTVERSIONED_NOTMANAGED
+                : getStatus(parent).getStatus();
         if (parentStatus == FileInformation.STATUS_NOTVERSIONED_EXCLUDED) {
             return isDirectory ? 
                 FILE_INFORMATION_EXCLUDED_DIRECTORY : FILE_INFORMATION_EXCLUDED;
@@ -1109,10 +1116,9 @@ public class FileStatusCache {
         String name = file.getName();
         Matcher m = auxConflictPattern.matcher(name);
         if (exists && m.matches()) {
-            File dir = file.getParentFile();
-            if (dir != null) {
+            if (parent != null) {
                 String masterName = m.group(1);
-                File master = new File(dir, masterName);
+                File master = new File(parent, masterName);
                 if (master.isFile()) {
                     return FILE_INFORMATION_EXCLUDED;
                 }

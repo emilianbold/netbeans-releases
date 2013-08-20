@@ -319,6 +319,9 @@ public class FixActionProvider extends ActionsProviderSupport {
         try {
             Session s = (Session) debugger.getClass().getMethod("getSession").invoke(debugger);
             rp = s.lookupFirst(null, RequestProcessor.class);
+            if (rp == null) {
+                rp = new RequestProcessor(FixActionProvider.class.getName());
+            }
         } catch (Exception ex) {
             Exceptions.printStackTrace(ex);
             return ;
