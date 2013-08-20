@@ -181,9 +181,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             case EL_OPEN_DELIMITER:
                  if (tokenSequence.moveNext()) {
                     if (tokenSequence.token().id() == HTMLTokenId.EL_CONTENT) {
-                        String value = tokenSequence.token().text().toString().trim();
+                        String value = tokenSequence.token().text().toString();
                         int indexStart = 0;
-                        String name = value;
+                        String name = value.trim();
                         if (value.startsWith("(")) {
                             name = value.substring(1);
                             indexStart = 1;
