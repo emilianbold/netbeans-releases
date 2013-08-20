@@ -41,18 +41,14 @@
  */
 package org.netbeans.swing.plaf.nimbus;
 
-import com.sun.imageio.plugins.common.ImageUtil;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.concurrent.Callable;
-import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 import javax.swing.LookAndFeel;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
-import org.netbeans.swing.plaf.util.DarkIconFilter;
 import org.netbeans.swing.plaf.util.RelativeColor;
 
 /**
