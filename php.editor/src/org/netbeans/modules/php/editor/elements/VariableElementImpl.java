@@ -123,7 +123,6 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<VariableElement> retval = values.length > 0
                 ? new HashSet<VariableElement>() : Collections.<VariableElement>emptySet();
-        String url = indexResult.getUrl().toString();
         for (final String val : values) {
             final VariableElement var = fromSignature(query, indexQuery, Signature.get(val));
             if (var != null) {
