@@ -1017,6 +1017,12 @@ public class JsFormatter implements Formatter {
                 return CodeStyle.get(context).wrapTernaryOps();
             case AFTER_OBJECT_START:
             case BEFORE_OBJECT_END:
+                // this is special because people usually don't want to wrap
+                // empty objects see #228716
+                // add an option wrap empty objects if anybody will complain
+                if (isEmptyObject(token)) {
+                    return null;
+                }
                 return CodeStyle.get(context).wrapObjects();
             case AFTER_PROPERTY:
                 return CodeStyle.get(context).wrapProperties();
@@ -1196,6 +1202,29 @@ public class JsFormatter implements Formatter {
             default:
                 return false;
         }
+    }
+
+    private static boolean isEmptyObject(FormatToken token) {
+        if (token.getKind() == FormatToken.Kind.AFTER_OBJECT_START) {
+            FormatToken current = token.next();
+            while (current != null && current.isVirtual()) {
+                if (current.getKind() == FormatToken.Kind.BEFORE_OBJECT_END) {
+                    return true;
+                }
+                current = current.next();
+            }
+            return false;
+        } else if (token.getKind() == FormatToken.Kind.BEFORE_OBJECT_END) {
+            FormatToken current = token.previous();
+            while (current != null && current.isVirtual()) {
+                if (current.getKind() == FormatToken.Kind.AFTER_OBJECT_START) {
+                    return true;
+                }
+                current = current.previous();
+            }
+            return false;
+        }
+        return false;
     }
 
     private int getFormatStableStart(BaseDocument doc, Language<JsTokenId> language,

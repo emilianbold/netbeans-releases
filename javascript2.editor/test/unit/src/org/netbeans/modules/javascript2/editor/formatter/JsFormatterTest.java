@@ -1727,6 +1727,10 @@ public class JsFormatterTest extends JsTestBase {
         format("this.", "this.", new IndentPrefs(4, 4));
     }
 
+    public void testIssue228716() throws Exception {
+        format("var o = {};", "var o = {};", new IndentPrefs(4, 4));
+    }
+
     // test from original formatter
 
     public void testSemi01() throws Exception {
