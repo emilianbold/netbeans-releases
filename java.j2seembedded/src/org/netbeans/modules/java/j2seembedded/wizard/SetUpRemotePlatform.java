@@ -63,6 +63,7 @@ import org.openide.WizardDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
@@ -632,35 +633,48 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         public void run() {
             String[] antTargets = null;
             final Properties prop = new Properties();
-            prop.setProperty("host", host.getText()); //NOI18N
-            prop.setProperty("port", String.valueOf(port.getValue())); //NOI18N
-            prop.setProperty("username", username.getText()); //NOI18N
-            prop.setProperty("jrePath", jreLocation.getText()); //NOI18N            
-            prop.setProperty("workingDir", workingDir.getText().length() > 0 ? workingDir.getText() : "/home/" + username.getText() + "/NetBeansProjects/"); //NOI18N
-            if (radioButtonPassword.isSelected()) {
-                antTargets = new String[]{"connect-ssh-password"}; //NOI18N
-                prop.setProperty("password", String.valueOf(password.getPassword())); //NOI18N
-            } else if (radioButtonKey.isSelected()) {
-                antTargets = new String[]{"connect-ssh-keyfile"}; //NOI18N
-                prop.setProperty("keyfile", keyFilePath.getText()); //NOI18N
-                prop.setProperty("passphrase", String.valueOf(passphrase.getPassword())); //NOI18N
-            }
-
-            final String resourcesPath = "org/netbeans/modules/java/j2seembedded/resources/validateconnection.xml"; //NOI18N
-            File tmpFile = null;
-            ExecutorTask executorTask = null;
-            try {
-                try (InputStream inputStream = SetUpRemotePlatform.class.getClassLoader().getResourceAsStream(resourcesPath)) {
-                    tmpFile = File.createTempFile("antScript", ".xml"); //NOI18N
-                    try (OutputStream outputStream = new FileOutputStream(tmpFile)) {
-                        int read = 0;
-                        byte[] bytes = new byte[1024];
-                        while ((read = inputStream.read(bytes)) != -1) {
-                            outputStream.write(bytes, 0, read);
+            prop.setProperty("remote.host", host.getText()); //NOI18N
+            prop.setProperty("remote.port", String.valueOf(port.getValue())); //NOI18N
+            prop.setProperty("remote.username", username.getText()); //NOI18N
+            prop.setProperty("remote.platform.home", jreLocation.getText()); //NOI18N
+            prop.setProperty("remote.working.dir", workingDir.getText().length() > 0 ? workingDir.getText() : "/home/" + username.getText() + "/NetBeansProjects/"); //NOI18N
+            final File probe = InstalledFileLocator.getDefault().locate("modules/ext/org-netbeans-modules-java-j2seembedded-probe.jar", "org.netbeans.modules.java.j2seembedded", false);   //NOI18N
+            if (probe == null) {
+                SwingUtilities.invokeLater(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (panel.wizardDescriptor != null) {
+                            panel.wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
+                                    NbBundle.getMessage(SetUpRemotePlatform.class, "MSG_MissingProbe")); //NOI18N
+                            panel.changeSupport.fireChange();
                         }
                     }
+                });
+                return;
+            }
+            prop.setProperty("probe.file", probe.getAbsolutePath());
+            File platformProperties = null;
+            File buildScript = null;
+            ExecutorTask executorTask = null;
+            try {
+                platformProperties = File.createTempFile("platform", ".properties");   //NOI18N
+                prop.setProperty("platform.properties.file", platformProperties.getAbsolutePath()); //NOI18N
+                if (radioButtonPassword.isSelected()) {
+                    antTargets = new String[]{"connect-ssh-password"}; //NOI18N
+                    prop.setProperty("remote.password", String.valueOf(password.getPassword())); //NOI18N
+                } else if (radioButtonKey.isSelected()) {
+                    antTargets = new String[]{"connect-ssh-keyfile"}; //NOI18N
+                    prop.setProperty("keystore.file", keyFilePath.getText()); //NOI18N
+                    prop.setProperty("keystore.passphrase", String.valueOf(passphrase.getPassword())); //NOI18N
                 }
-                final FileObject antScript = FileUtil.createData(FileUtil.normalizeFile(tmpFile));
+
+                final String resourcesPath = "org/netbeans/modules/java/j2seembedded/resources/validateconnection.xml"; //NOI18N
+                buildScript = FileUtil.normalizeFile(File.createTempFile("antScript", ".xml")); //NOI18N
+                try (InputStream inputStream = SetUpRemotePlatform.class.getClassLoader().getResourceAsStream(resourcesPath);
+                     OutputStream outputStream = new FileOutputStream(buildScript)) {
+                    FileUtil.copy(inputStream, outputStream);
+                }
+                final FileObject antScript = FileUtil.toFileObject(buildScript);
                 executorTask = ActionUtils.runTarget(antScript, antTargets, prop);
                 final int antResult = executorTask.result();
                 if (antResult == 0) {
@@ -692,8 +706,11 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                 if (executorTask != null) {
                     executorTask.getInputOutput().closeInputOutput();
                 }
-                if (tmpFile != null) {
-                    tmpFile.delete();
+                if (buildScript != null) {
+                    buildScript.delete();
+                }
+                if (platformProperties != null) {
+                    platformProperties.delete();
                 }
             }
         }
