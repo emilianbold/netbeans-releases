@@ -491,11 +491,45 @@ public class Css3ParserLessTest extends CssTestBase {
 
     }
 
-    public void testX() {
+    public void testNLInSelectors() {
         assertParses(".a,\n"
                 + ".b {\n"
                 + "    width: 1050px;\n"
                 + "}");
+    }
+
+    public void testMixinCallFollowedByRule() {
+        CssParserResult result = assertParses("foo{\n"
+                + "    @a: 12px;\n"
+                + "    @b: normal;\n"
+                + "    .test(@a @b);\n"
+                + "}\n"
+                + "\n"
+                + "div {\n"
+                + "    \n"
+                + "}");
+
+        assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration|2/cp_mixin_call"));
+
+        assertParses("foo{\n"
+                + "    @a: 12px;\n"
+                + "    @b: normal;\n"
+                + "    .test(@a @b);\n"
+                + "    div {\n"
+                + "    }\n"
+                + "}\n");
+    }
+
+    public void testSASSKeywordAsLessVariable() {
+        assertParses(".transform (@function) {\n"
+                + "	-webkit-transform: @function;\n"
+                + "}\n"
+                + "\n"
+                + "div{\n"
+                + "  .transform(rotate(90));\n"
+                + "}");
+        
+        assertParses(".mx(@each) {}");
     }
 
 }

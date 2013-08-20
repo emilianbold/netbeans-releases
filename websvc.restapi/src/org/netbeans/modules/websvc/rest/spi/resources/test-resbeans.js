@@ -1358,7 +1358,8 @@ WADLParser.prototype = {
           for (var i = 0; i < node.childNodes.length; ++i) {
             var n = node.childNodes[i];
             if(ts.wdr.isResource(n) /*&& !isTemplateResource(ch)*/) {
-                var pathVal = ts.wdr.getNormailizedPath(n);
+                var pathVal = unescape(ts.wdr.getNormailizedPath(n));
+                n.attributes.getNamedItem('path').nodeValue = pathVal;
                 ts.topUrls.push(pathVal);
             }
           } 
