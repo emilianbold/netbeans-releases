@@ -2575,7 +2575,9 @@ declarator[int kind, int level]
     |
         // typedef ((...));
         // int (i);
-        {level < 5 && (_td || (_ts != tsTYPEID && _ts != tsInvalid))}? (LPAREN declarator[kind, level + 1] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        // or
+        // type(var);
+        {level < 5 && (_td || (_ts != tsInvalid))}? (LPAREN declarator[kind, level + 1] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
         LPAREN declarator[kind, level + 1] RPAREN
     |
         // type (var) = {...}
@@ -3496,6 +3498,12 @@ statement
 			printf("statement_13[%d]: pro_c_statement\n", LT(1).getLine());
 		}
         |
+                ( is_known_typename LPAREN IDENT RPAREN) => // declaration like "int(a);"
+                {if (statementTrace>=1) 
+                        printf("statement_1a[%d]: declaration\n", LT(1).getLine());
+                }
+                declaration[declGeneric]  {#statement = #(#[CSM_DECLARATION_STATEMENT, "CSM_DECLARATION_STATEMENT"], #statement);}
+        |
                 // #227479 - SQL EXEC support is broken
                 // This alternative is greedy and must be after pro_c alternative
                 ( is_declaration | LITERAL_namespace | literal_inline LITERAL_namespace | LITERAL_static_assert ) =>
@@ -3573,6 +3581,18 @@ compound_labeled_statement
         labeled_statement
         {#compound_labeled_statement = #([CSM_COMPOUND_STATEMENT, "CSM_COMPOUND_STATEMENT"], #compound_labeled_statement);}
     ;
+
+protected
+is_known_typename
+{/*TypeSpecifier*/int ts=0;}
+    :
+        ts=builtin_type[0]
+        |
+        is_va_list_type
+    ;
+
+protected
+is_va_list_type : id:IDENT {"va_list".contentEquals(id.getText())}?;
 
 protected
 label
