@@ -57,10 +57,13 @@ import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 
 /**
@@ -223,8 +226,17 @@ public abstract class QtInfoProvider {
                     ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
                     String qmakePath = getQmakePath(conf);
                     if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
+                        boolean isMac = false;
+                        try {
+                            isMac = HostInfoUtils.getHostInfo(execEnv).getOSFamily() == HostInfo.OSFamily.MACOSX;
+                        } catch (IOException | ConnectionManager.CancellationException ex) {
+                            ex.printStackTrace(System.err);
+                        }
                         String baseInc = queryBaseQtIncludeDir(execEnv, qmakePath);
-                        String baseLib = queryBaseQtLibsDir(execEnv, qmakePath);
+                        String baseLib = null;
+                        if (isMac) {
+                            baseLib = queryBaseQtLibsDir(execEnv, qmakePath);
+                        }
                         baseDir = Pair.of(baseInc, baseLib);
                         cache.put(cacheKey, baseDir);
                     } else {
