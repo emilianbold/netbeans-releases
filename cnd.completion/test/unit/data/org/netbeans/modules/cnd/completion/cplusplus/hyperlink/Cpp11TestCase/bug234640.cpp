@@ -9,7 +9,7 @@ namespace {
 
     int foo() {
         BBB b;
-        b.yy;
+        b.xx;
     }
 }
      
