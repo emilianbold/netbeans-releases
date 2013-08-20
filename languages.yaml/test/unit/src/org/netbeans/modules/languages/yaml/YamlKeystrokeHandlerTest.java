@@ -69,11 +69,11 @@ public class YamlKeystrokeHandlerTest extends YamlTestBase {
     }
 
     public void testBreak1() throws Exception {
-        insertBreak("test1:^", "test1:\n  ^");
+        insertBreak("test1:^", "test1:\n    ^");
     }
 
     public void testBreak2() throws Exception {
-        insertBreak("test1:^\n", "test1:\n  ^\n");
+        insertBreak("test1:^\n", "test1:\n    ^\n");
     }
 
     public void testBreak3() throws Exception {
