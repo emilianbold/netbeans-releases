@@ -59,8 +59,10 @@ import java.net.URI;
 import java.net.URL;
 import java.net.URLStreamHandler;
 import java.nio.file.Files;
-import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
+import java.security.AccessController;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -2342,11 +2344,11 @@ public final class FileUtil extends Object {
      * false otherwise.
      */
     static boolean isRecursiveSymlink(FileObject fileObject) {
-        File file = toFile(fileObject);
+        File file = (File) fileObject.getAttribute("java.io.File"); // NOI18N
         if (file == null) {
             return false;
         }
-        Path path;
+        final Path path;
         try {
             path = file.toPath();
         } catch (RuntimeException e) {
@@ -2354,24 +2356,32 @@ public final class FileUtil extends Object {
             LOG.log(Level.FINE, null, e);
             return false;
         }
-        try {
-            if (Files.isSymbolicLink(path)) {
-                try {
-                    Path target = Files.readSymbolicLink(path).toRealPath();
-                    for (Path ancestor = path.getParent().toRealPath();
-                            ancestor != null; ancestor = ancestor.getParent()) {
-                        if (target.equals(ancestor)) {
-                            return true;
+        if (Files.isSymbolicLink(path)) {
+            try {
+                return AccessController.doPrivileged(new PrivilegedExceptionAction<Boolean>() {
+                    @Override
+                    public Boolean run () throws IOException {
+                        Path target = Files.readSymbolicLink(path);
+                        if (!target.isAbsolute()) {
+                            target = path.resolve(target);
                         }
+                        target = target.toRealPath();
+                        for (Path ancestor = path.getParent();
+                                ancestor != null; ancestor = ancestor.getParent()) {
+                            if (target.equals(ancestor)) {
+                                return true;
+                            }
+                        }
+                        return false;
                     }
-                } catch (IOException ex) {
-                    LOG.log(Level.INFO, "Cannot read symbolic link {0}",//NOI18N
-                            path);
-                    LOG.log(Level.FINE, null, ex);
-                }
+                });
+            } catch (PrivilegedActionException ex) {
+                LOG.log(Level.INFO, "Cannot read symbolic link {0}",//NOI18N
+                        path);
+                LOG.log(Level.FINE, null, ex.getException());
+            } catch (SecurityException ex) {
+                LOG.log(Level.INFO, null, ex);
             }
-        } catch (SecurityException e) {
-            LOG.log(Level.INFO, null, e);
         }
         return false;
     }
