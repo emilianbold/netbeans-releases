@@ -42,9 +42,9 @@
 package org.netbeans.modules.languages.yaml;
 
 import java.util.prefs.Preferences;
-import org.netbeans.api.editor.mimelookup.MimeLookup;
-import org.netbeans.api.editor.mimelookup.MimePath;
+import javax.swing.text.Document;
 import org.netbeans.api.editor.settings.SimpleValueNames;
+import org.netbeans.modules.editor.indent.spi.CodeStylePreferences;
 
 /**
  *
@@ -55,9 +55,9 @@ public class IndentUtils {
     private IndentUtils() {
     }
 
-    public static int getIndentSize() {
-        Preferences prefs = MimeLookup.getLookup(MimePath.get(YamlTokenId.YAML_MIME_TYPE)).lookup(Preferences.class);
-        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 4);
+    public static int getIndentSize(Document doc) {
+        Preferences prefs = CodeStylePreferences.get(doc).getPreferences();
+        return prefs.getInt(SimpleValueNames.SPACES_PER_TAB, 2);
     }
 
     private static void indent(final StringBuilder sb, final int indent) {
