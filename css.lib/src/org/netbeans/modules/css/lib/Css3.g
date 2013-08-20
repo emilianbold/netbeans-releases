@@ -449,7 +449,7 @@ mediaFeature
  
 bodyItem
     : 
-        (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
+        (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|RBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
         //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
         | {isLessSource()}? (cp_mixin_call ws? SEMI)=>cp_mixin_call
         | {isScssSource()}? (cp_mixin_call)=>cp_mixin_call
@@ -629,7 +629,7 @@ declaration
     | (propertyDeclaration)=>propertyDeclaration 
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
     | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration 
-    | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN (~LBRACE)* LBRACE))=>cp_mixin_declaration 
+    | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI|RBRACE)* LBRACE))=>cp_mixin_declaration 
     | (cp_mixin_call)=>cp_mixin_call 
     | (selectorsGroup ws? LBRACE)=>rule 
     | {isCssPreprocessorSource()}? at_rule 

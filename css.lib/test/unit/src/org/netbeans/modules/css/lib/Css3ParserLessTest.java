@@ -48,22 +48,22 @@ import org.netbeans.modules.css.lib.api.*;
  * @author marekfukala
  */
 public class Css3ParserLessTest extends CssTestBase {
-
+    
     public Css3ParserLessTest(String testName) {
         super(testName);
     }
-
+    
     @Override
     protected void setUp() throws Exception {
         super.setUp();
         setLessSource();
     }
-
+    
     @Override
     protected void tearDown() throws Exception {
         setPlainSource();
     }
-
+    
     public void testAllANTLRRulesHaveNodeTypes() {
         for (String rule : Css3Parser.ruleNames) {
             if (!rule.startsWith("synpred") && !rule.toLowerCase().endsWith("predicate")) {
@@ -71,7 +71,7 @@ public class Css3ParserLessTest extends CssTestBase {
             }
         }
     }
-
+    
     public void testDisabledLessSupport() {
         try {
             ExtCss3Parser.isLessSource_unit_tests = false;
@@ -83,7 +83,7 @@ public class Css3ParserLessTest extends CssTestBase {
                     + "h2 {\n"
                     + "  color: @color;\n"
                     + "}";
-
+            
             CssParserResult result = TestUtil.parse(source);
 
             //there must be some css parsing errors as the less support is disabled
@@ -92,7 +92,7 @@ public class Css3ParserLessTest extends CssTestBase {
             ExtCss3Parser.isLessSource_unit_tests = true;
         }
     }
-
+    
     public void testVariable() {
         String source = "@color: #4D926F;\n"
                 + "\n"
@@ -102,37 +102,37 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "h2 {\n"
                 + "  color: @color;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testVariable2() {
         String source = "#header {\n"
                 + "  border: 2px @color solid;\n"
                 + "}\n";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testVariableAsPropertyName() {
         String source = ".class {\n"
                 + "    @var: 2;\n"
                 + "    three: @var;\n"
                 + "    @var: 3;\n"
                 + "  }";
-
+        
         CssParserResult result = TestUtil.parse(source);
-
+        
         NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testFunction() {
         String source
                 = "#header {\n"
@@ -140,13 +140,13 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "  border-left: @the-border;\n"
                 + "  border-right: (@the-border * 2);\n"
                 + "}\n";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testFunction2() {
         String source
                 = "#footer {\n"
@@ -154,13 +154,13 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "  color: (@base-color + #003300);\n"
                 + "}";
         ;
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testMixinDeclaration() {
         String source
                 = ".rounded-corners (@radius: 5px) {\n"
@@ -171,13 +171,13 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "  border-radius: @radius;\n"
                 + "}";
         ;
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testMixinDeclaration2() {
         String source
                 = ".box-shadow (@x: 0, @y: 0, @blur: 1px, @color: #000) {\n"
@@ -186,13 +186,13 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "  -webkit-box-shadow: @arguments;\n"
                 + "}";
         ;
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testMixinDeclarationAdvancedArguments() {
         String source
                 = ".mixin1 (...) {}"
@@ -201,98 +201,98 @@ public class Css3ParserLessTest extends CssTestBase {
                 + ".mixin4 (@a: 1, ...) {}"
                 + ".mixin5 (@a, ...) {}";
         ;
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testGuardedMixins() {
         String source
                 = ".mixin (@a) when (@a > 10), (@a = -10) {\n"
                 + "  background-color: black;\n"
                 + "}";
         ;
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testGuardedMixins2() {
         String source
                 = ".truth (@a) when (@a) { }\n"
                 + ".truth (@a) when (@a = true) { }\n"
                 + ".mixin (@a) when (@media = mobile) { } \n";
         ;
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testGuardedMixinIsFunction() {
         String source
                 = ".mixin (@a, @b: 0) when (isnumber(@b)) { }\n";
         ;
-
+        
         CssParserResult result = TestUtil.parse(source);
-
+        
         NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testGuardedMixinNotOperator() {
         String source
                 = ".mixin (@b) when not (@b > 0) { }\n";
         ;
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testMixinNesting() {
         String source
                 = ".class {\n"
                 + "  .mixin(@switch, #888);\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
-
+        
         NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testMixinNesting2() {
         String source
                 = ".class {\n"
                 + "  .mixin(@switch, #888);\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testMixinNesting3() {
         String source
                 = "#menu a {\n"
                 + "  color: #111;\n"
                 + "  .bordered;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
-
+        
         NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testFunctions() {
         String source = ".class {\n"
                 + "  width: percentage(0.5);\n"
@@ -304,7 +304,7 @@ public class Css3ParserLessTest extends CssTestBase {
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
     }
-
+    
     public void testRulesNesting() {
         String source = "#header {\n"
                 + "  color: black;\n"
@@ -320,9 +320,9 @@ public class Css3ParserLessTest extends CssTestBase {
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testAmpCombinatorInNestedRules() {
         String source = "#header        { color: black;\n"
                 + "  .navigation  { font-size: 12px; }\n"
@@ -330,28 +330,28 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "    &:hover    { text-decoration: none; }\n"
                 + "  }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testAmpCombinatorInNestedRules2() {
         String source = ".shape{\n"
                 + "    &:hover{ \n"
                 + "        background:@lightRed;   \n"
                 + "    }\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testNestedRules() {
         String source = "#header{\n"
                 + "    /* #header styles */\n"
@@ -363,76 +363,76 @@ public class Css3ParserLessTest extends CssTestBase {
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testOperationsInVariableDeclaration() {
         String source = "@darkBlue: @lightBlue - #555;";
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testLessExpressionNotInParens() {
         String source = "div {"
                 + "width: @pageWidth * .75;\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testMixinCallWithoutParams() {
         String source = "#shape1{ .Round; }";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testMixinCallOldWeirSyntax() {
         String source = "#skyscraper {  \n"
                 + "    h2 {  \n"
                 + "        .header(@color3; #A1915F);  \n"
                 + "    }  \n"
                 + "}  ";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testPropertyValueWithParenthesis() {
         String source = "div {\n"
                 + "width: (@u * @unit) - ((@margin * 2) + @gpadding + @gborder);\n "
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
-
+        
         NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testPropertyValue() {
         String source = "div {\n"
                 + "border-top: 1px solid @color1 - #222; "
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
-
+        
         NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
 
     //like normal css import, but the ref. file doesn't need to have an extension,
@@ -441,36 +441,36 @@ public class Css3ParserLessTest extends CssTestBase {
     public void testImport() {
         String source
                 = "@import \"rounded\";\n";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testLineComment() {
         String source
                 = ".funky {\n"
                 + " //line comment\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
 
 //        NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
-
+    
     public void testMixinCallInStylesheet() {
         String source
                 = ".firefox-message(\".header\");\n";
-
+        
         CssParserResult result = TestUtil.parse(source);
-
+        
         NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
-
+        
     }
 
     //https://netbeans.org/bugzilla/show_bug.cgi?id=231698
@@ -479,23 +479,45 @@ public class Css3ParserLessTest extends CssTestBase {
                 = ".mxc(\"param\");\n"
                 + ".next {\n"
                 + "}";
-
+        
         CssParserResult result = TestUtil.parse(source);
-
+        
         NodeUtil.dumpTree(result.getParseTree());
         assertResultOK(result);
 
         //verify that .mxc(\"param\") was parsed as mixin call
         Node mixinCall = NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/cp_mixin_call");
         assertNotNull(mixinCall);
-
+        
     }
-
-    public void testX() {
+    
+    public void testNLInSelectors() {
         assertParses(".a,\n"
                 + ".b {\n"
                 + "    width: 1050px;\n"
                 + "}");
     }
-
+    
+    public void testMixinCallFollowedByRule() {
+        CssParserResult result = assertParses("foo{\n"
+                + "    @a: 12px;\n"
+                + "    @b: normal;\n"
+                + "    .test(@a @b);\n"
+                + "}\n"
+                + "\n"
+                + "div {\n"
+                + "    \n"
+                + "}");
+        
+        assertNotNull(NodeUtil.query(result.getParseTree(), "styleSheet/body/bodyItem/rule/declarations/declaration|2/cp_mixin_call"));
+        
+        assertParses("foo{\n"
+                + "    @a: 12px;\n"
+                + "    @b: normal;\n"
+                + "    .test(@a @b);\n"
+                + "    div {\n"
+                + "    }\n"
+                + "}\n");
+    }
+    
 }
