@@ -601,4 +601,38 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "}");
     }
 
+    public void testNestedSelectorConcatenation() {
+        assertParses(".child, .sibling {\n"
+                + "    .parent & {\n"
+                + "        color: black;\n"
+                + "    }\n"
+                + "    & + & {\n"
+                + "        color: red;\n"
+                + "    }\n"
+                + "}");
+    }
+
+    public void testMixinDeclarationPredicate2() {
+        assertParses("@attr:1;\n"
+                + "@name:1;\n"
+                + "\n"
+                + "pre {    \n"
+                + "    .test2(red);\n"
+                + "}\n"
+                + "\n"
+                + ".test2(@j){\n"
+                + "    color: @j;\n"
+                + "    font-size: @attr;\n"
+                + "}");
+    }
+
+//    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c10 / case#18
+//    public void testMixinCallAsSelector() {
+//        assertParses(".x { #gradient > .vertical(#f5f5f5, #eeeeee); }");
+//        
+//        assertParses(".subnav-fixed {\n"
+//                + "#gradient > .vertical(#f5f5f5, #eeeeee);\n"
+//                + "}");
+//    }
+
 }
