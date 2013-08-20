@@ -128,6 +128,8 @@ final class DocumentOpenClose {
      */
     DocumentRef docRef;
     
+    final Object docRefLock;
+    
     /**
      * Strong reference to document is used when document becomes modified.
      */
@@ -140,6 +142,7 @@ final class DocumentOpenClose {
     DocumentOpenClose(CloneableEditorSupport ces) {
         this.ces = ces;
         this.lock = ces.getLock();
+        this.docRefLock = new Object();
     }
 
     public DocumentStatus getDocumentStatusLA() { // Lock acquired mandatory
@@ -151,18 +154,10 @@ final class DocumentOpenClose {
     }
     
     StyledDocument getDocument() {
-        synchronized (lock) {
-            switch (documentStatus) {
-                case CLOSED:
-                case LOADING:
-                    return null;
-                case OPENED:
-                case RELOADING:
-                    return getRefDocument();
-                default:
-                    throw invalidStatus();
-            }
-        }
+        // Do not sync on "lock" since CND model calls getDocument()
+        // during notifyModify() which gets rescheduled from EDT
+        // (which already holds CES.getLock()) into non-EDT which would lead to starvation.
+        return getRefDocument();
     }
 
     /**
@@ -171,8 +166,14 @@ final class DocumentOpenClose {
      * @return document instance from docRef.
      */
     StyledDocument getRefDocument() {
-        synchronized (lock) {
+        synchronized (docRefLock) {
             return (docRef != null) ? docRef.get() : null;
+        }
+    }
+    
+    void setDocRef(StyledDocument doc) {
+        synchronized (docRefLock) {
+            docRef = (doc != null) ? new DocumentRef(doc) : null;
         }
     }
     
@@ -602,7 +603,6 @@ final class DocumentOpenClose {
                             assert (loadDoc != null) : "kit.createDefaultDocument() returned null"; // NOI18N
                         }
                     }
-                    docRef = new DocumentRef(loadDoc);
                 }
 
                 // Perform atomicLockedRun() under atomic lock
@@ -651,7 +651,7 @@ final class DocumentOpenClose {
                     synchronized (lock) {
                         if (!loadSuccess) {
                             documentStatus = DocumentStatus.CLOSED;
-                            docRef = null;
+                            setDocRef(null);
                             ces.setListeningOnEnv(false);
                         }
 
@@ -716,6 +716,9 @@ final class DocumentOpenClose {
                         is.close();
                     }
                 }
+
+                // Start to return the document from CES.getDocument()
+                setDocRef(loadDoc);
 
                 // opening the document, inform position manager
                 if (reload) {
@@ -899,6 +902,7 @@ final class DocumentOpenClose {
                 }
                 started = true;
             }
+            setDocRef(null); // getDocument() will no longer return the document being closed
             try {
                 // Stop listening on the Env
                 ces.setListeningOnEnv(false);
@@ -916,7 +920,6 @@ final class DocumentOpenClose {
                     documentStatus = DocumentStatus.CLOSED;
                     activeCloseTask = null;
                     activeClose = null;
-                    docRef = null;
                 }
                 
                 // Some listeners may request openDocument() directly from closed document notification
