@@ -363,4 +363,8 @@ public class PhpParserErrorTest extends PHPTestBase {
     public void testYield_08() throws Exception {
         checkErrors("testfiles/parser/yield_08.php");
     }
+
+    public void testClassConstant() throws Exception {
+        checkErrors("testfiles/parser/classConstant.php");
+    }
 }

@@ -60,6 +60,7 @@ import org.netbeans.spi.lexer.LexerRestartInfo;
 %state ST_PHP_DOUBLE_QUOTES
 %state ST_PHP_BACKQUOTE
 %state ST_PHP_QUOTES_AFTER_VARIABLE
+%state ST_PHP_LOOKING_FOR_CLASS_CONST
 %state ST_PHP_HEREDOC
 %state ST_PHP_START_HEREDOC
 %state ST_PHP_END_HEREDOC
@@ -565,7 +566,19 @@ PHP_OPERATOR=       "=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-=
 }
 
 <ST_PHP_IN_SCRIPTING>"::" {
+    pushState(ST_PHP_LOOKING_FOR_CLASS_CONST);
     return PHPTokenId.PHP_PAAMAYIM_NEKUDOTAYIM;
+}
+
+<ST_PHP_LOOKING_FOR_CLASS_CONST> {
+    "class" {
+        popState();
+        return PHPTokenId.PHP_STRING;
+    }
+    {ANY_CHAR} {
+        yypushback(yylength());
+        popState();
+    }
 }
 
 <ST_PHP_IN_SCRIPTING>"\\" {

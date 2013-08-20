@@ -53,7 +53,9 @@ import org.netbeans.modules.php.editor.parser.astnodes.Expression;
 import org.netbeans.modules.php.editor.parser.astnodes.ExpressionArrayAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.FinallyClause;
 import org.netbeans.modules.php.editor.parser.astnodes.ForEachStatement;
+import org.netbeans.modules.php.editor.parser.astnodes.Identifier;
 import org.netbeans.modules.php.editor.parser.astnodes.ListVariable;
+import org.netbeans.modules.php.editor.parser.astnodes.StaticConstantAccess;
 import org.netbeans.modules.php.editor.parser.astnodes.YieldExpression;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
 import org.openide.filesystems.FileObject;
@@ -117,6 +119,14 @@ public class PHP55UnhandledError extends UnhandledErrorRule {
                 createError(value);
             } else {
                 super.visit(node);
+            }
+        }
+
+        @Override
+        public void visit(StaticConstantAccess node) {
+            Identifier constant = node.getConstant();
+            if (constant != null && "class".equals(constant.getName())) { //NOI18N
+                createError(constant);
             }
         }
 

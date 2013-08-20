@@ -893,6 +893,14 @@ public class PHPCodeCompletion implements CodeCompletionHandler {
                             completionResult.add(constantItem);
                         }
                     }
+                    if (staticContext) {
+                        Set<TypeConstantElement> magicConstants = constantsFilter.filter(request.index.getAccessibleMagicConstants(typeScope));
+                        for (TypeConstantElement magicConstant : magicConstants) {
+                            if (magicConstant != null) {
+                                completionResult.add(PHPCompletionItem.TypeConstantItem.getItem(magicConstant, request));
+                            }
+                        }
+                    }
                 }
             }
         }
