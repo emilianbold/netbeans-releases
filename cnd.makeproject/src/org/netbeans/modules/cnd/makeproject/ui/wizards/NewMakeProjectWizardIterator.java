@@ -482,13 +482,6 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
             resultSet.add(dir);
         }
         
-        String resource = "/org/netbeans/modules/cnd/makeproject/launchers/resources/simple-launcher.template"; // NOI18N
-
-        URL url = MakeConfiguration.class.getResource(resource);
-        FileObject fo = URLMapper.findFileObject(url);
-
-        fo.copy(dirF.getFileObject().getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER), "launcher", "properties"); // NOI18N
-        
         return resultSet;
     }
     private transient int index;

@@ -103,6 +103,7 @@ import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectEvent;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectHelper;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectLife;
 import org.netbeans.modules.cnd.makeproject.api.support.MakeProjectListener;
+import org.netbeans.modules.cnd.makeproject.launchers.LaunchersProjectMetadataFactory;
 import org.netbeans.modules.cnd.makeproject.ui.FolderSearchInfo.FileObjectNameMatcherImpl;
 import org.netbeans.modules.cnd.makeproject.ui.MakeLogicalViewProvider;
 import org.netbeans.modules.cnd.makeproject.ui.options.FullFileIndexer;
@@ -1393,6 +1394,7 @@ public final class MakeProject implements Project, MakeProjectListener {
             projectDescriptorProvider.opening();
             helper.addMakeProjectListener(MakeProject.this);
             checkNeededExtensions();
+            createLaunchersFileIfNeeded(dir);
             MakeOptions.getInstance().addPropertyChangeListener(indexerListener);
             // project is in opened state
             openStateAndLock.set(true);
@@ -1416,6 +1418,27 @@ public final class MakeProject implements Project, MakeProjectListener {
                     }
                 }
             });
+        }
+    }
+    
+    private void createLaunchersFileIfNeeded(FileObject projectDir) {
+        CndUtils.assertNonUiThread();
+        
+        FileObject projectPrivateFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
+        FileObject launchers = projectPrivateFolder.getFileObject(LaunchersProjectMetadataFactory.NAME);
+        
+        if (launchers != null && launchers.isValid()) {
+            return;
+        }
+        
+        String resource = "/org/netbeans/modules/cnd/makeproject/launchers/resources/simple-launcher.template"; // NOI18N
+
+        URL url = MakeConfiguration.class.getResource(resource);
+        FileObject fo = URLMapper.findFileObject(url);
+        try {
+            fo.copy(projectPrivateFolder, "launcher", "properties"); // NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
         }
     }
     
