@@ -221,6 +221,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         } else {
                             tokenSequence.movePrevious();
                         }
+                    } else if (tokenSequence.token().id() == HTMLTokenId.EL_CLOSE_DELIMITER) {
+                        embeddings.add(snapshot.create(tokenSequence.offset(), 0, Constants.JAVASCRIPT_MIMETYPE));
+                        processed = true;
                     } else {
                         tokenSequence.movePrevious();
                     }
