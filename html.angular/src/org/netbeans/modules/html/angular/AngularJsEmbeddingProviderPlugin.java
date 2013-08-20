@@ -303,12 +303,17 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         } else {
             int parenStart = value.indexOf('('); //NOI18N
             String name = value;
+            int nameStart = 0;
             int lenght = name.length();
             if (parenStart > -1) {
                 name = name.substring(0, parenStart).trim();
             }
             if (name.indexOf('=') > -1) {
                 name = name.substring(0, name.indexOf('=')).trim();
+            }
+            if (name.charAt(0) == '!') {
+                name = name.substring(1);
+                nameStart = 1;
             }
             if (propertyToFqn.containsKey(name)) {
                 embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
@@ -337,7 +342,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 if (value.indexOf(' ') == -1 && parenStart == -1 && value.indexOf('.') == -1) {
                     embeddings.add(snapshot.create("var ", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                 }
-                embeddings.add(snapshot.create(tokenSequence.offset() + 1, value.length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1 + nameStart, value.length() - nameStart, Constants.JAVASCRIPT_MIMETYPE));
                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
             }
         }
