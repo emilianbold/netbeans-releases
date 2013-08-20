@@ -612,4 +612,18 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "}");
     }
 
+    public void testMixinDeclarationPredicate2() {
+        assertParses("@attr:1;\n"
+                + "@name:1;\n"
+                + "\n"
+                + "pre {    \n"
+                + "    .test2(red);\n"
+                + "}\n"
+                + "\n"
+                + ".test2(@j){\n"
+                + "    color: @j;\n"
+                + "    font-size: @attr;\n"
+                + "}");
+    }
+
 }
