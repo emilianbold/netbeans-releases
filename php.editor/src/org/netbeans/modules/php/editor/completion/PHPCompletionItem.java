@@ -1204,6 +1204,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                     builder.append(getName());
                     builder.append(" ${cursor}:"); //NOI18N
                     break;
+                case CURSOR_BEFORE_ENDING_SEMICOLON:
+                    builder.append(getName());
+                    builder.append(" ${cursor};"); //NOI18N
+                    break;
                 default:
                     assert false : type.toString();
                     break;
