@@ -287,7 +287,8 @@ public class CompletionTestBase extends NbTestCase {
         Writer out = new FileWriter(output);
         for (Object item : items) {
             String itemString = item.toString();
-            if (!(org.openide.util.Utilities.isMac() && itemString.equals("apple"))) { //ignoring 'apple' package
+            if (!(org.openide.util.Utilities.isMac() && itemString.equals("apple") //ignoring 'apple' package
+                    || itemString.equals("jdk"))) { //ignoring 'jdk' package introduced by jdk1.7.0_40
                 out.write(itemString);
                 out.write("\n");
             }

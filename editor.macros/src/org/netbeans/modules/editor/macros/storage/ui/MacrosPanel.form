@@ -1,6 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.8" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <Properties>
+    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+        <EmptyBorder bottom="10" left="10" right="10" top="10"/>
+      </Border>
+    </Property>
+  </Properties>
   <AccessibilityProperties>
     <Property name="AccessibleContext.accessibleName" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
       <ResourceString bundle="org/netbeans/modules/editor/macros/storage/ui/Bundle.properties" key="AN_MacrosPanel" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
@@ -29,7 +36,7 @@
                   <Component id="lMacros" min="-2" max="-2" attributes="0"/>
                   <Component id="lMacroCode" alignment="0" min="-2" max="-2" attributes="0"/>
                   <Component id="spMacros" alignment="0" pref="0" max="32767" attributes="2"/>
-                  <Component id="sMacroCode" alignment="0" pref="352" max="32767" attributes="1"/>
+                  <Component id="sMacroCode" alignment="0" pref="332" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -62,7 +69,7 @@
                       <EmptySpace min="-2" max="-2" attributes="0"/>
                       <Component id="lMacroCode" min="-2" max="-2" attributes="0"/>
                       <EmptySpace min="-2" max="-2" attributes="0"/>
-                      <Component id="sMacroCode" pref="147" max="32767" attributes="0"/>
+                      <Component id="sMacroCode" pref="127" max="32767" attributes="0"/>
                   </Group>
               </Group>
               <EmptySpace type="unrelated" max="-2" attributes="0"/>
