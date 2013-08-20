@@ -595,4 +595,10 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "} ");
     }
 
+    public void testGuardedMixinsWithFunctionInLessCondition() {
+        assertParses(".mixin (@a) when (lightness(@a) >= 50%) {\n"
+                + "  background-color: black;\n"
+                + "}");
+    }
+
 }

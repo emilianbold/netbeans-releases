@@ -1131,9 +1131,7 @@ less_condition
     (NOT ws?)?
     LPAREN ws? 
         (
-            less_function_in_condition ws?
-            |
-            ( cp_variable (ws? less_condition_operator ws? cp_math_expression)?)  
+             (cp_variable | less_function_in_condition) ws? (less_condition_operator ws? cp_math_expression)?
         )        
     RPAREN
     ;
