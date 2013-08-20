@@ -1949,7 +1949,7 @@ XHR.prototype = {
             xmlHttpReq.send(content);
             if (this.isResponseReady(method, xmlHttpReq, content, monitor)) {
               var rtext = xmlHttpReq.responseText;
-              if ( (rtext== undefined || rtext == '' ) && (method=='POST' || method=='PUT' )){
+              if ( (rtext== undefined || rtext == '' ) && (method=='POST' || method=='PUT' || method=='DELETE')){
                   return 'MSG_TEST_RESBEANS_NoContent';
               }
               if(rtext == undefined || rtext == '' || rtext.indexOf('HTTP Status') != -1) {
@@ -1984,7 +1984,7 @@ XHR.prototype = {
     },
 
     delete_ : function(url) {
-        return this.httpRequest('DELETE', url, 'application/xml', true);
+        return this.httpRequest('DELETE', url, 'application/xml', '', true);
     },
     
     loadXml : function(xmlStr) {
