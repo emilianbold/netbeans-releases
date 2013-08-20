@@ -563,7 +563,7 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "  }\n"
                 + "}");
     }
-    
+
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c4 / case 1
     public void testFunctionInMixinCall() {
         assertParses("#anid {\n"
@@ -572,7 +572,7 @@ public class Css3ParserLessTest extends CssTestBase {
                 + " border: 0;"
                 + "}");
     }
-    
+
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c4 / case 1
     public void testMixinCallWithWSSeparatedValues() {
         assertParses("#anid {\n"
@@ -581,13 +581,58 @@ public class Css3ParserLessTest extends CssTestBase {
                 + " padding: 0;\n"
                 + "}");
     }
-    
+
     //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c4 / case 2
     public void testCommaInSelectorsGroup() {
         assertParses(".dbx-clone, .dbx-clone .dbx-handle-cursor {\n"
                 + "    cursor: move !important; \n"
                 + "}");
     }
-    
-        
+
+    public void testImportantSymbolInMixinCall() {
+        assertParses(".important {\n"
+                + "  .mixin(2) !important; \n"
+                + "} ");
+    }
+
+    public void testGuardedMixinsWithFunctionInLessCondition() {
+        assertParses(".mixin (@a) when (lightness(@a) >= 50%) {\n"
+                + "  background-color: black;\n"
+                + "}");
+    }
+
+    public void testNestedSelectorConcatenation() {
+        assertParses(".child, .sibling {\n"
+                + "    .parent & {\n"
+                + "        color: black;\n"
+                + "    }\n"
+                + "    & + & {\n"
+                + "        color: red;\n"
+                + "    }\n"
+                + "}");
+    }
+
+    public void testMixinDeclarationPredicate2() {
+        assertParses("@attr:1;\n"
+                + "@name:1;\n"
+                + "\n"
+                + "pre {    \n"
+                + "    .test2(red);\n"
+                + "}\n"
+                + "\n"
+                + ".test2(@j){\n"
+                + "    color: @j;\n"
+                + "    font-size: @attr;\n"
+                + "}");
+    }
+
+//    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c10 / case#18
+//    public void testMixinCallAsSelector() {
+//        assertParses(".x { #gradient > .vertical(#f5f5f5, #eeeeee); }");
+//        
+//        assertParses(".subnav-fixed {\n"
+//                + "#gradient > .vertical(#f5f5f5, #eeeeee);\n"
+//                + "}");
+//    }
+
 }
