@@ -563,4 +563,31 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "  }\n"
                 + "}");
     }
+    
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c4 / case 1
+    public void testFunctionInMixinCall() {
+        assertParses("#anid {\n"
+                + " .background-image(linear-gradient(top, #fffffd 0%, #e8e6e6, 100%));\n"
+                + " .border-radius(5px 5px 0 0);\n"
+                + " border: 0;"
+                + "}");
+    }
+    
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c4 / case 1
+    public void testMixinCallWithWSSeparatedValues() {
+        assertParses("#anid {\n"
+                + " .box-shadow(0 0 5px #333);\n"
+                + " .border-radius(7px 7px 4px 4px);\n"
+                + " padding: 0;\n"
+                + "}");
+    }
+    
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c4 / case 2
+    public void testCommaInSelectorsGroup() {
+        assertParses(".dbx-clone, .dbx-clone .dbx-handle-cursor {\n"
+                + "    cursor: move !important; \n"
+                + "}");
+    }
+    
+        
 }
