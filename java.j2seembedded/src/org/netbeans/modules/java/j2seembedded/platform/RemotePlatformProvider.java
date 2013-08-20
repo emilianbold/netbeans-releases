@@ -89,8 +89,7 @@ import org.xml.sax.helpers.DefaultHandler;
  * @author Tomas Zezula
  */
 public final class RemotePlatformProvider implements Lookup.Provider, InstanceCookie.Of, InstanceContent.Convertor<Class<Node>, Node>, PropertyChangeListener, Runnable {
-
-    public static final String PLAT_PROP_ANT_NAME="platform.ant.name";             //NOI18N
+    
     private static final String PLATFORM_STOREGE = "Services/Platforms/org-netbeans-api-java-Platform"; //NOI18N
     private static final Logger LOG = Logger.getLogger(RemotePlatformProvider.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(RemotePlatformProvider.class);
@@ -221,9 +220,9 @@ public final class RemotePlatformProvider implements Lookup.Provider, InstanceCo
     public static RemotePlatform createNewPlatform (
         @NonNull final RemotePlatform prototype) throws IOException {
         Parameters.notNull("prototype", prototype);   //NOI18N
-        final String antName = prototype.getProperties().get(PLAT_PROP_ANT_NAME);
+        final String antName = prototype.getProperties().get(RemotePlatform.PLAT_PROP_ANT_NAME);
         if (antName == null) {
-            throw new IllegalArgumentException("Platform has no " + PLAT_PROP_ANT_NAME + " attribute.");    //NOI18N
+            throw new IllegalArgumentException("Platform has no " + RemotePlatform.PLAT_PROP_ANT_NAME + " attribute.");    //NOI18N
         }
         final RemotePlatform[] res = new RemotePlatform[1];
         FileUtil.runAtomicAction(new FileSystem.AtomicAction() {

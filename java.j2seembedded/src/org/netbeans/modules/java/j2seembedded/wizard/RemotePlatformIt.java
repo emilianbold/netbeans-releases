@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.java.j2seembedded.wizard;
 
+import java.io.File;
 import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Set;
@@ -49,6 +52,7 @@ import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.modules.java.j2seembedded.platform.ConnectionMethod;
 import org.netbeans.modules.java.j2seembedded.platform.RemotePlatform;
 import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
@@ -141,16 +145,7 @@ class RemotePlatformIt implements WizardDescriptor.InstantiatingIterator<WizardD
 
     @Override
     public Set<JavaPlatform> instantiate() throws IOException {
-        String displayName = (String) wizard.getProperty(PROP_DISPLAYNAME); //Platform name from wizard
-        String antName;
-        for (int i=1;;i++) {
-            displayName = "Remote Platform " + i; //NOI18N
-            antName = PropertyUtils.getUsablePropertyName(displayName);
-            if (RemotePlatformProvider.isValidPlatformAntName(antName)) {
-                break;
-            }
-        }
-
+        String displayName = (String) wizard.getProperty(PROP_DISPLAYNAME); //Platform name from wizard        
         String host = (String) wizard.getProperty(PROP_HOST);
         int port = (Integer) wizard.getProperty(PROP_PORT);
         String username = (String) wizard.getProperty(PROP_USERNAME);
@@ -166,15 +161,21 @@ class RemotePlatformIt implements WizardDescriptor.InstantiatingIterator<WizardD
         String jrePath = (String) wizard.getProperty(PROP_JREPATH);
         String workingDir = wizard.getProperty(PROP_WORKINGDIR) != null && ((String) wizard.getProperty(PROP_WORKINGDIR)).length() > 0
                 ? (String) wizard.getProperty(PROP_WORKINGDIR) : "/home/" + username + "/NetBeansProjects/"; //NOI18N
-
-        final Map<String,String> props = Collections.<String,String>singletonMap(RemotePlatformProvider.PLAT_PROP_ANT_NAME, antName);
-        final Map<String,String> sysProps = Collections.<String,String>emptyMap();
-        final RemotePlatform prototype = RemotePlatform.create(
-            displayName,
-            props,
-            sysProps);
-        return Collections.<JavaPlatform>singleton(
-            RemotePlatformProvider.createNewPlatform(prototype));
+        
+        final RemotePlatform prototype = RemotePlatform.create(displayName);
+        try {
+            prototype.setInstallFolder(new URI(jrePath));
+            prototype.setWorkFolder(new URI(workingDir));
+            final ConnectionMethod cm =
+                password != null ?
+                    ConnectionMethod.sshPassword(host, port, username, password) :
+                    ConnectionMethod.sshKey(host, port, username, new File(keyFile), passphrase);
+            prototype.setConnectionMethod(cm);
+            return Collections.<JavaPlatform>singleton(
+                RemotePlatformProvider.createNewPlatform(prototype));
+        } catch (URISyntaxException e) {
+            throw new IOException(e);
+        }
     }
     
 

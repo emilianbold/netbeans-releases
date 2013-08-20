@@ -41,17 +41,23 @@
  */
 package org.netbeans.modules.java.j2seembedded.platform;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -60,6 +66,11 @@ import org.openide.util.Parameters;
  * @author Tomas Zezula
  */
 public final class RemotePlatform extends JavaPlatform {
+
+    public static final String PROP_PROPERTIES="properties";                            //NOI18N
+    public static final String PLAT_PROP_ANT_NAME="platform.ant.name";                  //NOI18N
+    private final static String PLAT_PROP_INSTALL_FOLDER = "platform.install.folder";   //NOI18N
+    private final static String PLAT_PROP_WORK_FOLDER = "platform.work.folder";   //NOI18N
 
     private static final String SPEC_NAME = "j2se-remote";  //NOI18N
 
@@ -75,7 +86,7 @@ public final class RemotePlatform extends JavaPlatform {
         Parameters.notNull("properties", properties);   //NOI18N
         Parameters.notNull("sysProperties", sysProperties); //NOI18N
         this.displayName = displayName;
-        this.props = Collections.unmodifiableMap(properties);
+        this.props = new HashMap<>(properties);
         this.spec = new Specification(
             SPEC_NAME,
             new SpecificationVersion("1.5"),//TODO: Take from sys props
@@ -93,8 +104,27 @@ public final class RemotePlatform extends JavaPlatform {
             prototype.getSystemProperties());
     }
 
+    public static RemotePlatform create(@NonNull final String displayName) {
+        Parameters.notNull("displayName", displayName); //NOI18N
+        String currentDisplayName = displayName;
+        String antName;
+        for (int i=0;;i++) {
+            antName = PropertyUtils.getUsablePropertyName(currentDisplayName);
+            if (RemotePlatformProvider.isValidPlatformAntName(antName)) {
+                break;
+            }
+            currentDisplayName = String.format(
+                "%s %d",    //NOI18N
+                displayName,
+                i);
+        }
+        final Map<String,String> props = Collections.<String,String>singletonMap(PLAT_PROP_ANT_NAME, antName);
+        final Map<String,String> sysProps = Collections.<String,String>emptyMap();
+        return create(displayName, props, sysProps);
+    }
+
     @NonNull
-    public static RemotePlatform create(
+    static RemotePlatform create(
             @NonNull final String name,
             @NonNull final Map<String,String> properties,
             @NonNull final Map<String,String> sysProperties) {
@@ -108,7 +138,7 @@ public final class RemotePlatform extends JavaPlatform {
 
     @Override
     public Map<String, String> getProperties() {
-        return props;
+        return Collections.unmodifiableMap(props);
     }
 
     @Override
@@ -149,5 +179,67 @@ public final class RemotePlatform extends JavaPlatform {
     @Override
     public List<URL> getJavadocFolders() {
         return Collections.<URL>emptyList();
+    }
+
+    // RemotePlatform specific methods:
+
+    /**
+     * Returns the remote platform install folder.
+     * @return an install folder URI.
+     * @throws IllegalStateException when no valid install folder.
+     */
+    @NonNull
+    public URI getInstallFolder() {
+        final String path = props.get(PLAT_PROP_INSTALL_FOLDER);
+        if (path == null) {
+            throw new IllegalStateException("No install folder.");  //NOI18N
+        }
+        try {
+            return new URI(path);
+        } catch (URISyntaxException ex) {
+            throw  new IllegalStateException(ex);
+        }
+    }
+
+
+    public void setInstallFolder(@NonNull final URI installFolder) {
+        Parameters.notNull("installFolder", installFolder); //NOI18N
+        props.put(PLAT_PROP_INSTALL_FOLDER, installFolder.toString());
+        firePropertyChange(PROP_PROPERTIES, null, null);
+    }
+
+    /**
+     * Returns the remote platform work folder.
+     * @return an work folder URI.
+     * @throws IllegalStateException when no valid work folder.
+     */
+    @NonNull
+    public URI getWorkFolder() {
+        final String path = props.get(PLAT_PROP_WORK_FOLDER);
+        if (path == null) {
+            throw new IllegalStateException("No work folder."); //NOI18N
+        }
+        try {
+            return new URI(path);
+        } catch (URISyntaxException ex) {
+            throw new IllegalStateException(ex);
+        }
+    }
+
+    public void setWorkFolder(@NonNull final URI workDir) {
+        Parameters.notNull("workDir", workDir); //NOI18N
+        props.put(PLAT_PROP_WORK_FOLDER, workDir.toString());
+        firePropertyChange(PROP_PROPERTIES, null, null);
+    }
+
+    @NonNull
+    public ConnectionMethod getConnectionMethod() {
+        return ConnectionMethod.load(props);
+    }
+
+    public void setConnectionMethod(@NonNull final ConnectionMethod cm) {
+        Parameters.notNull("cm", cm); //NOI18N
+        cm.store(props);
+        firePropertyChange(PROP_PROPERTIES, null, null);
     }
 }
