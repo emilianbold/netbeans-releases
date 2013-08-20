@@ -56,6 +56,22 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         super(testName);
     }
 
+    public void test229003() throws Exception {
+        // #229003 - inaccuracy tests: Perl project has unresolved identifiers
+        
+        performTest("iz229003.cpp", 11, 20, "iz229003.cpp", 9, 5);
+        performTest("iz229003.cpp", 12, 20, "iz229003.cpp", 9, 5);
+        performTest("iz229003.cpp", 12, 40, "iz229003.cpp", 10, 5);
+        performTest("iz229003.cpp", 12, 50, "iz229003.cpp", 6, 1);
+        performTest("iz229003.cpp", 12, 60, "iz229003.cpp", 5, 1);
+        
+        // fun-ptr param parameters
+        performTest("iz229003.cpp", 15, 35, "iz229003.cpp", 15, 27);
+        performTest("iz229003.cpp", 15, 60, "iz229003.cpp", 15, 52);
+        performTest("iz229003.cpp", 15, 90, "iz229003.cpp", 15, 78);
+        
+    }
+    
     public void test192897() throws Exception {
         // #192897 -  unstable LiteSQL accuracy test
         performTest("iz192897.h", 23, 20, "iz192897.h", 6, 13);

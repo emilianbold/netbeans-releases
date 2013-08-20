@@ -1682,7 +1682,7 @@ public class AstRenderer {
                                     }
                                 }
                             }
-                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false, cfdi);
+                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, functionParameter, cfdi);
                             ptrOperator = null;
                             break;
                         case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
