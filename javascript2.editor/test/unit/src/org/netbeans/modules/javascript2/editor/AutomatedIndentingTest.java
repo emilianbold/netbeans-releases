@@ -69,4 +69,8 @@ public class AutomatedIndentingTest extends JsTestBase {
     public void testIssue231017() throws Exception {
         insertChar("$('div')\n^", '.', "$('div')\n        .^");
     }
+
+    public void testIssue182420() throws Exception {
+        insertChar("if (foo)\n    ^", '{', "if (foo)\n{^");
+    }
 }
