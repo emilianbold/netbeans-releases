@@ -71,13 +71,11 @@ public class HostMappingsAnalyzer {
     }
     
     /*package*/ void cancel() {
-        Thread thr;
         synchronized (lock) {
-            thr = thread;
-        }
-        if (thr != null) {
-            cancelled = true;
-            thr.interrupt();
+            if (thread != null) {
+                cancelled = true;
+                thread.interrupt();
+            }
         }
     }
 
@@ -100,11 +98,11 @@ public class HostMappingsAnalyzer {
     private void getMappingsImpl(Map<String, String> mappingsFirst2Second) {
         // all maps are host network name -> host local name
         Map<String, String> firstNetworkNames2Inner = populateMappingsList(firstPI, secondPI);
-        if (cancelled) {
+        if (isCancelled()) {
             return;
         }
         Map<String, String> secondNetworkNames2Inner = populateMappingsList(secondPI, firstPI);
-        if (cancelled) {
+        if (isCancelled()) {
             return;
         }
 
@@ -120,7 +118,7 @@ public class HostMappingsAnalyzer {
         }
 
         for (HostMappingProvider provider : singularProviders) {
-            if (cancelled) {
+            if (isCancelled()) {
                 return;
             }
             if (provider.isApplicable(secondPI, firstPI)) {
@@ -128,7 +126,7 @@ public class HostMappingsAnalyzer {
                         secondPI.getExecutionEnvironment(), firstPI.getExecutionEnvironment());
                 mappingsFirst2Second.putAll(map);
             }
-            if (cancelled) {
+            if (isCancelled()) {
                 return;
             }
             if (provider.isApplicable(firstPI, secondPI)) {
@@ -139,12 +137,18 @@ public class HostMappingsAnalyzer {
         }
     }
 
+    public boolean isCancelled() {
+        synchronized (lock) {
+            return cancelled;
+        }
+    }
+
     // host is one we are searching on
     // other is host in which context we are interested in mappings
     private Map<String, String> populateMappingsList(PlatformInfo hostPlatformInfo, PlatformInfo otherPlatformInfo) {
         Map<String, String> map = new HashMap<String, String>();
         for (HostMappingProvider prov : pairedProviders) {
-            if (cancelled) {
+            if (isCancelled()) {
                 break;
             }            
             if (prov.isApplicable(hostPlatformInfo, otherPlatformInfo)) {
