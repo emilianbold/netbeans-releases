@@ -8,7 +8,7 @@
 
 <body>
 <p><a id="dd_multiview_beanEnvironment" name="dd_multiview_beanEnvironment"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref601" name="sthref601"></a>
+<!-- infolevel="all" infotype="General" --><a id="sthref603" name="sthref603"></a>
 <h1>ejb-jar.xml Visual Editor: Bean Environment</h1>
 <a name="BEGIN" id="BEGIN"></a>
 <p>The <code>ejb-jar.xml</code> visual editor lets you edit the general deployment descriptor for an EJB module. You open the editor by expanding the project's Configuration Files node in the Projects window and double-clicking <code>ejb-jar.xml</code>. The Enterprise Beans section of the General tab contains a section for each of your EJB module's enterprise beans.</p>
@@ -20,15 +20,15 @@
 <li>Resource Environment References</li>
 <li>Security Role References</li>
 </ul>
-<a id="sthref602" name="sthref602"></a>
+<a id="sthref604" name="sthref604"></a>
 <p><b>Enterprise Bean References</b></p>
 <p>Lists all of the enterprise beans that a particular bean references. When you add a bean reference through the <code>ejb-jar.xml</code> visual editor, the IDE adds a reference to the bean in the deployment descriptor and creates lookup code for the referenced bean in the bean implementation class of the enterprise bean.</p>
 <p>You can also add enterprise bean references by right-clicking in the bean class for an enterprise bean and choosing Insert Code &gt; Call Enterprise Bean.</p>
-<a id="sthref603" name="sthref603"></a>
+<a id="sthref605" name="sthref605"></a>
 <p><b>Environment Entries</b></p>
 <p>In the Environment Entries section, you can define properties in the deployment descriptor that you can then access in the code of your EJB module. For example, an entry name of a enterprise bean that calculates money exchanges might be PoundToDollar and the value for this entry might be 1.55, which indicates the pound-to-dollar exchange rate.</p>
 <p>The environment entry values can be one of the following Java types: String, Character, Integer, Boolean, Double, Byte, Short, Long, and Float. Make sure that each entry's value matches its type. Also make sure that the name for each entry is unique in each enterprise bean.</p>
-<a id="sthref604" name="sthref604"></a>
+<a id="sthref606" name="sthref606"></a>
 <p><b>Resource References</b></p>
 <p>In the Resource References section, you can define references that your bean needs to access server resources. These resources can include the following:</p>
 <ul>
@@ -129,10 +129,10 @@
 <li>(Optional) Select Shareable or Unshareable in the Shareable column to specify whether connections obtained through the given resource manager connection factory reference can be shared.</li>
 <li>(Optional) Type a description of the resource reference in the description column.</li>
 </ol>
-<a id="sthref605" name="sthref605"></a>
+<a id="sthref607" name="sthref607"></a>
 <p><b>Resource Environment References</b></p>
 <p>Resource environment references are another type of environment entries. They allow you to refer to administered objects that are associated with resources (for example, JMS Destinations), by using logical names. You can type the name, resource type, and optionally a description for each resource environment reference.</p>
-<a id="sthref606" name="sthref606"></a>
+<a id="sthref608" name="sthref608"></a>
 <p><b>Security Role References</b></p>
 <p>In the Security Role References section, you can link a reference name used in your code to a security role defined on the application server. The value in the Reference Name column must be the security role name that is used as a parameter to the <code>isCallerInRole(String roleName)</code> method in your enterprise bean.</p>
 <p>All enterprise beans also have the following sections in the <code>ejb-jar.xml</code> visual editor:</p>
