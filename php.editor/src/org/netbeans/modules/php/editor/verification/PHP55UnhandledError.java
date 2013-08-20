@@ -125,8 +125,11 @@ public class PHP55UnhandledError extends UnhandledErrorRule {
         @Override
         public void visit(StaticConstantAccess node) {
             Identifier constant = node.getConstant();
-            if (constant != null && "class".equals(constant.getName())) { //NOI18N
-                createError(constant);
+            if (constant != null) {
+                String constantName = constant.getName();
+                if ("class".equals(constantName.toLowerCase())) { //NOI18N
+                    createError(constant);
+                }
             }
         }
 
