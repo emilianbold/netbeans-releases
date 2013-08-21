@@ -32,64 +32,64 @@
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t30">Element</th>
-<th align="left" valign="bottom" id="r1c2-t30">Description</th>
+<th align="left" valign="bottom" id="r1c1-t31">Element</th>
+<th align="left" valign="bottom" id="r1c2-t31">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t30" headers="r1c1-t30">
+<td align="left" id="r2c1-t31" headers="r1c1-t31">
 <p>Relationship Name</p>
 </td>
-<td align="left" headers="r2c1-t30 r1c2-t30">
+<td align="left" headers="r2c1-t31 r1c2-t31">
 <p>A unique name for the relationship.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r3c1-t30" headers="r1c1-t30">
+<td align="left" id="r3c1-t31" headers="r1c1-t31">
 <p>(Optional) Description</p>
 </td>
-<td align="left" headers="r3c1-t30 r1c2-t30">
+<td align="left" headers="r3c1-t31 r1c2-t31">
 <p>A short description of the relationship.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t30" headers="r1c1-t30">
+<td align="left" id="r4c1-t31" headers="r1c1-t31">
 <p>(Optional) Role Name</p>
 </td>
-<td align="left" headers="r4c1-t30 r1c2-t30">
+<td align="left" headers="r4c1-t31 r1c2-t31">
 <p>A unique name for each relationship role.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t30" headers="r1c1-t30">
+<td align="left" id="r5c1-t31" headers="r1c1-t31">
 <p>Entity Bean</p>
 </td>
-<td align="left" headers="r5c1-t30 r1c2-t30">
+<td align="left" headers="r5c1-t31 r1c2-t31">
 <p>The bean that is the source of the relationship role.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t30" headers="r1c1-t30">
+<td align="left" id="r6c1-t31" headers="r1c1-t31">
 <p>Multiplicity</p>
 </td>
-<td align="left" headers="r6c1-t30 r1c2-t30">
+<td align="left" headers="r6c1-t31 r1c2-t31">
 <p>Whether the relationship is one-to-one, one-to-many, many-to-one, or many-to-many.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t30" headers="r1c1-t30">
+<td align="left" id="r7c1-t31" headers="r1c1-t31">
 <p>Cascade Delete</p>
 </td>
-<td align="left" headers="r7c1-t30 r1c2-t30">
+<td align="left" headers="r7c1-t31 r1c2-t31">
 <p>Whether the bean is deleted whenever the other bean in the relationship is deleted.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r8c1-t30" headers="r1c1-t30">
+<td align="left" id="r8c1-t31" headers="r1c1-t31">
 <p>Create CMR Field</p>
 </td>
-<td align="left" headers="r8c1-t30 r1c2-t30">
+<td align="left" headers="r8c1-t31 r1c2-t31">
 <p>Whether to create a Container-Managed Relationship (CMR) field in the bean. If you create a CMR field, the application server can search for and return instances of the bean the field references. Specify the field name and return type of the CMR field. The name of the field must begin with a lower-case letter. If the multiplicity of the bean it is returning is one, you do not have to specify a return type. The application server automatically returns the enterprise bean's interface.</p>
 <p>If the multiplicity is set to many, you can choose whether to return java.util.Set or java.util.Collection. Choose java.util.Set if the returned beans cannot be duplicates. Choose java.util.Collection if the returned beans can include duplicates.</p>
 </td>
@@ -99,10 +99,42 @@
 <br />
 <!-- -->
 <hr><p><b>Related Topics</b></p>
-<p>About Container-Managed Relationships</p>
-<p>About Configuring EJB Modules</p>
-<p>Verifying an Enterprise Application</p>
-<p>ejb-jar.xml Visual Editor</p>
+<p><code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1321">
+<param name="text" value="<html><u>Developing EJB 2.1 Entity Beans</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code>
+</p>
+<p><code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1269">
+<param name="text" value="<html><u>Creating an Enterprise Bean</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code>
+</p>
+<p><code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1225">
+<param name="text" value="<html><u>Editing Deployment Descriptors</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code>
+</p>
+<p><code>
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1232">
+<param name="text" value="<html><u>Verifying Enterprise Applications</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</code>
+</p>
 
 <!-- -->
 <!-- Start Footer -->
