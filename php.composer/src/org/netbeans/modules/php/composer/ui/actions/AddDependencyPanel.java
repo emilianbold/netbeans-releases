@@ -527,10 +527,12 @@ public final class AddDependencyPanel extends JPanel {
     }
 
     private void cancelTasks(List<Future<Integer>> tasks) {
-        for (Future<Integer> task : tasks) {
+        ArrayList<Future<Integer>> tasksCopy = new ArrayList<>(tasks);
+        for (Future<Integer> task : tasksCopy) {
             assert task != null;
             task.cancel(true);
         }
+        tasks.removeAll(tasksCopy);
     }
 
     void runWhenTaskFinish(Future<Integer> task, Runnable postTask, @NullAllowed Runnable finalTask) {
