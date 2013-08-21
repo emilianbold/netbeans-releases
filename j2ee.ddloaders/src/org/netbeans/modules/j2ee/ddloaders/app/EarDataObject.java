@@ -106,7 +106,7 @@ public class EarDataObject extends DD2beansDataObject
     implements DDChangeListener, ApplicationProxy.OutputProvider, FileChangeListener, ChangeListener {
     private Application ejbJar;
     private FileObject srcRoots[];
-    protected final static RequestProcessor RP = new RequestProcessor("XML Parsing");   // NOI18N
+    private final static RequestProcessor RP2 = new RequestProcessor();   // NOI18N
 
     private static final long serialVersionUID = 8857563089355069362L;
     
@@ -624,8 +624,14 @@ public class EarDataObject extends DD2beansDataObject
     public void fileAttributeChanged(org.openide.filesystems.FileAttributeEvent fileAttributeEvent) {
     }
     
+    @Override
     public void stateChanged (javax.swing.event.ChangeEvent e) {
-        refreshSourceFolders ();
+        RP2.post(new Runnable() {
+            @Override
+            public void run() {
+                refreshSourceFolders ();
+            }
+        });
     }
 
     private boolean fireEvent(String oldResourceName, String resourceName,
