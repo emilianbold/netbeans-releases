@@ -376,6 +376,20 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
                 return false;
             }
         }
+        
+        if (Bundle.ProfilerOptionsPanel_KeyOpenAlways().equals(openLocksViewCombo.getSelectedItem())) {
+            if (settings.getLockContentionViewBehavior() != ProfilerIDESettings.OPEN_ALWAYS) {
+                return false;
+            }
+        } else if (Bundle.ProfilerOptionsPanel_KeyOpenMonitoring().equals(openLocksViewCombo.getSelectedItem())) {
+            if (settings.getLockContentionViewBehavior() != ProfilerIDESettings.OPEN_MONITORING) {
+                return false;
+            }
+        } else if (Bundle.ProfilerOptionsPanel_KeyOpenNever().equals(openLocksViewCombo.getSelectedItem())) {
+            if (settings.getLockContentionViewBehavior() != ProfilerIDESettings.OPEN_NEVER) {
+                return false;
+            }
+        }
 
 //        JavaPlatform sel = getSelectedJavaPlatform();
 //
@@ -461,6 +475,21 @@ public final class ProfilerOptionsPanel extends JPanel implements ActionListener
                 break;
             default:
                 openThreadsViewCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_KeyOpenNever());
+
+                break;
+        }
+        
+        switch (pis.getLockContentionViewBehavior()) {
+            case ProfilerIDESettings.OPEN_ALWAYS:
+                openLocksViewCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_KeyOpenAlways());
+
+                break;
+            case ProfilerIDESettings.OPEN_MONITORING:
+                openLocksViewCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_KeyOpenMonitoring());
+
+                break;
+            default:
+                openLocksViewCombo.setSelectedItem(Bundle.ProfilerOptionsPanel_KeyOpenNever());
 
                 break;
         }
