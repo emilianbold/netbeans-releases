@@ -361,7 +361,7 @@ public final class TransformPanel extends javax.swing.JPanel {
     
     private ChangeListener changeL;
     
-    public boolean isValid() {
+    public boolean isInputValid() {
         return valid;
     }
     
