@@ -239,6 +239,7 @@ public class AnalyzeMakeLog extends BaseDwarfProvider {
     
     @Override
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
+        init(project);
         String set = (String)getProperty(MAKE_LOG_KEY).getValue();
         if (set == null || set.length() == 0) {
             set = detectMakeLog(project);
