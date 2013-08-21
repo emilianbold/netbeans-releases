@@ -91,24 +91,28 @@ public final class HelpCtxProcessor implements Environment.Provider {
     public @Override Lookup getEnvironment(final DataObject obj) {
         Installer.log.log(Level.FINE, "creating help context presenter from {0}", obj.getPrimaryFile());
         return Lookups.singleton(new InstanceCookie() {
+            private Action instance = null;
             public @Override String instanceName() {
                 return obj.getName();
             }
             public @Override Class<?> instanceClass() throws IOException, ClassNotFoundException {
                 return Action.class;
             }
-            public @Override Object instanceCreate() throws IOException, ClassNotFoundException {
+            public @Override synchronized Object instanceCreate() throws IOException, ClassNotFoundException {
+                if (instance != null) {
+                    return instance;
+                }
                 try {
                     Document doc = XMLUtil.parse(new InputSource(obj.getPrimaryFile().getURL().toString()), true, false, XMLUtil.defaultErrorHandler(), EntityCatalog.getDefault());
                     Element el = doc.getDocumentElement();
                     if (!el.getNodeName().equals("helpctx")) { // NOI18N
                         throw new IOException();
                     }
-                    Action a = new ShortcutAction(obj, el.getAttribute("id"), Boolean.valueOf(el.getAttribute("showmaster")));
+                    instance = new ShortcutAction(obj, el.getAttribute("id"), Boolean.valueOf(el.getAttribute("showmaster")));
                     if (obj.getPrimaryFile().getAttribute("iconBase") != null) { //NOI18N
-                        a.putValue("iconBase", obj.getPrimaryFile().getAttribute("iconBase")); //NOI18N
+                        instance.putValue("iconBase", obj.getPrimaryFile().getAttribute("iconBase")); //NOI18N
                     }
-                    return a;
+                    return instance;
                 } catch (IOException x) {
                     throw x;
                 } catch (Exception x) {
