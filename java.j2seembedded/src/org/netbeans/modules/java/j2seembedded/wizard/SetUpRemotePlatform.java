@@ -363,7 +363,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         gridBagConstraints.gridx = 0;
         gridBagConstraints.gridy = 11;
         gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 0, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 0, 5, 0);
         add(workingDirLabel, gridBagConstraints);
 
         workingDir.setText(org.openide.util.NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.workingDir.text")); // NOI18N
@@ -372,7 +372,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         gridBagConstraints.gridy = 11;
         gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
         gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
+        gridBagConstraints.insets = new java.awt.Insets(5, 5, 5, 0);
         add(workingDir, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
@@ -401,7 +401,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         add(displayName, gridBagConstraints);
         gridBagConstraints = new java.awt.GridBagConstraints();
         gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 13;
+        gridBagConstraints.gridy = 12;
         gridBagConstraints.fill = java.awt.GridBagConstraints.VERTICAL;
         gridBagConstraints.weighty = 1.0;
         add(fillerBottomVertical, gridBagConstraints);
