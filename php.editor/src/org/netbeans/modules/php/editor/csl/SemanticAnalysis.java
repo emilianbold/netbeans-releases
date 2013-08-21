@@ -135,7 +135,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public static final EnumSet<ColoringAttributes> METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.CUSTOM1);
     public static final EnumSet<ColoringAttributes> STATIC_METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.CUSTOM1);
     private static final Logger LOGGER = Logger.getLogger(SemanticAnalysis.class.getName());
-
+    private static boolean isLogged = false;
     private volatile boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
     private final boolean isResolveDeprecatedElements;
@@ -146,7 +146,10 @@ public class SemanticAnalysis extends SemanticAnalyzer {
 
     public SemanticAnalysis(boolean isResolveDeprecatedElements) {
         if (isResolveDeprecatedElements) {
-            LOGGER.info("Resolving of deprecated elements in Semantic analysis - IDE will be possibly slow!");
+            if (!isLogged) {
+                LOGGER.info("Resolving of deprecated elements in Semantic analysis - IDE will be possibly slow!");
+                isLogged = true;
+            }
         }
         this.isResolveDeprecatedElements = isResolveDeprecatedElements;
         semanticHighlights = null;
