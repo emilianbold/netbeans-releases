@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.debug;
 
+import com.sun.jdi.VMOutOfMemoryException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
@@ -255,6 +256,8 @@ public class DebuggerChecker implements LateBoundPrerequisitesChecker, Execution
             LOGGER.log(Level.INFO, error, cfer); //#216376
         } catch (ClassCircularityError ccer) {
             error = "A circularity has been detected while initializing a class: "+ccer.getLocalizedMessage();
+        } catch (VMOutOfMemoryException oomex) {
+            error = "Out of memory in the target VM has occurred during class reload.";
         }
         if (error != null) {
             logger.println("NetBeans:" + error);

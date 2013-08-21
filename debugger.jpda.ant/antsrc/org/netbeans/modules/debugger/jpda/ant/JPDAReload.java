@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.debugger.jpda.ant;
 
+import com.sun.jdi.VMOutOfMemoryException;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -185,6 +186,8 @@ public class JPDAReload extends Task {
             error = "The bytes do not represent a valid class. "+cfer.getLocalizedMessage();
         } catch (ClassCircularityError ccer) {
             error = "A circularity has been detected while initializing a class: "+ccer.getLocalizedMessage();
+        } catch (VMOutOfMemoryException oomex) {
+            error = "Out of memory in the target VM has occurred during class reload.";
         }
         if (error != null) {
             getProject().log(error, Project.MSG_ERR);
