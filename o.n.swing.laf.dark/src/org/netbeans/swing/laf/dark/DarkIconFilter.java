@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.swing.plaf.util;
+package org.netbeans.swing.laf.dark;
 
 import java.awt.Color;
 import java.awt.image.RGBImageFilter;
