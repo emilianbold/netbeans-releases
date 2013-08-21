@@ -84,11 +84,11 @@ public class FieldCCTest extends GroovyTestBase {
     }
 
     public void testFields1() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Fields1.groovy", "\"User $nom^\"", false);
+        checkCompletion(TEST_BASE + "" + "Fields1.groovy", "\"User $nom^\"", true);
     }
 
     public void testFields2() throws Exception {
-        checkCompletion(TEST_BASE + "" + "Fields1.groovy", "println \"Hi: $ad^\"", false);
+        checkCompletion(TEST_BASE + "" + "Fields1.groovy", "println \"Hi: $ad^\"", true);
     }
 
 }

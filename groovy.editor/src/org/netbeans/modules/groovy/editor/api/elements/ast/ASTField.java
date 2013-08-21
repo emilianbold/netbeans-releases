@@ -41,8 +41,11 @@
  */
 package org.netbeans.modules.groovy.editor.api.elements.ast;
 
+import java.util.Collections;
+import java.util.Set;
 import org.codehaus.groovy.ast.FieldNode;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 
 public final class ASTField extends ASTElement {
 
@@ -72,5 +75,13 @@ public final class ASTField extends ASTElement {
 
     public boolean isProperty() {
         return isProperty;
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        if (isProperty) {
+            return Collections.singleton(Modifier.PRIVATE);
+        }
+        return super.getModifiers();
     }
 }

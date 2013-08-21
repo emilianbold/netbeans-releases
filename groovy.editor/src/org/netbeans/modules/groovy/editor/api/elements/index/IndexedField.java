@@ -30,7 +30,10 @@
  */
 package org.netbeans.modules.groovy.editor.api.elements.index;
 
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
@@ -103,6 +106,14 @@ public class IndexedField extends IndexedElement {
             }
         }
         return false;
+    }
+
+    @Override
+    public Set<Modifier> getModifiers() {
+        if (isProperty()) {
+            return Collections.singleton(Modifier.PRIVATE);
+        }
+        return super.getModifiers();
     }
 
     @Override
