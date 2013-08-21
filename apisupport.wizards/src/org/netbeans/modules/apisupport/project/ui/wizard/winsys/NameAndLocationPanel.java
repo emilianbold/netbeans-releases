@@ -113,6 +113,11 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
         
     }
     
+    private void clearCreatedAndModifiedFilesTextArea() {
+        createdFilesValue.setText(null);
+        modifiedFilesValue.setText(null);
+    }
+    
     protected void readFromDataModel() {
         txtPrefix.setText(data.getName());
         txtIcon.setText(data.getIcon());
@@ -129,6 +134,7 @@ final class NameAndLocationPanel extends BasicWizardIterator.Panel {
     private boolean checkValidity() {
         if (txtPrefix.getText().trim().length() == 0) {
             setInfo(getMessage("ERR_Name_Prefix_Empty"), false);
+            clearCreatedAndModifiedFilesTextArea();
             return false;
         }
         if (!Utilities.isJavaIdentifier(txtPrefix.getText().trim())) {
