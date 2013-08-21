@@ -65,6 +65,7 @@ import org.netbeans.modules.css.prep.util.InvalidExternalExecutableException;
 import org.netbeans.modules.css.prep.util.UiUtils;
 import org.netbeans.modules.web.common.api.Version;
 import org.openide.filesystems.FileUtil;
+import org.openide.modules.Places;
 import org.openide.util.NbBundle;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
@@ -82,6 +83,7 @@ public final class SassExecutable {
     private static final String DEBUG_PARAM = "--debug-info"; // NOI18N
     private static final String SOURCEMAP_PARAM = "--sourcemap"; // NOI18N
     private static final String VERSION_PARAM = "--version"; // NOI18N
+    private static final String CACHE_LOCATION_PARAM = "--cache-location"; // NOI18N
 
     private static final File TMP_DIR = new File(System.getProperty("java.io.tmpdir")); // NOI18N
 
@@ -130,7 +132,7 @@ public final class SassExecutable {
         VersionOutputProcessorFactory versionOutputProcessorFactory = new VersionOutputProcessorFactory();
         try {
             SassExecutable sassExecutable = getDefault();
-            sassExecutable.getExecutable("Sass version") // NOI18N
+            sassExecutable.getExecutable("Sass version", TMP_DIR) // NOI18N
                     .additionalParameters(Collections.singletonList(VERSION_PARAM))
                     .runAndWait(getSilentDescriptor(), versionOutputProcessorFactory, "Detecting Sass version..."); // NOI18N
             String detectedVersion = versionOutputProcessorFactory.getVersion();
@@ -153,8 +155,9 @@ public final class SassExecutable {
 
     @NbBundle.Messages("Sass.compile=Sass (compile)")
     @CheckForNull
-    public void compile(File source, final File target, List<String> compilerOptions) throws ExecutionException {
+    public void compile(File workDir, File source, final File target, List<String> compilerOptions) throws ExecutionException {
         assert !EventQueue.isDispatchThread();
+        assert workDir.isDirectory() : "Not directory given: " + workDir;
         assert source.isFile() : "Not file given: " + source;
         final File targetDir = target.getParentFile();
         if (!targetDir.isDirectory()) {
@@ -164,7 +167,7 @@ public final class SassExecutable {
             }
         }
         try {
-            getExecutable(Bundle.Sass_compile())
+            getExecutable(Bundle.Sass_compile(), workDir)
                     .additionalParameters(getParameters(source, target, compilerOptions))
                     .runAndWait(getDescriptor(new Runnable() {
                 @Override
@@ -181,9 +184,9 @@ public final class SassExecutable {
         }
     }
 
-    private ExternalExecutable getExecutable(String title) {
+    private ExternalExecutable getExecutable(String title, File workDir) {
         return new ExternalExecutable(sassPath)
-                .workDir(TMP_DIR)
+                .workDir(workDir)
                 .displayName(title);
     }
 
@@ -208,6 +211,9 @@ public final class SassExecutable {
 
     private List<String> getParameters(File inputFile, File outputFile, List<String> compilerOptions) {
         List<String> params = new ArrayList<>();
+        // cache location
+        params.add(CACHE_LOCATION_PARAM);
+        params.add(Places.getCacheSubdirectory("sass-compiler").getAbsolutePath()); // NOI18N
         // debug
         boolean debug = CssPrepOptions.getInstance().getSassDebug();
         if (debug) {
