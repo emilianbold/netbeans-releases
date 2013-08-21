@@ -68,7 +68,6 @@ import org.netbeans.modules.php.editor.model.VariableScope;
 import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.model.impl.VariousUtils;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
-import org.netbeans.modules.php.editor.NavUtils;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.netbeans.modules.php.editor.parser.api.Utils;
 import org.netbeans.modules.php.editor.parser.astnodes.ASTNode;
@@ -93,7 +92,6 @@ import org.netbeans.modules.php.editor.parser.astnodes.StaticStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.ThrowStatement;
 import org.netbeans.modules.php.editor.parser.astnodes.Variable;
 import org.netbeans.modules.php.editor.parser.astnodes.visitors.DefaultVisitor;
-import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.RequestProcessor;
 
@@ -103,8 +101,7 @@ import org.openide.util.RequestProcessor;
  */
 public final class GeneratingBracketCompleter {
 
-    private static final RequestProcessor RP = new RequestProcessor("Generating Bracket Completer"); //NOI18N
-
+    static final RequestProcessor RP = new RequestProcessor("Generating Bracket Completer", 1); //NOI18N
     static final String TYPE_PLACEHOLDER = "type";
 
     private GeneratingBracketCompleter() {
@@ -371,10 +368,6 @@ public final class GeneratingBracketCompleter {
 
         @Override
         public void run() {
-            FileObject file = NavUtils.getFile(doc);
-            if (file == null) {
-                return;
-            }
             try {
                 ParserManager.parse(Collections.singleton(Source.create(doc)), new UserTask() {
 
