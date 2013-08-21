@@ -49,7 +49,10 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.Specification;
@@ -71,6 +74,7 @@ public final class RemotePlatform extends JavaPlatform {
     private final static String PLAT_PROP_WORK_FOLDER = "platform.work.folder";   //NOI18N
 
     private static final String SPEC_NAME = "j2se-remote";  //NOI18N
+    private static final Logger LOG = Logger.getLogger(RemotePlatform.class.getName());
 
     private final String displayName;
     private final Map<String,String> props;
@@ -87,7 +91,7 @@ public final class RemotePlatform extends JavaPlatform {
         this.props = new HashMap<>(properties);
         this.spec = new Specification(
             SPEC_NAME,
-            new SpecificationVersion("1.5"),//TODO: Take from sys props
+            createSpecificationVersion(sysProperties.get("java.specification.version")),   // NOI18N
             NbBundle.getMessage(RemotePlatform.class, "TXT_RemotePlatform"),
             null);
         setSystemProperties(sysProperties);
@@ -153,7 +157,7 @@ public final class RemotePlatform extends JavaPlatform {
 
     @Override
     public String getVendor() {
-        return "";  //NOI18N
+        return getSystemProperties().get("java.vm.vendor"); //NOI18N
     }
 
     @Override
@@ -242,4 +246,31 @@ public final class RemotePlatform extends JavaPlatform {
         cm.store(props);
         firePropertyChange(PROP_PROPERTIES, null, null);
     }
+
+    //Utility methods
+    @NonNull
+    private static SpecificationVersion createSpecificationVersion(
+        @NullAllowed String version) {
+        if (version != null) {
+            try {
+                return new SpecificationVersion(version);
+            } catch (NumberFormatException nfe) {
+                LOG.log(
+                    Level.WARNING,
+                    "Invalid specification version: {0}",   // NOI18N
+                    version);
+            }
+            do {
+                version = version.substring(0, version.length() - 1);
+                try {
+                    return new SpecificationVersion(version);
+                } catch (NumberFormatException nfe) {
+                    // ignore
+                }
+            } while (version.length() > 0);
+        }
+        //Nothing return lower bound JDK 1.1
+        return new SpecificationVersion("1.1"); // NOI18N
+    }
+
 }
