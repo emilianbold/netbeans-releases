@@ -60,13 +60,14 @@ import org.openide.util.Exceptions;
  *
  * @author Martin Fousek <marfous@netbeans.org>
  */
-@ProjectServiceProvider(service = {JavaEEProjectSettingsImplementation.class}, projectType = {
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_WAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EAR,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_EJB,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_APPCLIENT,
-    "org-netbeans-modules-maven/" + NbMavenProject.TYPE_OSGI
-})
+@ProjectServiceProvider(
+    service = {
+        JavaEEProjectSettingsImplementation.class
+    }, 
+    projectType = {
+        "org-netbeans-modules-maven"
+    }
+)
 public class JavaEEProjectSettingsImpl implements JavaEEProjectSettingsImplementation {
 
     private final Project project;
