@@ -55,6 +55,22 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
         //System.setProperty("cnd.modelimpl.trace.registration", "true");
     }
 
+    public void test228950() throws Exception {
+        // #228950 - inaccuracy tests: LiteSQL project has unresolved identifiers
+        
+        // size()
+        performTest("iz228950.cpp", 10, 20, "bug228950_Included.h", 6, 9); 
+        performTest("iz228950.cpp", 19, 15, "bug228950_Included.h", 6, 9); 
+        // Field::typeOther
+        performTest("iz228950.cpp", 9, 10, "bug228950_Included.h", 10, 5); 
+        performTest("iz228950.cpp", 9, 20, "bug228950_Included.h", 12, 9); 
+        // Field::typeOther
+        performTest("iz228950.cpp", 18, 9, "bug228950_Included.h", 10, 5); 
+        performTest("iz228950.cpp", 18, 15, "bug228950_Included.h", 12, 9); 
+        // main3()
+        performTest("iz228950.cpp", 19, 25, "iz228950.cpp", 8, 5); 
+    }
+    
     public void testDoubleUsing() throws Exception {
         // #207841 - double "using namespace" breaks code model
         performTest("iz207841.cpp", 27, 7, "iz207841.cpp", 13, 9); 
