@@ -59,16 +59,9 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
  * @author Martin Adamek
  */
 public final class IndexedMethod extends IndexedElement implements MethodElement {
-    /** This method takes a (possibly optional, see BLOCK_OPTIONAL) block */
-    public static final int BLOCK = 1 << 6;
-    /** This method takes an optional block */
-    public static final int BLOCK_OPTIONAL = 1 << 7;
-    /** Deprecated? */
-    /** Parenthesis or space delimited? */
 
     protected final String signature;
     private List<MethodParameter> parameters;
-    private boolean smart;
     private final String returnType;
     
     private IndexedMethod(String signature, String returnType, IndexResult result, String clz, String attributes, int flags) {
@@ -157,26 +150,6 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
         } else {
             return ElementKind.METHOD;
         }
-    }
-    
-    public boolean isSmart() {
-        return smart;
-    }
-    
-    public void setSmart(boolean smart) {
-        this.smart = smart;
-    }
-
-    public boolean hasBlock() {
-        return (flags & BLOCK) != 0;
-    }
-
-    public boolean isBlockOptional() {
-        return (flags & BLOCK_OPTIONAL) != 0;
-    }
-
-    public String getEncodedAttributes() {
-        return attributes;
     }
 
     @Override

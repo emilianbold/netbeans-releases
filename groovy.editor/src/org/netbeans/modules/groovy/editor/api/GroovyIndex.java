@@ -253,9 +253,6 @@ public final class GroovyIndex {
      */
     @SuppressWarnings("fallthrough")
     public Set<IndexedMethod> getMethods(final String name, final String clz, QuerySupport.Kind kind) {
-        boolean inherited = clz == null;
-
-        //    public void searchByCriteria(final String name, final ClassIndex.NameKind kind, /*final ResultConvertor<T> convertor,*/ final Set<String> result) throws IOException {
         final Set<IndexResult> result = new HashSet<>();
 
         String field = GroovyIndexer.METHOD_NAME;
@@ -326,7 +323,7 @@ public final class GroovyIndex {
 
                     // XXX THIS DOES NOT WORK WHEN THERE ARE IDENTICAL SIGNATURES!!!
                     assert map != null;
-                    methods.add(createMethod(signature, map, inherited));
+                    methods.add(createMethod(signature, map));
                 }
             }
         }
@@ -447,9 +444,6 @@ public final class GroovyIndex {
      * @param kind Whether the prefix field should be taken as a prefix or a whole name
      */
     public Set<IndexedMethod> getInheritedMethods(String classFqn, String prefix, QuerySupport.Kind kind) {
-        boolean haveRedirected = false;
-
-        //String field = RubyIndexer.FIELD_FQN_NAME;
         Set<IndexedMethod> methods = new HashSet<>();
         Set<String> scannedClasses = new HashSet<>();
         Set<String> seenSignatures = new HashSet<>();
@@ -458,7 +452,7 @@ public final class GroovyIndex {
             prefix = "";
         }
 
-        addMethodsFromClass(prefix, kind, classFqn, methods, seenSignatures, scannedClasses, haveRedirected, false);
+        addMethodsFromClass(prefix, kind, classFqn, methods, seenSignatures, scannedClasses);
 
         return methods;
     }
@@ -468,8 +462,7 @@ public final class GroovyIndex {
      * additional methods from parents (Object/Class).
      */
     private boolean addMethodsFromClass(String prefix, QuerySupport.Kind kind, String classFqn,
-        Set<IndexedMethod> methods, Set<String> seenSignatures, Set<String> scannedClasses,
-        boolean haveRedirected, boolean inheriting) {
+        Set<IndexedMethod> methods, Set<String> seenSignatures, Set<String> scannedClasses) {
         // Prevent problems with circular includes or redundant includes
         if (scannedClasses.contains(classFqn)) {
             return false;
@@ -520,8 +513,7 @@ public final class GroovyIndex {
 
                             seenSignatures.add(signature);
 
-                            IndexedMethod method = createMethod(signature, map, inheriting);
-                            method.setSmart(!haveRedirected);
+                            IndexedMethod method = createMethod(signature, map);
                             methods.add(method);
                         }
                     }
@@ -531,8 +523,7 @@ public final class GroovyIndex {
 
 //        if (extendsClass == null) {
             // XXX GroovyObject, GroovyScript
-        addMethodsFromClass(prefix, kind, "java.lang.Object", methods, seenSignatures, scannedClasses, // NOI18N
-            true, true);
+        addMethodsFromClass(prefix, kind, "java.lang.Object", methods, seenSignatures, scannedClasses); // NOI18N
 
         return foundIt;
     }
@@ -558,7 +549,7 @@ public final class GroovyIndex {
         return c;
     }
 
-    private IndexedMethod createMethod(String signature, IndexResult map, boolean inherited) {
+    private IndexedMethod createMethod(String signature, IndexResult map) {
         String clz = map.getValue(GroovyIndexer.CLASS_NAME);
         String module = map.getValue(GroovyIndexer.IN);
 
