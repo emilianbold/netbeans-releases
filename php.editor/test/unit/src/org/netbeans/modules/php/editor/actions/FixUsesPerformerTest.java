@@ -183,7 +183,7 @@ public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
                             ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(phpResult)),
                             namespaceScope.getNamespaceName(),
                             currentOptions).create();
-                    final List<ItemVariant> properSelections = new ArrayList<ItemVariant>();
+                    final List<ItemVariant> properSelections = new ArrayList<>();
                     for (String selection : selections) {
                         properSelections.add(new ItemVariant(selection, ItemVariant.UsagePolicy.CAN_BE_USED));
                     }
