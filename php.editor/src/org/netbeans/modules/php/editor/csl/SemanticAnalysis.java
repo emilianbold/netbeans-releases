@@ -138,8 +138,8 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     private static boolean isLogged = false;
     private volatile boolean cancelled;
     private boolean checkIfResolveDeprecatedElements = true;
+    private boolean isResolveDeprecatedElements = false;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
-    private boolean isResolveDeprecatedElements;
 
     public SemanticAnalysis() {
         semanticHighlights = null;
