@@ -59,14 +59,20 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
     private NetworkMonitorTopComponent.Model model;
     private final BrowserFamilyId browserFamilyId;
     private final Project project;
+    private boolean debuggingSession;
 
     private NetworkMonitor(Lookup projectContext, NetworkMonitorTopComponent comp, 
-            NetworkMonitorTopComponent.Model mod) {
+            NetworkMonitorTopComponent.Model mod, boolean debuggingSession) {
         this.component = comp;
         this.model = mod;
+        this.debuggingSession = debuggingSession;
         browserFamilyId = projectContext.lookup(BrowserFamilyId.class);
         project = projectContext.lookup(Project.class);
         lastNetworkMonitor = new WeakReference<>(this);
+    }
+
+    boolean isConnected() {
+        return debuggingSession;
     }
 
     void open() {
@@ -79,12 +85,12 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
             @Override
             public void run() {
                 if (component == null) {
-                    component = new NetworkMonitorTopComponent(NetworkMonitor.this, model);
+                    component = new NetworkMonitorTopComponent(model, isConnected());
                     if (show) {
                         component.open();
                     }
                 } else {
-                    component.setModel(model);
+                    component.setModel(model, isConnected());
                 }
             }
         });
@@ -93,7 +99,7 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
     public static NetworkMonitor createNetworkMonitor(Lookup projectContext) {
         NetworkMonitorTopComponent component = findNetworkMonitorTC();
         // reuse TopComponent if it is open; but always create a new model for new monitoring session
-        NetworkMonitor nm = new NetworkMonitor(projectContext, component, new NetworkMonitorTopComponent.Model());
+        NetworkMonitor nm = new NetworkMonitor(projectContext, component, new NetworkMonitorTopComponent.Model(), true);
         nm.open();
         return nm;
     }
@@ -109,7 +115,7 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
                 nm.component = null;
             } else {
                 // open blank NetworkMonitor:
-                nm = new NetworkMonitor(Lookup.EMPTY, null, new NetworkMonitorTopComponent.Model());
+                nm = new NetworkMonitor(Lookup.EMPTY, null, new NetworkMonitorTopComponent.Model(), false);
             }
             nm.open();
         }
@@ -137,6 +143,7 @@ public class NetworkMonitor implements Network.Listener, Console.Listener {
                 }
             }
         });
+        debuggingSession = false;
     }
 
     @Override
