@@ -1,6 +1,6 @@
 diff -r 02f810c26ff9 make/build-nasgen.xml
 --- a/make/build-nasgen.xml	Wed Feb 06 12:51:09 2013 -0400
-+++ b/make/build-nasgen.xml	Thu Jul 11 15:26:53 2013 +0200
++++ b/make/build-nasgen.xml	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,7 +25,7 @@
      <description>Builds and runs nasgen.</description>
      <import file="build.xml"/>
@@ -12,7 +12,7 @@ diff -r 02f810c26ff9 make/build-nasgen.xml
      </target>
 diff -r 02f810c26ff9 make/build.xml
 --- a/make/build.xml	Wed Feb 06 12:51:09 2013 -0400
-+++ b/make/build.xml	Thu Jul 11 15:26:53 2013 +0200
++++ b/make/build.xml	Wed Aug 21 11:27:06 2013 +0200
 @@ -63,24 +63,16 @@
      <delete dir="${dynalink.dir}"/>
    </target>
@@ -110,7 +110,7 @@ diff -r 02f810c26ff9 make/build.xml
        <fileset dir="${jdk.asm.src.dir}" includes="**/*.java"/>
 diff -r 02f810c26ff9 make/nbproject/nbjdk.properties
 --- a/make/nbproject/nbjdk.properties	Wed Feb 06 12:51:09 2013 -0400
-+++ b/make/nbproject/nbjdk.properties	Thu Jul 11 15:26:53 2013 +0200
++++ b/make/nbproject/nbjdk.properties	Wed Aug 21 11:27:06 2013 +0200
 @@ -20,5 +20,5 @@
  # or visit www.oracle.com if you need additional information or have any
  # questions.
@@ -120,7 +120,7 @@ diff -r 02f810c26ff9 make/nbproject/nbjdk.properties
  
 diff -r 02f810c26ff9 make/project.properties
 --- a/make/project.properties	Wed Feb 06 12:51:09 2013 -0400
-+++ b/make/project.properties	Thu Jul 11 15:26:53 2013 +0200
++++ b/make/project.properties	Wed Aug 21 11:27:06 2013 +0200
 @@ -88,18 +88,22 @@
  # "-SNAPSHOT" suffix and the jar version will have a timestamp in it. When
  # it's 'release', the version has no suffix, and the jar version is 
@@ -150,16 +150,285 @@ diff -r 02f810c26ff9 make/project.properties
      ${build.test.classes.dir}:\
 diff -r 02f810c26ff9 src/META-INF/services/javax.script.ScriptEngineFactory
 --- a/src/META-INF/services/javax.script.ScriptEngineFactory	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/META-INF/services/javax.script.ScriptEngineFactory	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/META-INF/services/javax.script.ScriptEngineFactory	Wed Aug 21 11:27:06 2013 +0200
 @@ -22,4 +22,4 @@
  # or visit www.oracle.com if you need additional information or have any
  # questions.
  #
 -jdk.nashorn.api.scripting.NashornScriptEngineFactory
 +#jdk.nashorn.api.scripting.NashornScriptEngineFactory
+diff -r 02f810c26ff9 src/jdk/nashorn/api/scripting/NashornScriptEngineFactory.java
+--- a/src/jdk/nashorn/api/scripting/NashornScriptEngineFactory.java	Wed Feb 06 12:51:09 2013 -0400
++++ b/src/jdk/nashorn/api/scripting/NashornScriptEngineFactory.java	Wed Aug 21 11:27:06 2013 +0200
+@@ -22,220 +22,92 @@
+  * or visit www.oracle.com if you need additional information or have any
+  * questions.
+  */
+-
+ package jdk.nashorn.api.scripting;
+ 
+-import java.util.Arrays;
+-import java.util.Collections;
+ import java.util.List;
+ import javax.script.ScriptEngine;
+ import javax.script.ScriptEngineFactory;
+-import jdk.nashorn.internal.runtime.Version;
+-import sun.reflect.Reflection;
+ 
+ /**
+- * JSR-223 compliant script engine factory for Nashorn. The engine answers for:
+- * <ul>
+- * <li>names {@code "nashorn"}, {@code "Nashorn"}, {@code "js"}, {@code "JS"}, {@code "JavaScript"},
+- * {@code "javascript"}, {@code "ECMAScript"}, and {@code "ecmascript"};</li>
+- * <li>MIME types {@code "application/javascript"}, {@code "application/ecmascript"}, {@code "text/javascript"}, and
+- * {@code "text/ecmascript"};</li>
+- * <li>as well as for the extension {@code "js"}.</li>
+- * </ul>
+- * Programs executing in engines created using {@link #getScriptEngine(String[])} will have the passed arguments
+- * accessible as a global variable named {@code "arguments"}.
++ * This is just proxy to delegate to system script engine factory.
++ * <p>
++ * As unfortunately NB may request the NashornScriptEngineFactory (although it
++ * is commented out in META-INF/services) we just delegate to the NashornScriptEngineFactory
++ * from system classloader where the service has been found registered.
++ *
++ * @author Petr Hejl
+  */
+-public final class NashornScriptEngineFactory implements ScriptEngineFactory {
++public class NashornScriptEngineFactory implements ScriptEngineFactory {
++
++    private final ScriptEngineFactory delegate;
++
++    public NashornScriptEngineFactory() {
++        try {
++            Class<?> clazz = Class.forName("jdk.nashorn.api.scripting.NashornScriptEngineFactory",
++                    true, ClassLoader.getSystemClassLoader());
++            delegate = (ScriptEngineFactory) clazz.newInstance();
++        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException ex) {
++            throw new RuntimeException(ex);
++        }
++    }
++
+     @Override
+     public String getEngineName() {
+-        return (String) getParameter(ScriptEngine.ENGINE);
++        return delegate.getEngineName();
+     }
+ 
+     @Override
+     public String getEngineVersion() {
+-        return (String) getParameter(ScriptEngine.ENGINE_VERSION);
++        return delegate.getEngineVersion();
+     }
+ 
+     @Override
+     public List<String> getExtensions() {
+-        return Collections.unmodifiableList(extensions);
++        return delegate.getExtensions();
++    }
++
++    @Override
++    public List<String> getMimeTypes() {
++        return delegate.getMimeTypes();
++    }
++
++    @Override
++    public List<String> getNames() {
++        return delegate.getNames();
+     }
+ 
+     @Override
+     public String getLanguageName() {
+-        return (String) getParameter(ScriptEngine.LANGUAGE);
++        return delegate.getLanguageName();
+     }
+ 
+     @Override
+     public String getLanguageVersion() {
+-        return (String) getParameter(ScriptEngine.LANGUAGE_VERSION);
++        return delegate.getLanguageVersion();
+     }
+ 
+     @Override
+-    public String getMethodCallSyntax(final String obj, final String method, final String... args) {
+-        final StringBuilder sb = new StringBuilder().append(obj).append('.').append(method).append('(');
+-        final int len = args.length;
+-
+-        if (len > 0) {
+-            sb.append(args[0]);
+-        }
+-        for (int i = 1; i < len; i++) {
+-            sb.append(',').append(args[i]);
+-        }
+-        sb.append(')');
+-
+-        return sb.toString();
++    public Object getParameter(String key) {
++        return delegate.getParameter(key);
+     }
+ 
+     @Override
+-    public List<String> getMimeTypes() {
+-        return Collections.unmodifiableList(mimeTypes);
++    public String getMethodCallSyntax(String obj, String m, String... args) {
++        return delegate.getMethodCallSyntax(obj, m, args);
+     }
+ 
+     @Override
+-    public List<String> getNames() {
+-        return Collections.unmodifiableList(names);
++    public String getOutputStatement(String toDisplay) {
++        return delegate.getOutputStatement(toDisplay);
+     }
+ 
+     @Override
+-    public String getOutputStatement(final String toDisplay) {
+-        return "print(" + toDisplay + ")";
+-    }
+-
+-    @Override
+-    public Object getParameter(final String key) {
+-        switch (key) {
+-        case ScriptEngine.NAME:
+-            return "javascript";
+-        case ScriptEngine.ENGINE:
+-            return "Oracle Nashorn";
+-        case ScriptEngine.ENGINE_VERSION:
+-            return Version.version();
+-        case ScriptEngine.LANGUAGE:
+-            return "ECMAScript";
+-        case ScriptEngine.LANGUAGE_VERSION:
+-            return "ECMA - 262 Edition 5.1";
+-        case "THREADING":
+-            // The engine implementation is not thread-safe. Can't be
+-            // used to execute scripts concurrently on multiple threads.
+-            return null;
+-        default:
+-            throw new IllegalArgumentException("Invalid key");
+-        }
+-    }
+-
+-    @Override
+-    public String getProgram(final String... statements) {
+-        final StringBuilder sb = new StringBuilder();
+-
+-        for (final String statement : statements) {
+-            sb.append(statement).append(';');
+-        }
+-
+-        return sb.toString();
++    public String getProgram(String... statements) {
++        return delegate.getProgram(statements);
+     }
+ 
+     @Override
+     public ScriptEngine getScriptEngine() {
+-        return new NashornScriptEngine(this, getAppClassLoader());
+-    }
+-
+-    /**
+-     * Create a new Script engine initialized by given class loader.
+-     *
+-     * @param appLoader class loader to be used as script "app" class loader.
+-     * @return newly created script engine.
+-     */
+-    public ScriptEngine getScriptEngine(final ClassLoader appLoader) {
+-        return new NashornScriptEngine(this, appLoader);
+-    }
+-
+-    /**
+-     * Create a new Script engine initialized by given arguments.
+-     *
+-     * @param args arguments array passed to script engine.
+-     * @return newly created script engine.
+-     */
+-    public ScriptEngine getScriptEngine(final String[] args) {
+-        return new NashornScriptEngine(this, args, getAppClassLoader());
+-    }
+-
+-    /**
+-     * Create a new Script engine initialized by given arguments.
+-     *
+-     * @param args arguments array passed to script engine.
+-     * @param appLoader class loader to be used as script "app" class loader.
+-     * @return newly created script engine.
+-     */
+-    public ScriptEngine getScriptEngine(final String[] args, final ClassLoader appLoader) {
+-        return new NashornScriptEngine(this, args, appLoader);
+-    }
+-
+-    // -- Internals only below this point
+-
+-    private static final List<String> names;
+-    private static final List<String> mimeTypes;
+-    private static final List<String> extensions;
+-
+-    static {
+-        names = immutableList(
+-                    "nashorn", "Nashorn",
+-                    "js", "JS",
+-                    "JavaScript", "javascript",
+-                    "ECMAScript", "ecmascript"
+-                );
+-
+-        mimeTypes = immutableList(
+-                        "application/javascript",
+-                        "application/ecmascript",
+-                        "text/javascript",
+-                        "text/ecmascript"
+-                    );
+-
+-        extensions = immutableList("js");
+-    }
+-
+-    private static List<String> immutableList(final String... elements) {
+-        return Collections.unmodifiableList(Arrays.asList(elements));
+-    }
+-
+-    private static ClassLoader getAppClassLoader() {
+-        if (System.getSecurityManager() == null) {
+-            return Thread.currentThread().getContextClassLoader();
+-        }
+-
+-        // Try to determine the caller class loader. Use that if it can be
+-        // found. If not, use the class loader of nashorn itself as the
+-        // "application" class loader for scripts.
+-
+-        // User could have called ScriptEngineFactory.getScriptEngine()
+-        //
+-        // <caller>
+-        //  <factory.getScriptEngine()>
+-        //   <factory.getAppClassLoader()>
+-        //    <Reflection.getCallerClass()>
+-        //
+-        // or used one of the getEngineByABC methods of ScriptEngineManager.
+-        //
+-        // <caller>
+-        //  <ScriptEngineManager.getEngineByName()>
+-        //   <factory.getScriptEngine()>
+-        //    <factory.getAppClassLoader()>
+-        //     <Reflection.getCallerClass()>
+-
+-        // So, stack depth is 3 or 4 (recall it is zero based). We try
+-        // stack depths 3, 4 and look for non-bootstrap caller.
+-        Class<?> caller = null;
+-        for (int depth = 3; depth < 5; depth++) {
+-            caller = Reflection.getCallerClass(depth);
+-            if (caller != null && caller.getClassLoader() != null) {
+-                // found a non-bootstrap caller
+-                break;
+-            }
+-        }
+-
+-        final ClassLoader ccl = (caller == null)? null : caller.getClassLoader();
+-        // if caller loader is null, then use nashorn's own loader
+-        return (ccl == null)? NashornScriptEngineFactory.class.getClassLoader() : ccl;
++        return delegate.getScriptEngine();
+     }
+ }
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/ClassEmitter.java
 --- a/src/jdk/nashorn/internal/codegen/ClassEmitter.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/ClassEmitter.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/ClassEmitter.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,18 +25,18 @@
  
  package jdk.nashorn.internal.codegen;
@@ -208,7 +477,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/ClassEmitter.java
  import jdk.nashorn.internal.runtime.Context;
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/MethodEmitter.java
 --- a/src/jdk/nashorn/internal/codegen/MethodEmitter.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/MethodEmitter.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/MethodEmitter.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,38 +25,38 @@
  
  package jdk.nashorn.internal.codegen;
@@ -311,7 +580,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/MethodEmitter.java
  
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/ArrayType.java
 --- a/src/jdk/nashorn/internal/codegen/types/ArrayType.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/ArrayType.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/ArrayType.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,13 +25,13 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -334,7 +603,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/ArrayType.java
   * This is an array type, i.e. OBJECT_ARRAY, NUMBER_ARRAY.
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BooleanType.java
 --- a/src/jdk/nashorn/internal/codegen/types/BooleanType.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BooleanType.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/BooleanType.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -50,14 +50,14 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -358,7 +627,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BooleanType.java
  import jdk.nashorn.internal.runtime.JSType;
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java
 --- a/src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -370,7 +639,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeArrayOps.jav
   * Array operations, not supported by all ops
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java
 --- a/src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -382,7 +651,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeBitwiseOps.j
   * Bitwise operations not supported by all types
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java
 --- a/src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -394,7 +663,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeNumericOps.j
   * Numeric operations, not supported by all types
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeOps.java
 --- a/src/jdk/nashorn/internal/codegen/types/BytecodeOps.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/BytecodeOps.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/BytecodeOps.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,7 +25,7 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -406,7 +675,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/BytecodeOps.java
  /**
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/IntType.java
 --- a/src/jdk/nashorn/internal/codegen/types/IntType.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/IntType.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/IntType.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,35 +25,35 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -472,7 +741,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/IntType.java
  
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/LongType.java
 --- a/src/jdk/nashorn/internal/codegen/types/LongType.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/LongType.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/LongType.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,29 +25,29 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -526,7 +795,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/LongType.java
  
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/NumberType.java
 --- a/src/jdk/nashorn/internal/codegen/types/NumberType.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/NumberType.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/NumberType.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,22 +25,22 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -566,7 +835,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/NumberType.java
  import jdk.nashorn.internal.runtime.JSType;
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/ObjectType.java
 --- a/src/jdk/nashorn/internal/codegen/types/ObjectType.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/ObjectType.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/ObjectType.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,18 +25,18 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -596,7 +865,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/ObjectType.java
  import jdk.nashorn.internal.runtime.ScriptRuntime;
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/Type.java
 --- a/src/jdk/nashorn/internal/codegen/types/Type.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/codegen/types/Type.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/codegen/types/Type.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,30 +25,30 @@
  
  package jdk.nashorn.internal.codegen.types;
@@ -789,7 +1058,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/codegen/types/Type.java
      /**
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/parser/AbstractParser.java
 --- a/src/jdk/nashorn/internal/parser/AbstractParser.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/parser/AbstractParser.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/parser/AbstractParser.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -167,6 +167,10 @@
  
              // Set up next token.
@@ -803,7 +1072,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/parser/AbstractParser.java
              type = Token.descType(token);
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/parser/JSONParser.java
 --- a/src/jdk/nashorn/internal/parser/JSONParser.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/parser/JSONParser.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/parser/JSONParser.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -158,24 +158,52 @@
  
      @SuppressWarnings("fallthrough")
@@ -905,7 +1174,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/parser/JSONParser.java
          if (name != null) {
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/runtime/Context.java
 --- a/src/jdk/nashorn/internal/runtime/Context.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/Context.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/runtime/Context.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -44,8 +44,8 @@
  import java.security.PrivilegedAction;
  import java.util.Locale;
@@ -919,7 +1188,7 @@ diff -r 02f810c26ff9 src/jdk/nashorn/internal/runtime/Context.java
  import jdk.nashorn.internal.codegen.Namespace;
 diff -r 02f810c26ff9 src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java
 --- a/src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java	Wed Feb 06 12:51:09 2013 -0400
-+++ b/src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java	Thu Jul 11 15:26:53 2013 +0200
++++ b/src/jdk/nashorn/internal/runtime/linker/JavaAdapterFactory.java	Wed Aug 21 11:27:06 2013 +0200
 @@ -25,21 +25,21 @@
  
  package jdk.nashorn.internal.runtime.linker;
