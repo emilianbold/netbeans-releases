@@ -42,24 +42,27 @@
 package org.netbeans.modules.java.j2seembedded.wizard;
 
 import java.awt.Component;
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
+import java.util.concurrent.Callable;
 import javax.swing.JFileChooser;
-import javax.swing.SwingUtilities;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.NonNull;
-import org.netbeans.api.progress.ProgressUtils;
+import org.netbeans.modules.java.j2seembedded.platform.ConnectionMethod;
 import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -181,7 +184,6 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         jSeparator1 = new javax.swing.JSeparator();
         jreLocationLabel = new javax.swing.JLabel();
         jreLocation = new javax.swing.JTextField();
-        buttonTest = new javax.swing.JButton();
         workingDirLabel = new javax.swing.JLabel();
         workingDir = new javax.swing.JTextField();
         jSeparator2 = new javax.swing.JSeparator();
@@ -355,22 +357,6 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         gridBagConstraints.insets = new java.awt.Insets(5, 5, 0, 0);
         add(jreLocation, gridBagConstraints);
 
-        org.openide.awt.Mnemonics.setLocalizedText(buttonTest, org.openide.util.NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.buttonTest.text")); // NOI18N
-        buttonTest.setToolTipText(org.openide.util.NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.buttonTest.toolTipText")); // NOI18N
-        buttonTest.setEnabled(false);
-        buttonTest.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                buttonTestActionPerformed(evt);
-            }
-        });
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 12;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(10, 0, 5, 0);
-        add(buttonTest, gridBagConstraints);
-
         workingDirLabel.setLabelFor(workingDir);
         org.openide.awt.Mnemonics.setLocalizedText(workingDirLabel, org.openide.util.NbBundle.getMessage(SetUpRemotePlatform.class, "SetUpRemotePlatform.workingDirLabel.text")); // NOI18N
         gridBagConstraints = new java.awt.GridBagConstraints();
@@ -434,13 +420,9 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_buttonBrowseActionPerformed
 
-    private void buttonTestActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_buttonTestActionPerformed
-        ProgressUtils.showProgressDialogAndRun(new ConnectionValidator(), NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_ConnectingToPlatform")); //NOI18N
-    }//GEN-LAST:event_buttonTestActionPerformed
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton buttonBrowse;
     private javax.swing.ButtonGroup buttonGroupAuth;
-    private javax.swing.JButton buttonTest;
     private javax.swing.JTextField displayName;
     private javax.swing.JLabel displayNameLabel;
     private javax.swing.Box.Filler fillerBottomVertical;
@@ -466,12 +448,13 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
     private javax.swing.JLabel workingDirLabel;
     // End of variables declaration//GEN-END:variables
 
-    static class Panel implements WizardDescriptor.Panel<WizardDescriptor>, ChangeListener {
+    static class Panel implements WizardDescriptor.AsynchronousValidatingPanel<WizardDescriptor>, ChangeListener {
 
         private final ChangeSupport changeSupport;
         private SetUpRemotePlatform ui;
         private boolean valid = false;
-        private WizardDescriptor wizardDescriptor;
+        private volatile WizardDescriptor wizardDescriptor;
+        private volatile ConnectionValidator connectionValidator;
         
         //Following fields are used for panel validation (info messages updates)
         private boolean wasEmptyWorkingDir = false;
@@ -570,12 +553,10 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         @Override
         public void stateChanged(ChangeEvent e) {
             valid = checkPanelValidity();
-            ui.buttonTest.setEnabled(valid);
             changeSupport.fireChange();
         }
 
         private boolean checkPanelValidity() {
-            ui.buttonTest.setEnabled(false);
             if (ui.displayName.getText().isEmpty()) {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_DisplayName")); // NOI18N
                 return false;
@@ -616,7 +597,6 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                 displayNotification(""); // NOI18N
                 wasEmptyWorkingDir = false;
             }
-            ui.buttonTest.setEnabled(true);
             return true;
         }
 
@@ -625,32 +605,76 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                 wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE, message); // NOI18N
             }
         }
-    }
-
-    private class ConnectionValidator implements Runnable {
 
         @Override
-        public void run() {
+        public void prepareValidation() {
+            if (ui != null) {
+                final ConnectionMethod cm;
+                if (ui.radioButtonPassword.isSelected()) {
+                    cm = ConnectionMethod.sshPassword(
+                        ui.host.getText(),
+                        ((Integer)ui.port.getValue()).intValue(),
+                        ui.username.getText(),
+                        String.valueOf(ui.password.getPassword()));
+                } else {
+                    cm = ConnectionMethod.sshKey(
+                       ui.host.getText(),
+                       ((Integer)ui.port.getValue()).intValue(),
+                       ui.username.getText(),
+                       new File(ui.keyFilePath.getText()),
+                       String.valueOf(ui.passphrase.getPassword()));
+                }
+                connectionValidator = new ConnectionValidator(
+                    ui.jreLocation.getText(),
+                    ui.workingDir.getText(),
+                    cm);
+            }
+        }
+
+        @Override
+        public void validate() throws WizardValidationException {
+            final ConnectionValidator cv = connectionValidator;
+            if (cv != null) {
+                final Properties props = cv.call();
+                wizardDescriptor.putProperty(RemotePlatformIt.PROP_SYS_PROPERTIES, props);
+            }
+        }
+    }
+
+    private static class ConnectionValidator implements Callable<Properties> {
+
+        private final String jreLocation;
+        private final String workingDir;
+        private final ConnectionMethod connectionMethod;
+
+        ConnectionValidator(
+            @NonNull final String jreLocation,
+            @NonNull final String workingDir,
+            @NonNull final ConnectionMethod connectionMethod) {
+            Parameters.notNull("jreLocation", jreLocation); //NOI18N
+            Parameters.notNull("workingDir", workingDir);   //NOI18N
+            Parameters.notNull("connectionMethod", connectionMethod);   //NOI18N
+            this.jreLocation = jreLocation;
+            this.workingDir = workingDir;
+            this.connectionMethod = connectionMethod;
+        }
+
+
+        @Override
+        public Properties call() throws WizardValidationException {
             String[] antTargets = null;
             final Properties prop = new Properties();
-            prop.setProperty("remote.host", host.getText()); //NOI18N
-            prop.setProperty("remote.port", String.valueOf(port.getValue())); //NOI18N
-            prop.setProperty("remote.username", username.getText()); //NOI18N
-            prop.setProperty("remote.platform.home", jreLocation.getText()); //NOI18N
-            prop.setProperty("remote.working.dir", workingDir.getText().length() > 0 ? workingDir.getText() : "/home/" + username.getText() + "/NetBeansProjects/"); //NOI18N
+            prop.setProperty("remote.host", connectionMethod.getHost()); //NOI18N
+            prop.setProperty("remote.port", String.valueOf(connectionMethod.getPort())); //NOI18N
+            prop.setProperty("remote.username", connectionMethod.getAuthentification().getUserName()); //NOI18N
+            prop.setProperty("remote.platform.home", jreLocation); //NOI18N
+            prop.setProperty("remote.working.dir", workingDir.length() > 0 ? workingDir : "/home/" + connectionMethod.getAuthentification().getUserName() + "/NetBeansProjects/"); //NOI18N
             final File probe = InstalledFileLocator.getDefault().locate("modules/ext/org-netbeans-modules-java-j2seembedded-probe.jar", "org.netbeans.modules.java.j2seembedded", false);   //NOI18N
             if (probe == null) {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (panel.wizardDescriptor != null) {
-                            panel.wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                                    NbBundle.getMessage(SetUpRemotePlatform.class, "MSG_MissingProbe")); //NOI18N
-                            panel.changeSupport.fireChange();
-                        }
-                    }
-                });
-                return;
+                throw new WizardValidationException(
+                    null,
+                    NbBundle.getMessage(SetUpRemotePlatform.class, "MSG_MissingProbe"),
+                    null);
             }
             prop.setProperty("probe.file", probe.getAbsolutePath());
             File platformProperties = null;
@@ -659,13 +683,13 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
             try {
                 platformProperties = File.createTempFile("platform", ".properties");   //NOI18N
                 prop.setProperty("platform.properties.file", platformProperties.getAbsolutePath()); //NOI18N
-                if (radioButtonPassword.isSelected()) {
+                if (connectionMethod.getAuthentification().getKind() == ConnectionMethod.Authentification.Kind.PASSWORD) {
                     antTargets = new String[]{"connect-ssh-password"}; //NOI18N
-                    prop.setProperty("remote.password", String.valueOf(password.getPassword())); //NOI18N
-                } else if (radioButtonKey.isSelected()) {
+                    prop.setProperty("remote.password", ((ConnectionMethod.Authentification.Password)connectionMethod.getAuthentification()).getPassword()); //NOI18N
+                } else {
                     antTargets = new String[]{"connect-ssh-keyfile"}; //NOI18N
-                    prop.setProperty("keystore.file", keyFilePath.getText()); //NOI18N
-                    prop.setProperty("keystore.passphrase", String.valueOf(passphrase.getPassword())); //NOI18N
+                    prop.setProperty("keystore.file", ((ConnectionMethod.Authentification.Key)connectionMethod.getAuthentification()).getKeyStore().getAbsolutePath()); //NOI18N
+                    prop.setProperty("keystore.passphrase", ((ConnectionMethod.Authentification.Key)connectionMethod.getAuthentification()).getPassPhrase()); //NOI18N
                 }
 
                 final String resourcesPath = "org/netbeans/modules/java/j2seembedded/resources/validateconnection.xml"; //NOI18N
@@ -677,31 +701,23 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                 final FileObject antScript = FileUtil.toFileObject(buildScript);
                 executorTask = ActionUtils.runTarget(antScript, antTargets, prop);
                 final int antResult = executorTask.result();
-                if (antResult == 0) {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (panel.wizardDescriptor != null) {
-                                panel.wizardDescriptor.putProperty(WizardDescriptor.PROP_INFO_MESSAGE,
-                                        NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_ConnectionSuccessful")); //NOI18N
-                                panel.changeSupport.fireChange();
-                            }
-                        }
-                    });
-                } else {
-                    SwingUtilities.invokeLater(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (panel.wizardDescriptor != null) {
-                                panel.wizardDescriptor.putProperty(WizardDescriptor.PROP_ERROR_MESSAGE,
-                                        NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_ConnectionError")); //NOI18N
-                                panel.changeSupport.fireChange();
-                            }
-                        }
-                    });
+                if (antResult != 0) {
+                    throw new WizardValidationException(
+                        null,
+                        NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_ConnectionError"),
+                        null);
                 }
+                final Properties props = new Properties();
+                try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(platformProperties))) {
+                    props.load(in);
+                }
+                return props;
             } catch (IllegalArgumentException | IOException ex) {
                 Exceptions.printStackTrace(ex);
+                throw new WizardValidationException(
+                    null,
+                    ex.getMessage(),
+                    ex.getLocalizedMessage());
             } finally {
                 if (executorTask != null) {
                     executorTask.getInputOutput().closeInputOutput();

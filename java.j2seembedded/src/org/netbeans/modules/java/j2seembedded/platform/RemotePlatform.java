@@ -49,7 +49,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.platform.JavaPlatform;
@@ -57,7 +56,6 @@ import org.netbeans.api.java.platform.Specification;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.modules.SpecificationVersion;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
@@ -104,8 +102,11 @@ public final class RemotePlatform extends JavaPlatform {
             prototype.getSystemProperties());
     }
 
-    public static RemotePlatform create(@NonNull final String displayName) {
+    public static RemotePlatform create(
+        @NonNull final String displayName,
+        @NonNull final Map<String,String> sysProps ) {
         Parameters.notNull("displayName", displayName); //NOI18N
+        Parameters.notNull("sysProps", sysProps);       //NOI18N
         String currentDisplayName = displayName;
         String antName;
         for (int i=0;;i++) {
@@ -119,7 +120,6 @@ public final class RemotePlatform extends JavaPlatform {
                 i);
         }
         final Map<String,String> props = Collections.<String,String>singletonMap(PLAT_PROP_ANT_NAME, antName);
-        final Map<String,String> sysProps = Collections.<String,String>emptyMap();
         return create(displayName, props, sysProps);
     }
 

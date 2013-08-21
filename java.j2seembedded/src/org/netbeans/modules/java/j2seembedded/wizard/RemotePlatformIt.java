@@ -47,6 +47,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Collections;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Set;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
@@ -55,7 +56,6 @@ import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.modules.java.j2seembedded.platform.ConnectionMethod;
 import org.netbeans.modules.java.j2seembedded.platform.RemotePlatform;
 import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProvider;
-import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.util.ChangeSupport;
 import org.openide.util.NbBundle;
@@ -77,6 +77,7 @@ class RemotePlatformIt implements WizardDescriptor.InstantiatingIterator<WizardD
     public static final String PROP_PASSPHRASE = "passphrase"; //NOI18N
     public static final String PROP_JREPATH = "jrePath"; //NOI18N
     public static final String PROP_WORKINGDIR = "workingDir"; //NOI18N
+    public static final String PROP_SYS_PROPERTIES = "sysProperties";   //NOI18N
     
     private final ChangeSupport changeSupport = new ChangeSupport(this);
 
@@ -160,9 +161,8 @@ class RemotePlatformIt implements WizardDescriptor.InstantiatingIterator<WizardD
         }
         String jrePath = (String) wizard.getProperty(PROP_JREPATH);
         String workingDir = wizard.getProperty(PROP_WORKINGDIR) != null && ((String) wizard.getProperty(PROP_WORKINGDIR)).length() > 0
-                ? (String) wizard.getProperty(PROP_WORKINGDIR) : "/home/" + username + "/NetBeansProjects/"; //NOI18N
-        
-        final RemotePlatform prototype = RemotePlatform.create(displayName);
+                ? (String) wizard.getProperty(PROP_WORKINGDIR) : "/home/" + username + "/NetBeansProjects/"; //NOI18N        
+        final RemotePlatform prototype = RemotePlatform.create(displayName, getSystemProperties(wizard));
         try {
             prototype.setInstallFolder(new URI(jrePath));
             prototype.setWorkFolder(new URI(workingDir));
@@ -176,6 +176,13 @@ class RemotePlatformIt implements WizardDescriptor.InstantiatingIterator<WizardD
         } catch (URISyntaxException e) {
             throw new IOException(e);
         }
+    }
+
+    @NonNull
+    private static Map<String,String> getSystemProperties(@NonNull final WizardDescriptor wizard) {
+        @SuppressWarnings("unchecked")
+        final Map<String,String> sysProps = (Map<String,String>) wizard.getProperty(PROP_SYS_PROPERTIES);
+        return sysProps;
     }
     
 
