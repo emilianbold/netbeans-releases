@@ -130,19 +130,15 @@ public abstract class PHPNavTestBase extends PHPTestBase {
 
     protected void performTest(String[] code, final UserTask task, boolean waitFinished) throws Exception {
         FileUtil.refreshAll();
-
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         FileObject folder = workDir.createFolder("src");
         int index = -1;
-//
         for (String c : code) {
             FileObject f = FileUtil.createData(folder, computeFileName(index));
             TestUtilities.copyStringToFile(f, c);
             index++;
         }
-//
         final FileObject test = folder.getFileObject("test.php");
-
         Source testSource = getTestSource(test);
         if (waitFinished) {
             Future<Void> parseWhenScanFinished = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
@@ -151,6 +147,7 @@ public abstract class PHPNavTestBase extends PHPTestBase {
             ParserManager.parse(Collections.singleton(testSource), task);
         }
     }
+    
     protected void performTest(String[] code, final UserTask task) throws Exception {
         performTest(code, task, true);
     }

@@ -57,25 +57,6 @@ public class ModelTest extends ModelTestBase {
         super(testName);
     }
 
-//    public void testOccurencesBasicFileScope() throws Exception {
-//        Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
-//        FileScope topScope = model.getFileScope();
-//        assertFalse(topScope.getElements().isEmpty());
-//        FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"myfnc"));
-//        assertNotNull(fncScope);
-//        model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
-//        Occurence underCaret = underCaret(
-//                model,prepareTestFile("testfiles/model/basicFileScope.php"), fncScope.getOffset());
-//        assertNotNull(underCaret);
-//        for (PhpElement phpElement : underCaret.getAllDeclarations()) {
-//            assertEquals(PhpElementKind.FUNCTION, phpElement.getPhpElementKind());
-//            assertEquals(fncScope.getName(), phpElement.getName());
-//        }
-//        Collection<Occurence> allOccurences = underCaret.getAllOccurences();
-//        assertEquals(3, allOccurences.size());
-//    }
-
-
     public void testVarsForBasicFileScope() throws Exception {
         Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
         FileScope topScope = model.getFileScope();
@@ -143,7 +124,6 @@ public class ModelTest extends ModelTestBase {
         Model model = getModel(prepareTestFile("testfiles/model/scope.php"));
         FileScope topScope = model.getFileScope();
 
-
         Collection<? extends TypeScope> types = ModelUtils.getDeclaredTypes(topScope);
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
         Collection<? extends InterfaceScope> interfaces = ModelUtils.getDeclaredInterfaces(topScope);
@@ -203,7 +183,6 @@ public class ModelTest extends ModelTestBase {
         assertTrue(fnca.getInScope() instanceof NamespaceScope);
         assertTrue(fnca.getInScope().getInScope() instanceof FileScope);
         assertSame(topScope, fnca.getInScope().getInScope());
-
 
         assertEquals("fnca", fnca.getName());
         assertEquals("", ModelUtils.getCamelCaseName(fnca));
