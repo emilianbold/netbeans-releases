@@ -45,6 +45,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.core.network.proxy.NetworkProxyResolver;
 import org.netbeans.core.network.proxy.NetworkProxySettings;
+import org.openide.util.NbBundle;
 
 /**
  * Fallback resolver tries to retrieve proxy setting from environment variables.
@@ -69,6 +70,8 @@ public class FallbackNetworkProxy implements NetworkProxyResolver {
     private final static String HTTPS_PROXY_SYS_PROPERTY = "https_proxy"; //NOI18N
     private final static String SOCKS_PROXY_SYS_PROPERTY = "socks_proxy"; //NOI18N
     private final static String NO_PROXY_SYS_PROPERTY = "no_proxy"; //NOI18N
+    
+    private final static String DEFAULT_NO_PROXY_HOSTS = NbBundle.getMessage(FallbackNetworkProxy.class, "DefaulNoProxyHosts");
 
     @Override
     public NetworkProxySettings getNetworkProxySettings() {
@@ -87,7 +90,13 @@ public class FallbackNetworkProxy implements NetworkProxyResolver {
             String httpProxy = prepareVariable(httpProxyRaw);
             String httpsProxy = prepareVariable(httpsProxyRaw);
             String socksProxy = prepareVariable(socksProxyRaw);
-            String[] noProxyHosts = noProxyRaw == null ? new String[0] : noProxyRaw.split(COMMA);                   
+            String[] noProxyHosts;
+            if (noProxyRaw == null) {
+                noProxyHosts = DEFAULT_NO_PROXY_HOSTS.split(COMMA);
+                LOGGER.log(Level.INFO, "Fallback system proxy resolver: no proxy set to default"); //NOI18N
+            } else {
+                noProxyHosts = noProxyRaw.split(COMMA);
+            }
             
             return new NetworkProxySettings(httpProxy, httpsProxy, socksProxy, noProxyHosts);
         }
