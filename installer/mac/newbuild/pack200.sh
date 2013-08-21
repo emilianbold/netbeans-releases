@@ -44,7 +44,7 @@ do
         continue
     fi
     if [ ! -z "$dont_pack_localization_jars" ]; then
-        if [ ! -z `echo $f | grep "/locale/"` ];
+        if [ ! -z `echo $f | grep "/locale/"` ]; then
             echo "Skipping packing of localization jars: $f"
             continue
         fi
