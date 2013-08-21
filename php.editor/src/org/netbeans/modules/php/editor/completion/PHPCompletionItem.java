@@ -874,6 +874,16 @@ public abstract class PHPCompletionItem implements CompletionProposal {
             Completion.get().showToolTip();
             return getName();
         }
+
+        @Override
+        @NbBundle.Messages("MagicConstant=Magic Constant")
+        public String getRhsHtml(HtmlFormatter formatter) {
+            if (getConstant().isMagic()) {
+                formatter.appendText(Bundle.MagicConstant());
+                return formatter.getText();
+            }
+            return super.getRhsHtml(formatter);
+        }
     }
 
     public static class MethodDeclarationItem extends MethodElementItem {
@@ -1203,6 +1213,10 @@ public abstract class PHPCompletionItem implements CompletionProposal {
                 case ENDS_WITH_COLON:
                     builder.append(getName());
                     builder.append(" ${cursor}:"); //NOI18N
+                    break;
+                case CURSOR_BEFORE_ENDING_SEMICOLON:
+                    builder.append(getName());
+                    builder.append(" ${cursor};"); //NOI18N
                     break;
                 default:
                     assert false : type.toString();

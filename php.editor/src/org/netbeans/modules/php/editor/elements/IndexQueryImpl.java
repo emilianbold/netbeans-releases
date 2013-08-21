@@ -281,6 +281,11 @@ public final class IndexQueryImpl implements ElementQuery.Index {
         return MethodElementImpl.getMagicMethods(type);
     }
 
+    @Override
+    public Set<TypeConstantElement> getAccessibleMagicConstants(TypeElement type) {
+        return TypeConstantElementImpl.getMagicConstants(type);
+    }
+
     private Set<FunctionElement> getFunctionsImpl(final NameKind query) {
         final long start = (LOG.isLoggable(Level.FINE)) ? System.currentTimeMillis() : 0;
         final Set<FunctionElement> functions = new HashSet<>();

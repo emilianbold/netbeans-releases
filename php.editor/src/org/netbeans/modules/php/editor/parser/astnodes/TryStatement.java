@@ -60,8 +60,9 @@ public class TryStatement extends Statement {
 
     private Block tryStatement;
     private ArrayList<CatchClause> catchClauses = new ArrayList<>();
+    private final FinallyClause finallyClause;
 
-    private TryStatement(int start, int end, Block tryStatement, CatchClause[] catchClauses) {
+    private TryStatement(int start, int end, Block tryStatement, CatchClause[] catchClauses, FinallyClause finallyClause) {
         super(start, end);
 
         if (tryStatement == null || catchClauses == null) {
@@ -69,10 +70,11 @@ public class TryStatement extends Statement {
         }
         this.tryStatement = tryStatement;
         this.catchClauses.addAll(Arrays.asList(catchClauses));
+        this.finallyClause = finallyClause;
     }
 
-    public TryStatement(int start, int end, Block tryStatement, List<CatchClause> catchClauses) {
-        this(start, end, tryStatement, catchClauses == null ? null : (CatchClause[]) catchClauses.toArray(new CatchClause[catchClauses.size()]));
+    public TryStatement(int start, int end, Block tryStatement, List<CatchClause> catchClauses, FinallyClause finallyClause) {
+        this(start, end, tryStatement, catchClauses == null ? null : (CatchClause[]) catchClauses.toArray(new CatchClause[catchClauses.size()]), finallyClause);
     }
 
     /**
@@ -92,6 +94,10 @@ public class TryStatement extends Statement {
      */
     public List<CatchClause> getCatchClauses() {
         return this.catchClauses;
+    }
+
+    public FinallyClause getFinallyClause() {
+        return finallyClause;
     }
 
     @Override
