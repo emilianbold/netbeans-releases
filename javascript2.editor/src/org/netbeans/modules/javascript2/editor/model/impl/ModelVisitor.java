@@ -63,7 +63,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -598,11 +600,7 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node enter(FunctionNode functionNode) {
         addToPath(functionNode);
-        List<FunctionNode> functions = new ArrayList<FunctionNode>(functionNode.getFunctions().size());
-        // store all function nodes in cache
-        for (FunctionNode fn : functionNode.getFunctions()) {
-            functions.add(fn);
-        }
+        List<FunctionNode> functions = new ArrayList<FunctionNode>(functionNode.getFunctions());
 
         List<Identifier> name = null;
         boolean isPrivate = false;
@@ -734,8 +732,9 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
 
             }
-
-            for (FunctionNode fn : functions) {
+            
+            List<FunctionNode> copy = new ArrayList<FunctionNode>(functions);
+            for (FunctionNode fn : copy) {
                 if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
                     // go through all functions defined via reference
                     String functionName = fn.getIdent().getName();
