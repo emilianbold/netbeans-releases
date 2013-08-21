@@ -77,13 +77,13 @@ public abstract class PHPNavTestBase extends PHPTestBase {
 
     private static final String FOLDER = "GsfPlugins";
 
-    protected String preaperTestFile(String filePath) throws IOException {
+    protected String prepareTestFile(String filePath) throws IOException {
         String retval = TestUtilities.copyFileToString(new File(getDataDir(), filePath));
         return retval;
     }
 
     protected String prepareTestFile(String filePath, String... texts) throws IOException {
-        String retval = preaperTestFile(filePath);
+        String retval = prepareTestFile(filePath);
         assert texts != null && texts.length%2 == 0;
         for (int i = 0; i+1 < texts.length; i++) {
             String originalText = texts[i];
