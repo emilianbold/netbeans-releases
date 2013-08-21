@@ -30,19 +30,21 @@ FUNCTION DEFINITION foo229003  [8:1/134-13:2/295] FunctionDDImpl SCOPE: $Global$
             VARIABLE a229003 [10:5/187-10:18/200]  TYPE: int TEXT=int  [10:5/187-10:9/191]  INIT: null  SCOPE: Stmt  [8:20/153-13:2/295]
         STATEMENT EXPRESSION  [11:5/205-11:29/229] SCOPE: Stmt  [8:20/153-13:2/295] text: 'foo229003(arglist229003)'
         STATEMENT RETURN  [12:5/235-12:63/293] SCOPE: Stmt  [8:20/153-13:2/295] text: 'return arglist229003 != 0 && a229003 == c229003 + b229003;'
-FUNCTION DEFINITION boo229003  [15:1/299-19:2/435] FunctionDDImpl SCOPE: $Global$ 
+FUNCTION DEFINITION boo229003  [15:1/299-21:2/489] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE boo229003(void()(int),void(*)(void*),void()(double))
     UNIQUE NAME f:boo229003(void()(int),void(*)(void*),void()(double))
-    DECLARATION: boo229003  [15:1/299-19:2/435]
+    DECLARATION: boo229003  [15:1/299-21:2/489]
     PARAMETERS:
         fun1 [15:15/313-15:37/335]  TYPE: void TEXT=void()(int)  [15:15/313-15:21/319]  INIT: null  SCOPE: boo229003 
         fun2 [15:39/337-15:64/362]  TYPE: void TEXT=void(*)(void*)  [15:39/337-15:46/344]  INIT: null  SCOPE: boo229003 
         fun3 [15:66/364-15:91/389]  TYPE: void TEXT=void()(double)  [15:66/364-15:72/370]  INIT: null  SCOPE: boo229003 
     RETURNS int TEXT=int  [15:1/299-15:4/302]
-    STATEMENT COMPOUND  [15:93/391-19:2/435] SCOPE: boo229003 
-        STATEMENT EXPRESSION  [16:5/398-16:12/405] SCOPE: Stmt  [15:93/391-19:2/435] text: 'fun1(0)'
-        STATEMENT EXPRESSION  [17:5/412-17:12/419] SCOPE: Stmt  [15:93/391-19:2/435] text: 'fun2(0)'
-        STATEMENT EXPRESSION  [18:5/425-18:12/432] SCOPE: Stmt  [15:93/391-19:2/435] text: 'fun3(1)'
+    STATEMENT COMPOUND  [15:93/391-21:2/489] SCOPE: boo229003 
+        STATEMENT EXPRESSION  [16:5/398-16:12/405] SCOPE: Stmt  [15:93/391-21:2/489] text: 'fun1(0)'
+        STATEMENT EXPRESSION  [17:5/412-17:12/419] SCOPE: Stmt  [15:93/391-21:2/489] text: 'fun2(0)'
+        STATEMENT EXPRESSION  [18:5/425-18:12/432] SCOPE: Stmt  [15:93/391-21:2/489] text: 'fun3(1)'
+        STATEMENT DECLARATION  [20:5/439-20:53/487] SCOPE: Stmt  [15:93/391-21:2/489]
+            VARIABLE aaa [20:13/447-20:52/486]  TYPE: A229003 TEXT=A229003  [20:5/439-20:12/446]  INIT: null  SCOPE: Stmt  [15:93/391-21:2/489]
 
 ========== Dumping model of PROJECT DummyProject
 TYPEDEF __gnuc_va_list  [2:1/1-2:42/42] TYPE: __builtin_va_list TEXT=__builtin_va_list  [2:9/9-2:26/26] SCOPE: $Global$ 
@@ -64,17 +66,19 @@ FUNCTION DEFINITION foo229003  [8:1/134-13:2/295] FunctionDDImpl SCOPE: $Global$
             VARIABLE a229003 [10:5/187-10:18/200]  TYPE: int TEXT=int  [10:5/187-10:9/191]  INIT: null  SCOPE: Stmt  [8:20/153-13:2/295]
         STATEMENT EXPRESSION  [11:5/205-11:29/229] SCOPE: Stmt  [8:20/153-13:2/295] text: 'foo229003(arglist229003)'
         STATEMENT RETURN  [12:5/235-12:63/293] SCOPE: Stmt  [8:20/153-13:2/295] text: 'return arglist229003 != 0 && a229003 == c229003 + b229003;'
-FUNCTION DEFINITION boo229003  [15:1/299-19:2/435] FunctionDDImpl SCOPE: $Global$ 
+FUNCTION DEFINITION boo229003  [15:1/299-21:2/489] FunctionDDImpl SCOPE: $Global$ 
     SIGNATURE boo229003(void()(int),void(*)(void*),void()(double))
     UNIQUE NAME f:boo229003(void()(int),void(*)(void*),void()(double))
-    DECLARATION: boo229003  [15:1/299-19:2/435]
+    DECLARATION: boo229003  [15:1/299-21:2/489]
     PARAMETERS:
         fun1 [15:15/313-15:37/335]  TYPE: void TEXT=void()(int)  [15:15/313-15:21/319]  INIT: null  SCOPE: boo229003 
         fun2 [15:39/337-15:64/362]  TYPE: void TEXT=void(*)(void*)  [15:39/337-15:46/344]  INIT: null  SCOPE: boo229003 
         fun3 [15:66/364-15:91/389]  TYPE: void TEXT=void()(double)  [15:66/364-15:72/370]  INIT: null  SCOPE: boo229003 
     RETURNS int TEXT=int  [15:1/299-15:4/302]
-    STATEMENT COMPOUND  [15:93/391-19:2/435] SCOPE: boo229003 
-        STATEMENT EXPRESSION  [16:5/398-16:12/405] SCOPE: Stmt  [15:93/391-19:2/435] text: 'fun1(0)'
-        STATEMENT EXPRESSION  [17:5/412-17:12/419] SCOPE: Stmt  [15:93/391-19:2/435] text: 'fun2(0)'
-        STATEMENT EXPRESSION  [18:5/425-18:12/432] SCOPE: Stmt  [15:93/391-19:2/435] text: 'fun3(1)'
+    STATEMENT COMPOUND  [15:93/391-21:2/489] SCOPE: boo229003 
+        STATEMENT EXPRESSION  [16:5/398-16:12/405] SCOPE: Stmt  [15:93/391-21:2/489] text: 'fun1(0)'
+        STATEMENT EXPRESSION  [17:5/412-17:12/419] SCOPE: Stmt  [15:93/391-21:2/489] text: 'fun2(0)'
+        STATEMENT EXPRESSION  [18:5/425-18:12/432] SCOPE: Stmt  [15:93/391-21:2/489] text: 'fun3(1)'
+        STATEMENT DECLARATION  [20:5/439-20:53/487] SCOPE: Stmt  [15:93/391-21:2/489]
+            VARIABLE aaa [20:13/447-20:52/486]  TYPE: A229003 TEXT=A229003  [20:5/439-20:12/446]  INIT: null  SCOPE: Stmt  [15:93/391-21:2/489]
 

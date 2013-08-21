@@ -2577,7 +2577,7 @@ declarator[int kind, int level]
         // int (i);
         // or
         // type(var);
-        {level < 5 && (_td || (_ts != tsInvalid))}? (LPAREN declarator[kind, level + 1] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        {level < 5 && (_td || (_ts != tsInvalid))}? (LPAREN declarator[kind, level + 1] RPAREN is_post_declarator_token) =>
         LPAREN declarator[kind, level + 1] RPAREN
     |
         // type (var) = {...}
@@ -2592,7 +2592,7 @@ restrict_declarator[int kind, int level]
     :
         // IZ 109079 : Parser reports "unexpexted token" on parenthesized pointer to array
         // IZ 140559 : parser fails on code from boost
-        (LPAREN declarator[kind, level] RPAREN (SEMICOLON | ASSIGNEQUAL | COMMA | RPAREN)) =>
+        (LPAREN declarator[kind, level] RPAREN is_post_declarator_token) =>
         LPAREN declarator[kind, level] RPAREN
     |
         // Fix for IZ#136947: IDE highlights code with 'typedef' as wrong
@@ -2734,7 +2734,7 @@ function_declarator [boolean definition, boolean allowParens, boolean symTabChec
         (ptr_operator)=> ptr_operator function_declarator[definition, allowParens, symTabCheck]
     |	
         // int (i);
-        {_td || (_ts != tsTYPEID && _ts != tsInvalid) || allowParens}? (LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN (SEMICOLON | RPAREN)) =>
+        {_td || (_ts != tsInvalid) || allowParens}? (LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN is_post_declarator_token) =>
         LPAREN function_declarator[definition, allowParens, symTabCheck] RPAREN
     |
         function_direct_declarator[definition, symTabCheck] 
@@ -2750,7 +2750,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
 		)
         // IZ#134182 : missed const in function parameter
         // we should add "const" to function only if it's not K&R style function
-        (   ((cv_qualifier)* (LITERAL_override | LITERAL_final | LITERAL_new)? (LCURLY | literal_try | LITERAL_throw | LITERAL_noexcept | RPAREN | SEMICOLON | ASSIGNEQUAL | EOF | literal_attribute | POINTERTO))
+        (   ((cv_qualifier)* (LITERAL_override | LITERAL_final | LITERAL_new)? (is_post_declarator_token | literal_try | LITERAL_throw | LITERAL_noexcept | literal_attribute | POINTERTO))
             =>
             (options{warnWhenFollowAmbig = false;}: tq = cv_qualifier)*
         )?
@@ -2765,6 +2765,12 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
                 (options {greedy=true;} :function_attribute_specification)?
 	;
         
+protected
+is_post_declarator_token
+    :
+        SEMICOLON | ASSIGNEQUAL | LCURLY | EOF 
+    ;
+
 trailing_type
 {int ts = tsInvalid; TypeQualifier tq;}
     :

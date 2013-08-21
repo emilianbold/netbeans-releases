@@ -16,5 +16,7 @@ int boo229003(void (fun1)(int param), void (*fun2)(void* param), void (fun3)(dou
     fun1(0); 
     fun2(0);
     fun3(1);
+
+    A229003 aaa(fun1(fun2(fun3(fun1(fun2(fun3))))));
 }
 
