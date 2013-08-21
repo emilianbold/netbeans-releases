@@ -88,7 +88,7 @@ final class MakefileOrConfigureDescriptorPanel implements WizardDescriptor.Panel
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx("NewMakeWizardP11"); // NOI18N
+        return new HelpCtx("NewMakeWizardP1"); // NOI18N
     }
 
     @Override

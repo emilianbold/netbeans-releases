@@ -102,9 +102,9 @@ public class PanelConfigureProject implements MakeSamplePanel<WizardDescriptor>,
         } else if (type == NewMakeProjectWizardIterator.TYPE_STATIC_LIB || type == NewMakeProjectWizardIterator.TYPE_QT_STATIC_LIB) {
             return new HelpCtx("NewStaticLibWizard"); // NOI18N
         } else if (type == NewMakeProjectWizardIterator.TYPE_MAKEFILE) {
-            return new HelpCtx("NewMakeWizardP1"); // NOI18N
+            return new HelpCtx("NewMakeWizardP5"); // NOI18N
         } else if (type == NewMakeProjectWizardIterator.TYPE_BINARY) {
-            return new HelpCtx("NewBinaryWizard"); // NOI18N
+            return new HelpCtx("NewBinaryWizardP2"); // NOI18N
         } else {
             return new HelpCtx("CreatingCorC++Project"); // NOI18N
         }
