@@ -1108,7 +1108,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         String resolution = getRepositoryFieldValue(IssueField.RESOLUTION);
 
         if (resolution != null && !resolution.trim().isEmpty()) {
-            status += "/" + resolution;
+            status += "/" + resolution; //NOI18N
         }
 
 
@@ -1122,9 +1122,9 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         StringBuilder sb = new StringBuilder("<html>"); //NOI18N
         sb.append("<b>").append(displayName).append("</b><br>"); //NOI18N
         if (stateName != null && !stateName.isEmpty()) {
-            sb.append("<p style=\"padding:5px;\">").append(iconCode).append(stateName).append("</p><hr>"); //NOI18N
-
+            sb.append("<p style=\"padding:5px;\">").append(iconCode).append(stateName).append("</p>"); //NOI18N
         }
+        sb.append("<hr>"); //NOI18N
         sb.append(fieldTable);
         sb.append("</html>"); //NOI18N
         tooltip = sb.toString();

@@ -199,7 +199,8 @@ public class CloneAction implements ActionListener, HelpCtx.Provider {
                                     client.createBranch(GitUtils.MASTER, GitUtils.PREFIX_R_REMOTES + remoteName + "/" + GitUtils.MASTER, getProgressMonitor());
                                 } else {
                                     client.createBranch(branch.getName(), remoteName + "/" + branch.getName(), getProgressMonitor());
-                                    client.checkout(new File[0], branch.getName(), true, getProgressMonitor());
+                                    client.checkoutRevision(branch.getName(), true, getProgressMonitor());
+                                    client.reset(branch.getName(), org.netbeans.libs.git.GitClient.ResetType.HARD, getProgressMonitor());
                                 }
 
                                 Git.getInstance().getFileStatusCache().refreshAllRoots(destination);

@@ -244,7 +244,16 @@ public final class TextDetail implements Selectable {
     }
 
     String getLineTextPart(int beginIndex, int endIndex) {
-        return lineText.substring(beginIndex, endIndex);
+        if (beginIndex >= 0 && beginIndex <= endIndex) {
+            return lineText.substring(beginIndex, endIndex);
+        } else {
+            LOG.log(Level.WARNING, "Invalid range: " //NOI18N
+                    + "beginIndex = {0}, endIndex = {1}.", //NOI18N
+                    new Object[]{beginIndex, endIndex});
+            return lineText.substring(
+                    Math.max(0, beginIndex),
+                    Math.max(0, Math.max(beginIndex, endIndex)));
+        }
     }
 
     String getLineTextPart(int beginIndex) {
