@@ -30,7 +30,10 @@
  */
 package org.netbeans.modules.groovy.editor.api.elements.index;
 
+import java.util.Collections;
+import java.util.Set;
 import org.netbeans.modules.csl.api.ElementKind;
+import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
@@ -75,7 +78,7 @@ public class IndexedField extends IndexedElement {
 
     @Override
     public String getSignature() {
-        return classFqn + "#" + fieldName;
+        return in + "#" + fieldName;
     }
 
     @Override
@@ -106,6 +109,14 @@ public class IndexedField extends IndexedElement {
     }
 
     @Override
+    public Set<Modifier> getModifiers() {
+        if (isProperty()) {
+            return Collections.singleton(Modifier.PRIVATE);
+        }
+        return super.getModifiers();
+    }
+
+    @Override
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -117,7 +128,7 @@ public class IndexedField extends IndexedElement {
         if (this.fieldName != other.fieldName && (this.fieldName == null || !this.fieldName.equals(other.fieldName))) {
             return false;
         }
-        if (this.classFqn != other.classFqn && (this.classFqn == null || !this.classFqn.equals(other.classFqn))) {
+        if (this.in != other.in && (this.in == null || !this.in.equals(other.in))) {
             return false;
         }
         if (this.flags != other.flags) {
@@ -130,7 +141,7 @@ public class IndexedField extends IndexedElement {
     public int hashCode() {
         int hash = 7;
         hash = 43 * hash + (this.fieldName != null ? this.fieldName.hashCode() : 0);
-        hash = 43 * hash + (this.classFqn != null ? this.classFqn.hashCode() : 0);
+        hash = 43 * hash + (this.in != null ? this.in.hashCode() : 0);
         hash = 53 * hash + flags;
         return hash;
     }

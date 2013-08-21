@@ -44,11 +44,11 @@
 package org.netbeans.modules.groovy.editor.api.elements.index;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.elements.common.IMethodElement;
+import org.netbeans.modules.groovy.editor.api.elements.common.MethodElement;
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
@@ -58,7 +58,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
  * @author Tor Norbye
  * @author Martin Adamek
  */
-public final class IndexedMethod extends IndexedElement implements IMethodElement {
+public final class IndexedMethod extends IndexedElement implements MethodElement {
     /** This method takes a (possibly optional, see BLOCK_OPTIONAL) block */
     public static final int BLOCK = 1 << 6;
     /** This method takes an optional block */
@@ -67,15 +67,11 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
     /** Parenthesis or space delimited? */
 
     protected final String signature;
-    private String[] args;
-    private String name;
-    private List<String> parameters;
+    private List<MethodParameter> parameters;
     private boolean smart;
-    private boolean inherited; 
     private final String returnType;
     
     private IndexedMethod(String signature, String returnType, IndexResult result, String clz, String attributes, int flags) {
-
         super(result, clz, attributes, flags);
         this.signature = signature;
         this.returnType = returnType;
@@ -108,39 +104,32 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
         return name;
     }
 
+    @Override
     public String getReturnType() {
         return returnType;
     }
 
     @Override
     public String getSignature() {
-        return classFqn + "#" + signature;
-    }
-
-    private String[] getArgs() {
-        if (args == null) {
-            // Parse signature
-            int parenIndex = signature.indexOf('(');
-
-            if (parenIndex == -1) {
-                return new String[0];
-            }
-
-            String argsPortion = signature.substring(parenIndex + 1, signature.length() - 1);
-            args = argsPortion.split(","); // NOI18N
-        }
-
-        return args;
+        return in + "#" + signature;
     }
 
     @Override
-    public List<String> getParameters() {
+    public List<MethodParameter> getParameters() {
         if (parameters == null) {
-            String[] argArray = getArgs();
+            int parenIndex = signature.indexOf('('); // NOI18N
+            if (parenIndex == -1) {
+                return Collections.emptyList();
+            }
 
-            if ((argArray != null) && (argArray.length > 0)) {
-                parameters = new ArrayList<>(argArray.length);
-                parameters.addAll(Arrays.asList(argArray));
+            String argsPortion = signature.substring(parenIndex + 1, signature.length() - 1);
+            String[] args = argsPortion.split(","); // NOI18N
+
+            if (args != null && args.length > 0) {
+                parameters = new ArrayList<>();
+                for (String paramType : args) {
+                    parameters.add(new MethodParameter(paramType, GroovyUtils.stripPackage(paramType)));
+                }
             } else {
                 parameters = Collections.emptyList();
             }
@@ -150,8 +139,13 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
     }
 
     @Override
-    public boolean isDeprecated() {
-        return false;
+    public List<String> getParameterTypes() {
+        List<String> paramTypes = new ArrayList<>();
+
+        for (MethodParameter parameter : getParameters()) {
+            paramTypes.add(parameter.getType());
+        }
+        return paramTypes;
     }
 
     @Override
@@ -173,15 +167,6 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
         this.smart = smart;
     }
 
-    @Override
-    public boolean isInherited() {
-        return inherited;
-    }
-
-    public void setInherited(boolean inherited) {
-        this.inherited = inherited;
-    }
-
     public boolean hasBlock() {
         return (flags & BLOCK) != 0;
     }
@@ -195,12 +180,6 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
     }
 
     @Override
-    public boolean isTopLevel() {
-        return false;
-    }
-
-
-    @Override
     public boolean equals(Object obj) {
         if (obj == null) {
             return false;
@@ -212,7 +191,7 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
         if (this.signature != other.signature && (this.signature == null || !this.signature.equals(other.signature))) {
             return false;
         }
-        if (this.classFqn != other.classFqn && (this.classFqn == null || !this.classFqn.equals(other.classFqn))) {
+        if (this.in != other.in && (this.in == null || !this.in.equals(other.in))) {
             return false;
         }
         if (this.flags != other.flags) {
@@ -225,7 +204,7 @@ public final class IndexedMethod extends IndexedElement implements IMethodElemen
     public int hashCode() {
         int hash = 7;
         hash = 53 * hash + (this.signature != null ? this.signature.hashCode() : 0);
-        hash = 53 * hash + (this.classFqn != null ? this.classFqn.hashCode() : 0);
+        hash = 53 * hash + (this.in != null ? this.in.hashCode() : 0);
         hash = 53 * hash + flags;
         return hash;
     }

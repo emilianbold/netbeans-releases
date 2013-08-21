@@ -45,22 +45,13 @@ package org.netbeans.modules.groovy.editor.api.elements.ast;
 
 import groovyjarjarasm.asm.Opcodes;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.FieldNode;
 import org.codehaus.groovy.ast.MethodNode;
-import org.netbeans.editor.BaseDocument;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.csl.api.OffsetRange;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.groovy.editor.api.ASTUtils;
-import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
-import org.netbeans.modules.groovy.editor.api.lexer.LexUtilities;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 
 /**
  *
@@ -69,61 +60,34 @@ import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
 public abstract class ASTElement extends GroovyElement {
 
     protected final ASTNode node;
-    protected final GroovyParserResult info;
-    protected String name;
-    protected String in;
-    protected String signature;
-    protected List<ASTElement> children;
+    protected final List<ASTElement> children;
     protected Set<Modifier> modifiers;
 
-    public ASTElement(GroovyParserResult info, ASTNode node) {
-        this.info = info;
+
+    public ASTElement(ASTNode node) {
+        this(node, null);
+    }
+
+    public ASTElement(ASTNode node, String in) {
+        this(node, in, null);
+    }
+
+    public ASTElement(ASTNode node, String in, String name) {
+        super(in, name);
         this.node = node;
-    }
-
-    public List<ASTElement> getChildren() {
-        if (children == null) {
-            return Collections.<ASTElement>emptyList();
-        }
-
-        return children;
-    }
-
-    public void addChild(ASTElement child) {
-        if (children == null) {
-            children = new ArrayList<ASTElement>();
-        }
-
-        children.add(child);
-    }
-
-    public String getSignature() {
-        if (signature == null) {
-            StringBuilder sb = new StringBuilder();
-            String clz = getIn();
-            if (clz != null && clz.length() > 0) {
-                sb.append(clz);
-                sb.append("."); // NOI18N
-            }
-            sb.append(getName());
-            signature = sb.toString();
-        }
-
-        return signature;
+        this.children = new ArrayList<>();
     }
 
     public ASTNode getNode() {
         return node;
     }
 
-    @Override
-    public String getIn() {
-        return in;
+    public List<ASTElement> getChildren() {
+        return children;
     }
 
-    @Override
-    public ElementKind getKind() {
-        return ElementKind.OTHER;
+    public void addChild(ASTElement child) {
+        children.add(child);
     }
 
     @Override
@@ -158,10 +122,6 @@ public abstract class ASTElement extends GroovyElement {
         return modifiers;
     }
 
-    public void setIn(String in) {
-        this.in = in;
-    }
-
     @Override
     public boolean signatureEquals(final ElementHandle handle) {
         if (handle instanceof ASTElement) {
@@ -170,13 +130,9 @@ public abstract class ASTElement extends GroovyElement {
         return false;
     }
 
-    public GroovyParserResult getParseResult() {
-        return info;
-    }
-
-    public static ASTElement create(GroovyParserResult info, ASTNode node) {
+    public static ASTElement create(ASTNode node) {
         if (node instanceof MethodNode) {
-            return new ASTMethod(info, node);
+            return new ASTMethod(node);
         }
         return null;
     }
@@ -184,43 +140,5 @@ public abstract class ASTElement extends GroovyElement {
     @Override
     public String toString() {
         return getKind() + "<" + getName() + ">";
-    }
-
-    @Override
-    public OffsetRange getOffsetRange(ParserResult result) {
-        GroovyParserResult parserResult = ASTUtils.getParseResult(result);
-        // FIXME resolve handle
-        ElementHandle object = ElementHandleSupport.resolveHandle(parserResult, ElementHandleSupport.createHandle(result, this));
-
-        if (object instanceof ASTElement) {
-            BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
-            if (doc != null) {
-                ASTElement astElement = (ASTElement) object;
-                OffsetRange range = ASTUtils.getRange(astElement.getNode(), doc);
-                return LexUtilities.getLexerOffsets(parserResult, range);
-            }
-            return OffsetRange.NONE;
-        } else if (object != null) {
-            Logger logger = Logger.getLogger(ASTElement.class.getName());
-            logger.log(Level.WARNING, "Foreign element: {0} of type {1}", new Object[]{object, (object != null) ? object.getClass().getName() : "null"}); //NOI18N
-        } else {
-            if (getNode() != null) {
-                BaseDocument doc = (BaseDocument) result.getSnapshot().getSource().getDocument(false);
-                if (doc != null) {
-                    OffsetRange astRange = ASTUtils.getRange(getNode(), doc);
-                    if (astRange != OffsetRange.NONE) {
-                        GroovyParserResult oldInfo = info;
-                        if (oldInfo == null) {
-                            oldInfo = parserResult;
-                        }
-                        return LexUtilities.getLexerOffsets(oldInfo, astRange);
-                    } else {
-                        return OffsetRange.NONE;
-                    }
-                }
-            }
-        }
-
-        return OffsetRange.NONE;
     }
 }

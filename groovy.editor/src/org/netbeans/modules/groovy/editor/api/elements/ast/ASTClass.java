@@ -44,73 +44,27 @@
 
 package org.netbeans.modules.groovy.editor.api.elements.ast;
 
-import java.util.Set;
-import org.codehaus.groovy.ast.ASTNode;
 import org.codehaus.groovy.ast.ClassNode;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.elements.common.IClassElement;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.groovy.editor.api.elements.common.ClassElement;
 
-public class ASTClass extends ASTElement implements IClassElement {
+public class ASTClass extends ASTElement implements ClassElement {
 
-    private String fqn;
-    private Set<String> includes;
+    private final String fqn;
 
 
-    public ASTClass(GroovyParserResult info, ASTNode node) {
-        super(info, node);
-    }
-
-    @Override
-    public String getName() {
-        if (name == null) {
-            if (node instanceof ClassNode) {
-                name = ((ClassNode) node).getNameWithoutPackage();
-            }
-
-            if (name == null) {
-                name = node.toString();
-            }
+    public ASTClass(ClassNode node, String fqn) {
+        super(node, node.getPackageName(), node.getNameWithoutPackage());
+        if (fqn != null) {
+            this.fqn = fqn;
+        } else {
+            this.fqn = getName();
         }
-
-        return name;
-    }
-
-    @Override
-    public String getIn() {
-        if (in == null) {
-            if (node instanceof ClassNode) {
-                in = ((ClassNode) node).getPackageName();
-            }
-
-            if (in == null) {
-                in = ""; // NOI18N
-            }
-        }
-
-        return in;
     }
 
     @Override
     public String getFqn() {
-        if (fqn == null) {
-            return getName();
-        }
-
         return fqn;
-    }
-
-    public void setFqn(String fqn) {
-        this.fqn = fqn;
-    }
-
-    @Override
-    public Set<String> getIncludes() {
-        return includes;
-    }
-    
-    public void setIncludes(Set<String> includes) {
-        this.includes = includes;
     }
 
     @Override

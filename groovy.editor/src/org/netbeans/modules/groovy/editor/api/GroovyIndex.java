@@ -597,8 +597,6 @@ public final class GroovyIndex {
         }
 
         IndexedMethod m = IndexedMethod.create(methodSignature, type, clz, map, attributes, flags);
-
-        m.setInherited(inherited);
         return m;
     }
 

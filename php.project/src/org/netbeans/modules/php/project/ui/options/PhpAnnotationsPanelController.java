@@ -42,6 +42,8 @@
 package org.netbeans.modules.php.project.ui.options;
 
 import java.awt.EventQueue;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.swing.JComponent;
 import org.netbeans.modules.php.api.util.UiUtils;
 import org.netbeans.modules.php.project.annotations.UserAnnotations;
@@ -58,6 +60,7 @@ import org.openide.util.Lookup;
 )
 public class PhpAnnotationsPanelController extends BaseOptionsPanelController {
 
+    private static final Logger LOGGER = Logger.getLogger(PhpAnnotationsPanelController.class.getName());
     public static final String ID = "Annotations"; // NOI18N
 
     // @GuardedBy(EDT)
@@ -82,7 +85,9 @@ public class PhpAnnotationsPanelController extends BaseOptionsPanelController {
     protected void applyChangesInternal() {
         assert EventQueue.isDispatchThread();
         UserAnnotations.getInstance().setAnnotations(panel.getAnnotations());
-        PhpOptions.getInstance().setAnnotationsResolveDeprecatedElements(panel.isResolveDeprecatedElements());
+        boolean resolveDeprecatedElements = panel.isResolveDeprecatedElements();
+        LOGGER.log(Level.INFO, "Resolving of deprecated PHP elements: {0}", resolveDeprecatedElements);
+        PhpOptions.getInstance().setAnnotationsResolveDeprecatedElements(resolveDeprecatedElements);
     }
 
     @Override
