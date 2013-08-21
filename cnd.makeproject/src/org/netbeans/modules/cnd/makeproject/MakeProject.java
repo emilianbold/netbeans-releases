@@ -1427,7 +1427,7 @@ public final class MakeProject implements Project, MakeProjectListener {
         FileObject projectPrivateFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
         FileObject launchers = projectPrivateFolder.getFileObject(LaunchersProjectMetadataFactory.NAME);
         
-        if (launchers != null && launchers.isValid()) {
+        if (!projectPrivateFolder.canWrite() || (launchers != null && launchers.isValid())) {
             return;
         }
         
