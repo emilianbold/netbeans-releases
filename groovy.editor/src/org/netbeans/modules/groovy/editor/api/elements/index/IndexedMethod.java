@@ -48,6 +48,7 @@ import java.util.Collections;
 import java.util.List;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.elements.common.MethodElement;
+import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
@@ -66,7 +67,6 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
     /** Parenthesis or space delimited? */
 
     protected final String signature;
-    private String[] args;
     private List<MethodParameter> parameters;
     private boolean smart;
     private final String returnType;
@@ -114,31 +114,21 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
         return in + "#" + signature;
     }
 
-    private String[] getArgs() {
-        if (args == null) {
-            // Parse signature
-            int parenIndex = signature.indexOf('(');
-
-            if (parenIndex == -1) {
-                return new String[0];
-            }
-
-            String argsPortion = signature.substring(parenIndex + 1, signature.length() - 1);
-            args = argsPortion.split(","); // NOI18N
-        }
-
-        return args;
-    }
-
     @Override
     public List<MethodParameter> getParameters() {
         if (parameters == null) {
-            String[] argArray = getArgs();
+            int parenIndex = signature.indexOf('('); // NOI18N
+            if (parenIndex == -1) {
+                return Collections.emptyList();
+            }
 
-            if ((argArray != null) && (argArray.length > 0)) {
-                parameters = new ArrayList<>(argArray.length);
-                for (String paramType : argArray) {
-                    parameters.add(new MethodParameter(paramType, null, null));
+            String argsPortion = signature.substring(parenIndex + 1, signature.length() - 1);
+            String[] args = argsPortion.split(","); // NOI18N
+
+            if (args != null && args.length > 0) {
+                parameters = new ArrayList<>();
+                for (String paramType : args) {
+                    parameters.add(new MethodParameter(paramType, GroovyUtils.stripPackage(paramType)));
                 }
             } else {
                 parameters = Collections.emptyList();

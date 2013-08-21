@@ -85,6 +85,10 @@ public interface MethodElement {
         private final String type;
         private final String name;
 
+        public MethodParameter(String fqnType, String type) {
+            this(fqnType, type, null);
+        }
+
         public MethodParameter(String fqnType, String type, String name) {
             this.fqnType = fqnType;
             this.type = type;
