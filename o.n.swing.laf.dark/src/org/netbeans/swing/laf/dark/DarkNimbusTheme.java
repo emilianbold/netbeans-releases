@@ -39,21 +39,16 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.swing.plaf.nimbus;
+package org.netbeans.swing.laf.dark;
 
-import com.sun.imageio.plugins.common.ImageUtil;
 import java.awt.Color;
 import java.awt.Font;
 import java.util.concurrent.Callable;
-import javax.imageio.ImageIO;
 import javax.swing.JLabel;
 import javax.swing.LookAndFeel;
-import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
-import org.netbeans.swing.plaf.util.DarkIconFilter;
-import org.netbeans.swing.plaf.util.RelativeColor;
 
 /**
  *
@@ -62,6 +57,7 @@ import org.netbeans.swing.plaf.util.RelativeColor;
 public class DarkNimbusTheme {
 
     public static void install( LookAndFeel laf ) {
+        UIManager.put( "nb.dark.theme", Boolean.TRUE );
         UIManager.put( "control", new Color( 128, 128, 128) );
         UIManager.put( "info", new Color(128,128,128) );
         UIManager.put( "nimbusBase", new Color( 18, 30, 49) );

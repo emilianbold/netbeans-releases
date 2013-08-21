@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,35 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.testng.actions;
+package org.netbeans.swing.laf.dark;
 
-import javax.swing.text.Document;
-import org.netbeans.modules.gsf.testrunner.api.TestMethodRunnerProvider;
-import org.netbeans.spi.project.SingleMethod;
-import org.openide.nodes.Node;
-import org.openide.util.lookup.ServiceProvider;
+import javax.swing.UIDefaults;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
+import org.openide.util.NbBundle;
 
 /**
- *
- * @author theofanis
+ * Dark-themed Nimbus l&f
+ * 
+ * @author S. Aubrecht
  */
-@ServiceProvider(service = TestMethodRunnerProvider.class, position = 20)
-public class TestNGMethodRunnerProvider extends TestMethodRunnerProvider {
+public class DarkNimbusLookAndFeel extends NimbusLookAndFeel {
 
     @Override
-    public boolean isTestClass(Node activatedNode) {
-        return TestSingleMethodSupport.isTestClass(activatedNode);
-    }
-    
-    @Override
-    public SingleMethod getTestMethod(Document doc, int cursor){
-        return TestSingleMethodSupport.getTestMethod(doc, cursor);
+    public String getName() {
+        return NbBundle.getMessage(DarkNimbusLookAndFeel.class, "LBL_DARK_NIMBUS");
     }
 
     @Override
-    public boolean canHandle(Node activatedNode) {
-        return TestSingleMethodSupport.canHandle(activatedNode);
+    public UIDefaults getDefaults() {
+        UIDefaults res = super.getDefaults();
+        res.put( "nb.dark.theme", Boolean.TRUE );
+        return res;
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+        DarkNimbusTheme.install( this );
     }
 }
