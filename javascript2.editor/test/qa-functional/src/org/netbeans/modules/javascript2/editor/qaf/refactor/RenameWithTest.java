@@ -177,12 +177,11 @@ public class RenameWithTest extends RenameTest {
         eo.pressKey(java.awt.event.KeyEvent.VK_DELETE);
         eo.insert(RenameWithTest.fileContent);
         eo.save();
-        evt.waitEvent(500);
-
     }
 
     public void doRefactoring(EditorOperator eo, int lineNumber) {
         waitScanFinished();
+        evt.waitEvent(500);
         String rawLine = eo.getText(lineNumber);
         int start = rawLine.indexOf("//rename");
         String rawConfig = rawLine.substring(start + 2);
