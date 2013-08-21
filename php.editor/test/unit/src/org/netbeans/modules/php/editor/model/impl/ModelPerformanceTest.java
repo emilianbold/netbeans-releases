@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,24 +37,21 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2008 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
+import java.util.Date;
 import java.util.concurrent.Future;
+import static junit.framework.Assert.assertTrue;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
-import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.php.editor.model.Occurence;
-import org.netbeans.modules.php.editor.csl.PHPNavTestBase;
+import org.netbeans.modules.php.editor.model.Model;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -62,60 +59,33 @@ import org.openide.util.Exceptions;
 
 /**
  *
- * @author Radek Matous
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class ModelTestBase extends PHPNavTestBase {
+public class ModelPerformanceTest extends ModelTestBase {
 
-    public ModelTestBase(String testName) {
+    public ModelPerformanceTest(String testName) {
         super(testName);
     }
 
-    protected Source getTestSource(String relativeFilePath) {
-        FileObject fileObject = FileUtil.toFileObject(new File(getDataDir(), relativeFilePath));
-        return getTestSource(fileObject);
-    }
-
-    protected Model getModel(Source testSource) throws Exception {
-        final Model[] globals = new Model[1];
-        Future<Void> parseWhenScanFinished = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), new UserTask() {
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                PHPParseResult parameter = (PHPParseResult) resultIterator.getParserResult();
-                if (parameter != null) {
-                    Model model = parameter.getModel();
-                    globals[0] = model;
-                }
-            }
-        });
-        parseWhenScanFinished.get();
-        return globals[0];
-    }
-
-    public Occurence underCaret(final Model model,String code, final int offset) throws Exception {
-        final List<Occurence> occurences = new ArrayList<Occurence>();
-        super.performTest(new String[] {code}, new UserTask() {
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                PHPParseResult parameter = (PHPParseResult) resultIterator.getParserResult();
-                if (parameter != null) {
-                    Model mod = model != null ? model : parameter.getModel();
-                    OccurencesSupport occurencesSupport = mod.getOccurencesSupport(offset);
-                    Occurence underCaret = occurencesSupport.getOccurence();
-                    occurences.add(underCaret);
-                }
-            }
-        });
-        return occurences.get(0);
+    public void testModelPerformance() throws Exception {
+        Source testSource = getTestSource("testfiles/model/performance/performance.php");
+        Date start = new Date();
+        Model model = getModel(testSource);
+        Date end = new Date();
+        long time = end.getTime() - start.getTime();
+        System.out.println("Creating model takes: " + time);
+        assertTrue(time < 3000);
     }
 
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         FileObject dataDir = FileUtil.toFileObject(getDataDir());
         try {
-            return new FileObject[]{toFileObject(dataDir, "testfiles/model", true)}; //NOI18N
+            return new FileObject[]{toFileObject(dataDir, "testfiles/model/performance", true)}; //NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
         }
         return null;
     }
+
 }
