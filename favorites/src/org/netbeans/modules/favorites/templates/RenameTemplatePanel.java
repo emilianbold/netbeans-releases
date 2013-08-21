@@ -57,6 +57,7 @@ import org.openide.util.NbBundle;
 public class RenameTemplatePanel extends java.awt.Panel {
     
     private Set<String> otherFileNames;
+    private boolean isLicense = false;
     private DialogDescriptor dd;
     private NotificationLineSupport notificationLineSupport;
 
@@ -139,6 +140,10 @@ public class RenameTemplatePanel extends java.awt.Panel {
     String getFileDisplayName() {
         return displayNameTextField.getText();
     }
+    
+    void setIsLicense(boolean isLicense) {
+        this.isLicense = isLicense;
+    }
 
     void setOtherFileNames(Set<String> otherFileNames) {
         this.otherFileNames = otherFileNames;
@@ -149,19 +154,32 @@ public class RenameTemplatePanel extends java.awt.Panel {
         this.notificationLineSupport = dd.createNotificationLineSupport();
     }
 
-    @NbBundle.Messages("Err_FileNameExists=Template with this file name already exists.")
+    @NbBundle.Messages({"Err_FileNameExists=Template with this file name already exists.",
+                        "# {0} - prefix of the license file name",
+                        "# {1} - suffix of the license file name",
+                        "RenameTemplatePanel.license.warning.text=License file name must start with \"{0}\" and end with \"{1}\"."})
     private void checkName() {
-        if (otherFileNames == null) {
-            return ;
-        }
         String name = fileNameTextField.getText();
-        boolean clash = otherFileNames.contains(name);
+        boolean clash = otherFileNames != null && otherFileNames.contains(name);
         if (clash) {
             notificationLineSupport.setErrorMessage(Bundle.Err_FileNameExists());
         } else {
-            notificationLineSupport.clearMessages();
+            clash = isLicense && checkLicenseClash(name);
+            if (clash) {
+                notificationLineSupport.setErrorMessage(
+                        Bundle.RenameTemplatePanel_license_warning_text(
+                            TemplatesPanel.LICENSE_NAME_START,
+                            TemplatesPanel.LICENSE_NAME_END));
+            } else {
+                notificationLineSupport.clearMessages();
+            }
         }
         dd.setValid(!clash);
+    }
+    
+    private static boolean checkLicenseClash(String name) {
+        return !name.startsWith(TemplatesPanel.LICENSE_NAME_START) ||
+               !name.endsWith(TemplatesPanel.LICENSE_NAME_END);
     }
 
     private class NameDocumentListener implements DocumentListener {
