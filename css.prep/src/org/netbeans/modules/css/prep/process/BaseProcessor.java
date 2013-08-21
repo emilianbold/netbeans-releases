@@ -87,7 +87,7 @@ abstract class BaseProcessor {
 
     protected abstract String getCompilerOptions(Project project);
 
-    protected abstract void compileInternal(Project project, File source, File target, List<String> compilerOptions);
+    protected abstract void compileInternal(Project project, File workDir, File source, File target, List<String> compilerOptions);
 
     public void process(Project project, FileObject fileObject, String originalName, String originalExtension) {
         if (!isEnabled(project)) {
@@ -155,12 +155,14 @@ abstract class BaseProcessor {
             LOGGER.log(Level.WARNING, "Not compiling, file not found for fileobject {0}", FileUtil.getFileDisplayName(fileObject));
             return;
         }
-        File target = getTargetFile(project, getWebRoot(project, fileObject), file);
+        FileObject webRoot = getWebRoot(project, fileObject);
+        File target = getTargetFile(project, webRoot, file);
         if (target == null) {
             // not found
             return;
         }
-        compileInternal(project, file, target, CssPreprocessorUtils.parseCompilerOptions(getCompilerOptions(project), getWebRoot(project, fileObject)));
+        compileInternal(project, FileUtil.toFile(webRoot), file, target,
+                CssPreprocessorUtils.parseCompilerOptions(getCompilerOptions(project), webRoot));
     }
 
     protected void compileReferences(Project project, FileObject fileObject) {
