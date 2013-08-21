@@ -91,23 +91,6 @@ public class ModelTestBase extends PHPNavTestBase {
         return globals[0];
     }
 
-    public Occurence underCaret(final Model model,String code, final int offset) throws Exception {
-        final List<Occurence> occurences = new ArrayList<Occurence>();
-        super.performTest(new String[] {code}, new UserTask() {
-            @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                PHPParseResult parameter = (PHPParseResult) resultIterator.getParserResult();
-                if (parameter != null) {
-                    Model mod = model != null ? model : parameter.getModel();
-                    OccurencesSupport occurencesSupport = mod.getOccurencesSupport(offset);
-                    Occurence underCaret = occurencesSupport.getOccurence();
-                    occurences.add(underCaret);
-                }
-            }
-        });
-        return occurences.get(0);
-    }
-
     @Override
     protected FileObject[] createSourceClassPathsForTest() {
         FileObject dataDir = FileUtil.toFileObject(getDataDir());
