@@ -536,6 +536,7 @@ public class StatusLineComponent extends JPanel implements ProgressUIWorkerWithM
         resizePopup();
         popupWindow.setVisible(true);
         pane.requestFocus();
+        pane.repaint();
 //        System.out.println("     window focusable=" + popupWindow.isFocusableWindow());
     }
     

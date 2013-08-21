@@ -440,6 +440,10 @@ public class SQLLexer implements Lexer<SQLTokenId> {
         return isStartIdentifierQuoteChar(start) && end == getMatchingQuote(start);
     }
 
+    public static boolean isEndStringQuoteChar(int start, int end) {
+        return isStartStringQuoteChar(start) && end == getMatchingQuote(start);
+    }
+
     private static SQLTokenId testKeyword(CharSequence value) {
         if (SQLKeywords.isSQL99Keyword(value.toString().toUpperCase(), true)) {
             return SQLTokenId.KEYWORD;
