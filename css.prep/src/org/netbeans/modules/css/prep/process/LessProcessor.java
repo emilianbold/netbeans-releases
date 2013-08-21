@@ -90,13 +90,13 @@ public final class LessProcessor extends BaseProcessor {
     }
 
     @Override
-    protected void compileInternal(Project project, File source, File target, List<String> compilerOptions) {
+    protected void compileInternal(Project project, File workDir, File source, File target, List<String> compilerOptions) {
         LessExecutable less = getLess(project);
         if (less == null) {
             return;
         }
         try {
-            less.compile(source, target, compilerOptions);
+            less.compile(workDir, source, target, compilerOptions);
         } catch (ExecutionException ex) {
             if (Warnings.showWarning(CssPreprocessorType.LESS)) {
                 UiUtils.processExecutionException(ex);
