@@ -39,7 +39,7 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.swing.plaf.metal;
+package org.netbeans.swing.laf.dark;
 
 import java.awt.Color;
 import java.awt.Font;
@@ -51,8 +51,6 @@ import javax.swing.plaf.ColorUIResource;
 import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
-import org.netbeans.swing.plaf.util.DarkIconFilter;
-import org.netbeans.swing.plaf.util.RelativeColor;
 
 /**
  *
@@ -77,6 +75,7 @@ public class DarkMetalTheme extends DefaultMetalTheme {
     @Override
     public void addCustomEntriesToTable( UIDefaults table ) {
         super.addCustomEntriesToTable( table );
+        table.put( "nb.dark.theme", Boolean.TRUE );
         table.put( "nb.imageicon.filter", new DarkIconFilter() ); //NOI18N
         table.put( "nb.errorForeground", new Color(255,71,71) ); //NOI18N
         table.put( "nb.warningForeground", new Color(255,216,0) ); //NOI18N

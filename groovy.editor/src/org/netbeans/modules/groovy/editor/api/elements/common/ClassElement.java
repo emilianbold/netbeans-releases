@@ -43,16 +43,12 @@
  */
 package org.netbeans.modules.groovy.editor.api.elements.common;
 
-import java.util.Set;
-
 /**
- * Groovy-Elements that correspond to class type will implement
- * this interface whether they are from an AST or from an index
+ * General class element, either from an AST or from an index.
  *
  * @author Tor Norbye
  */
-public interface IClassElement {
+public interface ClassElement {
 
     String getFqn();
-    Set<String> getIncludes();
 }

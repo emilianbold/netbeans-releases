@@ -57,6 +57,7 @@ import org.codehaus.groovy.ast.expr.ConstructorCallExpression;
 import org.codehaus.groovy.ast.expr.Expression;
 import org.codehaus.groovy.ast.expr.MethodCallExpression;
 import org.codehaus.groovy.ast.expr.NamedArgumentListExpression;
+import org.netbeans.modules.groovy.editor.api.elements.common.MethodElement.MethodParameter;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
 
 /**
@@ -185,11 +186,11 @@ public class Methods {
     }
 
     public static boolean hasSameParameters(IndexedMethod indexedMethod, MethodNode method) {
-        return isSameList(indexedMethod.getParameters(), getMethodParams(method));
+        return isSameList(getMethodParams(indexedMethod), getMethodParams(method));
     }
 
     public static boolean hasSameParameters(IndexedMethod indexedMethod, MethodCallExpression methodCall) {
-        return isSameList(indexedMethod.getParameters(), getMethodParams(methodCall));
+        return isSameList(getMethodParams(indexedMethod), getMethodParams(methodCall));
     }
 
     public static boolean hasSameParameters(MethodNode methodNode, MethodCallExpression methodCall) {
@@ -206,6 +207,16 @@ public class Methods {
             }
         }
         return true;
+    }
+
+    private static List<String> getMethodParams(IndexedMethod indexedMethod) {
+        List<MethodParameter> parameters = indexedMethod.getParameters();
+        List<String> paramTypes = new ArrayList<>();
+
+        for (MethodParameter param : parameters) {
+            paramTypes.add(param.getType());
+        }
+        return paramTypes;
     }
 
     private static List<String> getMethodParams(MethodNode methodNode) {

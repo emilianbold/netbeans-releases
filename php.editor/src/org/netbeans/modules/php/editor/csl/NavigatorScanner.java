@@ -90,6 +90,7 @@ public final class NavigatorScanner {
     private static final String CLOSE_FONT = "</font>"; //NOI18N
     private static ImageIcon interfaceIcon = null;
     private static ImageIcon traitIcon = null;
+    private static boolean isLogged = false;
     private final FileScope fileScope;
     private final Set<TypeElement> deprecatedTypes;
 
@@ -100,7 +101,10 @@ public final class NavigatorScanner {
     private NavigatorScanner(Model model, boolean resolveDeprecatedElements) {
         fileScope = model.getFileScope();
         if (resolveDeprecatedElements) {
-            LOGGER.info("Resolving of deprecated elements in Navigator scanner - IDE will be possibly slow!");
+            if (!isLogged) {
+                LOGGER.info("Resolving of deprecated elements in Navigator scanner - IDE will be possibly slow!");
+                isLogged = true;
+            }
             deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
         } else {
             deprecatedTypes = Collections.<TypeElement>emptySet();

@@ -119,7 +119,7 @@ public class UsedNamesComputerTest extends PHPCodeCompletionTestBase {
         } else {
             caretOffset = -1;
         }
-        final Map<String, List<UsedNamespaceName>> result = new HashMap<String, List<UsedNamespaceName>>();
+        final Map<String, List<UsedNamespaceName>> result = new HashMap<>();
         ParserManager.parse(Collections.singleton(testSource), new UserTask() {
 
             @Override

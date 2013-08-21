@@ -44,7 +44,6 @@
 
 package org.netbeans.swing.plaf;
 
-import com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel;
 import java.awt.Toolkit;
 import java.util.logging.Logger;
 import org.netbeans.swing.plaf.aqua.AquaLFCustoms;
@@ -66,8 +65,6 @@ import java.util.ResourceBundle;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.logging.Level;
-import org.netbeans.swing.plaf.metal.DarkMetalTheme;
-import org.netbeans.swing.plaf.nimbus.DarkNimbusTheme;
 import org.netbeans.swing.plaf.nimbus.NimbusLFCustoms;
 import org.netbeans.swing.plaf.winclassic.WindowsLFCustoms;
 import org.netbeans.swing.plaf.windows8.Windows8LFCustoms;
@@ -123,9 +120,6 @@ public final class Startup {
         if (lf instanceof MetalLookAndFeel) {
             //Metal theme must be assigned before using the look and feel
             forceLaf = installTheme(lf);
-        } else if(lf instanceof NimbusLookAndFeel && isUseDarkTheme()) {
-            DarkNimbusTheme.install( lf );
-            forceLaf = true;
         }
         // overall defaults for all LFs
         // defaults for supported LFs
@@ -233,16 +227,6 @@ public final class Startup {
             themeInstalled = true;
             NbTheme nbTheme = new NbTheme(themeURL, lf);
             MetalLookAndFeel.setCurrentTheme(nbTheme);
-        } else if( isUseDarkTheme() ) {
-            //#232429 - make sure the theme overrides custom values from LFCustoms (if any)
-            if( lf instanceof MetalLookAndFeel ) {
-                DarkMetalTheme darkTheme = new DarkMetalTheme();
-                MetalLookAndFeel.setCurrentTheme( darkTheme );
-                themeInstalled = true;
-                darkTheme.addCustomEntriesToTable( UIManager.getDefaults() );
-            } else if( lf instanceof NimbusLookAndFeel || lf instanceof javax.swing.plaf.nimbus.NimbusLookAndFeel ) {
-                DarkNimbusTheme.install( lf );
-            }
         }
         return themeInstalled;
     }
@@ -623,9 +607,5 @@ public final class Startup {
                 installPerLFDefaults();
             }
         }
-    }
-
-    private static boolean isUseDarkTheme() {
-        return Boolean.getBoolean("netbeans.plaf.dark.theme"); //NOI18N
     }
 }

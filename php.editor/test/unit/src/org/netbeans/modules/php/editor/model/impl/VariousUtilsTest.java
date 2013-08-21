@@ -82,7 +82,7 @@ public class VariousUtilsTest extends ModelTestBase{
 
     @Test
     public void testGetPossibleNamespaces02() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/namespaces01.php"));
+        Model model = getModel(getTestSource("testfiles/model/namespaces01.php"));
         FileScope topScope = model.getFileScope();
 
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
@@ -97,7 +97,7 @@ public class VariousUtilsTest extends ModelTestBase{
 
     @Test
     public void testGetPossibleNamespaces03() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/namespaces02.php"));
+        Model model = getModel(getTestSource("testfiles/model/namespaces02.php"));
         FileScope topScope = model.getFileScope();
 
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
@@ -112,7 +112,7 @@ public class VariousUtilsTest extends ModelTestBase{
 
     @Test
     public void testGetPossibleNamespaces04() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/namespaces03.php"));
+        Model model = getModel(getTestSource("testfiles/model/namespaces03.php"));
         FileScope topScope = model.getFileScope();
 
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
@@ -127,7 +127,7 @@ public class VariousUtilsTest extends ModelTestBase{
 
     @Test
     public void testGetPossibleNamespaces05() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/namespaces04.php"));
+        Model model = getModel(getTestSource("testfiles/model/namespaces04.php"));
         FileScope topScope = model.getFileScope();
 
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
@@ -142,7 +142,7 @@ public class VariousUtilsTest extends ModelTestBase{
 
     @Test
     public void testGetPossibleNamespaces06() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/namespaces05.php"));
+        Model model = getModel(getTestSource("testfiles/model/namespaces05.php"));
         FileScope topScope = model.getFileScope();
 
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
@@ -157,7 +157,7 @@ public class VariousUtilsTest extends ModelTestBase{
 
     @Test
     public void testGetPossibleNamespaces07() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/namespaces06.php"));
+        Model model = getModel(getTestSource("testfiles/model/namespaces06.php"));
         FileScope topScope = model.getFileScope();
 
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
@@ -213,7 +213,7 @@ public class VariousUtilsTest extends ModelTestBase{
 
     @Test
     public void testGetPossibleNamespaces08() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/namespaces07.php"));
+        Model model = getModel(getTestSource("testfiles/model/namespaces07.php"));
         FileScope topScope = model.getFileScope();
 
         Collection<? extends FunctionScope> functions = ModelUtils.getDeclaredFunctions(topScope);
@@ -222,7 +222,7 @@ public class VariousUtilsTest extends ModelTestBase{
 
     public void testIssue206727() throws Exception {
         QualifiedName testName = QualifiedName.create("Nette\\Configurator");
-        Model model = getModel(prepareTestFile("testfiles/model/issue206727.php"));
+        Model model = getModel(getTestSource("testfiles/model/issue206727.php"));
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), 1);
         QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(testName, 1, namespaceScope);
         assertEquals(2, fullyQualifiedName.getSegments().size());
@@ -234,7 +234,7 @@ public class VariousUtilsTest extends ModelTestBase{
     public void testIssue210558() throws Exception {
         String array = "array";
         QualifiedName testName = QualifiedName.create(array);
-        Model model = getModel(prepareTestFile("testfiles/model/issue210558.php"));
+        Model model = getModel(getTestSource("testfiles/model/issue210558.php"));
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), 1);
         QualifiedName fullyQualifiedName = VariousUtils.getFullyQualifiedName(testName, 1, namespaceScope);
         assertEquals(QualifiedNameKind.UNQUALIFIED, fullyQualifiedName.getKind());

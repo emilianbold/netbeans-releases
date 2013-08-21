@@ -61,20 +61,80 @@ import org.openide.filesystems.FileObject;
  */
 public abstract class GroovyElement implements ElementHandle {
 
-    @Override
-    public abstract String getName();
+    /**
+     * Name of the element where this Groovy element lies. This might be package
+     * name in case of class element, class name in case of field element, etc.
+     */
+    protected String in;
+
+    /** Name of this element */
+    protected String name;
+
+    /** Signature of the element*/
+    protected String signature;
+
+
+    public GroovyElement() {
+    }
+
+    public GroovyElement(String in) {
+        this(in, null);
+    }
+
+    public GroovyElement(String in, String name) {
+        this.in = in;
+        this.name = name;
+    }
+
     @Override
     public abstract ElementKind getKind();
 
     @Override
-    public String getMimeType() {
-        return GroovyTokenId.GROOVY_MIME_TYPE;
+    public boolean signatureEquals(ElementHandle handle) {
+        if (getIn().equals(handle.getIn()) &&
+            getName().equals(handle.getName()) &&
+            getKind().equals(handle.getKind())) {
+
+            return true;
+        }
+        return false;
     }
 
     @Override
-    public boolean signatureEquals(ElementHandle handle) {
-        // XXX TODO
-        return false;
+    public String getIn() {
+        return in;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    /**
+     * Returns signature of this element.
+     * <p>
+     * The signature is formed as {@code in.name}.
+     * </p>
+     * @return signature of this element
+     */
+    public String getSignature() {
+        if (signature == null) {
+            StringBuilder sb = new StringBuilder();
+            String clz = getIn();
+            if (clz != null && clz.length() > 0) {
+                sb.append(clz);
+                sb.append("."); // NOI18N
+            }
+            sb.append(getName());
+            signature = sb.toString();
+        }
+
+        return signature;
+    }
+
+    @Override
+    public String getMimeType() {
+        return GroovyTokenId.GROOVY_MIME_TYPE;
     }
 
     @Override
@@ -85,11 +145,6 @@ public abstract class GroovyElement implements ElementHandle {
     @Override
     public Set<Modifier> getModifiers() {
         return Collections.emptySet();
-    }
-
-    @Override
-    public String getIn() {
-        return null;
     }
 
     @Override

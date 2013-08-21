@@ -77,13 +77,13 @@ public abstract class PHPNavTestBase extends PHPTestBase {
 
     private static final String FOLDER = "GsfPlugins";
 
-    protected String preaperTestFile(String filePath) throws IOException {
+    protected String prepareTestFile(String filePath) throws IOException {
         String retval = TestUtilities.copyFileToString(new File(getDataDir(), filePath));
         return retval;
     }
 
     protected String prepareTestFile(String filePath, String... texts) throws IOException {
-        String retval = preaperTestFile(filePath);
+        String retval = prepareTestFile(filePath);
         assert texts != null && texts.length%2 == 0;
         for (int i = 0; i+1 < texts.length; i++) {
             String originalText = texts[i];
@@ -130,19 +130,15 @@ public abstract class PHPNavTestBase extends PHPTestBase {
 
     protected void performTest(String[] code, final UserTask task, boolean waitFinished) throws Exception {
         FileUtil.refreshAll();
-
         FileObject workDir = FileUtil.toFileObject(getWorkDir());
         FileObject folder = workDir.createFolder("src");
         int index = -1;
-//
         for (String c : code) {
             FileObject f = FileUtil.createData(folder, computeFileName(index));
             TestUtilities.copyStringToFile(f, c);
             index++;
         }
-//
         final FileObject test = folder.getFileObject("test.php");
-
         Source testSource = getTestSource(test);
         if (waitFinished) {
             Future<Void> parseWhenScanFinished = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), task);
@@ -151,6 +147,7 @@ public abstract class PHPNavTestBase extends PHPTestBase {
             ParserManager.parse(Collections.singleton(testSource), task);
         }
     }
+    
     protected void performTest(String[] code, final UserTask task) throws Exception {
         performTest(code, task, true);
     }

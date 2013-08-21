@@ -42,10 +42,15 @@
 
 package org.netbeans.modules.php.editor.model.impl;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.Future;
+import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.php.editor.model.Occurence;
@@ -60,13 +65,19 @@ import org.openide.util.Exceptions;
  * @author Radek Matous
  */
 public class ModelTestBase extends PHPNavTestBase {
+
     public ModelTestBase(String testName) {
         super(testName);
     }
 
-    public Model getModel(String code) throws Exception {
+    protected Source getTestSource(String relativeFilePath) {
+        FileObject fileObject = FileUtil.toFileObject(new File(getDataDir(), relativeFilePath));
+        return getTestSource(fileObject);
+    }
+
+    protected Model getModel(Source testSource) throws Exception {
         final Model[] globals = new Model[1];
-        super.performTest(new String[] {code}, new UserTask() {
+        Future<Void> parseWhenScanFinished = ParserManager.parseWhenScanFinished(Collections.singleton(testSource), new UserTask() {
             @Override
             public void run(ResultIterator resultIterator) throws Exception {
                 PHPParseResult parameter = (PHPParseResult) resultIterator.getParserResult();
@@ -76,6 +87,7 @@ public class ModelTestBase extends PHPNavTestBase {
                 }
             }
         });
+        parseWhenScanFinished.get();
         return globals[0];
     }
 

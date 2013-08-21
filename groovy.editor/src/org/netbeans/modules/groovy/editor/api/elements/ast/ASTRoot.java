@@ -45,7 +45,7 @@
 package org.netbeans.modules.groovy.editor.api.elements.ast;
 
 import org.codehaus.groovy.ast.ModuleNode;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.csl.api.ElementKind;
 import org.openide.filesystems.FileObject;
 
 /**
@@ -57,8 +57,8 @@ public class ASTRoot extends ASTElement {
     private final FileObject fileObject;
     private final ModuleNode moduleNode;
 
-    public ASTRoot(FileObject fo, GroovyParserResult info, ModuleNode moduleNode) {
-        super(info, moduleNode);
+    public ASTRoot(FileObject fo, ModuleNode moduleNode) {
+        super(moduleNode);
         this.fileObject = fo;
         this.moduleNode = moduleNode;
     }
@@ -71,5 +71,9 @@ public class ASTRoot extends ASTElement {
     public ModuleNode getModuleNode() {
         return moduleNode;
     }
-    
+
+    @Override
+    public ElementKind getKind() {
+        return ElementKind.MODULE;
+    }
 }

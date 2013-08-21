@@ -39,50 +39,53 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.swing.plaf.util;
+package org.netbeans.modules.php.editor.model.impl;
 
-import java.awt.Color;
-import java.awt.image.RGBImageFilter;
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.Date;
+import java.util.concurrent.Future;
+import static junit.framework.Assert.assertTrue;
+import org.netbeans.modules.parsing.api.ParserManager;
+import org.netbeans.modules.parsing.api.ResultIterator;
+import org.netbeans.modules.parsing.api.Source;
+import org.netbeans.modules.parsing.api.UserTask;
+import org.netbeans.modules.php.editor.model.Model;
+import org.netbeans.modules.php.editor.parser.PHPParseResult;
+import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 
 /**
- * For dark LaFs it inverts icon brightness (=inverts icon image to obtain dark icon,
- * then inverts its hue to restore original colors).
- * 
- * @author P. Somol
+ *
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class DarkIconFilter extends RGBImageFilter {
+public class ModelPerformanceTest extends ModelTestBase {
 
-    /** in dark LaFs brighten all icons; 0.0f = no change, 1.0f = maximum brightening */
-    private static final float DARK_ICON_BRIGHTEN = 0.1f;
+    public ModelPerformanceTest(String testName) {
+        super(testName);
+    }
+
+    public void testModelPerformance() throws Exception {
+        Source testSource = getTestSource("testfiles/model/performance/performance.php");
+        Date start = new Date();
+        Model model = getModel(testSource);
+        Date end = new Date();
+        long time = end.getTime() - start.getTime();
+        System.out.println("Creating model takes: " + time);
+        assertTrue(time < 3000);
+    }
 
     @Override
-    public int filterRGB(int x, int y, int color) {
-        int a = color & 0xff000000;
-        int rgb[] = decode(color);
-        int inverted[] = invert(rgb);
-        int result[] = invertHueBrighten(inverted, DARK_ICON_BRIGHTEN);
-        return a | encode(result);
-   }
-
-    private int[] invert(int[] rgb) {
-        return new int[]{255-rgb[0], 255-rgb[1], 255-rgb[2]};
-    }
-
-    private int[] invertHueBrighten(int[] rgb, float brighten) {
-        float hsb[] = new float[3];
-        Color.RGBtoHSB(rgb[0], rgb[1], rgb[2], hsb);
-        return decode(Color.HSBtoRGB(hsb[0] > 0.5f ? hsb[0]-0.5f : hsb[0]+0.5f, hsb[1], hsb[2]+(1.0f-hsb[2])*brighten));
-    }
-
-    private int[] decode(int rgb) {
-        return new int[]{(rgb & 0x00ff0000) >> 16, (rgb & 0x0000ff00) >> 8, rgb & 0x000000ff};
-    }
-    private int encode(int[] rgb) {
-        return (toBoundaries(rgb[0]) << 16) | (toBoundaries(rgb[1]) << 8) | toBoundaries(rgb[2]);
-    }
-
-    private int toBoundaries(int color) {
-        return Math.max(0,Math.min(255,color));
+    protected FileObject[] createSourceClassPathsForTest() {
+        FileObject dataDir = FileUtil.toFileObject(getDataDir());
+        try {
+            return new FileObject[]{toFileObject(dataDir, "testfiles/model/performance", true)}; //NOI18N
+        } catch (IOException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return null;
     }
 
 }

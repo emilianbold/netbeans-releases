@@ -44,9 +44,8 @@
 
 package org.netbeans.modules.groovy.editor.api.elements.index;
 
-import java.util.Set;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.elements.common.IClassElement;
+import org.netbeans.modules.groovy.editor.api.elements.common.ClassElement;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
@@ -56,7 +55,7 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
  * @author Tor Norbye
  * @author Martin Adamek
  */
-public final class IndexedClass extends IndexedElement implements IClassElement {
+public final class IndexedClass extends IndexedElement implements ClassElement {
 
     /** This class is a module rather than a proper class */
     public static final int MODULE = 1 << 6;
@@ -77,7 +76,7 @@ public final class IndexedClass extends IndexedElement implements IClassElement 
     // XXX Is this necessary?
     @Override
     public String getSignature() {
-        return classFqn;
+        return in;
     }
 
     @Override
@@ -89,27 +88,22 @@ public final class IndexedClass extends IndexedElement implements IClassElement 
     public ElementKind getKind() {
         return (flags & MODULE) != 0 ? ElementKind.MODULE : ElementKind.CLASS;
     }
-
-    @Override
-    public Set<String> getIncludes() {
-        return null;
-    }
     
     @Override 
     public boolean equals(Object o) {
-        if (o instanceof IndexedClass && classFqn != null) {
-            return classFqn.equals(((IndexedClass) o).classFqn);
+        if (o instanceof IndexedClass && in != null) {
+            return in.equals(((IndexedClass) o).in);
         }
         return super.equals(o);
     }
     
     @Override
     public int hashCode() {
-        return classFqn == null ? super.hashCode() : classFqn.hashCode();
+        return in == null ? super.hashCode() : in.hashCode();
     }
 
     @Override
     public String getFqn() {
-        return classFqn;
+        return in;
     }
 }
