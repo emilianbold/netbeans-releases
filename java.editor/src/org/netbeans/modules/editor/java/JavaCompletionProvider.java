@@ -5448,7 +5448,7 @@ public class JavaCompletionProvider implements CompletionProvider {
         private Env getCompletionEnvironment(CompilationController controller, int queryType) throws IOException {
             controller.toPhase(Phase.PARSED);
             int offset = controller.getSnapshot().getEmbeddedOffset(caretOffset);
-            if (offset < 0)
+            if (offset < 0 || offset > controller.getText().length())
                 return null;
             String prefix = null;
             if (offset > 0) {
@@ -5490,6 +5490,7 @@ public class JavaCompletionProvider implements CompletionProvider {
                     }
                 }
             }
+            offset = Math.min(offset, controller.getText().length());
             TreePath path = controller.getTreeUtilities().pathFor(offset);
             if (queryType != DOCUMENTATION_QUERY_TYPE) {
                 TreePath treePath = path;
