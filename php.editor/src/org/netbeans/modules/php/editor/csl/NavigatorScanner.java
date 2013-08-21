@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
+import java.util.logging.Logger;
 import javax.swing.ImageIcon;
 import org.netbeans.modules.csl.api.ElementHandle;
 import org.netbeans.modules.csl.api.ElementKind;
@@ -84,6 +85,7 @@ import org.openide.util.ImageUtilities;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public final class NavigatorScanner {
+    private static final Logger LOGGER = Logger.getLogger(NavigatorScanner.class.getName());
     private static final String FONT_GRAY_COLOR = "<font color=\"#999999\">"; //NOI18N
     private static final String CLOSE_FONT = "</font>"; //NOI18N
     private static ImageIcon interfaceIcon = null;
@@ -97,9 +99,12 @@ public final class NavigatorScanner {
 
     private NavigatorScanner(Model model, boolean resolveDeprecatedElements) {
         fileScope = model.getFileScope();
-        deprecatedTypes = resolveDeprecatedElements
-                ? ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()))
-                : Collections.<TypeElement>emptySet();
+        if (resolveDeprecatedElements) {
+            LOGGER.info("Resolving of deprecated elements in Navigator scanner - IDE will be possibly slow!");
+            deprecatedTypes = ElementFilter.forDeprecated(true).filter(model.getIndexScope().getIndex().getTypes(NameKind.empty()));
+        } else {
+            deprecatedTypes = Collections.<TypeElement>emptySet();
+        }
     }
 
     public List<? extends StructureItem> scan() {
