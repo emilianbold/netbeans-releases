@@ -235,6 +235,9 @@ public final class NewTestActionFactory {
 
         @Override
         public void performAction(Node[] activatedNodes) {
+            if (activatedNodes.length == 0) {
+                return;
+            }
             Node n = activatedNodes[0];
             Folder folder = (Folder) n.getValue("Folder"); // NOI18N
             assert folder != null;

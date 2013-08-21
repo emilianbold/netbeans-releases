@@ -61,6 +61,10 @@ import javax.swing.event.ChangeListener;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.NbMavenProject;
 import org.netbeans.spi.project.ui.support.ProjectChooser;
 import org.netbeans.spi.project.ui.templates.support.Templates;
@@ -68,6 +72,7 @@ import org.openide.WizardDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInstantiatingIterator {
@@ -130,6 +135,8 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
         handle.progress(1);
         Project prj = ProjectManager.getDefault().findProject(dir);
         if (prj != null) {
+            configureServer(prj);
+
             final NbMavenProject mvn = prj.getLookup().lookup(NbMavenProject.class);
             if (mvn != null) {
                 mvn.downloadDependencyAndJavadocSource(false);
@@ -297,6 +304,49 @@ public class MavenSamplesWizardIterator implements WizardDescriptor.ProgressInst
     @Override
     public Set instantiate() throws IOException {
         throw new UnsupportedOperationException("Not supported yet.");
+    }
+
+    // #230450
+    protected void configureServer(Project project) {
+        if (!isJavaEEProject(project)) {
+            return;
+        }
+
+        Set<String> gfServers = new LinkedHashSet<String>();
+        gfServers.add("gfv3ee6"); // NOI18N
+        gfServers.add("gfv3ee6wc"); // NOI18N
+
+        String[] registeredServers = Deployment.getDefault().getServerInstanceIDs();
+        for (String serverInstanceID : registeredServers) {
+            ServerInstance si = Deployment.getDefault().getServerInstance(serverInstanceID);
+            if (si != null) {
+                try {
+                    String serverID = si.getServerID();
+
+                    if (gfServers.contains(serverID)) {
+                        JavaEEProjectSettings.setServerInstanceID(project, serverInstanceID);
+                        return;
+                    }
+                } catch (InstanceRemovedException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+        }
+    }
+
+    private boolean isJavaEEProject(Project project) {
+        NbMavenProject mavenProject = project.getLookup().lookup(NbMavenProject.class);
+        if (mavenProject != null) {
+            String packagingType = mavenProject.getPackagingType();
+            if ("war".equals(packagingType) ||
+                "ejb".equals(packagingType) ||
+                "ear".equals(packagingType) ||
+                "app-client".equals(packagingType)) {
+
+                return true;
+            }
+        }
+        return false;
     }
 
     protected void configureProject(FileObject dir) throws IOException {}

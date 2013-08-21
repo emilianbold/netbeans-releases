@@ -92,7 +92,7 @@ public class JsfPageMetadataProvider implements WebPageMetadataProvider {
         }
 
         Collection<String> namespaces = result.getAllDeclaredNamespaces().keySet();
-        Collection<String> jsfNamespaces = new HashSet<String>();
+        Collection<String> jsfNamespaces = new HashSet<>();
         for(String ns : namespaces) {
             if(jsfs.getLibrary(ns) != null) {
                 jsfNamespaces.add(ns);
@@ -103,7 +103,7 @@ public class JsfPageMetadataProvider implements WebPageMetadataProvider {
             return null; //no jsf content
         }
 
-        Map<String, Object> resultMap = new TreeMap<String, Object>();
+        Map<String, Object> resultMap = new TreeMap<>();
         resultMap.put(JSF_LIBRARIES_KEY, jsfNamespaces);
         resultMap.put(WebPageMetadata.MIMETYPE, JsfUtils.JSF_XHTML_FILE_MIMETYPE);
         

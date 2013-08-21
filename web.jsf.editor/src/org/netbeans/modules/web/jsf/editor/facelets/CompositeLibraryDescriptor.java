@@ -86,9 +86,9 @@ public class CompositeLibraryDescriptor implements LibraryDescriptor {
         Map<String, Tag> s = first.getTags();
         Map<String, Tag> t = second.getTags();
 
-        Map<String, Tag> result = new HashMap<String, Tag>();
+        Map<String, Tag> result = new HashMap<>();
 
-        Collection<String> allTagNames = new HashSet<String>();
+        Collection<String> allTagNames = new HashSet<>();
         allTagNames.addAll(s.keySet());
         allTagNames.addAll(t.keySet());
         for(String tagName : allTagNames) {

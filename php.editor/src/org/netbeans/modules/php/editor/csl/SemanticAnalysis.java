@@ -48,6 +48,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Logger;
 import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
@@ -133,6 +134,7 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public static final EnumSet<ColoringAttributes> ANNOTATION_TYPE_SET = EnumSet.of(ColoringAttributes.ANNOTATION_TYPE);
     public static final EnumSet<ColoringAttributes> METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.CUSTOM1);
     public static final EnumSet<ColoringAttributes> STATIC_METHOD_INVOCATION_SET = EnumSet.of(ColoringAttributes.STATIC, ColoringAttributes.CUSTOM1);
+    private static final Logger LOGGER = Logger.getLogger(SemanticAnalysis.class.getName());
 
     private volatile boolean cancelled;
     private Map<OffsetRange, Set<ColoringAttributes>> semanticHighlights;
@@ -143,6 +145,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     }
 
     public SemanticAnalysis(boolean isResolveDeprecatedElements) {
+        if (isResolveDeprecatedElements) {
+            LOGGER.info("Resolving of deprecated elements in Semantic analysis - IDE will be possibly slow!");
+        }
         this.isResolveDeprecatedElements = isResolveDeprecatedElements;
         semanticHighlights = null;
     }

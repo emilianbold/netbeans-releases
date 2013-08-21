@@ -106,7 +106,7 @@ public class FaceletsLibrarySupport {
 
     private static final Logger LOGGER = Logger.getLogger(FaceletsLibrarySupport.class.getSimpleName());
 
-    private final ThreadLocal<Collection<? extends Library>> declaredFacesComponentsCache = new ThreadLocal<Collection<? extends Library>>();
+    private final ThreadLocal<Collection<? extends Library>> declaredFacesComponentsCache = new ThreadLocal<>();
 
     private FileChangeListener DDLISTENER = new FileChangeAdapter() {
         @Override
@@ -229,10 +229,10 @@ public class FaceletsLibrarySupport {
     // a library descriptor and also adds the default composite library
     // namespace as a new key to the libraries map.
     private void updateCompositeLibraries(Map<String, Library> faceletsLibraries) {
-        List<String> libraryNames = new ArrayList<String>(jsfSupport.getIndex().getAllCompositeLibraryNames());
+        List<String> libraryNames = new ArrayList<>(jsfSupport.getIndex().getAllCompositeLibraryNames());
         //go through all the declared libraries, filter composite libraries
         //and add default namespace to the libraries map
-        Map<String, Library> cclibsMap = new HashMap<String, Library>();
+        Map<String, Library> cclibsMap = new HashMap<>();
         for (Library lib : faceletsLibraries.values()) {
             if (lib instanceof CompositeComponentLibrary) {
                 CompositeComponentLibrary cclib = (CompositeComponentLibrary)lib;
@@ -299,7 +299,7 @@ public class FaceletsLibrarySupport {
                 + "the used URLClassLoader will also contain following roots:",
                 originalLoader.getClass().getName()); //NOI18N
 
-        Collection<URL> urlsToLoad = new ArrayList<URL>();
+        Collection<URL> urlsToLoad = new ArrayList<>();
         for (FileObject cpRoot : getJsfSupport().getClassPath().getRoots()) {
             try {
                 //exclude the jsf jars from the classpath, if jsf20 library is available,
@@ -352,7 +352,7 @@ public class FaceletsLibrarySupport {
     private Map<String, Library> parseLibraries() {
         // initialize the resource providers for facelet-taglib documents
         List<ConfigurationResourceProvider> faceletTaglibProviders =
-                new ArrayList<ConfigurationResourceProvider>();
+                new ArrayList<>();
 
         //1. first add provider which looks for libraries defined in web-inf.xml
         //WEB-INF/web.xml <param-name>javax.faces.FACELETS_LIBRARIES</param-name> context param provider
@@ -363,7 +363,7 @@ public class FaceletsLibrarySupport {
 
         //2. second add a provider returning URIs of library descriptors found during indexing
         //   the URIs points to both source roots and binary roots of dependent libraries.
-        final Collection<URI> uris = new ArrayList<URI>();
+        final Collection<URI> uris = new ArrayList<>();
         for (IndexedFile file : getJsfSupport().getIndex().getAllFaceletsLibraryDescriptors()) {
             try {
                 uris.add(URLMapper.findURL(file.getFile(), URLMapper.EXTERNAL).toURI());
@@ -393,12 +393,10 @@ public class FaceletsLibrarySupport {
         //be overridden if the descriptors are found in any of the jars
         //on compile classpath.
         Collection<FileObject> libraryDescriptorFiles = DefaultFaceletLibraries.getInstance().getLibrariesDescriptorsFiles();
-        final Collection<URI> libraryURIs = new ArrayList<URI>();
+        final Collection<URI> libraryURIs = new ArrayList<>();
         for(FileObject fo : libraryDescriptorFiles) {
             try {
-                libraryURIs.add(fo.getURL().toURI());
-            } catch (FileStateInvalidException ex) {
-                LOGGER.log(Level.INFO, null, ex);
+                libraryURIs.add(fo.toURL().toURI());
             } catch (URISyntaxException ex) {
                 LOGGER.log(Level.INFO, null, ex);
             }
@@ -420,7 +418,7 @@ public class FaceletsLibrarySupport {
         FaceletsTaglibConfigProcessor processor = new FaceletsTaglibConfigProcessor(this);
         processor.process(new EmptyServletContext(), documents);
         
-        Map<String, Library> libsMap = new HashMap<String, Library>();
+        Map<String, Library> libsMap = new HashMap<>();
         for (Library lib : processor.compiler.libraries) {
             if (lib.getLegacyNamespace() != null) {
                 libsMap.put(lib.getLegacyNamespace(), lib);
@@ -458,7 +456,7 @@ public class FaceletsLibrarySupport {
 
     public static class Compiler {
 
-        private Collection<Library> libraries = new HashSet<Library>();
+        private Collection<Library> libraries = new HashSet<>();
 
         //FaceletsTaglibConfigProcessor puts the libraries here and since the
         //equals on the libraries is defined by comparing the namespaces,

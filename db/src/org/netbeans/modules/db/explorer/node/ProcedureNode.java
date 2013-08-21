@@ -355,11 +355,13 @@ public class ProcedureNode extends BaseNode {
         public String getSource() {
             String source = "";
             try {
+                boolean function = false;
                 switch (getType()) {
                     case Function:
+                        function = true;
                     case Procedure:
                         Statement stat = connection.getConnection().createStatement();
-                        ResultSet rs = stat.executeQuery("SELECT param_list, body, db FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
+                        ResultSet rs = stat.executeQuery("SELECT param_list, returns, body, db FROM mysql.proc WHERE name = '" + getName() + "';"); // NOI18N
                         while(rs.next()) {
                             String parent = rs.getString("db"); // NOI18N
                             if (parent != null && parent.trim().length() > 0) {
@@ -368,9 +370,15 @@ public class ProcedureNode extends BaseNode {
                                 parent = "";
                             }
                             String params = rs.getString("param_list"); // NOI18N
+                            
+                            String returns = null;
+                            if (function) {
+                                returns = rs.getString("returns"); // NOI18N
+                            }
                             String body = rs.getString("body"); // NOI18N
-                            source = getTypeName(getType()) + " " + parent + getName() + '\n' + // NOI18N
-                                    '(' + params + ")" + '\n' + // NOI18N
+                            source = getTypeName(getType()) + " " + parent + getName() + "\n" + // NOI18N
+                                    "(" + params + ")" + "\n" + // NOI18N
+                                    (function ? "RETURNS " + returns + "\n" : "") + // NOI18N                                   
                                     body;
                         }
                         rs.close();

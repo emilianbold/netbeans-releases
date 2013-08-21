@@ -185,13 +185,8 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
         } else {
             boolean found = false;
             b = "chrome"; // NOI18N
-            java.io.File f = new java.io.File ("/opt/google/chrome/chrome"); // NOI18N
+            java.io.File f = new java.io.File ("/usr/local/bin/google-chrome"); // NOI18N
             if (f.exists()) {
-                found = true;
-                b = f.getAbsolutePath();
-            }
-            f = new java.io.File ("/opt/google/chrome/google-chrome"); // NOI18N
-            if ( !found && f.exists()) {
                 found = true;
                 b = f.getAbsolutePath();
             }
@@ -200,7 +195,12 @@ public class ChromeBrowser extends ExtWebBrowser implements PropertyChangeListen
                 found = true;
                 b = f.getAbsolutePath();
             }
-            f = new java.io.File ("/usr/local/bin/google-chrome"); // NOI18N
+            f = new java.io.File ("/opt/google/chrome/google-chrome"); // NOI18N
+            if ( !found && f.exists()) {
+                found = true;
+                b = f.getAbsolutePath();
+            }
+            f = new java.io.File ("/opt/google/chrome/chrome"); // NOI18N
             if ( ! found && f.exists()) {
                 found = true;
                 b = f.getAbsolutePath();

@@ -42,6 +42,7 @@
 package org.netbeans.modules.web.jsf.editor.el;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -50,20 +51,33 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
+import org.netbeans.modules.html.editor.lib.api.elements.Attribute;
+import org.netbeans.modules.html.editor.lib.api.elements.Element;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementType;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementUtils;
+import org.netbeans.modules.html.editor.lib.api.elements.ElementVisitor;
+import org.netbeans.modules.html.editor.lib.api.elements.Node;
+import org.netbeans.modules.html.editor.lib.api.elements.OpenTag;
+import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.ParseException;
 import org.netbeans.modules.parsing.spi.Parser.Result;
+import org.netbeans.modules.web.common.api.LexerUtils;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.netbeans.modules.web.el.spi.ResolverContext;
 import org.netbeans.modules.web.jsf.api.editor.JSFBeanCache;
+import org.netbeans.modules.web.jsf.api.facesmodel.ManagedBean;
 import org.netbeans.modules.web.jsf.api.metamodel.FacesManagedBean;
+import org.netbeans.modules.web.jsf.api.metamodel.ManagedProperty;
 import org.netbeans.modules.web.jsf.editor.JsfUtils;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfPageModelFactory;
+import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.lookup.ServiceProvider;
@@ -117,7 +131,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     @Override
     public List<VariableInfo> getManagedBeans(FileObject target, ResolverContext context) {
         List<FacesManagedBean> beans = getJsfManagedBeans(target, context);
-        List<VariableInfo> result = new ArrayList<VariableInfo>(beans.size());
+        List<VariableInfo> result = new ArrayList<>(beans.size());
         for (FacesManagedBean bean : beans) {
             if(bean.getManagedBeanClass() != null && bean.getManagedBeanName() != null) {
                 result.add(VariableInfo.createResolvedVariable(bean.getManagedBeanName(), bean.getManagedBeanClass()));
@@ -129,7 +143,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     @Override
     public List<VariableInfo> getVariables(Snapshot snapshot, final int offset, ResolverContext context) {
         List<JsfVariableContext> allJsfVariables = getAllJsfVariables(snapshot, offset);
-        List<VariableInfo> result = new ArrayList<VariableInfo>(allJsfVariables.size());
+        List<VariableInfo> result = new ArrayList<>(allJsfVariables.size());
         for (JsfVariableContext jsfVariable : allJsfVariables) {
             //gets the generated expression from the el variables chain, see the JsfVariablesModel for more info
             String expression = jsfVariable.getResolvedExpression();
@@ -143,7 +157,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
 
     @Override
     public List<VariableInfo> getRawObjectProperties(String objectName, Snapshot snapshot, ResolverContext context) {
-        List<VariableInfo> variables = new ArrayList<VariableInfo> (3);
+        List<VariableInfo> variables = new ArrayList<> (3);
         
         //composite component object's properties handling
         if(OBJECT_NAME__CC.equals(objectName)) { //NOI18N
@@ -155,7 +169,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
             variables.add(VARIABLE_INFO__RENDERED);
             final JsfPageModelFactory modelFactory = JsfPageModelFactory.getFactory(CompositeComponentModel.Factory.class);
             assert modelFactory != null;
-            final AtomicReference<CompositeComponentModel> ccModelRef = new AtomicReference<CompositeComponentModel>();
+            final AtomicReference<CompositeComponentModel> ccModelRef = new AtomicReference<>();
             try {
                 ParserManager.parse(Collections.singleton(snapshot.getSource()), new UserTask() {
 
@@ -194,7 +208,7 @@ public final class JsfELVariableResolver implements ELVariableResolver {
 
     @Override
     public List<VariableInfo> getBeansInScope(String scope, Snapshot snapshot, ResolverContext context) {
-        List<VariableInfo> result = new ArrayList<VariableInfo>();
+        List<VariableInfo> result = new ArrayList<>();
         for (FacesManagedBean bean : getJsfManagedBeans(snapshot.getSource().getFileObject(), context)) {
             if(bean.getManagedBeanClass() != null && bean.getManagedBeanName() == null) {
                 if (scope.equals(bean.getManagedBeanScopeString())) {
@@ -206,19 +220,26 @@ public final class JsfELVariableResolver implements ELVariableResolver {
     }
 
     private List<FacesManagedBean> getJsfManagedBeans(FileObject target, ResolverContext context) {
+        List<FacesManagedBean> result = new ArrayList<>();
         Project project = FileOwnerQuery.getOwner(target);
         if (project == null) {
-            return Collections.<FacesManagedBean>emptyList();
+            return result;
         } else {
             if (context.getContent(CONTENT_NAME) == null) {
                 context.setContent(CONTENT_NAME, JSFBeanCache.getBeans(project));
             }
-            return (List<FacesManagedBean>) context.getContent(CONTENT_NAME);
+            List<FacesManagedBean> beans = (List<FacesManagedBean>) context.getContent(CONTENT_NAME);
+            result.addAll(beans);
+
+            // issue #225844 - get beans defined via ui:param tag
+            result.addAll(getFaceletParameters(target, beans));
+
+            return result;
         }
     }
 
     private List<JsfVariableContext> getAllJsfVariables(Snapshot snapshot, final int offset) {
-        final List<JsfVariableContext> result = new ArrayList<JsfVariableContext>();
+        final List<JsfVariableContext> result = new ArrayList<>();
         try {
             ParserManager.parse(Collections.singleton(snapshot.getSource()), new UserTask() {
 
@@ -237,5 +258,93 @@ public final class JsfELVariableResolver implements ELVariableResolver {
             Exceptions.printStackTrace(e);
         }
         return result;
+    }
+
+    private static Collection<? extends FacesManagedBean> getFaceletParameters(FileObject target, final List<FacesManagedBean> managedBeans) {
+        final List<FacesManagedBean> result = new ArrayList<>(managedBeans);
+        try {
+            ParserManager.parse(Arrays.asList(Source.create(target)), new UserTask() {
+                @Override
+                public void run(final ResultIterator resultIterator) throws Exception {
+                    for (Embedding e : resultIterator.getEmbeddings()) {
+                        if (e.getMimeType().equals("text/html")) { //NOI18N
+                            final HtmlParserResult parserResult = (HtmlParserResult) resultIterator.getResultIterator(e).getParserResult();
+                            Node root = parserResult.root(DefaultLibraryInfo.FACELETS.getNamespace());
+                            if (root == null || root.children().isEmpty()) {
+                                root = parserResult.root(DefaultLibraryInfo.FACELETS.getLegacyNamespace());
+                            }
+                            ElementUtils.visitChildren(root, new ElementVisitor() {
+                                @Override
+                                public void visit(Element node) {
+                                    OpenTag ot = (OpenTag) node;
+                                    if (LexerUtils.equals("param", ot.unqualifiedName(), true, true)) { //NOI18N
+                                        Attribute nameAttr = ot.getAttribute("name");   //NOI18N
+                                        Attribute valueAttr = ot.getAttribute("value"); //NOI18N
+                                        if (nameAttr != null && valueAttr != null) {
+                                            int doc_from = parserResult.getSnapshot().getOriginalOffset(valueAttr.valueOffset());
+                                            int doc_to = parserResult.getSnapshot().getOriginalOffset(valueAttr.valueOffset() + valueAttr.value().length());
+                                            if (doc_from == -1 || doc_to == -1 || doc_from > doc_to) {
+                                                return;
+                                            }
+                                            CharSequence topLevelSnapshotText = resultIterator.getSnapshot().getText();
+                                            String documentValueContent = topLevelSnapshotText.subSequence(doc_from, doc_to).toString();
+                                            for (FacesManagedBean managedBean : managedBeans) {
+                                                if (documentValueContent.contains(managedBean.getManagedBeanName())) {
+                                                    result.add(new ParamDefinedManagedBean(managedBean, (String) nameAttr.unquotedValue()));
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }, ElementType.OPEN_TAG);
+                        }
+                    }
+                }
+            });
+        } catch (ParseException ex) {
+            Exceptions.printStackTrace(ex);
+        }
+        return result;
+    }
+
+    private static class ParamDefinedManagedBean implements FacesManagedBean {
+
+        private final FacesManagedBean managedBean;
+        private final String name;
+
+        public ParamDefinedManagedBean(FacesManagedBean managedBean, String name) {
+            this.managedBean = managedBean;
+            this.name = name;
+        }
+
+        @Override
+        public Boolean getEager() {
+            return managedBean.getEager();
+        }
+
+        @Override
+        public String getManagedBeanName() {
+            return name;
+        }
+
+        @Override
+        public String getManagedBeanClass() {
+            return managedBean.getManagedBeanClass();
+        }
+
+        @Override
+        public ManagedBean.Scope getManagedBeanScope() {
+            return managedBean.getManagedBeanScope();
+        }
+
+        @Override
+        public String getManagedBeanScopeString() {
+            return managedBean.getManagedBeanScopeString();
+        }
+
+        @Override
+        public List<ManagedProperty> getManagedProperties() {
+            return managedBean.getManagedProperties();
+        }
     }
 }

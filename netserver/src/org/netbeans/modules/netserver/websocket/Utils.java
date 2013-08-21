@@ -49,6 +49,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.Charset;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.logging.Level;
@@ -112,7 +113,7 @@ final class Utils {
             read: while( true ){
                 int read = socketChannel.read( buffer );
                 if ( read ==-1 ){
-                    return null;
+                    return Collections.emptyList();
                 }
                 buffer.flip();
                 int size = buffer.limit();
@@ -181,7 +182,7 @@ final class Utils {
                 while(red<size){
                     int read = socketChannel.read( buffer );
                     if ( read == -1){
-                        return null;
+                        return Collections.emptyList();
                     }
                     red+=read;
                 }

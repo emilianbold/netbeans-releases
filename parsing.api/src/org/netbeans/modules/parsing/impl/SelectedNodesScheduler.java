@@ -66,7 +66,6 @@ import org.openide.util.lookup.ServiceProvider;
 public class SelectedNodesScheduler extends Scheduler {
 
 
-    private Source              source;
 
     public SelectedNodesScheduler () {
         TopComponent.getRegistry ().addPropertyChangeListener (new AListener ());
@@ -86,7 +85,7 @@ public class SelectedNodesScheduler extends Scheduler {
                     if (dataObject != null && dataObject.isValid()) {
                         final FileObject fileObject = dataObject.getPrimaryFile ();
                         if (fileObject.isValid() && Util.canBeParsed(fileObject.getMIMEType())) {
-                            source = Source.create (fileObject);
+                            final Source source = Source.create (fileObject);
                             if (source != null) {
                                 schedule (source, new SchedulerEvent (SelectedNodesScheduler.this) {});
                                 return;
@@ -95,7 +94,6 @@ public class SelectedNodesScheduler extends Scheduler {
                     }
                 }
 
-                source = null;
                 schedule(null, null);
             }
         });
@@ -108,7 +106,7 @@ public class SelectedNodesScheduler extends Scheduler {
 
     @Override
     protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
-        if (event.getModifiedSource () == source)
+        if (event.getModifiedSource () == getSource())
             return new SchedulerEvent (this) {};
         return null;
     }

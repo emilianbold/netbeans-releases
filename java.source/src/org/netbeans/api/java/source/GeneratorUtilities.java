@@ -959,6 +959,7 @@ public final class GeneratorUtilities {
 
         if (preceding) {
             t.addComments(RelativePosition.PRECEDING, s.getComments(RelativePosition.PRECEDING));
+            t.addComments(RelativePosition.INNER, s.getComments(RelativePosition.INNER));
         } else {
             t.addComments(RelativePosition.INLINE, s.getComments(RelativePosition.INLINE));
             t.addComments(RelativePosition.TRAILING, s.getComments(RelativePosition.TRAILING));

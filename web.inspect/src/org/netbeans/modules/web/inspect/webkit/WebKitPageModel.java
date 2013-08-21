@@ -186,7 +186,7 @@ public class WebKitPageModel extends PageModel {
                     String shortcutsScript = Files.getScript("shortcuts"); // NOI18N
                     webKit.getRuntime().evaluate(shortcutsScript);
                 }
-                cSSUpdater.start(webKit);
+                cSSUpdater.start(webKit, getProject());
             }
         }
     }

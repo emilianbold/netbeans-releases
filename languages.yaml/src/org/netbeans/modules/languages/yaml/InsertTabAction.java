@@ -118,7 +118,7 @@ public class InsertTabAction extends BaseAction {
             assert caretOffset >= rowStart : "Caret: " + caretOffset + " rowStart: " + rowStart;
             final String indentString = baseDocument.getText(rowStart, caretOffset - rowStart);
             if (indentString.contains(TAB_CHARACTER)) {
-                final String newIndentString = indentString.replace(TAB_CHARACTER, IndentUtils.getIndentString(IndentUtils.getIndentSize()));
+                final String newIndentString = indentString.replace(TAB_CHARACTER, IndentUtils.getIndentString(IndentUtils.getIndentSize(baseDocument)));
                 baseDocument.replace(rowStart, caretOffset - rowStart, newIndentString, null);
             }
         }

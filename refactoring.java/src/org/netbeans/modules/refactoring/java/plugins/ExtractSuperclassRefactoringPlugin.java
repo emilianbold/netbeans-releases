@@ -171,7 +171,7 @@ public final class ExtractSuperclassRefactoringPlugin extends JavaRefactoringPlu
         Problem result = null;
         String newName = refactoring.getSuperClassName();
         TypeMirror parsedType = javac.getTreeUtilities().parseType(newName, classHandle.resolve(javac));
-        if(parsedType != null) {
+        if(parsedType != null && parsedType.getKind() != TypeKind.ERROR) {
             result = createProblem(result, true, NbBundle.getMessage(ExtractInterfaceRefactoringPlugin.class, "ERR_ClassClash", newName, pkgName)); // NOI18N
             return result;
         }

@@ -150,7 +150,7 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
     private static void assertKit(EditorKit kit) {
         if (kit instanceof NbLikeEditorKit) {
             NbLikeEditorKit nb = (NbLikeEditorKit) kit;
-            assertNull("the kit's call mehtod is not called due to backward compat", nb.callThread);
+            assertNotNull("the kit's call mehtod expected to be called", nb.callThread);
         } else {
             fail("Should use NbLikeEditorKit: " + kit);
         }
@@ -330,7 +330,8 @@ public class InitializeInAWTTest extends NbTestCase implements CloneableEditorSu
         @Override
         protected CloneableEditor createCloneableEditor() {
             CloneableEditor ed = super.createCloneableEditor();
-            ed.putClientProperty("oldInitialize", Boolean.TRUE);
+            // "oldInitialize" no longer used
+//            ed.putClientProperty("oldInitialize", Boolean.TRUE);
             return ed;
         }
         

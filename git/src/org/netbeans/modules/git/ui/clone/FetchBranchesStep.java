@@ -82,15 +82,18 @@ public class FetchBranchesStep extends AbstractWizardPanel implements ChangeList
         "MSG_FetchRefsPanel.errorNoBranchSelected=No branch selected",
         "MSG_FetchRefsPanel.warningNoBranchInRepository=No branch in the repository yet"
     })
-    protected final void validateBeforeNext () {
+    protected final boolean validateBeforeNext () {
+        boolean valid = true;
         setValid(true, null);
         if (branches.isEmpty()) {
             setValid(true, new Message(Bundle.MSG_FetchRefsPanel_warningNoBranchInRepository(), true));
         } else if(branches.getSelectedBranches().isEmpty()) {
+            valid = false;
             setValid(false, new Message(Bundle.MSG_FetchRefsPanel_errorNoBranchSelected(), true));
         } else {
             setValid(true, null);
         }
+        return valid;
     }
 
     @Override

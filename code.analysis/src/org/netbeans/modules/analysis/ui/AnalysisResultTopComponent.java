@@ -129,6 +129,9 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         prevAction.addPropertyChangeListener(l);
         nextAction.addPropertyChangeListener(l);
 
+        previousError.setEnabled(prevAction.isEnabled());
+        nextError.setEnabled(nextAction.isEnabled());
+        
         setData(Lookup.EMPTY, null, new AnalysisResult(Collections.<AnalyzerFactory, List<ErrorDescription>>emptyMap(), Collections.<ErrorDescription, Project>emptyMap(), new FutureWarnings(), Collections.<Node>emptyList()));
 
         getActionMap().put("jumpNext", nextAction);
@@ -152,6 +155,8 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
                     CharSequence description = rd != null ? rd.getDescription() : null;
                     descriptionPanel.setText(description != null ? description.toString() : null);
                 }
+
+                selectOnEnable = false;
             }
         });
 
@@ -374,9 +379,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
         return manager;
     }
 
-    List<Node> nodesForNext;
-    boolean empty;
-    List<Node> seenNodes;
+    boolean selectOnEnable;
     final PreviousError prevAction;
     final NextError nextAction;
 
@@ -396,19 +399,7 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
     
     private void updatePrevNextButtonsForNewRootContext() {
         descriptionPanel.setText(null);
-        nodesForNext = null;
-        seenNodes = null;
-        empty = analysisResult.provider2Hints.isEmpty();
-        fireActionEnabledChange();
-        
-        if (!empty && !byCategory.isSelected() && nextAction.isEnabled()) {
-            nextAction.actionPerformed(null);
-        }
-    }
-
-    void fireActionEnabledChange() {
-        prevAction.fireEnabledChanged();
-        nextAction.fireEnabledChanged();
+        selectOnEnable = !analysisResult.provider2Hints.isEmpty() && !byCategory.isSelected();
     }
 
     public static synchronized AnalysisResultTopComponent findInstance() {
@@ -474,6 +465,13 @@ public final class AnalysisResultTopComponent extends TopComponent implements Ex
             if (name == null || "enabled".equals(name)) {
                 previousError.setEnabled(prevAction.isEnabled());
                 nextError.setEnabled(nextAction.isEnabled());
+
+                if (selectOnEnable && evt.getSource() == nextAction && nextAction.isEnabled()) {
+                    selectOnEnable = false;
+                    nextAction.actionPerformed(null);
+                }
+
+                selectOnEnable = false;
             }
         }
 

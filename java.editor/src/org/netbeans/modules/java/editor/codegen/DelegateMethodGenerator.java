@@ -251,7 +251,7 @@ public class DelegateMethodGenerator implements CodeGenerator {
             DeclaredType type = (DeclaredType) cls.asType();
             for (VariableElement field : ElementFilter.fieldsIn(elements.getAllMembers(cls))) {
                 TypeMirror fieldType = field.asType();
-                if (!ERROR.contentEquals(field.getSimpleName()) && !fieldType.getKind().isPrimitive()
+                if (!ERROR.contentEquals(field.getSimpleName()) && !fieldType.getKind().isPrimitive() && fieldType.getKind() != TypeKind.ARRAY
                         && (fieldType.getKind() != TypeKind.DECLARED || ((DeclaredType)fieldType).asElement() != cls) && trees.isAccessible(scope,
                         field, type)) {
                     List<ElementNode.Description> descriptions = map.get(field.getEnclosingElement());
@@ -342,7 +342,9 @@ public class DelegateMethodGenerator implements CodeGenerator {
             args.add(make.Identifier(ve.getSimpleName()));
         }
 
-        ExpressionTree methodSelect = useThisToDereference ? make.MemberSelect(make.Identifier("this"), delegateName) : make.Identifier(delegateName); //NOI18N
+        ExpressionTree methodSelect = method.getModifiers().contains(Modifier.STATIC)
+                ? make.QualIdent(method.getEnclosingElement())
+                : useThisToDereference ? make.MemberSelect(make.Identifier("this"), delegateName) : make.Identifier(delegateName); //NOI18N
         ExpressionTree exp = make.MethodInvocation(Collections.<ExpressionTree>emptyList(), make.MemberSelect(methodSelect, method.getSimpleName()), args);
         StatementTree stmt = method.getReturnType().getKind() == TypeKind.VOID ? make.ExpressionStatement(exp) : make.Return(exp);
         BlockTree body = make.Block(Collections.singletonList(stmt), false);

@@ -108,11 +108,11 @@ final class LazyLines extends Object implements List<Line> {
         return getDelegate().hashCode();
     }
 
-    public boolean addAll(java.util.Collection c) {
+    public boolean addAll(java.util.Collection<? extends Line> c) {
         throw new UnsupportedOperationException();
     }
 
-    public boolean removeAll(java.util.Collection c) {
+    public boolean removeAll(java.util.Collection<?> c) {
         throw new UnsupportedOperationException();
     }
 
@@ -192,7 +192,7 @@ final class LazyLines extends Object implements List<Line> {
         return getDelegate().iterator();
     }
 
-    public boolean addAll(int index, java.util.Collection c) {
+    public boolean addAll(int index, java.util.Collection<? extends Line> c) {
         throw new UnsupportedOperationException();
     }
 }

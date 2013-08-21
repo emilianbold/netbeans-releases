@@ -68,30 +68,6 @@ public class CommentCollectorTest extends NbTestCase {
 
     private File work;
     
-    public class xTest {
-        /* comment before */
-        public void m() {}
-        /* comment after */
-        /* comment before 2 */
-        public void m2() {
-        }
-        /* comment after 2 */
-        /*
-        block comment before 3
-        */
-        // line comment before 3
-        public void m3() {
-            
-            // line comment in 3
-        }
-        /* block comment after 3 */
-        
-        public void m4() {
-            
-        }
-        // line comment after 4
-    }
-
     @Override
     protected void setUp() throws Exception {
         File wd = getWorkDir();

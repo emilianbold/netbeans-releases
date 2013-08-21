@@ -407,8 +407,10 @@ mediaQueryList
  ;
  
 mediaQuery
- : (mediaQueryOperator ws? )?  mediaType ( ws? AND ws? mediaExpression )*
- | mediaExpression ( ws? AND ws? mediaExpression )*
+ : 
+    (mediaQueryOperator ws? )?  mediaType ( ws? AND ws? mediaExpression )*
+    | mediaExpression ( ws? AND ws? mediaExpression )*
+    | {isLessSource()}? cp_variable
  ;
  
 mediaQueryOperator
@@ -449,7 +451,7 @@ mediaFeature
  
 bodyItem
     : 
-        (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
+        (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|RBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
         //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
         | {isLessSource()}? (cp_mixin_call ws? SEMI)=>cp_mixin_call
         | {isScssSource()}? (cp_mixin_call)=>cp_mixin_call
@@ -629,8 +631,8 @@ declaration
     | (propertyDeclaration)=>propertyDeclaration 
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
     | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration 
-    | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN (~LBRACE)* LBRACE))=>cp_mixin_declaration 
-    | (cp_mixin_call)=>cp_mixin_call 
+    | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI|RBRACE)* LBRACE))=>cp_mixin_declaration 
+    | (cp_mixin_call)=>cp_mixin_call (ws? IMPORTANT_SYM)?
     | (selectorsGroup ws? LBRACE)=>rule 
     | {isCssPreprocessorSource()}? at_rule 
     | {isScssSource()}? sass_control 
@@ -693,6 +695,7 @@ elementSubsequent
     : 
     (
         {isScssSource()}? sass_extend_only_selector
+        | {isLessSource()}? less_selector_interpolation // @{var} { ... }
     	| cssId
     	| cssClass
         | slAttribute
@@ -702,7 +705,13 @@ elementSubsequent
     
 //Error Recovery: Allow the parser to enter the cssId rule even if there's just hash char.
 cssId
-    : HASH | ( HASH_SYMBOL NAME )
+    : HASH 
+      | 
+        ( HASH_SYMBOL 
+            ( NAME 
+              | {isLessSource()}? less_selector_interpolation // #@{var} { ... }
+            ) 
+        )
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -710,7 +719,12 @@ cssId
     }
 
 cssClass
-    : DOT ( IDENT | GEN  )
+    : DOT 
+        ( 
+            IDENT 
+            | GEN  
+            | {isLessSource()}? less_selector_interpolation // .@{var} { ... }
+        )
     ;
     catch[ RecognitionException rce] {
         reportError(rce);
@@ -865,6 +879,8 @@ term
         | RESOLUTION
         | DIMENSION     //so we can match expression like a:nth-child(3n+1) -- the "3n" is lexed as dimension
         | STRING
+        | {isLessSource()}? TILDE STRING //escaped less string
+        | {isLessSource()}? LESS_JS_STRING
         | GEN
         | URI
         | hexColor
@@ -948,11 +964,12 @@ cp_variable_declaration
 //ENTRY POINT FROM CSS GRAMMAR    
 cp_variable
     : 
-        {isLessSource()}? ( AT_IDENT | MEDIA_SYM )//TODO add all meaningful at-rules here
+        //every token which might possibly begin with the at sign
+        {isLessSource()}? ( AT_IDENT | IMPORT_SYM | PAGE_SYM | MEDIA_SYM | NAMESPACE_SYM | CHARSET_SYM | COUNTER_STYLE_SYM | FONT_FACE_SYM | TOPLEFTCORNER_SYM | TOPLEFT_SYM | TOPCENTER_SYM | TOPRIGHT_SYM | TOPRIGHTCORNER_SYM | BOTTOMLEFTCORNER_SYM | BOTTOMLEFT_SYM | BOTTOMCENTER_SYM | BOTTOMRIGHT_SYM | BOTTOMRIGHTCORNER_SYM | LEFTTOP_SYM | LEFTMIDDLE_SYM | LEFTBOTTOM_SYM | RIGHTTOP_SYM | RIGHTMIDDLE_SYM | RIGHTBOTTOM_SYM | MOZ_DOCUMENT_SYM | WEBKIT_KEYFRAMES_SYM | SASS_CONTENT | SASS_MIXIN | SASS_INCLUDE | SASS_EXTEND | SASS_DEBUG | SASS_WARN | SASS_IF | SASS_ELSE | SASS_FOR | SASS_FUNCTION | SASS_RETURN | SASS_EACH | SASS_WHILE  )
         |
         {isScssSource()}? ( SASS_VAR )
     ;
-
+    
 //comma separated list of cp_expression-s
 cp_expression_list
     :
@@ -1114,9 +1131,7 @@ less_condition
     (NOT ws?)?
     LPAREN ws? 
         (
-            less_function_in_condition ws?
-            |
-            ( cp_variable (ws? less_condition_operator ws? cp_math_expression)?)  
+             (cp_variable | less_function_in_condition) ws? (less_condition_operator ws? cp_math_expression)?
         )        
     RPAREN
     ;
@@ -1137,6 +1152,11 @@ less_condition_operator
     :
     GREATER | GREATER_OR_EQ | OPEQ | LESS | LESS_OR_EQ
     ;
+    
+less_selector_interpolation
+    :
+    AT_SIGN LBRACE ws? IDENT ws? RBRACE
+    ;
 
 //SCSS interpolation expression, e.g. #{$vert}
 
@@ -1148,14 +1168,14 @@ sass_selector_interpolation_expression
         ( 
             (sass_interpolation_expression_var)=>sass_interpolation_expression_var
             |
-            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA | STAR | GREATER )
+            (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA | STAR | GREATER | LBRACKET | RBRACKET )
         )
         ( 
             ws?
             (
                 (sass_interpolation_expression_var)=>sass_interpolation_expression_var
                 |
-                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA | STAR | GREATER)
+                (IDENT | MINUS | DOT | HASH_SYMBOL | HASH | COLON | LESS_AND | COMMA | STAR | GREATER | LBRACKET | RBRACKET)
             )
         )*
 
@@ -1640,6 +1660,13 @@ STRING          : '\'' ( ~('\n'|'\r'|'\f'|'\'') )*
                         | { $type = INVALID; }
                     )
                 ;
+                
+LESS_JS_STRING  : '`' ( ~('\n'|'\r'|'\f'|'`') )* 
+                    (
+                          '`'
+                        | { $type = INVALID; }
+                    )
+                    ;
 
 
 ONLY 		: 'ONLY';
@@ -1705,7 +1732,8 @@ SASS_RETURN         : '@RETURN';
 SASS_EACH           : '@EACH';
 SASS_WHILE          : '@WHILE';
 
-AT_IDENT	    : '@' NMCHAR+;	
+AT_SIGN             : '@';
+AT_IDENT	    : AT_SIGN NMCHAR+;	
 
 SASS_VAR            : '$' NMCHAR+;
 SASS_DEFAULT        : '!DEFAULT';

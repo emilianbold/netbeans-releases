@@ -181,9 +181,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
             case EL_OPEN_DELIMITER:
                  if (tokenSequence.moveNext()) {
                     if (tokenSequence.token().id() == HTMLTokenId.EL_CONTENT) {
-                        String value = tokenSequence.token().text().toString().trim();
+                        String value = tokenSequence.token().text().toString();
                         int indexStart = 0;
-                        String name = value;
+                        String name = value.trim();
                         if (value.startsWith("(")) {
                             name = value.substring(1);
                             indexStart = 1;
@@ -221,6 +221,9 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                         } else {
                             tokenSequence.movePrevious();
                         }
+                    } else if (tokenSequence.token().id() == HTMLTokenId.EL_CLOSE_DELIMITER) {
+                        embeddings.add(snapshot.create(tokenSequence.offset(), 0, Constants.JAVASCRIPT_MIMETYPE));
+                        processed = true;
                     } else {
                         tokenSequence.movePrevious();
                     }
@@ -295,17 +298,22 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
     private boolean processModel(String value) {     
          if (value.isEmpty()) {
             embeddings.add(snapshot.create("( function () {", Constants.JAVASCRIPT_MIMETYPE));
-            embeddings.add(snapshot.create(tokenSequence.offset(), 1, Constants.JAVASCRIPT_MIMETYPE));
+            embeddings.add(snapshot.create(tokenSequence.offset() + 1, 0, Constants.JAVASCRIPT_MIMETYPE));
             embeddings.add(snapshot.create(";})();\n", Constants.JAVASCRIPT_MIMETYPE));
         } else {
             int parenStart = value.indexOf('('); //NOI18N
             String name = value;
+            int nameStart = 0;
             int lenght = name.length();
             if (parenStart > -1) {
                 name = name.substring(0, parenStart).trim();
             }
             if (name.indexOf('=') > -1) {
                 name = name.substring(0, name.indexOf('=')).trim();
+            }
+            if (name.charAt(0) == '!') {
+                name = name.substring(1);
+                nameStart = 1;
             }
             if (propertyToFqn.containsKey(name)) {
                 embeddings.add(snapshot.create(propertyToFqn.get(name) + ".$scope.", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
@@ -334,7 +342,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
                 if (value.indexOf(' ') == -1 && parenStart == -1 && value.indexOf('.') == -1) {
                     embeddings.add(snapshot.create("var ", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
                 }
-                embeddings.add(snapshot.create(tokenSequence.offset() + 1, value.length(), Constants.JAVASCRIPT_MIMETYPE));
+                embeddings.add(snapshot.create(tokenSequence.offset() + 1 + nameStart, value.length() - nameStart, Constants.JAVASCRIPT_MIMETYPE));
                 embeddings.add(snapshot.create(";\n", Constants.JAVASCRIPT_MIMETYPE)); //NOI18N
             }
         }
@@ -429,7 +437,7 @@ public class AngularJsEmbeddingProviderPlugin extends JsEmbeddingProviderPlugin 
         boolean processed = false;
         if (value.isEmpty()) {
             embeddings.add(snapshot.create("( function () {", Constants.JAVASCRIPT_MIMETYPE));
-            embeddings.add(snapshot.create(tokenSequence.offset(), 1, Constants.JAVASCRIPT_MIMETYPE));
+            embeddings.add(snapshot.create(tokenSequence.offset() + 1, 0, Constants.JAVASCRIPT_MIMETYPE));
             embeddings.add(snapshot.create(";})();\n", Constants.JAVASCRIPT_MIMETYPE));
             processed = true;
         } else {

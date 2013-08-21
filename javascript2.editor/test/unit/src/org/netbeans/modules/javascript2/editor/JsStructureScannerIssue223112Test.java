@@ -73,10 +73,10 @@ public class JsStructureScannerIssue223112Test extends JsTestBase {
         checkStructure("testfiles/structure/issue223112/issue223112.js");
     }
 
-    @Override
-    protected boolean cleanCacheDir() {
-        return false;
-    }
+//    @Override
+//    protected boolean cleanCacheDir() {
+//        return false;
+//    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

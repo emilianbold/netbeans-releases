@@ -10,8 +10,6 @@ public abstract class Test {
 }
 %%=>
 LambdaInput:new Test() {
-            public void test(String s1, String s2) { s1 = s2; }
-        }
 %%TestCase convert-to-lambda-positive-constructor-param
 package test;
 import java.io.PrintWriter;
@@ -23,8 +21,6 @@ public abstract class Test {
 }
 %%=>
 LambdaInput:new OutputStream(){
-        public void write(int b) {}
-    }
 %%TestCase convert-to-lambda-negative-needs-abstract
 package test;
 public class Test {

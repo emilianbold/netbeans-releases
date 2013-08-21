@@ -86,14 +86,14 @@ public class JsfVariablesModel {
 
         //create a new model and cache it
         JsfVariablesModel model = new JsfVariablesModel(result, topLevelSnapshot);
-        lastModelCache = new WeakReference<JsfVariablesModel>(model);
+        lastModelCache = new WeakReference<>(model);
 
         return model;
     
     }
 
     private HtmlParserResult result;
-    private SortedSet<JsfVariableContext> contextsList = new TreeSet<JsfVariableContext>();
+    private SortedSet<JsfVariableContext> contextsList = new TreeSet<>();
     private Snapshot topLevelSnapshot;
 
     private JsfVariablesModel(HtmlParserResult result, Snapshot topLevelSnapshot) {
@@ -269,7 +269,7 @@ public class JsfVariablesModel {
         JsfVariableContext[] head_array = head.toArray(new JsfVariableContext[]{});
         //scan backward for all elements which contains the given context
         //they will be the ancestors in the direct order
-        ArrayList<JsfVariableContext> ancestors = new ArrayList<JsfVariableContext>();
+        ArrayList<JsfVariableContext> ancestors = new ArrayList<>();
         for(int i = head_array.length - 1; i >= 0; i--) {
             JsfVariableContext c = head_array[i];
             if(c.getTo() > context.getTo()) {
@@ -289,7 +289,7 @@ public class JsfVariablesModel {
      */
     List<JsfVariableContext> getPredecessors(JsfVariableContext context, boolean includeItself) {
         SortedSet<JsfVariableContext> head = getContexts().headSet(context);
-        List<JsfVariableContext> pre = new ArrayList<JsfVariableContext>();
+        List<JsfVariableContext> pre = new ArrayList<>();
         for(JsfVariableContext c : head) {
             pre.add(0, c);
         }
@@ -312,7 +312,7 @@ public class JsfVariablesModel {
             return expr.getCleanExpression();
         }
 
-        List<JsfVariableContext> matching = new ArrayList<JsfVariableContext>();
+        List<JsfVariableContext> matching = new ArrayList<>();
         //gather matching contexts (those which baseObject fits to ancestor's variable name)
         for(JsfVariableContext c : ancestors) {
             if(c.getVariableName().equals(expr.getBase())) {
@@ -370,7 +370,7 @@ public class JsfVariablesModel {
 
     //order: the closest var is first
     public List<JsfVariableContext> getAllAvailableVariables(int offset, boolean nestingAware) {
-        List<JsfVariableContext> vars = new ArrayList<JsfVariableContext>();
+        List<JsfVariableContext> vars = new ArrayList<>();
         JsfVariableContext leaf = nestingAware ? getContainingContext(offset) : getPrecedingContext(offset);
         if(leaf == null) {
             return vars;

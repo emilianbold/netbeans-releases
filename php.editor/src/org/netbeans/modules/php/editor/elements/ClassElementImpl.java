@@ -100,9 +100,8 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
             final IndexQueryImpl indexScopeQuery, final IndexResult indexResult) {
         String[] values = indexResult.getValues(IDX_FIELD);
         Set<ClassElement> retval = values.length > 0 ? new HashSet<ClassElement>() : Collections.<ClassElement>emptySet();
-        String url = indexResult.getUrl().toString();
         for (String val : values) {
-            final ClassElement clz = fromSignature(query, indexScopeQuery, url, Signature.get(val));
+            final ClassElement clz = fromSignature(query, indexScopeQuery, Signature.get(val));
             if (clz != null) {
                 retval.add(clz);
             }
@@ -111,7 +110,7 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
     }
 
     private static ClassElement fromSignature(final NameKind query,
-            final IndexQueryImpl indexScopeQuery, final String url, final Signature clsSignature) {
+            final IndexQueryImpl indexScopeQuery, final Signature clsSignature) {
         Parameters.notNull("query", query);
         ClassSignatureParser signParser = new ClassSignatureParser(clsSignature);
         ClassElement retval = null;
@@ -119,7 +118,7 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
             retval = new ClassElementImpl(signParser.getQualifiedName(), signParser.getOffset(),
                     signParser.getSuperClassName(), signParser.getPossibleFQSuperClassName(),
                     signParser.getSuperInterfaces(), signParser.getFQSuperInterfaces(), signParser.getFlags(),
-                    signParser.getUsedTraits(), url, indexScopeQuery,
+                    signParser.getUsedTraits(), signParser.getFileUrl(), indexScopeQuery,
                     signParser.isDeprecated());
         }
         return retval;
@@ -213,7 +212,7 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
         }
         sb.append(";"); //NOI18N
         sb.append(isDeprecated() ? 1 : 0).append(";"); //NOI18N
-
+        sb.append(getFilenameUrl()).append(Separator.SEMICOLON);
         checkClassSignature(sb);
         return sb.toString();
     }
@@ -383,6 +382,10 @@ public final class ClassElementImpl extends TypeElementImpl implements ClassElem
 
         boolean isDeprecated() {
             return signature.integer(8) == 1;
+        }
+
+        String getFileUrl() {
+            return signature.string(9);
         }
     }
 }

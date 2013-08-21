@@ -579,6 +579,7 @@ public final class NbDocument extends Object {
             if (type.isInstance(edit)) {
                 return type.cast(edit);
             } else if (edit instanceof List) {
+                @SuppressWarnings("unchecked")
                 List<UndoableEdit> listEdit = (List<UndoableEdit>) edit;
                 for (int i = listEdit.size() -1; i >= 0; i--) { // Go from most wrapped back
                     edit = listEdit.get(i);

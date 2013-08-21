@@ -189,7 +189,8 @@ final class MagicSurroundWithTryCatchFix implements Fix {
         while (tryPath != null
                 && tryPath.getLeaf().getKind() != Kind.TRY
                 && !TreeUtilities.CLASS_TREE_KINDS.contains(tryPath.getLeaf().getKind())
-                && tryPath.getLeaf().getKind() != Kind.CATCH)
+                && tryPath.getLeaf().getKind() != Kind.CATCH
+                && tryPath.getLeaf().getKind() != Kind.LAMBDA_EXPRESSION)
             tryPath = tryPath.getParentPath();
 
         if (tryPath.getLeaf().getKind() == Kind.TRY) {

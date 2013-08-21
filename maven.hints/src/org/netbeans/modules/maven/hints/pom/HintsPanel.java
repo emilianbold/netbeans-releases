@@ -306,9 +306,10 @@ final class HintsPanel extends javax.swing.JPanel implements TreeCellRenderer  {
         else if ( data instanceof POMErrorFixBase ) {
             POMErrorFixBase rule = (POMErrorFixBase)data;
             renderer.setText( rule.getConfiguration().getDisplayName() );
-            
-            Preferences node = logic.getCurrentPrefernces(rule);
-            renderer.setSelected( rule.getConfiguration().isEnabled(node));
+            if (logic != null) {
+                Preferences node = logic.getCurrentPrefernces(rule);
+                renderer.setSelected( rule.getConfiguration().isEnabled(node));
+            }
         }
         else {
             renderer.setText( value.toString() );

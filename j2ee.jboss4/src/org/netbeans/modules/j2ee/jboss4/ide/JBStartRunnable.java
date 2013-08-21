@@ -448,28 +448,35 @@ class JBStartRunnable implements Runnable {
                 String contentRun = readFile(serverRunFileName);
                 String contentConf = readFile(serverLocation + CONF_BAT);
                 Matcher matcherRun = IF_JAVA_OPTS_PATTERN.matcher(contentRun);
-                Matcher matcherConf = IF_JAVA_OPTS_PATTERN.matcher(contentConf);
+                Matcher matcherConf = contentConf != null
+                        ? IF_JAVA_OPTS_PATTERN.matcher(contentConf)
+                        : null;
                 
                 boolean needChangeRun = matcherRun.matches();
-                boolean needChangeConf = matcherConf.matches();
+                boolean needChangeConf = matcherConf != null && matcherConf.matches();
                 try {
                     if (needChangeRun || needChangeConf) {
                         File startBat = File.createTempFile(RUN_FILE_NAME, ".bat"); // NOI18N
-                        File confBat = File.createTempFile(CONF_FILE_NAME, ".bat",  // NOI18N
+                        File confBat = null;
+                        if (contentConf != null) {
+                            confBat = File.createTempFile(CONF_FILE_NAME, ".bat",  // NOI18N
                                 startBat.getParentFile()); // NOI18N
+                        }
                         startBat.deleteOnExit();
-                        confBat.deleteOnExit();
-                        int start = 0;
                         contentRun = replaceJavaOpts(contentRun, matcherRun);
-                        contentConf = replaceJavaOpts(contentConf, matcherConf);
-                        contentRun = contentRun.replace(CONF_FILE_NAME, confBat
-                                .getName());
+                        if (confBat != null) {
+                            contentRun = contentRun.replace(CONF_FILE_NAME, confBat.getName());
+                        }
                         writeFile(startBat, contentRun);
-                        writeFile(confBat, contentConf);
+
+                        if (confBat != null) {
+                            confBat.deleteOnExit();
+                            contentConf = replaceJavaOpts(contentConf, matcherConf);
+                            writeFile(confBat, contentConf);
+                        }
                         return startBat.getAbsolutePath();
                     }
-                }
-                catch (IOException e) {
+                } catch (IOException e) {
                     Exceptions.attachLocalizedMessage(e, NbBundle.getMessage(
                             JBStartRunnable.class, "ERR_WriteError"));          // NOI18N
                     Logger.getLogger("global").log(Level.WARNING, null, e);     // NOI18N
@@ -560,9 +567,11 @@ class JBStartRunnable implements Runnable {
         
         private boolean runFileNeedChange( String[] envp ){
             JBProperties properties = dm.getProperties();
+            if (properties.isVersion(JBPluginUtils.JBOSS_7_0_0)) {
+                return false;
+            }
             if ( properties.isVersion(JBPluginUtils.JBOSS_5_0_1) && 
-                    Utilities.isWindows())
-            {
+                    Utilities.isWindows()) {
                 for( String env : envp ){
                     if ( env.startsWith(JAVA_OPTS+"=")){
                         return env.indexOf('"')>=0;

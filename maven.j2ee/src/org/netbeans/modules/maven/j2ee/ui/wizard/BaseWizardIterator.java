@@ -49,10 +49,12 @@ import java.util.NoSuchElementException;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
+import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.validation.adapters.WizardDescriptorAdapter;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.api.Constants;
 import org.netbeans.modules.maven.j2ee.MavenJavaEEConstants;
 import static org.netbeans.modules.maven.j2ee.ui.wizard.Bundle.*;
@@ -89,11 +91,15 @@ public abstract class BaseWizardIterator implements WizardDescriptor.BackgroundI
         String instanceID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER_ID);
         String serverID = (String) wiz.getProperty(MavenJavaEEConstants.HINT_DEPLOY_J2EE_SERVER);
         String j2eeVersion = (String) wiz.getProperty(MavenJavaEEConstants.HINT_J2EE_VERSION);
+        Profile j2eeProfile = Profile.fromPropertiesString(j2eeVersion);
 
         // Saving server information for project
-        MavenProjectSupport.setJ2eeVersion(project, j2eeVersion);
+        if (j2eeProfile != null) {
+            JavaEEProjectSettings.setProfile(project, j2eeProfile);
+        }
+
         MavenProjectSupport.setServerID(project, serverID);
-        MavenProjectSupport.setServerInstanceID(project, instanceID);
+        JavaEEProjectSettings.setServerInstanceID(project, instanceID);
         MavenProjectSupport.createWebXMLIfRequired(project, serverID);
 
         if (j2eeVersion.contains("1.7")) { //NOI18N

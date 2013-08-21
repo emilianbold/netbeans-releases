@@ -94,7 +94,6 @@ import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityClassInfo.FieldInfo;
 import org.netbeans.modules.websvc.rest.codegen.model.EntityResourceBeanModel;
 import org.netbeans.modules.websvc.rest.model.api.RestConstants;
-import org.netbeans.modules.websvc.rest.support.SourceGroupSupport;
 import org.netbeans.modules.websvc.rest.wizard.Util;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -104,6 +103,9 @@ import org.openide.filesystems.FileUtil;
  * @author mkuchtiak
  */
 public class EjbFacadeGenerator implements FacadeGenerator {
+    
+    private static final Logger LOGGER = Logger.getLogger(EjbFacadeGenerator.class.getName());
+    
     private static final String REST_FACADE_SUFFIX = FACADE_SUFFIX+"REST"; //NOI18N
     private static final String FACADE_ABSTRACT = "AbstractFacade"; //NOI18N
     private static final String FACADE_REMOTE_SUFFIX = REST_FACADE_SUFFIX + "Remote"; //NOI18N
@@ -153,7 +155,7 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         //create the abstract facade class
         final String afName = pkg + "." + FACADE_ABSTRACT;
         FileObject afFO = targetFolder.getFileObject(FACADE_ABSTRACT, "java");
-        if (afFO == null){
+        if (afFO == null) {
             afFO = GenerationUtils.createClass(targetFolder, FACADE_ABSTRACT, null);
             createdFiles.add(afFO);
 
@@ -283,9 +285,11 @@ public class EjbFacadeGenerator implements FacadeGenerator {
             createdFiles.add(remote);
         }
         
-        if ( model != null ){
+        if ( model != null ) {
             Util.generatePrimaryKeyMethod(facade, entityFQN, model);
         }
+        
+        final FileObject abstractFacadeFO = afFO;
         
         // add the @stateless annotation
         // add implements and extends clauses to the facade
@@ -454,14 +458,26 @@ public class EjbFacadeGenerator implements FacadeGenerator {
                                 genUtils.createAnnotation(RestConstants.PATH, 
                                         Collections.<ExpressionTree>singletonList(
                                                 annArgument)));
-                
+                               
+
+                TypeElement abstractFacadeElement = wc.getElements().getTypeElement(afName);
+                TypeElement entityElement = wc.getElements().getTypeElement(entityFQN);
+                if (abstractFacadeElement == null) {
+                    LOGGER.log(Level.SEVERE, "TypeElement not found for {0}", afName);
+                    if (abstractFacadeFO == null) {
+                        LOGGER.log(Level.SEVERE, "AbstractFacade FileObject is null");
+                    } else {
+                        LOGGER.log(Level.SEVERE, "AbstractFacade:path={0},valid={1},canRead={2},", new Object[]{
+                            abstractFacadeFO.getPath(), abstractFacadeFO.isValid(), abstractFacadeFO.canRead()});
+                    }
+                }
                 ClassTree newClassTree = maker.Class(
                         modifiersTree,
                         classTree.getSimpleName(),
                         classTree.getTypeParameters(),
                         maker.Type(wc.getTypes().getDeclaredType(
-                            wc.getElements().getTypeElement(afName),
-                            wc.getElements().getTypeElement(entityFQN).asType())),
+                            abstractFacadeElement,
+                            entityElement.asType())),
                         implementsClause,
                         members);
 
@@ -771,8 +787,15 @@ public class EjbFacadeGenerator implements FacadeGenerator {
         RestGenerationOptions editOptions = new RestGenerationOptions();
         editOptions.setRestMethod(Operation.EDIT);
         editOptions.setReturnType("void");//NOI18N
-        editOptions.setParameterNames(new String[]{"entity"}); //NOI18N
-        editOptions.setParameterTypes(new String[]{entityFQN}); //NOI18N
+        editOptions.setParameterNames(new String[]{"id", "entity"}); //NOI18N
+        editOptions.setPathParams(new String[]{"id", null}); //NOI18N
+        if ( needPathSegment ){
+            editOptions.setParameterTypes(new String[]{"javax.ws.rs.core.PathSegment", entityFQN}); // NOI18N
+        }
+        else {
+            editOptions.setParameterTypes(new String[]{idType, entityFQN}); 
+        }
+        //editOptions.setParameterTypes(new String[]{entityFQN}); //NOI18N
         editOptions.setConsumes(new String[]{"application/xml", 
                 "application/json"}); //NOI18N
         editOptions.setBody("super.edit(entity);"); //NOI18N

@@ -54,6 +54,7 @@ import org.openide.ErrorManager;
 import org.netbeans.modules.form.editors.*;
 import org.netbeans.modules.form.editors2.JTableSelectionModelEditor;
 import org.netbeans.modules.form.fakepeer.FakePeerSupport;
+import org.openide.util.Exceptions;
 
 /**
  * Implementation of properties for (meta)components (class RADComponent).
@@ -157,31 +158,22 @@ public class RADProperty extends FormProperty {
 
             Throwable tex = ex.getTargetException();
             if(tex instanceof IllegalArgumentException) {
-                ErrorManager.getDefault().annotate(
-                    tex, ErrorManager.WARNING, null,
-                    message, null, null);
                 // Issue 73627
                 if ("contentType".equals(getName()) && (beanInstance instanceof javax.swing.JTextPane)) { // NOI18N
                     return;
                 }
+                Exceptions.attachLocalizedMessage(tex, message);
                 throw (IllegalArgumentException) tex;
             } else if(tex instanceof IllegalAccessException) {
-                ErrorManager.getDefault().annotate(
-                    tex, ErrorManager.WARNING, null,
-                    message, null, null);                
+                Exceptions.attachLocalizedMessage(tex, message);
                 throw (IllegalAccessException) tex;
             } else if(value==null && tex instanceof NullPointerException) {
                 IllegalArgumentException iae = new IllegalArgumentException();
-                ErrorManager.getDefault().annotate(
-                    iae, ErrorManager.WARNING, null,
-                    message, null, null);                
+                Exceptions.attachLocalizedMessage(iae, message);
                 throw iae;                
             }
-            
-            ErrorManager.getDefault().annotate(
-                ex, ErrorManager.WARNING, null,
-                message, null, null);
 
+            Exceptions.attachLocalizedMessage(ex, message);
             throw ex;
         }
 

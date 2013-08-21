@@ -181,10 +181,13 @@ public class InstallStep implements WizardDescriptor.FinishablePanel<WizardDescr
                 @Override
                 public void propertyChange (PropertyChangeEvent evt) {
                     if (OperationPanel.RUN_ACTION.equals (evt.getPropertyName ())) {
-                        RequestProcessor.Task it = createInstallTask ();
-                        PluginManagerUI.registerRunningTask (it);
-                        it.waitFinished ();
-                        PluginManagerUI.unregisterRunningTask ();
+                        try {
+                            RequestProcessor.Task it = createInstallTask ();
+                            PluginManagerUI.registerRunningTask (it);
+                            it.waitFinished ();
+                        } finally {
+                            PluginManagerUI.unregisterRunningTask ();
+                        }
                     } else if (OperationPanel.RUN_IN_BACKGROUND.equals (evt.getPropertyName ())) {
                         setRunInBackground ();
                     }

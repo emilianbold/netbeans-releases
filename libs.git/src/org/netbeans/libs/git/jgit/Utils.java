@@ -93,7 +93,7 @@ public final class Utils {
     }
 
     public static Repository getRepositoryForWorkingDir (File workDir) throws IOException, IllegalArgumentException {
-         return new FileRepositoryBuilder().setWorkTree(workDir).readEnvironment().build();
+         return new FileRepositoryBuilder().setWorkTree(workDir).build();
     }
 
     public static File getMetadataFolder (File workDir) {

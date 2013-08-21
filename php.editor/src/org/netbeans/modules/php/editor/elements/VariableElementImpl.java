@@ -123,9 +123,8 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<VariableElement> retval = values.length > 0
                 ? new HashSet<VariableElement>() : Collections.<VariableElement>emptySet();
-        String url = indexResult.getUrl().toString();
         for (final String val : values) {
-            final VariableElement var = fromSignature(query, indexQuery, url, Signature.get(val));
+            final VariableElement var = fromSignature(query, indexQuery, Signature.get(val));
             if (var != null) {
                 retval.add(var);
             }
@@ -134,12 +133,12 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
     }
 
     public static VariableElement fromSignature(final NameKind query,
-            final IndexQueryImpl indexScopeQuery, final String url, final Signature sig) {
+            final IndexQueryImpl indexScopeQuery, final Signature sig) {
         final VariableSignatureParser signParser = new VariableSignatureParser(sig);
         VariableElement retval = null;
         if (matchesQuery(query, signParser)) {
             retval = new VariableElementImpl(signParser.getVariableName(),
-                    signParser.getOffset(), url,
+                    signParser.getOffset(), signParser.getFileUrl(),
                     indexScopeQuery, signParser.getTypes(), signParser.getFQTypes(),
                     signParser.isDeprecated());
         }
@@ -193,6 +192,7 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
         sb.append(Separator.SEMICOLON); //NOI18N
         sb.append(getOffset()).append(Separator.SEMICOLON); //NOI18N
         sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
+        sb.append(getFilenameUrl()).append(Separator.SEMICOLON);
         checkSignature(sb);
         return sb.toString();
     }
@@ -259,6 +259,10 @@ public class VariableElementImpl extends PhpElementImpl implements VariableEleme
 
         boolean isDeprecated() {
             return signature.integer(4) == 1;
+        }
+
+        String getFileUrl() {
+            return signature.string(5);
         }
 
     }

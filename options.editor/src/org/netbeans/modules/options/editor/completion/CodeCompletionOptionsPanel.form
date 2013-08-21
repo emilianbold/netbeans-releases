@@ -1,6 +1,13 @@
-<?xml version="1.1" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 
 <Form version="1.5" maxVersion="1.7" type="org.netbeans.modules.form.forminfo.JPanelFormInfo">
+  <Properties>
+    <Property name="border" type="javax.swing.border.Border" editor="org.netbeans.modules.form.editors2.BorderEditor">
+      <Border info="org.netbeans.modules.form.compat2.border.EmptyBorderInfo">
+        <EmptyBorder bottom="10" left="10" right="10" top="10"/>
+      </Border>
+    </Property>
+  </Properties>
   <AuxValues>
     <AuxValue name="FormSettings_autoResourcing" type="java.lang.Integer" value="1"/>
     <AuxValue name="FormSettings_autoSetComponentName" type="java.lang.Boolean" value="false"/>
@@ -22,7 +29,7 @@
               <Component id="cbLanguage" min="-2" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="panel" alignment="0" pref="132" max="32767" attributes="1"/>
+          <Component id="panel" alignment="0" max="32767" attributes="1"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -33,7 +40,7 @@
                   <Component id="cbLanguage" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="panel" pref="131" max="32767" attributes="0"/>
+              <Component id="panel" pref="111" max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>
