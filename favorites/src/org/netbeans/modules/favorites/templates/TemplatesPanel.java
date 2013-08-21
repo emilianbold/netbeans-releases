@@ -147,6 +147,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
     
     /** Paths of folders, where templates should not have the script engine set. */
     private static final Set<String> FOLDERS_WITH_NO_SCRIPT_ENGINE = Collections.singleton(LICENSES_FOLDER);
+    
+    static final String LICENSE_NAME_START = "license-";
+    static final String LICENSE_NAME_END = ".txt";
 
     /** Creates new form TemplatesPanel */
     public TemplatesPanel () {
@@ -1149,6 +1152,21 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         DataObject template = null;
         try {
             template = sourceDO.copy (folder);
+            FileObject templateFile = template.getPrimaryFile();
+            if (LICENSES_FOLDER.equals(folder.getPrimaryFile().getPath())) {
+                String licenseName = templateFile.getNameExt();
+                String licenseNewName = null;
+                if (!licenseName.startsWith(LICENSE_NAME_START)) {
+                    licenseNewName = LICENSE_NAME_START+licenseName;
+                }
+                if (!licenseName.endsWith(LICENSE_NAME_END)) {
+                    licenseNewName = ((licenseNewName == null) ? licenseName : licenseNewName) + LICENSE_NAME_END;
+                }
+                if (licenseNewName != null) {
+                    template.rename(licenseNewName);
+                    templateFile = template.getPrimaryFile();
+                }
+            }
             DataObject templateSample = null;
             boolean shouldSetScriptEngine = !FOLDERS_WITH_NO_SCRIPT_ENGINE.contains(
                     folder.getPrimaryFile().getPath());
@@ -1164,9 +1182,9 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
             if (shouldSetScriptEngine) {
                 if (templateSample == null) {
                     // a fallback if no template sample found
-                    template.getPrimaryFile ().setAttribute (TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE, "freemarker"); // NOI18N
+                    templateFile.setAttribute (TEMPLATE_SCRIPT_ENGINE_ATTRIBUTE, "freemarker"); // NOI18N
                 } else {
-                    setTemplateAttributes (template.getPrimaryFile (), templateSample.getPrimaryFile ());
+                    setTemplateAttributes (templateFile, templateSample.getPrimaryFile ());
                 }
             }
         } catch (IOException ioe) {
@@ -1428,12 +1446,15 @@ public class TemplatesPanel extends TopComponent implements ExplorerManager.Prov
         String displayName = n.getDisplayName();
         FileObject fo = n.getLookup().lookup(FileObject.class);
         RenameTemplatePanel editPanel = new RenameTemplatePanel(isUserFile(fo));
-        editPanel.setFileName(name);
-        editPanel.setFileDisplayName(displayName);
+        if (LICENSES_FOLDER.equals(fo.getParent().getPath())) {
+            editPanel.setIsLicense(true);
+        }
         editPanel.setOtherFileNames(getOtherFileNames(n));
         String title = RenameTemplatePanel_title_text();
         DialogDescriptor dd = new DialogDescriptor(editPanel, title);
         editPanel.setDescriptor(dd);
+        editPanel.setFileName(name);
+        editPanel.setFileDisplayName(displayName);
         Object res = DialogDisplayer.getDefault().notify(dd);
         if (DialogDescriptor.OK_OPTION.equals(res)) {
             name = editPanel.getFileName();

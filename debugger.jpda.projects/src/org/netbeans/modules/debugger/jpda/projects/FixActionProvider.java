@@ -347,7 +347,9 @@ public class FixActionProvider extends ActionsProviderSupport {
                     error = NbBundle.getMessage(SourcePathProviderImpl.class, "MSG_FixCircularity", ccer.getLocalizedMessage());
                 } catch (RuntimeException vmdisc) {
                 //} catch (VMDisconnectedException vmdisc) {
-                    if ("com.sun.jdi.VMDisconnectedException".equals(vmdisc.getClass().getName())) {
+                    if ("com.sun.jdi.VMOutOfMemoryException".equals(vmdisc.getClass().getName())) {
+                        error = NbBundle.getMessage(SourcePathProviderImpl.class, "MSG_FixOOME");
+                    } else if ("com.sun.jdi.VMDisconnectedException".equals(vmdisc.getClass().getName())) {
                         //BuildArtifactMapper.removeArtifactsUpdatedListener(url, ArtifactsUpdatedImpl.this);
                         return ;
                     } else {
