@@ -99,12 +99,12 @@ import org.openide.util.RequestProcessor;
  *
  * @author Jan Lahoda
  */
-public final class GeneratingBracketCompleter {
+public final class PhpCommentGenerator {
 
     static final RequestProcessor RP = new RequestProcessor("Generating Bracket Completer", 1); //NOI18N
     static final String TYPE_PLACEHOLDER = "type";
 
-    private GeneratingBracketCompleter() {
+    private PhpCommentGenerator() {
     }
 
     static void generateDocTags(final BaseDocument doc, final int offset, final int indent) {

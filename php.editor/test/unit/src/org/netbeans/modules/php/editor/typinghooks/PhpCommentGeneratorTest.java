@@ -56,9 +56,9 @@ import org.netbeans.modules.php.editor.csl.PHPNavTestBase;
  * 
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class GeneratingBracketCompleterTest extends PHPNavTestBase {
+public class PhpCommentGeneratorTest extends PHPNavTestBase {
 
-    public GeneratingBracketCompleterTest(String testName) {
+    public PhpCommentGeneratorTest(String testName) {
         super(testName);
     }
 
@@ -76,7 +76,7 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
                             "<?php\n" +
                             "/**\n" +
                             " * \n" +
-                            " * @param " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + " $i^\n" +
+                            " * @param " + PhpCommentGenerator.TYPE_PLACEHOLDER + " $i^\n" +
                             " */\n" +
                             "function foo($i) {\n" +
                             "}\n" +
@@ -113,7 +113,7 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
                             "<?php\n" +
                             "/**\n" +
                             " * \n" +
-                            " * @staticvar " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + " $r^\n" +
+                            " * @staticvar " + PhpCommentGenerator.TYPE_PLACEHOLDER + " $r^\n" +
                             " */\n" +
                             "function foo() {\n" +
                             "    static $r;\n" +
@@ -165,7 +165,7 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
                             "class foo {\n" +
                             "    /**\n" +
                             "     *\n" +
-                            "     * @var " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + " ^\n" +
+                            "     * @var " + PhpCommentGenerator.TYPE_PLACEHOLDER + " ^\n" +
                             "     */\n" +
                             "    var $bar = \"\";\n" +
                             "}\n" +
@@ -184,7 +184,7 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
                             "class foo {\n" +
                             "    /**\n" +
                             "     * \n" +
-                            "     * @param " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + " $par^\n" +
+                            "     * @param " + PhpCommentGenerator.TYPE_PLACEHOLDER + " $par^\n" +
                             "     */\n" +
                             "    function bar($par) {\n" +
                             "    }\n" +
@@ -216,7 +216,7 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
         runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
 
         // wait for generating comment
-        Future<?> future = GeneratingBracketCompleter.RP.submit(new Runnable() {
+        Future<?> future = PhpCommentGenerator.RP.submit(new Runnable() {
             @Override
             public void run() {
             }

@@ -791,7 +791,7 @@ public class PhpTypedBreakInterceptor implements TypedBreakInterceptor {
 
         @Override
         public void generate(BaseDocument baseDocument) {
-            GeneratingBracketCompleter.generateDocTags(baseDocument, offset, indent);
+            PhpCommentGenerator.generateDocTags(baseDocument, offset, indent);
         }
     }
 
