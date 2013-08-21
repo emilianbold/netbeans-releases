@@ -43,7 +43,6 @@ package org.netbeans.modules.php.editor.actions;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -55,11 +54,9 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.completion.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
-import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
@@ -76,17 +73,9 @@ import org.openide.filesystems.FileUtil;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
-    private Index index;
 
     public FixUsesPerformerTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        QuerySupport querySupport = QuerySupportFactory.get(Arrays.asList(createSourceClassPathsForTest()));
-        index = ElementQueryFactory.createIndexQuery(querySupport);
     }
 
     public void testIssue210093_01() throws Exception {
@@ -189,7 +178,11 @@ public class FixUsesPerformerTest extends PHPCodeCompletionTestBase {
                         CodeStyle codeStyle = CodeStyle.get(document);
                         currentOptions = new FixUsesAction.Options(codeStyle);
                     }
-                    ImportData importData = new ImportDataCreator(usedNames, index, namespaceScope.getNamespaceName(), currentOptions).create();
+                    ImportData importData = new ImportDataCreator(
+                            usedNames,
+                            ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(phpResult)),
+                            namespaceScope.getNamespaceName(),
+                            currentOptions).create();
                     final List<ItemVariant> properSelections = new ArrayList<ItemVariant>();
                     for (String selection : selections) {
                         properSelections.add(new ItemVariant(selection, ItemVariant.UsagePolicy.CAN_BE_USED));
