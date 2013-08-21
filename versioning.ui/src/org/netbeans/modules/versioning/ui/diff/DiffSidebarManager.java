@@ -89,6 +89,7 @@ public class DiffSidebarManager implements PreferenceChangeListener, PropertyCha
      */
     private static final RequestProcessor blockingRequestProcessor = new RequestProcessor("Diffsidebar long tasks", 1, false, false);
     static final Logger LOG = Logger.getLogger(DiffSidebarManager.class.getName());
+    private static final boolean LOG_STACKTRACE = Boolean.getBoolean("versioning.diffsidebar.refresh.logstacktrace"); //NOI18N
     
     public static synchronized DiffSidebarManager getInstance() {
         if (instance == null) {
@@ -119,6 +120,9 @@ public class DiffSidebarManager implements PreferenceChangeListener, PropertyCha
                 fileObjects.add(file.toFileObject());
             }
             fileObjects.remove(null);
+        }
+        if (LOG_STACKTRACE && (fileObjects == null || !fileObjects.isEmpty())) {
+            LOG.log(Level.INFO, "Refreshing: " + fileObjects, new Exception());
         }
         final Set<FileObject> fileObjectsToRefresh = fileObjects;
         SwingUtilities.invokeLater(new Runnable() {

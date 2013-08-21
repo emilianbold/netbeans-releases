@@ -246,16 +246,14 @@ public class InternationalizationResourceBundleBrandingPanel extends AbstractBra
             refreshTask = RPforRefresh.create(new Runnable() {
                 @Override
                 public void run() {
-                    prepareTree();
+                    prepareTree(loadPlatformJars());
                 }
             });
         }
         refreshTask.schedule(0);
     }
-
-    private void prepareTree() {
-        List<BundleNode> resourcebundlenodes = new LinkedList<BundleNode>();
-
+    
+    private Set<File> loadPlatformJars() {
         Set<File> jars = new HashSet<File>();
         PlatformJarProvider pjp = prj.getLookup().lookup(PlatformJarProvider.class);
         if (pjp != null) {
@@ -265,6 +263,12 @@ public class InternationalizationResourceBundleBrandingPanel extends AbstractBra
                 LOG.log(Level.INFO, null, x);
             }
         }
+        return jars;
+    }
+
+    private void prepareTree(Set<File> jars) {
+        List<BundleNode> resourcebundlenodes = new LinkedList<BundleNode>();
+
         Set<File> brandableJars = branding.getBrandableJars();
         jars.retainAll(brandableJars);
         
@@ -843,12 +847,13 @@ public class InternationalizationResourceBundleBrandingPanel extends AbstractBra
                 RP.post(new Runnable() {
                     @Override
                     public void run() {
+                        final Set<File> jars = loadPlatformJars();
                         SwingUtilities.invokeLater(new Runnable() {
                             @Override
                             public void run() {
                                 if (e.getStateChange() == ItemEvent.SELECTED) {
                                     branding.refreshLocalizedBundles((Locale) e.getItem());
-                                    prepareTree();
+                                    prepareTree(jars);
                                 }
                             }
                         });

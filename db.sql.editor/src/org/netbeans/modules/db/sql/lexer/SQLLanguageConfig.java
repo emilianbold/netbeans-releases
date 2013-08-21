@@ -45,8 +45,9 @@ import org.netbeans.api.lexer.Language;
 import org.netbeans.modules.csl.spi.DefaultLanguageConfig;
 import org.netbeans.modules.csl.spi.LanguageRegistration;
 
-@LanguageRegistration(mimeType="text/x-sql")
+@LanguageRegistration(mimeType=SQLLanguageConfig.mimeType)
 public class SQLLanguageConfig extends DefaultLanguageConfig {
+    public final static String mimeType = "text/x-sql";
 
     @Override
     public Language<SQLTokenId> getLexerLanguage() {

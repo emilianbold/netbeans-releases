@@ -43,6 +43,7 @@
 package org.netbeans.modules.maven.execute;
 
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -52,6 +53,7 @@ import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.project.JavaProjectConstants;
+import org.netbeans.api.java.queries.UnitTestForSourceQuery;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.SourceUtils;
 import org.netbeans.api.project.Project;
@@ -70,6 +72,7 @@ import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.filesystems.URLMapper;
 import org.openide.loaders.DataObject;
 import org.openide.util.Lookup;
 
@@ -196,12 +199,24 @@ public class DefaultReplaceTokenProvider implements ReplaceTokenProvider, Action
                         (ActionProvider.COMMAND_TEST_SINGLE.equals(actionName) ||
                          ActionProvider.COMMAND_DEBUG_TEST_SINGLE.equals(actionName) ||
                          ActionProvider.COMMAND_PROFILE_TEST_SINGLE.equals(actionName))) {
-                        if (classnameExt.toString().endsWith(".java")) {
-                            classnameExt.delete(classnameExt.length() - ".java".length(), classnameExt.length());
-                            classnameExt.append("Test.java");
+                        String fix = "Test";
+                        if (classnameExt.toString().endsWith("." + file.getExt())) {
+                            classnameExt.delete(classnameExt.length() - ("." + file.getExt()).length(), classnameExt.length());
+                            URL[] unitRoots = UnitTestForSourceQuery.findUnitTests(group.getRootFolder());
+                            if (unitRoots != null) {
+                                for (URL unitRoot : unitRoots) {
+                                    FileObject root = URLMapper.findFileObject(unitRoot);
+                                    String ngPath = relP + (relP.isEmpty() ? "" : "/") + classnameExt + "NGTest." + file.getExt();
+                                    if (root.getFileObject(ngPath) != null) {
+                                        fix = "NGTest";
+                                        break;
+                                    }
+                                }
+                            }
+                            classnameExt.append(fix).append(".").append(file.getExt());
                         }
-                        packClassname.append("Test");
-                        classname.append("Test");
+                        packClassname.append(fix);
+                        classname.append(fix);
                     }
                 }
             }

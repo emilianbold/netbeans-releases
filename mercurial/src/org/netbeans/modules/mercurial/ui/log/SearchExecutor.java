@@ -129,7 +129,9 @@ class SearchExecutor extends HgProgressSupport {
             this.branches = HgCommand.getBranches(root, OutputLogger.getLogger(null));
         } catch (HgException ex) {
             this.branches = new HgBranch[0];
-            Mercurial.LOG.log(Level.INFO, null, ex);
+            Mercurial.LOG.log(ex instanceof HgException.HgCommandCanceledException
+                    ? Level.FINE
+                    : Level.INFO, null, ex);
         }
         List<RepositoryRevision> results = search(fromRevision, toRevision, limitRevisions, branchName, this, logger);
         if (!isCanceled()) {

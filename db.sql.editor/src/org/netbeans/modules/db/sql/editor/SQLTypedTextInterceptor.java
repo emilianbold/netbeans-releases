@@ -41,7 +41,10 @@
  */
 package org.netbeans.modules.db.sql.editor;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 import javax.swing.text.BadLocationException;
+import javax.swing.text.Caret;
 import javax.swing.text.Document;
 import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.api.editor.mimelookup.MimeRegistrations;
@@ -66,8 +69,60 @@ public class SQLTypedTextInterceptor implements TypedTextInterceptor {
     }
 
     @Override
-    public boolean beforeInsert(Context context) throws BadLocationException {
+    public boolean beforeInsert(final Context context) throws BadLocationException {
+        if(! OptionsUtils.isPairCharactersCompletion()) {
         return false;
+    }
+
+        final Document doc = context.getDocument();
+        
+        Callable<Boolean> callable = new Callable<Boolean>() {
+    @Override
+            public Boolean call() {
+                int caretOffset = context.getOffset();
+                String str = context.getText(); // guaranteed to be one character
+
+                Character nextChar;
+                Character prevChar;
+                try {
+                    nextChar = doc.getText(caretOffset, 1).charAt(0);
+                } catch (BadLocationException ex) {
+                    nextChar = null;
+                }
+                try {
+                    prevChar = doc.getText(caretOffset - 1, 1).charAt(0);
+                } catch (BadLocationException ex) {
+                    prevChar = null;
+                }
+
+                if (nextChar == str.charAt(0) && (
+                        (prevChar == '(' && nextChar == ')') ||
+                        SQLLexer.isEndStringQuoteChar(prevChar, nextChar) ||
+                        SQLLexer.isEndIdentifierQuoteChar(prevChar, nextChar)
+                        )) {
+                    Caret c = context.getComponent().getCaret();
+                    c.setDot(c.getDot() + 1);
+                    return true;
+                }
+                return false;
+            }
+        };
+
+        Boolean result;
+        
+        try {
+            if (doc instanceof BaseDocument) {
+                FutureTask<Boolean> task = new FutureTask<Boolean>(callable);
+                ((BaseDocument) doc).runAtomic(task);
+                result = task.get();
+            } else {
+                result = callable.call();
+            }
+        } catch (Exception ex) {
+            result = false;
+        }
+        
+        return result;
     }
 
     @Override
@@ -76,6 +131,10 @@ public class SQLTypedTextInterceptor implements TypedTextInterceptor {
 
     @Override
     public void afterInsert(final Context context) throws BadLocationException {
+        if(! OptionsUtils.isPairCharactersCompletion()) {
+            return;
+        }
+        
         final Document doc = context.getDocument();
 
         Runnable r = new Runnable() {
