@@ -211,5 +211,6 @@ public class DarkNimbusTheme {
         //#233622
         UIManager.put( "List[Selected].textForeground", UIManager.getColor( "nimbusSelectedText" ) );
 
+        UIManager.put( "nb.explorer.noFocusSelectionBackground", UIManager.get( "nimbusSelectionBackground") );
    }
 }
