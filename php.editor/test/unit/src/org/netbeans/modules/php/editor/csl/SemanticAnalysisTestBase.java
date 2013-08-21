@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,49 +37,20 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
 package org.netbeans.modules.php.editor.csl;
 
-import java.io.File;
-import java.util.Collections;
-import java.util.Map;
-import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.php.project.api.PhpSourcePath;
-import org.netbeans.spi.java.classpath.support.ClassPathSupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
+import org.netbeans.modules.php.editor.PHPTestBase;
 
 /**
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class DeprecatedMethodsSemanticAnalysisTest extends DeprecatedSemanticAnalysisTestBase {
+public class SemanticAnalysisTestBase extends PHPTestBase {
 
-    public DeprecatedMethodsSemanticAnalysisTest(String testName) {
+    public SemanticAnalysisTestBase(String testName) {
         super(testName);
-    }
-
-    public void testDeprecatedMethodDeclarations() throws Exception {
-        checkSemantic("testfiles/semantic/deprecatedMethods/deprecatedMethodDeclarations.php");
-    }
-
-    public void testDeprecatedPrivateTraitMethod() throws Exception {
-        checkSemantic("testfiles/semantic/deprecatedMethods/deprecatedPrivateTraitMethod.php");
-    }
-
-    public void testDeprecatedPrivateClassMethod() throws Exception {
-        checkSemantic("testfiles/semantic/deprecatedMethods/deprecatedPrivateClassMethod.php");
-    }
-
-    @Override
-    protected Map<String, ClassPath> createClassPathsForTest() {
-        return Collections.singletonMap(
-            PhpSourcePath.SOURCE_CP,
-            ClassPathSupport.createClassPath(new FileObject[] {
-                FileUtil.toFileObject(new File(getDataDir(), "/testfiles/semantic/deprecatedMethods"))
-            })
-        );
     }
 
 }

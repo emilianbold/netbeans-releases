@@ -42,13 +42,11 @@
 
 package org.netbeans.modules.php.editor.csl;
 
-import org.netbeans.modules.php.editor.completion.PHPCodeCompletionTestBase;
-
 /**
  *
  * @author Petr Pisl
  */
-public class SemanticAnalyzerTest extends PHPCodeCompletionTestBase {
+public class SemanticAnalyzerTest extends SemanticAnalysisTestBase {
 
     public SemanticAnalyzerTest(String testName) {
         super(testName);
