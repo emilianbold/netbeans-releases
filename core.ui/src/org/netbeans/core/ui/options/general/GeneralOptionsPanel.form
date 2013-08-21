@@ -173,9 +173,6 @@
           </Border>
         </Property>
       </Properties>
-      <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="rbNoProxyActionPerformed"/>
-      </Events>
     </Component>
     <Component class="javax.swing.JRadioButton" name="rbUseSystemProxy">
       <Properties>
@@ -285,7 +282,9 @@
       <SubComponents>
         <Component class="javax.swing.JLabel" name="lblLearnMore">
           <Properties>
-            <Property name="text" type="java.lang.String" value="&lt;html&gt;&lt;font color=&quot;#0000FF&quot; &lt;u&gt;Learn more&lt;/u&gt;&lt;/font&gt;&lt;/html&gt;" noResource="true"/>
+            <Property name="text" type="java.lang.String" editor="org.netbeans.modules.i18n.form.FormI18nStringEditor">
+              <ResourceString bundle="org/netbeans/core/ui/options/general/Bundle.properties" key="CTL_Learn_More" replaceFormat="org.openide.util.NbBundle.getMessage({sourceFileName}.class, &quot;{key}&quot;)"/>
+            </Property>
           </Properties>
           <Events>
             <EventHandler event="mouseEntered" listener="java.awt.event.MouseListener" parameters="java.awt.event.MouseEvent" handler="lblLearnMoreMouseEntered"/>

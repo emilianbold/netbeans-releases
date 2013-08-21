@@ -44,44 +44,42 @@ package org.netbeans.modules.groovy.editor.api.elements.ast;
 import groovy.lang.MetaMethod;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
-import org.codehaus.groovy.ast.AnnotationNode;
 import org.codehaus.groovy.ast.ConstructorNode;
 import org.codehaus.groovy.ast.MethodNode;
 import org.codehaus.groovy.ast.Parameter;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.csl.api.Modifier;
-import org.netbeans.modules.groovy.editor.api.elements.common.IMethodElement;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.groovy.editor.api.elements.common.MethodElement;
 
-public class ASTMethod extends ASTElement implements IMethodElement {
+public class ASTMethod extends ASTElement implements MethodElement {
 
-    private List<String> parameters;
+    private List<MethodParameter> parameters;
+    private String returnType;
     private Class clz;
     private MetaMethod method;
-    private boolean GDK;
-    private String methodSignature;
-    private String returnType;
+    private boolean isGDK;
 
     
-    public ASTMethod(GroovyParserResult info, ASTNode node) {
-        super(info, node);
+    public ASTMethod(ASTNode node) {
+        this(node, null);
+    }
+
+    public ASTMethod(ASTNode node, String in) {
+        super(node, in);
     }
     
     // We need this variant to drag the Class to which this Method belongs with us.
     // This is used in the CodeCompleter complete/document pair.
     
-    public ASTMethod(GroovyParserResult info, ASTNode node, Class clz, MetaMethod method, boolean GDK) {
-
-        super(info, node);
+    public ASTMethod(ASTNode node, Class clz, MetaMethod method, boolean isGDK) {
+        super(node);
         this.clz = clz;
         this.method = method;
-        this.GDK = GDK;
+        this.isGDK = isGDK;
     }
 
     public boolean isGDK() {
-        return GDK;
+        return isGDK;
     }
 
     public MetaMethod getMethod() {
@@ -93,36 +91,47 @@ public class ASTMethod extends ASTElement implements IMethodElement {
     }
 
     @Override
-    public List<String> getParameters() {
+    public List<MethodParameter> getParameters() {
         if (parameters == null) {
-            parameters = new ArrayList<String>();
+            parameters = new ArrayList<>();
             for (Parameter parameter : ((MethodNode) node).getParameters()) {
-                String parameterName = parameter.getName();
-                String parameterType = parameter.getType().getNameWithoutPackage();
-                
-                parameters.add(parameterType + " " + parameterName);
+                String paramName = parameter.getName();
+                String fqnType = parameter.getType().getName();
+                String type = parameter.getType().getNameWithoutPackage();
+
+                parameters.add(new MethodParameter(fqnType, type, paramName));
             }
         }
         return parameters;
     }
+
+    @Override
+    public List<String> getParameterTypes() {
+        List<String> paramTypes = new ArrayList<>();
+
+        for (MethodParameter parameter : getParameters()) {
+            paramTypes.add(parameter.getType());
+        }
+        return paramTypes;
+    }
     
     @Override
     public String getSignature() {
-        if (methodSignature == null) {
+        if (signature == null) {
             StringBuilder builder = new StringBuilder(super.getSignature());
-            List<String> params = getParameters();
+            List<MethodParameter> params = getParameters();
             if (params.size() > 0) {
                 builder.append("("); // NOI18N
-                for (String parameter : params) {
-                    builder.append(parameter);
+                for (MethodParameter parameter : params) {
+                    builder.append(parameter.getFqnType());
                     builder.append(","); // NOI18N
                 }
                 builder.setLength(builder.length() - 1);
                 builder.append(")"); // NOI18N
             }
-            methodSignature = builder.toString();
+            signature = builder.toString();
         }
-        return methodSignature;
+        return signature;
     }
 
     @Override
@@ -141,15 +150,12 @@ public class ASTMethod extends ASTElement implements IMethodElement {
         return name;
     }
     
+    @Override
     public String getReturnType() {
         if (returnType == null) {
             returnType = ((MethodNode) node).getReturnType().getNameWithoutPackage();
         }
         return returnType;
-    }
-
-    public void setModifiers(Set<Modifier> modifiers) {
-        this.modifiers = modifiers;
     }
 
     @Override
@@ -161,27 +167,5 @@ public class ASTMethod extends ASTElement implements IMethodElement {
         } else {
             return ElementKind.OTHER;
         }
-    }
-
-    @Override
-    public boolean isTopLevel() {
-        return false;
-    }
-
-    @Override
-    public boolean isInherited() {
-        return false;
-    }
-
-    @Override
-    public boolean isDeprecated() {
-        if (node instanceof MethodNode) {
-            for (AnnotationNode annotation : ((MethodNode) node).getAnnotations()) {
-                if (Deprecated.class.getName().equals(annotation.getClassNode().getName())) { // NOI18N
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 }

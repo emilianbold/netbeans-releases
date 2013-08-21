@@ -224,14 +224,20 @@ public final class CoreBridgeImpl extends CoreBridge {
         String uiClassName = prefs.get( "laf", null ); //NOI18N
         if( null == uiClassName )
             return null;
+        ClassLoader loader = Lookup.getDefault().lookup( ClassLoader.class );
+        if( null == loader )
+            loader = ClassLoader.getSystemClassLoader();
         try {
-            Class uiClass = Class.forName( uiClassName );
-            if( prefs.getBoolean( "theme.dark", false ) ) { //NOI18N
-                System.setProperty( "netbeans.plaf.dark.theme", "true" ); //NOI18N
-            }
+            Class uiClass = loader.loadClass( uiClassName );
             return uiClass;
         } catch( ClassNotFoundException ex ) {
-            Logger.getLogger( CoreBridgeImpl.class.getName() ).log( Level.INFO, "Cannot use look and feel class: " + uiClassName, ex ); //NOI18N
+            //HACK ModuleInstall.uninstalled() is never called so let's check if Dark Themes module has been uninstalled
+            if( prefs.getBoolean( "dark.themes.installed", false) ) {
+                prefs.remove( "laf" ); //NOI18N
+                prefs.remove( "dark.themes.installed" ); //NOI18N
+            } else {
+                Logger.getLogger( CoreBridgeImpl.class.getName() ).log( Level.INFO, "Cannot use look and feel class: " + uiClassName, ex ); //NOI18N
+            }
         }
         return null;
     }

@@ -42,7 +42,6 @@
 package org.netbeans.modules.php.editor.actions;
 
 import java.io.File;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -54,11 +53,9 @@ import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.parsing.api.UserTask;
 import org.netbeans.modules.parsing.spi.Parser;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.completion.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.editor.actions.FixUsesAction.Options;
 import org.netbeans.modules.php.editor.actions.ImportData.ItemVariant;
-import org.netbeans.modules.php.editor.api.ElementQuery.Index;
 import org.netbeans.modules.php.editor.api.ElementQueryFactory;
 import org.netbeans.modules.php.editor.api.QuerySupportFactory;
 import org.netbeans.modules.php.editor.indent.CodeStyle;
@@ -75,17 +72,9 @@ import org.openide.filesystems.FileUtil;
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
 public class ImportDataCreatorTest extends PHPCodeCompletionTestBase {
-    private Index index;
 
     public ImportDataCreatorTest(String testName) {
         super(testName);
-    }
-
-    @Override
-    public void setUp() throws Exception {
-        super.setUp();
-        QuerySupport querySupport = QuerySupportFactory.get(Arrays.asList(createSourceClassPathsForTest()));
-        index = ElementQueryFactory.createIndexQuery(querySupport);
     }
 
     public void testImportData_01() throws Exception {
@@ -169,7 +158,11 @@ public class ImportDataCreatorTest extends PHPCodeCompletionTestBase {
                         CodeStyle codeStyle = CodeStyle.get(document);
                         currentOptions = new Options(codeStyle);
                     }
-                    ImportData importData = new ImportDataCreator(usedNames, index, namespaceScope.getNamespaceName(), currentOptions).create();
+                    ImportData importData = new ImportDataCreator(
+                            usedNames,
+                            ElementQueryFactory.createIndexQuery(QuerySupportFactory.get(phpResult)),
+                            namespaceScope.getNamespaceName(),
+                            currentOptions).create();
                     importData.caretPosition = caretOffset;
                     result[0] = importData;
                 }

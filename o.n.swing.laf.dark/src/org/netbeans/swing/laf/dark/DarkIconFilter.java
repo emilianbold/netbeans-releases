@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2006 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,22 +34,55 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.groovy.editor.api.elements.common;
+package org.netbeans.swing.laf.dark;
 
-import java.util.List;
+import java.awt.Color;
+import java.awt.image.RGBImageFilter;
 
 /**
- * Groovy-Elements that correspond to methods will implement
- * this interface whether they are from an AST or from an index
- *
- * @author Tor Norbye
+ * For dark LaFs it inverts icon brightness (=inverts icon image to obtain dark icon,
+ * then inverts its hue to restore original colors).
+ * 
+ * @author P. Somol
  */
-public interface IMethodElement {
+public class DarkIconFilter extends RGBImageFilter {
 
-    List<String> getParameters();
-    
-    boolean isTopLevel();
-    boolean isInherited();
-    boolean isDeprecated();
+    /** in dark LaFs brighten all icons; 0.0f = no change, 1.0f = maximum brightening */
+    private static final float DARK_ICON_BRIGHTEN = 0.1f;
+
+    @Override
+    public int filterRGB(int x, int y, int color) {
+        int a = color & 0xff000000;
+        int rgb[] = decode(color);
+        int inverted[] = invert(rgb);
+        int result[] = invertHueBrighten(inverted, DARK_ICON_BRIGHTEN);
+        return a | encode(result);
+   }
+
+    private int[] invert(int[] rgb) {
+        return new int[]{255-rgb[0], 255-rgb[1], 255-rgb[2]};
+    }
+
+    private int[] invertHueBrighten(int[] rgb, float brighten) {
+        float hsb[] = new float[3];
+        Color.RGBtoHSB(rgb[0], rgb[1], rgb[2], hsb);
+        return decode(Color.HSBtoRGB(hsb[0] > 0.5f ? hsb[0]-0.5f : hsb[0]+0.5f, hsb[1], hsb[2]+(1.0f-hsb[2])*brighten));
+    }
+
+    private int[] decode(int rgb) {
+        return new int[]{(rgb & 0x00ff0000) >> 16, (rgb & 0x0000ff00) >> 8, rgb & 0x000000ff};
+    }
+    private int encode(int[] rgb) {
+        return (toBoundaries(rgb[0]) << 16) | (toBoundaries(rgb[1]) << 8) | toBoundaries(rgb[2]);
+    }
+
+    private int toBoundaries(int color) {
+        return Math.max(0,Math.min(255,color));
+    }
+
 }

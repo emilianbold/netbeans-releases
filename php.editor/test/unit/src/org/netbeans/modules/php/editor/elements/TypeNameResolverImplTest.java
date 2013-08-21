@@ -120,8 +120,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testFullyQualifiedName_01() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testFullyQualifiedName_01.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testFullyQualifiedName_01.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -132,8 +133,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testQualifiedName_01() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_01.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testQualifiedName_01.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -144,8 +146,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testQualifiedName_02() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_02.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testQualifiedName_02.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -156,8 +159,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testQualifiedName_03() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_03.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testQualifiedName_03.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -168,8 +172,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testQualifiedName_04() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_04.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testQualifiedName_04.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -180,8 +185,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testQualifiedName_05() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_05.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testQualifiedName_05.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -192,8 +198,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testQualifiedName_06() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_06.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testQualifiedName_06.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -204,8 +211,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testQualifiedName_07() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_07.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testQualifiedName_07.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -216,8 +224,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testQualifiedName_08() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_08.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testQualifiedName_08.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -228,8 +237,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testQualifiedName_09() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_09.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testQualifiedName_09.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -240,8 +250,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testQualifiedName_10() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_10.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testQualifiedName_10.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -252,8 +263,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testQualifiedName_11() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_11.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testQualifiedName_11.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -264,8 +276,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testQualifiedName_12() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testQualifiedName_12.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testQualifiedName_12.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -276,8 +289,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testSmartName_fail_01() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_fail.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testSmartName_fail.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -290,8 +304,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testSmartName_fail_02() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_fail.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testSmartName_fail.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -304,8 +319,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testSmartName_01() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_01.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testSmartName_01.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -316,8 +332,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testSmartName_02() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_02.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testSmartName_02.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -328,8 +345,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testSmartName_03() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_03.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testSmartName_03.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -340,8 +358,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testSmartName_04() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_04.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testSmartName_04.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 
@@ -352,8 +371,9 @@ public class TypeNameResolverImplTest extends ModelTestBase {
     }
 
     public void testSmartName_05() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/elements/typenameresolver/testSmartName_05.php");
-        Model model = getModel(preparedTestFile);
+        String filePath = "testfiles/elements/typenameresolver/testSmartName_05.php";
+        String preparedTestFile = prepareTestFile(filePath);
+        Model model = getModel(getTestSource(filePath));
         int offset = getResolvingOffset(preparedTestFile);
         NamespaceScope namespaceScope = ModelUtils.getNamespaceScope(model.getFileScope(), offset);
 

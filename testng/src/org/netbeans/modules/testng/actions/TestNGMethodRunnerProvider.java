@@ -41,21 +41,10 @@
  */
 package org.netbeans.modules.testng.actions;
 
-import java.io.IOException;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
-import javax.swing.JEditorPane;
 import javax.swing.text.Document;
-import org.netbeans.api.java.source.JavaSource;
 import org.netbeans.modules.gsf.testrunner.api.TestMethodRunnerProvider;
-import org.netbeans.modules.java.testrunner.CommonTestUtil;
 import org.netbeans.spi.project.SingleMethod;
-import org.openide.cookies.EditorCookie;
-import org.openide.filesystems.FileObject;
 import org.openide.nodes.Node;
-import org.openide.text.NbDocument;
-import org.openide.util.Mutex;
 import org.openide.util.lookup.ServiceProvider;
 
 /**
@@ -65,61 +54,18 @@ import org.openide.util.lookup.ServiceProvider;
 @ServiceProvider(service = TestMethodRunnerProvider.class, position = 20)
 public class TestNGMethodRunnerProvider extends TestMethodRunnerProvider {
 
-    private static final Logger LOGGER = Logger.getLogger(TestNGMethodRunnerProvider.class.getName());
-
     @Override
     public boolean isTestClass(Node activatedNode) {
-        String displayName = activatedNode.getDisplayName();
-        if (!displayName.endsWith("Test.java")) {   // NOI18N
-            return false;
-        }
-        return true;
+        return TestSingleMethodSupport.isTestClass(activatedNode);
+    }
+    
+    @Override
+    public SingleMethod getTestMethod(Document doc, int cursor){
+        return TestSingleMethodSupport.getTestMethod(doc, cursor);
     }
 
     @Override
     public boolean canHandle(Node activatedNode) {
-        FileObject fileO = CommonTestUtil.getFileObjectFromNode(activatedNode);
-        if (fileO != null) {
-            final EditorCookie ec = activatedNode.getLookup().lookup(EditorCookie.class);
-            if (ec != null) {
-                JEditorPane pane = Mutex.EVENT.readAccess(new Mutex.Action<JEditorPane>() {
-		    @Override
-		    public JEditorPane run() {
-			return NbDocument.findRecentEditorPane(ec);
-		    }
-		});
-                if (pane != null) {
-                    String text = pane.getText();
-                    int index = text.indexOf("public");  //NOI18N
-                    if (index != -1) {
-                        if (text.substring(0, index).contains("org.testng.")) {  //NOI18N
-                            return true;
-                        }
-                    }
-                }
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public SingleMethod getTestMethod(Document doc, int cursor) {
-        SingleMethod sm = null;
-        if (doc != null) {
-            JavaSource js = JavaSource.forDocument(doc);
-            if(js == null) {
-                return null;
-            }
-            TestClassInfoTask task = new TestClassInfoTask(cursor);
-            try {
-                Future<Void> f = js.runWhenScanFinished(task, true);
-                if (f.isDone() && task.getFileObject() != null && task.getMethodName() != null) {
-                    sm = new SingleMethod(task.getFileObject(), task.getMethodName());
-                }
-            } catch (IOException ex) {
-                LOGGER.log(Level.WARNING, null, ex);
-            }
-        }
-        return sm;
+        return TestSingleMethodSupport.canHandle(activatedNode);
     }
 }

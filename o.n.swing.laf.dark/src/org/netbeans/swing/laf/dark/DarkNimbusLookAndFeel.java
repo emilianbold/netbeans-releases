@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2012 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -37,15 +37,36 @@
  *
  * Contributor(s):
  *
- * Portions Copyrighted 2012 Sun Microsystems, Inc.
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.modules.php.composer.mimeresolver;
+package org.netbeans.swing.laf.dark;
 
-import org.openide.filesystems.MIMEResolver;
+import javax.swing.UIDefaults;
+import javax.swing.plaf.nimbus.NimbusLookAndFeel;
+import org.openide.util.NbBundle;
 
 /**
- * Register {@code composer.lock} file as JSON.
+ * Dark-themed Nimbus l&f
+ * 
+ * @author S. Aubrecht
  */
-@MIMEResolver.Registration(displayName="#LBL_ComposerLockFile", resource="../resources/mime-resolver.xml", position=550)
-public class ComposerLockFileRegistration {
+public class DarkNimbusLookAndFeel extends NimbusLookAndFeel {
+
+    @Override
+    public String getName() {
+        return NbBundle.getMessage(DarkNimbusLookAndFeel.class, "LBL_DARK_NIMBUS");
+    }
+
+    @Override
+    public UIDefaults getDefaults() {
+        UIDefaults res = super.getDefaults();
+        res.put( "nb.dark.theme", Boolean.TRUE );
+        return res;
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize();
+        DarkNimbusTheme.install( this );
+    }
 }

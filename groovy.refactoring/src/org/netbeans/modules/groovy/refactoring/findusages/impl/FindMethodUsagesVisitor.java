@@ -94,7 +94,7 @@ public class FindMethodUsagesVisitor extends AbstractFindUsagesVisitor {
         final Set<IndexedMethod> possibleMethods = index.getMethods(methodName, methodType, QuerySupport.Kind.EXACT);
         for (IndexedMethod indexedMethod : possibleMethods) {
             final boolean sameName = methodName.equals(indexedMethod.getName());
-            final boolean sameParameters = Methods.isSameList(methodParams, indexedMethod.getParameters());
+            final boolean sameParameters = Methods.isSameList(methodParams, indexedMethod.getParameterTypes());
 
             // Find the exact method we are looking for
             if (sameName && sameParameters) {
