@@ -1545,10 +1545,6 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             }
             if (fc.isDirectorySelectionEnabled() && !fc.isFileSelectionEnabled()) {
                 if (fsv.isFileSystem(currentDirectory)) {                    
-                    if (fc.getSelectedFile()  == null) {
-                        //set selected file to the cureDir
-                        fc.setSelectedFile(currentDirectory);                        
-                    }
                     setFileName(getStringOfFileName(fc.getSelectedFile() == null ? currentDirectory : fc.getSelectedFile()));
                 } else {
                     setFileName(null);
@@ -2815,16 +2811,6 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             model = new DirectoryTreeModel(rootNode);
             tree.setModel(model);
             tree.repaint();
-            if (fileChooser.getSelectedFile() != null) {
-                //make selection
-                tree.setSelectionPath(new TreePath(new FileNode(fileChooser.getSelectedFile())));
-                for (int i = 0; i < rootNode.getChildCount(); i++)  {
-                    FileNode child = (FileNode)rootNode.getChildAt(i);
-                    if (child.getFile() != null && child.getFile().equals(fileChooser.getSelectedFile())) {
-                        tree.setSelectionRow(i);
-                    }
-                }
-            }
             checkUpdate();
             if (validationResult.isDirectoryChanged) {                
                 fireDirectoryChanged(null);
