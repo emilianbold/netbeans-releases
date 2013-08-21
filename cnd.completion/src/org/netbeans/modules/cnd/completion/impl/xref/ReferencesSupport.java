@@ -315,10 +315,12 @@ public final class ReferencesSupport {
                     csmItem = labels.iterator().next().getReferencedObject();
                 }
             }
-            if (csmItem == null) {
-                // Exit now, don't look for variables, types and etc.
-                return null;
-            }
+// Commented because goto statements could be expression based. 
+// In such case there are inner identifiers
+//            if (csmItem == null) {
+//                // Exit now, don't look for variables, types and etc.
+//                return null;
+//            }
         } else if (CsmKindUtilities.isVariable(objUnderOffset) || CsmKindUtilities.isTypedef(objUnderOffset)) {
             CsmType type = CsmKindUtilities.isVariable(objUnderOffset) ? ((CsmVariable) objUnderOffset).getType() : ((CsmTypedef) objUnderOffset).getType();
             CsmParameter parameter = null;

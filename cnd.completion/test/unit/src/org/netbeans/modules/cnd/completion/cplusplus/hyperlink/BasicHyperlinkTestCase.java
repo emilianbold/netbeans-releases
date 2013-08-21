@@ -1000,6 +1000,11 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug233836.cpp", 7, 20, "bug233836.cpp", 7, 12);        
     }
     
+    public void testBug228953() throws Exception { 
+        // Bug 228953 - inaccuracy tests: Python project has unresolved identifiers
+        performTest("bug228953.cpp", 7, 18, "bug228953.cpp", 3, 7);
+    }    
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

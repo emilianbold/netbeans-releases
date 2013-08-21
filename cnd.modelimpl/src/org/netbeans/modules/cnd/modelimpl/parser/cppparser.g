@@ -3778,7 +3778,10 @@ for_range_init_statement
 
 jump_statement
 	:	
-	(	LITERAL_goto IDENT (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
+	(	LITERAL_goto 
+                ((IDENT (EOF | SEMICOLON)) => IDENT
+                | expression)
+                (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
         {/*end_of_stmt();*/ #jump_statement = #(#[CSM_GOTO_STATEMENT, "CSM_GOTO_STATEMENT"], #jump_statement);}
 	|	LITERAL_continue (EOF! { reportError(new NoViableAltException(org.netbeans.modules.cnd.apt.utils.APTUtils.EOF_TOKEN, getFilename())); } |SEMICOLON)
         {/*end_of_stmt();*/ #jump_statement = #(#[CSM_CONTINUE_STATEMENT, "CSM_CONTINUE_STATEMENT"], #jump_statement);}
