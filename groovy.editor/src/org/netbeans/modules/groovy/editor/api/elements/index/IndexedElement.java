@@ -104,7 +104,7 @@ public abstract class IndexedElement extends GroovyElement {
     }
 
     @Override
-    public final Set<Modifier> getModifiers() {
+    public Set<Modifier> getModifiers() {
         if (modifiers == null) {
             Modifier access = null;
             if (isPublic()) {
