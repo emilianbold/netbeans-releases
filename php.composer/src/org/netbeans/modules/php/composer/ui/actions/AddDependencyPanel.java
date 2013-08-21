@@ -134,13 +134,16 @@ public final class AddDependencyPanel extends JPanel {
     private final List<Future<Integer>> showTasks = new CopyOnWriteArrayList<>();
 
 
-    private AddDependencyPanel(PhpModule phpModule) {
-        assert phpModule != null;
+    private AddDependencyPanel(@NullAllowed PhpModule phpModule) {
 
         this.phpModule = phpModule;
 
         initComponents();
         init();
+    }
+
+    public static AddDependencyPanel create() {
+        return new AddDependencyPanel(null);
     }
 
     @NbBundle.Messages({
@@ -149,6 +152,7 @@ public final class AddDependencyPanel extends JPanel {
     })
     public static void open(PhpModule phpModule) {
         assert EventQueue.isDispatchThread();
+        assert phpModule != null;
 
         AddDependencyPanel searchPanel = new AddDependencyPanel(phpModule);
         Object[] options = new Object[] {
@@ -549,6 +553,7 @@ public final class AddDependencyPanel extends JPanel {
     }
 
     private void initComposer(Composer composer, Runnable postTask) {
+        assert phpModule != null;
         Future<Integer> task = composer.initIfNotPresent(phpModule);
         if (task == null) {
             // file exists already
@@ -758,6 +763,7 @@ public final class AddDependencyPanel extends JPanel {
             @Override
             public void run() {
                 assert EventQueue.isDispatchThread();
+                assert phpModule != null;
                 composer.require(phpModule, selectedName);
             }
         });
@@ -774,6 +780,7 @@ public final class AddDependencyPanel extends JPanel {
             @Override
             public void run() {
                 assert EventQueue.isDispatchThread();
+                assert phpModule != null;
                 composer.requireDev(phpModule, selectedName);
             }
         });
