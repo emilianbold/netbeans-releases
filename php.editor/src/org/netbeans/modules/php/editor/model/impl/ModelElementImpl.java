@@ -262,8 +262,7 @@ abstract class ModelElementImpl extends PHPElement implements ModelElement {
                 fileObject = file.hasSecond() ? file.second() : null;
             }
         }
-        if (fileObject == null) {
-            assert file.hasFirst();
+        if (fileObject == null && file.hasFirst()) {
             String fileUrl = file.first();
             if (StringUtils.hasText(fileUrl)) {
                 fileObject = PhpElementImpl.resolveFileObject(fileUrl);

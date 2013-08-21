@@ -42,55 +42,41 @@
 
 package org.netbeans.modules.php.editor.typinghooks;
 
-import java.io.IOException;
-import javax.swing.JTextArea;
-import javax.swing.text.BadLocationException;
+import java.util.concurrent.Future;
+import javax.swing.JEditorPane;
 import javax.swing.text.Caret;
-import junit.framework.TestSuite;
+import javax.swing.text.DefaultEditorKit;
+import static junit.framework.Assert.assertEquals;
+import static junit.framework.Assert.assertNotNull;
 import org.netbeans.editor.BaseDocument;
-import org.netbeans.lib.editor.util.swing.DocumentUtilities;
-import org.netbeans.modules.csl.spi.GsfUtilities;
-import org.netbeans.modules.csl.spi.ParserResult;
-import org.netbeans.modules.editor.indent.api.Reformat;
-import org.netbeans.modules.parsing.api.ResultIterator;
-import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.php.api.util.FileUtils;
-import org.netbeans.modules.php.editor.csl.PHPBracketCompleter;
-import org.netbeans.modules.php.editor.indent.PHPFormatter;
-import org.netbeans.modules.php.editor.lexer.PHPTokenId;
+import org.netbeans.modules.csl.api.Formatter;
 import org.netbeans.modules.php.editor.csl.PHPNavTestBase;
-import org.openide.loaders.DataObjectNotFoundException;
 
 /**
- *
- * @author Jan Lahoda
+ * 
+ * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class GeneratingBracketCompleterTest extends PHPNavTestBase {
+public class PhpCommentGeneratorTest extends PHPNavTestBase {
 
-    public GeneratingBracketCompleterTest(String testName) {
+    public PhpCommentGeneratorTest(String testName) {
         super(testName);
     }
 
-    public static TestSuite suite() {
-        TestSuite ts = new TestSuite();
-
-        ts.addTest(new GeneratingBracketCompleterTest("testFoo"));
-
-        return ts;
+    @Override
+    protected boolean runInEQ() {
+        return true;
     }
 
-    public void testFoo() throws Exception {}
-
     public void testFunctionDocumentationParam() throws Exception {
-        performInsertBreak( "<?php\n" +
+        insertBreak( "<?php\n" +
                             "/**^\n" +
                             "function foo($i) {\n" +
                             "}\n" +
                             "?>\n",
                             "<?php\n" +
                             "/**\n" +
-                            " * ^\n" +
-                            " * @param " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + " $i\n" +
+                            " * \n" +
+                            " * @param " + PhpCommentGenerator.TYPE_PLACEHOLDER + " $i^\n" +
                             " */\n" +
                             "function foo($i) {\n" +
                             "}\n" +
@@ -98,7 +84,7 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
     }
 
     public void testFunctionDocumentationGlobalVar() throws Exception {
-        performInsertBreak( "<?php\n" +
+        insertBreak( "<?php\n" +
                             "$r = 1;\n" +
                             "/**^\n" +
                             "function foo() {\n" +
@@ -108,8 +94,8 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
                             "<?php\n" +
                             "$r = 1;\n" +
                             "/**\n" +
-                            " * ^\n" +
-                            " * @global " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + " $r\n" +
+                            " * \n" +
+                            " * @global int $r^\n" +
                             " */\n" +
                             "function foo() {\n" +
                             "    global $r;\n" +
@@ -118,7 +104,7 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
     }
 
     public void testFunctionDocumentationStaticVar() throws Exception {
-        performInsertBreak( "<?php\n" +
+        insertBreak( "<?php\n" +
                             "/**^\n" +
                             "function foo() {\n" +
                             "    static $r;\n" +
@@ -126,8 +112,8 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
                             "?>\n",
                             "<?php\n" +
                             "/**\n" +
-                            " * ^\n" +
-                            " * @staticvar " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + " $r\n" +
+                            " * \n" +
+                            " * @staticvar " + PhpCommentGenerator.TYPE_PLACEHOLDER + " $r^\n" +
                             " */\n" +
                             "function foo() {\n" +
                             "    static $r;\n" +
@@ -136,7 +122,7 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
     }
 
     public void testFunctionDocumentationReturn() throws Exception {
-        performInsertBreak( "<?php\n" +
+        insertBreak( "<?php\n" +
                             "/**^\n" +
                             "function foo() {\n" +
                             "    return \"\";\n" +
@@ -144,8 +130,8 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
                             "?>\n",
                             "<?php\n" +
                             "/**\n" +
-                            " * ^\n" +
-                            " * @return " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + "\n" +
+                            " * \n" +
+                            " * @return string^\n" +
                             " */\n" +
                             "function foo() {\n" +
                             "    return \"\";\n" +
@@ -154,22 +140,22 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
     }
 
     public void testGlobalVariableDocumentation() throws Exception {
-        performInsertBreak( "<?php\n" +
+        insertBreak( "<?php\n" +
                             "/**^\n" +
                             "$GLOBALS['test'] = \"\";\n" +
                             "?>\n",
                             "<?php\n" +
                             "/**\n" +
-                            " * ^\n" +
-                            " * @global " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + " $GLOBALS['test']\n" +
-                            " * @name $test\n" +
+                            " *\n" +
+                            " * @global string $GLOBALS['test']\n" +
+                            " * @name $test ^\n" +
                             " */\n" +
                             "$GLOBALS['test'] = \"\";\n" +
                             "?>\n");
     }
 
     public void testFieldDocumentation() throws Exception {
-        performInsertBreak( "<?php\n" +
+        insertBreak( "<?php\n" +
                             "class foo {\n" +
                             "    /**^\n" +
                             "    var $bar = \"\";\n" +
@@ -178,8 +164,8 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
                             "<?php\n" +
                             "class foo {\n" +
                             "    /**\n" +
-                            "     * ^\n" +
-                            "     * @var " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + "\n" +
+                            "     *\n" +
+                            "     * @var " + PhpCommentGenerator.TYPE_PLACEHOLDER + " ^\n" +
                             "     */\n" +
                             "    var $bar = \"\";\n" +
                             "}\n" +
@@ -187,7 +173,7 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
     }
 
     public void testMethodDocumentation() throws Exception {
-        performInsertBreak( "<?php\n" +
+        insertBreak( "<?php\n" +
                             "class foo {\n" +
                             "    /**^\n" +
                             "    function bar($par) {\n" +
@@ -197,8 +183,8 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
                             "<?php\n" +
                             "class foo {\n" +
                             "    /**\n" +
-                            "     * ^\n" +
-                            "     * @param " + GeneratingBracketCompleter.TYPE_PLACEHOLDER + " $par\n" +
+                            "     * \n" +
+                            "     * @param " + PhpCommentGenerator.TYPE_PLACEHOLDER + " $par^\n" +
                             "     */\n" +
                             "    function bar($par) {\n" +
                             "    }\n" +
@@ -206,80 +192,43 @@ public class GeneratingBracketCompleterTest extends PHPNavTestBase {
                             "?>\n");
     }
 
-    private void performInsertBreak(final String original, final String expected) throws Exception {
-        final int insertOffset = original.indexOf('^');
-        final int finalCaretPos = expected.indexOf('^');
-        final String originalFin = original.substring(0, insertOffset) + original.substring(insertOffset + 1);
-        final String expectedFin = expected.substring(0, finalCaretPos) + expected.substring(finalCaretPos + 1);
-        performTest(new String[] {originalFin}, new UserTask() {
-            public void cancel() {}
+    @Override
+    public void insertNewline(String source, String reformatted, IndentPrefs preferences) throws Exception {
+        int sourcePos = source.indexOf('^');
+        assertNotNull(sourcePos);
+        source = source.substring(0, sourcePos) + source.substring(sourcePos + 1);
+        Formatter formatter = getFormatter(null);
 
+        int reformattedPos = reformatted.indexOf('^');
+        assertNotNull(reformattedPos);
+        reformatted = reformatted.substring(0, reformattedPos) + reformatted.substring(reformattedPos + 1);
+
+        JEditorPane ta = getPane(source);
+        Caret caret = ta.getCaret();
+        caret.setDot(sourcePos);
+        BaseDocument doc = (BaseDocument) ta.getDocument();
+        if (formatter != null) {
+            configureIndenters(doc, formatter, true);
+        }
+
+        setupDocumentIndentation(doc, preferences);
+
+        runKitAction(ta, DefaultEditorKit.insertBreakAction, "\n");
+
+        // wait for generating comment
+        Future<?> future = PhpCommentGenerator.RP.submit(new Runnable() {
             @Override
-            public void run(ResultIterator resultIterator) throws Exception {
-                ParserResult parameter = (ParserResult) resultIterator.getParserResult();
-                if (parameter != null) {
-                    insertBreak(parameter, originalFin, expectedFin, insertOffset, finalCaretPos);
-                }
+            public void run() {
             }
         });
-    }
+        future.get();
 
-    private void insertBreak(ParserResult info, String original, String expected, int insertOffset, int finalCaretPos) throws BadLocationException, DataObjectNotFoundException, IOException {
+        String formatted = doc.getText(0, doc.getLength());
+        assertEquals(reformatted, formatted);
 
-        BaseDocument doc = (BaseDocument) info.getSnapshot().getSource().getDocument(false);//PHPBracketCompleterTest.getDocument(original);
-        assertNotNull(doc);
-
-        doc.putProperty(org.netbeans.api.lexer.Language.class, PHPTokenId.language());
-        doc.putProperty("mimeType", FileUtils.PHP_MIME_TYPE);
-//        doc.putProperty(Document.StreamDescriptionProperty, DataObject.find(info.getFileObject()));
-
-        JTextArea ta = new JTextArea(doc);
-        Caret caret = ta.getCaret();
-        caret.setDot(insertOffset);
-
-        Reformat f = Reformat.get(doc);
-        assertNotNull(f);
-
-        f.lock();
-        try {
-            doc.atomicLock();
-            try {
-                DocumentUtilities.setTypingModification(doc, true);
-                try {
-                    PHPBracketCompleter bc = new PHPBracketCompleter();
-                    int newOffset = bc.beforeBreak(doc, insertOffset, ta);
-                    doc.insertString(caret.getDot(), "\n", null);
-                    // Indent the new line
-                    PHPFormatter formatter = new PHPFormatter();
-                    //ParserResult result = parse(fo);
-
-                    int startPos = caret.getDot()+1;
-                    int endPos = startPos+1;
-
-                    //ParserResult result = parse(fo);
-                    f.reformat(startPos, endPos);
-
-                    int indent = GsfUtilities.getLineIndent(doc, insertOffset+1);
-
-                    //bc.afterBreak(doc, insertOffset, caret);
-                    String formatted = doc.getText(0, doc.getLength());
-                    assertEquals(expected, formatted);
-                    if (newOffset != -1) {
-                        caret.setDot(newOffset);
-                    } else {
-                        caret.setDot(insertOffset+1+indent);
-                    }
-                    if (finalCaretPos != -1) {
-                        assertEquals(finalCaretPos, caret.getDot());
-                    }
-                } finally {
-                    DocumentUtilities.setTypingModification(doc, false);
-                }
-            } finally {
-                doc.atomicUnlock();
-            }
-        } finally {
-            f.unlock();
+        if (reformattedPos != -1) {
+            assertEquals(reformattedPos, caret.getDot());
         }
     }
+
 }
