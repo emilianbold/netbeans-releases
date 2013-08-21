@@ -137,7 +137,7 @@ public class HostMappingsAnalyzer {
         }
     }
 
-    public boolean isCancelled() {
+    private boolean isCancelled() {
         synchronized (lock) {
             return cancelled;
         }
