@@ -72,6 +72,9 @@ public class Utils {
     private static final KeyStroke DELETE_KEY = KeyStroke.getKeyStroke("DELETE"); //NOI18N
 
     public static String getFormatedDate(Calendar calendar) {
+        if (calendar == null) {
+            return "";
+        }
         int evaluation = evaluateDate(calendar);
         switch (evaluation) {
             case DATE_MINUTES_AGO:
@@ -87,13 +90,13 @@ public class Utils {
     }
 
     public static String getFullFormatedDate(Calendar calendar) {
+        if (calendar == null) {
+            return "";
+        }
         return DateFormat.getDateTimeInstance(DateFormat.MEDIUM, DateFormat.SHORT).format(calendar.getTime());
     }
 
     private static int evaluateDate(Calendar calendar) {
-        if (calendar == null) {
-            return -1;
-        }
         Calendar rightNow = Calendar.getInstance();
         if (calendar.get(Calendar.MONTH) == rightNow.get(Calendar.MONTH)
                 && calendar.get(Calendar.YEAR) == rightNow.get(Calendar.YEAR)

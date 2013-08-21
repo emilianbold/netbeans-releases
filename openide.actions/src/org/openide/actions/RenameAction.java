@@ -43,12 +43,14 @@
  */
 package org.openide.actions;
 
+import java.awt.EventQueue;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.util.actions.*;
 
 
@@ -58,6 +60,9 @@ import org.openide.util.actions.*;
 * @author   Petr Hamernik, Dafe Simonek
 */
 public class RenameAction extends NodeAction {
+
+    private static final RequestProcessor RP = new RequestProcessor(RenameAction.class); // NOI18N
+
     protected boolean surviveFocusChange() {
         return false;
     }
@@ -80,11 +85,22 @@ public class RenameAction extends NodeAction {
         return activatedNodes[0].canRename();
     }
 
-    protected void performAction(Node[] activatedNodes) {
+    protected void performAction(final Node[] activatedNodes) {
         if (activatedNodes == null || activatedNodes.length == 0) {
             return;
         }
         Node n = activatedNodes[0]; // we supposed that one node is activated
+        
+        // for slow FS perform rename out of EDT
+        if (EventQueue.isDispatchThread() && Boolean.TRUE.equals(n.getValue("slowRename"))) { // NOI18N
+            RP.post(new Runnable() {
+                @Override
+                public void run() {
+                    performAction(activatedNodes);
+                }
+            });
+            return;
+        }
 
         NotifyDescriptor.InputLine dlg = new NotifyDescriptor.InputLine(
                 NbBundle.getMessage(RenameAction.class, "CTL_RenameLabel"),
