@@ -114,19 +114,19 @@ public final class NetworkMonitorTopComponent extends TopComponent
 
     private Model model;
     private static final RequestProcessor RP = new RequestProcessor(NetworkMonitorTopComponent.class.getName(), 5);
-    private final NetworkMonitor parent;
     private final InputOutput io;
     private MyProvider ioProvider;
     private UIUpdater updater;
+    private boolean debuggingSession;
 
-    NetworkMonitorTopComponent(NetworkMonitor parent, Model m) {
+    NetworkMonitorTopComponent(Model m, boolean debuggingSession) {
+        this.debuggingSession = debuggingSession;
         initComponents();
         jResponse.setEditorKit(CloneableEditorSupport.getEditorKit("text/plain"));
         setName(Bundle.CTL_NetworkMonitorTopComponent());
         setToolTipText(Bundle.HINT_NetworkMonitorTopComponent());
         updater = new UIUpdater(this);
-        setModel(m);
-        this.parent = parent;
+        setModel(m, debuggingSession);
         jRequestsList.setCellRenderer(new ListRendererImpl());
         jSplitPane.setDividerLocation(NbPreferences.forModule(NetworkMonitorTopComponent.class).getInt("separator", 200));
         selectedItemChanged();
@@ -162,8 +162,9 @@ public final class NetworkMonitorTopComponent extends TopComponent
 
     }
     
-    void setModel(Model model) {
+    void setModel(Model model, boolean debuggingSession) {
         this.model = model;
+        this.debuggingSession = debuggingSession;
         ListModel lm = jRequestsList.getModel();
         if (lm != null) {
             lm.removeListDataListener(this);
@@ -208,6 +209,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jCallStackPanel = new javax.swing.JPanel();
         jIOContainerPlaceholder = new javax.swing.JPanel();
         jNoData = new javax.swing.JLabel();
+        jNoConnection = new javax.swing.JLabel();
 
         jRequestsList.setSelectionMode(javax.swing.ListSelectionModel.SINGLE_SELECTION);
         jRequestsList.addListSelectionListener(new javax.swing.event.ListSelectionListener() {
@@ -239,7 +241,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addComponent(jClear)
                 .addGap(0, 0, 0)
-                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 223, Short.MAX_VALUE))
+                .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 217, Short.MAX_VALUE))
         );
 
         jSplitPane.setLeftComponent(jPanel3);
@@ -257,7 +259,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         );
         jHeadersPanelLayout.setVerticalGroup(
             jHeadersPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 214, Short.MAX_VALUE)
+            .addComponent(jScrollPane5, javax.swing.GroupLayout.DEFAULT_SIZE, 208, Short.MAX_VALUE)
         );
 
         jTabbedPane1.addTab(org.openide.util.NbBundle.getMessage(NetworkMonitorTopComponent.class, "NetworkMonitorTopComponent.jHeadersPanel.TabConstraints.tabTitle"), jHeadersPanel); // NOI18N
@@ -286,7 +288,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jRequestPanelLayout.setVerticalGroup(
             jRequestPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jRequestPanelLayout.createSequentialGroup()
-                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jRawResponseRequest))
         );
@@ -317,7 +319,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jResponsePanelLayout.setVerticalGroup(
             jResponsePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jResponsePanelLayout.createSequentialGroup()
-                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
+                .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jRawResponseResponse))
         );
@@ -347,7 +349,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jFramesPanelLayout.setVerticalGroup(
             jFramesPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jFramesPanelLayout.createSequentialGroup()
-                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 184, Short.MAX_VALUE)
+                .addComponent(jScrollPane4, javax.swing.GroupLayout.DEFAULT_SIZE, 178, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jRawResponseFrames))
         );
@@ -364,7 +366,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         );
         jIOContainerPlaceholderLayout.setVerticalGroup(
             jIOContainerPlaceholderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 214, Short.MAX_VALUE)
+            .addGap(0, 208, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout jCallStackPanelLayout = new javax.swing.GroupLayout(jCallStackPanel);
@@ -390,7 +392,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 251, Short.MAX_VALUE)
+            .addGap(0, 245, Short.MAX_VALUE)
             .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                 .addComponent(jTabbedPane1, javax.swing.GroupLayout.PREFERRED_SIZE, 183, Short.MAX_VALUE))
         );
@@ -414,19 +416,26 @@ public final class NetworkMonitorTopComponent extends TopComponent
         jNoData.setVerticalAlignment(javax.swing.SwingConstants.TOP);
         jNoData.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 1, 1));
 
+        org.openide.awt.Mnemonics.setLocalizedText(jNoConnection, org.openide.util.NbBundle.getMessage(NetworkMonitorTopComponent.class, "NetworkMonitorTopComponent.jNoConnection.text")); // NOI18N
+        jNoConnection.setVerticalAlignment(javax.swing.SwingConstants.TOP);
+        jNoConnection.setBorder(javax.swing.BorderFactory.createEmptyBorder(12, 12, 1, 1));
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(jSplitPane)
             .addComponent(jNoData, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
+            .addComponent(jNoConnection, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(jSplitPane)
+                .addComponent(jSplitPane, javax.swing.GroupLayout.DEFAULT_SIZE, 245, Short.MAX_VALUE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jNoData))
+                .addComponent(jNoData, javax.swing.GroupLayout.PREFERRED_SIZE, 123, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jNoConnection, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -467,6 +476,7 @@ public final class NetworkMonitorTopComponent extends TopComponent
     private javax.swing.JTextPane jHeaders;
     private javax.swing.JPanel jHeadersPanel;
     private javax.swing.JPanel jIOContainerPlaceholder;
+    private javax.swing.JLabel jNoConnection;
     private javax.swing.JLabel jNoData;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
@@ -543,7 +553,8 @@ public final class NetworkMonitorTopComponent extends TopComponent
     private void updateVisibility() {
         boolean empty = model.getSize() == 0;
         jSplitPane.setVisible(!empty);
-        jNoData.setVisible(empty);
+        jNoData.setVisible(empty && debuggingSession);
+        jNoConnection.setVisible(empty && !debuggingSession);
         if (!empty && jRequestsList.getSelectedValue() == null) {
             refreshDetailsView(null);
         }
