@@ -3900,7 +3900,7 @@ public class Reformatter implements ReformatTask {
                                     || JDOC_VALUE_TAG.equalsIgnoreCase(tokenText)
                                     || JDOC_LITERAL_TAG.equalsIgnoreCase(tokenText)) {
                                 insideTag = true;
-                                marks.add(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 5));
+                                addMark(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 5), marks, state);
                                 lastWSOffset = currWSOffset = -1;
                                 break;
                             } else {
@@ -3909,9 +3909,9 @@ public class Reformatter implements ReformatTask {
                                 newState = 7;
                             }
                             if (currWSOffset >= 0 && afterText) {
-                                marks.add(Pair.of(currWSOffset, state == 0 && cs.blankLineAfterJavadocDescription()
+                                addMark(Pair.of(currWSOffset, state == 0 && cs.blankLineAfterJavadocDescription()
                                         || state == 2 && newState != 1 && cs.blankLineAfterJavadocParameterDescriptions()
-                                        || state == 3 && cs.blankLineAfterJavadocReturnTag() ? 0 : 1));
+                                        || state == 3 && cs.blankLineAfterJavadocReturnTag() ? 0 : 1), marks, state);
                             }
                             state = newState;
                             if (state == 3 && cs.alignJavadocReturnDescription()) {
@@ -3921,7 +3921,7 @@ public class Reformatter implements ReformatTask {
                             break;
                         case IDENT:
                             if (toAdd != null) {
-                                marks.add(toAdd);
+                                addMark(toAdd, marks, state);
                                 toAdd = null;
                             }
                             nlAdd = null;
@@ -3932,32 +3932,35 @@ public class Reformatter implements ReformatTask {
                             break;
                         case HTML_TAG:
                             if (toAdd != null) {
-                                marks.add(toAdd);
+                                addMark(toAdd, marks, state);
                             }
                             nlAdd = null;
                             tokenText = javadocTokens.token().text().toString();
                             if (tokenText.endsWith(">")) { //NOI18N
                                 if (P_TAG.equalsIgnoreCase(tokenText) || END_P_TAG.equalsIgnoreCase(tokenText)) {
                                     if (currWSOffset >= 0 && currWSOffset > lastAddedNLOffset && (toAdd == null || toAdd.first() < currWSOffset)) {
-                                        marks.add(Pair.of(currWSOffset, 1));
+                                        addMark(Pair.of(currWSOffset, 1), marks, state);
                                     }
                                     lastAddedNLOffset = javadocTokens.offset() + javadocTokens.token().length() - offset;
-                                    marks.add(Pair.of(lastAddedNLOffset, 1));
+                                    addMark(Pair.of(lastAddedNLOffset, 1), marks, state);
                                     afterText = false;
                                 } else if (PRE_TAG.equalsIgnoreCase(tokenText)) {
                                     if (currWSOffset >= 0 && state == 0 && (toAdd == null || toAdd.first() < currWSOffset)) {
-                                        marks.add(Pair.of(currWSOffset, 1));
+                                        addMark(Pair.of(currWSOffset, 1), marks, state);
                                     }
-                                    marks.add(Pair.of(javadocTokens.offset() - offset, 5));
+                                    addMark(Pair.of(javadocTokens.offset() - offset, 5), marks, state);
+                                    state = 6;
                                 } else if (CODE_TAG.equalsIgnoreCase(tokenText)) {
-                                    marks.add(Pair.of(javadocTokens.offset() - offset, 5));
-                                } else if (PRE_END_TAG.equalsIgnoreCase(tokenText)
-                                        || CODE_END_TAG.equalsIgnoreCase(tokenText)) {
-                                    marks.add(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 6));
+                                    addMark(Pair.of(javadocTokens.offset() - offset, 5), marks, state);
+                                } else if (PRE_END_TAG.equalsIgnoreCase(tokenText)) {
+                                    state = 0;
+                                    addMark(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 6), marks, state);
+                                } else if (CODE_END_TAG.equalsIgnoreCase(tokenText)) {
+                                    addMark(Pair.of(currWSOffset >= 0 ? currWSOffset : javadocTokens.offset() - offset, 6), marks, state);
                                 } else {
                                     if (currWSOffset >= 0 && lastNLOffset >= currWSOffset
                                             && lastAddedNLOffset < currWSOffset && (toAdd == null || toAdd.first() < currWSOffset)) {
-                                        marks.add(Pair.of(currWSOffset, 1));
+                                        addMark(Pair.of(currWSOffset, 1), marks, state);
                                     }
                                     nlAdd = Pair.of(javadocTokens.offset() + javadocTokens.token().length() - offset, 1);
                                 }
@@ -3998,7 +4001,7 @@ public class Reformatter implements ReformatTask {
                                         nlFollows = false;
                                         if (c != '*') {
                                             if (toAdd != null) {
-                                                marks.add(toAdd);
+                                                addMark(toAdd, marks, state);
                                                 toAdd = null;
                                             } else {
                                                 addNow = true;
@@ -4050,18 +4053,18 @@ public class Reformatter implements ReformatTask {
                                     state = 5;
                                 }
                                 if (addNow && toAdd != null) {
-                                    marks.add(toAdd);
+                                    addMark(toAdd, marks, state);
                                     toAdd = null;
                                 }
                                 identStart = -1;
                             }
                             if (insideTagEndOffset >= 0)
-                                marks.add(Pair.of(insideTagEndOffset, 6));
+                                addMark(Pair.of(insideTagEndOffset, 6), marks, state);
                             cseq = null;
                             break;
                         default:
                             if (toAdd != null) {
-                                marks.add(toAdd);
+                                addMark(toAdd, marks, state);
                                 toAdd = null;
                             }
                             nlAdd = null;
@@ -4437,6 +4440,12 @@ public class Reformatter implements ReformatTask {
                         break;
                     }
                 }
+            }
+        }
+        
+        private void addMark(Pair<Integer, Integer> mark, List<Pair<Integer, Integer>> marks, int state) {
+            if (state != 6) {
+                marks.add(mark);
             }
         }
         
