@@ -409,6 +409,8 @@ public final class ConnectionManager {
             fireConnected(env);
         } catch (InterruptedException ex) {
             // don't report interrupted exception
+            connectionTask.cancel();
+            throw new CancellationException();
         } catch (ExecutionException ex) {
             Exceptions.printStackTrace(ex);
         } finally {
