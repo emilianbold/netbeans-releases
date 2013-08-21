@@ -46,8 +46,6 @@ package org.netbeans.core.windows.options;
 
 import java.awt.BorderLayout;
 import java.awt.Cursor;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.awt.event.ItemListener;
 import java.awt.event.MouseAdapter;
@@ -63,11 +61,10 @@ import javax.swing.JComponent;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
+import javax.swing.LookAndFeel;
 import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.UIManager.LookAndFeelInfo;
-import javax.swing.plaf.metal.MetalLookAndFeel;
-import javax.swing.plaf.nimbus.NimbusLookAndFeel;
 import org.netbeans.api.options.OptionsDisplayer;
 import org.netbeans.core.windows.FloatingWindowTransparencyManager;
 import org.netbeans.core.windows.nativeaccess.NativeWindowSystem;
@@ -75,7 +72,6 @@ import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.LifecycleManager;
 import org.openide.awt.Notification;
 import org.openide.awt.NotificationDisplayer;
-import org.openide.util.Exceptions;
 import org.openide.util.ImageUtilities;
 import org.openide.util.Lookup;
 import org.openide.util.NbBundle;
@@ -505,8 +501,6 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         if( selLaFIndex != defaultLookAndFeelIndex && !isForcedLaF() ) {
             LookAndFeelInfo li = lafs.get( comboLaf.getSelectedIndex() );
             NbPreferences.root().node( "laf" ).put( "laf", li.getClassName() ); //NOI18N
-            boolean darkTheme = li == DARK_METAL || li == DARK_NIMBUS;
-            NbPreferences.root().node( "laf" ).putBoolean( "theme.dark", darkTheme ); //NOI18N
             askForRestart();
         }
 
@@ -601,11 +595,6 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         lafs.clear();
         for( LookAndFeelInfo i : UIManager.getInstalledLookAndFeels() ) {
             lafs.add( i );
-            if( MetalLookAndFeel.class.getName().equals( i.getClassName() ) ) {
-                lafs.add( DARK_METAL );
-            } else if( "Nimbus".equals( i.getName() ) ) { //NOI18N
-                lafs.add( DARK_NIMBUS );
-            }
         }
     }
 
@@ -614,7 +603,6 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     private LookAndFeelInfo getCurrentLaF() {
-        boolean darkTheme = Boolean.getBoolean("netbeans.plaf.dark.theme"); //NOI18N
         LookAndFeelInfo currentLaf = null;
         String currentLAFClassName = UIManager.getLookAndFeel().getClass().getName();
         boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
@@ -622,13 +610,6 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             if( currentLAFClassName.equals( li.getClassName() ) 
                     || (isAqua && li.getClassName().contains("apple.laf.AquaLookAndFeel")) ) { //NOI18N
                 currentLaf = li;
-                if( darkTheme ) {
-                    if( MetalLookAndFeel.class.getName().equals( currentLAFClassName ) ) {
-                        currentLaf = DARK_METAL;
-                    } else if( "Nimbus".equals( UIManager.getLookAndFeel().getID() ) ) { //NOI18N
-                        currentLaf = DARK_NIMBUS;
-                    }
-                }
                 break;
             }
         }
@@ -640,32 +621,16 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         if( null == lafClassName )
             return getCurrentLaF();
         LookAndFeelInfo currentLaf = null;
-        boolean darkTheme = NbPreferences.root().node( "laf" ).getBoolean( "theme.dark", false ); //NOI18N
         boolean isAqua = "Aqua".equals(UIManager.getLookAndFeel().getID()); //NOI18N
         for( LookAndFeelInfo li : lafs ) {
             if( lafClassName.equals( li.getClassName() )
                     || (isAqua && li.getClassName().contains("apple.laf.AquaLookAndFeel")) ) { //NOI18N
                 currentLaf = li;
-                if( darkTheme ) {
-                    if( MetalLookAndFeel.class.getName().equals( lafClassName ) ) {
-                        currentLaf = DARK_METAL;
-                    } else if( NimbusLookAndFeel.class.getName().equals( lafClassName ) ) {
-                        currentLaf = DARK_NIMBUS;
-                    }
-                }
                 break;
             }
         }
-        if( null == currentLaf
-                && com.sun.java.swing.plaf.nimbus.NimbusLookAndFeel.class.getName().equals( lafClassName )
-                && darkTheme ) {
-            currentLaf = DARK_NIMBUS;
-    }
         return currentLaf;
     }
-
-    static final LookAndFeelInfo DARK_METAL = new UIManager.LookAndFeelInfo( NbBundle.getMessage(WinSysPanel.class, "Laf_DARK_METAL"), MetalLookAndFeel.class.getName() );
-    static final LookAndFeelInfo DARK_NIMBUS = new UIManager.LookAndFeelInfo( NbBundle.getMessage(WinSysPanel.class, "Laf_DARK_NIMBUS"), NimbusLookAndFeel.class.getName() );
 
     private static Notification restartNotification;
 
@@ -680,7 +645,6 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     }
 
     void selectDarkLookAndFeel() {
-        comboLaf.setSelectedItem( DARK_METAL.getName() );
         comboLaf.requestFocusInWindow();
         SwingUtilities.invokeLater( new Runnable() {
 
@@ -696,7 +660,7 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
     private static final String DARK_COLOR_THEME_NAME = "Norway Today"; //NOI18N
 
     private boolean isChangeEditorColorsPossible() {
-        if( !NbPreferences.root().node( "laf" ).getBoolean( "theme.dark", false ) ) //NOI18N
+        if( !isDarkLookAndFeel() )
             return false;
         ClassLoader cl = Lookup.getDefault().lookup( ClassLoader.class );
         if( null == cl )
@@ -758,5 +722,24 @@ private void isSnappingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
             }
         });
         return res;
+    }
+
+    private boolean isDarkLookAndFeel() {
+        String className = NbPreferences.root().node( "laf" ).get( "laf", null );
+        if( null == className )
+            return false;
+
+        ClassLoader loader = Lookup.getDefault().lookup( ClassLoader.class );
+        if( null == loader )
+            loader = ClassLoader.getSystemClassLoader();
+
+        try {
+            Class klazz = loader.loadClass( className );
+            LookAndFeel laf = ( LookAndFeel ) klazz.newInstance();
+            return laf.getDefaults().getBoolean( "nb.dark.theme" ); //NOI18N
+        } catch( Exception e ) {
+            //ignore
+        }
+        return false;
     }
 }
