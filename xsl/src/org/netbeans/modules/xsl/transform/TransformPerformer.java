@@ -251,6 +251,7 @@ public class TransformPerformer {
         
         private TransformPanel.Data data;
         private boolean last = true;
+        private Object okOption;
         
         // was window closed by
         private boolean workaround31850 = true;
@@ -295,6 +296,7 @@ public class TransformPerformer {
                 new JButton(NbBundle.getMessage(TransformPerformer.class, "LBL_GoTransform")),
                 new JButton(NbBundle.getMessage(TransformPerformer.class, "LBL_Cancel")), 
             };
+            okOption = options[0];
             
             dialogDescriptor = new DialogDescriptor(transformPanel,
                     NbBundle.getMessage(TransformPerformer.class, "NAME_transform_panel_title"), true,
@@ -307,13 +309,13 @@ public class TransformPerformer {
             class L implements ChangeListener {
                 @Override
                 public void stateChanged(ChangeEvent e) {
-                    options[0].setEnabled(transformPanel.isValid());
+                    options[0].setEnabled(transformPanel.isInputValid());
                 }
 
             }
             L l = new L();
             transformPanel.setChangeListener(l);
-            options[0].setEnabled(transformPanel.isValid());
+            options[0].setEnabled(transformPanel.isInputValid());
             
             dialogDescriptor.setClosingOptions(options);
             dialogDescriptor.setButtonListener(this);
@@ -472,7 +474,7 @@ public class TransformPerformer {
 //            }
             
             workaround31850 = false;
-            if ( DialogDescriptor.OK_OPTION.equals(e.getSource()) ) {
+            if ( okOption == e.getSource() ) {
                 try {
                     active = true;
                     prepareData(); // throws IOException(, FileStateInvalidException, MalformedURLException), ParserConfigurationException, SAXException

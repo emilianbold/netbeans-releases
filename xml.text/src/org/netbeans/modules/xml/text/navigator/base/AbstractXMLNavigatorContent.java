@@ -55,6 +55,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.openide.explorer.ExplorerManager;
 import org.openide.explorer.view.BeanTreeView;
 import org.openide.explorer.view.TreeView;
@@ -93,9 +94,9 @@ public abstract class AbstractXMLNavigatorContent extends javax.swing.JPanel
         explorerManager.addPropertyChangeListener(this);
         treeView = new BeanTreeView();
         //init empty panel
-        setBackground(Color.WHITE);
+        setBackground(UIManager.getColor("Tree.textBackground"));
         emptyPanel = new JPanel();
-        emptyPanel.setBackground(Color.WHITE);
+        emptyPanel.setBackground(UIManager.getColor("Tree.textBackground"));
         emptyPanel.setLayout(new BorderLayout());
         msgLabel = new JLabel();
         emptyPanel.add(msgLabel, BorderLayout.CENTER);
