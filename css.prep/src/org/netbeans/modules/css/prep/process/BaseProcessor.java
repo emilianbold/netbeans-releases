@@ -178,7 +178,7 @@ abstract class BaseProcessor {
                     // ignore myself
                     continue;
                 }
-                processFile(project, fileObject, null, null);
+                processFile(project, referring, null, null);
             }
         } catch (IOException ex) {
             LOGGER.log(Level.WARNING, null, ex);

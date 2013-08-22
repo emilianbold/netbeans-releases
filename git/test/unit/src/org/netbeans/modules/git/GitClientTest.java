@@ -150,6 +150,7 @@ public class GitClientTest extends AbstractGitTestCase {
                 "revert",
                 "setCallback",
                 "setRemote",
+                "setUpstreamBranch",
                 "unignore"));
         Set<String> readOnlyMethods = new HashSet<String>(Arrays.asList(
                 "addNotificationListener",
@@ -259,6 +260,7 @@ public class GitClientTest extends AbstractGitTestCase {
                 "revert",
                 "setCallback",
                 "setRemote",
+                "setUpstreamBranch",
                 "unignore"));
         Set<String> expectedMethods = new HashSet<String>(Arrays.asList(
                 "checkout",
@@ -275,7 +277,8 @@ public class GitClientTest extends AbstractGitTestCase {
                 "reset",
                 "removeRemote",
                 "revert",
-                "setRemote"));
+                "setRemote",
+                "setUpstreamBranch"));
         Field f = GitClient.class.getDeclaredField("NEED_REPOSITORY_REFRESH_COMMANDS");
         f.setAccessible(true);
         Set<String> actualMethods = (Set<String>) f.get(GitClient.class);
@@ -352,6 +355,7 @@ public class GitClientTest extends AbstractGitTestCase {
                 "revert",
                 "setCallback",
                 "setRemote",
+                "setUpstreamBranch",
                 "unignore"));
         Set<String> networkMethods = new HashSet<String>(Arrays.asList(
                 "fetch",
@@ -519,6 +523,7 @@ public class GitClientTest extends AbstractGitTestCase {
                 "revert",
                 "setCallback",
                 "setRemote",
+                "setUpstreamBranch",
                 "unignore"));
         Set<String> parallelizableMethods = new HashSet<String>(Arrays.asList(
                 "addNotificationListener",

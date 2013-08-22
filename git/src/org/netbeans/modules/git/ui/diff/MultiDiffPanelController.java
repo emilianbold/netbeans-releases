@@ -478,15 +478,27 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
         panel.splitPane.setTopComponent(fileTable.getComponent());
         panel.splitPane.setBottomComponent(getInfoPanelLoading());
         panel.addAncestorListener(new AncestorListener() {
+            private int lastDividerLoc;
             @Override
             public void ancestorAdded (AncestorEvent event) {
                 JComponent parent = (JComponent) panel.getParent();
                 parent.getActionMap().put("jumpNext", nextAction); //NOI18N
                 parent.getActionMap().put("jumpPrev", prevAction); //NOI18N
+                if (lastDividerLoc != 0) {
+                    EventQueue.invokeLater(new Runnable() {
+                        @Override
+                        public void run () {
+                            panel.splitPane.setDividerLocation(lastDividerLoc);
+                        }
+                    });
+                }
             }
 
             @Override
             public void ancestorRemoved (AncestorEvent event) {
+                if (dividerSet) {
+                    lastDividerLoc = panel.splitPane.getDividerLocation();
+                }
             }
 
             @Override

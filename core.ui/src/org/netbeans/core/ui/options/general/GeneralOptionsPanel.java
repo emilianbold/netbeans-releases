@@ -605,14 +605,16 @@ private void bMoreProxyActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FI
         return portStatus;
     }
 
-    private void showError(String message) {
+    private void showError(String message) {        
         errorLabel.setVisible(true);
-        errorLabel.setText(message);
+        errorLabel.setText(message);        
+        bTestConnection.setEnabled(false);
     }
 
     private void clearError() {
         errorLabel.setText("");
         errorLabel.setVisible(false);
+        bTestConnection.setEnabled(true);
     }
 
     private static String loc (String key, String... params) {

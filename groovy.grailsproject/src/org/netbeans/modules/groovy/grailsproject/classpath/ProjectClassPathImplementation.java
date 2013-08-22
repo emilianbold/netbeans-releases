@@ -259,7 +259,12 @@ final class ProjectClassPathImplementation implements ClassPathImplementation {
                         URL entry = Utilities.toURI(f).toURL();
                         if (FileUtil.isArchiveFile(entry)) {
                             entry = FileUtil.getArchiveRoot(entry);
-                            result.add(ClassPathSupport.createResource(entry));
+
+                            // #233601
+                            String rootS = entry.toString();
+                            if (!rootS.contains("/../") && !rootS.contains("/./")) {  //NOI18N
+                                result.add(ClassPathSupport.createResource(entry));
+                            }
                         }
                     } else if (recurse && f.isDirectory()) {
                         addJars(f, result, recurse);

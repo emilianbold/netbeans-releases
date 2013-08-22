@@ -551,6 +551,17 @@ public class FormatVisitor extends DefaultVisitor {
     }
 
     @Override
+    public void visit(InterfaceDeclaration node) {
+        addAllUntilOffset(node.getStartOffset());
+        if (includeWSBeforePHPDoc) {
+            formatTokens.add(new FormatToken(FormatToken.Kind.WHITESPACE_BEFORE_CLASS, ts.offset()));
+        } else {
+            includeWSBeforePHPDoc = true;
+        }
+        super.visit(node);
+    }
+
+    @Override
     public void visit(ClassDeclaration node) {
 
         addAllUntilOffset(node.getStartOffset());
