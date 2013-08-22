@@ -857,4 +857,10 @@ public class PHPFormatterBlankLinesTest extends PHPFormatterTestBase {
         reformatFileContents("testfiles/formatting/blankLines/issue232395_08.php", options);
     }
 
+    public void testIssue234774() throws Exception {
+        HashMap<String, Object> options = new HashMap<String, Object>(FmtOptions.getDefaults());
+        options.put(FmtOptions.BLANK_LINES_BEFORE_CLASS, 5);
+        reformatFileContents("testfiles/formatting/blankLines/issue234774.php", options);
+    }
+
 }
