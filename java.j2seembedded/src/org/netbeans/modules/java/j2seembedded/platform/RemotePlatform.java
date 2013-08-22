@@ -81,6 +81,7 @@ public final class RemotePlatform extends JavaPlatform {
     private final String displayName;
     private final Map<String,String> props;
     private final Specification spec;
+    private volatile ConnectionMethod connectionMethod;
 
     private RemotePlatform(
         @NonNull final String displayName,
@@ -240,11 +241,16 @@ public final class RemotePlatform extends JavaPlatform {
 
     @NonNull
     public ConnectionMethod getConnectionMethod() {
-        return ConnectionMethod.load(props);
+        ConnectionMethod cm = connectionMethod;
+        if (cm == null) {
+            connectionMethod = cm = ConnectionMethod.load(props);
+        }
+        return cm;
     }
 
     public void setConnectionMethod(@NonNull final ConnectionMethod cm) {
         Parameters.notNull("cm", cm); //NOI18N
+        connectionMethod = cm;
         cm.store(props);
         firePropertyChange(PROP_PROPERTIES, null, null);
     }
