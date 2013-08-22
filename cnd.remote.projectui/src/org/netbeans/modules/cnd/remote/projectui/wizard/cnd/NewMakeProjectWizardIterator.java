@@ -210,7 +210,7 @@ public class NewMakeProjectWizardIterator implements WizardDescriptor.ProgressIn
     }
 
     public static NewMakeProjectWizardIterator newDBApplication(Map<String,?> inst) {
-        String helpCtx = (String)inst.get("helpCtx");
+        String helpCtx = (String)inst.get("helpCtx"); //NOI18N
         String name = DBAPPLICATION_PROJECT_NAME;
         String wizardTitle = getString("Templates/Project/Native/newDBApplication.xml");
         String wizardACSD = getString("NativeNewDBApplicationACSD");
