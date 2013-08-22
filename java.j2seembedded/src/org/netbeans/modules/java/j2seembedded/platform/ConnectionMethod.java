@@ -48,6 +48,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.keyring.Keyring;
 import org.openide.util.Parameters;
 
 
@@ -75,11 +76,13 @@ public final class ConnectionMethod {
                     if (user == null) {
                         throw new IllegalStateException("No user"); //NOI18N
                     }
-                    String passwd = props.get(Password.PLAT_PROP_AUTH_PASSWD);
+                    char[] passwd = Keyring.read(createKeyringKey(
+                        props.get(RemotePlatform.PLAT_PROP_ANT_NAME),
+                        Password.PLAT_PROP_AUTH_PASSWD));
                     if (passwd == null) {
                         throw new IllegalStateException("No password"); //NOI18N
                     }
-                    return new Password(user, passwd);
+                    return new Password(user, String.valueOf(passwd));
                 }
             },
             KEY {
@@ -94,11 +97,13 @@ public final class ConnectionMethod {
                     if (keyStore == null) {
                         throw new IllegalStateException("No key store");    //NOI18N
                     }
-                    final String passPhrase = props.get(Key.PLAT_PROP_AUTH_PASSPHRASE);
+                    final char[] passPhrase = Keyring.read(createKeyringKey(
+                        props.get(RemotePlatform.PLAT_PROP_ANT_NAME),
+                        Key.PLAT_PROP_AUTH_PASSPHRASE));
                     if (keyStore == null) {
                         throw new IllegalStateException("No pass phrase");    //NOI18N
                     }
-                    return new Key(user, new File(keyStore), passPhrase);
+                    return new Key(user, new File(keyStore), String.valueOf(passPhrase));
                 }
             };
 
@@ -151,6 +156,17 @@ public final class ConnectionMethod {
             return kind.create(props);
         }
 
+        @NonNull
+        private static String createKeyringKey(
+            @NonNull String platformAntName,
+            @NonNull String key) {
+            return String.format(
+               "platforms.%s.%s",   //NOI18N
+               platformAntName,
+               key
+               );
+        }
+
         public static final class Password extends Authentification {
 
             private final static String PLAT_PROP_AUTH_PASSWD = "platform.auth.passwd";         //NOI18N
@@ -174,7 +190,12 @@ public final class ConnectionMethod {
             @Override
             void store(@NonNull final Map<String,String> props) {
                 super.store(props);
-                props.put(PLAT_PROP_AUTH_PASSWD, getPassword());
+                Keyring.save(
+                    createKeyringKey(
+                        props.get(RemotePlatform.PLAT_PROP_ANT_NAME),
+                        PLAT_PROP_AUTH_PASSWD),
+                    getPassword().toCharArray(),
+                    null);
             }
 
         }
@@ -212,7 +233,12 @@ public final class ConnectionMethod {
             void store(@NonNull final Map<String,String> props) {
                 super.store(props);
                 props.put(PLAT_PROP_AUTH_KEYSTORE, getKeyStore().getAbsolutePath());
-                props.put(PLAT_PROP_AUTH_PASSPHRASE, getPassPhrase());
+                Keyring.save(
+                    createKeyringKey(
+                        props.get(RemotePlatform.PLAT_PROP_ANT_NAME),
+                        PLAT_PROP_AUTH_PASSPHRASE),
+                    getPassPhrase().toCharArray(),
+                    null);
             }
 
             @NonNull
