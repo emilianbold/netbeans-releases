@@ -158,9 +158,9 @@ final public class WebProjectProperties {
     public static final String J2EE_COMPILE_ON_SAVE = "j2ee.compile.on.save"; //NOI18N
     public static final String J2EE_COPY_STATIC_FILES_ON_SAVE = "j2ee.copy.static.files.on.save"; //NOI18N
     public static final String CONTEXT_PATH = "context.path"; //NOI18N
-    public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
+    public static final String J2EE_SERVER_INSTANCE = J2EEProjectProperties.J2EE_SERVER_INSTANCE;
     public static final String J2EE_SERVER_CHECK = "j2ee.server.check"; //NOI18N
-    public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
+    public static final String J2EE_SERVER_TYPE = J2EEProjectProperties.J2EE_SERVER_TYPE;
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
     public static final String J2EE_PLATFORM_EMBEDDABLE_EJB_CLASSPATH = "j2ee.platform.embeddableejb.classpath"; //NOI18N
     public static final String JAVAC_SOURCE = "javac.source"; //NOI18N

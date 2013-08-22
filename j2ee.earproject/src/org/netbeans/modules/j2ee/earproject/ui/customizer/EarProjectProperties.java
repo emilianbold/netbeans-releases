@@ -154,8 +154,8 @@ public final class EarProjectProperties {
     public static final String J2EE_DEPLOY_ON_SAVE = "j2ee.deploy.on.save"; //NOI18N
     public static final String J2EE_COMPILE_ON_SAVE = "j2ee.compile.on.save"; //NOI18N
     public static final String CLIENT_MODULE_URI = "client.module.uri"; //NOI18N
-    public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; //NOI18N
-    public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; //NOI18N
+    public static final String J2EE_SERVER_INSTANCE = J2EEProjectProperties.J2EE_SERVER_INSTANCE;
+    public static final String J2EE_SERVER_TYPE = J2EEProjectProperties.J2EE_SERVER_TYPE;
     public static final String JAVAC_SOURCE = "javac.source"; //NOI18N
     public static final String JAVAC_DEBUG = "javac.debug"; //NOI18N
     public static final String JAVAC_DEPRECATION = "javac.deprecation"; //NOI18N
