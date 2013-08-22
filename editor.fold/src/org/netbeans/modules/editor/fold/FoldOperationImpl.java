@@ -622,8 +622,8 @@ public final class FoldOperationImpl {
             FoldInfo i = infoIt.hasNext() ? infoIt.next() : null;
             
             tran = openTransaction();
-
-            
+            Document d = getDocument();
+            int len = d.getLength();
             try {
                 while (f != null || i != null) {
                     if (LOG.isLoggable(Level.FINEST)) {
@@ -665,6 +665,10 @@ public final class FoldOperationImpl {
                 }
                 for (FoldInfo info : toAdd) {
                     try {
+                        if (info.getStart() > len || info.getEnd() > len) {
+                            // invalid fold info; possibly document has changed from the time FoldInfo was created.
+                            continue;
+                        }
                         currentFolds.put(info, getOperation().addToHierarchy(
                                 info.getType(), 
                                 info.getStart(), info.getEnd(),
@@ -689,6 +693,11 @@ public final class FoldOperationImpl {
             this.fsch = null;
             int soffs = f.getStartOffset();
             ApiPackageAccessor acc = getAccessor();
+            int len = getDocument().getLength();
+            if (info.getStart() > len || info.getEnd() > len) {
+                // no update done, new values are not valid
+                return f;
+            }
             if (info.getStart() != soffs) {
                 acc.foldSetStartOffset(f, getDocument(), info.getStart());
                 FoldStateChange state = getFSCH(f);

@@ -1436,7 +1436,9 @@ public abstract class CslTestBase extends NbTestCase {
                     if (ends.containsKey(i)) {
                         sb.append("<|");
                     }
-                    sb.append(text.charAt(i));
+                    if (i < length) {
+                        sb.append(text.charAt(i));
+                    }
                 }
             }
             index = lineEnd + 1;

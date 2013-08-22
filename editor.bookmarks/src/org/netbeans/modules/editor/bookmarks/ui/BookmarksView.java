@@ -663,7 +663,11 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         bookmarksTreeButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setTreeViewVisible(true);
+                if (!treeViewShowing) {
+                    setTreeViewVisible(true);
+                } else {
+                    bookmarksTableButton.doClick();
+                }
             }
         });
         toolBar.add(bookmarksTreeButton);
@@ -674,7 +678,11 @@ implements BookmarkManagerListener, PropertyChangeListener, ExplorerManager.Prov
         bookmarksTableButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                setTreeViewVisible(false);
+                if (treeViewShowing) {
+                    setTreeViewVisible(false);
+                } else {
+                    bookmarksTreeButton.doClick();
+                }
             }
         });
         toolBar.add(bookmarksTableButton);

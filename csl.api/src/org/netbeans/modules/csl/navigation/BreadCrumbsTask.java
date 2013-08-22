@@ -110,7 +110,7 @@ public class BreadCrumbsTask extends ElementScanningTask {
             //XXX: outside AWT!
             JTextComponent c = EditorRegistry.focusedComponent();
             
-            if (c.getDocument() == doc)
+            if (c != null && c.getDocument() == doc)
                 caret = c.getCaretPosition();
             else
                 caret = (-1);
