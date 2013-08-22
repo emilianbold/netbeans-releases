@@ -42,7 +42,11 @@
 package org.netbeans.modules.java.j2seembedded.platform;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import org.netbeans.api.annotations.common.NonNull;
 import org.openide.util.Parameters;
 
@@ -114,10 +118,12 @@ public final class ConnectionMethod {
             this.userName = userName;
         }
 
+        @NonNull
         public Kind getKind() {
             return kind;
         }
 
+        @NonNull
         public String getUserName() {
             return userName;
         }
@@ -125,6 +131,14 @@ public final class ConnectionMethod {
         void store(@NonNull final Map<String,String> props) {
             props.put(PLAT_PROP_AUTH_KIND, getKind().toString());
             props.put(PLAT_PROP_AUTH_USER, getUserName());
+        }
+
+        @NonNull
+        Collection<String> getBuildProperties() {
+            final Set<String> result = new HashSet<>();
+            result.add(PLAT_PROP_AUTH_KIND);
+            result.add(PLAT_PROP_AUTH_USER);
+            return Collections.unmodifiableSet(result);
         }
 
         @NonNull
@@ -151,10 +165,12 @@ public final class ConnectionMethod {
                 this.password = password;
             }
 
+            @NonNull
             public String getPassword() {
                 return password;
             }
 
+            @NonNull
             @Override
             void store(@NonNull final Map<String,String> props) {
                 super.store(props);
@@ -182,10 +198,12 @@ public final class ConnectionMethod {
                 this.passPhrase = passPhrase;
             }
 
+            @NonNull
             public File getKeyStore() {
                 return keyStore;
             }
 
+            @NonNull
             public String getPassPhrase() {
                 return passPhrase;
             }
@@ -195,6 +213,15 @@ public final class ConnectionMethod {
                 super.store(props);
                 props.put(PLAT_PROP_AUTH_KEYSTORE, getKeyStore().getAbsolutePath());
                 props.put(PLAT_PROP_AUTH_PASSPHRASE, getPassPhrase());
+            }
+
+            @NonNull
+            @Override
+            Collection<String> getBuildProperties() {
+                final Set<String> result = new HashSet<>();
+                result.addAll(super.getBuildProperties());
+                result.add(PLAT_PROP_AUTH_KEYSTORE);
+                return  Collections.unmodifiableSet(result);
             }
         }
     }
@@ -215,7 +242,7 @@ public final class ConnectionMethod {
 
     }
 
-
+    @NonNull
     public String getHost() {
         return host;
     }
@@ -224,6 +251,7 @@ public final class ConnectionMethod {
         return port;
     }
 
+    @NonNull
     public Authentification getAuthentification() {
         return auth;
     }
@@ -234,6 +262,16 @@ public final class ConnectionMethod {
         auth.store(props);
     }
 
+    @NonNull
+    Collection<String> getBuildProperties() {
+        final Set<String> result = new HashSet<>();
+        result.add(PLAT_PROP_HOST);
+        result.add(PLAT_PROP_PORT);
+        result.addAll(auth.getBuildProperties());
+        return Collections.unmodifiableSet(result);
+    }
+
+    @NonNull
     public static ConnectionMethod sshPassword(
         @NonNull final String host,
         @NonNull final int port,
@@ -242,6 +280,7 @@ public final class ConnectionMethod {
         return new ConnectionMethod(host, port, new Authentification.Password(username, password));
     }
 
+    @NonNull
     public static ConnectionMethod sshKey(
        @NonNull final String host,
        @NonNull final int port,

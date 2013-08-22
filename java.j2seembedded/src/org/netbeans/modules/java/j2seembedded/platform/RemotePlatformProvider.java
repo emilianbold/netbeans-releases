@@ -59,6 +59,9 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.api.java.platform.JavaPlatform;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.cookies.InstanceCookie;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
@@ -70,6 +73,8 @@ import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Mutex;
+import org.openide.util.MutexException;
 import org.openide.util.Parameters;
 import org.openide.util.RequestProcessor;
 import org.openide.util.lookup.AbstractLookup;
@@ -93,7 +98,7 @@ public final class RemotePlatformProvider implements Lookup.Provider, InstanceCo
     private static final String PLATFORM_STOREGE = "Services/Platforms/org-netbeans-api-java-Platform"; //NOI18N
     private static final Logger LOG = Logger.getLogger(RemotePlatformProvider.class.getName());
     private static final RequestProcessor RP = new RequestProcessor(RemotePlatformProvider.class);
-    private static final int SLIDING_WINDOW = 2000;
+    private static final int SLIDING_WINDOW = 2000;    
     
     private final XMLDataObject store;
     private final RequestProcessor.Task task;
@@ -251,6 +256,13 @@ public final class RemotePlatformProvider implements Lookup.Provider, InstanceCo
     private static void store(
         @NonNull final RemotePlatform platform,
         @NonNull final FileObject target) throws IOException {
+        storePlatformDefinition(platform, target);
+        updateBuildProperties(platform);
+    }
+
+    private static void storePlatformDefinition(
+        @NonNull final RemotePlatform platform,
+        @NonNull final FileObject target) throws IOException {
         final FileLock lock = target.lock();
         try {
             try (OutputStream out = target.getOutputStream(lock)) {
@@ -259,6 +271,42 @@ public final class RemotePlatformProvider implements Lookup.Provider, InstanceCo
         } finally {
             lock.releaseLock();
         }
+    }
+
+    private static void updateBuildProperties(@NonNull final RemotePlatform platform)  throws IOException {
+        try {
+            ProjectManager.mutex().writeAccess(new Mutex.ExceptionAction<Void>() {
+                @Override
+                public Void run() throws Exception {
+                    final Map<String,String> props = platform.getProperties();
+                    final String antPlatformName = props.get(RemotePlatform.PLAT_PROP_ANT_NAME);
+                    final EditableProperties ep = PropertyUtils.getGlobalProperties();                    
+                    for (String key : platform.getBuildProperties()) {
+                        ep.setProperty(
+                            createPropertyName(antPlatformName, key),
+                            props.get(key));
+                    }
+                    PropertyUtils.putGlobalProperties(ep);
+                    return null;
+                }
+            });
+        } catch (MutexException me) {
+            if (me.getCause() instanceof IOException) {
+                throw (IOException) me.getCause();
+            } else {
+                throw new IOException(me);
+            }
+        }
+    }
+
+    @NonNull
+    private static String createPropertyName(
+            @NonNull final String antPlatformName,
+            @NonNull final String propName) {
+        return String.format(
+            "platforms.%s.%s",          //NOI18N
+             antPlatformName,
+             propName);
     }
 
     private static final class SAXHandler extends DefaultHandler implements EntityResolver {
