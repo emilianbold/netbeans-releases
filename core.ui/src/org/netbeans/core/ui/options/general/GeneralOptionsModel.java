@@ -55,6 +55,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.prefs.Preferences;
 import org.netbeans.core.ProxySettings;
+import org.openide.util.NbBundle;
 import org.openide.util.NbPreferences;
 import org.openide.util.RequestProcessor;
 
@@ -295,9 +296,10 @@ class GeneralOptionsModel {
                         int proxyPort = Integer.valueOf(proxyPortString);
                         testingProxy = new Proxy(Proxy.Type.HTTP, new InetSocketAddress(proxyHost, proxyPort));
                     } catch (NumberFormatException ex) {
+                        // shouldn't fall into this code
                         LOGGER.log(Level.INFO, "Cannot parse port number", ex);
                         status = TestingStatus.FAILED;
-                        message = "Port is not number!";
+                        message = NbBundle.getMessage(GeneralOptionsModel.class, "LBL_GeneralOptionsPanel_PortError");
                         panel.updateTestConnectionStatus(status, message);
                         return;
                     }                    
