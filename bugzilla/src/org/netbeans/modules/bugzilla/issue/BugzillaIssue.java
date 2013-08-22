@@ -224,9 +224,12 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         Bugzilla.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run () {
-                editorOpened();
-                ensureConfigurationUptodate();
-                refreshViewData(true);
+                if (editorOpened()) {
+                    ensureConfigurationUptodate();
+                    refreshViewData(true);
+                } else {
+                    // should close somehow
+                }
             }
         });
         String refresh = System.getProperty("org.netbeans.modules.bugzilla.noIssueRefresh"); // NOI18N
@@ -804,7 +807,12 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             }
         }
         attachmentSource.setContentType(contentType);
-
+        TaskData repositoryTaskData = getRepositoryTaskData();
+        if (repositoryTaskData == null && (!synchronizeTask()
+                || (repositoryTaskData = getRepositoryTaskData()) == null)) {
+            // not fully initialized task, sync failed
+            return;            
+        }
         final TaskAttribute attAttribute = new TaskAttribute(getRepositoryTaskData().getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
         TaskAttributeMapper mapper = attAttribute.getTaskData().getAttributeMapper();
         TaskAttribute a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION);
@@ -1169,89 +1177,91 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
                 || syncState == SynchronizationState.CONFLICT) {
             try {
                 NbTaskDataState taskDataState = getNbTask().getTaskDataState();
-                TaskData repositoryData = taskDataState.getRepositoryData();
-                TaskData lastReadData = taskDataState.getLastReadData();
-                List<IssueField> changedFields = new ArrayList<IssueField>();
-                for (IssueField f : getRepository().getConfiguration().getFields()) {
-                    if (f==IssueField.MODIFICATION
-                            || f==IssueField.REPORTER_NAME
-                            || f==IssueField.QA_CONTACT_NAME
-                            || f==IssueField.ASSIGNED_TO_NAME) {
-                        continue;
-                    }
-                    String value = getFieldValue(repositoryData, f);
-                    String seenValue = getFieldValue(lastReadData, f);
-                    if(!value.trim().equals(seenValue)) {
-                        changedFields.add(f);
-                    }
-                }
-                int changedCount = changedFields.size();
-                if(changedCount == 1) {
-                    String ret = null;
-                    for (IssueField changedField : changedFields) {
-                        if (changedField == IssueField.SUMMARY) {
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_SUMMARY_CHANGED_STATUS"); // NOI18N
-                        } else if (changedField == IssueField.CC) {
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CC_FIELD_CHANGED_STATUS"); // NOI18N
-                        } else if (changedField == IssueField.KEYWORDS) {
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_KEYWORDS_CHANGED_STATUS"); // NOI18N
-                        } else if (changedField == IssueField.DEPENDS_ON || changedField == IssueField.BLOCKS) {
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS"); // NOI18N
-                        } else if (changedField == IssueField.COMMENT_COUNT) {
-                            String value = getFieldValue(repositoryData, changedField);
-                            String seenValue = getFieldValue(lastReadData, changedField);
-                            if(seenValue.equals("")) { // NOI18N
-                                seenValue = "0"; // NOI18N
-                            }
-                            int count = 0;
-                            try {
-                                count = Integer.parseInt(value) - Integer.parseInt(seenValue);
-                            } catch(NumberFormatException ex) {
-                                Bugzilla.LOG.log(Level.WARNING, ret, ex);
-                            }
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count}); // NOI18N
-                        } else if (changedField == IssueField.ATTACHEMENT_COUNT) {
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_ATTACHMENTS_CHANGED"); // NOI18N
-                        } else {
-                            ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldValue(repositoryData, changedField)}); // NOI18N
+                if (taskDataState != null) {
+                    TaskData repositoryData = taskDataState.getRepositoryData();
+                    TaskData lastReadData = taskDataState.getLastReadData();
+                    List<IssueField> changedFields = new ArrayList<IssueField>();
+                    for (IssueField f : getRepository().getConfiguration().getFields()) {
+                        if (f==IssueField.MODIFICATION
+                                || f==IssueField.REPORTER_NAME
+                                || f==IssueField.QA_CONTACT_NAME
+                                || f==IssueField.ASSIGNED_TO_NAME) {
+                            continue;
+                        }
+                        String value = getFieldValue(repositoryData, f);
+                        String seenValue = getFieldValue(lastReadData, f);
+                        if(!value.trim().equals(seenValue)) {
+                            changedFields.add(f);
                         }
                     }
-                    recentChanges = ret;
-                } else {
-                    for (IssueField changedField : changedFields) {
-                        String key;
-                        if (changedField == IssueField.SUMMARY) {
-                            key = "LBL_CHANGES_INCL_SUMMARY"; // NOI18N
-                        } else if (changedField == IssueField.PRIORITY) {
-                            key = "LBL_CHANGES_INCL_PRIORITY"; // NOI18N
-                        } else if (changedField == IssueField.SEVERITY) {
-                            key = "LBL_CHANGES_INCL_SEVERITY"; // NOI18N
-                        } else if (changedField == IssueField.ISSUE_TYPE) {
-                            key = "LBL_CHANGES_INCL_ISSUE_TYPE"; // NOI18N
-                        } else if (changedField == IssueField.PRODUCT) {
-                            key = "LBL_CHANGES_INCL_PRODUCT"; // NOI18N
-                        } else if (changedField == IssueField.COMPONENT) {
-                            key = "LBL_CHANGES_INCL_COMPONENT"; // NOI18N
-                        } else if (changedField == IssueField.PLATFORM) {
-                            key = "LBL_CHANGES_INCL_PLATFORM"; // NOI18N
-                        } else if (changedField == IssueField.VERSION) {
-                            key = "LBL_CHANGES_INCL_VERSION"; // NOI18N
-                        } else if (changedField == IssueField.MILESTONE) {
-                            key = "LBL_CHANGES_INCL_MILESTONE"; // NOI18N
-                        } else if (changedField == IssueField.KEYWORDS) {
-                            key = "LBL_CHANGES_INCL_KEYWORDS"; // NOI18N
-                        } else if (changedField == IssueField.URL) {
-                            key = "LBL_CHANGES_INCL_URL"; // NOI18N
-                        } else if (changedField == IssueField.ASSIGNED_TO) {
-                            key = "LBL_CHANGES_INCL_ASSIGNEE"; // NOI18N
-                        } else if (changedField == IssueField.QA_CONTACT) {
-                            key = "LBL_CHANGES_INCL_QA_CONTACT"; // NOI18N
-                        } else if (changedField == IssueField.DEPENDS_ON || changedField == IssueField.BLOCKS) {
-                            key = "LBL_CHANGES_INCLUSIVE_DEPENDENCE"; // NOI18N
-                        } else {
-                            key = "LBL_CHANGES"; // NOI18N
+                    int changedCount = changedFields.size();
+                    if(changedCount == 1) {
+                        String ret = null;
+                        for (IssueField changedField : changedFields) {
+                            if (changedField == IssueField.SUMMARY) {
+                                ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_SUMMARY_CHANGED_STATUS"); // NOI18N
+                            } else if (changedField == IssueField.CC) {
+                                ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CC_FIELD_CHANGED_STATUS"); // NOI18N
+                            } else if (changedField == IssueField.KEYWORDS) {
+                                ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_KEYWORDS_CHANGED_STATUS"); // NOI18N
+                            } else if (changedField == IssueField.DEPENDS_ON || changedField == IssueField.BLOCKS) {
+                                ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_DEPENDENCE_CHANGED_STATUS"); // NOI18N
+                            } else if (changedField == IssueField.COMMENT_COUNT) {
+                                String value = getFieldValue(repositoryData, changedField);
+                                String seenValue = getFieldValue(lastReadData, changedField);
+                                if(seenValue.equals("")) { // NOI18N
+                                    seenValue = "0"; // NOI18N
+                                }
+                                int count = 0;
+                                try {
+                                    count = Integer.parseInt(value) - Integer.parseInt(seenValue);
+                                } catch(NumberFormatException ex) {
+                                    Bugzilla.LOG.log(Level.WARNING, ret, ex);
+                                }
+                                ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_COMMENTS_CHANGED", new Object[] {count}); // NOI18N
+                            } else if (changedField == IssueField.ATTACHEMENT_COUNT) {
+                                ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_ATTACHMENTS_CHANGED"); // NOI18N
+                            } else {
+                                ret = NbBundle.getMessage(BugzillaIssue.class, "LBL_CHANGED_TO", new Object[] {changedField.getDisplayName(), getFieldValue(repositoryData, changedField)}); // NOI18N
+                            }
                         }
-                        recentChanges = NbBundle.getMessage(BugzillaIssue.class, key, new Object[] {changedCount});
+                        recentChanges = ret;
+                    } else {
+                        for (IssueField changedField : changedFields) {
+                            String key;
+                            if (changedField == IssueField.SUMMARY) {
+                                key = "LBL_CHANGES_INCL_SUMMARY"; // NOI18N
+                            } else if (changedField == IssueField.PRIORITY) {
+                                key = "LBL_CHANGES_INCL_PRIORITY"; // NOI18N
+                            } else if (changedField == IssueField.SEVERITY) {
+                                key = "LBL_CHANGES_INCL_SEVERITY"; // NOI18N
+                            } else if (changedField == IssueField.ISSUE_TYPE) {
+                                key = "LBL_CHANGES_INCL_ISSUE_TYPE"; // NOI18N
+                            } else if (changedField == IssueField.PRODUCT) {
+                                key = "LBL_CHANGES_INCL_PRODUCT"; // NOI18N
+                            } else if (changedField == IssueField.COMPONENT) {
+                                key = "LBL_CHANGES_INCL_COMPONENT"; // NOI18N
+                            } else if (changedField == IssueField.PLATFORM) {
+                                key = "LBL_CHANGES_INCL_PLATFORM"; // NOI18N
+                            } else if (changedField == IssueField.VERSION) {
+                                key = "LBL_CHANGES_INCL_VERSION"; // NOI18N
+                            } else if (changedField == IssueField.MILESTONE) {
+                                key = "LBL_CHANGES_INCL_MILESTONE"; // NOI18N
+                            } else if (changedField == IssueField.KEYWORDS) {
+                                key = "LBL_CHANGES_INCL_KEYWORDS"; // NOI18N
+                            } else if (changedField == IssueField.URL) {
+                                key = "LBL_CHANGES_INCL_URL"; // NOI18N
+                            } else if (changedField == IssueField.ASSIGNED_TO) {
+                                key = "LBL_CHANGES_INCL_ASSIGNEE"; // NOI18N
+                            } else if (changedField == IssueField.QA_CONTACT) {
+                                key = "LBL_CHANGES_INCL_QA_CONTACT"; // NOI18N
+                            } else if (changedField == IssueField.DEPENDS_ON || changedField == IssueField.BLOCKS) {
+                                key = "LBL_CHANGES_INCLUSIVE_DEPENDENCE"; // NOI18N
+                            } else {
+                                key = "LBL_CHANGES"; // NOI18N
+                            }
+                            recentChanges = NbBundle.getMessage(BugzillaIssue.class, key, new Object[] {changedCount});
+                        }
                     }
                 }
             } catch (CoreException ex) {
@@ -1278,6 +1288,20 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
         if (controller != null) {
             // view might not exist yet and we won't unnecessarily create it
             controller.modelStateChanged(model.isDirty(), model.isDirty() || !model.getChangedAttributes().isEmpty());
+        }
+    }
+
+    @Override
+    protected boolean synchronizeTask () {
+        try {
+            SynchronizeTasksCommand cmd = MylynSupport.getInstance().getCommandFactory().createSynchronizeTasksCommand(
+                    getRepository().getTaskRepository(), Collections.<NbTask>singleton(getNbTask()));
+            getRepository().getExecutor().execute(cmd);
+            return !cmd.hasFailed();
+        } catch (CoreException ex) {
+            // should not happen
+            Bugzilla.LOG.log(Level.WARNING, null, ex);
+            return false;
         }
     }
 
