@@ -78,7 +78,14 @@ public class CordovaPlatform {
     public Version getVersion() {
         if (version == null) {
             try {
-                String v = ProcessUtilities.callProcess(Utilities.isWindows()?"cordova.cmd":"cordova", true, 60*1000, "-v");
+                String v;
+                if (Utilities.isWindows()) {
+                    v = ProcessUtilities.callProcess("cordova.cmd", true, 60*1000, "-v");
+                } else if (Utilities.isMac()) {
+                    v = ProcessUtilities.callProcess("/bin/bash", true, 60*1000, "-lc", "cordova -v");
+                } else {
+                    v = ProcessUtilities.callProcess("cordova", true, 60*1000, "-v");
+                }
                 if (versionPattern.matcher(v.trim()).matches()) {
                     version = new Version(v);
                 }
@@ -120,7 +127,15 @@ public class CordovaPlatform {
     private boolean isGitReady() {
         if (!isGitReady) {
             try {
-                String v = ProcessUtilities.callProcess(Utilities.isWindows() ? "git.exe" : "git", true, 60 * 1000, "--version");
+                String v;
+                if (Utilities.isWindows()) {
+                    v = ProcessUtilities.callProcess("git.exe", true, 60*1000, "--version");
+                } else if (Utilities.isMac()) {
+                    v = ProcessUtilities.callProcess("/bin/bash", true, 60*1000, "-lc", "git --version");
+                } else {
+                    v = ProcessUtilities.callProcess("git", true, 60*1000, "--version");
+                }
+                
                 if (v.contains("version")) {
                     isGitReady = true;
                 }
