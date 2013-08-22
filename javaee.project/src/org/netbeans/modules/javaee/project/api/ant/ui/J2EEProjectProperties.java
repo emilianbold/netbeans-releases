@@ -52,6 +52,8 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.annotations.common.NullAllowed;
 import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.common.ClasspathUtil;
@@ -60,13 +62,20 @@ import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.InstanceRemovedException;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eePlatform;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.ServerInstance;
+import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.java.api.common.classpath.ClassPathSupport;
 import org.netbeans.modules.javaee.specs.support.api.JaxWs;
 import org.netbeans.modules.websvc.wsstack.api.WSStack;
 import org.netbeans.modules.websvc.wsstack.api.WSTool;
+import org.netbeans.spi.project.support.ant.AntProjectHelper;
 import org.netbeans.spi.project.support.ant.EditableProperties;
+import org.netbeans.spi.project.support.ant.PropertyEvaluator;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
+import org.openide.util.NbBundle;
 
 
 /** Helper class. Defines constants for properties. Knows the proper
@@ -143,7 +152,93 @@ public final class J2EEProjectProperties {
         }
         return null;
     }
-    
+
+    /**
+     * Performs necessary check of server instance. Those include server presence
+     * and optionally support for debugging and/or profiling. Unless suppressed
+     * it will display warning dialog on a check failure.
+     * <p>
+     * The check may try to use and set another server of the same type if
+     * the current server instance does not exist and the {@code callback}
+     * is not null.
+     *
+     * @param project the project we are checking
+     * @param helper the ant helper associated with the project
+     * @param profile the Java EE profile project is using
+     * @param moduleType the module type of the project
+     * @param callback the callback to use to set another server of the same type
+     *             when the current instance is not available
+     * @param checkDebug {@code true} if the ability to run in debugging mode should be checked
+     * @param checkProfile {@code true} if the ability to run in profiling mode should be checked
+     * @param noMessages {@code true} to suppress UI dialogs
+     * @return {@code true} if the server instance is usable {@code false} otherwise
+     * @since 1.8
+     */
+    public static boolean checkSelectedServer(@NonNull Project project, @NonNull AntProjectHelper helper,
+            @NonNull Profile profile, @NonNull J2eeModule.Type moduleType,
+            @NullAllowed SetServerInstanceCallback callback,
+            boolean checkDebug, boolean checkProfile, boolean noMessages) {
+
+        final PropertyEvaluator eval = helper.getStandardPropertyEvaluator();
+        String instanceId = null;
+        String instance = eval.getProperty(J2EE_SERVER_INSTANCE);
+        if (instance != null) {
+            J2eeModuleProvider jmp = (J2eeModuleProvider) project.getLookup().lookup(J2eeModuleProvider.class);
+            String sdi = jmp.getServerInstanceID();
+            if (sdi != null) {
+                String id = Deployment.getDefault().getServerID(sdi);
+                if (id != null) {
+                    instanceId = sdi;
+                }
+            }
+        }
+
+// if there is some server instance of the type which was used
+// previously do not ask and use it
+        if (instanceId == null) {
+            String serverType = eval.getProperty(J2EE_SERVER_TYPE);
+            if (serverType != null) {
+                String instanceID = getMatchingInstance(serverType, moduleType, profile);
+                if (instanceID != null && callback != null) {
+                    callback.setServerInstance(instanceID);
+                    instanceId = instanceID;
+                }
+            }
+        }
+
+        if (instanceId != null) {
+            try {
+                ServerInstance instanceObject = Deployment.getDefault().getServerInstance(instanceId);
+                if (checkDebug && !instanceObject.isDebuggingSupported()) {
+                    if (!noMessages) {
+                        String msg = NbBundle.getMessage(J2EEProjectProperties.class, "MSG_Server_No_Debugging"); //  NOI18N
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+                    }
+                    return false;
+                }
+                if (checkProfile && !instanceObject.isProfilingSupported()) {
+                    if (!noMessages) {
+                        String msg = NbBundle.getMessage(J2EEProjectProperties.class, "MSG_Server_No_Profiling"); //  NOI18N
+                        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+                    }
+                    return false;
+                }
+            } catch (InstanceRemovedException ex) {
+                instanceId = null;
+            }
+        }
+        if (instanceId == null) {
+            // no selected server => warning
+            if (!noMessages) {
+                String msg = NbBundle.getMessage(J2EEProjectProperties.class, "MSG_No_Server_Selected"); //  NOI18N
+                DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+            }
+
+            return false;
+        }
+        return true;
+    }
+
     /**
      * Sets all server related properties.
      */
@@ -447,5 +542,17 @@ public final class J2EEProjectProperties {
         return toClasspathString(files.toArray(new File[files.size()]), roots);
     }
 
+    /**
+     * Callback to set the desired server instance.
+     * since 1.8
+     */
+    public static interface SetServerInstanceCallback {
 
+        /**
+         * Sets the server instance.
+         * 
+         * @param serverInstanceId the id of the server instance
+         */
+        void setServerInstance(String serverInstanceId);
+    }
 }

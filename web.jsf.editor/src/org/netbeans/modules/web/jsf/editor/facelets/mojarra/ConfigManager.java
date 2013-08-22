@@ -746,6 +746,11 @@ public class ConfigManager {
                         d.run();
                     }
                 }
+            } catch (ExecutionException ee) {
+                // #181807 - NPE from WebAppMetadataModelImpl by obtaining project classPath. But the classPath
+                // looks to be created correctly - this is strange exceptional cause which is hard to reproduce.
+                // The consequence of this is not fatal, we will not get the javax.faces.FACELETS_LIBRARIES parameter.
+                LOGGER.log(Level.INFO, "WebFaceletTaglibResourceProvider didn't run well: ", ee);
             } catch (InterruptedException ignored) {
             } catch (Exception e) {
                 throw new ConfigurationException(e);

@@ -333,7 +333,8 @@ public class WebActionProvider extends BaseActionProvider {
             if (res != null) {
                 return res;
             }
-            if (!isSelectedServer()) {
+            if (!checkSelectedServer(
+                    command.equals(COMMAND_DEBUG_SINGLE), command.equals(COMMAND_PROFILE_SINGLE))) {
                 return null;
             }
             String targetNames[];
@@ -383,7 +384,7 @@ public class WebActionProvider extends BaseActionProvider {
             }
             return null;
         } else if (command.equals(COMMAND_RUN) || command.equals(WebProjectConstants.COMMAND_REDEPLOY)) {
-            if (!isSelectedServer()) {
+            if (!checkSelectedServer(false, false)) {
                 return null;
             }
             if (WhiteListUpdater.isWhitelistViolated(getProject())) {
@@ -391,12 +392,12 @@ public class WebActionProvider extends BaseActionProvider {
             }
             return commands.get(command);
         } else if (command.equals(COMMAND_PROFILE)) {
-            if (!isSelectedServer()) {
+            if (!checkSelectedServer(false, true)) {
                 return null;
             }
             initWebServiceProperties(p);
         } else if (command.equals(COMMAND_DEBUG)) {
-            if (!isSelectedServer()) {
+            if (!checkSelectedServer(true, false)) {
                 return null;
             }
             initWebServiceProperties(p);
@@ -899,39 +900,19 @@ public class WebActionProvider extends BaseActionProvider {
         return false;
     }
 
-    private boolean isSelectedServer() {
+    private boolean checkSelectedServer(boolean checkDebug, boolean checkProfile) {
         final PropertyEvaluator eval = getAntProjectHelper().getStandardPropertyEvaluator();
         if ("false".equals(eval.getProperty(WebProjectProperties.J2EE_SERVER_CHECK))) { // NOI18N
             return true;
         }
-        String instance = eval.getProperty(WebProjectProperties.J2EE_SERVER_INSTANCE);
-        if (instance != null) {
-            J2eeModuleProvider jmp = (J2eeModuleProvider) getProject().getLookup().lookup(J2eeModuleProvider.class);
-            String sdi = jmp.getServerInstanceID();
-            if (sdi != null) {
-                String id = Deployment.getDefault().getServerID(sdi);
-                if (id != null) {
-                    return true;
-                }
+        return J2EEProjectProperties.checkSelectedServer(getProject(), getAntProjectHelper(),
+                ((WebProject) getProject()).getAPIWebModule().getJ2eeProfile(), J2eeModule.Type.WAR, new J2EEProjectProperties.SetServerInstanceCallback() {
+
+            @Override
+            public void setServerInstance(String serverInstanceId) {
+                WebActionProvider.this.setServerInstance(serverInstanceId);
             }
-        }
-
-// if there is some server instance of the type which was used
-// previously do not ask and use it
-        String serverType = eval.getProperty(WebProjectProperties.J2EE_SERVER_TYPE);
-        if (serverType != null) {
-            String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, J2eeModule.Type.WAR, ((WebProject) getProject()).getAPIWebModule().getJ2eeProfile());
-            if (instanceID != null) {
-                setServerInstance(instanceID);
-                return true;
-            }
-        }
-
-        // no selected server => warning
-        String msg = NbBundle.getMessage(WebActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
-
-        return false;
+        }, checkDebug, checkProfile, false);
     }
 
     private void setServerInstance(String serverInstanceId) {

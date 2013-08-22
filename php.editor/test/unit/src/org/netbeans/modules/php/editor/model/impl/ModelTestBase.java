@@ -44,16 +44,13 @@ package org.netbeans.modules.php.editor.model.impl;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.List;
 import java.util.concurrent.Future;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.parsing.api.UserTask;
-import org.netbeans.modules.php.editor.model.Occurence;
 import org.netbeans.modules.php.editor.csl.PHPNavTestBase;
 import org.netbeans.modules.php.editor.parser.PHPParseResult;
 import org.openide.filesystems.FileObject;

@@ -1392,6 +1392,9 @@ public final class PhpProject implements Project {
             if (support == null) {
                 return;
             }
+            if (!support.isWebBrowserPaneOpen()) {
+                return;
+            }
             // #226884, 227281 - wait till copysupport finishes
             if (!project.getCopySupport().waitFinished(Bundle.ClientSideDevelopmentSupport_reload_copySupportRunning(), 5000, getCustomizerButton())) {
                 return;
