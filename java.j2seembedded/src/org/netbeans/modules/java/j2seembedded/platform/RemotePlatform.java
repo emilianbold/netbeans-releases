@@ -47,8 +47,10 @@ import java.net.URL;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
@@ -245,6 +247,15 @@ public final class RemotePlatform extends JavaPlatform {
         Parameters.notNull("cm", cm); //NOI18N
         cm.store(props);
         firePropertyChange(PROP_PROPERTIES, null, null);
+    }
+
+    @NonNull
+    Collection<String> getBuildProperties() {
+        final Set<String> result = new HashSet<>();
+        result.add(PLAT_PROP_INSTALL_FOLDER);
+        result.add(PLAT_PROP_WORK_FOLDER);
+        result.addAll(getConnectionMethod().getBuildProperties());
+        return Collections.unmodifiableSet(result);
     }
 
     //Utility methods
