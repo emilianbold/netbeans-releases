@@ -78,7 +78,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     /** Local logger. */
     private static final Logger LOGGER
             = GlassFishLogger.get(GlassfishInstanceProvider.class);
-   
+
     public static final String GLASSFISH_AUTOREGISTERED_INSTANCE = "glassfish_autoregistered_instance";
 
     private static final String AUTOINSTANCECOPIED = "autoinstance-copied"; // NOI18N
@@ -104,7 +104,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         }
         return providerList;
     }
-    
+
     public static GlassfishInstanceProvider getProvider() {
         if (ee6Provider != null) {
             return ee6Provider;
