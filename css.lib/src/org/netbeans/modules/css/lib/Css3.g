@@ -387,7 +387,9 @@ mediaBody
 mediaBodyItem
     :
     (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI)* LBRACE))=>cp_mixin_declaration 
-    | (cp_mixin_call)=>cp_mixin_call 
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
+    | (cp_mixin_call (ws? IMPORTANT_SYM)? ws? SEMI)=> {isLessSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
+    | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     |( ~(LBRACE|SEMI|RBRACE|COLON)+ COLON ~(SEMI|LBRACE|RBRACE)+ SEMI )=>propertyDeclaration
     |( sass_declaration_interpolation_expression COLON ~(SEMI|LBRACE|RBRACE)+ SEMI )=>propertyDeclaration
     | {isScssSource()}? sass_extend
@@ -453,8 +455,8 @@ bodyItem
     : 
         (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|RBRACE|SEMI)* LBRACE))=>cp_mixin_declaration
         //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
-        | {isLessSource()}? (cp_mixin_call ws? SEMI)=>cp_mixin_call
-        | {isScssSource()}? (cp_mixin_call)=>cp_mixin_call
+        | (cp_mixin_call ws? SEMI)=> {isLessSource()}? cp_mixin_call
+        | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call
     	| rule
         | at_rule
         | {isCssPreprocessorSource()}? cp_variable_declaration
@@ -632,7 +634,9 @@ declaration
     //for the error recovery - if the previous synt. predicate fails (an error in the declaration we'll still able to recover INSIDE the declaration
     | (property ws? COLON ~(LBRACE|SEMI|RBRACE)* (RBRACE|SEMI) )=>propertyDeclaration 
     | (SASS_MIXIN | (DOT IDENT ws? LPAREN (~RPAREN)* RPAREN ~(LBRACE|SEMI|RBRACE)* LBRACE))=>cp_mixin_declaration 
-    | (cp_mixin_call)=>cp_mixin_call (ws? IMPORTANT_SYM)?
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c12 -- class selector in selector group recognized as mixin call -- workarounded by adding the ws? SEMI to the predicate
+    | (cp_mixin_call (ws? IMPORTANT_SYM)? ws? SEMI)=> {isLessSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
+    | (cp_mixin_call)=> {isScssSource()}? cp_mixin_call (ws? IMPORTANT_SYM)?
     | (selectorsGroup ws? LBRACE)=>rule 
     | {isCssPreprocessorSource()}? at_rule 
     | {isScssSource()}? sass_control 

@@ -626,6 +626,26 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "}");
     }
 
+    public void testX() {
+        assertParses(".bar,\n"
+                + "    .baz {\n"
+                + "        width: 100%;\n"
+                + "    }\n");
+        
+        assertParses("#foo {\n"
+                + "    .bar, .baz {\n"
+                + "        width: 100%;\n"
+                + "    }\n"
+                + "}");
+        
+        assertParses("#foo {\n"
+                + "    .bar,\n"
+                + "    .baz {\n"
+                + "        width: 100%;\n"
+                + "    }\n"
+                + "}");
+    }
+
 //    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c10 / case#18
 //    public void testMixinCallAsSelector() {
 //        assertParses(".x { #gradient > .vertical(#f5f5f5, #eeeeee); }");
@@ -634,5 +654,4 @@ public class Css3ParserLessTest extends CssTestBase {
 //                + "#gradient > .vertical(#f5f5f5, #eeeeee);\n"
 //                + "}");
 //    }
-
 }
