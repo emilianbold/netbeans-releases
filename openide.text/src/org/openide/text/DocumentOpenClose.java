@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.lang.ref.Reference;
 import java.lang.ref.WeakReference;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JEditorPane;
@@ -494,6 +495,16 @@ final class DocumentOpenClose {
             activeClose = null;
         }
     }
+    
+    void updateLines(StyledDocument doc, boolean close) {
+        Map<Line, Reference<Line>> lineMap = ces.findWeakHashMap();
+        for (Map.Entry<Line, Reference<Line>> entry : lineMap.entrySet()) {
+            Line line = entry.getKey();
+            if (line instanceof DocumentLine) {
+                ((DocumentLine)line).documentOpenedClosed(doc, close);
+            }
+        }
+    }
 
     IllegalStateException invalidStatus() {
         return new IllegalStateException("Unknown documentStatus=" + documentStatus); // NOI18N
@@ -663,6 +674,9 @@ final class DocumentOpenClose {
                         LOG.fine("task-callNotifyUnmodified");
                         ces.callNotifyUnmodified();
                     }
+                    
+                    // Attach annotations
+                    updateLines(loadDoc, false);
 
                     documentStatus = DocumentStatus.OPENED; // common for both reload and open
                     loadSuccess = true;
@@ -960,6 +974,7 @@ final class DocumentOpenClose {
                 }
 
                 ces.updateLineSet(true);
+                updateLines(closeDoc, true);
                 
             } finally {
                 synchronized (lock) {
