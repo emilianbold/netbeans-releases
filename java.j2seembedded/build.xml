@@ -11,6 +11,7 @@
             <manifest>
                 <attribute name="NetBeans-Own-Library" value="true"/>
                 <attribute name="Main-Class" value="org.netbeans.modules.java.j2seembedded.wizard.JREProbe"/>
+                <attribute name="Profile" value="compact1"/>
             </manifest>
             <fileset dir="build/probe/classes"/>
         </jar>
