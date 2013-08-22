@@ -74,9 +74,11 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
 
     private static final String GLOBAL_KO_OBJECT = "ko"; // NOI18N
 
+    private static final Pattern NAME_PATTERN = Pattern.compile("ko\\.(exportSymbol|exportProperty)"); // NOI18N
+
     @Override
     public Pattern getNamePattern() {
-        return Pattern.compile("ko\\.(exportSymbol|exportProperty)"); // NOI18N
+        return NAME_PATTERN;
     }
 
     @Override
@@ -90,7 +92,7 @@ public class KnockoutExportInterceptor implements FunctionInterceptor {
             FunctionArgument valueArgument = iterator.next();
 
             int offset = nameArgument.getOffset();
-            
+
             JsObject object = null;
             if (objectArgument.getKind() == FunctionArgument.Kind.REFERENCE) {
                 List<String> identifiers = (List<String>) objectArgument.getValue();

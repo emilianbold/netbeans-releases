@@ -178,13 +178,13 @@ public final class Model {
                 LOGGER.fine(MessageFormat.format("Building model took {0}ms. Resolving types took {1}ms. Extending model took {2}", new Object[]{(end - start), (startCallingME - startResolve), (end - startCallingME)}));
             }
         } else if (resolveWithObjects) {
-            long start = System.currentTimeMillis();
+            //long start = System.currentTimeMillis();
             resolveWithObjects = false;
             resolveWindowProperties = true;
             JsIndex jsIndex = JsIndex.get(parserResult.getSnapshot().getSource().getFileObject());
             processWithObjectIn(visitor.getGlobalObject(), jsIndex);
-            long end = System.currentTimeMillis();
-            System.out.println("resolving with took: " + (end - start));
+            //long end = System.currentTimeMillis();
+            //System.out.println("resolving with took: " + (end - start));
         }
         if (resolveWindowProperties) {
             processWindowsProperties(visitor.getGlobalObject());

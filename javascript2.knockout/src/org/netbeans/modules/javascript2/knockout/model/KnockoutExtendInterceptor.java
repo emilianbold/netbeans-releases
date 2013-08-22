@@ -68,9 +68,11 @@ public class KnockoutExtendInterceptor implements FunctionInterceptor {
 
     private static final Logger LOGGER = Logger.getLogger(KnockoutExtendInterceptor.class.getName());
 
+    private static final Pattern NAME_PATTERN = Pattern.compile("ko\\.utils\\.extend"); // NOI18N
+
     @Override
     public Pattern getNamePattern() {
-        return Pattern.compile("ko\\.utils\\.extend"); // NOI18N
+        return NAME_PATTERN;
     }
 
     @Override

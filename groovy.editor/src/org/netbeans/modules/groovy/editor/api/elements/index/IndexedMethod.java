@@ -44,11 +44,10 @@
 package org.netbeans.modules.groovy.editor.api.elements.index;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.groovy.editor.api.elements.common.MethodElement;
-import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 
 /**
@@ -59,29 +58,22 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
  * @author Martin Adamek
  */
 public final class IndexedMethod extends IndexedElement implements MethodElement {
-    /** This method takes a (possibly optional, see BLOCK_OPTIONAL) block */
-    public static final int BLOCK = 1 << 6;
-    /** This method takes an optional block */
-    public static final int BLOCK_OPTIONAL = 1 << 7;
-    /** Deprecated? */
-    /** Parenthesis or space delimited? */
 
-    protected final String signature;
-    private List<MethodParameter> parameters;
-    private boolean smart;
+    private final List<MethodParameter> parameters;
     private final String returnType;
-    
-    private IndexedMethod(String signature, String returnType, IndexResult result, String clz, String attributes, int flags) {
-        super(result, clz, attributes, flags);
-        this.signature = signature;
+
+    public IndexedMethod(
+            IndexResult result,
+            String clz,
+            String name,
+            String returnType,
+            List<MethodParameter> parameters,
+            String attributes,
+            int flags) {
+
+        super(result, clz, name, attributes, flags);
         this.returnType = returnType;
-    }
-
-    public static IndexedMethod create(String signature, String returnType,
-            String clz, IndexResult result, String attributes, int flags) {
-        IndexedMethod m = new IndexedMethod(signature, returnType, result, clz, attributes, flags);
-
-        return m;
+        this.parameters = parameters;
     }
 
     @Override
@@ -91,16 +83,6 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
 
     @Override
     public String getName() {
-        if (name == null) {
-            int parenIndex = signature.indexOf('(');
-
-            if (parenIndex == -1) {
-                name = signature;
-            } else {
-                name = signature.substring(0, parenIndex);
-            }
-        }
-
         return name;
     }
 
@@ -111,30 +93,26 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
 
     @Override
     public String getSignature() {
-        return in + "#" + signature;
+        StringBuilder sb = new StringBuilder();
+        sb.append(in);
+        sb.append("#"); // NOI18N
+        sb.append(name);
+
+        if (!parameters.isEmpty()) {
+            sb.append("("); // NOI18N
+            for (MethodParameter param : parameters) {
+                sb.append(param.getFqnType());
+                sb.append(",");
+            }
+            sb.deleteCharAt(sb.length() - 1);
+            sb.append(")"); // NOI18N
+        }
+
+        return sb.toString();
     }
 
     @Override
     public List<MethodParameter> getParameters() {
-        if (parameters == null) {
-            int parenIndex = signature.indexOf('('); // NOI18N
-            if (parenIndex == -1) {
-                return Collections.emptyList();
-            }
-
-            String argsPortion = signature.substring(parenIndex + 1, signature.length() - 1);
-            String[] args = argsPortion.split(","); // NOI18N
-
-            if (args != null && args.length > 0) {
-                parameters = new ArrayList<>();
-                for (String paramType : args) {
-                    parameters.add(new MethodParameter(paramType, GroovyUtils.stripPackage(paramType)));
-                }
-            } else {
-                parameters = Collections.emptyList();
-            }
-        }
-
         return parameters;
     }
 
@@ -158,25 +136,17 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
             return ElementKind.METHOD;
         }
     }
-    
-    public boolean isSmart() {
-        return smart;
-    }
-    
-    public void setSmart(boolean smart) {
-        this.smart = smart;
-    }
 
-    public boolean hasBlock() {
-        return (flags & BLOCK) != 0;
-    }
-
-    public boolean isBlockOptional() {
-        return (flags & BLOCK_OPTIONAL) != 0;
-    }
-
-    public String getEncodedAttributes() {
-        return attributes;
+    @Override
+    public int hashCode() {
+        int hash = 5;
+        hash = 47 * hash + Objects.hashCode(this.in);
+        hash = 47 * hash + Objects.hashCode(this.name);
+        hash = 47 * hash + Objects.hashCode(this.signature);
+        hash = 47 * hash + Objects.hashCode(this.modifiers);
+        hash = 47 * hash + Objects.hashCode(this.parameters);
+        hash = 47 * hash + Objects.hashCode(this.returnType);
+        return hash;
     }
 
     @Override
@@ -188,24 +158,25 @@ public final class IndexedMethod extends IndexedElement implements MethodElement
             return false;
         }
         final IndexedMethod other = (IndexedMethod) obj;
-        if (this.signature != other.signature && (this.signature == null || !this.signature.equals(other.signature))) {
+        if (!Objects.equals(this.in, other.in)) {
             return false;
         }
-        if (this.in != other.in && (this.in == null || !this.in.equals(other.in))) {
+        if (!Objects.equals(this.name, other.name)) {
             return false;
         }
-        if (this.flags != other.flags) {
+        if (!Objects.equals(this.signature, other.signature)) {
+            return false;
+        }
+        if (!Objects.equals(this.modifiers, other.modifiers)) {
+            return false;
+        }
+        if (!Objects.equals(this.parameters, other.parameters)) {
+            return false;
+        }
+        if (!Objects.equals(this.returnType, other.returnType)) {
             return false;
         }
         return true;
     }
 
-    @Override
-    public int hashCode() {
-        int hash = 7;
-        hash = 53 * hash + (this.signature != null ? this.signature.hashCode() : 0);
-        hash = 53 * hash + (this.in != null ? this.in.hashCode() : 0);
-        hash = 53 * hash + flags;
-        return hash;
-    }
 }
