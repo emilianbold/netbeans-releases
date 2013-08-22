@@ -429,6 +429,12 @@ public class WebBrowserImpl extends WebBrowser implements BrowserCallback, Enhan
             }
             container = null;
         }
+        SwingUtilities.invokeLater(new Runnable() {
+            @Override
+            public void run() {
+                propSupport.firePropertyChange(HtmlBrowser.Impl.PROP_BROWSER_WAS_CLOSED, null, null);
+            }
+        });
     }
 
     @Override
