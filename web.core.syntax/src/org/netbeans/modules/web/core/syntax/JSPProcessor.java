@@ -167,7 +167,7 @@ public abstract class JSPProcessor {
                     if (vars != null) {
                         for (VariableInfo var : vars) {
                             // Create Variable Definitions
-                            if (var.getVarName() != null && var.getClassName() != null && var.getDeclare()) {
+                            if (var != null && var.getVarName() != null && var.getClassName() != null && var.getDeclare()) {
                                 String varDeclaration = var.getClassName() + " " + var.getVarName() + ";\n";
                                 beanDeclarationsBuff.append(varDeclaration);
                             }
