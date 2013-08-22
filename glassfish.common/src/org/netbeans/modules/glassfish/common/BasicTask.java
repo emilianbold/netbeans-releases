@@ -51,12 +51,11 @@ import static org.glassfish.tools.ide.GlassFishStatus.OFFLINE;
 import static org.glassfish.tools.ide.GlassFishStatus.ONLINE;
 import static org.glassfish.tools.ide.GlassFishStatus.SHUTDOWN;
 import static org.glassfish.tools.ide.GlassFishStatus.STARTUP;
-import org.glassfish.tools.ide.admin.TaskState;
-import org.glassfish.tools.ide.admin.TaskStateListener;
+import org.glassfish.tools.ide.TaskEvent;
+import org.glassfish.tools.ide.TaskState;
+import org.glassfish.tools.ide.TaskStateListener;
 import org.glassfish.tools.ide.data.GlassFishServer;
-import org.glassfish.tools.ide.data.GlassFishStatusCheckResult;
 import org.glassfish.tools.ide.data.GlassFishStatusTask;
-import org.glassfish.tools.ide.data.TaskEvent;
 import org.netbeans.modules.glassfish.common.status.WakeUpStateListener;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.openide.util.NbBundle;
@@ -282,6 +281,9 @@ public abstract class BasicTask<V> implements Callable<V> {
     /** Name of GlassFish instance accessed in this task. */
     protected String instanceName;
 
+    /** Task thread when inside <code>call</code> method. */
+    protected volatile Thread taskThread;
+
     ////////////////////////////////////////////////////////////////////////////
     // Abstract methods                                                       //
     ////////////////////////////////////////////////////////////////////////////
@@ -311,11 +313,32 @@ public abstract class BasicTask<V> implements Callable<V> {
         this.stateListener = stateListener;
         this.instanceName = instance.getProperty(
                 GlassfishModule.DISPLAY_NAME_ATTR);
+        this.taskThread = null;
     }
 
     ////////////////////////////////////////////////////////////////////////////
     // Methods                                                                //
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Initialize task thread when <code>call</code> method is started.
+     * <p/>
+     * This should be called immediately after <code>call</code> method
+     * is started from inside.
+     */
+    protected void setTaskThread() {
+        taskThread = Thread.currentThread();
+    }
+
+    /**
+     * Clear task thread when <code>call</code> method is exiting.
+     * <p/>
+     * This should be called when <code>call</code> method
+     * is exiting.
+     */
+    protected void clearTaskThread() {
+        taskThread = null;
+    }
 
     /**
      * Initialize GlassFisg server startup monitoring.

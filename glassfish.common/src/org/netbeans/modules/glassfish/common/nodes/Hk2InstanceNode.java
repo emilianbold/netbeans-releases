@@ -151,8 +151,52 @@ public class Hk2InstanceNode extends AbstractNode implements ChangeListener { //
         return shortDesc;
     }
 
+    /** Get the set of actions that are associated with this node.
+     * <p/>
+     * This set is used to construct the context menu for the node.    
+     * <p/>
+     * @param context Whether to find actions for context meaning or for the
+     *                node itself.
+     * @return A list of actions (you may include nulls for separators).
+     */
     @Override
     public Action[] getActions(boolean context) {
+        return serverInstance.isRemote()
+                ? getRemoteActions() : getLocalActions();
+    }
+
+    /**
+     * Node actions for local server instance.
+     * <p/>
+     * @return A list of actions for local server instance.
+     */
+    public Action[] getLocalActions() {
+        return new Action[] {
+            SystemAction.get(StartServerAction.class),
+            SystemAction.get(DebugAction.class),
+            SystemAction.get(ProfileAction.class),
+            SystemAction.get(RestartAction.class),
+            SystemAction.get(StopServerAction.class),
+// Disabled: Not finished
+//            SystemAction.get(KillServerAction.class),
+            SystemAction.get(RefreshModulesAction.class),
+            null,
+            SystemAction.get(RemoveServerAction.class),
+            null,
+            SystemAction.get(ViewAdminConsoleAction.class),
+            SystemAction.get(ViewServerLogAction.class),
+            SystemAction.get(ViewUpdateCenterAction.class),
+            null,
+            SystemAction.get(PropertiesAction.class)
+        };
+    }
+
+    /**
+     * Node actions for local server instance.
+     * <p/>
+     * @return A list of actions for local server instance.
+     */
+    public Action[] getRemoteActions() {
         return new Action[] {
             SystemAction.get(StartServerAction.class),
             SystemAction.get(DebugAction.class),
