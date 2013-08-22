@@ -45,12 +45,12 @@ package org.netbeans.modules.php.project.api;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.project.PhpLanguagePropertiesAccessor;
 import org.netbeans.modules.php.project.PhpProject;
 import org.netbeans.modules.php.project.ProjectPropertiesSupport;
 import org.netbeans.modules.php.project.ui.customizer.PhpProjectProperties;
 import org.openide.filesystems.FileObject;
-import org.openide.util.NbBundle;
 
 /**
  * Helper class to get PHP language properties like ASP tags supported etc.
@@ -79,58 +79,6 @@ public final class PhpLanguageProperties {
     */
     public static final String PROP_PHP_VERSION = PhpLanguageProperties.class.getName() + ".phpVersion"; // NOI18N
 
-    /**
-     * PHP version, currently used only for hints.
-     * @see #getPhpVersion()
-     */
-    public static enum PhpVersion {
-
-        // order is important! from oldest to newest, see #getDefault()
-        PHP_5(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_5"), false), // NOI18N
-        PHP_53(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_53")), // NOI18N
-        PHP_54(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_54")), // NOI18N
-        PHP_55(NbBundle.getMessage(PhpLanguageProperties.class, "PHP_55")); // NOI18N
-
-        private final String displayName;
-        private final boolean namespaces;
-
-
-        PhpVersion(String displayName) {
-            this(displayName, true);
-        }
-
-        PhpVersion(String displayName, boolean namespaces) {
-            assert displayName != null;
-            this.displayName = displayName;
-            this.namespaces = namespaces;
-        }
-
-        /**
-         * Always return the latest PHP version.
-         * @return the latest PHP version
-         */
-        public static PhpVersion getDefault() {
-            PhpVersion[] phpVersions = PhpVersion.values();
-            return phpVersions[phpVersions.length - 1];
-        }
-
-        public String getDisplayName() {
-            return displayName;
-        }
-
-        /**
-         * @since 2.67
-         */
-        public boolean hasNamespaces() {
-            return namespaces;
-        }
-
-        @Override
-        public String toString() {
-            return getDisplayName();
-        }
-
-    };
 
     private static final PhpLanguageProperties INSTANCE = new PhpLanguageProperties();
 
