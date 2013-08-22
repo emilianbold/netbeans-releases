@@ -51,6 +51,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Elements;
 import org.codehaus.groovy.ast.*;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -60,13 +61,16 @@ import org.netbeans.modules.groovy.editor.api.GroovyIndex;
 import org.netbeans.modules.groovy.editor.api.completion.CaretLocation;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem;
 import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.ConstructorItem;
-import org.netbeans.modules.groovy.editor.api.completion.CompletionItem.ParameterDescriptor;
 import org.netbeans.modules.groovy.editor.api.completion.MethodSignature;
 import org.netbeans.modules.groovy.editor.api.completion.util.ContextHelper;
 import org.netbeans.modules.groovy.editor.completion.provider.CompleteElementHandler;
 import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
+import org.netbeans.modules.groovy.editor.api.elements.common.MethodElement.MethodParameter;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
+import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
 import org.netbeans.modules.groovy.editor.imports.ImportUtils;
+import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 
 /**
  * Complete the methods invokable on a class.
@@ -194,7 +198,48 @@ public class MethodCompletion extends BaseCompletion {
             }
         }
 
+        GroovyIndex index = GroovyIndex.get(QuerySupport.findRoots(context.getSourceFile(), Collections.singleton(ClassPath.SOURCE), null, null));
+
+        if (exactClassExists(index)) {
+            Set<IndexedMethod> constructors = index.getConstructors(context.getPrefix());
+            for (IndexedMethod indexedMethod : constructors) {
+                List<MethodParameter> parameters = indexedMethod.getParameters();
+                List<String> parameterTypes = indexedMethod.getParameterTypes();
+
+                StringBuilder sb = new StringBuilder();
+                if (!parameterTypes.isEmpty()) {
+                    for (String type : parameterTypes) {
+                        sb.append(type);
+                        sb.append(", ");
+                    }
+                    // Removing last ", "
+                    sb.delete(sb.length() - 2, sb.length());
+                }
+
+                ConstructorItem constructor = new ConstructorItem(context.getPrefix(), sb.toString(), parameters, anchor, false);
+                if (!proposals.contains(constructor)) {
+                    proposals.add(constructor);
+                }
+            }
+
+            // If we didn't find any proposal, it means the instatiate class does not have any constructor
+            // explicitely declared - in such case add defaultly generated no-parameter constructor
+            if (proposals.isEmpty()) {
+                proposals.add(new ConstructorItem(context.getPrefix(), "", Collections.<MethodParameter>emptyList(), anchor, false));
+            }
+        }
+
         return !proposals.isEmpty();
+    }
+
+    private boolean exactClassExists(GroovyIndex index) {
+        Set<IndexedClass> classes = index.getClasses(context.getPrefix(), QuerySupport.Kind.PREFIX);
+        for (IndexedClass indexedClass : classes) {
+            if (indexedClass.getName().equals(context.getPrefix())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private List<String> getAllImports() {
@@ -285,7 +330,7 @@ public class MethodCompletion extends BaseCompletion {
 
     private void addConstructorProposal(String constructorName, ExecutableElement encl) {
         String paramListString = getParameterListForMethod(encl);
-        List<ParameterDescriptor> paramList = getParameterList(encl);
+        List<MethodParameter> paramList = getParameterList(encl);
         
         ConstructorItem constructor = new ConstructorItem(constructorName, paramListString, paramList, anchor, false);
         if (!proposals.contains(constructor)) {
@@ -306,7 +351,7 @@ public class MethodCompletion extends BaseCompletion {
             for (ConstructorNode constructor : classNode.getDeclaredConstructors()) {
                 Parameter[] parameters = constructor.getParameters();
                 String paramListString = getParameterListStringForMethod(parameters);
-                List<ParameterDescriptor> paramList = getParameterListForMethod(parameters);
+                List<MethodParameter> paramList = getParameterListForMethod(parameters);
 
                 proposals.add(new ConstructorItem(constructorName, paramListString, paramList, anchor, false));
             }
@@ -351,8 +396,8 @@ public class MethodCompletion extends BaseCompletion {
      * @param exe executable element
      * @return list of <code>ParameterDescriptor</code>'s
      */
-    private List<CompletionItem.ParameterDescriptor> getParameterList(ExecutableElement exe) {
-        List<CompletionItem.ParameterDescriptor> paramList = new ArrayList<>();
+    private List<MethodParameter> getParameterList(ExecutableElement exe) {
+        List<MethodParameter> paramList = new ArrayList<>();
 
         if (exe != null) {
             try {
@@ -374,7 +419,7 @@ public class MethodCompletion extends BaseCompletion {
                     // todo: this needs to be replaced with values from the JavaDoc
                     String varName = "param" + String.valueOf(i);
 
-                    paramList.add(new CompletionItem.ParameterDescriptor(fullName, name, varName));
+                    paramList.add(new MethodParameter(fullName, name, varName));
 
                     i++;
                 }
@@ -449,18 +494,18 @@ public class MethodCompletion extends BaseCompletion {
      * @param parameters array of parameters
      * @return list of <code>ParameterDescription</code>'s
      */
-    private List<ParameterDescriptor> getParameterListForMethod(Parameter[] parameters) {
+    private List<MethodParameter> getParameterListForMethod(Parameter[] parameters) {
         if (parameters.length == 0) {
             return Collections.EMPTY_LIST;
         }
 
-        List<ParameterDescriptor> paramDescriptors = new ArrayList<>();
+        List<MethodParameter> paramDescriptors = new ArrayList<>();
         for (Parameter param : parameters) {
             String fullTypeName = param.getType().getName();
             String typeName = param.getType().getNameWithoutPackage();
             String name = param.getName();
 
-            paramDescriptors.add(new ParameterDescriptor(fullTypeName, typeName, name));
+            paramDescriptors.add(new MethodParameter(fullTypeName, typeName, name));
         }
         return paramDescriptors;
     }
