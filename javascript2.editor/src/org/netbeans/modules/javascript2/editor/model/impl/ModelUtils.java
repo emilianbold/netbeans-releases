@@ -1157,6 +1157,9 @@ public class ModelUtils {
      */
     public static Collection <? extends TypeUsage> getTypeFromWith(Model model, int offset) {
         JsObject jsObject = ModelUtils.findJsObject(model, offset);
+        while (jsObject != null && jsObject.isAnonymous() && jsObject.getJSKind() != JsElement.Kind.WITH_OBJECT) {
+            jsObject = ModelUtils.findJsObject(model, jsObject.getOffset() - 1);
+        }
         while(jsObject != null && jsObject.getJSKind() != JsElement.Kind.WITH_OBJECT) {
             jsObject = jsObject.getParent();
         }
