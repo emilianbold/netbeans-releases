@@ -59,6 +59,8 @@ import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
+import org.netbeans.modules.maven.api.execute.RunConfig;
+import org.netbeans.modules.maven.api.execute.RunUtils;
 import org.netbeans.modules.maven.jaxws.MavenJAXWSSupportImpl;
 import org.netbeans.modules.maven.jaxws.MavenModelUtils;
 import org.netbeans.modules.maven.jaxws.MavenWebService;
@@ -561,6 +563,18 @@ public class JaxWsClientNode extends AbstractNode implements OpenCookie, Refresh
             DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(
                     NbBundle.getMessage(JaxWsClientNode.class, "MSG_RefreshClient")));        
             updateNode();
+        }
+        
+        if (wsdlFileObject != null) {
+            // execute wsimport goal
+            Project project = FileOwnerQuery.getOwner(wsdlFileObject);
+            RunConfig cfg = RunUtils.createRunConfig(FileUtil.toFile(
+                    project.getProjectDirectory()),
+                    project,
+                    "JAX-WS:wsimport", //NOI18N
+                    Collections.singletonList("compile")); //NOI18N
+
+            RunUtils.executeMaven(cfg);
         }
     }
     
