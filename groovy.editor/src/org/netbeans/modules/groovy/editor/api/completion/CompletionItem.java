@@ -63,6 +63,7 @@ import org.netbeans.modules.groovy.editor.api.elements.ast.ASTMethod;
 import org.netbeans.modules.groovy.editor.api.elements.ElementHandleSupport;
 import org.netbeans.modules.groovy.editor.api.elements.GroovyElement;
 import org.netbeans.modules.groovy.editor.api.elements.KeywordElement;
+import org.netbeans.modules.groovy.editor.api.elements.common.MethodElement.MethodParameter;
 import org.netbeans.modules.groovy.editor.java.Utilities;
 import org.netbeans.modules.groovy.editor.utils.GroovyUtils;
 import org.netbeans.modules.groovy.support.api.GroovySources;
@@ -704,10 +705,10 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         private final boolean expand; // should this item expand to a constructor body?
         private final String name;
         private final String paramListString;
-        private final List<ParameterDescriptor> paramList;
+        private final List<MethodParameter> paramList;
 
         
-        public ConstructorItem(String name, String paramListString, List<ParameterDescriptor> paramList, int anchorOffset, boolean expand) {
+        public ConstructorItem(String name, String paramListString, List<MethodParameter> paramList, int anchorOffset, boolean expand) {
             super(null, anchorOffset);
             this.name = name;
             this.expand = expand;
@@ -778,11 +779,11 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
             // sb.append("${cursor}"); // NOI18N
 
             if (paramList != null) {
-                for (ParameterDescriptor paramDesc : paramList) {
+                for (MethodParameter paramDesc : paramList) {
 
                     LOG.log(Level.FINEST, "-------------------------------------------------------------------");
-                    LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.getFullTypeName());
-                    LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.getTypeName());
+                    LOG.log(Level.FINEST, "paramDesc.fullTypeName : {0}", paramDesc.getFqnType());
+                    LOG.log(Level.FINEST, "paramDesc.typeName     : {0}", paramDesc.getType());
                     LOG.log(Level.FINEST, "paramDesc.name         : {0}", paramDesc.getName());
 
                     sb.append("${"); //NOI18N
@@ -1055,32 +1056,6 @@ public abstract class CompletionItem extends DefaultCompletionProposal {
         @Override
         public Set<Modifier> getModifiers() {
             return Collections.emptySet();
-        }
-    }
-
-    public static class ParameterDescriptor {
-
-        private final String fullTypeName;
-        private final String typeName;
-        private final String name;
-        
-
-        public ParameterDescriptor(String fullTypeName, String typeName, String name) {
-            this.fullTypeName = fullTypeName;
-            this.typeName = typeName;
-            this.name = name;
-        }
-
-        public String getName() {
-            return name;
-        }
-
-        public String getTypeName() {
-            return typeName;
-        }
-
-        public String getFullTypeName() {
-            return fullTypeName;
         }
     }
 }

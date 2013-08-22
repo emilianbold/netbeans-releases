@@ -626,6 +626,46 @@ public class Css3ParserLessTest extends CssTestBase {
                 + "}");
     }
 
+    public void testRuleParsedAsMixin() {
+        assertParses(".bar,\n"
+                + "    .baz {\n"
+                + "        width: 100%;\n"
+                + "    }\n");
+
+        assertParses("#foo {\n"
+                + "    .bar, .baz {\n"
+                + "        width: 100%;\n"
+                + "    }\n"
+                + "}");
+
+        assertParses("#foo {\n"
+                + "    .bar,\n"
+                + "    .baz {\n"
+                + "        width: 100%;\n"
+                + "    }\n"
+                + "}");
+    }
+
+    //https://netbeans.org/bugzilla/show_bug.cgi?id=234712
+    //so far closed as INVALID -- seems to be an erroneous sample
+//    public void testDotInMixinName() {
+//        assertParses("a.bar {\n"
+//                + "    color: red;\n"
+//                + "}\n"
+//                + "\n"
+//                + ".foo {\n"
+//                + "    a.bar;\n"
+//                + "}");
+//    }
+
+    public void testEscapedString() {
+        assertParses("@str: \"hello\";");
+        
+        assertParses("@var: ~\"xyz\";");
+        
+        assertParses("@var: ~`\"@{str}\".toUpperCase() + '!'`;");
+    }
+
 //    //https://netbeans.org/bugzilla/show_bug.cgi?id=227510#c10 / case#18
 //    public void testMixinCallAsSelector() {
 //        assertParses(".x { #gradient > .vertical(#f5f5f5, #eeeeee); }");
@@ -634,5 +674,4 @@ public class Css3ParserLessTest extends CssTestBase {
 //                + "#gradient > .vertical(#f5f5f5, #eeeeee);\n"
 //                + "}");
 //    }
-
 }

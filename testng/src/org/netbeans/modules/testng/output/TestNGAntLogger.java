@@ -423,7 +423,7 @@ public final class TestNGAntLogger extends AntLogger {
             } catch (Exception e) {
             }
             Properties props = new Properties();
-            String[] propsOfInterest = {"javac.includes", "classname", "methodname", "work.dir", "classpath", "platform.java", "test.includes"};//NOI18N
+            String[] propsOfInterest = {"test.class", "test.methods", "javac.includes", "classname", "methodname", "work.dir", "classpath", "platform.java", "test.includes"};//NOI18N
             for(String prop:propsOfInterest) {
                 String val = event.getProperty(prop);
                 if (val!=null) {
