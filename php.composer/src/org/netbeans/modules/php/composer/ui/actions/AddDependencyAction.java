@@ -58,7 +58,7 @@ public class AddDependencyAction extends BaseComposerAction {
 
     @Override
     protected void runCommand(PhpModule phpModule) throws InvalidPhpExecutableException {
-        AddDependencyPanel.open(phpModule);
+        DependenciesPanel.openForModule(phpModule);
     }
 
 }

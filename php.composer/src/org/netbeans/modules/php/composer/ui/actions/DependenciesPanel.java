@@ -110,7 +110,7 @@ import org.openide.util.RequestProcessor;
 /**
  * UI for Composer search command.
  */
-public final class AddDependencyPanel extends JPanel {
+public final class DependenciesPanel extends JPanel {
 
     private static final long serialVersionUID = -4572187014657456L;
 
@@ -128,13 +128,13 @@ public final class AddDependencyPanel extends JPanel {
     // @GuardedBy("EDT")
     private final VersionComboBoxModel versionsModel = new VersionComboBoxModel();
     // tasks
-    private final RequestProcessor postSearchRequestProcessor = new RequestProcessor(AddDependencyPanel.class.getName() + " (POST SEARCH)"); // NOI18N
-    private final RequestProcessor postShowRequestProcessor = new RequestProcessor(AddDependencyPanel.class.getName() + " (POST SHOW)"); // NOI18N
+    private final RequestProcessor postSearchRequestProcessor = new RequestProcessor(DependenciesPanel.class.getName() + " (POST SEARCH)"); // NOI18N
+    private final RequestProcessor postShowRequestProcessor = new RequestProcessor(DependenciesPanel.class.getName() + " (POST SHOW)"); // NOI18N
     private final List<Future<Integer>> searchTasks = new CopyOnWriteArrayList<>();
     private final List<Future<Integer>> showTasks = new CopyOnWriteArrayList<>();
 
 
-    private AddDependencyPanel(@NullAllowed PhpModule phpModule) {
+    private DependenciesPanel(@NullAllowed PhpModule phpModule) {
 
         this.phpModule = phpModule;
 
@@ -142,19 +142,19 @@ public final class AddDependencyPanel extends JPanel {
         init();
     }
 
-    public static AddDependencyPanel create() {
-        return new AddDependencyPanel(null);
+    public static DependenciesPanel create() {
+        return new DependenciesPanel(null);
     }
 
     @NbBundle.Messages({
         "# {0} - project name",
         "AddDependencyPanel.panel.title=Composer Packages ({0})",
     })
-    public static void open(PhpModule phpModule) {
+    public static void openForModule(PhpModule phpModule) {
         assert EventQueue.isDispatchThread();
         assert phpModule != null;
 
-        AddDependencyPanel searchPanel = new AddDependencyPanel(phpModule);
+        DependenciesPanel searchPanel = new DependenciesPanel(phpModule);
         Object[] options = new Object[] {
             searchPanel.requireButton,
             searchPanel.requireDevButton,
@@ -176,7 +176,7 @@ public final class AddDependencyPanel extends JPanel {
         dialog.setVisible(true);
     }
 
-    private static void setDefaultButton(Dialog dialog, final AddDependencyPanel searchPanel) {
+    private static void setDefaultButton(Dialog dialog, final DependenciesPanel searchPanel) {
         if (dialog instanceof JDialog) {
             JRootPane rootPane = ((JDialog) dialog).getRootPane();
             rootPane.getInputMap(JComponent.WHEN_ANCESTOR_OF_FOCUSED_COMPONENT).put(KeyStroke.getKeyStroke(KeyEvent.VK_ENTER, 0), "search"); // NOI18N
@@ -198,7 +198,7 @@ public final class AddDependencyPanel extends JPanel {
         }
     }
 
-    private static void handleKeepOpen(final Dialog dialog, final AddDependencyPanel searchPanel) {
+    private static void handleKeepOpen(final Dialog dialog, final DependenciesPanel searchPanel) {
         ActionListener keepOpenActionListener = new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -588,14 +588,14 @@ public final class AddDependencyPanel extends JPanel {
         versionLabel = new JLabel();
         versionComboBox = new JComboBox<String>();
 
-        Mnemonics.setLocalizedText(requireDevButton, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.requireDevButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(requireDevButton, NbBundle.getMessage(DependenciesPanel.class, "DependenciesPanel.requireDevButton.text")); // NOI18N
         requireDevButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 requireDevButtonActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(requireButton, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.requireButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(requireButton, NbBundle.getMessage(DependenciesPanel.class, "DependenciesPanel.requireButton.text")); // NOI18N
         requireButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 requireButtonActionPerformed(evt);
@@ -603,20 +603,20 @@ public final class AddDependencyPanel extends JPanel {
         });
 
         keepOpenCheckBox.setSelected(true);
-        Mnemonics.setLocalizedText(keepOpenCheckBox, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.keepOpenCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(keepOpenCheckBox, NbBundle.getMessage(DependenciesPanel.class, "DependenciesPanel.keepOpenCheckBox.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(tokenLabel, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.tokenLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(tokenLabel, NbBundle.getMessage(DependenciesPanel.class, "DependenciesPanel.tokenLabel.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(onlyNameCheckBox, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.onlyNameCheckBox.text")); // NOI18N
+        Mnemonics.setLocalizedText(onlyNameCheckBox, NbBundle.getMessage(DependenciesPanel.class, "DependenciesPanel.onlyNameCheckBox.text")); // NOI18N
 
-        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.searchButton.text")); // NOI18N
+        Mnemonics.setLocalizedText(searchButton, NbBundle.getMessage(DependenciesPanel.class, "DependenciesPanel.searchButton.text")); // NOI18N
         searchButton.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent evt) {
                 searchButtonActionPerformed(evt);
             }
         });
 
-        Mnemonics.setLocalizedText(packagesLabel, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.packagesLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(packagesLabel, NbBundle.getMessage(DependenciesPanel.class, "DependenciesPanel.packagesLabel.text")); // NOI18N
 
         outputSplitPane.setOrientation(JSplitPane.VERTICAL_SPLIT);
         outputSplitPane.setResizeWeight(0.5);
@@ -638,7 +638,7 @@ public final class AddDependencyPanel extends JPanel {
         outputSplitPane.setBottomComponent(detailsScrollPane);
 
         versionLabel.setLabelFor(versionComboBox);
-        Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(AddDependencyPanel.class, "AddDependencyPanel.versionLabel.text")); // NOI18N
+        Mnemonics.setLocalizedText(versionLabel, NbBundle.getMessage(DependenciesPanel.class, "DependenciesPanel.versionLabel.text")); // NOI18N
 
         GroupLayout layout = new GroupLayout(this);
         this.setLayout(layout);
