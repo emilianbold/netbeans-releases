@@ -43,6 +43,7 @@ package org.netbeans.modules.editor.bookmarks;
 
 import java.util.Comparator;
 import org.openide.filesystems.FileObject;
+import org.openide.text.Annotation;
 import org.openide.util.NbBundle;
 
 /**
@@ -82,6 +83,8 @@ public final class BookmarkInfo {
     private String key;
 
     private FileBookmarks fileBookmarks;
+    
+    private Annotation annotation;
     
     private BookmarkInfo(int id, String name, int lineIndex, String key) {
         this.id = id;
@@ -173,7 +176,15 @@ public final class BookmarkInfo {
         }
         return description.toString();
     }
-    
+
+    public void setAnnotation(Annotation annotation) {
+        this.annotation = annotation;
+    }
+
+    public Annotation getAnnotation() {
+        return annotation;
+    }
+  
     public String getFullPathDescription() {
         if (this != BOOKMARKS_WINDOW) {
             FileObject fo = getFileBookmarks().getFileObject();
