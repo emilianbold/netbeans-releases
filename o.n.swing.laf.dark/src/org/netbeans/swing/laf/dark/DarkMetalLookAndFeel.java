@@ -41,7 +41,11 @@
  */
 package org.netbeans.swing.laf.dark;
 
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.plaf.metal.MetalLookAndFeel;
+import static javax.swing.plaf.metal.MetalLookAndFeel.getCurrentTheme;
+import static javax.swing.plaf.metal.MetalLookAndFeel.setCurrentTheme;
 import org.openide.util.NbBundle;
 
 /**
@@ -58,6 +62,26 @@ public class DarkMetalLookAndFeel extends MetalLookAndFeel {
 
     @Override
     protected void createDefaultTheme() {
-        setCurrentTheme( new DarkMetalTheme() );
+        super.createDefaultTheme();
+        if( !(getCurrentTheme() instanceof DarkMetalTheme) )
+            setCurrentTheme( new DarkMetalTheme() );
     }
+
+    @Override
+    public UIDefaults getDefaults() {
+//        if( !(getCurrentTheme() instanceof DarkMetalTheme) )
+//            setCurrentTheme( new DarkMetalTheme() );
+        UIDefaults defaults = super.getDefaults(); //To change body of generated methods, choose Tools | Templates.
+//        new DarkMetalTheme().addCustomEntriesToTable( defaults );
+        return defaults;
+    }
+
+    @Override
+    public void initialize() {
+        super.initialize(); //To change body of generated methods, choose Tools | Templates.
+//        setCurrentTheme( new DarkMetalTheme() );
+//        new DarkMetalTheme().addCustomEntriesToTable( UIManager.getDefaults() );
+    }
+
+
 }
