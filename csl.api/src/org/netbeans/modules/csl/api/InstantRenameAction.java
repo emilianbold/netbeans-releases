@@ -143,6 +143,8 @@ public class InstantRenameAction extends BaseAction {
                 
             };
             target.getDocument().addDocumentListener(dl);
+            
+            final InstantRenamer[] renamer = new InstantRenamer[1];
             try {
                 do {
                     changed.set(0);
@@ -182,26 +184,19 @@ public class InstantRenameAction extends BaseAction {
                                         }
                                         ParserResult parserResult = (ParserResult)result;
 
-                                        InstantRenamer renamer = language.getInstantRenamer();
-                                        assert renamer != null;
+                                        renamer[0] = language.getInstantRenamer();
+                                        assert renamer[0] != null;
 
                                         String[] descRetValue = new String[1];
 
-                                        if (!renamer.isRenameAllowed(parserResult, caret, descRetValue)) {
+                                        if (!renamer[0].isRenameAllowed(parserResult, caret, descRetValue)) {
                                             return;
                                         }
 
-                                        Set<OffsetRange> regions = renamer.getRenameRegions(parserResult, caret);
+                                        Set<OffsetRange> regions = renamer[0].getRenameRegions(parserResult, caret);
 
                                         if ((regions != null) && (regions.size() > 0)) {
                                             changePoints[0] = regions;
-                                            // sanity check the regions against snaphost size, see #227890
-                                            int maxLen = parserResult.getSnapshot().getText().length();
-                                            for (OffsetRange r : regions) {
-                                                if (r.getStart() >= maxLen || r.getEnd() >= maxLen) {
-                                                    throw new IllegalArgumentException("Bad OffsetRange provided by " + renamer + ": " + r + ", docLen=" + maxLen);
-                                                }
-                                            }
                                         }
 
                                         break; //the for break
@@ -213,11 +208,20 @@ public class InstantRenameAction extends BaseAction {
 
                     if (changePoints[0] != null) {
                         final BadLocationException[] exc = new BadLocationException[1];
-                        target.getDocument().render(new Runnable() {
+                        final BaseDocument baseDoc = (BaseDocument)target.getDocument();
+                        baseDoc.render(new Runnable() {
                             public void run() {
                                 try {
                                     // writers are now locked out, check mod flag:
                                     if (changed.get() == 0) {
+                                        // sanity check the regions against snaphost size, see #227890; OffsetRange contains document positions.
+                                        // if no document change happened, then offsets must be correct and within doc bounds.
+                                        int maxLen = baseDoc.getLength();
+                                        for (OffsetRange r : changePoints[0]) {
+                                            if (r.getStart() >= maxLen || r.getEnd() >= maxLen) {
+                                                throw new IllegalArgumentException("Bad OffsetRange provided by " + renamer[0] + ": " + r + ", docLen=" + maxLen);
+                                            }
+                                        }
                                         doInstantRename(changePoints[0], target, caret, ident);
                                         // don't loop even if there's a modification
                                         changed.set(2);
