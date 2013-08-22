@@ -39,49 +39,40 @@
  *
  * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
-package org.netbeans.swing.laf.dark;
+package org.netbeans.modules.apisupport.project.layers;
 
-import javax.swing.UIDefaults;
-import javax.swing.UIManager;
-import javax.swing.plaf.metal.MetalLookAndFeel;
-import static javax.swing.plaf.metal.MetalLookAndFeel.getCurrentTheme;
-import static javax.swing.plaf.metal.MetalLookAndFeel.setCurrentTheme;
-import org.openide.util.NbBundle;
+import javax.swing.Action;
+import org.openide.nodes.FilterNode;
+import org.openide.nodes.Node;
+import org.openide.util.actions.SystemAction;
 
 /**
- * Dark-themed Metal look and feel.
- * 
- * @author S. Aubrecht
+ *
+ * @author mkozeny
  */
-public class DarkMetalLookAndFeel extends MetalLookAndFeel {
+public class LayerFilterNode extends FilterNode {
 
-    @Override
-    public String getName() {
-        return NbBundle.getMessage(DarkMetalLookAndFeel.class, "LBL_DARK_METAL");
+    LayerFilterNode(Node original) {
+        super(original, org.openide.nodes.Children.LEAF == original.getChildren()
+                ? org.openide.nodes.Children.LEAF : new LayerFilterNodeChildren(original));
     }
 
     @Override
-    protected void createDefaultTheme() {
-        super.createDefaultTheme();
-        if( !(getCurrentTheme() instanceof DarkMetalTheme) )
-            setCurrentTheme( new DarkMetalTheme() );
+    public Action getPreferredAction() {
+        return SystemAction.get(OpenLayerFilesAction.class);
     }
 
-    @Override
-    public UIDefaults getDefaults() {
-//        if( !(getCurrentTheme() instanceof DarkMetalTheme) )
-//            setCurrentTheme( new DarkMetalTheme() );
-        UIDefaults defaults = super.getDefaults(); //To change body of generated methods, choose Tools | Templates.
-//        new DarkMetalTheme().addCustomEntriesToTable( defaults );
-        return defaults;
-    }
+    private static class LayerFilterNodeChildren extends FilterNode.Children {
 
-    @Override
-    public void initialize() {
-        super.initialize(); //To change body of generated methods, choose Tools | Templates.
-//        setCurrentTheme( new DarkMetalTheme() );
-//        new DarkMetalTheme().addCustomEntriesToTable( UIManager.getDefaults() );
-    }
+        LayerFilterNodeChildren(Node orig) {
+            super(orig);
+        }
 
+        @Override
+        protected Node copyNode(Node node) {
+            return new LayerFilterNode(node);
+        }
+
+    }
 
 }

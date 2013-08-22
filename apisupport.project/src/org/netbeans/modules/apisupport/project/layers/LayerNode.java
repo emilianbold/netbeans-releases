@@ -140,7 +140,7 @@ public final class LayerNode extends FilterNode implements Node.Cookie {
         }
 
         @Override protected Node createNodeForKey(DataObject key) {
-            return key.getNodeDelegate();
+            return new LayerFilterNode(key.getNodeDelegate());
         }
 
     }

@@ -48,7 +48,8 @@ import javax.swing.JLabel;
 import javax.swing.UIDefaults;
 import javax.swing.UIManager;
 import javax.swing.plaf.ColorUIResource;
-import javax.swing.plaf.metal.DefaultMetalTheme;
+import javax.swing.plaf.FontUIResource;
+import javax.swing.plaf.metal.MetalTheme;
 import javax.swing.text.html.HTMLEditorKit;
 import javax.swing.text.html.StyleSheet;
 
@@ -56,7 +57,7 @@ import javax.swing.text.html.StyleSheet;
  *
  * @author S. Aubrecht, P. Somol
  */
-public class DarkMetalTheme extends DefaultMetalTheme {
+public class DarkMetalTheme extends MetalTheme {
 
     private final ColorUIResource primary1 = new ColorUIResource( 121, 121, 125 );
     private final ColorUIResource primary2 = new ColorUIResource( 71, 71, 75 );
@@ -250,4 +251,36 @@ public class DarkMetalTheme extends DefaultMetalTheme {
     protected ColorUIResource getBlack() {
         return black;
     }
+
+    @Override
+    public FontUIResource getControlTextFont() {
+        return DEFAULT_FONT;
+    }
+
+    @Override
+    public FontUIResource getSystemTextFont() {
+        return DEFAULT_FONT;
+    }
+
+    @Override
+    public FontUIResource getUserTextFont() {
+        return DEFAULT_FONT;
+    }
+
+    @Override
+    public FontUIResource getMenuTextFont() {
+        return DEFAULT_FONT;
+    }
+
+    @Override
+    public FontUIResource getWindowTitleFont() {
+        return DEFAULT_FONT;
+    }
+
+    @Override
+    public FontUIResource getSubTextFont() {
+        return DEFAULT_FONT;
+    }
+
+    private final static FontUIResource DEFAULT_FONT = new FontUIResource("Dialog", Font.PLAIN, 11); //NOI18N
 }
