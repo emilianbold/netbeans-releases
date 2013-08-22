@@ -258,7 +258,7 @@ final class HtmlStructureItem implements StructureItem {
         return value != null ? value.toString() : null;
     }
 
-    private List<OpenTag> gatherNonVirtualChildren(Node element) {
+    static List<OpenTag> gatherNonVirtualChildren(Node element) {
         List<OpenTag> collected = new LinkedList<>();
         for (OpenTag child : element.children(OpenTag.class)) {
             if (child.type() == ElementType.OPEN_TAG) {

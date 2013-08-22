@@ -122,9 +122,11 @@ public class HtmlStructureScanner implements StructureScanner {
         FileObject file = snapshot.getSource().getFileObject();
         List<HtmlStructureItem> elements = new ArrayList<>();
         for (OpenTag tag : root.children(OpenTag.class)) {
-            HtmlElementHandle handle = new HtmlElementHandle(tag, file);
-            HtmlStructureItem si = new HtmlStructureItem(tag, handle, snapshot);
-            elements.add(si);
+            if (!(ElementUtils.isVirtualNode(tag) && HtmlStructureItem.gatherNonVirtualChildren(tag).isEmpty())) { //ignore childless virtual elements
+                HtmlElementHandle handle = new HtmlElementHandle(tag, file);
+                HtmlStructureItem si = new HtmlStructureItem(tag, handle, snapshot);
+                elements.add(si);
+            }
         }
 
         //cache
