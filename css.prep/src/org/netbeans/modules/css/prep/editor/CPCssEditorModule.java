@@ -155,7 +155,9 @@ public class CPCssEditorModule extends CssEditorModule {
                     return Utilities.filterCompletionProposals(allVars, context.getPrefix(), true);
                 }
                     break;
-
+            }
+            case AT_SIGN:
+                switch (first) {
                 case '@':
                     //may be:
                     //1. @-rule beginning
@@ -202,6 +204,7 @@ public class CPCssEditorModule extends CssEditorModule {
         switch (activeNode.type()) {
             case bodyItem:
             case mediaBody:
+            case mediaBodyItem:
                 switch (tid) {
                 case WS:
                     //in stylesheet main body: @include |
@@ -601,9 +604,9 @@ public class CPCssEditorModule extends CssEditorModule {
                                                         locations.add(
                                                                 Pair.of(
                                                                 new CPCslElementHandle(
-                                                                file, 
-                                                                var.getName(), 
-                                                                element.getRange(), 
+                                                                file,
+                                                                var.getName(),
+                                                                element.getRange(),
                                                                 var.getType()),
                                                                 result.getSnapshot()
                                                                 ));
@@ -621,7 +624,7 @@ public class CPCssEditorModule extends CssEditorModule {
                         if (locations.isEmpty()) {
                             return DeclarationLocation.NONE;
                         } else {
-                           Iterator<Pair<CPCslElementHandle, Snapshot>> itr = locations.iterator();
+                            Iterator<Pair<CPCslElementHandle, Snapshot>> itr = locations.iterator();
                             DeclarationLocation main = null;
 
                             while (itr.hasNext()) {

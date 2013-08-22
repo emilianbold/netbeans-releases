@@ -59,8 +59,8 @@ public class CssCompletionTest extends CssModuleTestBase {
 
     public void testAtRules() throws ParseException {
         checkCC("|", AT_RULES, Match.CONTAINS);
-        checkCC("@|", AT_RULES, Match.CONTAINS);
-        checkCC("@pa|", new String[]{"@page"}, Match.EXACT);
+        checkCC("@| ", AT_RULES, Match.CONTAINS);
+        checkCC("@pa| ", new String[]{"@page"}, Match.EXACT);
 
         checkCC("|  h1 { }", AT_RULES, Match.CONTAINS);
         checkCC("@| h1 { }", AT_RULES, Match.CONTAINS);

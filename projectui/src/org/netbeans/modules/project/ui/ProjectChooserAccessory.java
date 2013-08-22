@@ -551,6 +551,12 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
 
         @Override
         public Icon getIcon(File f) {
+            synchronized (this) { //#233480 to reduce number of calls to IO layer
+                Icon icon = knownProjectIcons.get(f);
+                if (icon != null) {
+                    return icon;
+                }
+            }
             if (!f.exists()) {
                 //#159646: Workaround for JDK issue #6357445
                 // Can happen when a file was deleted on disk while project
@@ -558,14 +564,12 @@ public class ProjectChooserAccessory extends javax.swing.JPanel
                 // repeatedly from FSV.gSI during repaint.
                 return null;
             }
-            if (f.isDirectory() && // #173958: do not call ProjectManager.isProject now, could block
-                    !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc.
-                    f.getParentFile() != null) { // do not consider drive roots
+            if ( 
+                   !f.toString().matches("/[^/]+") && // Unix: /net, /proc, etc.
+                    f.getParentFile() != null && // do not consider drive roots
+                    f.isDirectory()) { // #173958: do not call ProjectManager.isProject now, could block
                 synchronized (this) {
-                    Icon icon = knownProjectIcons.get(f);
-                    if (icon != null) {
-                        return icon;
-                    } else if (lookingForIcon == null) {
+                    if (lookingForIcon == null) {
                         lookingForIcon = f;
                         task.schedule(20);
                         // Only calculate one at a time.

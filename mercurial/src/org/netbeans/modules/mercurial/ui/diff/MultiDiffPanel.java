@@ -187,6 +187,7 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     private static final int VIEW_MODE_TABLE = 1;
     private static final int VIEW_MODE_TREE = 2;
     private int currentSetupDiffLengthChanged;
+    private int lastDividerLoc;
     
     /**
      * Creates diff panel and immediatelly starts loading...
@@ -577,6 +578,14 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
         JComponent parent = (JComponent) getParent();
         parent.getActionMap().put("jumpNext", nextAction);  // NOI18N
         parent.getActionMap().put("jumpPrev", prevAction); // NOI18N
+        if (splitPane != null && lastDividerLoc != 0) {
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run () {
+                    splitPane.setDividerLocation(lastDividerLoc);
+                }
+            });
+        }
     }
 
     private void updateSplitLocation() {
@@ -608,6 +617,9 @@ public class MultiDiffPanel extends javax.swing.JPanel implements ActionListener
     
     @Override
     public void removeNotify() {
+        if (splitPane != null) {
+            lastDividerLoc = splitPane.getDividerLocation();
+        }
         Mercurial.getInstance().getFileStatusCache().removePropertyChangeListener(this);
         if (refreshTask != null) {
             HgModuleConfig.getDefault().getPreferences().removePreferenceChangeListener(this);

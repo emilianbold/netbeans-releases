@@ -45,6 +45,7 @@ package org.netbeans.modules.cordova.updatetask;
 import java.io.File;
 import java.io.IOException;
 import org.apache.tools.ant.BuildException;
+import org.apache.tools.ant.taskdefs.ExecTask;
 
 /**
  * 
@@ -67,10 +68,26 @@ public class ReadConfigTask extends CordovaTask {
             final String path = PluginTask.isWin()?"env.Path":"env.PATH";
             final String pathKey = PluginTask.isWin()?"Path":"PATH";
             setProperty("cordova.path.key", pathKey);
-            setProperty("cordova.path.value", getProperty(path));
+            setProperty("cordova.path.value", PluginTask.isMac()?getMacPath(path):getProperty(path));
         } catch (IOException ex) {
             throw new BuildException(ex);
         }
-        
+    }
+    
+    private String getMacPath(String path) {
+        ExecTask exec = (ExecTask) getProject().createTask("exec");
+        exec.setExecutable("/bin/bash");
+        exec.createArg().setLine("-lc env");
+        exec.setOutputproperty("mac.path");
+        exec.execute();
+        String property = getProperty("mac.path");
+        if (property != null) {
+            for (String line : property.split(System.getProperty("line.separator"))) {
+                if (line.startsWith("PATH=")) {
+                    return line.substring(5);
+                }
+            }
+        }
+        return getProperty(path);
     }
 }

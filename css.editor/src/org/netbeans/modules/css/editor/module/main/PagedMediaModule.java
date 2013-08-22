@@ -101,10 +101,19 @@ public class PagedMediaModule extends ExtCssEditorModule implements CssModule {
     @Override
     public List<CompletionProposal> getCompletionProposals(CompletionContext context) {
         List<CompletionProposal> proposals = new ArrayList<>();
+        
         Node activeNode = context.getActiveNode();
-        boolean isError = activeNode.type() == NodeType.error;
-        if (isError) {
-            activeNode = activeNode.parent();
+        //switch to first non error node
+        loop:
+        for (;;) {
+            switch (activeNode.type()) {
+                case error:
+                case recovery:
+                    activeNode = activeNode.parent();
+                    break;
+                default:
+                    break loop;
+            }
         }
         String prefix = context.getPrefix(); //default
         Token<CssTokenId> token = context.getTokenSequence().token();
@@ -135,7 +144,7 @@ public class PagedMediaModule extends ExtCssEditorModule implements CssModule {
                     case PAGE_SYM: //just after @page keyword: @page|
                         proposals.addAll(getPagePseudoClassCompletionProposals(context, true));
                         break;
-                    case ERROR:
+                    case AT_SIGN:
                         //@page { @|  }
                         if (token.text().charAt(0) == '@') {
                             proposals.addAll(getPageMarginSymbolsCompletionProposals(context, true));
@@ -144,6 +153,7 @@ public class PagedMediaModule extends ExtCssEditorModule implements CssModule {
                 }
                 break;
             case pseudoPage:
+            case bodyItem:
                 switch (tokenId) {
                     case COLON: //just after colon: @page :|
                     case IDENT: //in the page pseudo class: @page:fir|
