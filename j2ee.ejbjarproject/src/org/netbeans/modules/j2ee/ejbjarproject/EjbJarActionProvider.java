@@ -69,12 +69,9 @@ import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.LookupProvider;
 import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.SingleMethod;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
 
 
@@ -260,8 +257,22 @@ public class EjbJarActionProvider extends BaseActionProvider {
             command.equals(COMMAND_PROFILE_TEST_SINGLE)) {
             setDirectoryDeploymentProperty(p);
         }
+        if (command.equals(COMMAND_RUN_SINGLE) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_PROFILE_SINGLE)) {
+            if (!checkSelectedServer(
+                    command.equals(COMMAND_DEBUG_SINGLE), command.equals(COMMAND_PROFILE_SINGLE))) {
+                return null;
+            }
+        } else if (command.equals(COMMAND_PROFILE)) {
+            if (!checkSelectedServer(false, true)) {
+                return null;
+            }
+        } else if (command.equals(COMMAND_DEBUG)) {
+            if (!checkSelectedServer(true, false)) {
+                return null;
+            }
+        }
         if (command.equals(COMMAND_RUN) || command.equals(EjbProjectConstants.COMMAND_REDEPLOY)) {
-            if (!isSelectedServer()) {
+            if (!checkSelectedServer(false, false)) {
                 return null;
             }
             if (isDebugged()) {
@@ -332,31 +343,15 @@ public class EjbJarActionProvider extends BaseActionProvider {
         return false;
     }
     
-    private boolean isSelectedServer() {
-        String instance = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_INSTANCE);
-        if (instance != null) {
-            String id = Deployment.getDefault().getServerID(instance);
-            if (id != null) {
-                return true;
+    private boolean checkSelectedServer(boolean checkDebug, boolean checkProfile) {
+        return J2EEProjectProperties.checkSelectedServer(getProject(), getAntProjectHelper(),
+                project.getAPIEjbJar().getJ2eeProfile(), J2eeModule.Type.EJB, new J2EEProjectProperties.SetServerInstanceCallback() {
+
+            @Override
+            public void setServerInstance(String serverInstanceId) {
+                EjbJarActionProvider.this.setServerInstance(serverInstanceId);
             }
-        }
-        
-        // if there is some server instance of the type which was used
-        // previously do not ask and use it
-        String serverType = getAntProjectHelper().getStandardPropertyEvaluator().getProperty(EjbJarProjectProperties.J2EE_SERVER_TYPE);
-        if (serverType != null) {
-            String instanceID = J2EEProjectProperties.getMatchingInstance(
-                    serverType, J2eeModule.Type.EJB, project.getAPIEjbJar().getJ2eeProfile());
-            if (instanceID != null) {
-                setServerInstance(instanceID);
-                return true;
-            }
-        }
-        
-        // no selected server => warning
-        String msg = NbBundle.getMessage(EjbJarActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
-        DialogDisplayer.getDefault().notify(new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
-        return false;
+        }, checkDebug, checkProfile, false);
     }
     
     private void setServerInstance(final String serverInstanceId) {
