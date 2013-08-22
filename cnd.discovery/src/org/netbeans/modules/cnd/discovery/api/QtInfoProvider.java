@@ -89,7 +89,7 @@ public abstract class QtInfoProvider {
         return DEFAULT;
     }
 
-    public abstract List<String> getQtAdditionalMakroses(MakeConfiguration conf);
+    public abstract List<String> getQtAdditionalMacroses(MakeConfiguration conf);
 
     public abstract List<String> getQtIncludeDirectories(MakeConfiguration conf);
 
@@ -102,7 +102,7 @@ public abstract class QtInfoProvider {
         }
 
         @Override
-        public List<String> getQtAdditionalMakroses(MakeConfiguration conf) {
+        public List<String> getQtAdditionalMacroses(MakeConfiguration conf) {
             FileObject projectDir = conf.getBaseFSPath().getFileObject();
             if (projectDir != null && projectDir.isValid()) {
                 try {
