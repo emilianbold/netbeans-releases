@@ -46,7 +46,6 @@ package org.netbeans.modules.groovy.editor.api;
 
 import java.io.File;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
@@ -103,21 +102,6 @@ public class GroovyIndexerTest extends GroovyTestBase {
         Set<IndexedClass> classes = index.getAllClasses();
         assertEquals(5, classes.size());
     }
-    
-//    public void testQueryPath() throws Exception {
-//        GroovyIndexer indexer = new GroovyIndexer();
-//        assertTrue(indexer.acceptQueryPath("/foo/bar/baz"));
-//        assertFalse(indexer.acceptQueryPath("/foo/target/bar"));
-//        assertFalse(indexer.acceptQueryPath("/foo/art/bar"));
-//    }
-
-//    public void testProperties() throws Exception {
-//        FileObject fo = getTestFile("testfiles/indexer/Properties1.groovy");
-//        GsfTestCompilationInfo info = getInfo(fo);
-//        GroovyIndex index = new GroovyIndex(info.getIndex(GroovyTokenId.GROOVY_MIME_TYPE));
-//
-//        // FIXME
-//    }
     
     private GroovyIndex initIndex() throws Exception {
         indexFile(getTestPath());
