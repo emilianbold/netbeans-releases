@@ -47,7 +47,6 @@ import groovyjarjarasm.asm.Opcodes;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import org.codehaus.groovy.ast.ASTNode;
@@ -95,6 +94,9 @@ public class GroovyIndexer extends EmbeddingIndexer {
 
     // method
     static final String METHOD_NAME = "method"; //NOI18N
+
+    // constructor
+    static final String CONSTRUCTOR = "ctor"; //NOI18N
 
     // field
     static final String FIELD_NAME = "field"; //NOI18N
@@ -297,6 +299,9 @@ public class GroovyIndexer extends EmbeddingIndexer {
                     case METHOD:
                         indexMethod((ASTMethod) child, document);
                         break;
+                    case CONSTRUCTOR:
+                        indexConstructor((ASTMethod) child, document);
+                        break;
                     case FIELD:
                         indexField((ASTField) child, document);
                         break;
@@ -333,6 +338,26 @@ public class GroovyIndexer extends EmbeddingIndexer {
 
             // TODO - gather documentation on fields? naeh
             document.addPair(FIELD_NAME, sb.toString(), true, true);
+        }
+
+        private void indexConstructor(ASTMethod constructor, IndexDocument document) {
+            StringBuilder sb = new StringBuilder();
+            sb.append(constructor.getName());
+            sb.append(';');
+            for (String paramName : constructor.getParameterTypes()) {
+                sb.append(paramName);
+            }
+
+            Set<Modifier> modifiers = constructor.getModifiers();
+
+            int flags = getMethodModifiersFlag(modifiers);
+            if (flags != 0) {
+                sb.append(';');
+                sb.append(IndexedElement.flagToFirstChar(flags));
+                sb.append(IndexedElement.flagToSecondChar(flags));
+            }
+
+            document.addPair(CONSTRUCTOR, sb.toString(), true, true);
         }
 
         private void indexMethod(ASTMethod child, IndexDocument document) {

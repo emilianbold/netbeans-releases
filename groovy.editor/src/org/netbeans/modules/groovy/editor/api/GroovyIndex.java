@@ -45,14 +45,18 @@ package org.netbeans.modules.groovy.editor.api;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 import org.netbeans.modules.csl.api.Modifier;
+import org.netbeans.modules.groovy.editor.api.elements.common.MethodElement.MethodParameter;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedElement;
 import org.netbeans.modules.groovy.editor.api.elements.index.IndexedField;
@@ -244,7 +248,40 @@ public final class GroovyIndex {
 
         return classes;
     }
-    
+
+    /**
+     * For the given class name finds explicitely declared constructors.
+     *
+     * @param className name of the class
+     * @return explicitely declared constructors
+     */
+    public Set<IndexedMethod> getConstructors(final String className) {
+        final Set<IndexResult> indexResult = new HashSet<>();
+        final Set<IndexedMethod> result = new HashSet<>();
+
+        search(GroovyIndexer.CONSTRUCTOR, className, QuerySupport.Kind.PREFIX, indexResult);
+
+        for (IndexResult map : indexResult) {
+            String[] constructors = map.getValues(GroovyIndexer.CONSTRUCTOR);
+
+            for (String constructor : constructors) {
+                String paramList = constructor.substring(constructor.indexOf(";") + 1, constructor.length()); // NOI18N
+                String[] params = paramList.split(",");
+
+                List<MethodParameter> methodParams = new ArrayList<>();
+                for (String param : params) {
+                    if (!"".equals(param.trim())) { // NOI18N
+                        methodParams.add(new MethodParameter(param, GroovyUtils.stripPackage(param)));
+                    }
+                }
+
+                result.add(new IndexedMethod(map, className, className, "void", methodParams, "", 0));
+            }
+        }
+
+        return result;
+    }
+
     /**
      * Return a set of methods that match the given name prefix, and are in the given
      * class and module. If no class is specified, match methods across all classes.
@@ -587,8 +624,36 @@ public final class GroovyIndex {
             }
         }
 
-        IndexedMethod m = IndexedMethod.create(methodSignature, type, clz, map, attributes, flags);
-        return m;
+        return new IndexedMethod(map, clz, getMethodName(methodSignature), type, getMethodParameter(methodSignature), attributes, flags);
+    }
+
+    private String getMethodName(String methodSignature) {
+        int parenIndex = methodSignature.indexOf('(');
+        if (parenIndex == -1) {
+            return methodSignature;
+        } else {
+            return methodSignature.substring(0, parenIndex);
+        }
+    }
+
+    private List<MethodParameter> getMethodParameter(String methodSignature) {
+        int parenIndex = methodSignature.indexOf('('); // NOI18N
+        if (parenIndex == -1) {
+            return Collections.emptyList();
+        }
+
+        String argsPortion = methodSignature.substring(parenIndex + 1, methodSignature.length() - 1);
+        String[] args = argsPortion.split(","); // NOI18N
+
+        if (args == null || args.length <= 0) {
+            return Collections.emptyList();
+        }
+
+        List<MethodParameter> parameters = new ArrayList<>();
+        for (String paramType : args) {
+            parameters.add(new MethodParameter(paramType, GroovyUtils.stripPackage(paramType)));
+        }
+        return parameters;
     }
 
     private IndexedField createField(String signature, IndexResult map, boolean inherited) {
