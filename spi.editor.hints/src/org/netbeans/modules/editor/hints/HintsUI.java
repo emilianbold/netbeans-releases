@@ -663,7 +663,8 @@ public final class HintsUI implements MouseListener, MouseMotionListener, KeyLis
 
                 if (!onlyActive) {
                     refresh(doc, comp.getCaretPosition());
-                    Pair<FixData, String> fixData = getAnnotationHolder(doc).buildUpFixDataForLine(line);
+                    AnnotationHolder holder = getAnnotationHolder(doc);
+                    Pair<FixData, String> fixData = holder != null ? holder.buildUpFixDataForLine(line) : null;
 
                     if (fixData == null) return false;
 

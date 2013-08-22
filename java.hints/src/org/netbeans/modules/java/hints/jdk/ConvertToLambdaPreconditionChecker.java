@@ -62,6 +62,7 @@ import javax.lang.model.element.Element;
 import javax.lang.model.element.ElementKind;
 import javax.lang.model.element.ExecutableElement;
 import javax.lang.model.element.VariableElement;
+import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.util.Types;
 import org.netbeans.api.java.source.CompilationInfo;
@@ -81,6 +82,7 @@ public class ConvertToLambdaPreconditionChecker {
     private boolean foundRecursiveCall = false;
     private boolean foundOverloadWhichMakesLambdaAmbiguous = false;
     private boolean foundAssignmentToSupertype = false;
+    private boolean foundErroneousTargetType = false;
     private boolean havePreconditionsBeenChecked = false;
 
     public ConvertToLambdaPreconditionChecker(TreePath pathToNewClassTree, CompilationInfo info) {
@@ -116,7 +118,7 @@ public class ConvertToLambdaPreconditionChecker {
             TreePath path = new TreePath(pathToNewClassTree, lambdaMethodTree);
             new PreconditionScanner().scan(path, info.getTrees());
             checkForOverload();
-            checkForTypeMismatch();
+            verifyTargetType();
             
             havePreconditionsBeenChecked = true;
         }
@@ -124,7 +126,8 @@ public class ConvertToLambdaPreconditionChecker {
     
     public boolean passesFatalPreconditions() {
         return !foundRefToThisOrSuper() &&
-               !foundRecursiveCall();
+               !foundRecursiveCall() &&
+               !foundErroneousTargetType();
     }
 
     public boolean needsCastToExpectedType() {
@@ -158,12 +161,13 @@ public class ConvertToLambdaPreconditionChecker {
         return foundAssignmentToSupertype;
     }
 
-    private void checkForOverload() {
-        foundOverloadWhichMakesLambdaAmbiguous = doesOverloadMakeLambdaAmbiguous();
+    public boolean foundErroneousTargetType() {
+        ensurePreconditionsAreChecked();
+        return foundErroneousTargetType;
     }
 
-    private void checkForTypeMismatch() {
-        foundAssignmentToSupertype = needsCastToSupertype();
+    private void checkForOverload() {
+        foundOverloadWhichMakesLambdaAmbiguous = doesOverloadMakeLambdaAmbiguous();
     }
 
     private class PreconditionScanner extends TreePathScanner<Tree, Trees> {
@@ -250,13 +254,18 @@ public class ConvertToLambdaPreconditionChecker {
 
     private ExecutableElement getElementFromInvokingTree(TreePath treePath) {
         Tree invokingTree = treePath.getLeaf();
+        Element result;
         if (invokingTree.getKind() == Tree.Kind.METHOD_INVOCATION) {
             MethodInvocationTree invokingMethTree = ((MethodInvocationTree) invokingTree);
             TreePath methodTreePath = new TreePath(treePath, invokingMethTree);
-            return (ExecutableElement) getElementFromTreePath(methodTreePath);
+            result = getElementFromTreePath(methodTreePath);
         } else {
-            return (ExecutableElement) getElementFromTreePath(treePath);
+            result = getElementFromTreePath(treePath);
         }
+        if (result != null && (result.getKind() == ElementKind.CONSTRUCTOR || result.getKind() == ElementKind.METHOD)) {
+            return (ExecutableElement) result;
+        }
+        return null;
     }
 
     private int getLambdaIndexFromInvokingTree(Tree invokingTree) {
@@ -426,11 +435,12 @@ public class ConvertToLambdaPreconditionChecker {
         return true;
     }
 
-    private boolean needsCastToSupertype() {
+    private void verifyTargetType() {
 
         TypeMirror expectedType = findExpectedType(pathToNewClassTree);
-        if (expectedType == null) {
-            return false;
+        if (expectedType == null || expectedType.getKind() == TypeKind.ERROR) {
+            foundErroneousTargetType = true;
+            return;
         }
 
         expectedType = info.getTypes().erasure(expectedType);
@@ -439,8 +449,7 @@ public class ConvertToLambdaPreconditionChecker {
         TypeMirror lambdaType = info.getTrees().getTypeMirror(pathForClassIdentifier);
         lambdaType = info.getTypes().erasure(lambdaType);
 
-        boolean isTypeMismatch = !info.getTypes().isSameType(expectedType, lambdaType);
-        return isTypeMismatch;
+        foundAssignmentToSupertype = !info.getTypes().isSameType(expectedType, lambdaType);
     }
 
     private TypeMirror findExpectedType(TreePath path) {
@@ -471,6 +480,9 @@ public class ConvertToLambdaPreconditionChecker {
             if (isInvocationTree(currTree)) {
 
                 ExecutableElement invokingElement = getElementFromInvokingTree(path);
+
+                if (invokingElement == null) return null;
+                
                 int lambdaIndex = getLambdaIndexFromInvokingTree(currTree);
                 if (lambdaIndex >= 0 && lambdaIndex < invokingElement.getParameters().size()) {
                     return invokingElement.getParameters().get(lambdaIndex).asType();
