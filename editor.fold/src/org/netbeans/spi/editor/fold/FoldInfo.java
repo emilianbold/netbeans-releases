@@ -129,6 +129,14 @@ public final class FoldInfo {
         this.start = start;
         this.end = end;
         this.template = ft.getTemplate();
+        /*
+        if ((end - start) < (template.getGuardedStart() + template.getGuardedEnd())) {
+            throw new IllegalArgumentException("Invalid fold length: (endOffset=" + end // NOI18N
+                + " - startOffset=" + start + ") < " // NOI18N
+                + "(startGuardedLength=" + template.getGuardedStart() // NOI18N
+                + " + endGuardedLength=" + template.getGuardedEnd() + ")"); // NOI18N
+        }
+        */
     }
     
     /**
