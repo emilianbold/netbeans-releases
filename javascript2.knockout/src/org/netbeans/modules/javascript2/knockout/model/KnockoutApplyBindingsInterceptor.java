@@ -70,9 +70,11 @@ public class KnockoutApplyBindingsInterceptor implements FunctionInterceptor {
 
     private static final String GENERATED_FUNCTION_PREFIX = "_L"; //NOI18N
 
+    private static final Pattern NAME_PATTERN = Pattern.compile("ko\\.applyBindings"); // NOI18N
+
     @Override
     public Pattern getNamePattern() {
-        return Pattern.compile("ko\\.applyBindings"); // NOI18N
+        return NAME_PATTERN;
     }
 
     @Override
