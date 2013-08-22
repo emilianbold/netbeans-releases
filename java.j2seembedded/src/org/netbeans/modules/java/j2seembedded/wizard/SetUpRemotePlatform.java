@@ -56,6 +56,7 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.text.Document;
 import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.j2seembedded.platform.ConnectionMethod;
@@ -82,13 +83,12 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
 
     private static final String HELP_ID = "java.j2seembedded.setup-remote-platform";    //NOI18N
     private final ChangeSupport cs = new ChangeSupport(this);
-    private final Panel panel;
+    private String currentDefaultWorkDir;
 
     /**
      * Creates new form SetUpRemotePlatform
      */
-    private SetUpRemotePlatform(Panel panel) {
-        this.panel = panel;
+    private SetUpRemotePlatform() {
         initComponents();
         postInitComponents();
     }
@@ -117,18 +117,21 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         final DocumentListener docListener = new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
+                updateDefaultDirectory(e);
                 cs.fireChange();
             }
 
             @Override
             public void removeUpdate(DocumentEvent e) {
+                updateDefaultDirectory(e);
                 cs.fireChange();
             }
 
             @Override
             public void changedUpdate(DocumentEvent e) {
+                updateDefaultDirectory(e);
                 cs.fireChange();
-            }
+            }           
         };
         this.displayName.getDocument().addDocumentListener(docListener);
         this.host.getDocument().addDocumentListener(docListener);
@@ -153,6 +156,26 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
 
     public final synchronized void removeChangeListener(ChangeListener listener) {
         cs.removeChangeListener(listener);
+    }
+
+    private void updateDefaultDirectory(DocumentEvent e) {
+        Document doc = e.getDocument();
+        if (doc.equals(username.getDocument())) {
+            String usernameText = username.getText();
+            if (!usernameText.isEmpty()) {
+                String workdirText = workingDir.getText();
+                if (workdirText.isEmpty() || (currentDefaultWorkDir != null && workdirText.equals(currentDefaultWorkDir))) {
+                    String updatedDefaultworkDir = "/home/" + usernameText + "/NetBeansProjects/"; //NOI18N
+                    workingDir.setText(updatedDefaultworkDir);
+                    currentDefaultWorkDir = updatedDefaultworkDir;
+                }
+            } else {
+                if (currentDefaultWorkDir != null && workingDir.getText().equals(currentDefaultWorkDir)) {
+                    workingDir.setText(""); //NOI18N
+                    currentDefaultWorkDir = null;
+                }
+            }
+        }
     }
 
     /**
@@ -455,10 +478,6 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         private boolean valid = false;
         private volatile WizardDescriptor wizardDescriptor;
         private volatile ConnectionValidator connectionValidator;
-        
-        //Following fields are used for panel validation (info messages updates)
-        private boolean wasEmptyWorkingDir = false;
-        private int usernameLength = 0;
 
         public Panel() {
             changeSupport = new ChangeSupport(this);
@@ -467,7 +486,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
         @Override
         public Component getComponent() {
             if (ui == null) {
-                ui = new SetUpRemotePlatform(this);
+                ui = new SetUpRemotePlatform();
                 ui.addChangeListener(this);
             }
             checkPanelValidity();
@@ -494,7 +513,7 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
             }
             if (settings.getProperty(RemotePlatformIt.PROP_USERNAME) != null) {
                 ui.username.setText((String) settings.getProperty(RemotePlatformIt.PROP_USERNAME));
-            }
+            }            
             if (settings.getProperty(RemotePlatformIt.PROP_PASSWORD) != null) {
                 ui.password.setText((String) settings.getProperty(RemotePlatformIt.PROP_PASSWORD));
                 ui.radioButtonPassword.setSelected(true);
@@ -585,17 +604,14 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
                 displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "ERROR_Empty_JRE")); // NOI18N
                 return false;
             }
+            if (ui.workingDir.getText().isEmpty()) {
+                displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "MSG_Empty_WorkingDir")); // NOI18N
+                return false;
+            }
 
-            if ((!valid || !wasEmptyWorkingDir || usernameLength != ui.username.getText().length()) && ui.workingDir.getText().isEmpty()) {
-                //Workdir has been changed from specified to empty => show info message
-                //or username has been modified => update message
-                displayNotification(NbBundle.getMessage(SetUpRemotePlatform.class, "MSG_Empty_WorkingDir", ui.username.getText())); // NOI18N
-                wasEmptyWorkingDir = true;
-                usernameLength = ui.username.getText().length();
-            } else if ((!valid || wasEmptyWorkingDir) && !ui.workingDir.getText().isEmpty()) {
-                //Workdir has been changed changed from empty to specified => hide info message
+            if (!valid) {
+                //Wasn't valid before, now will be
                 displayNotification(""); // NOI18N
-                wasEmptyWorkingDir = false;
             }
             return true;
         }
