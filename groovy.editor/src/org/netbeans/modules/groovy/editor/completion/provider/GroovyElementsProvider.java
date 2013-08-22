@@ -88,7 +88,7 @@ public final class GroovyElementsProvider implements CompletionProvider {
                     result.put(getMethodSignature(indexedMethod), CompletionItem.forJavaMethod(
                             context.getTypeName(),
                             indexedMethod.getName(),
-                            indexedMethod.getParameters(),
+                            indexedMethod.getParameterTypes(),
                             indexedMethod.getReturnType(),
                             Utilities.gsfModifiersToModel(indexedMethod.getModifiers(), Modifier.PUBLIC),
                             context.getAnchor(),
@@ -147,7 +147,7 @@ public final class GroovyElementsProvider implements CompletionProvider {
     }
 
     private MethodSignature getMethodSignature(IndexedMethod method) {
-        String[] parameters = method.getParameters().toArray(new String[method.getParameters().size()]);
+        String[] parameters = method.getParameterTypes().toArray(new String[method.getParameterTypes().size()]);
         return new MethodSignature(method.getName(), parameters);
     }
 

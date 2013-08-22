@@ -406,7 +406,9 @@ public enum NodeType {
     
     mediaBodyItem,
     
-    cp_term_symbol
+    cp_term_symbol,
+    
+    less_selector_interpolation
     
     ;
     

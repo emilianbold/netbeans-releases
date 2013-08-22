@@ -188,6 +188,28 @@ public final class ServerInstance {
     }
 
     /**
+     * Returns <code>true</code> when debugging is supported by the server.
+     *
+     * @return <code>true</code> when debugging is supported by the server
+     * @throws InstanceRemovedException if the instance is not available anymore
+     * @since 1.103
+     */
+    public boolean isDebuggingSupported() throws InstanceRemovedException {
+        return getInstanceFromRegistry(ServerRegistry.getInstance()).isDebugSupported();
+    }
+
+    /**
+     * Returns <code>true</code> when profiling is supported by the server.
+     *
+     * @return <code>true</code> when profiling is supported by the server
+     * @throws InstanceRemovedException if the instance is not available anymore
+     * @since 1.103
+     */
+    public boolean isProfilingSupported() throws InstanceRemovedException {
+        return getInstanceFromRegistry(ServerRegistry.getInstance()).isProfileSupported();
+    }
+
+    /**
      * Returns descriptor providing extra information about the instance. May
      * return <code>null</code> if the server does not support this.
      *

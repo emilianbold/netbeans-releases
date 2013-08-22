@@ -43,6 +43,7 @@ package org.netbeans.modules.web.jsf.editor.completion;
 
 import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
@@ -60,6 +61,7 @@ import org.netbeans.modules.html.editor.lib.api.HelpResolver;
 import org.openide.filesystems.FileUtil;
 import org.openide.modules.InstalledFileLocator;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -74,7 +76,7 @@ public class JsfDocumentation implements HelpResolver {
 
     private static final String JAVADOC_FOLDER_NAME = "javadocs/"; //NOI18N
 
-    private static Map<String, String> HELP_FILES_CACHE = new WeakHashMap<String, String>();
+    private static Map<String, String> HELP_FILES_CACHE = new WeakHashMap<>();
 
     public static JsfDocumentation getDefault() {
         return SINGLETON;
@@ -85,7 +87,7 @@ public class JsfDocumentation implements HelpResolver {
             File file = InstalledFileLocator.getDefault().locate(DOC_ZIP_FILE_NAME, null, false);
             if (file != null) {
                 try {
-                    URL url = file.toURI().toURL();
+                    URL url = Utilities.toURI(file).toURL();
                     DOC_ZIP_URL = FileUtil.getArchiveRoot(url);
                 } catch (MalformedURLException ex) {
                     Logger.getLogger(JsfDocumentation.class.getName()).log(Level.SEVERE, null, ex);
@@ -109,9 +111,7 @@ public class JsfDocumentation implements HelpResolver {
                 LOGGER.log(Level.FINE, "resolved to = ''{0}''", u.toURL()); //NOI18N
                 return u.toURL();
             }
-        } catch (MalformedURLException ex) {
-            Exceptions.printStackTrace(ex);
-        } catch (URISyntaxException ex) {
+        } catch (MalformedURLException | URISyntaxException ex) {
             Exceptions.printStackTrace(ex);
         }
 
@@ -121,7 +121,7 @@ public class JsfDocumentation implements HelpResolver {
         if(javadocIndex != -1) {
             relativeLink = relativeLink.substring(javadocIndex + JAVADOC_FOLDER_NAME.length());
         }
-        String link = null;
+        String link;
 
         if (relativeLink.startsWith("#")) {
             assert baseURL != null : "Base URL must be provided for local relative links (anchors)."; //NOI18N
@@ -147,9 +147,7 @@ public class JsfDocumentation implements HelpResolver {
             URL url = new URI(link).toURL();
             LOGGER.log(Level.FINE, "resolved to = ''{0}''", url); //NOI18N
             return url;
-        } catch (URISyntaxException ex) {
-            Logger.getLogger(JsfDocumentation.class.getName()).log(Level.INFO, null, ex);
-        } catch (MalformedURLException ex) {
+        } catch (URISyntaxException | MalformedURLException ex) {
             Logger.getLogger(JsfDocumentation.class.getName()).log(Level.INFO, null, ex);
         }
         LOGGER.fine("cannot be resolved!"); //NOI18N
@@ -176,7 +174,7 @@ public class JsfDocumentation implements HelpResolver {
             }
             url = url + "/" + link; // NOI18N
         }
-        URL newURL = null;
+        URL newURL;
         try{
             newURL = new URL(url);
         } catch (java.net.MalformedURLException e){
@@ -215,8 +213,10 @@ public class JsfDocumentation implements HelpResolver {
             String strContent = content.toString();
             HELP_FILES_CACHE.put(filePath, strContent);
             return strContent;
+        } catch (FileNotFoundException fnfe) {
+            LOGGER.log(Level.INFO, "Document at this link is not available: {0}", filePath);
         } catch (IOException ex) {
-            Logger.getLogger(JsfDocumentation.class.getName()).log(Level.WARNING, null, ex);
+            LOGGER.log(Level.WARNING, null, ex);
         }
 
         return null;

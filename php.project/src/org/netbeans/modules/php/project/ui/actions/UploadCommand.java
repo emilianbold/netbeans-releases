@@ -179,7 +179,7 @@ public class UploadCommand extends RemoteCommand implements Displayable {
             RemoteUtils.processRemoteException(ex);
         } finally {
             try {
-                remoteClient.disconnect();
+                remoteClient.disconnect(true);
             } catch (RemoteException ex) {
                 RemoteUtils.processRemoteException(ex);
             }

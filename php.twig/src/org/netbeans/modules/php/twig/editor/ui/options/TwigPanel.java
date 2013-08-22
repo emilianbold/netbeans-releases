@@ -118,7 +118,7 @@ final class TwigPanel extends javax.swing.JPanel {
 
     void load() {
         ToggleBlockCommentAction.ToggleCommentType toggleCommentType = TwigOptions.getInstance().getToggleCommentType();
-        if (toggleCommentType == ToggleBlockCommentAction.ToggleCommentType.LINE_BY_TWIG) {
+        if (toggleCommentType == ToggleBlockCommentAction.ToggleCommentType.AS_TWIG_EVERYWHERE) {
             asTwigEverywhereRadioButton.setSelected(true);
         } else {
             languageSensitiveRadioButton.setSelected(true);
@@ -128,9 +128,9 @@ final class TwigPanel extends javax.swing.JPanel {
     void store() {
         ToggleBlockCommentAction.ToggleCommentType toggleCommentType;
         if (asTwigEverywhereRadioButton.isSelected()) {
-            toggleCommentType = ToggleBlockCommentAction.ToggleCommentType.LINE_BY_TWIG;
+            toggleCommentType = ToggleBlockCommentAction.ToggleCommentType.AS_TWIG_EVERYWHERE;
         } else {
-            toggleCommentType = ToggleBlockCommentAction.ToggleCommentType.FOCUSED_TWIG_PART;
+            toggleCommentType = ToggleBlockCommentAction.ToggleCommentType.LANGUAGE_SENSITIVE;
         }
         TwigOptions.getInstance().setToggleCommentType(toggleCommentType);
     }

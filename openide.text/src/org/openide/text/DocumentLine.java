@@ -110,9 +110,6 @@ public abstract class DocumentLine extends Line {
     */
     void init() {
         listener = new LR();
-        pos.getCloneableEditorSupport().addChangeListener(
-            org.openide.util.WeakListeners.change(listener, pos.getCloneableEditorSupport())
-        );
     }
 
     /* Get the line number.
@@ -698,6 +695,7 @@ public abstract class DocumentLine extends Line {
          * split during the editing, the annotation is shorten till the end of the line. Modules can listen on
          * changes of this value*/
         public int getLength() {
+            length = limitLength(length);
             return length;
         }
 
@@ -867,14 +865,16 @@ public abstract class DocumentLine extends Line {
             previousOffset = position.getOffset();
         }
     }
+    
+    void documentOpenedClosed(StyledDocument doc, boolean closed) {
+        refreshState();
+        attachDetachAnnotations(doc, closed);
+    }
 
     /** Definition of actions performed in Listener */
-    private final class LR implements Runnable, ChangeListener, DocumentListener {
-        private static final int REFRESH = 0;
+    private final class LR implements Runnable, DocumentListener {
         private static final int UNMARK = 1;
-        private static final int ATTACH_DETACH = 2;
         private int actionId;
-        private EnhancedChangeEvent ev;
 
         public LR() {
         }
@@ -883,27 +883,10 @@ public abstract class DocumentLine extends Line {
             this.actionId = actionId;
         }
 
-        public LR(EnhancedChangeEvent ev) {
-            this.actionId = ATTACH_DETACH;
-            this.ev = ev;
-        }
-
         public void run() {
             switch (actionId) {
-            case REFRESH:
-                refreshState();
-
-                break;
-
             case UNMARK:
                 unmarkError();
-
-                break;
-
-            case ATTACH_DETACH:
-                attachDetachAnnotations(ev.getDocument(), ev.isClosingDocument());
-                ev = null;
-
                 break;
             }
         }
@@ -912,17 +895,6 @@ public abstract class DocumentLine extends Line {
             // part of #33165 - done synchronously not invoking into EQ
             //SwingUtilities.invokeLater(new LR(op));
             new LR(op).run();
-        }
-
-        private void invoke(EnhancedChangeEvent ev) {
-            // part of #33165 - done synchronously not invoking into EQ
-            //SwingUtilities.invokeLater(new LR(ev));
-            new LR(ev).run();
-        }
-
-        public void stateChanged(ChangeEvent ev) {
-            invoke(REFRESH);
-            invoke((EnhancedChangeEvent) ev);
         }
 
         public void removeUpdate(final javax.swing.event.DocumentEvent p0) {
@@ -963,11 +935,11 @@ public abstract class DocumentLine extends Line {
         /** Find the line given as parameter in list of all lines attached to this set
          * and if the line exist in the list, notify it about being edited. */
         void linesChanged(int startLineNumber, int endLineNumber, DocumentEvent p0) {
-            List changedLines = getLinesFromRange(startLineNumber, endLineNumber);
+            List<Line> changedLines = getLinesFromRange(startLineNumber, endLineNumber);
             StyledDocument doc = listener.support.getDocument();
 
-            for (Iterator it = changedLines.iterator(); it.hasNext();) {
-                Line line = (Line) it.next();
+            for (Iterator<Line> it = changedLines.iterator(); it.hasNext();) {
+                Line line = it.next();
 
                 line.firePropertyChange(Annotatable.PROP_TEXT, null, null);
 
@@ -982,10 +954,10 @@ public abstract class DocumentLine extends Line {
         /** Find the line given as parameter in list of all lines attached to this set
          * and if the line exist in the list, notify it about being moved. */
         void linesMoved(int startLineNumber, int endLineNumber) {
-            List movedLines = getLinesFromRange(startLineNumber, endLineNumber);
+            List<Line> movedLines = getLinesFromRange(startLineNumber, endLineNumber);
 
-            for (Iterator it = movedLines.iterator(); it.hasNext();) {
-                Line line = (Line) it.next();
+            for (Iterator<Line> it = movedLines.iterator(); it.hasNext();) {
+                Line line = it.next();
                 line.firePropertyChange(Line.PROP_LINE_NUMBER, null, null);
 
                 // notify all parts attached to this line

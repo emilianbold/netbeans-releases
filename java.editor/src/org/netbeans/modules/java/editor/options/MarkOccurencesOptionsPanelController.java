@@ -55,32 +55,38 @@ public final class MarkOccurencesOptionsPanelController extends OptionsPanelCont
     private MarkOccurencesPanel panel;
     
     private final PropertyChangeSupport pcs = new PropertyChangeSupport(this);
-    private boolean changed;
                     
+    @Override
     public void update() {
         panel.load( this );
     }
     
+    @Override
     public void applyChanges() {
         panel.store();
     }
     
+    @Override
     public void cancel() {
 	// need not do anything special, if no changes have been persisted yet
     }
     
+    @Override
     public boolean isValid() {
         return true; // Always valid 
     }
     
+    @Override
     public boolean isChanged() {
 	return panel.changed();
     }
     
+    @Override
     public HelpCtx getHelpCtx() {
 	return new HelpCtx("netbeans.optionsDialog.java.markoccurrences");
     }
     
+    @Override
     public synchronized JComponent getComponent(Lookup masterLookup) {
         if ( panel == null ) {
             panel = new MarkOccurencesPanel(this);
@@ -88,20 +94,14 @@ public final class MarkOccurencesOptionsPanelController extends OptionsPanelCont
         return panel;
     }
     
+    @Override
     public void addPropertyChangeListener(PropertyChangeListener l) {
 	pcs.addPropertyChangeListener(l);
     }
     
+    @Override
     public void removePropertyChangeListener(PropertyChangeListener l) {
 	pcs.removePropertyChangeListener(l);
-    }
-    
-    void changed() {
-	if (!changed) {
-	    changed = true;
-	    pcs.firePropertyChange(OptionsPanelController.PROP_CHANGED, false, true);
-	}
-	pcs.firePropertyChange(OptionsPanelController.PROP_VALID, null, null);
     }
     
 }

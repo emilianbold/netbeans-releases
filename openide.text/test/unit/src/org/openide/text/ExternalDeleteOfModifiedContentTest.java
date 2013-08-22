@@ -64,6 +64,7 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.LocalFileSystem;
 import org.openide.util.Lookup;
 import org.openide.util.Mutex;
+import org.openide.util.Task;
 import org.openide.util.UserQuestionException;
 import org.openide.util.lookup.AbstractLookup;
 import org.openide.util.lookup.InstanceContent;
@@ -188,6 +189,12 @@ implements CloneableEditorSupport.Env  {
         
         waitEQ();
         
+        Task reloadTask = support.reloadDocument();
+        reloadTask.waitFinished(); // Notification will be resolved in EDT so wait again for EDT
+
+        waitEQ();
+        Thread.sleep(3000);
+
         assertNotNull ("Text message was there", DD.message);
         assertEquals ("Text message was there", "Ahoj", DD.message);
 

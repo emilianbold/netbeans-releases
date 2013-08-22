@@ -14,7 +14,7 @@ Manager:CLASS:[PRIVATE]:ESCAPED{Manager}:
     data:PARAMETER:[PUBLIC]:ESCAPED{data}:
       $className:FIELD:[PUBLIC]:ESCAPED{$className}:
       createdFn:FIELD:[PUBLIC]:ESCAPED{createdFn}:
-      postprocessors:FIELD:[PUBLIC]:ESCAPED{postprocessors}:
+      postprocessors:FIELD:[PUBLIC]:ESCAPED{postprocessors}<font color="#999999">ESCAPED{ : }postprocessors</font>:
   createNamespaces:METHOD:[PRIVATE]:ESCAPED{createNamespaces}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.createNamespaces.root</font>:
   createOverride:METHOD:[PUBLIC]:ESCAPED{createOverride}ESCAPED{(}ESCAPED{className}ESCAPED{, }ESCAPED{data}ESCAPED{, }ESCAPED{createdFn}ESCAPED{)}<font color="#999999">ESCAPED{ : }Ext.ClassManager.createOverride.me</font>:
     classReady:METHOD:[PRIVATE]:ESCAPED{classReady}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
@@ -82,7 +82,7 @@ cls:PARAMETER:[PUBLIC]:ESCAPED{cls}:
   xtype:FIELD:[PUBLIC]:ESCAPED{xtype}:
 data:PARAMETER:[PUBLIC]:ESCAPED{data}:
   alias:FIELD:[PUBLIC]:ESCAPED{alias}:
-  xtype:FIELD:[PUBLIC]:ESCAPED{xtype}:
+  xtype:FIELD:[PUBLIC]:ESCAPED{xtype}<font color="#999999">ESCAPED{ : }xtypes</font>:
   xtypes:FIELD:[PUBLIC]:ESCAPED{xtypes}<font color="#999999">ESCAPED{ : }mixin.xtypes</font>:
   xtypesChain:FIELD:[PUBLIC]:ESCAPED{xtypesChain}:
   xtypesMap:FIELD:[PUBLIC]:ESCAPED{xtypesMap}<font color="#999999">ESCAPED{ : }Boolean</font>:

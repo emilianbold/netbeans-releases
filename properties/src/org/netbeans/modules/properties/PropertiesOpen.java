@@ -325,8 +325,8 @@ public class PropertiesOpen extends CloneableOpenSupport
     protected String messageOpening() {
         bundleStructure.updateEntries();
         PropertiesFileEntry primaryEntry = bundleStructure.getNthEntry(0);
-        String primaryEntryName = primaryEntry.getName();
-        FileObject fo = primaryEntry.getFile();
+        String primaryEntryName = primaryEntry != null ? primaryEntry.getName() : "";
+        FileObject fo = primaryEntry != null ? primaryEntry.getFile() : null;
         String primaryEntryFile = fo != null ? fo.toString() : "" ; // #190125
         return NbBundle.getMessage(PropertiesOpen.class,
                                    "LBL_ObjectOpen", // NOI18N

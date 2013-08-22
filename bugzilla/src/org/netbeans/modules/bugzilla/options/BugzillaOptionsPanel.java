@@ -43,10 +43,10 @@
  */
 package org.netbeans.modules.bugzilla.options;
 
-import java.awt.Color;
 import java.awt.Image;
 import javax.swing.ImageIcon;
 import org.netbeans.api.options.OptionsDisplayer;
+import org.netbeans.modules.bugzilla.util.BugzillaUtil;
 import org.netbeans.spi.options.OptionsPanelController;
 import org.openide.util.ImageUtilities;
 
@@ -60,7 +60,7 @@ public class BugzillaOptionsPanel extends javax.swing.JPanel {
     /** Creates new form SvnOptionsPanel */
     public BugzillaOptionsPanel() {
         initComponents();
-        errorLabel.setForeground(new Color(153,0,0));
+        errorLabel.setForeground(BugzillaUtil.getErrorForegroundColor());
         Image img = ImageUtilities.loadImage("org/netbeans/modules/bugzilla/resources/error.gif"); //NOI18N
         errorLabel.setIcon(new ImageIcon(img));
         errorLabel.setVisible(false);

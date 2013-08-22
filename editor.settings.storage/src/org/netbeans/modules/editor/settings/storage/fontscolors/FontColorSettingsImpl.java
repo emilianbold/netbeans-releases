@@ -136,7 +136,25 @@ public final class FontColorSettingsImpl extends FontColorSettingsFactory {
      */
     public Collection<AttributeSet> getAllFontColorDefaults(String profile) {
         profile = getInternalFontColorProfile(profile);
-        return getDefaultColorings(profile).values();
+        Map<String, AttributeSet> profileColorings = getDefaultColorings(profile);
+        Map<String, AttributeSet> defaultProfileColorings = null;
+        if (!EditorSettingsImpl.DEFAULT_PROFILE.equals(profile)) {
+            defaultProfileColorings = getDefaultColorings(EditorSettingsImpl.DEFAULT_PROFILE);
+        }
+
+        // Add colorings from the default profile that do not exist in
+        // the profileColorings. They are normally the same, but when
+        // imported from previous version some colorings can be missing.
+        // See #119709
+        Map<String, AttributeSet> m = new HashMap<String, AttributeSet>();
+        if (defaultProfileColorings != null) {
+            m.putAll(defaultProfileColorings);
+        }
+        if (profileColorings != null) {
+            m.putAll(profileColorings);
+        }
+        profileColorings = Collections.unmodifiableMap(m);
+        return profileColorings.values();
     }
     
     /**

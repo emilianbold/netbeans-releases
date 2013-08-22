@@ -60,19 +60,17 @@ import org.openide.util.lookup.ServiceProvider;
 public class CurrentDocumentScheduler extends CurrentEditorTaskScheduler {
     
     private Document        currentDocument;
-    private Source          source;
     
     protected void setEditor (JTextComponent editor) {
         if (editor != null) {
             Document document = editor.getDocument ();
             if (currentDocument == document) return;
             currentDocument = document;
-            source = Source.create (currentDocument);
+            final Source source = Source.create (currentDocument);
             schedule (source, new SchedulerEvent (this) {});
         }
         else {
-            currentDocument = null;
-            source = null;
+            currentDocument = null;            
             schedule(null, null);
         }
     }
@@ -82,7 +80,6 @@ public class CurrentDocumentScheduler extends CurrentEditorTaskScheduler {
      * @param source
      */
     void schedule (Source source) {
-        this.source = source;
         schedule (source, new SchedulerEvent (this) {});
     }
     
@@ -93,7 +90,7 @@ public class CurrentDocumentScheduler extends CurrentEditorTaskScheduler {
 
     @Override
     protected SchedulerEvent createSchedulerEvent (SourceModificationEvent event) {
-        if (event.getModifiedSource () == source)
+        if (event.getModifiedSource () == getSource())
             return new SchedulerEvent (this) {};
         return null;
     }

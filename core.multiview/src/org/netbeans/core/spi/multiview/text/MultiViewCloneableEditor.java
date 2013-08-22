@@ -46,7 +46,6 @@ package org.netbeans.core.spi.multiview.text;
 
 import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
-import java.beans.PropertyChangeListener;
 import java.io.IOException;
 import java.util.Enumeration;
 import java.util.logging.Level;

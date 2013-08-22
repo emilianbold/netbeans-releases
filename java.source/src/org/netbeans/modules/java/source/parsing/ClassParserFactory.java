@@ -43,6 +43,7 @@
 package org.netbeans.modules.java.source.parsing;
 
 import java.util.Collection;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.Parser;
 import org.netbeans.modules.parsing.spi.ParserFactory;
@@ -51,6 +52,7 @@ import org.netbeans.modules.parsing.spi.ParserFactory;
  *
  * @author Tomas Zezula
  */
+@MimeRegistration(mimeType = "application/x-class-file", service = ParserFactory.class)
 public class ClassParserFactory extends ParserFactory {
 
     @Override

@@ -2155,7 +2155,13 @@ public class FormDesigner {
                     if (width < 0) {
                         width = 0;
                     }
-                    baseLinePos = comp.getBaseline(width, height);
+                    try {
+                        baseLinePos = comp.getBaseline(width, height);
+                    } catch (Exception ex) {
+                        // Sometimes getting baseline may fail even if we do nothing wrong,
+                        // e.g. when a JLabel with html text and icon is set smaller than default (bug 229412).
+                        Logger.getLogger(FormDesigner.class.getName()).log(Level.INFO, null, ex);
+                    }
                 }
             }
             if (baseLinePos == -1) {

@@ -43,6 +43,7 @@ import java.lang.reflect.Method;
 import java.net.URL;
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.Tag;
@@ -105,9 +106,6 @@ public abstract class AbstractFaceletsLibrary extends TagLibraryImpl implements 
              return false;
          }
          AbstractFaceletsLibrary other = (AbstractFaceletsLibrary)obj;
-        if (obj == null) {
-            return false;
-        }
         if (getClass() != obj.getClass()) {
             return false;
         }
@@ -158,8 +156,6 @@ public abstract class AbstractFaceletsLibrary extends TagLibraryImpl implements 
             System.arraycopy(second, 0, merged, first.length, second.length);
             return merged;
         }
-
-
     }
 
     public class BaseComponent extends NamedComponent {

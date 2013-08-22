@@ -54,23 +54,18 @@ import java.util.Set;
 import org.netbeans.api.debugger.DebuggerManager;
 import org.netbeans.api.debugger.Session;
 import org.netbeans.api.debugger.jpda.AttachingDICookie;
-import org.netbeans.api.j2ee.core.Profile;
 import org.netbeans.api.java.project.JavaProjectConstants;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.j2ee.clientproject.ui.customizer.AppClientProjectProperties;
 import org.netbeans.modules.javaee.project.api.ant.ui.J2EEProjectProperties;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.Deployment;
-import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule.Type;
+import org.netbeans.modules.j2ee.deployment.devmodules.api.J2eeModule;
 import org.netbeans.modules.j2ee.deployment.devmodules.spi.J2eeModuleProvider;
 import org.netbeans.modules.j2ee.deployment.plugins.api.InstanceProperties;
 import org.netbeans.modules.j2ee.deployment.plugins.api.ServerDebugInfo;
 import org.netbeans.modules.java.api.common.ant.UpdateHelper;
 import org.netbeans.modules.java.api.common.project.BaseActionProvider;
 import org.netbeans.spi.project.SingleMethod;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 
 /**
  * Action provider of the Application Client project.
@@ -213,11 +208,7 @@ class AppClientActionProvider extends BaseActionProvider {
     public String[] getTargetNames(String command, Lookup context, Properties p, boolean doJavaChecks) throws IllegalArgumentException {
         if (command.equals(COMMAND_RUN) || command.equals(EjbProjectConstants.COMMAND_REDEPLOY) || 
                 command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE) || command.equals(COMMAND_RUN_SINGLE)) {
-            if (!isSelectedServer()) {
-                String msg = NbBundle.getMessage(
-                        AppClientActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+            if (!checkSelectedServer(command.equals(COMMAND_DEBUG) || command.equals(COMMAND_DEBUG_SINGLE), false, false)) {
                 return null;
             }
             if (isDebugged()) {
@@ -241,31 +232,20 @@ class AppClientActionProvider extends BaseActionProvider {
         if (command.equals(COMMAND_RUN) || command.equals(COMMAND_DEBUG)) {
             //see issue #92895
             //XXX - replace this method with a call to API as soon as issue 109895 will be fixed
-            return res && isSelectedServer() && !isTargetServerRemote();
+            return res && checkSelectedServer(command.equals(COMMAND_DEBUG), false, true) && !isTargetServerRemote();
         }
         return res;
     }
     
-    private boolean isSelectedServer() {
-        String instance = getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (AppClientProjectProperties.J2EE_SERVER_INSTANCE);
-        if (instance != null) {
-            String id = Deployment.getDefault().getServerID(instance);
-            if (id != null) {
-                return true;
+    private boolean checkSelectedServer(boolean checkDebug, boolean checkProfile, boolean noMessages) {
+        return J2EEProjectProperties.checkSelectedServer(getProject(), getAntProjectHelper(),
+                ((AppClientProject) getProject()).getAPICar().getJ2eeProfile(), J2eeModule.Type.CAR, new J2EEProjectProperties.SetServerInstanceCallback() {
+
+            @Override
+            public void setServerInstance(String serverInstanceId) {
+                AppClientActionProvider.this.setServerInstance(serverInstanceId);
             }
-        }
-        
-        // if there is some server instance of the type which was used
-        // previously do not ask and use it
-        String serverType = getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (AppClientProjectProperties.J2EE_SERVER_TYPE);
-        if (serverType != null) {
-            String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, Type.CAR, ((AppClientProject) getProject()).getAPICar().getJ2eeProfile());
-            if (instanceID != null) {
-                setServerInstance(instanceID);
-                return true;
-            }
-        }
-        return false;
+        }, checkDebug, checkProfile, false);
     }
     
     private void setServerInstance(final String serverInstanceId) {

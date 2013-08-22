@@ -41,6 +41,7 @@
  */
 package org.netbeans.modules.maven.j2ee.utils;
 
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.j2ee.JavaEEMavenTestBase;
 import org.netbeans.modules.maven.j2ee.SessionContent;
 
@@ -65,7 +66,7 @@ public class ServerSettingTest extends JavaEEMavenTestBase {
     }
 
     public void testObtainServerIDs_withSetServerInstanceID() {
-        MavenProjectSupport.setServerInstanceID(project, "InstanceServerID"); // NOI18N
+        JavaEEProjectSettings.setServerInstanceID(project, "InstanceServerID"); // NOI18N
 
         String[] serverIDs = MavenProjectSupport.obtainServerIds(project);
 
@@ -83,7 +84,7 @@ public class ServerSettingTest extends JavaEEMavenTestBase {
     }
 
     public void testObtainServerIDs_withSetServerAndServerInstanceID() {
-        MavenProjectSupport.setServerInstanceID(project, "InstanceServerID"); // NOI18N
+        JavaEEProjectSettings.setServerInstanceID(project, "InstanceServerID"); // NOI18N
         MavenProjectSupport.setServerID(project, "ServerID"); // NOI18N
 
         String[] serverIDs = MavenProjectSupport.obtainServerIds(project);

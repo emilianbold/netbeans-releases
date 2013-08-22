@@ -94,5 +94,16 @@ public class DefaultReplaceTokenProviderTest extends NbTestCase {
         assertEquals(null, ActionProviderImpl.replacements(p, ActionProvider.COMMAND_RUN, Lookup.EMPTY).get(DefaultReplaceTokenProvider.CLASSNAME_EXT));
         
     }
+    
+    public void testNgSingle() throws Exception {
+        TestFileUtils.writeFile(d, "pom.xml", "<project><modelVersion>4.0.0</modelVersion>"
+                + "<groupId>g</groupId><artifactId>a</artifactId><version>0</version></project>");
+        TestFileUtils.writeFile(d, "src/test/java/p1/FirstNGTest.java", "package p1; class FirstNGTest {}");
+        TestFileUtils.writeFile(d, "src/main/java/p1/First.java", "package p1; class First {}");
+        
+        Project p = ProjectManager.getDefault().findProject(d);
+        assertEquals("p1.FirstNGTest", ActionProviderImpl.replacements(p, ActionProvider.COMMAND_TEST_SINGLE, Lookups.singleton(d.getFileObject("src/main/java/p1/First.java"))).get(DefaultReplaceTokenProvider.PACK_CLASSNAME));
+
+    }
 
 }

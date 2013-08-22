@@ -307,21 +307,26 @@ public class FruchtermanReingoldLayout extends SceneLayout {
     }
     
     private boolean isThereFreeSpace(Point pnt, ArtifactGraphNode node) {
-        Rectangle bnds = scene.findWidget(node).getBounds();
-        if (bnds == null) {
-            return true;
-        }
-        bnds = new Rectangle(pnt.x, pnt.y, bnds.width, bnds.height);
-        for (ArtifactGraphNode nd : scene.getNodes()) {
-            Rectangle bnds2 = scene.findWidget(nd).getBounds();
-            if (bnds2 == null) {
-                return true;
-            }
-            Point point = new Point();
-            point.setLocation(nd.locX, nd.locY);
-            bnds2 = new Rectangle(point, bnds2.getSize());
-            if (bnds.intersects((bnds2))) {
-                return false;
+        if(scene != null) {
+            Widget widget = scene.findWidget(node);
+            if(widget != null) {
+                Rectangle bnds = widget.getBounds();
+                if (bnds == null) {
+                    return true;
+                }
+                bnds = new Rectangle(pnt.x, pnt.y, bnds.width, bnds.height);
+                for (ArtifactGraphNode nd : scene.getNodes()) {
+                    Rectangle bnds2 = scene.findWidget(nd).getBounds();
+                    if (bnds2 == null) {
+                        return true;
+                    }
+                    Point point = new Point();
+                    point.setLocation(nd.locX, nd.locY);
+                    bnds2 = new Rectangle(point, bnds2.getSize());
+                    if (bnds.intersects((bnds2))) {
+                        return false;
+                    }
+                }
             }
         }
         return true;

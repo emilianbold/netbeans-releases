@@ -60,10 +60,12 @@ public interface RemoteClient {
     void connect() throws RemoteException;
 
     /**
-     * Disconnect from a remote server.
+     * Possibly disconnect from a remote server. Typically do nothing
+     * if keep-alive is used and <tt>force</tt> is {@code false}.
+     * @param force if {@code true}, always disconnect from the server
      * @throws RemoteException if any unexpected error occurs.
      */
-    void disconnect() throws RemoteException;
+    void disconnect(boolean force) throws RemoteException;
 
     /**
      * Change working directory to the given file path.

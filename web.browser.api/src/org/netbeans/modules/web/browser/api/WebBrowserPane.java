@@ -72,6 +72,7 @@ public final class WebBrowserPane {
     private boolean createTopComponent = false;
     private Lookup lastProjectContext = null;
     private WebBrowserFeatures features;
+    private boolean open = false;
     
     WebBrowserPane(WebBrowserFeatures features, WebBrowserFactoryDescriptor desc,
             boolean wrapEmbeddedBrowserInTopComponent) 
@@ -91,6 +92,7 @@ public final class WebBrowserPane {
                 if (HtmlBrowser.Impl.PROP_BROWSER_WAS_CLOSED.equals(
                         evt.getPropertyName())) 
                 {
+                    open = false;
                     firePaneClosed();
                 }
                 if (HtmlBrowser.Impl.PROP_URL.equals(evt.getPropertyName())) {
@@ -135,6 +137,11 @@ public final class WebBrowserPane {
                 ((EnhancedBrowser) impl).close(closeTab);
             }
         }
+        open = false;
+    }
+
+    boolean isOpen() {
+        return open;
     }
     
     private synchronized HtmlBrowserComponent getTopComponent() {
@@ -223,6 +230,7 @@ public final class WebBrowserPane {
                 }
             }
         };
+        open = true;
         if (SwingUtilities.isEventDispatchThread() || !isEmbedded()) {
             r.run();
         } else {
@@ -269,6 +277,7 @@ public final class WebBrowserPane {
                 }
             }
         };
+        open = true;
         if (SwingUtilities.isEventDispatchThread()) {
             r.run();
         } else {

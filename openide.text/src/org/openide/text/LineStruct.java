@@ -140,11 +140,11 @@ final class LineStruct extends Object {
     * @return line number in the new numbering
     */
     private int originalToCurrentImpl(int line) {
-        Iterator it = list.iterator();
+        Iterator<Info> it = list.iterator();
         int cur = 0;
 
         for (;;) {
-            Info i = (Info) it.next();
+            Info i = it.next();
 
             if (i.original > line) {
                 // ok we found the segment that contained this line
@@ -161,11 +161,11 @@ final class LineStruct extends Object {
     * @return line number in the original numbering
     */
     private int currentToOriginalImpl(int line) {
-        Iterator it = list.iterator();
+        Iterator<Info> it = list.iterator();
         int cur = 0;
 
         for (;;) {
-            Info i = (Info) it.next();
+            Info i = it.next();
 
             if (i.current > line) {
                 // ok we found the segment that contained this line

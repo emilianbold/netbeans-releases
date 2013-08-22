@@ -86,6 +86,7 @@ import org.netbeans.modules.csl.api.StructureItem;
 import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.csl.api.StructureScanner.Configuration;
 import org.netbeans.modules.csl.spi.ParserResult;
+import org.netbeans.modules.groovy.editor.api.elements.common.MethodElement.MethodParameter;
 
 
 /**
@@ -155,10 +156,6 @@ public class StructureAnalyzer implements StructureScanner {
 
                 // Add unique fields
                 for (FieldNode field : names.values()) {
-                    ASTField co = new ASTField(result, field);
-                    //co.setIn(AstUtilities.getClassOrModuleName(clz));
-                    co.setIn(clz.getFqn());
-
                     // Make sure I don't already have an entry for this field as an
                     // attr_accessor or writer
                     String fieldName = field.getName();
@@ -175,10 +172,11 @@ public class StructureAnalyzer implements StructureScanner {
                         }
                     }
 
+                    boolean isProperty = false;
                     if (found) {
-                        co.setProperty(true);
+                        isProperty = true;
                     }
-                    clz.addChild(co);
+                    clz.addChild(new ASTField(field, clz.getFqn(), isProperty));
                 }
 
                 names.clear();
@@ -195,8 +193,8 @@ public class StructureAnalyzer implements StructureScanner {
                 && !((AnnotatedNode) node).hasNoRealSourcePosition()) {
 
             if (node instanceof ClassNode) {
-                ASTClass co = new ASTClass(result, node);
-                co.setFqn(((ClassNode) node).getName());
+                ClassNode classNode = (ClassNode) node;
+                ASTClass co = new ASTClass(classNode, classNode.getName());
 
                 if (parent != null) {
                     parent.addChild(co);
@@ -219,9 +217,8 @@ public class StructureAnalyzer implements StructureScanner {
                     assignments.add((FieldNode) node);
                 }
             } else if (node instanceof MethodNode) {
-                ASTMethod co = new ASTMethod(result, node);
+                ASTMethod co = new ASTMethod(node, in);
                 methods.add(co);
-                co.setIn(in);
 
                 // TODO - don't add this to the top level! Make a nested list
                 if (parent != null) {
@@ -459,14 +456,14 @@ public class StructureAnalyzer implements StructureScanner {
             formatter.appendHtml(method.getName());
         }
         
-        private void appendParameters(HtmlFormatter formatter, Collection<String> params) {
+        private void appendParameters(HtmlFormatter formatter, Collection<MethodParameter> params) {
             if (!params.isEmpty()) {
                 formatter.appendHtml("(");
                 formatter.parameters(true);
 
-                for (Iterator<String> it = params.iterator(); it.hasNext();) {
-                    String ve = it.next();
-                    formatter.appendText(ve);
+                for (Iterator<MethodParameter> it = params.iterator(); it.hasNext();) {
+                    MethodParameter param = it.next();
+                    formatter.appendText(param.toString());
 
                     if (it.hasNext()) {
                         formatter.appendHtml(", ");

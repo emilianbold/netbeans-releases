@@ -73,10 +73,10 @@ public class JsStructureScannerWithIndexTest extends JsWithBase {
         checkStructure("testfiles/structure/withIndex/issue223117.js");
     }
 
-    @Override
-    protected boolean cleanCacheDir() {
-        return false;
-    }
+//    @Override
+//    protected boolean cleanCacheDir() {
+//        return false;
+//    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

@@ -81,10 +81,10 @@ public class JsStructureScannerArrayTest extends JsTestBase {
         checkStructure("testfiles/completion/arrays/issue231449.js");
     }
 
-    @Override
-    protected boolean cleanCacheDir() {
-        return false;
-    }
+//    @Override
+//    protected boolean cleanCacheDir() {
+//        return false;
+//    }
 
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {

@@ -631,9 +631,11 @@ public class Nodes {
 
         @Override
         protected Node[] createNodes(ErrorDescription key) {
-            return new Node[] {new ErrorDescriptionNode(error2Analyzer.get(key), key)};
+            AnalyzerFactory analyzerFactory = error2Analyzer.get(key);
+            if (analyzerFactory==null) {
+                return null;
+            } else return new Node[] {new ErrorDescriptionNode(analyzerFactory, key)};
         }
-
     }
 
     private static final class ErrorDescriptionNode extends AbstractNode {

@@ -294,11 +294,11 @@ public class CallbackPanel extends SectionInnerPanel {
         }
 
         if (source.equals(iterationField)) {
-            String iterations = (String) iterationField.getValue();
-            if ((iterations == null) || iterations.length() == 0) {
+            Long iterations = (Long)iterationField.getValue();
+            if ((iterations == null) || iterations.toString().length() == 0) {
                 ProprietarySecurityPolicyModelHelper.setHandlerIterations(binding, null, true);
             } else {
-                ProprietarySecurityPolicyModelHelper.setHandlerIterations(binding, iterations, true);
+                ProprietarySecurityPolicyModelHelper.setHandlerIterations(binding, iterations.toString(), true);
             }
         }
 

@@ -64,6 +64,7 @@ import org.netbeans.spi.gototest.TestLocator.LocationListener;
 import org.netbeans.spi.gototest.TestLocator.LocationResult;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import org.openide.awt.StatusDisplayer;
 import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
@@ -101,11 +102,10 @@ public class GotoOppositeAction extends CallableSystemAction {
         putValue("trimmed-text", trimmedName); //NOI18N
     }
     
+    @Override
+    @NbBundle.Messages("LBL_Action_GoToTestOrTestedClass=&Go to Test/Tested class")
     public String getName() {
-        return NbBundle.getMessage(getClass(),
-                                   getCurrentFileType() == FileType.TEST
-                                        ? "LBL_Action_GoToSource" //NOI18N
-                                        : "LBL_Action_GoToTest"); //NOI18N
+        return Bundle.LBL_Action_GoToTestOrTestedClass();
     }
     
     @Override
@@ -115,7 +115,7 @@ public class GotoOppositeAction extends CallableSystemAction {
         if (ec == null || ec.getDocument() == null) {
             return false;
         }
-        return getCurrentFileType() != FileType.NEITHER;
+        return true;
     }
 
     public HelpCtx getHelpCtx() {
@@ -137,6 +137,7 @@ public class GotoOppositeAction extends CallableSystemAction {
     }
     
     @Override
+    @NbBundle.Messages("No_Test_Or_Tested_Class_Found=No Test or Tested class found")
     public void performAction() {
         int caretOffsetHolder[] = { -1 };
         final FileObject fo = getApplicableFileObject(caretOffsetHolder);
@@ -149,18 +150,24 @@ public class GotoOppositeAction extends CallableSystemAction {
 
                 @Override
                 public void run() {
-                    populateLocationResults(fo, caretOffset);
-                    SwingUtilities.invokeLater(new Runnable() {
+                    FileType currentFileType = getCurrentFileType();
+                    if(currentFileType == FileType.NEITHER) {
+                        StatusDisplayer.getDefault().setStatusText(Bundle.No_Test_Or_Tested_Class_Found());
+                    }
+                    else {
+                        populateLocationResults(fo, caretOffset);
+                        SwingUtilities.invokeLater(new Runnable() {
 
-                        @Override
-                        public void run() {
-                            if (locationResults.size() == 1) {
-                                handleResult(locationResults.keySet().iterator().next());
-                            } else if (locationResults.size() > 1) {
-                                showPopup(fo);
+                            @Override
+                            public void run() {
+                                if (locationResults.size() == 1) {
+                                    handleResult(locationResults.keySet().iterator().next());
+                                } else if (locationResults.size() > 1) {
+                                    showPopup(fo);
+                                }
                             }
-                        }
-                    });
+                        });
+                    }
                 }
             });
         }

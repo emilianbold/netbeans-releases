@@ -798,11 +798,11 @@ public class Actions {
         public boolean isEnabled() {
             List<TreeListNode> selectedNodes = DashboardViewer.getInstance().getSelectedNodes();
             for (TreeListNode treeListNodes : selectedNodes) {
-                if (treeListNodes instanceof RepositoryNode || treeListNodes instanceof CategoryNode || treeListNodes instanceof QueryNode || treeListNodes instanceof TaskNode) {
-                    return true;
+                if (!(treeListNodes instanceof RepositoryNode || treeListNodes instanceof CategoryNode || treeListNodes instanceof QueryNode || treeListNodes instanceof TaskNode)) {
+                    return false;
                 }
             }
-            return false;
+            return true;
         }
     }
 

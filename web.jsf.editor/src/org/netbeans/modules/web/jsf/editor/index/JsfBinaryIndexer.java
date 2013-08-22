@@ -46,7 +46,6 @@ import java.util.*;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.project.Project;
-import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.html.editor.api.gsf.HtmlParserResult;
 import org.netbeans.modules.parsing.api.Embedding;
 import org.netbeans.modules.parsing.api.ParserManager;
@@ -182,7 +181,7 @@ public class JsfBinaryIndexer extends ConstrainedBinaryIndexer {
 
     }
     public static Collection<FileObject> findLibraryDescriptors(Iterable<? extends FileObject> fos, String suffix) {
-        Collection<FileObject> files = new ArrayList<FileObject>();
+        Collection<FileObject> files = new ArrayList<>();
         for (FileObject file : fos) {
             if (file.getNameExt().toLowerCase(Locale.US).endsWith(suffix)) { //NOI18N
                 //found library, create a new instance and cache it
@@ -199,7 +198,9 @@ public class JsfBinaryIndexer extends ConstrainedBinaryIndexer {
             for(Project p : LibraryUtils.getOpenedJSFProjects()) {
                 JsfSupport support = JsfSupportProvider.get(p.getProjectDirectory());
                 if(support != null) {
-                    ((JsfSupportImpl)support).indexedContentPossiblyChanged();
+                    JsfSupportImpl jsfSupportImpl = (JsfSupportImpl) support;
+                    jsfSupportImpl.indexedContentPossiblyChanged();
+                    jsfSupportImpl.getIndex().notifyChange();
                 }
             }
         }

@@ -55,6 +55,7 @@ import org.netbeans.api.project.libraries.LibraryManager;
 import org.netbeans.modules.testng.api.TestNGSupport.Action;
 import org.netbeans.modules.testng.spi.TestConfig;
 import org.netbeans.modules.testng.spi.TestNGSupportImplementation;
+import org.netbeans.spi.project.ProjectServiceProvider;
 import org.netbeans.spi.project.ant.AntArtifactProvider;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
@@ -192,13 +193,27 @@ public class AntTestNGSupport extends TestNGSupportImplementation {
                 cmd = "debug-test"; //NOI18N
                 props.put("test.class", "'".concat(FileUtil.toFile(test).getAbsolutePath()).concat("'")); //NOI18N
             } else if (Action.RUN_TESTMETHOD.equals(action)) {
-                cmd = "test-single-method"; //NOI18N
-                props.put("test.class", config.getPackageName() + "." + config.getClassName()); //NOI18N
-                props.put("test.method", config.getMethodName()); //NOI18N
+                if (isNbModuleProject()) {
+                    cmd = "test-method"; //NOI18N
+                    props.put("test.class", config.getPackageName() + "." + config.getClassName()); //NOI18N
+                    props.put("test.methods", config.getMethodName()); //NOI18N
+                    props.setProperty("continue.after.failing.tests", "true");  //NOI18N
+                } else {
+                    cmd = "test-single-method"; //NOI18N
+                    props.put("test.class", config.getPackageName() + "." + config.getClassName()); //NOI18N
+                    props.put("test.method", config.getMethodName()); //NOI18N
+                }
             } else if (Action.DEBUG_TESTMETHOD.equals(action)) {
-                cmd = "debug-test-method"; //NOI18N
-                props.put("test.class", config.getPackageName() + "." + config.getClassName()); //NOI18N
-                props.put("test.method", config.getMethodName()); //NOI18N
+                if (isNbModuleProject()) {
+                    cmd = "debug-test-single-nb"; //NOI18N
+                    props.put("test.class", config.getPackageName() + "." + config.getClassName()); //NOI18N
+                    props.put("test.methods", config.getMethodName()); //NOI18N
+                    props.setProperty("continue.after.failing.tests", "true");  //NOI18N
+                } else {
+                    cmd = "debug-test-method"; //NOI18N
+                    props.put("test.class", config.getPackageName() + "." + config.getClassName()); //NOI18N
+                    props.put("test.method", config.getMethodName()); //NOI18N
+                }
             }
             assert cmd != null : "Unsupported action: " + action; //NOI18N
             props.put("javac.includes", ActionUtils.antIncludesList(new FileObject[]{testRoot}, testRoot, true)); //NOI18N
@@ -209,6 +224,15 @@ public class AntTestNGSupport extends TestNGSupportImplementation {
 		return;
 	    }
             ActionUtils.runTarget(buildFO, new String[]{cmd}, props);
+        }
+
+        private boolean isNbModuleProject() {
+            return p.getLookup().lookup(AntTestNGSupportProjectServiceProvider.class) != null;
+        }
+
+        @ProjectServiceProvider(service = AntTestNGSupportProjectServiceProvider.class, projectType = "org-netbeans-modules-apisupport-project")
+        public static class AntTestNGSupportProjectServiceProvider {
+            public AntTestNGSupportProjectServiceProvider(Project p) { }
         }
     }
 }

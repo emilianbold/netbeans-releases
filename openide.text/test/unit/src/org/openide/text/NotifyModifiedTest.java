@@ -378,10 +378,6 @@ implements CloneableEditorSupport.Env {
         assertEquals ("The text is the same as original content", content, text);
     }
     
-    protected final boolean supportsModificationListener() {
-        return Boolean.TRUE.equals(support.getDocument().getProperty("supportsModificationListener"));
-    }
-    
     public void testRevertModificationAfterSave () throws Exception {
         content = "Ahoj";
         
@@ -427,10 +423,7 @@ implements CloneableEditorSupport.Env {
         NbDocument.runAtomic (doc, r);
 
         assertEquals ("The same number of modification and unmodifications", support.notifyModified, support.notifyUnmodified);
-        // runAtomic() for supportsModificationListener() must notifyModify() before acquiring doc.writeLock()
-        //   => 1 modify and 1 unmodify
-        int expectedCount = supportsModificationListener() ? 1 : 0;
-        assertEquals ("Actually it is zero", expectedCount, support.notifyUnmodified);
+        assertEquals ("Actually it is zero", 0, support.notifyUnmodified);
     }
     
     
@@ -440,10 +433,8 @@ implements CloneableEditorSupport.Env {
         
         support.getDocument ().insertString (0, "Ahoj", null);
         
-        int expectedCount = supportsModificationListener() ? 2 : 1;
-        assertEquals ("One modification now", expectedCount, support.notifyModified);
-        expectedCount = supportsModificationListener() ? 1 : 0;
-        assertEquals ("No unmodified", expectedCount, support.notifyUnmodified);
+        assertEquals ("One modification now", 1, support.notifyModified);
+        assertEquals ("No unmodified", 0, support.notifyUnmodified);
         support.assertModified (true, "Is modified");
     }
 
@@ -452,10 +443,8 @@ implements CloneableEditorSupport.Env {
         
         support.getDocument ().remove (0, 4);
         
-        int expectedCount = supportsModificationListener() ? 2 : 1;
-        assertEquals ("One modification now", expectedCount, support.notifyModified);
-        expectedCount = supportsModificationListener() ? 1 : 0;
-        assertEquals ("No unmodified", expectedCount, support.notifyUnmodified);
+        assertEquals ("One modification now", 1, support.notifyModified);
+        assertEquals ("No unmodified", 0, support.notifyUnmodified);
         support.assertModified (true, "Is modified");
     }
     
@@ -743,13 +732,16 @@ implements CloneableEditorSupport.Env {
     public void markModified() throws java.io.IOException {
         modified = true;
         //new Exception ("markModified: " + modified).printStackTrace(System.out);
-        checkThatDocumentLockIsNotHeld ();
+        // The document is expected to hold write-lock when markModified() is called - this change
+        // allows to get rid of extra unmarkModified() done when an atomic-lock section
+        // does not perform any document modification.
+//        checkThatDocumentLockIsNotHeld ();
     }
     
     public void unmarkModified() {
         modified = false;
         //new Exception ("unmarkModified: " + modified).printStackTrace(System.out);
-        checkThatDocumentLockIsNotHeld ();
+//        checkThatDocumentLockIsNotHeld ();
     }
     
     /** Implementation of the CES */

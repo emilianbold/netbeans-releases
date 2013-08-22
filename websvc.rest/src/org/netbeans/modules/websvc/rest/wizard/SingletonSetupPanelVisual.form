@@ -42,21 +42,21 @@
               </Group>
               <EmptySpace min="-2" pref="7" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="classTextField" alignment="1" pref="329" max="32767" attributes="1"/>
-                  <Component id="medaTypeComboBox" alignment="1" pref="329" max="32767" attributes="0"/>
+                  <Component id="classTextField" alignment="1" pref="301" max="32767" attributes="1"/>
+                  <Component id="medaTypeComboBox" alignment="1" pref="301" max="32767" attributes="0"/>
                   <Group type="102" alignment="1" attributes="0">
-                      <Component id="contentClassTextField" pref="250" max="32767" attributes="0"/>
+                      <Component id="contentClassTextField" pref="227" max="32767" attributes="0"/>
                       <EmptySpace max="-2" attributes="0"/>
                       <Component id="selectClassButton" min="-2" max="-2" attributes="0"/>
                   </Group>
-                  <Component id="uriTextField" alignment="1" pref="329" max="32767" attributes="0"/>
-                  <Component id="locationComboBox" alignment="1" pref="327" max="32767" attributes="1"/>
-                  <Component id="packageComboBox" alignment="1" pref="281" max="32767" attributes="1"/>
-                  <Component id="projectTextField" alignment="0" pref="329" max="32767" attributes="1"/>
+                  <Component id="uriTextField" alignment="1" pref="301" max="32767" attributes="0"/>
+                  <Component id="locationComboBox" alignment="1" pref="301" max="32767" attributes="1"/>
+                  <Component id="packageComboBox" alignment="1" pref="301" max="32767" attributes="1"/>
+                  <Component id="projectTextField" alignment="0" pref="301" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
           </Group>
-          <Component id="jSeparator2" alignment="0" pref="452" max="32767" attributes="0"/>
+          <Component id="jSeparator2" alignment="0" pref="470" max="32767" attributes="0"/>
       </Group>
     </DimensionLayout>
     <DimensionLayout dim="1">
@@ -68,8 +68,8 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="locationComboBox" alignment="3" min="-2" pref="29" max="-2" attributes="0"/>
                   <Component id="locationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="locationComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
@@ -97,9 +97,8 @@
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="contentClassLabel" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="selectClassButton" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="contentClassTextField" alignment="3" min="-2" pref="22" max="-2" attributes="0"/>
+                  <Component id="contentClassTextField" alignment="0" max="32767" attributes="0"/>
               </Group>
-              <EmptySpace max="32767" attributes="0"/>
           </Group>
       </Group>
     </DimensionLayout>

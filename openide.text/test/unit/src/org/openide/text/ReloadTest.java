@@ -62,6 +62,7 @@ import org.netbeans.junit.Log;
 import org.netbeans.junit.NbTestCase;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
+import org.openide.util.Task;
 import org.openide.windows.CloneableOpenSupport;
 import org.openide.windows.CloneableTopComponent;
 
@@ -117,6 +118,8 @@ implements CloneableEditorSupport.Env {
         propL.firePropertyChange (CloneableEditorSupport.Env.PROP_TIME, null, null);
         
         waitAWT ();
+        Task reloadTask = support.reloadDocument();
+        reloadTask.waitFinished();
         
         String s = doc.getText (0, doc.getLength ());
         assertEquals ("Text has been updated", content, s);

@@ -7,7 +7,6 @@ CLASS      B                               [PUBLIC]   issue232792.js
 CLASS      console                         [PUBLIC]   issue232792.js
 METHOD     getGlobal(): undefined          [PUBLIC]   issue232792.js
 METHOD     getInfo(): undefined            [PUBLIC]   issue232792.js
-METHOD     getInfo(): undefined            [PUBLIC]   issue232792.js
 METHOD     getName(): undefined            [PUBLIC]   issue232792.js
 FIELD      monitor: Number                 [PUBLIC]   issue232792.js
 KEYWORD    break                                      null

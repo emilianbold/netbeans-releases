@@ -166,6 +166,8 @@ public abstract class PushMapping extends ItemSelector.Item {
     String getRemoteName () {
         return remoteName;
     }
+
+    abstract boolean isCreateBranchMapping ();
     
     public static final class PushBranchMapping extends PushMapping {
         private final GitBranch localBranch;
@@ -226,6 +228,11 @@ public abstract class PushMapping extends ItemSelector.Item {
                 return super.getInfoMessage();
             }
         }
+
+        @Override
+        boolean isCreateBranchMapping () {
+            return localBranch != null && remoteBranchName == null;
+        }
     }
     
     public static final class PushTagMapping extends PushMapping {
@@ -239,6 +246,11 @@ public abstract class PushMapping extends ItemSelector.Item {
         @Override
         public String getRefSpec () {
             return GitUtils.getPushTagRefSpec(tag.getTagName());
+        }
+
+        @Override
+        boolean isCreateBranchMapping () {
+            return false;
         }
     }
 }

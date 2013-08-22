@@ -93,7 +93,7 @@ public final class Utils {
     }
 
     public static Repository getRepositoryForWorkingDir (File workDir) throws IOException, IllegalArgumentException {
-         return new FileRepositoryBuilder().setWorkTree(workDir).readEnvironment().build();
+         return new FileRepositoryBuilder().setWorkTree(workDir).build();
     }
 
     public static File getMetadataFolder (File workDir) {
@@ -407,6 +407,8 @@ public final class Utils {
         if (trackedBranchName != null) {
             if (trackedBranchName.startsWith(Constants.R_HEADS)) {
                 trackedBranchName = trackedBranchName.substring(Constants.R_HEADS.length());
+            } else if (trackedBranchName.startsWith(Constants.R_REMOTES)) {
+                trackedBranchName = trackedBranchName.substring(Constants.R_REMOTES.length());
             }
         }
         if (trackedBranchName == null) {

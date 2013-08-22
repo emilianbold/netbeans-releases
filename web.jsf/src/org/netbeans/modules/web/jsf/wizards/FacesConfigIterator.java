@@ -45,7 +45,11 @@
 package org.netbeans.modules.web.jsf.wizards;
 
 import java.io.IOException;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Set;
 import java.util.logging.Level;
@@ -53,6 +57,7 @@ import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
 import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
@@ -71,7 +76,14 @@ import org.netbeans.modules.web.jsf.JSFConfigUtilities;
 import org.netbeans.modules.web.jsf.JSFFrameworkProvider;
 import org.netbeans.modules.web.jsf.JSFUtils;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
+import static org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion.JSF_1_0;
+import static org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion.JSF_1_1;
+import static org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion.JSF_1_2;
+import static org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion.JSF_2_0;
+import static org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion.JSF_2_1;
+import static org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion.JSF_2_2;
 import org.netbeans.modules.web.wizards.Utilities;
+import org.netbeans.spi.java.classpath.ClassPathProvider;
 import org.netbeans.spi.project.ui.templates.support.Templates;
 import org.openide.WizardDescriptor;
 import org.openide.WizardDescriptor.Panel;
@@ -178,6 +190,20 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
         return result;
     }
 
+    private static ClassPath getCompileClasspath(Project project) {
+        ClassPathProvider cpp = project.getLookup().lookup(ClassPathProvider.class);
+        Sources sources = ProjectUtils.getSources(project);
+        if (sources == null) {
+            return null;
+        }
+
+        SourceGroup[] sourceGroups = sources.getSourceGroups("java"); //NOII18N
+        if (sourceGroups.length > 0) {
+            return cpp.findClassPath(sourceGroups[0].getRootFolder(), ClassPath.COMPILE);
+        }
+        return null;
+    }
+
     private static String findFacesConfigTemplate(WebModule wm) {
         JSFVersion jsfVersion = JSFVersion.get(wm, false);
         // not found on project classpath (case of Maven project with JSF in deps)
@@ -185,14 +211,31 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
             // XXX - rewrite using javaee.spec.support module
             Project project = FileOwnerQuery.getOwner(JSFUtils.getFileObject(wm));
             J2eePlatform j2eePlatform = ProjectUtil.getPlatform(project);
-            Set<Profile> serverProfiles = j2eePlatform.getSupportedProfiles();
-            if (serverProfiles.contains(Profile.JAVA_EE_7_WEB) || serverProfiles.contains(Profile.JAVA_EE_7_FULL)) {
-                return JSFCatalog.RES_FACES_CONFIG_2_2;
-            } else if (serverProfiles.contains(Profile.JAVA_EE_5) || serverProfiles.contains(Profile.JAVA_EE_6_WEB) || serverProfiles.contains(Profile.JAVA_EE_6_FULL)) {
-                return JSFCatalog.RES_FACES_CONFIG_2_1;
+            if (j2eePlatform != null) {
+                Set<Profile> serverProfiles = j2eePlatform.getSupportedProfiles();
+                if (serverProfiles.contains(Profile.JAVA_EE_7_WEB) || serverProfiles.contains(Profile.JAVA_EE_7_FULL)) {
+                    return JSFCatalog.RES_FACES_CONFIG_2_2;
+                } else if (serverProfiles.contains(Profile.JAVA_EE_5) || serverProfiles.contains(Profile.JAVA_EE_6_WEB) || serverProfiles.contains(Profile.JAVA_EE_6_FULL)) {
+                    return JSFCatalog.RES_FACES_CONFIG_2_1;
+                }
+            }
+            if (project != null ) {
+                ClassPath compileClasspath = getCompileClasspath(project);
+                if (compileClasspath != null) {
+                    List<URL> cpUrls = new ArrayList<>();
+                    for (ClassPath.Entry entry : compileClasspath.entries()) {
+                        cpUrls.add(entry.getURL());
+                    }
+                    jsfVersion = JSFVersion.forClasspath(cpUrls);
+                    return facesConfigForVersion(jsfVersion);
+                }
             }
             return JSFCatalog.RES_FACES_CONFIG_DEFAULT;
         }
+        return facesConfigForVersion(jsfVersion);
+    }
+
+    private static String facesConfigForVersion(JSFVersion jsfVersion) {
         switch (jsfVersion) {
             case JSF_2_2:
                 return JSFCatalog.RES_FACES_CONFIG_2_2;
@@ -204,9 +247,9 @@ public class FacesConfigIterator implements TemplateWizard.Iterator {
                 return JSFCatalog.RES_FACES_CONFIG_1_2;
             case JSF_1_1:
             case JSF_1_0:
+            default:
                 return JSFCatalog.RES_FACES_CONFIG_DEFAULT;
         }
-        return JSFCatalog.RES_FACES_CONFIG_DEFAULT;
     }
 
     @Override

@@ -622,13 +622,14 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                 if (isCanceled) {
                     return null;
                 }
-                current = provider;
-                final TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message, contexts.iterator().next());
+                current = provider;                
                 long start = System.currentTimeMillis();
                 try {
                     LOGGER.log(Level.FINE, "Calling TypeProvider: {0}", provider);  //NOI18N
                     for (TypeProvider.Context context : contexts) {
+                        final TypeProvider.Result result = TypeProviderAccessor.DEFAULT.createResult(items, message, contexts.iterator().next());
                         provider.computeTypeNames(context, result);
+                        retry[0] = mergeRetryTimeOut(retry[0], TypeProviderAccessor.DEFAULT.getRetry(result));
                     }
                 } finally {
                     current = null;
@@ -638,10 +639,7 @@ public class GoToTypeAction extends AbstractAction implements GoToPanel.ContentP
                         new Object[]{
                             provider.getDisplayName(),
                             delta
-                        });
-                retry[0] = mergeRetryTimeOut(
-                    retry[0],
-                    TypeProviderAccessor.DEFAULT.getRetry(result));
+                        });                
             }
             if ( !isCanceled ) {
                 final ArrayList<TypeDescriptor> result = new ArrayList<TypeDescriptor>(items);

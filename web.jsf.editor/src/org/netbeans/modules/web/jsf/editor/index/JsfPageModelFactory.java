@@ -53,13 +53,13 @@ import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
  */
 public abstract class JsfPageModelFactory {
 
-    private static final Collection<JsfPageModelFactory> FACTORIES = new ArrayList<JsfPageModelFactory>();
+    private static final Collection<JsfPageModelFactory> FACTORIES = new ArrayList<>();
     static {
         FACTORIES.add(new CompositeComponentModel.Factory());
     }
 
     public static Collection<JsfPageModel> getModels(HtmlParserResult result) {
-        Collection<JsfPageModel> models = new ArrayList<JsfPageModel>();
+        Collection<JsfPageModel> models = new ArrayList<>();
         for(JsfPageModelFactory factory : FACTORIES) {
             JsfPageModel model = factory.getModel(result);
             if(model != null) {

@@ -64,7 +64,6 @@ import org.netbeans.modules.web.beans.api.model.WebBeansModel;
 import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsf.editor.facelets.FaceletsLibrarySupport;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
-import org.netbeans.modules.web.jsfapi.api.DefaultLibraryInfo;
 import org.netbeans.modules.web.jsfapi.api.JsfSupport;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.NamespaceUtils;
@@ -107,8 +106,7 @@ public class JsfSupportImpl implements JsfSupport {
         if(webModule != null) {
             // #217213 - prevent NPE:
             if (webModule.getDocumentBase() == null) {
-                LOG.log(Level.INFO, "project '"+project+ // NOI18N
-                        "' does not have valid documentBase"); // NOI18N
+                LOG.log(Level.INFO, "project ''{0}'' does not have valid documentBase", project); // NOI18N
                 return null;
             }
             //web project
@@ -116,9 +114,7 @@ public class JsfSupportImpl implements JsfSupport {
             ClassPath compileCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.COMPILE);
             // #217213 - prevent NPE; not sure what's causing it:
             if (compileCP == null) {
-                LOG.log(Level.INFO, "project '"+project+ // NOI18N
-                        "' does not have compilation classpath; documentBase="+ // NOI18N
-                        webModule.getDocumentBase());
+                LOG.log(Level.INFO, "project ''{0}'' does not have compilation classpath; documentBase={1}", new Object[]{project, webModule.getDocumentBase()});
                 return null;
             }
             ClassPath executeCP = ClassPath.getClassPath(webModule.getDocumentBase(), ClassPath.EXECUTE);
@@ -130,10 +126,10 @@ public class JsfSupportImpl implements JsfSupport {
             Sources sources = ProjectUtils.getSources(project);
             SourceGroup[] sourceGroups = sources.getSourceGroups( JavaProjectConstants.SOURCES_TYPE_JAVA );
             if(sourceGroups.length > 0) {
-                Collection<ClassPath> sourceCps = new HashSet<ClassPath>();
-                Collection<ClassPath> compileCps = new HashSet<ClassPath>();
-                Collection<ClassPath> executeCps = new HashSet<ClassPath>();
-                Collection<ClassPath> bootCps = new HashSet<ClassPath>();
+                Collection<ClassPath> sourceCps = new HashSet<>();
+                Collection<ClassPath> compileCps = new HashSet<>();
+                Collection<ClassPath> executeCps = new HashSet<>();
+                Collection<ClassPath> bootCps = new HashSet<>();
                 for(SourceGroup sg : sourceGroups) {
                     sourceCps.add(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.SOURCE));
                     compileCps.add(ClassPath.getClassPath(sg.getRootFolder(), ClassPath.COMPILE));
@@ -203,7 +199,7 @@ public class JsfSupportImpl implements JsfSupport {
     }
     
     public FileObject[] getClassPathRoots() {
-        Collection<FileObject> roots = new ArrayList<FileObject>();
+        Collection<FileObject> roots = new ArrayList<>();
         roots.addAll(Arrays.asList(sourceClassPath.getRoots()));
         roots.addAll(Arrays.asList(compileClasspath.getRoots()));
         roots.addAll(Arrays.asList(executeClassPath.getRoots()));

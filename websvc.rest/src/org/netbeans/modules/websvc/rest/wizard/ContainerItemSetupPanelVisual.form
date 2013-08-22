@@ -29,7 +29,7 @@
   <Layout>
     <DimensionLayout dim="0">
       <Group type="103" groupAlignment="0" attributes="0">
-          <Component id="jSeparator1" alignment="0" pref="454" max="32767" attributes="1"/>
+          <Component id="jSeparator1" alignment="0" pref="449" max="32767" attributes="1"/>
           <Group type="102" alignment="0" attributes="0">
               <Group type="103" groupAlignment="0" attributes="0">
                   <Component id="classLabel" alignment="0" min="-2" max="-2" attributes="0"/>
@@ -41,12 +41,12 @@
               </Group>
               <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="0" attributes="0">
-                  <Component id="packageComboBox" alignment="0" pref="341" max="32767" attributes="1"/>
-                  <Component id="resourceNameTextField" alignment="0" pref="337" max="32767" attributes="1"/>
-                  <Component id="classTextField" alignment="0" pref="341" max="32767" attributes="1"/>
-                  <Component id="projectTextField" alignment="0" pref="341" max="32767" attributes="1"/>
-                  <Component id="locationComboBox" alignment="0" pref="341" max="32767" attributes="1"/>
-                  <Component id="containerTextField" alignment="1" pref="341" max="32767" attributes="1"/>
+                  <Component id="resourceNameTextField" alignment="0" pref="281" max="32767" attributes="1"/>
+                  <Component id="classTextField" alignment="0" pref="281" max="32767" attributes="1"/>
+                  <Component id="projectTextField" alignment="0" pref="281" max="32767" attributes="1"/>
+                  <Component id="locationComboBox" alignment="0" pref="281" max="32767" attributes="1"/>
+                  <Component id="containerTextField" alignment="1" pref="281" max="32767" attributes="1"/>
+                  <Component id="packageComboBox" max="32767" attributes="1"/>
               </Group>
           </Group>
           <Group type="102" alignment="1" attributes="0">
@@ -57,11 +57,11 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" attributes="0">
-                  <Component id="uriTextField" alignment="0" pref="215" max="32767" attributes="1"/>
-                  <Component id="representationClassTextField" alignment="0" pref="215" max="32767" attributes="0"/>
-                  <Component id="containerRepresentationClassTextField" alignment="0" pref="215" max="32767" attributes="1"/>
-                  <Component id="containerUriTextField" alignment="0" pref="215" max="32767" attributes="1"/>
-                  <Component id="medaTypeComboBox" alignment="0" pref="142" max="32767" attributes="1"/>
+                  <Component id="uriTextField" alignment="0" pref="141" max="32767" attributes="1"/>
+                  <Component id="representationClassTextField" alignment="0" pref="141" max="32767" attributes="0"/>
+                  <Component id="containerRepresentationClassTextField" alignment="0" pref="141" max="32767" attributes="1"/>
+                  <Component id="containerUriTextField" alignment="0" pref="141" max="32767" attributes="1"/>
+                  <Component id="medaTypeComboBox" alignment="0" pref="141" max="32767" attributes="1"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="1" max="-2" attributes="0">
@@ -81,7 +81,6 @@
     <DimensionLayout dim="1">
       <Group type="103" groupAlignment="0" attributes="0">
           <Group type="102" alignment="0" attributes="0">
-              <EmptySpace min="-2" max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="resourceNameTextField" alignment="3" min="-2" max="-2" attributes="0"/>
                   <Component id="resourceNameLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -103,16 +102,16 @@
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="locationComboBox" alignment="3" min="-2" pref="26" max="-2" attributes="0"/>
                   <Component id="locationLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="locationComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
+                  <Component id="packageComboBox" alignment="3" min="-2" pref="26" max="-2" attributes="0"/>
                   <Component id="packageLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="packageComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
-              <Component id="jSeparator1" min="-2" pref="10" max="-2" attributes="0"/>
+              <Component id="jSeparator1" min="-2" pref="1" max="-2" attributes="0"/>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="uriLabel" alignment="3" min="-2" max="-2" attributes="0"/>
@@ -126,7 +125,7 @@
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">
                   <Component id="mediaTypeLabel" alignment="3" min="-2" max="-2" attributes="0"/>
-                  <Component id="medaTypeComboBox" alignment="3" min="-2" pref="19" max="-2" attributes="0"/>
+                  <Component id="medaTypeComboBox" alignment="3" min="-2" max="-2" attributes="0"/>
               </Group>
               <EmptySpace max="-2" attributes="0"/>
               <Group type="103" groupAlignment="3" attributes="0">

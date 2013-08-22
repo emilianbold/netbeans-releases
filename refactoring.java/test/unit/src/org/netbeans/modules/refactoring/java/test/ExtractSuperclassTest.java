@@ -234,7 +234,7 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "}\n"));
     }
     
-    public void test212624() throws Exception {
+    public void test212624a() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"
                 + "\n"
@@ -263,7 +263,9 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "     */\n"
                 + "    protected String value;\n"
                 + "}\n"));
-        
+    }
+     
+    public void test212624b() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"
                 + "\n"
@@ -290,7 +292,7 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "}\n"));
     }
 
-    public void test211894() throws Exception {
+    public void test211894a() throws Exception {
         writeFilesAndWaitForScan(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"
                 + "\n"
@@ -325,7 +327,9 @@ public class ExtractSuperclassTest extends RefactoringTestBase {
                 + "        System.out.println(\"Hello\");\n"
                 + "    } // Trailing comments\n"
                 + "}\n"));
-        
+    }
+    
+    public void test211894b() throws Exception {    
         writeFilesAndWaitForScan(src,
                 new File("extract/ExtractBaseClass.java", "package extract;\n"
                 + "\n"

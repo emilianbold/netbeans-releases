@@ -645,7 +645,7 @@ public final class ELTypeUtilities {
                     ExecutableElement method = null;
                     for (int i = 0; i < parent.jjtGetNumChildren(); i++) {
                         Node current = parent.jjtGetChild(i);
-                        if (current instanceof AstDotSuffix || NodeUtil.isMethodCall(current)) {
+                        if (enclosing != null && (current instanceof AstDotSuffix || NodeUtil.isMethodCall(current))) {
                             method = getElementForProperty(info, current, enclosing);
                             if (method == null) {
                                 continue;
@@ -819,7 +819,11 @@ public final class ELTypeUtilities {
                                     } else {
                                         for (VariableInfo property : variableInfos) {
                                             if (child.getImage().equals(property.name)) {
-                                                propertyType = info.info().getElements().getTypeElement(property.clazz);
+                                                if (property.clazz == null) {
+                                                    propertyType = info.info().getElements().getTypeElement("java.lang.Object"); //NOI18N
+                                                } else {
+                                                    propertyType = info.info().getElements().getTypeElement(property.clazz);
+                                                }
                                             }
                                         }
                                     }

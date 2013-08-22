@@ -63,7 +63,7 @@ public abstract class GenericTag implements Tag {
     private static final String[] DEFAULT_ATTRS = new String[]{"id", "parent", "rendered",
         "rendererType", "transient", "class" /* not in the spec */}; //NOI18N
     
-    private AtomicReference<Map<String, Attribute>> attrs = new AtomicReference<Map<String, Attribute>>();
+    private AtomicReference<Map<String, Attribute>> attrs = new AtomicReference<>();
 
     @Override
     public Collection<Attribute> getAttributes() {

@@ -201,6 +201,34 @@ public class OutputTabTest extends NbTestCase {
     }
 
     /**
+     * Test for bug 233924 - Can't reopen closed output window when using Maven.
+     *
+     * @throws java.lang.InterruptedException
+     * @throws java.lang.reflect.InvocationTargetException
+     */
+    public void testWriterWillNotDisposeIfOutputReopened()
+            throws InterruptedException, InvocationTargetException {
+        OutWriter out = ((NbWriter) io.getOut()).out();
+        out.println("x");
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                container.remove(tab);
+            }
+        });
+        assertTrue(out.isDisposeOnClose());
+        SwingUtilities.invokeAndWait(new Runnable() {
+            @Override
+            public void run() {
+                Controller.getDefault().performCommand(null, io,
+                        IOEvent.CMD_CREATE, false, null); // create new tab for the IO.
+            }
+        });
+        assertFalse(out.isDisposeOnClose());
+        out.close();
+    }
+
+    /**
      * Log Handler that releases an internal semaphore if an error is logged.
      */
     private static class ReleaseOnErrorHandler extends Handler {

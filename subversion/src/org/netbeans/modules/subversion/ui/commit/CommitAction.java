@@ -117,6 +117,22 @@ public class CommitAction extends ContextAction {
     public static final String RECENT_COMMIT_MESSAGES = "recentCommitMessage";
     private static final String PANEL_PREFIX = "commit"; //NOI18N
     private static final String ICON_RESOURCE = "org/netbeans/modules/subversion/resources/icons/commit.png"; //NOI18N
+    private static final String ERROR_COLOR;
+    private static final String INFO_COLOR;
+    static {
+        Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
+        if (c == null) {
+            ERROR_COLOR = "#CC0000"; //NOI18N
+        } else {
+            ERROR_COLOR = SvnUtils.getColorString(c);
+        }
+        c = UIManager.getColor("nb.warningForeground"); //NOI18N
+        if (c == null) {
+            INFO_COLOR = "#002080"; //NOI18N
+        } else {
+            INFO_COLOR = SvnUtils.getColorString(c);
+        }
+    }
 
     public CommitAction () {
         super(ICON_RESOURCE);
@@ -582,7 +598,7 @@ public class CommitAction extends ContextAction {
                 String msg = (status & FileInformation.STATUS_VERSIONED_CONFLICT) != 0 ?
                         loc.getString("MSG_CommitForm_ErrorConflicts") :
                         loc.getString("MSG_CommitForm_ErrorRemoteChanges");
-                panel.setErrorLabel("<html><font color=\"#002080\">" + msg + "</font></html>");  // NOI18N
+                panel.setErrorLabel("<html><font color=\"" + INFO_COLOR + "\">" + msg + "</font></html>");  // NOI18N
                 conflicts = true;
             }
         }
@@ -606,12 +622,12 @@ public class CommitAction extends ContextAction {
             } else {
                 dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branch"), new Object [] { contentTitle, stickyTag }));
                 String msg = MessageFormat.format(loc.getString("MSG_CommitForm_InfoBranch"), new Object [] { stickyTag });
-                errorLabel = "<html><font color=\"#002080\">" + msg + "</font></html>"; // NOI18N
+                errorLabel = "<html><font color=\"" + INFO_COLOR + "\">" + msg + "</font></html>"; // NOI18N
             }
         } else {
             dd.setTitle(MessageFormat.format(loc.getString("CTL_CommitDialog_Title_Branches"), new Object [] { contentTitle }));
             String msg = loc.getString("MSG_CommitForm_ErrorMultipleBranches");
-            errorLabel = "<html><font color=\"#CC0000\">" + msg + "</font></html>"; // NOI18N
+            errorLabel = "<html><font color=\"" + ERROR_COLOR + "\">" + msg + "</font></html>"; // NOI18N
         }
         if (!conflicts) {
             panel.setErrorLabel(errorLabel);
