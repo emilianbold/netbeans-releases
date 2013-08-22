@@ -60,7 +60,6 @@ import org.netbeans.api.debugger.jpda.AttachingDICookie;
 import org.netbeans.api.extexecution.startup.StartupExtender;
 import org.netbeans.api.java.platform.JavaPlatform;
 import org.netbeans.api.java.platform.JavaPlatformManager;
-import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.j2ee.api.ejbjar.EjbProjectConstants;
 import org.netbeans.modules.javaee.project.api.ant.DeployOnSaveUtils;
@@ -81,14 +80,11 @@ import org.netbeans.spi.project.ActionProgress;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.SubprojectProvider;
 import org.netbeans.spi.project.ui.support.DefaultProjectOperations;
-import org.openide.DialogDisplayer;
-import org.openide.NotifyDescriptor;
 import org.openide.execution.ExecutorTask;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.Exceptions;
 import org.openide.util.Lookup;
-import org.openide.util.NbBundle;
 import org.openide.util.Task;
 import org.openide.util.TaskListener;
 import org.openide.util.lookup.Lookups;
@@ -247,12 +243,7 @@ public class EarActionProvider implements ActionProvider {
         
         //EXECUTION PART
         if (command.equals (COMMAND_RUN) || command.equals (EjbProjectConstants.COMMAND_REDEPLOY)) { //  || command.equals (COMMAND_DEBUG)) {
-            if (!isSelectedServer ()) {
-                // no selected server => warning
-                String msg = NbBundle.getMessage(
-                        EarActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+            if (!checkSelectedServer (false, false, false)) {
                 return null;
             }
             if (command.equals (COMMAND_RUN) && isDebugged()) {
@@ -266,12 +257,7 @@ public class EarActionProvider implements ActionProvider {
             setDirectoryDeploymentProperty(p);
         //DEBUGGING PART
         } else if (command.equals (COMMAND_DEBUG)) {
-            if (!isSelectedServer ()) {
-                // no selected server => warning
-                String msg = NbBundle.getMessage(
-                        EarActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+            if (!checkSelectedServer (true, false, false)) {
                 return null;
             }
             setDirectoryDeploymentProperty(p);
@@ -304,12 +290,7 @@ public class EarActionProvider implements ActionProvider {
         } else if (command.equals (COMMAND_PROFILE)) {
             // TODO This is basically a copy of the debugging part for now. Figure out what to do here!
             
-            if (!isSelectedServer ()) {
-                // no selected server => warning
-                String msg = NbBundle.getMessage(
-                        EarActionProvider.class, "MSG_No_Server_Selected"); //  NOI18N
-                DialogDisplayer.getDefault().notify(
-                        new NotifyDescriptor.Message(msg, NotifyDescriptor.WARNING_MESSAGE));
+            if (!checkSelectedServer (false, true, false)) {
                 return null;
             }
             setDirectoryDeploymentProperty(p);
@@ -380,7 +361,7 @@ public class EarActionProvider implements ActionProvider {
             //see issue #92895
             //XXX - replace this method with a call to API as soon as issue 109895 will be fixed
             boolean isAppClientSelected = project.evaluator().getProperty("app.client") != null; //NOI18N
-            return isSelectedServer() && !(isAppClientSelected && isTargetServerRemote());
+            return checkSelectedServer(false, false, true) && !(isAppClientSelected && isTargetServerRemote());
         }
         // other actions are global
         return true;
@@ -427,27 +408,16 @@ public class EarActionProvider implements ActionProvider {
         return false;
     }
     
-    private boolean isSelectedServer () {
+    private boolean checkSelectedServer (boolean checkDebug, boolean checkProfile, boolean noMessages) {
         // XXX determine what to do with the ejb jar project properties
-        String instance = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_INSTANCE);
-        if (instance != null) {
-            String id = Deployment.getDefault().getServerID(instance);
-            if (id != null) {
-                return true;
+        return J2EEProjectProperties.checkSelectedServer(project, updateHelper.getAntProjectHelper(),
+                project.getJ2eeProfile(), J2eeModule.Type.EAR, new J2EEProjectProperties.SetServerInstanceCallback() {
+
+            @Override
+            public void setServerInstance(String serverInstanceId) {
+                EarProjectProperties.setServerInstance(project, updateHelper, serverInstanceId);
             }
-        }
-        
-        // if there is some server instance of the type which was used
-        // previously do not ask and use it
-        String serverType = updateHelper.getAntProjectHelper().getStandardPropertyEvaluator ().getProperty (EarProjectProperties.J2EE_SERVER_TYPE);
-        if (serverType != null) {
-            String instanceID = J2EEProjectProperties.getMatchingInstance(serverType, J2eeModule.Type.EAR, project.getJ2eeProfile());
-            if (instanceID != null) {
-                EarProjectProperties.setServerInstance(project, updateHelper, instanceID);
-                return true;
-            }
-        }
-        return false;
+        }, checkDebug, checkProfile, noMessages);
     }
 
     private boolean isTargetServerRemote() {
