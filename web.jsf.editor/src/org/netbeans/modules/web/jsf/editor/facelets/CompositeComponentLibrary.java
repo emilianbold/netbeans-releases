@@ -47,9 +47,12 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.StringTokenizer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 import org.netbeans.modules.web.jsf.editor.index.CompositeComponentModel;
 import org.netbeans.modules.web.jsf.editor.index.JsfIndex;
 import org.netbeans.modules.web.jsfapi.api.Attribute;
@@ -57,6 +60,7 @@ import org.netbeans.modules.web.jsfapi.api.LibraryType;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.util.NbBundle;
+import org.openide.util.WeakListeners;
 
 /**
  *
@@ -162,11 +166,36 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         public CompositeComponentModel getComponentModel() {
             return index().getCompositeComponentModel(getLibraryName(), name);
         }
+
+        @Override
+        public int hashCode() {
+            int hash = 7;
+            return hash;
+        }
+
+        @Override
+        public boolean equals(Object obj) {
+            if (obj == null) {
+                return false;
+            }
+            if (getClass() != obj.getClass()) {
+                return false;
+            }
+            final NamedComponent other = (NamedComponent) obj;
+            if (!Objects.equals(this.name, other.name)) {
+                return false;
+            }
+            return true;
+        }
     }
 
-    protected class CCVirtualLibraryDescriptor implements LibraryDescriptor {
+    protected class CCVirtualLibraryDescriptor implements LibraryDescriptor, ChangeListener {
 
-        protected final Map<CompositeComponent, CompositeComponentModel> modelsCache = new HashMap<>();
+        protected Map<CompositeComponent, CompositeComponentModel> modelsCache = new HashMap<>();
+
+        public CCVirtualLibraryDescriptor() {
+            index().addChangeListener(WeakListeners.change(this, null));
+        }
 
         @Override
         public Map<String, Tag> getTags() {
@@ -186,6 +215,11 @@ public class CompositeComponentLibrary extends FaceletsLibrary {
         @Override
         public String getPrefix() {
             return null;
+        }
+
+        @Override
+        public void stateChanged(ChangeEvent e) {
+            modelsCache.clear();
         }
         
         private class LazyLoadingTag extends GenericTag {

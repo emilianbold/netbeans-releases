@@ -135,7 +135,9 @@ public class JsfIndexer extends EmbeddingIndexer {
                 for (Project p : LibraryUtils.getOpenedJSFProjects()) {
                     JsfSupport support = JsfSupportProvider.get(p.getProjectDirectory());
                     if (support != null) {
-                        ((JsfSupportImpl) support).indexedContentPossiblyChanged();
+                        JsfSupportImpl jsfSupportImpl = (JsfSupportImpl) support;
+                        jsfSupportImpl.indexedContentPossiblyChanged();
+                        jsfSupportImpl.getIndex().notifyChange();
                     }
                 }
             }
