@@ -179,7 +179,8 @@ public final class GitClient {
             "reset", //NOI18N
             "removeRemote", //NOI18N - updates remotes
             "revert", //NOI18N - creates a new head
-            "setRemote")); //NOI18N - updates remotes
+            "setRemote", //NOI18N - updates remotes
+            "setUpstreamBranch")); //NOI18N - updates remotes
     /**
      * Commands accessing a remote repository. For these NbAuthenticator must be switched off
      */
@@ -721,6 +722,17 @@ public final class GitClient {
                 return delegate.unignore(files, monitor);
             }
         }, "unignore"); //NOI18N
+    }
+
+    public GitBranch updateTracking (final String localBranchName, final String remoteBranchName,
+            final ProgressMonitor monitor) throws GitException {
+        return new CommandInvoker().runMethod(new Callable<GitBranch>() {
+
+            @Override
+            public GitBranch call () throws Exception {
+                return delegate.setUpstreamBranch(localBranchName, remoteBranchName, monitor);
+            }
+        }, "updateTracking"); //NOI18N
     }
 
     private static class CleanTask implements Runnable {

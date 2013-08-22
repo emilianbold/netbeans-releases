@@ -111,6 +111,21 @@ is the proper place.
         
         <change>
             <api name="gitlibrary_api"/>
+            <summary>Adding a command setting the upstream branch/tracking of local branches</summary>
+            <version major="1" minor="12"/>
+            <date day="22" month="8" year="2013"/>
+            <author login="ovrabec"/>
+            <compatibility addition="yes"/>
+            <description>
+                <p>Adding a new method GitClient.setUpstreamBranch(String, String, ProgressMonitor)
+                    allowing an API client to set the tracking/upstream branch for a local branch.
+                </p>
+            </description>
+            <class package="org.netbeans.libs.git" name="GitClient"/>
+            <issue number="234391"/>
+        </change>
+        <change>
+            <api name="gitlibrary_api"/>
             <summary>Adding support comparing trees of arbitrary commits</summary>
             <version major="1" minor="9"/>
             <date day="12" month="3" year="2013"/>
