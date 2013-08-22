@@ -57,6 +57,7 @@ import javax.swing.SwingUtilities;
 import org.openide.util.Cancellable;
 import org.openide.util.ImageUtilities;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 
 /**
  * Node which creates its renderer component asynchronously.
@@ -79,6 +80,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
     private JLabel lblFill;
     private boolean expandAfterRefresh;;
     private final String title;
+    private static final RequestProcessor RP = new RequestProcessor("Asynchronous Tree List Node - Loader", 5); // NOI18N
 
     /**
      * C'tor
@@ -189,7 +191,7 @@ public abstract class AsynchronousNode<T> extends TreeListNode {
             loader.cancel();
         }
         loader = new Loader();
-        post(loader);
+        RP.post(loader);
     }
 
     private void timedout() {

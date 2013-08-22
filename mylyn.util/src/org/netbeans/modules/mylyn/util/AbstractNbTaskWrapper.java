@@ -205,8 +205,8 @@ public abstract class AbstractNbTaskWrapper {
     }
 
     protected final void editorClosed () {
-        final NbTaskDataModel m = model;
-        final boolean markedAsNewUnread = isMarkedNewUnread();
+        NbTaskDataModel m = model;
+        boolean markedAsNewUnread = isMarkedNewUnread();
         if (m != null) {
             if (list != null) {
                 m.removeNbTaskDataModelListener(list);
@@ -217,16 +217,16 @@ public abstract class AbstractNbTaskWrapper {
                 // was not modified by user and not yet saved
                 deleteTask();
             } else {
-                synchronized (MODEL_LOCK) {
-                    if (model == m) {
-                        model = null;
-                    }
-                }
                 if (m.isDirty()) {
                     try {
                         save();
                     } catch (CoreException ex) {
                         LOG.log(Level.WARNING, null, ex);
+                    }
+                }
+                synchronized (MODEL_LOCK) {
+                    if (model == m) {
+                        model = null;
                     }
                 }
             }
