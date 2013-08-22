@@ -48,6 +48,9 @@ import java.awt.datatransfer.Transferable;
 import java.awt.event.HierarchyEvent;
 import java.awt.event.HierarchyListener;
 import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -60,6 +63,7 @@ import java.util.List;
 import javax.swing.Action;
 import javax.swing.JScrollPane;
 import javax.swing.KeyStroke;
+import javax.swing.ToolTipManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.TableColumnModelEvent;
@@ -163,6 +167,43 @@ public class ResultsOutlineSupport {
         FontMetrics fm = outlineView.getOutline().getFontMetrics(font);
         outlineView.getOutline().setRowHeight(
                 Math.max(16, fm.getHeight()) + VERTICAL_ROW_SPACE);
+        setTooltipHidingBehavior();
+    }
+
+    /**
+     * Hide the tooltip every time the mouse moves. See bug 233642.
+     */
+    private void setTooltipHidingBehavior() {
+        MouseAdapter ma = new MouseAdapter() {
+
+            private long lastMoveTime;
+
+            @Override
+            public void mouseMoved(MouseEvent e) {
+
+                long time = System.currentTimeMillis();
+                // hide the tooltip if it seems to be displayed
+                if (time - lastMoveTime >= ToolTipManager.sharedInstance().getInitialDelay()) {
+                    ToolTipManager.sharedInstance().mousePressed(e);
+                }
+                lastMoveTime = time;
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                ToolTipManager.sharedInstance().mousePressed(e);
+                lastMoveTime = System.currentTimeMillis();
+            }
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                ToolTipManager.sharedInstance().mouseMoved(e);
+                lastMoveTime = System.currentTimeMillis();
+            }
+        };
+        outlineView.getOutline().addMouseListener(ma);
+        outlineView.getOutline().addMouseMotionListener(ma);
+        outlineView.addMouseWheelListener(ma);
     }
 
     public synchronized void closed() {
