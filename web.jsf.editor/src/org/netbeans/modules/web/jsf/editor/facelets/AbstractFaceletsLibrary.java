@@ -156,28 +156,6 @@ public abstract class AbstractFaceletsLibrary extends TagLibraryImpl implements 
             System.arraycopy(second, 0, merged, first.length, second.length);
             return merged;
         }
-
-        @Override
-        public int hashCode() {
-            int hash = 7;
-            return hash;
-        }
-
-        @Override
-        public boolean equals(Object obj) {
-            if (obj == null) {
-                return false;
-            }
-            if (getClass() != obj.getClass()) {
-                return false;
-            }
-            final NamedComponent other = (NamedComponent) obj;
-            if (!Objects.equals(this.name, other.name)) {
-                return false;
-            }
-            return true;
-        }
-
     }
 
     public class BaseComponent extends NamedComponent {
