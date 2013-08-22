@@ -103,6 +103,8 @@ public class KnockoutApplyBindingsInterceptor implements FunctionInterceptor {
                 }
             }
             object = ref;
+        } else if (modelArgument.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
+            object = (JsObject) modelArgument.getValue();
         }
 
         if (object != null) {
