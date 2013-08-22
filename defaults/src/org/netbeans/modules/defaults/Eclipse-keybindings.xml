@@ -98,7 +98,7 @@ made subject to such option by the copyright holder.
     <bind actionName="find-previous" key="DS-K"/>
     <bind actionName="fix-imports" key="DS-O"/>
     <bind actionName="format" key="D-I"/>
-<!--    <bind actionName="generate-code" key="OS-S"/>-->
+    <bind actionName="generate-code" key="OS-S"/>
     <bind actionName="goto" key="D-L"/>
     <bind actionName="goto-declaration" key="F3"/>
     <bind actionName="in-place-refactoring" key="OS-R"/>
