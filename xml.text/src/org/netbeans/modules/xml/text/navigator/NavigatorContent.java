@@ -79,7 +79,9 @@ import javax.swing.tree.TreeModel;
 import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreePath;
 import javax.swing.tree.TreeSelectionModel;
+import org.netbeans.api.editor.mimelookup.MimePath;
 import org.netbeans.editor.BaseDocument;
+import org.netbeans.lib.editor.util.swing.DocumentUtilities;
 import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.editor.structure.api.DocumentElement;
 import org.netbeans.modules.editor.structure.api.DocumentModel;
@@ -233,8 +235,11 @@ public class NavigatorContent extends AbstractXMLNavigatorContent   {
                                 }
                             });
                     } else {
-                        //model is null => show message
-                        showError(AbstractXMLNavigatorContent.ERROR_CANNOT_NAVIGATE);
+                        MimePath mp = MimePath.parse(DocumentUtilities.getMimeType(bdoc));
+                        if (mp == null || "text/xml".equals(mp.getInheritedType())) {
+                            //model is null => show message
+                            showError(AbstractXMLNavigatorContent.ERROR_CANNOT_NAVIGATE);
+                        }
                     }
                 }catch(DocumentModelException dme) {
                     ErrorManager.getDefault().notify(ErrorManager.INFORMATIONAL, dme);
