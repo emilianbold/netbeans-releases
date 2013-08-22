@@ -53,6 +53,7 @@ import java.lang.ref.WeakReference;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeSet;
 import java.util.logging.Level;
@@ -63,6 +64,8 @@ import org.netbeans.api.project.ProjectManager;
 import org.netbeans.spi.project.support.ant.EditableProperties;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.cookies.InstanceCookie;
+import org.openide.filesystems.FileChangeAdapter;
+import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
@@ -109,6 +112,35 @@ public final class RemotePlatformProvider implements Lookup.Provider, InstanceCo
     private RemotePlatformProvider(@NonNull final XMLDataObject store) {
         Parameters.notNull("store", store); //NOI18N
         this.store = store;
+        this.store.getPrimaryFile().addFileChangeListener(new FileChangeAdapter(){
+            @Override
+            public void fileDeleted(@NonNull final FileEvent fe) {
+                try {
+                    ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction<Void> () {
+                        @Override
+                        public Void run () throws IOException {
+                            final String systemName = fe.getFile().getName();
+                            final String propPrefix =  String.format("platforms.%s.", systemName);   //NOI18N
+                            boolean changed = false;
+                            final EditableProperties props = PropertyUtils.getGlobalProperties();
+                            for (Iterator<String> it = props.keySet().iterator(); it.hasNext(); ) {
+                                final String key = it.next ();
+                                if (key.startsWith(propPrefix)) {
+                                    it.remove();
+                                    changed =true;
+                                }
+                            }
+                            if (changed) {
+                                PropertyUtils.putGlobalProperties(props);
+                            }
+                            return null;
+                        }
+                    });
+                } catch (MutexException e) {
+                    Exceptions.printStackTrace(e);
+                }
+            }
+        });
         final InstanceContent c = new InstanceContent();
         c.add(Node.class, this);
         this.lkp = new AbstractLookup(c);
