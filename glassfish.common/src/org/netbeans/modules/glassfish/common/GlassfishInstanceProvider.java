@@ -78,15 +78,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     /** Local logger. */
     private static final Logger LOGGER
             = GlassFishLogger.get(GlassfishInstanceProvider.class);
-
-    // Initialize GlassFish asadmin command execution framework to use
-    // AdminAuthenticator.
-    // Plugin proxy initialization is done as a side effect
-    // of AdminAuthenticator constructor.
-    static {
-        ServerAdmin.init(new AdminAuthenticator());
-    }
-    
+   
     public static final String GLASSFISH_AUTOREGISTERED_INSTANCE = "glassfish_autoregistered_instance";
 
     private static final String AUTOINSTANCECOPIED = "autoinstance-copied"; // NOI18N
