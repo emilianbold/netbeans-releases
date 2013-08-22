@@ -45,6 +45,10 @@
 package org.netbeans.modules.csl.hints.infrastructure;
 
 import java.awt.Component;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.prefs.Preferences;
@@ -57,7 +61,6 @@ import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 import javax.swing.tree.DefaultTreeModel;
 import javax.swing.tree.TreeCellRenderer;
-import javax.swing.tree.TreeNode;
 import javax.swing.tree.TreeSelectionModel;
 import org.netbeans.modules.csl.api.Rule;
 
@@ -104,7 +107,9 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
         update();
 
         //errorTree.setModel( RulesManager.getInstance().getHintsTreeModel() );
-        errorTree.setModel(treeModel);
+        DefaultMutableTreeNode root = (DefaultMutableTreeNode) treeModel.getRoot();
+        treeModel = new DefaultTreeModel(sort(root));
+        errorTree.setModel(treeModel);      
         this.baseModel = (DefaultTreeModel)treeModel;
         
         if (filter != null) {
@@ -116,7 +121,46 @@ public final class HintsPanel extends javax.swing.JPanel implements TreeCellRend
             errorTree.expandRow(lastRow);
         }        
     }
-    
+
+    private DefaultMutableTreeNode sort(DefaultMutableTreeNode parent) {
+        List<DefaultMutableTreeNode> nodes = new ArrayList<DefaultMutableTreeNode>();
+
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            DefaultMutableTreeNode node = (DefaultMutableTreeNode) parent.getChildAt(i);
+            nodes.add(sort(node));
+        }
+
+        Collections.sort(nodes, new Comparator<DefaultMutableTreeNode>() {
+            @Override
+            public int compare(DefaultMutableTreeNode p1, DefaultMutableTreeNode p2) {
+                Object o1 = p1.getUserObject();
+                String s1 = "";
+                if (o1 instanceof Rule) {
+                    s1 = ((Rule) o1).getDisplayName();
+                }
+                if (o1 instanceof FileObject) {
+                    s1 = getFileObjectLocalizedName((FileObject) o1);
+                }
+
+                Object o2 = p2.getUserObject();
+                String s2 = "";
+                if (o2 instanceof Rule) {
+                    s2 = ((Rule) o2).getDisplayName();
+                }
+                if (o2 instanceof FileObject) {
+                    s2 = getFileObjectLocalizedName((FileObject) o2);
+                }
+                return s1.compareTo(s2);
+            }
+        });
+        parent.removeAllChildren();
+        for (DefaultMutableTreeNode node : nodes) {
+            parent.add(node);
+        }
+
+        return parent;
+    }
+ 
     private class AcceptorImpl implements OptionsFilter.Acceptor {
         @Override
         public boolean accept(Object originalTreeNode, String filterText) {

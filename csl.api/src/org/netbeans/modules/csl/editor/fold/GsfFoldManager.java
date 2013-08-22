@@ -512,10 +512,19 @@ public class GsfFoldManager implements FoldManager {
             final Collection<FoldInfo> folds, final Document doc, final
             StructureScanner scanner) {
             
+            // #217322, disabled folding -> no folds will be created
+            String mime = info.getSnapshot().getMimeType();
+            
+            if (!FoldUtilities.isFoldingEnabled(mime)) {
+                LOG.log(Level.FINER, "Folding is not enabled for MIME: {0}", mime);
+                return;
+            }
+            final Map<String,List<OffsetRange>> collectedFolds = scanner.folds(info);
+            final Collection<? extends FoldType> ftypes = FoldUtilities.getFoldTypes(mime).values();
             doc.render(new Runnable() {
                 @Override
                 public void run() {
-                    addTree(folds, info, doc, scanner);
+                    addTree(folds, info, collectedFolds, ftypes);
                 }
             });
         }
@@ -523,7 +532,6 @@ public class GsfFoldManager implements FoldManager {
         private boolean addFoldsOfType(
                     String type, Map<String,List<OffsetRange>> folds,
                     Collection<FoldInfo> result,
-                    Document doc, 
                     FoldType foldType) {
             
             List<OffsetRange> ranges = folds.get(type); //NOI18N
@@ -537,7 +545,7 @@ public class GsfFoldManager implements FoldManager {
                     if (LOG.isLoggable(Level.FINEST)) {
                         LOG.log(Level.FINEST, "Fold: {0}", range);
                     }
-                    addFold(range, result, doc, foldType);
+                    addFold(range, result, foldType);
                 }
                 folds.remove(type);
                 return true;
@@ -547,38 +555,30 @@ public class GsfFoldManager implements FoldManager {
             }
         }
         
-        private void addTree(Collection<FoldInfo> result, ParserResult info, Document doc, StructureScanner scanner) {
-            // #217322, disabled folding -> no folds will be created
-            String mime = info.getSnapshot().getMimeType();
-            
-            if (!FoldUtilities.isFoldingEnabled(mime)) {
-                LOG.log(Level.FINER, "Folding is not enabled for MIME: {0}", mime);
-                return;
-            }
-            Map<String,List<OffsetRange>> folds = scanner.folds(info);
+        private void addTree(Collection<FoldInfo> result, ParserResult info, 
+                Map<String,List<OffsetRange>> folds, Collection<? extends FoldType> ftypes) {
             if (cancelled.get()) {
                 return;
             }
-            Collection<? extends FoldType> ftypes = FoldUtilities.getFoldTypes(mime).values();
             // make a copy, since addFoldsOfType will remove pieces:
             folds = new HashMap<String, List<OffsetRange>>(folds);
             for (FoldType ft : ftypes) {
-                addFoldsOfType(ft.code(), folds, result, doc, ft);
+                addFoldsOfType(ft.code(), folds, result,  ft);
             }
             // fallback: transform the legacy keys into FoldInfos
-            addFoldsOfType("codeblocks", folds, result, doc, 
+            addFoldsOfType("codeblocks", folds, result, 
                     CODE_BLOCK_FOLD_TYPE);
-            addFoldsOfType("comments", folds, result, doc, 
+            addFoldsOfType("comments", folds, result, 
                     JAVADOC_FOLD_TYPE);
-            addFoldsOfType("initial-comment", folds, result, doc, 
+            addFoldsOfType("initial-comment", folds, result, 
                     INITIAL_COMMENT_FOLD_TYPE);
-            addFoldsOfType("imports", folds, result, doc, 
+            addFoldsOfType("imports", folds, result, 
                     IMPORTS_FOLD_TYPE);
-            addFoldsOfType("tags", folds, result, doc, 
+            addFoldsOfType("tags", folds, result, 
                     TAG_FOLD_TYPE);
-            addFoldsOfType("othercodeblocks", folds, result, doc, 
+            addFoldsOfType("othercodeblocks", folds, result, 
                     CODE_BLOCK_FOLD_TYPE);
-            addFoldsOfType("inner-classes", folds, result, doc, 
+            addFoldsOfType("inner-classes", folds, result, 
                     INNER_CLASS_FOLD_TYPE);
             
             if (folds.size() > 0) {
@@ -588,11 +588,13 @@ public class GsfFoldManager implements FoldManager {
             }
         }
         
-        private void addFold(OffsetRange range, Collection<FoldInfo> folds, Document doc, FoldType type) {
+        private void addFold(OffsetRange range, Collection<FoldInfo> folds, FoldType type) {
             if (range != OffsetRange.NONE) {
                 int start = range.getStart();
                 int end = range.getEnd();
-                if (start != (-1) && end != (-1) && end <= doc.getLength()) {
+                // the readlock will be interrupted before FoldInfos are committed to fold hierarchy,
+                // so we don't need to check against doc length here. FoldOp.update checks+ignores under read lock.
+                if (start != (-1) && end != (-1)) {
                     FoldInfo fi = FoldInfo.range(start, end, type);
                     // hack for singular imports fold
                     if (fi.getType() == IMPORTS_FOLD_TYPE && imports == null) {

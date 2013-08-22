@@ -44,6 +44,7 @@ package org.openide.text;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -182,9 +183,18 @@ implements CloneableEditorSupport.Env {
 
         latch1.await();
         support.close();
-        // Temprorarily disable latch - will soon be corrected.
+        // The test would not proceed past the following latch2.await() so it's commented out. Description follows.
 //        latch2.await();
-        Thread.sleep(5);
+        // Since CES.closeDocument() is now asynchronous it allows to cancel a pending close task
+        // that was not processed yet. The execution flow of the threads is the following:
+        // M (main thread); DPRP (Document Processing RP thread)
+        // M: openDocument(): schedules open task to DPRP followed by extra task for firing doc change (to DPRP)
+        // DPRP: open task finished.
+        // M: latch1.await() waiting...
+        // DPRP: firing doc change task started. proceeds to listener's latch1.countDown() and waits on Thread.sleep(100)
+        // M: proceeds to close() call which schedules a close task
+        // DPRP: Thread.sleep(100) finishes and openDocument() finds a pending close task which it cancels
+        //       so the currently opened document is retained. The "else" part of the listener is never called.
     }
 
     //

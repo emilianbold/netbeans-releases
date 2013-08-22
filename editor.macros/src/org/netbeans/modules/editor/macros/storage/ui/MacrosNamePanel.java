@@ -49,6 +49,8 @@
 package org.netbeans.modules.editor.macros.storage.ui;
 
 import java.awt.Color;
+import javax.swing.UIDefaults;
+import javax.swing.UIManager;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -62,9 +64,14 @@ class MacrosNamePanel extends javax.swing.JPanel {
 
     private transient ChangeListener parent;
 
+    private final Color regularColor;
+    private final Color errColor;
+    
     /** Creates new form MacrosNamePanel */
     public MacrosNamePanel() {
         initComponents();
+        regularColor = nameField.getForeground();
+        errColor = (Color)UIManager.getDefaults().getColor("nb.errorForeground"); // NOI18N
         setErrorMessage(null);
     }
 
@@ -76,46 +83,53 @@ class MacrosNamePanel extends javax.swing.JPanel {
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
-        java.awt.GridBagConstraints gridBagConstraints;
 
         label = new javax.swing.JLabel();
         nameField = new javax.swing.JTextField();
         errorLabel = new javax.swing.JLabel();
 
         setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
-        setMinimumSize(new java.awt.Dimension(100, 30));
-        setPreferredSize(new java.awt.Dimension(260, 50));
-        setLayout(new java.awt.GridBagLayout());
+        setMinimumSize(new java.awt.Dimension(100, 50));
+        setPreferredSize(new java.awt.Dimension(340, 82));
 
         label.setHorizontalAlignment(javax.swing.SwingConstants.LEFT);
         label.setLabelFor(nameField);
         org.openide.awt.Mnemonics.setLocalizedText(label, org.openide.util.NbBundle.getMessage(MacrosNamePanel.class, "CTL_Enter_macro_name")); // NOI18N
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.insets = new java.awt.Insets(10, 10, 5, 5);
-        add(label, gridBagConstraints);
 
-        nameField.setMinimumSize(new java.awt.Dimension(44, 19));
-        nameField.setPreferredSize(new java.awt.Dimension(120, 19));
+        nameField.setMinimumSize(new java.awt.Dimension(44, 24));
+        nameField.setPreferredSize(new java.awt.Dimension(120, 24));
         nameField.selectAll();
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridy = 0;
-        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
-        gridBagConstraints.weightx = 1.0;
-        gridBagConstraints.insets = new java.awt.Insets(10, 5, 5, 10);
-        add(nameField, gridBagConstraints);
-        nameField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MacrosNamePanel.class, "AN_Enter_macro_name")); // NOI18N
-        nameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacrosNamePanel.class, "AD_Enter_macro_name")); // NOI18N
 
         errorLabel.setForeground(new java.awt.Color(255, 0, 0));
         errorLabel.setHorizontalTextPosition(javax.swing.SwingConstants.LEFT);
-        gridBagConstraints = new java.awt.GridBagConstraints();
-        gridBagConstraints.gridx = 0;
-        gridBagConstraints.gridy = 1;
-        gridBagConstraints.gridwidth = 2;
-        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
-        gridBagConstraints.insets = new java.awt.Insets(5, 10, 5, 10);
-        add(errorLabel, gridBagConstraints);
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
+        this.setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addComponent(label)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(nameField, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(errorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 307, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(5, Short.MAX_VALUE))
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(label)
+                    .addComponent(nameField, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(errorLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        nameField.getAccessibleContext().setAccessibleName(org.openide.util.NbBundle.getMessage(MacrosNamePanel.class, "AN_Enter_macro_name")); // NOI18N
+        nameField.getAccessibleContext().setAccessibleDescription(org.openide.util.NbBundle.getMessage(MacrosNamePanel.class, "AD_Enter_macro_name")); // NOI18N
     }// </editor-fold>//GEN-END:initComponents
 
 
@@ -157,13 +171,13 @@ class MacrosNamePanel extends javax.swing.JPanel {
         {
             errorLabel.setText(text);
             errorLabel.setFocusable(true);
-            setTextColor(Color.RED);
+            setTextColor(errColor);
         }
         else
         {
             errorLabel.setText(" ");//NOI18N, set not empty to avoid relayout
             errorLabel.setFocusable(false);
-            setTextColor(Color.BLACK);
+            setTextColor(regularColor);
         }
     }
 
