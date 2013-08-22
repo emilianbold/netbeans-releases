@@ -148,7 +148,7 @@ public class JBStartServer extends StartServer implements ProgressObject{
     }
     
     public boolean supportsStartProfiling(Target target) {
-        return true;
+        return !dm.isAs7();
     }
     
     public boolean isAlsoTargetServer(Target target) {
