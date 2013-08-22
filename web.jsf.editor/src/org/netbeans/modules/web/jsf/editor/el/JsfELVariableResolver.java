@@ -269,6 +269,9 @@ public final class JsfELVariableResolver implements ELVariableResolver {
                     for (Embedding e : resultIterator.getEmbeddings()) {
                         if (e.getMimeType().equals("text/html")) { //NOI18N
                             final HtmlParserResult parserResult = (HtmlParserResult) resultIterator.getResultIterator(e).getParserResult();
+                            if (parserResult == null) {
+                                continue;
+                            }
                             Node root = parserResult.root(DefaultLibraryInfo.FACELETS.getNamespace());
                             if (root == null || root.children().isEmpty()) {
                                 root = parserResult.root(DefaultLibraryInfo.FACELETS.getLegacyNamespace());
