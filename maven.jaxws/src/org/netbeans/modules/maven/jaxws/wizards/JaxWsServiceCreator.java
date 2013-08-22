@@ -328,16 +328,21 @@ public class JaxWsServiceCreator implements ServiceCreator {
                                             Level.INFO, "Cannot add Metro libbrary to pom file", ex); //NOI18N
                                 }
                             }
-                            org.netbeans.modules.maven.model.pom.Plugin plugin =
-                                    WSUtils.isEJB(project) ?
-                                        MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
-                                        MavenModelUtils.addJaxWSPlugin(model);
-                            MavenModelUtils.addWsimportExecution(plugin, 
-                                    serviceName, relativePath,null );
-                            if (WSUtils.isWeb(project)) { // expecting web project
-                                MavenModelUtils.addWarPlugin(model);
-                            } else { // J2SE Project
-                                MavenModelUtils.addWsdlResources(model);
+                            try {
+                                model.startTransaction();
+                                org.netbeans.modules.maven.model.pom.Plugin plugin =
+                                        WSUtils.isEJB(project) ?
+                                            MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
+                                            MavenModelUtils.addJaxWSPlugin(model);
+                                MavenModelUtils.addWsimportExecution(plugin, 
+                                        serviceName, relativePath,null );
+                                if (WSUtils.isWeb(project)) { // expecting web project
+                                    MavenModelUtils.addWarPlugin(model);
+                                } else { // J2SE Project
+                                    MavenModelUtils.addWsdlResources(model);
+                                }
+                            } finally {
+                                model.endTransaction();
                             }
                         }
                     };
@@ -353,7 +358,7 @@ public class JaxWsServiceCreator implements ServiceCreator {
                             FileUtil.toFile(project.getProjectDirectory()),
                             project,
                             "JAX-WS:wsimport", //NOI18N
-                            Collections.singletonList(MavenModelUtils.JAXWS_PLUGIN_KEY+":wsimport")); //NOI18N
+                            Collections.singletonList("compile")); //NOI18N
                     ExecutorTask task = RunUtils.executeMaven(cfg);
                     try {
                         task.waitFinished(60000);
