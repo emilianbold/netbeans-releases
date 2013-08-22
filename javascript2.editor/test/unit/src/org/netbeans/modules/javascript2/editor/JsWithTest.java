@@ -95,6 +95,10 @@ public class JsWithTest extends JsWithBase {
         checkCompletion("testfiles/with/issue234375.js", "p^ // cc doesn't offer e.g. pull() or push()", true);
     }
     
+    public void testIssue234637_01() throws Exception {
+        checkCompletion("testfiles/with/issue234637Test.js", "({id: x^});", true);
+    }
+    
     @Override
     protected Map<String, ClassPath> createClassPathsForTest() {
         List<FileObject> cpRoots = new LinkedList<FileObject>(ClasspathProviderImplAccessor.getJsStubs());
