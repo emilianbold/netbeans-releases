@@ -47,6 +47,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.text.Document;
 import org.netbeans.api.annotations.common.CheckForNull;
+import org.netbeans.modules.php.api.PhpVersion;
 import org.netbeans.modules.php.editor.model.impl.Type;
 import org.netbeans.modules.php.editor.model.nodes.NamespaceDeclarationInfo;
 import org.netbeans.modules.php.editor.parser.astnodes.ArrayAccess;
@@ -111,7 +112,7 @@ public final class CodeUtils {
         Parameters.notNull("file", file);
         boolean result = false;
         PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
-        if (forFileObject.getPhpVersion() == PhpLanguageProperties.PhpVersion.PHP_5) {
+        if (forFileObject.getPhpVersion() == PhpVersion.PHP_5) {
             result = true;
         }
         return result;
@@ -121,7 +122,7 @@ public final class CodeUtils {
         Parameters.notNull("file", file);
         boolean result = false;
         PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
-        if (forFileObject.getPhpVersion() == PhpLanguageProperties.PhpVersion.PHP_53) {
+        if (forFileObject.getPhpVersion() == PhpVersion.PHP_53) {
             result = true;
         }
         return result;
@@ -131,7 +132,7 @@ public final class CodeUtils {
         Parameters.notNull("file", file);
         boolean result = false;
         PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
-        if (forFileObject.getPhpVersion() == PhpLanguageProperties.PhpVersion.PHP_54) {
+        if (forFileObject.getPhpVersion() == PhpVersion.PHP_54) {
             result = true;
         }
         return result;
@@ -141,7 +142,7 @@ public final class CodeUtils {
         Parameters.notNull("file", file);
         boolean result = false;
         PhpLanguageProperties forFileObject = PhpLanguageProperties.forFileObject(file);
-        if (forFileObject.getPhpVersion() == PhpLanguageProperties.PhpVersion.PHP_55) {
+        if (forFileObject.getPhpVersion() == PhpVersion.PHP_55) {
             result = true;
         }
         return result;
