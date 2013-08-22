@@ -44,16 +44,7 @@
 
 package org.netbeans.modules.groovy.editor.api;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import org.netbeans.modules.groovy.editor.api.elements.index.IndexedClass;
-import org.netbeans.modules.groovy.editor.api.elements.index.IndexedMethod;
 import org.netbeans.modules.groovy.editor.test.GroovyTestBase;
-import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 
 /**
  *
@@ -81,56 +72,5 @@ public class GroovyIndexerTest extends GroovyTestBase {
 
     public void testIndex2() throws Exception {
         checkIndexer("testfiles/Hello.groovy");
-    }
-    
-    /*******************************************
-     *            INDEXER METHODS
-     *******************************************/
-    public void testGetMethods() throws Exception {
-        GroovyIndex index = initIndex();
-        
-        Set<IndexedMethod> methods = index.getMethods("m", "demo.GroovyClass1", QuerySupport.Kind.PREFIX);
-        assertEquals(3, methods.size());
-
-        methods = index.getMethods(".*", "demo.GroovyClass1", QuerySupport.Kind.REGEXP);
-        assertEquals(4, methods.size());
-    }
-    
-    public void testGetClasses() throws Exception {
-        GroovyIndex index = initIndex();
-        
-        Set<IndexedClass> classes = index.getAllClasses();
-        assertEquals(5, classes.size());
-    }
-    
-    private GroovyIndex initIndex() throws Exception {
-        indexFile(getTestPath());
-        return GroovyIndex.get(createSourceClassPathsForTest());
-    }
-    
-    private List<FileObject> createSourceClassPathsForTest() {
-        List<FileObject> list = new ArrayList<FileObject>();
-        
-        File folder = new File(getDataDir(), getTestFolderPath());
-        list.add(FileUtil.toFileObject(folder));
-        
-        return list;
-    }
-
-    private String getTestFolderPath() {
-        return "testfiles/index/" + getTestName(); //NOI18N
-    }
-    
-    private String getTestPath() {
-        return getTestFolderPath() + "/" + getTestName() + ".groovy"; //NOI18N
-    }
-
-    private String getTestName() {
-        String name = getName();
-        int indexOf = name.indexOf("_");
-        if (indexOf != -1) {
-            name = name.substring(0, indexOf);
-        }
-        return name;
     }
 }
