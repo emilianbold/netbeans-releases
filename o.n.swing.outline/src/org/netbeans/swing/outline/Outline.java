@@ -56,6 +56,7 @@ import java.awt.event.ComponentEvent;
 import java.awt.event.ComponentListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionAdapter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -76,6 +77,7 @@ import javax.swing.JToolTip;
 import javax.swing.JViewport;
 import javax.swing.KeyStroke;
 import javax.swing.Timer;
+import javax.swing.ToolTipManager;
 import javax.swing.UIManager;
 import javax.swing.border.Border;
 import javax.swing.event.ListSelectionEvent;
@@ -452,6 +454,20 @@ public class Outline extends ETable {
         JToolTip t = toolTip;
         toolTip = null;
         if (t != null) {
+            t.addMouseMotionListener(new MouseMotionAdapter() { // #233642
+
+                boolean initialized = false;
+
+                @Override
+                public void mouseMoved(MouseEvent e) {
+                    if (!initialized) {
+                        initialized = true; // ignore the first event
+                    } else {
+                        // hide the tooltip if mouse moves over it
+                        ToolTipManager.sharedInstance().mousePressed(e);
+                    }
+                }
+            });
             return t;
         } else {
             return super.createToolTip();
