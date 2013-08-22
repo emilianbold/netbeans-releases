@@ -50,12 +50,17 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
+import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
 import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
@@ -63,6 +68,7 @@ import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 import org.openide.util.Pair;
 
@@ -83,25 +89,63 @@ public abstract class QtInfoProvider {
         return DEFAULT;
     }
 
+    public abstract List<String> getQtAdditionalMakroses(MakeConfiguration conf);
+
     public abstract List<String> getQtIncludeDirectories(MakeConfiguration conf);
 
     private static class Default extends QtInfoProvider {
 
-        private final Map<String, Pair<String,String>> cache;
+        private final Map<String, Pair<String, String>> cache;
 
         private Default() {
-            cache = new HashMap<String, Pair<String,String>>();
+            cache = new HashMap<String, Pair<String, String>>();
+        }
+
+        @Override
+        public List<String> getQtAdditionalMakroses(MakeConfiguration conf) {
+            FileObject projectDir = conf.getBaseFSPath().getFileObject();
+            if (projectDir != null && projectDir.isValid()) {
+                try {
+                    FileObject qtMakeFile = RemoteFileUtil.getFileObject(projectDir, MakeConfiguration.NBPROJECT_FOLDER + "/qt-" + conf.getName() + ".mk"); //NOI18N
+                    Project project = ProjectManager.getDefault().findProject(projectDir);
+                    if (project != null && qtMakeFile != null && qtMakeFile.isValid()) {
+                        for (String str : qtMakeFile.asLines()) {
+                            if (str.startsWith("CXXFLAGS")) { //NOI18N
+                                String[] lines = str.split("="); //NOI18N
+                                if (lines.length == 2) {
+                                    Artifacts artifacts = new Artifacts();
+                                    DiscoveryUtils.gatherCompilerLine(lines[1].trim(), DiscoveryUtils.LogOrigin.BuildLog, artifacts, new ProjectBridge(project), true);
+                                    List<String> result = new ArrayList<>(artifacts.userMacros.size());
+                                    for (Map.Entry<String, String> pair : artifacts.userMacros.entrySet()) {
+                                        if (pair.getValue() == null) {
+                                            result.add(pair.getKey());
+                                        } else {
+                                            result.add(pair.getKey() + "=" + pair.getValue()); //NOI18N
+                                        }
+                                    }
+                                    return result;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                } catch (IOException | IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return java.util.Collections.EMPTY_LIST;
         }
 
         /**
          * Finds Qt include directories for given project configuration.
          *
-         * @param conf  Qt project configuration
-         * @return list of include directories, may be empty if qmake is not found
+         * @param conf Qt project configuration
+         * @return list of include directories, may be empty if qmake is not
+         * found
          */
         @Override
         public List<String> getQtIncludeDirectories(MakeConfiguration conf) {
-            Pair<String,String> baseDir = getBaseQtIncludeDir(conf);
+            Pair<String, String> baseDir = getBaseQtIncludeDir(conf);
             List<String> result;
             if (baseDir != null && (baseDir.first() != null || baseDir.second() != null)) {
                 result = new ArrayList<String>();
@@ -216,9 +260,9 @@ public abstract class QtInfoProvider {
             return conf.getDevelopmentHost().getHostKey() + '/' + getQmakePath(conf); // NOI18N
         }
 
-        private Pair<String,String> getBaseQtIncludeDir(MakeConfiguration conf) {
+        private Pair<String, String> getBaseQtIncludeDir(MakeConfiguration conf) {
             String cacheKey = getCacheKey(conf);
-            Pair<String,String> baseDir;
+            Pair<String, String> baseDir;
             synchronized (cache) {
                 if (cache.containsKey(cacheKey)) {
                     baseDir = cache.get(cacheKey);
@@ -249,7 +293,7 @@ public abstract class QtInfoProvider {
                 }
             }
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Qt include dir for {0} = {1}", new Object[] {cacheKey, baseDir});
+                LOGGER.log(Level.FINE, "Qt include dir for {0} = {1}", new Object[]{cacheKey, baseDir});
             }
             return baseDir;
         }

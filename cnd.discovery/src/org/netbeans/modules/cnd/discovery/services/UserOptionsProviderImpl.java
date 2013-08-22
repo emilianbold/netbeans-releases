@@ -107,13 +107,16 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
     
     @Override
     public List<String> getItemUserMacros(List<String> macros, AllOptionsProvider compilerOptions, AbstractCompiler compiler, MakeConfiguration makeConfiguration) {
-        List<String> res =new ArrayList<String>(macros);
+        List<String> res = new ArrayList<String>(macros);
         if (makeConfiguration.getConfigurationType().getValue() != MakeConfiguration.TYPE_MAKEFILE){
             String options = compilerOptions.getAllOptions(compiler);
             for(PackageConfiguration pc : getPackages(options, makeConfiguration)) {
                 res.addAll(pc.getMacros());
             }
             convertOptionsToMacros(compiler, options, res);
+        }
+        if (makeConfiguration.isQmakeConfiguration()) {
+            res.addAll(QtInfoProvider.getDefault().getQtAdditionalMakroses(makeConfiguration));
         }
         return res;
     }
