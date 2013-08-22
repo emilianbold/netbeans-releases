@@ -1103,13 +1103,13 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         // Mac: Ctrl not extra if used for popup menu
             || (e.isControlDown() && (!e.isPopupTrigger() || e.getButton() == MouseEvent.BUTTON3))
         // Mac: don't confuse Command key with right mouse (InputEvent.META_MASK == InputEvent.BUTTON3_MASK)
-            || (e.isMetaDown() && e.getButton() != MouseEvent.BUTTON3 && (e.getModifiers()&InputEvent.BUTTON3_DOWN_MASK) != InputEvent.BUTTON3_DOWN_MASK);
+            || (e.isMetaDown() && e.getButton() != MouseEvent.BUTTON3 && (e.getModifiersEx()&InputEvent.BUTTON3_DOWN_MASK) != InputEvent.BUTTON3_DOWN_MASK);
     }
 
     private static boolean ctrlOrCmdModifier(MouseEvent e) {
         // assuming this is asked only for a mouse press event
         if (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() == InputEvent.META_MASK) { // on Mac
-            return (e.getModifiers() & InputEvent.META_DOWN_MASK) == InputEvent.META_DOWN_MASK;
+            return (e.getModifiersEx() & InputEvent.META_DOWN_MASK) == InputEvent.META_DOWN_MASK;
         }
         return (e.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
     }
@@ -1925,7 +1925,7 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
         }
 
         boolean leftMouseReleased = (e.getButton() == MouseEvent.BUTTON1);
-        boolean rightMouseDown = (e.getModifiers() & InputEvent.BUTTON3_DOWN_MASK) == InputEvent.BUTTON3_DOWN_MASK;
+        boolean rightMouseDown = (e.getModifiersEx() & InputEvent.BUTTON3_DOWN_MASK) == InputEvent.BUTTON3_DOWN_MASK;
         boolean popup = e.isPopupTrigger();
         Point p = e.getPoint();
 
@@ -1965,13 +1965,13 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
             if (mouseOnNonVisualTray(p)) {
                 dispatchToNonVisualTray(e);
             } else if (popup && !endDragging(null)) {
+                // Going to show context menu
                 if (mouseOnVisual(p)) {
                     // If popup menu is already displayed (elsewhere), we did not receive
                     // mouse press event and now may have the clicked component unselected.
-                    RADComponent hitMetaComp = getMetaComponentAt(p, COMP_DEEPEST);
-                    if (!formDesigner.isComponentSelected(hitMetaComp)) {   
-                        formDesigner.setSelectedComponent(hitMetaComp);
-                    }            
+                    // We want to select the clicked component as usual but don't want
+                    // to cancel multiselection - thus selecting like on press event.
+                    selectComponent(e, true);
                 } else {
                     selectOtherComponentsNode();
                 }
@@ -2019,8 +2019,8 @@ public class HandleLayer extends JPanel implements MouseListener, MouseMotionLis
 
         boolean leftMousePressed = (e.getButton() == MouseEvent.BUTTON1);
         boolean rightMousePressed = (e.getButton() == MouseEvent.BUTTON3);
-        boolean leftMouseDown = (e.getModifiers() & InputEvent.BUTTON1_DOWN_MASK) == InputEvent.BUTTON1_DOWN_MASK;
-        boolean rightMouseDown = (e.getModifiers() & InputEvent.BUTTON3_DOWN_MASK) == InputEvent.BUTTON3_DOWN_MASK;
+        boolean leftMouseDown = (e.getModifiersEx() & InputEvent.BUTTON1_DOWN_MASK) == InputEvent.BUTTON1_DOWN_MASK;
+        boolean rightMouseDown = (e.getModifiersEx() & InputEvent.BUTTON3_DOWN_MASK) == InputEvent.BUTTON3_DOWN_MASK;
         boolean popup = e.isPopupTrigger();
         Point p = e.getPoint();
 

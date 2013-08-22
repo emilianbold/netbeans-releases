@@ -69,6 +69,7 @@ public class CodeCompletionOptionsPanel extends JPanel implements PropertyChange
     
     private CodeCompletionOptionsSelector selector;
     private PropertyChangeListener weakListener;
+    private Object lastSelectedItem = null;
     
     /** 
      * Creates new form CodeCompletionOptionsPanel.
@@ -112,8 +113,15 @@ public class CodeCompletionOptionsPanel extends JPanel implements PropertyChange
                 model.addElement(mimeType);
             }
             cbLanguage.setModel(model);
-            cbLanguage.setSelectedIndex(0);
+            if (lastSelectedItem != null) {
+                cbLanguage.setSelectedItem(lastSelectedItem);
+            } else {
+                cbLanguage.setSelectedIndex(0);
+            }
         } else {
+            if (cbLanguage.getSelectedItem() != null) {
+                lastSelectedItem = cbLanguage.getSelectedItem();
+            }
             cbLanguage.setModel(new DefaultComboBoxModel());
         }
     }

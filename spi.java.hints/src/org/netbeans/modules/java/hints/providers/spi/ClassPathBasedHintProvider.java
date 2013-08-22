@@ -43,8 +43,9 @@
 package org.netbeans.modules.java.hints.providers.spi;
 
 import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
+import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.java.hints.providers.spi.HintDescription;
 
 /**
  * XXX: this is another ugly hack!
@@ -52,6 +53,6 @@ import org.netbeans.modules.java.hints.providers.spi.HintDescription;
  */
 public interface ClassPathBasedHintProvider {
 
-    public Collection<? extends HintDescription> computeHints(ClassPath cp);
+    public @CheckForNull Collection<? extends HintDescription> computeHints(ClassPath cp, AtomicBoolean cancel);
 
 }

@@ -1200,7 +1200,7 @@ public class GlassPane extends JPanel implements GridActionPerformer {
 
     private static boolean ctrlOrCmdModifier(MouseEvent e) {
         if (Toolkit.getDefaultToolkit().getMenuShortcutKeyMask() == InputEvent.META_MASK) { // on Mac
-            return (e.getModifiers() & InputEvent.META_DOWN_MASK) == InputEvent.META_DOWN_MASK;
+            return (e.getModifiersEx() & InputEvent.META_DOWN_MASK) == InputEvent.META_DOWN_MASK;
         }
         return (e.getModifiers() & InputEvent.CTRL_MASK) == InputEvent.CTRL_MASK;
     }

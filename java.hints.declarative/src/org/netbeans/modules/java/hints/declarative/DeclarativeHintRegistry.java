@@ -54,6 +54,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.MissingResourceException;
 import java.util.ResourceBundle;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.api.annotations.common.NonNull;
@@ -62,7 +66,6 @@ import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.classpath.GlobalPathRegistry;
 import org.netbeans.api.lexer.TokenHierarchy;
 import org.netbeans.api.lexer.TokenSequence;
-import org.netbeans.modules.java.hints.declarative.Condition.Instanceof;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser.FixTextDescription;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser.HintTextDescription;
 import org.netbeans.modules.java.hints.declarative.DeclarativeHintsParser.Result;
@@ -78,6 +81,8 @@ import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileStateInvalidException;
 import org.openide.filesystems.FileUtil;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
+import org.openide.util.RequestProcessor.Task;
 import org.openide.util.lookup.ServiceProvider;
 import org.openide.util.lookup.ServiceProviders;
 
@@ -91,12 +96,36 @@ import org.openide.util.lookup.ServiceProviders;
 })
 public class DeclarativeHintRegistry implements HintProvider, ClassPathBasedHintProvider {
 
+    private static final RequestProcessor ASYNCHRONOUS = new RequestProcessor(DeclarativeHintRegistry.class.getName(), 10, false, false);
+    private static final Logger LOG = Logger.getLogger(DeclarativeHintRegistry.class.getName());
+
     public Map<HintMetadata, Collection<? extends HintDescription>> computeHints() {
         return readHints(findGlobalFiles());
     }
 
-    public Collection<? extends HintDescription> computeHints(ClassPath cp) {
-        return join(readHints(findFiles(cp)));
+    @Override
+    public Collection<? extends HintDescription> computeHints(final ClassPath cp, AtomicBoolean cancel) {
+        final AtomicReference<Collection<? extends FileObject>> foundFiles = new AtomicReference<>();
+
+        Task task = ASYNCHRONOUS.post(new Runnable() {
+            @Override public void run() {
+                foundFiles.set(findFiles(cp));
+            }
+        });
+
+        while ((cancel == null || !cancel.get()) && !task.isFinished()) {
+            try {
+                task.waitFinished(1);
+            } catch (InterruptedException ex) {
+                LOG.log(Level.FINE, null, ex);
+            }
+        }
+
+        Collection<? extends FileObject> files = foundFiles.get();
+
+        if (files == null || (cancel != null && cancel.get())) return null;
+
+        return join(readHints(files));
     }
 
     public static Collection<? extends HintDescription> join(Map<HintMetadata, Collection<? extends HintDescription>> hints) {
