@@ -43,10 +43,11 @@
 package org.netbeans.modules.php.editor.parser;
 
 import java.io.File;
-import java.io.FileReader;
+import java.io.StringReader;
 import java.util.Date;
 import java_cup.runtime.Symbol;
 import org.netbeans.junit.NbTestCase;
+import org.netbeans.modules.php.editor.csl.TestUtilities;
 
 /**
  *
@@ -70,9 +71,10 @@ public class ParserPerformanceTest extends NbTestCase {
 
     // the current time is around 1200 ms
     public void testBigFile() throws Exception {
-        File testFile = new File(getDataDir(), "testfiles/Subs.php");
+        File testFile = new File(getDataDir(), "testfiles/parser/performance/performance.php");
         assertTrue(testFile.exists());
-        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new FileReader(testFile));
+        String testSource = TestUtilities.copyFileToString(testFile);
+        ASTPHP5Scanner scanner = new ASTPHP5Scanner(new StringReader(testSource));
         ASTPHP5Parser parser = new ASTPHP5Parser(scanner);
         Date start = new Date();
         Symbol root = parser.parse();

@@ -308,7 +308,7 @@ public class ClientHandlerButtonListener implements ActionListener {
 
                 // execute wsimport goal
                 RunConfig cfg = RunUtils.createRunConfig(FileUtil.toFile(project.getProjectDirectory()), project, "wsimport", //NOI18N
-                        Collections.singletonList("jaxws:wsimport")); //NOI18N
+                        Collections.singletonList("compile")); //NOI18N
                 RunUtils.executeMaven(cfg);
             }
 

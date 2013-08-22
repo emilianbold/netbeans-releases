@@ -136,8 +136,8 @@ final public class AppClientProjectProperties {
     public static final String DIST_EAR_JAR = "dist.ear.jar"; //NOI18N
     public static final String JAR_NAME = "jar.name"; // NOI18N
     public static final String BUILD_EAR_CLASSES_DIR = "build.ear.classes.dir"; // NOI18N
-    public static final String J2EE_SERVER_INSTANCE = "j2ee.server.instance"; // NOI18N
-    public static final String J2EE_SERVER_TYPE = "j2ee.server.type"; // NOI18N
+    public static final String J2EE_SERVER_INSTANCE = J2EEProjectProperties.J2EE_SERVER_INSTANCE;
+    public static final String J2EE_SERVER_TYPE = J2EEProjectProperties.J2EE_SERVER_TYPE;
     public static final String J2EE_PLATFORM_CLASSPATH = "j2ee.platform.classpath"; //NOI18N
     
     // Properties stored in the PROJECT.PROPERTIES    
