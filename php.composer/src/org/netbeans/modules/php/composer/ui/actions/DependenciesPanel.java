@@ -85,6 +85,7 @@ import javax.swing.KeyStroke;
 import javax.swing.LayoutStyle;
 import javax.swing.ListCellRenderer;
 import javax.swing.ListSelectionModel;
+import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.ListDataEvent;
@@ -103,6 +104,7 @@ import org.netbeans.modules.php.composer.ui.options.ComposerOptionsPanelControll
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.Mnemonics;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 import org.openide.util.RequestProcessor;
@@ -132,6 +134,7 @@ public final class DependenciesPanel extends JPanel {
     private final RequestProcessor postShowRequestProcessor = new RequestProcessor(DependenciesPanel.class.getName() + " (POST SHOW)"); // NOI18N
     private final List<Future<Integer>> searchTasks = new CopyOnWriteArrayList<>();
     private final List<Future<Integer>> showTasks = new CopyOnWriteArrayList<>();
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
 
     private DependenciesPanel(@NullAllowed PhpModule phpModule) {
@@ -210,6 +213,14 @@ public final class DependenciesPanel extends JPanel {
         };
         searchPanel.requireButton.addActionListener(keepOpenActionListener);
         searchPanel.requireDevButton.addActionListener(keepOpenActionListener);
+    }
+
+    public void addChangeListener(ChangeListener listener) {
+        changeSupport.addChangeListener(listener);
+    }
+
+    public void removeChangeListener(ChangeListener listener) {
+        changeSupport.removeChangeListener(listener);
     }
 
     @Override
@@ -326,10 +337,12 @@ public final class DependenciesPanel extends JPanel {
     void resultsChanged() {
         enableRequireButtons();
         updateResultDetailsAndVersions(false);
+        fireChange();
     }
 
     void versionChanged() {
         enableRequireButtons();
+        fireChange();
     }
 
     void enableSearchButton() {
@@ -386,8 +399,7 @@ public final class DependenciesPanel extends JPanel {
     void enableRequireButtons() {
         assert EventQueue.isDispatchThread();
         boolean validResultSelected = false;
-        if (getSelectedSearchResult() != null
-                && getSelectedResultVersion() != null) {
+        if (getSelectedNameWithVersion() != null) {
             validResultSelected = true;
         }
         requireButton.setEnabled(validResultSelected);
@@ -491,21 +503,29 @@ public final class DependenciesPanel extends JPanel {
     }
 
     @CheckForNull
-    String getSelectedResultVersion() {
+    private String getSelectedResultVersion() {
         assert EventQueue.isDispatchThread();
-        String selectedVersion = versionsModel.getSelectedItem();
+        Object selectedVersion = versionsModel.getSelectedItem();
         if (selectedVersion == VersionComboBoxModel.NO_VERSIONS_AVAILABLE) {
             return null;
         }
-        return selectedVersion;
+        return (String) selectedVersion;
     }
 
-    String getSelectedNameWithVersion() {
+    @CheckForNull
+    public String getSelectedNameWithVersion() {
+        assert EventQueue.isDispatchThread();
         SearchResult selectedSearchResult = getSelectedSearchResult();
-        assert selectedSearchResult != null;
         String selectedVersion = getSelectedResultVersion();
-        assert selectedVersion != null;
+        if (selectedSearchResult == null
+                || selectedVersion == null) {
+            return null;
+        }
         return selectedSearchResult.getName() + ":" + selectedVersion; // NOI18N
+    }
+
+    private void fireChange() {
+        changeSupport.fireChange();
     }
 
     @NbBundle.Messages("AddDependencyPanel.error.composer.notValid=Composer is not valid.")
@@ -914,7 +934,7 @@ public final class DependenciesPanel extends JPanel {
 
         @CheckForNull
         @Override
-        public String getSelectedItem() {
+        public Object getSelectedItem() {
             return selectedVersion;
         }
 
