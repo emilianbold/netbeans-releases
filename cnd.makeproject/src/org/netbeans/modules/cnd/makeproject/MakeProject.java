@@ -1424,18 +1424,25 @@ public final class MakeProject implements Project, MakeProjectListener {
     private void createLaunchersFileIfNeeded(FileObject projectDir) {
         CndUtils.assertNonUiThread();
         
-        FileObject projectPrivateFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
-        FileObject launchers = projectPrivateFolder.getFileObject(LaunchersProjectMetadataFactory.NAME);
-        
-        if (!projectPrivateFolder.canWrite() || (launchers != null && launchers.isValid())) {
-            return;
-        }
-        
-        String resource = "/org/netbeans/modules/cnd/makeproject/launchers/resources/simple-launcher.template"; // NOI18N
-
-        URL url = MakeConfiguration.class.getResource(resource);
-        FileObject fo = URLMapper.findFileObject(url);
         try {
+            FileObject projectPrivateFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_PRIVATE_FOLDER);
+            if (projectPrivateFolder == null) {
+                FileObject projectFolder = projectDir.getFileObject(MakeConfiguration.NBPROJECT_FOLDER);
+                if (!projectFolder.canWrite()) {
+                    return;
+                }
+                projectPrivateFolder = projectFolder.createFolder(MakeConfiguration.PRIVATE_FOLDER);
+            }
+            FileObject launchers = projectPrivateFolder.getFileObject(LaunchersProjectMetadataFactory.NAME);
+
+            if (!projectPrivateFolder.canWrite() || (launchers != null && launchers.isValid())) {
+                return;
+            }
+
+            String resource = "/org/netbeans/modules/cnd/makeproject/launchers/resources/simple-launcher.template"; // NOI18N
+
+            URL url = MakeConfiguration.class.getResource(resource);
+            FileObject fo = URLMapper.findFileObject(url);
             fo.copy(projectPrivateFolder, "launcher", "properties"); // NOI18N
         } catch (IOException ex) {
             Exceptions.printStackTrace(ex);
