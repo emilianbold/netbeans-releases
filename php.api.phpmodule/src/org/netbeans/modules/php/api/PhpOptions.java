@@ -40,26 +40,22 @@
  * Portions Copyrighted 2009 Sun Microsystems, Inc.
  */
 
-package org.netbeans.modules.php.api.phpmodule;
+package org.netbeans.modules.php.api;
 
 import org.netbeans.api.annotations.common.CheckForNull;
 import org.netbeans.api.annotations.common.NonNull;
 
 /**
  * Instance of this class can be found in global lookup.
- * <p>
- * Clients probably want to use {@link PhpInterpreter#getDefault()}.
- * @author Tomas Mysik
- * @see PhpInterpreter
+ * @since 2.28
  */
 public interface PhpOptions {
 
     /**
      * Get the PHP interpreter file path.
      * <p>
-     * Clients probably want to use {@link PhpInterpreter#getDefault()}.
-     * @return the PHP interpreter file path or <code>null</code> if none is found.
-     * @see PhpInterpreter#getDefault()
+     * <b>Clients probably want to use {@code PhpInterpreter#getDefault()} from PHP Executable API module.</b>
+     * @return the PHP interpreter file path or {@code null} if none is found
      */
     @CheckForNull
     String getPhpInterpreter();
@@ -67,7 +63,6 @@ public interface PhpOptions {
     /**
      * Get debugger session ID.
      * @return debugger session ID
-     * @since 2.12
      */
     @NonNull
     String getDebuggerSessionId();
