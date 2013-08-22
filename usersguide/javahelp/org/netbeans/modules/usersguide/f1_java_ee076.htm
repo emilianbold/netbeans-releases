@@ -2,39 +2,92 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Using JWSDP 1.6 on the Tomcat Web Server</title>
+<title>glassfish-application-client.xml Visual Editor: General</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="tomcat_websvc_jwsdp" name="tomcat_websvc_jwsdp"></a></p>
 <!-- infolevel="all" infotype="General" --><a id="sthref659" name="sthref659"></a>
-<h1>Using JWSDP 1.6 on the Tomcat Web Server</h1>
+<h1>glassfish-application-client.xml Visual Editor: General</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Java Web Services Developer Pack (Java WSDP) is a free integrated toolkit you can use to build, test and deploy XML applications, web services, and web applications with the latest web service technologies and standards implementations. With the newest release of the Java WSDP you can do the following:</p>
-<ul>
-<li>Develop and deploy using the latest XML and web services technologies slated for inclusion into Sun's deployment platforms.</li>
-<li>Enhance web services performance without revising WSDL files or application code.</li>
-<li>Create XML and web service-enabled applications that exploit the enhanced security features.</li>
-<li>Continue to enjoy Java interoperability and portability across different platforms and devices.</li>
-<li>Simplify and lower the cost of legacy application integration, data interchange, and publishing in a Web environment.</li>
-</ul>
-<p>The instructions below explain how to set up JWSDP 1.6. JWSDP 1.6 assumes that you have a web container installed. For Tomcat, the JWSDP-compliant web container is called 'Tomcat 5.0 for Java WSDP 1.6'. It is based upon Tomcat 5.0.19. Therefore, if you need to use a higher version of the Tomcat Web Server, you cannot use JWSDP 1.6. Instead, you should use the Ant scrpts and the procedure described in <a href="custom:topic:tomcat_websvc"><code>Writing Ant Targets for Web Services on the Tomcat Web Server.</code></a></p>
-<p><b>Note</b>: The bundled Tomcat Web Server's version number is 5.5.17. Therefore, the bundled Tomcat Web Server is not a suitable web container for JWSDP 1.6.</p>
-<a id="sthref660" name="sthref660"></a>
-<p><b>To use web services with JWSDP 1.6:</b></p>
-<ol>
-<li>Download and install Tomcat 5.0 for Java WSDP 1.6:</li>
-<li>Download JWSDP 1.6:</li>
-<li>When you install JWSDP 1.6, make sure that you select Tomcat 5.0 for Java WSDP 1.6 as your web container.</li>
-<li>Register the Tomcat Web Server. In the Server Manager's Add Server Instance panel, select Tomcat 5.0 in the Server drop-down list.</li>
-<li>the web service or it.</li>
-</ol>
-<p><b>Note</b>: When you create a web service client in the New Web Service Client wizard, make sure to select IDE-generated static stub in the Client Type drop-down list.</p>
+<p>Use to set the properties for an enterprise application client's platform-specific deployment descriptor for the GlassFish application server. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1253">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>This dialog box enables you to add the following properties:</p>
+
+<table summary="Descriptions of name and location properties of new Java Project existing sources wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="36%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t58">Element</th>
+<th align="left" valign="bottom" id="r1c2-t58">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t58" headers="r1c1-t58">
+<p>Java Web Start Access</p>
+</td>
+<td align="left" headers="r2c1-t58 r1c2-t58">
+<p>Specifies changes to default Java Web Start parameters for an embedded or stand-alone application client module.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t58" headers="r1c1-t58">
+<p>Context Root</p>
+</td>
+<td align="left" headers="r3c1-t58 r1c2-t58">
+<p>Contains the context root for the Java Web Start enabled application client module. If none is specified, a default is generated.</p>
+<p>The default for an application is as follows:</p>
+<p><code>http://</code><code>host:port/app-name/relative-URI-to-appclient-jar</code></p>
+<p>The default for a stand-alone application client module is as follows:</p>
+<p><code>http://</code><code>host:port/module-name</code></p>
+<p>If the <code>app-name</code> or <code>module-name</code> is not specified during deployment, the name of the EAR or JAR file without the extension is used. If the application or module is not in EAR or JAR file format, a name is generated and written to the server log.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t58" headers="r1c1-t58">
+<p>Vendor</p>
+</td>
+<td align="left" headers="r4c1-t58 r1c2-t58">
+<p>Specifies the name of the vendor as it appears in Java Web Start download and launch screens.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t58" headers="r1c1-t58">
+<p>Eligible</p>
+</td>
+<td align="left" headers="r5c1-t58 r1c2-t58">
+<p>Specifies whether the application client module is eligible to be Java Web Start enabled.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
 <hr><p><b>Related Topics</b></p>
-<p>About the Tomcat Web Server</p>
-<p>Authenticating the Tomcat Web Server</p>
-<p>Setting Up a Tomcat Database Connection Pool</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1247">
+<param name="text" value="<html><u>&quot;About Developing Application Clients&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1249">
+<param name="text" value="<html><u>&quot;Creating Application Clients&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
 <!-- -->
 <!-- Start Footer -->

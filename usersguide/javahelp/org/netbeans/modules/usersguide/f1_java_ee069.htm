@@ -2,30 +2,97 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>About the Tomcat Web Server</title>
+<title>Deployment Descriptor Visual Editor: Security</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="context_help" name="context_help"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref646" name="sthref646"></a>
-<h1>About the Tomcat Web Server</h1>
+<!-- infolevel="all" infotype="General" --><a id="sthref652" name="sthref652"></a>
+<h1>Deployment Descriptor Visual Editor: Security</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The IDE provides an IDE module that handles integration with Tomcat Web Servers. A Tomcat Web Server is pre-configured to work with the plugin. The Tomcat Web Server that is bundled with the IDE implements the JavaServer Pages 2.2 and Servlet 3.0 specifications and includes many features that are useful in the deployment of web applications.</p>
-<p>Instead of using the bundled Tomcat Web Server, you can a supported Tomcat Web Server with the IDE and then deploy to it. The IDE supports Tomcat 7, Tomcat 6 and Tomcat 5.5.</p>
-<p>To see the Tomcat Web Servers that are registered with the IDE, expand the Servers node in the Services window.</p>
-<p>For more information, see the following web sites:</p>
-<p>When you download and install a version of the IDE that contains Java EE technologies, you can choose to install and register the Tomcat Web Server during the installation process.</p>
-<p>The configuration files for the bundled Tomcat Web Server are in the Tomcat base (Catalina base) directory, located under your IDE user directory. The Tomcat home (Catalina home) directory is under the IDE installation directory. Note that this setup differs from a typical Tomcat installation, where the base directory and home directory coincide. To see the exact locations of the home and base directories, right-click the server's node in the Services tab and choose Properties from the popup menu.</p>
-<p>If the Tomcat base (Catalina base) folder does not exist, it is created the first time the server is started.</p>
-<p>Shared libraries that are used by web applications must be added to the home directory. Do not add shared libraries to the base directory.</p>
-<p>Developers using a common IDE installation need to exercise caution when adding shared libraries to the home directory. Libraries stored in the home directory are shared by all web applications that are deployed on the server, so the potential for version conflicts exists.</p>
-<p>On the UNIX platform, the IDE is sometimes installed in a read-only directory. If this is the case, you cannot add shared libraries to the bundled Tomcat installation. Ask the person responsible for the IDE installation to make writable all directories under the Tomcat home directory. Alternatively, you could add another Tomcat Web Server and configure it to meet your needs.</p>
+<p>Use to edit the platform-specific <code>glassfish-web.xml/glassfish-ejb-jar.xml/glassfish-application.xml</code> deployment descriptor for the GlassFish server. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1715">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>The Security Role Mapping pane enables you to specify the principals and groups assigned to each security role specified in <code>web.xml</code> or <code>ejb-jar.xml</code>. The security role nodes in the pane are determined by the security roles defined in <code>web.xml</code>. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1715">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>A web or enterprise application will only contain the <code>glassfish-web.xml</code>, <code>glassfish-ejb-jar.xml</code> or <code>glassfish-application.xml</code> deployment descriptor files if the target server is the GlassFish server. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1874">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>For each security role you can specify the following security role mapping properties:</p>
+
+<table summary="Descriptions of name and location properties of new Java Project existing sources wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="36%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t49">Element</th>
+<th align="left" valign="bottom" id="r1c2-t49">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t49" headers="r1c1-t49">
+<p>Principals Assigned to this Role</p>
+</td>
+<td align="left" headers="r2c1-t49 r1c2-t49">
+<p>Specifies the names of the principals assigned to the role.</p>
+<p>Use the buttons on the right to add, edit and remove principals.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t49" headers="r1c1-t49">
+<p>Groups Assigned to this Role</p>
+</td>
+<td align="left" headers="r3c1-t49 r1c2-t49">
+<p>Specifies the names of the groups assigned to the role.</p>
+<p>Use the buttons on the right to add, edit and remove groups.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
 <hr><p><b>Related Topics</b></p>
-<p>Viewing the Tomcat Web Server in the IDE</p>
-<p>Customizing the Tomcat Web Server</p>
-<p>Customizing the Tomcat Configuration File</p>
-<p>Registering a Tomcat Web Server</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1937">
+<param name="text" value="<html><u>&quot;Configuring Quality of Service&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1111">
+<param name="text" value="<html><u>&quot;Configuring a Web Application&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1866">
+<param name="text" value="<html><u>&quot;Configuring Web Services&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
 <!-- -->
 <!-- Start Footer -->

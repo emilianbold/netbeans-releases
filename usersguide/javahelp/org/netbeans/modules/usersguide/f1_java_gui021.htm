@@ -11,7 +11,14 @@
 <!-- infolevel="all" infotype="General" --><a id="sthref257" name="sthref257"></a>
 <h1>Java FX Project Properties: Deployment</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The Deployment panel lets you configure options for deploying your project. These options apply only to projects that are run as Java Web Start or Browser applications.(Select how to run your project in the Run properties.)</p>
+<p>The Deployment panel lets you configure options for deploying your project. These options apply only to projects that are run as Java Web Start or Browser applications. Select how to run your project in the Run properties. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG403">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 <p>The IDE uses the settings in this panel, along with the settings in the Run and Application panels, to generate the project's JNLP file.</p>
 <p>The panel contains the following deployment settings:</p>
 
@@ -30,7 +37,14 @@
 <p>Check for Application Updates in Background</p>
 </td>
 <td align="left" headers="r2c1-t17 r1c2-t17">
-<p>Java Web Start and browser-embedded applications automatically check for updates to the application at the original location where the application was loaded. By default the application checks for updates in the background and applies updates only on application restart ("lazy" mode). Uncheck this box and the application checks for and applies updates at start time, before running ("eager" mode). In the JNLP file, unchecking this box changes <code>&lt;update check="lazy"/&gt;</code> to <code>&lt;update check="eager"/&gt;</code></p>
+<p>Java Web Start and browser-embedded applications automatically check for updates to the application at the original location where the application was loaded. By default the application checks for updates in the background and applies updates only on application restart ("lazy" mode). Uncheck this box and the application checks for and applies updates at start time, before running ("eager" mode). In the JNLP file, unchecking this box changes <code>&lt;update check="lazy"/&gt;</code> to <code>&lt;update check="eager"/&gt;</code>. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG399">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -60,7 +74,7 @@
 <tr align="left" valign="top">
 <td align="left" id="r6c1-t17" headers="r1c1-t17">
 <p>Request unrestricted access</p>
-<p>Signing certificate</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Signing certificate</p>
 </td>
 <td align="left" headers="r6c1-t17 r1c2-t17">
 <p>By default, Java Web Start applications run in a restricted environment where they have limited access to local computing resources. Tick this box if you want the application to request unrestricted access to the local file system. When you tick this box, the IDE inserts the <code>&lt;all-permissions&gt;</code> element into the security section of the JNLP file. The application must be signed in order to request unrestricted access.</p>
@@ -78,11 +92,11 @@
 <tr align="left" valign="top">
 <td align="left" id="r8c1-t17" headers="r1c1-t17">
 <p>Download Mode for Libraries</p>
-<p>"eager" (default)</p>
-<p>"lazy"</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;"eager" (default)</p>
+<p>&nbsp;&nbsp;&nbsp;&nbsp;"lazy"</p>
 </td>
 <td align="left" headers="r8c1-t17 r1c2-t17">
-<p>Click Edit to open a dialog where you can change the download mode for libraries. The modes are:</p>
+<p>Click <b>Edit</b> to open a dialog where you can change the download mode for libraries. The modes are:</p>
 <p>Libraries are downloaded before the application starts.</p>
 <p>Libraries are downloaded in the background as the application runs and are applied on restart.</p>
 </td>
@@ -116,11 +130,10 @@
 </object>
 </code></p>
 <hr><p><b>Related Topics</b></p>
-<p><i>Developing Applications with NetBeans IDE</i>, <a href="olinkNBDAG399">"Working with a JavaFX Project"</a></p>
-<p><i>Developing Applications with NetBeans IDE</i>, 
+<p>Developing Applications with NetBeans IDE, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG403">
-<param name="text" value="<html><u>&quot;Building and Running javaFX Applications&quot;</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG370">
+<param name="text" value="<html><u>&quot;Using Java Project Templates&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
