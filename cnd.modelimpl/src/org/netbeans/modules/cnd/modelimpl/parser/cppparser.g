@@ -138,7 +138,7 @@ tokens {
 	CSM_FUNCTION_TEMPLATE_DEFINITION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_PARAMETER_DECLARATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TYPE_BUILTIN<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
-    CSM_TYPE_DECLTYPE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
+        CSM_TYPE_DECLTYPE<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 	CSM_TYPE_COMPOUND<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
 
 	CSM_TEMPLATE_EXPLICIT_SPECIALIZATION<AST=org.netbeans.modules.cnd.modelimpl.parser.FakeAST>;
@@ -822,7 +822,7 @@ template_explicit_specialization
                 |   cv_qualifier
                 |   LITERAL_typedef
                 )*
-                LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
+                enum_head
             ) =>
             (LITERAL___extension__!)?
             (LITERAL_template LESSTHAN GREATERTHAN)?
@@ -1012,7 +1012,7 @@ declaration_template_impl { String s; K_and_R = false; boolean ctrName=false; bo
                     |   cv_qualifier
                     |   LITERAL_typedef
                     )*
-                    LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
+                    enum_head
                 ) =>
                 (LITERAL___extension__!)?
                     (   sc = storage_class_specifier
@@ -1124,7 +1124,7 @@ external_declaration {String s; K_and_R = false; boolean definition;StorageClass
             |   cv_qualifier
             |   LITERAL_typedef
             )*
-            LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
+            enum_head
         ) =>
         {action.simple_declaration(LT(1));}
         {action.enum_declaration(LT(1));}
@@ -1520,7 +1520,7 @@ member_declaration
 		{ #member_declaration = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #member_declaration); }
 	|  
 		// Enum definition (don't want to backtrack over this in other alts)
-		((storage_class_specifier)? LITERAL_enum (LITERAL_class | LITERAL_struct)? (qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY )=>
+		((storage_class_specifier)? enum_head)=>
                 {action.simple_declaration(LT(1));}
                 {action.enum_declaration(LT(1));}
                 (sc = storage_class_specifier)?
@@ -2145,8 +2145,8 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
         (sc = storage_class_specifier!)?
         (   id = class_qualified_id
             (options{generateAmbigWarnings = false;}:
-                (LITERAL_final | LITERAL_explicit)?
-                (base_clause)?
+            (LITERAL_final | LITERAL_explicit)?
+            (base_clause)?
                 
                 // parse class body if nesting limit not exceed
                 (
@@ -2169,7 +2169,7 @@ class_specifier[DeclSpecifier ds] returns [/*TypeSpecifier*/int ts = tsInvalid]
                         | RCURLY )
                     |   
                         balanceCurlies
-                 )
+        )
             |
                 {classForwardDeclaration(ts, ds, id);}
             )
@@ -2462,6 +2462,13 @@ class_head
 	)? LCURLY
 	;
 
+// for predicates
+enum_head
+        { String s; int ts; }
+        :
+            LITERAL_enum (LITERAL_class | LITERAL_struct)? (s = qualified_id)? (COLON ts = type_specifier[dsInvalid, false])? LCURLY
+        ;
+
 // so far this one is used in predicates only
 class_forward_declaration
         { String s; }
@@ -2525,7 +2532,7 @@ member_declarator_list
 member_declarator
 	:	
 		((IDENT)? COLON constant_expression)=>(IDENT)? COLON constant_expression
-	|  
+        |
 		declarator[declOther, 0] 
                 (   LITERAL_override 
                 |   LITERAL_final 
@@ -3868,9 +3875,33 @@ using_declaration
 
 alias_declaration
 	:	LITERAL_using
-		IDENT ASSIGNEQUAL type_name
+		IDENT ASSIGNEQUAL alias_declaration_type
 		SEMICOLON! //{end_of_stmt();}
 	;
+
+// Rule to catch class definition inside type alias
+alias_declaration_type
+        :   
+            ( 
+                // We do not need to process template classes here because of standard.
+                // [dcl.type], point 3:
+                // A type-specifier-seq shall not define a class or enumeration
+                // unless it appears in the type-id of an alias-declaration (7.1.3) that
+                // is not the declaration of a template-declaration.  
+                (class_head)=>
+                    type_name
+                    {#alias_declaration_type = #(#[CSM_CLASS_DECLARATION, "CSM_CLASS_DECLARATION"], #alias_declaration_type);}
+            |
+                (enum_head)=>
+                    // TODO: think about handling enums via type_name 
+                    {if(statementTrace>=1) printf("typedef_enum [%d]\n",LT(1).getLine()); }
+                    enum_specifier 
+                    (init_declarator_list[declOther])?
+                    {#alias_declaration_type = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #alias_declaration_type);}
+            |
+                type_name
+            )
+    ;
 
 visibility_redef_declaration
 {String qid="";}
