@@ -69,16 +69,25 @@ public class PanelConfigureProject implements MakeSamplePanel<WizardDescriptor>,
     private boolean initialized = false;
     private boolean showMakefileTextField;
     private boolean finishPanel = true;
+    private final String helpCtxtID;
 
     /** Create the wizard panel descriptor. */
-    public PanelConfigureProject(String name, int type, String wizardTitle, String wizardACSD, boolean showMakefileTextField) {
+    /* package*/ PanelConfigureProject(String name, int type, String wizardTitle, String wizardACSD, boolean showMakefileTextField) {
+        this(name, type, wizardTitle, wizardACSD, showMakefileTextField, null);
+    }
+    
+    /** Create the wizard panel descriptor. */
+    /* package*/ PanelConfigureProject(String name, int type, String wizardTitle, String wizardACSD, boolean showMakefileTextField, String helpCtx) {
         this.name = name;
         this.type = type;
         this.wizardTitle = wizardTitle;
         this.wizardACSD = wizardACSD;
         this.showMakefileTextField = showMakefileTextField;
         title = NbBundle.getMessage(PanelConfigureProject.class, "LAB_ConfigureProject"); // NOI18N
+        this.helpCtxtID = helpCtx;
     }
+
+    
 
     @Override
     public PanelConfigureProjectVisual getComponent() {
@@ -95,6 +104,9 @@ public class PanelConfigureProject implements MakeSamplePanel<WizardDescriptor>,
 
     @Override
     public HelpCtx getHelp() {
+        if (helpCtxtID != null) {
+            return new HelpCtx(helpCtxtID);
+        }        
         if (type == NewMakeProjectWizardIterator.TYPE_APPLICATION || type == NewMakeProjectWizardIterator.TYPE_QT_APPLICATION || type == NewMakeProjectWizardIterator.TYPE_DB_APPLICATION) {
             return new HelpCtx("NewAppWizard"); // NOI18N
         } else if (type == NewMakeProjectWizardIterator.TYPE_DYNAMIC_LIB || type == NewMakeProjectWizardIterator.TYPE_QT_DYNAMIC_LIB) {
