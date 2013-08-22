@@ -49,11 +49,13 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import javax.swing.event.ChangeListener;
 import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.queries.SourceForBinaryQuery;
 import org.netbeans.modules.parsing.spi.indexing.support.IndexResult;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.openide.filesystems.FileObject;
+import org.openide.util.ChangeSupport;
 import org.openide.util.Exceptions;
 
 /**
@@ -72,6 +74,8 @@ public class JsfIndex {
     private final ThreadLocal<QuerySupport> indexCacheEmbedding = new ThreadLocal<>();
     private final ThreadLocal<QuerySupport> indexCacheBinary = new ThreadLocal<>();
     private final ThreadLocal<QuerySupport> indexCacheCustom = new ThreadLocal<>();
+
+    private final ChangeSupport changeSupport = new ChangeSupport(this);
 
     /**
      * Creates a new instance of JsfIndex
@@ -129,6 +133,18 @@ public class JsfIndex {
             indexCacheCustom.set(result);
         }
         return result;
+    }
+
+    public void addChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+    public void removeChangeListener(ChangeListener l) {
+        changeSupport.addChangeListener(l);
+    }
+
+    public void notifyChange() {
+        changeSupport.fireChange();
     }
 
     // --------------- BOTH EMBEDDING && BINARY INDEXES ------------------
