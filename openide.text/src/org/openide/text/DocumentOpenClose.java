@@ -128,6 +128,8 @@ final class DocumentOpenClose {
      */
     DocumentRef docRef;
     
+    final Object docRefLock;
+    
     /**
      * Strong reference to document is used when document becomes modified.
      */
@@ -140,6 +142,7 @@ final class DocumentOpenClose {
     DocumentOpenClose(CloneableEditorSupport ces) {
         this.ces = ces;
         this.lock = ces.getLock();
+        this.docRefLock = new Object();
     }
 
     public DocumentStatus getDocumentStatusLA() { // Lock acquired mandatory
@@ -151,18 +154,10 @@ final class DocumentOpenClose {
     }
     
     StyledDocument getDocument() {
-        synchronized (lock) {
-            switch (documentStatus) {
-                case CLOSED:
-                case LOADING:
-                    return null;
-                case OPENED:
-                case RELOADING:
-                    return getRefDocument();
-                default:
-                    throw invalidStatus();
-            }
-        }
+        // Do not sync on "lock" since CND model calls getDocument()
+        // during notifyModify() which gets rescheduled from EDT
+        // (which already holds CES.getLock()) into non-EDT which would lead to starvation.
+        return getRefDocument();
     }
 
     /**
@@ -171,8 +166,14 @@ final class DocumentOpenClose {
      * @return document instance from docRef.
      */
     StyledDocument getRefDocument() {
-        synchronized (lock) {
+        synchronized (docRefLock) {
             return (docRef != null) ? docRef.get() : null;
+        }
+    }
+    
+    void setDocRef(StyledDocument doc) {
+        synchronized (docRefLock) {
+            docRef = (doc != null) ? new DocumentRef(doc) : null;
         }
     }
     
@@ -189,12 +190,15 @@ final class DocumentOpenClose {
     StyledDocument open() throws IOException {
         DocumentLoad load;
         Task task;
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "open() requested by", new Exception());
+        }
         synchronized (lock) {
             StyledDocument openDoc = retainExistingDocLA();
-            if (LOG.isLoggable(Level.FINER)) {
-                LOG.finer("open(): openDoc=" + openDoc + ", documentStatus=" + documentStatus); // NOI18N
-            }
             if (openDoc != null) {
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer("open(): Existing openDoc retained.\n"); // NOI18N
+                }
                 return openDoc;
             }
             switch (documentStatus) {
@@ -202,6 +206,9 @@ final class DocumentOpenClose {
                     // Doc was null (retainDocLA() failed) but automatic close()
                     // due to docRef GC might already be scheduled or not yet.
                     // Anyway ensure closing task gets scheduled before opening task (by passing false).
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("open(): status OPENED but doc GCed. Schedule close task followed by possible open task\n"); // NOI18N
+                    }
                     closeImplLA(null, false);
                     if (activeOpen == null) {
                         initLoadTaskLA(false);
@@ -211,6 +218,9 @@ final class DocumentOpenClose {
                     break;
                 case CLOSED:
                     boolean synchronousOpenTaskRun = firingCloseDocument && RP.isRequestProcessorThread();
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("open(): status CLOSED. Possibly schedule open task\n"); // NOI18N
+                    }
                     try {
                         if (activeOpen == null) {
                             initLoadTaskLA(synchronousOpenTaskRun);
@@ -401,6 +411,9 @@ final class DocumentOpenClose {
     
     private void initLoadTaskLA(boolean synchronousTaskRun) { // Lock acquired mandatory
         assert (activeOpen == null) : "Open task already inited."; // NOI18N
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer("initLoadTaskLA(): Schedule open task followed by change firing task.\n"); // NOI18N
+        }
         activeOpen = new DocumentLoad(!synchronousTaskRun);
         activeOpenTask = RP.create(activeOpen);
         // Btw RP task runs synchronously when waitFinished() is called from RP thread
@@ -414,6 +427,9 @@ final class DocumentOpenClose {
     
     private void initReloadTaskLA(StyledDocument reloadDoc) { // Lock acquired mandatory
         assert (activeReload == null) : "Reload task already inited."; // NOI18N
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer("initLoadTaskLA(): Schedule reload task.\n"); // NOI18N
+        }
         activeReload = new DocumentLoad(reloadDoc);
         // Initial part of reload runs in EDT (collects caret positions)
         Mutex.EVENT.readAccess(activeReload);
@@ -427,21 +443,34 @@ final class DocumentOpenClose {
     }
     
     void closeImplLA(StyledDocument doc, boolean delayedClose) { // Lock acquired mandatory
+        if (LOG.isLoggable(Level.FINEST)) {
+            LOG.log(Level.FINEST, "Close requested by:\n", new Exception()); // NOI18N
+        }
         if (activeClose != null) {
             // If immediate closing is necessary possibly reschedule
             if (!delayedClose && activeClose.delayedClose) {
                 cancelCloseLA();
                 if (activeClose != null) { // Close already running and can't be cancelled
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("closeImplLA(): Delayed active close already running (can't be cancelled). Return.\n"); // NOI18N
+                    }
                     return;
                 }
             } else { // Let existing close requrest finish
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer("closeImplLA(): Close already in progress. Return.\n"); // NOI18N
+                }
                 return;
             }
         }
         assert (activeClose == null);
         activeClose = new DocumentClose(doc, delayedClose);
         activeCloseTask = RP.create(activeClose);
-        activeCloseTask.schedule(delayedClose ? NULL_DOCUMENT_CLOSE_DELAY : 0);
+        int delay = delayedClose ? NULL_DOCUMENT_CLOSE_DELAY : 0;
+        activeCloseTask.schedule(delay);
+        if (LOG.isLoggable(Level.FINER)) {
+            LOG.finer("closeImplLA(): Scheduled close task with delay=" + delay + ".\n"); // NOI18N
+        }
     }
     
     /**
@@ -449,7 +478,17 @@ final class DocumentOpenClose {
      *  if close is already running.
      */
     void cancelCloseLA() { // Lock acquired mandatory
+        if (LOG.isLoggable(Level.FINER)) {
+            if (LOG.isLoggable(Level.FINEST)) {
+                LOG.log(Level.FINEST, "cancelCloseLA(): Attempt to cancel close by\n", new Exception());
+            } else {
+                LOG.finer("cancelCloseLA(): Attempt to cancel close.\n"); // NOI18N
+            }
+        }
         if (activeClose != null && activeClose.cancel()) {
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.finer("cancelCloseLA(): activeClose().cancel() successful.\n"); // NOI18N
+            }
             activeCloseTask.cancel();
             activeCloseTask = null;
             activeClose = null;
@@ -572,14 +611,6 @@ final class DocumentOpenClose {
                                     "Invalid documentStatus=" + documentStatus + " expected OPENED"; // NOI18N
                             documentStatus = DocumentStatus.RELOADING;
                         } else {
-                            if (documentStatus == DocumentStatus.OPENED) {
-                                // This state may happen if there was a close operation
-                                // followed by firing property change to listeners and one
-                                // of the listeners requested openDocument() which had to be
-                                // performed synchronously during the close notification.
-                                // If (in the meantime) there was an openDocument() requested
-                                // by a third thread that task would be waiting.
-                            }
                             assert (documentStatus == DocumentStatus.CLOSED) :
                                     "Invalid documentStatus=" + documentStatus + " expected CLOSED"; // NOI18N
                             documentStatus = DocumentStatus.LOADING;
@@ -602,7 +633,6 @@ final class DocumentOpenClose {
                             assert (loadDoc != null) : "kit.createDefaultDocument() returned null"; // NOI18N
                         }
                     }
-                    docRef = new DocumentRef(loadDoc);
                 }
 
                 // Perform atomicLockedRun() under atomic lock
@@ -647,11 +677,11 @@ final class DocumentOpenClose {
                 loadRuntimeException = ex;
 
             } finally {
-                if (!userQuestionExceptionInReload) {
+                if (!userQuestionExceptionInReload) { // For UQE during reload this will be done later
                     synchronized (lock) {
                         if (!loadSuccess) {
                             documentStatus = DocumentStatus.CLOSED;
-                            docRef = null;
+                            setDocRef(null);
                             ces.setListeningOnEnv(false);
                         }
 
@@ -665,6 +695,11 @@ final class DocumentOpenClose {
                                 activeOpenTask = null;
                                 activeOpen = null;
                             }
+                        }
+                        if (LOG.isLoggable(Level.FINER)) {
+                            LOG.finer("documentLoad(): reload=" + reload + // NOI18N
+                                    ", documentStatus=" + documentStatus + // NOI18N
+                                    ", loadSuccess=" + loadSuccess + "\n"); // NOI18N
                         }
                     }
                 }
@@ -716,6 +751,9 @@ final class DocumentOpenClose {
                         is.close();
                     }
                 }
+
+                // Start to return the document from CES.getDocument()
+                setDocRef(loadDoc);
 
                 // opening the document, inform position manager
                 if (reload) {
@@ -859,7 +897,18 @@ final class DocumentOpenClose {
         @Override
         public void run() {
             assert (!documentOpen.reload) : "This task should not be posted for reloads."; // NOI18N
-            documentOpen.fireDocumentChange();
+            if (LOG.isLoggable(Level.FINER)) {
+                LOG.finer("documentLoad(): Going to fireDocumentChange...\n"); // NOI18N
+            }
+            boolean success = false;
+            try {
+                documentOpen.fireDocumentChange();
+                success = true;
+            } finally {
+                if (LOG.isLoggable(Level.FINER)) {
+                    LOG.finer("documentLoad(): fireDocumentChange: success=" + success + "\n"); // NOI18N
+                }
+            }
         }
         
     }
@@ -899,6 +948,7 @@ final class DocumentOpenClose {
                 }
                 started = true;
             }
+            setDocRef(null); // getDocument() will no longer return the document being closed
             try {
                 // Stop listening on the Env
                 ces.setListeningOnEnv(false);
@@ -916,17 +966,21 @@ final class DocumentOpenClose {
                     documentStatus = DocumentStatus.CLOSED;
                     activeCloseTask = null;
                     activeClose = null;
-                    docRef = null;
                 }
                 
                 // Some listeners may request openDocument() directly from closed document notification
                 // Open the document synchronously for them.
                 firingCloseDocument = true;
+                boolean success = false;
                 try {
                     ces.fireDocumentChange(closeDoc, true);
+                    success = true;
                 } finally {
                     firingCloseDocument = false;
                     docOpenedWhenFiringCloseDocument = null;
+                    if (LOG.isLoggable(Level.FINER)) {
+                        LOG.finer("documentClose(): fireDocumentChange: success=" + success + "\n"); // NOI18N
+                    }
                 }
             }
         }
