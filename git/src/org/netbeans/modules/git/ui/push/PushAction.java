@@ -58,9 +58,11 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JButton;
+import org.netbeans.libs.git.GitBranch;
 import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.libs.git.GitException;
 import org.netbeans.libs.git.GitPushResult;
+import org.netbeans.libs.git.GitRefUpdateResult;
 import org.netbeans.libs.git.GitRemoteConfig;
 import org.netbeans.libs.git.GitRevisionInfo;
 import org.netbeans.libs.git.GitTransportUpdate;
@@ -153,7 +155,9 @@ public class PushAction extends SingleRepositoryAction {
         "MSG_PushAction.updates.updateBranch=Branch Update : {0}\n"
             + "Old Id        : {1}\n"
             + "New Id        : {2}\n"
-            + "Result        : {3}\n"
+            + "Result        : {3}\n",
+        "# {0} - local branch name", "# {1} - tracked branch name",
+        "MSG_PushAction.trackingUpdated=Branch {0} set to track {1}"
     })
     public Task push (File repository, final String target, final Collection<PushMapping> pushMappins,
     final List<String> fetchRefSpecs, final String remoteNameToUpdate) {
@@ -161,8 +165,12 @@ public class PushAction extends SingleRepositoryAction {
             @Override
             protected void perform () {
                 List<String> pushRefSpecs = new LinkedList<String>();
+                Set<String> newBranches = new HashSet<String>();
                 for (PushMapping b : pushMappins) {
                     pushRefSpecs.add(b.getRefSpec());
+                    if (b.isCreateBranchMapping()) {
+                        newBranches.add(b.getRemoteName());
+                    }
                 }
                 final Set<String> toDelete = new HashSet<String>();
                 for(ListIterator<String> it = fetchRefSpecs.listIterator(); it.hasNext(); ) {
@@ -176,6 +184,7 @@ public class PushAction extends SingleRepositoryAction {
                 LOG.log(Level.FINE, "Pushing {0}/{1} to {2}", new Object[] { pushRefSpecs, fetchRefSpecs, target }); //NOI18N
                 try {
                     GitClient client = getClient();
+                    Map<String, GitBranch> localBranches = client.getBranches(false, getProgressMonitor());                    
                     // init push hooks
                     Collection<GitHook> hooks = VCSHooks.getInstance().getHooks(GitHook.class);
                     beforePush(hooks, pushMappins);
@@ -206,6 +215,25 @@ public class PushAction extends SingleRepositoryAction {
                     reportRemoteConflicts(result.getRemoteRepositoryUpdates());
                     logUpdates(result.getRemoteRepositoryUpdates(), "MSG_PushAction.updates.remoteUpdates"); //NOI18N
                     logUpdates(result.getLocalRepositoryUpdates(), "MSG_PushAction.updates.localUpdates"); //NOI18N
+                    if (remoteNameToUpdate != null && !newBranches.isEmpty()) {
+                        for (Map.Entry<String, GitTransportUpdate> e : result.getLocalRepositoryUpdates().entrySet()) {
+                            if (e.getValue().getResult() == GitRefUpdateResult.NEW) {
+                                String localRefName = e.getValue().getLocalName();
+                                for (String localBranchName : newBranches) {
+                                    if (localRefName.equals(remoteNameToUpdate + "/" + localBranchName)) {
+                                        GitBranch localBranch = localBranches.get(localBranchName);
+                                        if (localBranch != null && localBranch.getTrackedBranch() == null) {
+                                            // update tracking here
+                                            LOG.log(Level.FINE, "Update tracking for {0} <-> {1}",
+                                                    new Object[] { localRefName, localBranchName });
+                                            GitBranch b = client.updateTracking(localBranchName, localRefName, getProgressMonitor());
+                                            logTrackingUpdate(b);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
                     if (isCanceled()) {
                         return;
                     }
@@ -245,6 +273,14 @@ public class PushAction extends SingleRepositoryAction {
                             }));
                         }
                     }
+                }
+            }
+            
+            private void logTrackingUpdate (GitBranch b) {
+                if (b != null && b.getTrackedBranch() != null) {
+                    OutputLogger logger = getLogger();
+                    logger.output(Bundle.MSG_PushAction_trackingUpdated(b.getName(), b.getTrackedBranch().getName()));
+                    logger.output(""); //NOI18N
                 }
             }
 
