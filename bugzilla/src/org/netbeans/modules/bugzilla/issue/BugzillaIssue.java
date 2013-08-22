@@ -813,7 +813,7 @@ public class BugzillaIssue extends AbstractNbTaskWrapper {
             // not fully initialized task, sync failed
             return;            
         }
-        final TaskAttribute attAttribute = new TaskAttribute(getRepositoryTaskData().getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
+        final TaskAttribute attAttribute = new TaskAttribute(repositoryTaskData.getRoot(),  TaskAttribute.TYPE_ATTACHMENT);
         TaskAttributeMapper mapper = attAttribute.getTaskData().getAttributeMapper();
         TaskAttribute a = attAttribute.createMappedAttribute(TaskAttribute.ATTACHMENT_DESCRIPTION);
         a.setValue(desc);
