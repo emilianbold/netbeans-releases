@@ -145,6 +145,14 @@ public class SemanticAnalysis extends SemanticAnalyzer {
         semanticHighlights = null;
     }
 
+    private static void setIsLogged(boolean isLogged) {
+        SemanticAnalysis.isLogged = isLogged;
+    }
+
+    private static boolean isLogged() {
+        return isLogged;
+    }
+
     @Override
     public Map<OffsetRange, Set<ColoringAttributes>> getHighlights() {
         return semanticHighlights;
@@ -159,9 +167,9 @@ public class SemanticAnalysis extends SemanticAnalyzer {
     public void run(Result r, SchedulerEvent event) {
         checkIfResolveDeprecatedElements = true;
         if (isResolveDeprecatedElements()) {
-            if (!isLogged) {
+            if (!isLogged()) {
                 LOGGER.info("Resolving of deprecated elements in Semantic analysis - IDE will be possibly slow!");
-                isLogged = true;
+                setIsLogged(true);
             }
         }
         resume();
