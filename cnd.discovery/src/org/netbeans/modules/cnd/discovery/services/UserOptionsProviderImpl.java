@@ -116,7 +116,7 @@ public class UserOptionsProviderImpl implements UserOptionsProvider {
             convertOptionsToMacros(compiler, options, res);
         }
         if (makeConfiguration.isQmakeConfiguration()) {
-            res.addAll(QtInfoProvider.getDefault().getQtAdditionalMacroses(makeConfiguration));
+            res.addAll(QtInfoProvider.getDefault().getQtAdditionalMacros(makeConfiguration));
         }
         return res;
     }
