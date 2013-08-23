@@ -264,7 +264,6 @@ public class ServicePanel extends SaveableSectionInnerPanel {
         defaultJavaClassCB.setText(bundle.getString("LBL_USE_DEFAULT")); // NOI18N
         defaultJavaClassCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         defaultJavaClassCB.setContentAreaFilled(false);
-        defaultJavaClassCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
