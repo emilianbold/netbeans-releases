@@ -43,6 +43,7 @@ package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.*;
 import java.io.File;
+import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -71,6 +72,7 @@ import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
 import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
 import org.netbeans.modules.web.el.completion.ELStreamCompletionItem;
@@ -754,11 +756,18 @@ public final class ELTypeUtilities {
      */
     public static ClasspathInfo getElimplExtendedCPI(FileObject file) {
         ClassPath bootPath = ClassPath.getClassPath(file, ClassPath.BOOT);
-        ClassPath compilePath = ClassPathSupport.createProxyClassPath(
-                ClassPath.getClassPath(file, ClassPath.COMPILE),
-                ClassPathSupport.createClassPath(EL_IMPL_JAR_FO));
+        if (bootPath == null) {
+            bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        }
+        ClassPath compilePath = ClassPath.getClassPath(file, ClassPath.COMPILE);
+        if (compilePath == null) {
+            compilePath = ClassPathSupport.createClassPath(new URL[0]);
+        }
         ClassPath srcPath = ClassPath.getClassPath(file, ClassPath.SOURCE);
-        return ClasspathInfo.create(bootPath, compilePath, srcPath);
+        return ClasspathInfo.create(
+                bootPath,
+                ClassPathSupport.createProxyClassPath(compilePath, ClassPathSupport.createClassPath(EL_IMPL_JAR_FO)),
+                srcPath);
     }
 
     private static boolean isSubtypeOf(CompilationContext info, TypeMirror tm, CharSequence typeName) {
