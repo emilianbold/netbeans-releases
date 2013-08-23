@@ -175,6 +175,7 @@ public class CreateAction implements ActionListener, HelpCtx.Provider {
                     @Override
                     public void perform() {
 
+                        Utils.logVCSActionEvent("HG"); //NOI18N
                         try {
                             OutputLogger logger = getLogger();
                             logger.outputInRed(

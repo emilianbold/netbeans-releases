@@ -86,6 +86,7 @@ public abstract class MultipleRepositoryAction extends GitAction {
             return;
         }
         for (File repository : repositories) {
+            GitUtils.logRemoteRepositoryAccess(repository);
             Task runningTask = performAction(repository, GitUtils.filterForRepository(context, repository), context);
             if (runningTask != null) {
                 runningTask.waitFinished();

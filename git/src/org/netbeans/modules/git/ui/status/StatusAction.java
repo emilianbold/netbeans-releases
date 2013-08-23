@@ -102,6 +102,7 @@ public class StatusAction extends GitAction {
         } else {
             final Map<File, Collection<File>> toRefresh = new HashMap<File, Collection<File>>(repositories.size());
             for (File repository : repositories) {
+                GitUtils.logRemoteRepositoryAccess(repository);
                 toRefresh.put(repository, Arrays.asList(GitUtils.filterForRepository(context, repository)));
             }
             GitProgressSupport supp = new GitProgressSupport() {
