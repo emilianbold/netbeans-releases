@@ -51,7 +51,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JComponent;
 import javax.swing.event.ChangeListener;
-import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.TaskState;
 import org.glassfish.tools.ide.data.GlassFishAdminInterface;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.glassfish.tools.ide.data.GlassFishVersion;

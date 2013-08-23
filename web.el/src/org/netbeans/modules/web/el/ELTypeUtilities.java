@@ -417,7 +417,7 @@ public final class ELTypeUtilities {
 
     public static boolean isImplicitObjectReference(CompilationContext info, Node target, List<ImplicitObjectType> types, boolean directly) {
         int repeation = directly ? 2 : Integer.MAX_VALUE;
-        do {
+        while (target != null && repeation > 0) {
             if (target instanceof AstIdentifier) {
                 for (ImplicitObject each : getImplicitObjects(info)) {
                     if (types.contains(each.getType()) && each.getName().equals(target.getImage())) {
@@ -428,7 +428,7 @@ public final class ELTypeUtilities {
 
             target = NodeUtil.getSiblingBefore(target);
             repeation--;
-        } while (target != null && repeation > 0);
+        };
 
         return false;
     }
@@ -921,8 +921,11 @@ public final class ELTypeUtilities {
                         } else {
                             if (enclosing != null) {
                                 Element propertyType = getElementForProperty(info, child, enclosing);
-                                if (child.equals(target)) {
+                                if (target.getImage() != null && target.getImage().equals(child.getImage())) {
                                     result = propertyType;
+                                    return;
+                                } else {
+                                    enclosing = propertyType;
                                 }
                             }
                         }

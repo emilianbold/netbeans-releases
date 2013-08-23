@@ -45,8 +45,13 @@ package org.netbeans.modules.maven;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -64,6 +69,10 @@ import org.sonatype.aether.artifact.Artifact;
 @ServiceProvider(service=ArtifactFixer.class)
 public class NbArtifactFixer implements ArtifactFixer {
 
+    private static final Logger LOG = Logger.getLogger(NbArtifactFixer.class.getName());
+
+    private final ThreadLocal<Set<String>> gav = new ThreadLocal<Set<String>>();        //#234586
+            
     public @Override File resolve(Artifact artifact) {
         if (!artifact.getExtension().equals(NbMavenProject.TYPE_POM)) {
             return null;
@@ -86,12 +95,31 @@ public class NbArtifactFixer implements ArtifactFixer {
                 return null; // for now, we prefer the repository version when available
             }
         }
-        File pom = MavenFileOwnerQueryImpl.getInstance().getOwnerPOM(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
-        if (pom != null) {
-            //instead of workarounds down the road, we set the artifact's file here.
-            // some stacktraces to maven/aether do set it after querying our code, but some don't for reasons unknown to me.
-            artifact.setFile(pom);
-            return pom;
+        //#234586
+        Set<String> gavSet = gav.get();
+        if (gavSet == null) {
+            gavSet = new HashSet<String>();
+            gav.set(gavSet);
+        }
+        String id = artifact.getGroupId() + ":" + artifact.getArtifactId() + ":" + artifact.getVersion();
+        try {
+            if (!gavSet.contains(id)) {
+                gavSet.add(id); //#234586
+                File pom = MavenFileOwnerQueryImpl.getInstance().getOwnerPOM(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());
+                if (pom != null) {
+                    //instead of workarounds down the road, we set the artifact's file here.
+                    // some stacktraces to maven/aether do set it after querying our code, but some don't for reasons unknown to me.
+                    artifact.setFile(pom);
+                    return pom;
+                }
+            } else {
+               LOG.log(Level.INFO, "Cycle in NbArtifactFixer resolution (issue #234586): {0}", Arrays.toString(gavSet.toArray()));
+            }
+        } finally {
+            gavSet.remove(id); //#234586
+            if (gavSet.isEmpty()) {
+                gav.remove();
+            }
         }
         try {
             File f = createFallbackPOM(artifact.getGroupId(), artifact.getArtifactId(), artifact.getVersion());

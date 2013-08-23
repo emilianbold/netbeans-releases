@@ -52,6 +52,7 @@ import org.junit.Test;
 import org.netbeans.modules.j2ee.dd.api.web.DDProvider;
 import org.netbeans.modules.j2ee.dd.api.web.WebApp;
 import static org.junit.Assert.*;
+import org.openide.util.Utilities;
 import org.xml.sax.SAXException;
 
 /**
@@ -72,7 +73,7 @@ public class HttpMonitorHelperTest {
         }
         File dataDir;
         try {
-            dataDir = new File(new File(codebase.toURI()).getParentFile(), "data");  // NOI18N
+            dataDir = new File(Utilities.toFile(codebase.toURI()).getParentFile(), "data");  // NOI18N
         } catch (URISyntaxException x) {
             throw new Error(x);
         }
@@ -84,9 +85,8 @@ public class HttpMonitorHelperTest {
          WebApp webApp;
         try {
             webApp = DDProvider.getDefault().getDDRoot(f);
-            fail("test data corrupted :: was able to parse old default-web.xml file"); // NOI18N
         } catch (IOException ioe) {
-            System.out.println("expected failure happened");
+            fail("Could not parse default-web.xml file");
         }
          // first pass
         f =  HttpMonitorHelper.getDefaultWebXML(domainLoc, domainName);
@@ -105,9 +105,8 @@ public class HttpMonitorHelperTest {
         f = new File(domainLoc + "/" + domainName +"/config/default-web.xml.orig");
         try {
             webApp = DDProvider.getDefault().getDDRoot(f);
-            fail("test data corrupted :: was able to parse old default-web.xml file"); // NOI18N
         } catch (IOException ioe) {
-            System.out.println("expected failure happened");
+            fail("Could not parse default-web.xml file");
         }
 
     }
@@ -139,7 +138,8 @@ public class HttpMonitorHelperTest {
         }
         File dataDir;
         try {
-            dataDir = new File(new File(codebase.toURI()).getParentFile(), "data");  // NOI18N
+            dataDir = new File(Utilities.toFile(
+                    codebase.toURI()).getParentFile(), "data");  // NOI18N
         } catch (URISyntaxException x) {
             throw new Error(x);
         }
@@ -148,8 +148,8 @@ public class HttpMonitorHelperTest {
         assert newWebXML.exists();
         try {
             WebApp webApp = DDProvider.getDefault().getDDRoot(webXML);
-            fail("was able to parse"); // NOI18N
         } catch (IOException ioe) {
+            fail("Could not parse default-web.xml file");
         }
         WebApp webApp = DDProvider.getDefault().getDDRoot(newWebXML);
         newWebXML.delete();

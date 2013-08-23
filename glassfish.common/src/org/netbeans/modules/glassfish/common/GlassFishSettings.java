@@ -42,6 +42,7 @@
 package org.netbeans.modules.glassfish.common;
 
 import java.util.prefs.Preferences;
+import org.glassfish.tools.ide.GlassFishToolsConfig;
 import org.openide.util.NbPreferences;
 
 /**
@@ -65,9 +66,20 @@ public class GlassFishSettings {
     private static final String LBL_GF312_WARNING_SHOW_AGAIN
             = "Gf312WarningAgain";
 
+    /** GlassFish settings label: GlassFish 3.1.2 warning show again. */
+    private static final String LBL_GF_KILL_SHOW_AGAIN
+            = "GfKillWarningAgain";
+
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Initialize and configure GlassFish Tooling Library.
+     */
+    static void toolingLibraryconfig() {
+        GlassFishToolsConfig.noProxyForLoopback();
+    }
 
     /**
      * Get NetBeans preferences node for GlassFish module settings.
@@ -96,6 +108,26 @@ public class GlassFishSettings {
      */
     public static void setGf312WarningShowAgain(boolean showAgain) {
         settings().putBoolean(LBL_GF312_WARNING_SHOW_AGAIN, showAgain);
+    }
+
+    /**
+     * Get GlassFish kill warning show again property value.
+     * <p/>
+     * Default value is <code>true</code>.
+     * <p/>
+     * @return GlassFish kill warning show again property value.
+     */
+    public static boolean getGfKillWarningShowAgain() {
+        return settings().getBoolean(LBL_GF_KILL_SHOW_AGAIN, true);
+    }
+
+    /**
+     * Set GlassFish kill warning show again property value.
+     * <p/>
+     * @return GlassFish kill warning show again property value to be set.
+     */
+    public static void setGfKillWarningShowAgain(boolean showAgain) {
+        settings().putBoolean(LBL_GF_KILL_SHOW_AGAIN, showAgain);
     }
 
 }

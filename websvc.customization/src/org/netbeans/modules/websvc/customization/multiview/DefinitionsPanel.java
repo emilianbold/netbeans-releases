@@ -470,27 +470,23 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
         enableWrapperStyleCB.setText(bundle.getString("LBL_ENABLE_WRAPPER_STYLE")); // NOI18N
         enableWrapperStyleCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableWrapperStyleCB.setContentAreaFilled(false);
-        enableWrapperStyleCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         enableAsyncMappingCB.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/customization/multiview/Bundle").getString("MNEMONIC_ENABLE_ASYNC_CLIENT").charAt(0));
         enableAsyncMappingCB.setText(bundle.getString("LBL_ENABLE_ASYNC_MAPPING")); // NOI18N
         enableAsyncMappingCB.setActionCommand(bundle.getString("LBL_ENABLE_ASYNC_MAPPING")); // NOI18N
         enableAsyncMappingCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableAsyncMappingCB.setContentAreaFilled(false);
-        enableAsyncMappingCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         enableMIMEContentCB.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/customization/multiview/Bundle").getString("MNEMONIC_ENABLE_MIME_CONTENT").charAt(0));
         enableMIMEContentCB.setText(bundle.getString("LBL_ENABLE_MIME_CONTENT")); // NOI18N
         enableMIMEContentCB.setActionCommand(bundle.getString("LBL_ENABLE_MIME_CONTENT")); // NOI18N
         enableMIMEContentCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableMIMEContentCB.setContentAreaFilled(false);
-        enableMIMEContentCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         defaultPackageCB.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/customization/multiview/Bundle").getString("MNEMONIC_USE_DEFAULT").charAt(0));
         defaultPackageCB.setText(bundle.getString("LBL_USE_DEFAULT")); // NOI18N
         defaultPackageCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         defaultPackageCB.setContentAreaFilled(false);
-        defaultPackageCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -516,15 +512,15 @@ public class DefinitionsPanel extends SaveableSectionInnerPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(packageLabel)
-                    .addComponent(packageNameText, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(defaultPackageCB))
+                    .addComponent(defaultPackageCB)
+                    .addComponent(packageNameText, javax.swing.GroupLayout.PREFERRED_SIZE, 25, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(20, 20, 20)
                 .addComponent(enableWrapperStyleCB)
                 .addGap(19, 19, 19)
                 .addComponent(enableMIMEContentCB)
                 .addGap(19, 19, 19)
                 .addComponent(enableAsyncMappingCB)
-                .addContainerGap(23, Short.MAX_VALUE))
+                .addContainerGap(18, Short.MAX_VALUE))
         );
 
         packageLabel.getAccessibleContext().setAccessibleName(bundle.getString("LBL_PACKAGE_NAME")); // NOI18N

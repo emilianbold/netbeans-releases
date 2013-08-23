@@ -135,10 +135,11 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             FileImpl fileImpl = (FileImpl) file;
             Collection<PreprocessorStatePair> statePairs = fileImpl.getPreprocStatePairs();
             List<CsmOffsetable> result = new ArrayList<CsmOffsetable>();
+            // to have visible code, we prefer non-error directive based dead blocks
             boolean first = true;
             for (PreprocessorStatePair pair : statePairs) {
                 FilePreprocessorConditionState state = pair.pcState;
-                if (state != FilePreprocessorConditionState.PARSING) {
+                if (state != FilePreprocessorConditionState.PARSING && !state.isFromErrorDirective()) {
                     List<CsmOffsetable> blocks = state.createBlocksForFile(fileImpl);
                     if (first) {
                         result = blocks;
@@ -151,23 +152,16 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                     }
                 }
             }
-            CsmOffsetable error = null;
-            for (CsmErrorDirective csmErrorDirective : fileImpl.getErrors()) {
-                error = org.netbeans.modules.cnd.modelimpl.csm.core.Utils.createOffsetable(fileImpl, csmErrorDirective.getEndOffset(), Integer.MAX_VALUE);
-                break;
-            }
-            if (error != null) {
-                out = new ArrayList<CsmOffsetable>(result.size());
-                for (CsmOffsetable offs : result) {
-                    if (offs.getEndOffset() < error.getStartOffset()) {
-                        out.add(offs);
-                    } else {
-                        break;
-                    }
-                }
-                out.add(error);
-            } else {
+            if (!result.isEmpty()) {
                 out = result;
+            } else {
+                // if no other dead blocks, check if we have error directive in file
+                CsmOffsetable error = null;
+                for (CsmErrorDirective csmErrorDirective : fileImpl.getErrors()) {
+                    error = org.netbeans.modules.cnd.modelimpl.csm.core.Utils.createOffsetable(fileImpl, csmErrorDirective.getEndOffset(), Integer.MAX_VALUE);
+                    out = Collections.singletonList(error);
+                    break;
+                }
             }
         }
         return out;

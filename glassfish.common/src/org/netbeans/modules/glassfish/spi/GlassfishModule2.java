@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -45,8 +45,8 @@ package org.netbeans.modules.glassfish.spi;
 import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Future;
+import org.glassfish.tools.ide.TaskStateListener;
 import org.glassfish.tools.ide.admin.ResultString;
-import org.glassfish.tools.ide.admin.TaskStateListener;
 
 /**
  * Extended version of GlassfishModule supporting deployment of standalone
