@@ -46,8 +46,10 @@ import java.awt.event.ItemListener;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -86,7 +88,7 @@ implements PreferenceChangeListener, ChangeListener, CustomizerWithDefaults, Ite
     
     public static final String PREF_OVERRIDE_DEFAULTS = FoldUtilitiesImpl.PREF_OVERRIDE_DEFAULTS;
     
-    private static final Set<FoldType> LEGACY_FOLD_TYPES = new HashSet<FoldType>();
+    private static Set<FoldType> LEGACY_FOLD_TYPES = new HashSet<FoldType>();
     
     static {
         LEGACY_FOLD_TYPES.add(FoldType.CODE_BLOCK);
@@ -268,6 +270,9 @@ implements PreferenceChangeListener, ChangeListener, CustomizerWithDefaults, Ite
 
     @Override
     public void preferenceChange(final PreferenceChangeEvent evt) {
+        // the inherited legacy 'method' fold setting in "" mime type is changed in the same Swing event
+        // as the real 'member' setting, so updating in the next event should read the already changed value.
+        // similar for javadoc and inner classes.
         SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 updateCheckers(evt);
@@ -418,6 +423,17 @@ implements PreferenceChangeListener, ChangeListener, CustomizerWithDefaults, Ite
         lastChangedCB = cb;
         LOG.log(Level.FINE, "Updating preference: " + prefKey + ", value = " + cb.isSelected()); // NOI18N
         preferences.putBoolean(prefKey, cb.isSelected());
+        
+        if (!"".equals(mimeType)) {
+            return;
+        }
+        // legacy setting support in transient prefs:
+        String propagate = FoldOptionsController.LEGACY_SETTINGS_MAP.get(ft.code());
+        if (propagate != null) {
+            prefKey = COLLAPSE_PREFIX + propagate;
+            LOG.log(Level.FINE, "Updating LEGACY preference: " + prefKey + ", value = " + cb.isSelected()); // NOI18N
+            preferences.putBoolean(prefKey, cb.isSelected());
+        }
     }
     
     @Override

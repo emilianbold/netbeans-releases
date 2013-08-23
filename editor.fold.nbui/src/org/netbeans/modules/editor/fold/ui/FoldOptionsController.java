@@ -57,6 +57,7 @@ import java.util.prefs.PreferenceChangeListener;
 import java.util.prefs.Preferences;
 import javax.swing.JComponent;
 import org.netbeans.api.editor.fold.FoldHierarchy;
+import org.netbeans.api.editor.fold.FoldType;
 import org.netbeans.api.editor.fold.FoldUtilities;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.mimelookup.MimePath;
@@ -95,6 +96,7 @@ import org.openide.util.WeakListeners;
 public class FoldOptionsController extends OptionsPanelController implements PreferenceChangeListener {
     // logging to catch issue #231362
     private static final Logger PREF_LOG = Logger.getLogger(FoldHierarchy.class.getName() + ".enabled");
+    static final Map<String, String> LEGACY_SETTINGS_MAP = new HashMap<String, String>();
     
     /**
      * The main panel.
@@ -115,6 +117,13 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
      * Preferences created for individual MIME types, as they are displaye by the user
      */
     private Map<String, MemoryPreferences>    preferences = new HashMap<String, MemoryPreferences>();
+    
+    static {
+        // keep this in sync with LegacySettingMap in Fold implementation.
+        LEGACY_SETTINGS_MAP.put(FoldType.MEMBER.code(), "method"); // NOI18N
+        LEGACY_SETTINGS_MAP.put(FoldType.NESTED.code(), "innerclass"); // NOI18N
+        LEGACY_SETTINGS_MAP.put(FoldType.DOCUMENTATION.code(), "javadoc"); // NOI18N
+    }
     
     @Override
     public void update() {
@@ -165,6 +174,12 @@ public class FoldOptionsController extends OptionsPanelController implements Pre
                         PREF_LOG.log(Level.FINE, "Setting fold enable: {0} = {1}", new Object[] {
                             s, p.getPreferences().get(FoldUtilitiesImpl.PREF_CODE_FOLDING_ENABLED, null)
                         });
+                    }
+                }
+                if ("".equals(s)) {
+                    // first remove the legacy keys from the map:
+                    for (String k : LEGACY_SETTINGS_MAP.values()) {
+                        p.getPreferences().remove(FoldUtilitiesImpl.PREF_COLLAPSE_PREFIX + k);
                     }
                 }
                 p.getPreferences().flush();
