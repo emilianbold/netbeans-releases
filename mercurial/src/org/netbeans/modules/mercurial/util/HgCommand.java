@@ -4782,6 +4782,7 @@ public abstract class HgCommand<T> implements Callable<T> {
 
     private static final Set<File> loggedRepositories = new HashSet<File>();
     private static final Set<String> noLogCommands = new HashSet<String>(Arrays.asList(
+        HG_BRANCH_CMD,
         HG_BRANCHES_CMD,
         HG_CAT_CMD,
         HG_HEADS_CMD,
@@ -4796,10 +4797,15 @@ public abstract class HgCommand<T> implements Callable<T> {
         if (!noLogCommands.contains(hgCommand) && loggedRepositories.add(repository)) {
             HgConfigFiles hgConfigFiles = new HgConfigFiles(repository);
             if (hgConfigFiles.getException() == null) {
+                boolean empty = true;
                 for (Entry<Object, Object> prop : hgConfigFiles.getProperties(HgConfigFiles.HG_PATHS_SECTION).entrySet()) {
                     if (!prop.getValue().toString().isEmpty()) {
+                        empty = false;
                         Utils.logVCSExternalRepository("HG", prop.getValue().toString()); //NOI18N
                     }
+                }
+                if (empty) {
+                    Utils.logVCSExternalRepository("HG", null); //NOI18N
                 }
             }
         }

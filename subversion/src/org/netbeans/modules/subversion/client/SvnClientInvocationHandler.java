@@ -322,7 +322,13 @@ public class SvnClientInvocationHandler implements InvocationHandler {
             if(desc != null && desc.getSvnUrl() != null) {
                 SvnConfigFiles.getInstance().storeSvnServersSettings(desc.getSvnUrl(), connectionType);
                 if (!parallelizable(proxyMethod, args) && !"getInfo".equals(proxyMethod.getName())) { //NOI18N
-                    Utils.logVCSExternalRepository("SVN", desc.getSvnUrl().toString()); //NOI18N
+                    // all svn actions running against a remote repository (commit, update, diff)
+                    String url = desc.getSvnUrl().toString();
+                    if (url.startsWith("file://")) { // NOI18N
+                        // null means LOCAL
+                        url = null;
+                    }
+                    Utils.logVCSExternalRepository("SVN", url); //NOI18N
                 }
             }
             logClientInvoked();
