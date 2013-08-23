@@ -827,8 +827,8 @@ made subject to such option by the copyright holder.
                 <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-DebugAsAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-launchers-actions-DebugAsAction.instance"/>
                     <attr name="position" intvalue="1450"/>                                        
-<!--                </file>
-                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-StepIntoAction.shadow">
+                </file>
+<!--                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-StepIntoAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-StepIntoAction.instance"/>
                     <attr name="position" intvalue="1500"/>
                 </file>                                                                        -->
