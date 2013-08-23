@@ -45,10 +45,13 @@ package org.netbeans.modules.maven;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.apache.maven.artifact.DefaultArtifact;
 import org.apache.maven.artifact.handler.DefaultArtifactHandler;
 import org.apache.maven.artifact.repository.ArtifactRepository;
@@ -66,7 +69,9 @@ import org.sonatype.aether.artifact.Artifact;
 @ServiceProvider(service=ArtifactFixer.class)
 public class NbArtifactFixer implements ArtifactFixer {
 
-    private ThreadLocal<Set<String>> gav = new ThreadLocal<Set<String>>();        //#234586
+    private static final Logger LOG = Logger.getLogger(NbArtifactFixer.class.getName());
+
+    private final ThreadLocal<Set<String>> gav = new ThreadLocal<Set<String>>();        //#234586
             
     public @Override File resolve(Artifact artifact) {
         if (!artifact.getExtension().equals(NbMavenProject.TYPE_POM)) {
@@ -107,6 +112,8 @@ public class NbArtifactFixer implements ArtifactFixer {
                     artifact.setFile(pom);
                     return pom;
                 }
+            } else {
+               LOG.log(Level.INFO, "Cycle in NbArtifactFixer resolution (issue #234586): {0}", Arrays.toString(gavSet.toArray()));
             }
         } finally {
             gavSet.remove(id); //#234586
