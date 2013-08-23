@@ -206,12 +206,12 @@ public class ReindenterTest extends NbTestCase {
 
     public void testNewLineIndentationInsideAnnotation() throws Exception {
         performNewLineIndentationTest("package t;\n@SuppressWarning(\"unchecked\"|)\npublic class T {\n}\n",
-                "package t;\n@SuppressWarning(\"unchecked\"\n        )\npublic class T {\n}\n");
+                "package t;\n@SuppressWarning(\"unchecked\"\n)\npublic class T {\n}\n");
     }
 
     public void testLineIndentationInsideAnnotation() throws Exception {
         performLineIndentationTest("package t;\n@SuppressWarning(\"unchecked\"\n|)\npublic class T {\n}\n",
-                "package t;\n@SuppressWarning(\"unchecked\"\n        )\npublic class T {\n}\n");
+                "package t;\n@SuppressWarning(\"unchecked\"\n)\npublic class T {\n}\n");
     }
 
     public void testNewLineIndentationAfterAlignedAnnotationArg() throws Exception {
