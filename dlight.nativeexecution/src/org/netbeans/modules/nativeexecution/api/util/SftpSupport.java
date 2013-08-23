@@ -211,7 +211,25 @@ class SftpSupport {
         return new SftpIOException(e.id, e.getMessage(), path, e);
     }
 
-    private class Uploader implements Callable<UploadStatus> {
+    private abstract class BaseWorker {
+
+        protected abstract String getTraceName();
+
+        protected void logException(Exception ex, Writer error) {
+            if (LOG.isLoggable(Level.INFO)) {
+                LOG.log(Level.INFO, "Error " + getTraceName(), ex);
+            }
+            if (error != null) {
+                try {
+                    error.append(ex.getLocalizedMessage());
+                } catch (IOException ex1) {
+                    Exceptions.printStackTrace(ex1);
+                }
+            }
+        }
+    }
+
+    private class Uploader extends BaseWorker implements Callable<UploadStatus> {
 
         private final CommonTasksSupport.UploadParameters parameters;
         protected StatInfo statInfo;
@@ -233,24 +251,24 @@ class SftpSupport {
                     // This is a known issue... but we cannot
                     // do anything with this ;(
                     if (isUnitTest) {
-                        logException(ex);
+                        logException(ex, null);
                     } else {
                         Message message = new NotifyDescriptor.Message(NbBundle.getMessage(SftpSupport.class, "SftpConnectionReceivedMessageIsTooLong.error.text"), Message.ERROR_MESSAGE); // NOI18N
                         DialogDisplayer.getDefault().notifyLater(message);
                     }
                     rc = 7;
                 } else {
-                    logException(ex);
+                    logException(ex, null);
                     rc = 1;
                 }
                 err.append(ex.getMessage());
             } catch (SftpException ex) {
                 err.append(ex.getMessage());
-                logException(ex);
+                logException(ex, null);
                 rc = 2;
             } catch (ConnectException ex) {
                 err.append(ex.getMessage());
-                logException(ex);
+                logException(ex, null);
                 rc = 3;
             } catch (InterruptedIOException ex) {
                 err.append(ex.getMessage());
@@ -258,7 +276,7 @@ class SftpSupport {
                 throw new InterruptedException(ex.getMessage());
             } catch (IOException ex) {
                 err.append(ex.getMessage());
-                logException(ex);
+                logException(ex, null);
                 rc = 5;
             } catch (CancellationException ex) {
                 err.append(ex.getMessage());
@@ -266,19 +284,13 @@ class SftpSupport {
                 rc = 6;
             } catch (ExecutionException ex) {
                 err.append(ex.getMessage());
-                logException(ex);
+                logException(ex, null);
                 rc = 7;
             }
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "{0}{1}", new Object[]{getTraceName(), rc == 0 ? " OK" : " FAILED"});
             }
             return new UploadStatus(rc, err.toString(), statInfo);
-        }
-
-        protected void logException(Exception ex) {
-            if (LOG.isLoggable(Level.INFO)) {
-                LOG.log(Level.INFO, "Error " + getTraceName(), ex);
-            }
         }
 
         private void work(StringBuilder err) throws IOException, CancellationException, JSchException, SftpException, InterruptedException, ExecutionException {
@@ -419,12 +431,13 @@ class SftpSupport {
             }
         }
 
+        @Override
         protected String getTraceName() {
             return "Uploading " + parameters.srcFile.getAbsolutePath() + " to " + execEnv + ":" + parameters.dstFileName; // NOI18N
         }
     }
 
-    private class Downloader implements Callable<Integer> {
+    private class Downloader extends BaseWorker implements Callable<Integer> {
 
         protected final String srcFileName;
         protected final String dstFileName;
@@ -449,33 +462,33 @@ class SftpSupport {
                     // This is a known issue... but we cannot
                     // do anything with this ;(
                     if (isUnitTest) {
-                        logException(ex);
+                        logException(ex, error);
                     } else {
                         Message message = new NotifyDescriptor.Message(NbBundle.getMessage(SftpSupport.class, "SftpConnectionReceivedMessageIsTooLong.error.text"), Message.ERROR_MESSAGE); // NOI18N
                         DialogDisplayer.getDefault().notifyLater(message);
                     }
                     rc = 7;
                 } else {
-                    logException(ex);
+                    logException(ex, error);
                     rc = 1;
                 }
             } catch (SftpException ex) {
-                logException(ex);
+                logException(ex, error);
                 rc = 2;
             } catch (ConnectException ex) {
-                logException(ex);
+                logException(ex, error);
                 rc = 3;
             } catch (InterruptedIOException ex) {
                 rc = 4;
                 throw new InterruptedException(ex.getMessage());
-            } catch (IOException ex) {
-                logException(ex);
+            } catch (IOException ex) {                
+                logException(ex, error);
                 rc = 5;
             } catch (CancellationException ex) {
                 // no trace
                 rc = 6;
             } catch (ExecutionException ex) {
-                logException(ex);
+                logException(ex, error);
                 rc = 7;
             } finally {
                 time = System.currentTimeMillis() - time;
@@ -484,12 +497,6 @@ class SftpSupport {
                 LOG.log(Level.FINE, "{0}{1} ({2} ms)", new Object[]{getTraceName(), rc == 0 ? " OK" : " FAILED", time});
             }
             return rc;
-        }
-
-        protected void logException(Exception ex) {
-            if (LOG.isLoggable(Level.INFO)) {
-                LOG.log(Level.INFO, "Error " + getTraceName(), ex);
-            }
         }
 
         protected void work() throws IOException, CancellationException, JSchException, SftpException, ExecutionException, InterruptedException {
@@ -507,6 +514,7 @@ class SftpSupport {
             }
         }
 
+        @Override
         protected String getTraceName() {
             return "Downloading " + execEnv + ":" + srcFileName + " to " + dstFileName; // NOI18N
         }
@@ -547,7 +555,7 @@ class SftpSupport {
         return ftask;
     }
 
-    private class StatLoader implements Callable<StatInfo> {
+    private class StatLoader extends BaseWorker implements Callable<StatInfo> {
 
         private final String path;
 
@@ -621,12 +629,13 @@ class SftpSupport {
             return result;
         }
 
+        @Override
         public String getTraceName() {
             return "Getting stat for " + path; //NOI18N
         }
     }
 
-    private class LsLoader implements Callable<StatInfo[]> {
+    private class LsLoader extends BaseWorker implements Callable<StatInfo[]> {
 
         //private static final int S_IFMT   =  0xF000; //bitmask for the file type bitfields
         //private static final int S_IFREG  =  0x8000; //regular file
@@ -705,6 +714,7 @@ class SftpSupport {
             return result == null ? new StatInfo[0] : result.toArray(new StatInfo[result.size()]);
         }
 
+        @Override
         public String getTraceName() {
             return "listing directory " + path; //NOI18N
         }
@@ -763,3 +773,4 @@ class SftpSupport {
         }
     }
 }
+

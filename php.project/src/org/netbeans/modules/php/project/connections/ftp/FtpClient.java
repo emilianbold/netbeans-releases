@@ -649,15 +649,15 @@ public class FtpClient implements RemoteClient {
         }
     }
 
-    // #203987
+    // #203987, #233485
     private void preventNoOperationTimeout() throws IOException {
         int counter = keepAliveCounter.incrementAndGet();
         if (counter == 10) {
             keepAliveCounter.set(0);
-            LOGGER.log(Level.FINE, "Keep-alive (PWD) for {0}", configuration.getHost());
+            LOGGER.log(Level.FINE, "Keep-alive (LIST FILES) for {0}", configuration.getHost());
             removeProtocolCommandListener();
             try {
-                ftpClient.pwd();
+                ftpClient.listFiles();
                 ftpClient.getReplyString();
             } finally {
                 addProtocolCommandListener();

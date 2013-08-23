@@ -203,7 +203,9 @@ public class AndroidDebugTransport extends MobileDebugTransport implements WebSo
                 }
             }
         }
-        LOGGER.info(array.toJSONString());
+        if (array!=null) {
+            LOGGER.info(array.toJSONString());
+        } 
         throw new IllegalStateException("Cannot get websocket address"); // NOI18N
     }
 

@@ -1544,8 +1544,8 @@ class FileChooserUIImpl extends BasicFileChooserUI{
                 updateWorker.updateTree(currentDirectory);
             }
             if (fc.isDirectorySelectionEnabled() && !fc.isFileSelectionEnabled()) {
-                if (fsv.isFileSystem(currentDirectory)) {
-                    setFileName(getStringOfFileName(currentDirectory));
+                if (fsv.isFileSystem(currentDirectory)) {                    
+                    setFileName(getStringOfFileName(fc.getSelectedFile() == null ? currentDirectory : fc.getSelectedFile()));
                 } else {
                     setFileName(null);
                 }
@@ -2315,6 +2315,9 @@ class FileChooserUIImpl extends BasicFileChooserUI{
             curSelPath = (curSel != null) ? new WeakReference<TreePath>(curSel) : null;
             
             if(path != null) {
+                if (!(path.getLastPathComponent() instanceof FileNode)) {
+                    return;
+                }
                 
                 FileNode node = (FileNode)path.getLastPathComponent();
                 File file = node.getFile();
@@ -2802,13 +2805,14 @@ class FileChooserUIImpl extends BasicFileChooserUI{
     
     private void updateTree() {
         ValidationResult validationResult = this.currentState.validationResult;
-        if (validationResult.isValid && validationResult.node != null) {
+        final TreeNode rootNode = validationResult.node;
+        if (validationResult.isValid && rootNode != null) {
             this.curDir = validationResult.currentFile;
-            model = new DirectoryTreeModel(validationResult.node);
+            model = new DirectoryTreeModel(rootNode);
             tree.setModel(model);
             tree.repaint();
             checkUpdate();
-            if (validationResult.isDirectoryChanged) {
+            if (validationResult.isDirectoryChanged) {                
                 fireDirectoryChanged(null);
             }
             setCursor(fileChooser, Cursor.DEFAULT_CURSOR);

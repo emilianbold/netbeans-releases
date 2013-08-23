@@ -72,6 +72,7 @@ import org.openide.filesystems.FileAlreadyLockedException;
 import org.openide.filesystems.FileEvent;
 import org.openide.filesystems.FileLock;
 import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
 
 /**
  *
@@ -363,8 +364,9 @@ public final class RemotePlainFile extends RemoteFileObjectBase {
     }
 
     private FileNotFoundException newFileNotFoundException(Exception cause) {
-        FileNotFoundException ex = new FileNotFoundException("" + getExecutionEnvironment() + ':' + getPath()); //NOI18N
+        FileNotFoundException ex = new FileNotFoundException(cause.getLocalizedMessage()); //NOI18N
         ex.initCause(cause);
+        Exceptions.attachLocalizedMessage(ex, cause.getLocalizedMessage());
         return ex;
     }
 

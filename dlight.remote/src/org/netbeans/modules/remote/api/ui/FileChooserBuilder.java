@@ -199,6 +199,15 @@ public final class FileChooserBuilder {
         }
 
         @Override
+        public File getSelectedFile() {
+            File result =  super.getSelectedFile(); //To change body of generated methods, choose Tools | Templates.
+            if (result == null) {
+                return getCurrentDirectory();
+            }
+            return result;
+        }
+                        
+        @Override
         public FileObject getSelectedFileObject() {
             File file = getSelectedFile();
             return (file == null) ? null : FileUtil.toFileObject(file);
@@ -298,7 +307,16 @@ public final class FileChooserBuilder {
             this.env = env;
             this.forModule = forModule;
         }
-
+        
+        @Override
+        public File getSelectedFile() {
+            File result =  super.getSelectedFile(); //To change body of generated methods, choose Tools | Templates.
+            if (result == null) {
+                return getCurrentDirectory();
+            }
+            return result;
+        }        
+           
         @Override
         public FileObject getSelectedFileObject() {
             File file = getSelectedFile();
@@ -310,7 +328,7 @@ public final class FileChooserBuilder {
             super.removeNotify();
             setCursor(Cursor.getDefaultCursor());
         }
-
+                
         @Override
         public FileObject[] getSelectedFileObjects() {
             File[] files = getSelectedFiles();

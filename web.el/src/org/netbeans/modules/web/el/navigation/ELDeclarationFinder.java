@@ -98,7 +98,7 @@ public class ELDeclarationFinder implements DeclarationFinder {
             return DeclarationLocation.NONE;
         }
         final FileObject file = DataLoadersBridge.getDefault().getFileObject(doc);
-        final ClasspathInfo cp = ClasspathInfo.create(file);
+        final ClasspathInfo cp = ELTypeUtilities.getElimplExtendedCPI(file);
         final RefsHolder refs = new RefsHolder();
         final List<AlternativeLocation> alternatives = new ArrayList<>();
         try {

@@ -42,6 +42,7 @@
 package org.netbeans.modules.cordova.platforms.ios;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
@@ -73,6 +74,7 @@ public class IOSBrowserActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
+        WebKitDebuggingSupport.getDefault().stopDebugging(true);
         IOSBrowser.openBrowser(command, context, IOSBrowser.Kind.valueOf(browserId), project, browserSupport);
     }
 
