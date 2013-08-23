@@ -820,18 +820,18 @@ made subject to such option by the copyright holder.
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-launchers-actions-RunAsAction.instance"/>
                     <attr name="position" intvalue="1350"/>                                        
                 </file>
-                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-DebugAction.shadow">
+<!--                <file name="org-netbeans-modules-cnd-makeproject-ui-actions-DebugAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-DebugAction.instance"/>
                     <attr name="position" intvalue="1400"/>
-                </file>                                                                        
+                </file>-->                                  
                 <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-DebugAsAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-launchers-actions-DebugAsAction.instance"/>
                     <attr name="position" intvalue="1450"/>                                        
-                </file>
+<!--                </file>
                 <file name="org-netbeans-modules-cnd-makeproject-ui-actions-StepIntoAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-ui-actions-StepIntoAction.instance"/>
                     <attr name="position" intvalue="1500"/>
-                </file>                                                                        
+                </file>                                                                        -->
                 <file name="org-netbeans-modules-cnd-makeproject-launchers-actions-StepIntoAction.shadow">
                     <attr name="originalFile" stringvalue="Actions/Project/org-netbeans-modules-cnd-makeproject-launchers-actions-StepIntoAction.instance"/>
                     <attr name="position" intvalue="1550"/>                                        
