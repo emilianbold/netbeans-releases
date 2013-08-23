@@ -105,11 +105,16 @@ public class JsStructureScanner implements StructureScanner {
                 && !containsFunction(jsObject)) 
                 || (ModelUtils.PROTOTYPE.equals(jsObject.getName()) && properties.isEmpty());
         
+        boolean hasDeclaredProperty = hasDeclaredProperty(jsObject);
+        
         for (JsObject child : properties) {
             // we do not want to show items from virtual source
             if (result.getSnapshot().getOriginalOffset(child.getOffset()) < 0 && !ModelUtils.PROTOTYPE.equals(child.getName())) {
                 continue;
             }
+//            if (countFunctionChild && !hasDeclaredProperty) {
+//                continue;
+//            }
             List<StructureItem> children = new ArrayList<StructureItem>();
             if ((((countFunctionChild && !child.getModifiers().contains(Modifier.STATIC)
                     && !child.getName().equals(ModelUtils.PROTOTYPE)) || child.getJSKind() == JsElement.Kind.ANONYMOUS_OBJECT) &&  child.getJSKind() != JsElement.Kind.OBJECT_LITERAL)
@@ -155,6 +160,9 @@ public class JsStructureScanner implements StructureScanner {
     private boolean containsFunction(JsObject jsObject) {
         for (JsObject property: jsObject.getProperties().values()) {
             if (property.getJSKind().isFunction() && property.isDeclared() && !property.isAnonymous()) {
+                return true;
+            }
+            if (containsFunction(property)) {
                 return true;
             }
         }
