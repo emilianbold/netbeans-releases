@@ -503,7 +503,7 @@ public final class Resolver3 implements Resolver {
     private void gatherMaps(Iterator<? extends CsmObject> it, boolean inLocalContext, int offset) {
         while(it.hasNext()) {
             CsmObject o = it.next();
-            assert o == null || o instanceof CsmOffsetable : "non CsmOffsetable" + o;
+            assert o == null || CsmKindUtilities.isOffsetable(o) : "non CsmOffsetable" + o;
             try {
                 int start = ((CsmOffsetable) o).getStartOffset();
                 int end = ((CsmOffsetable) o).getEndOffset();
@@ -511,7 +511,7 @@ public final class Resolver3 implements Resolver {
                     break;
                 }
                 //assert o instanceof CsmScopeElement;
-                if( o instanceof CsmScopeElement ) {
+                if( CsmKindUtilities.isScopeElement(o) ) {
                     if (!inLocalContext && CsmKindUtilities.isFunctionDefinition(o)) {
                         if (end >= offset) {
                             gatherMaps((CsmScopeElement) o, end, true, offset);
@@ -586,7 +586,7 @@ public final class Resolver3 implements Resolver {
      */
     private void gatherMaps(CsmScopeElement element, int end, boolean inLocalContext, int offset) {
 
-        CsmDeclaration.Kind kind = (element instanceof CsmDeclaration) ? ((CsmDeclaration) element).getKind() : null;
+        CsmDeclaration.Kind kind = CsmKindUtilities.isDeclaration(element) ? ((CsmDeclaration) element).getKind() : null;
         if (kind != null) {
             switch (kind) {
                 case NAMESPACE_DEFINITION: {
@@ -645,7 +645,7 @@ public final class Resolver3 implements Resolver {
                 }
             }
         }
-        if( element instanceof CsmDeclarationStatement ) {
+        if( CsmKindUtilities.isDeclarationStatement(element) ) {
             CsmDeclarationStatement ds = (CsmDeclarationStatement) element;
             if( ds.getStartOffset() < offset ) {
                 gatherMaps( ((CsmDeclarationStatement) element).getDeclarators(), inLocalContext, offset);
@@ -823,7 +823,7 @@ public final class Resolver3 implements Resolver {
             }
             if (result == null && needNamespaces()) {
                 Object o = namespaceAliases.get(CharSequences.create(name));
-                if (o instanceof CsmNamespace) {
+                if (CsmKindUtilities.isNamespace(o)) {
                     result = (CsmNamespace) o;
                 }
             }
@@ -949,7 +949,7 @@ public final class Resolver3 implements Resolver {
                     } finally {
                         ResolverFactory.releaseResolver(aResolver);
                     }                    
-                    if (nsObj instanceof CsmNamespace) {
+                    if (CsmKindUtilities.isNamespace(nsObj)) {
                         ns = (CsmNamespace)nsObj;                                            
                         CharSequence token = nameTokens[i];
                         nsName = ns.getQualifiedName() + "::" + token; // NOI18N
@@ -987,7 +987,7 @@ public final class Resolver3 implements Resolver {
             } finally {
                 ResolverFactory.releaseResolver(aResolver);
             }
-            if (obj instanceof CsmNamespace) {
+            if (CsmKindUtilities.isNamespace(obj)) {
                 CsmNamespace ns = (CsmNamespace) obj;
                 for (int i = 1; i < nameTokens.length; i++) {
                     CsmNamespace newNs = null;
