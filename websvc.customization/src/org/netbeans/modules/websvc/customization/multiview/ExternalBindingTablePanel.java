@@ -329,7 +329,8 @@ public class ExternalBindingTablePanel extends DefaultTablePanel{
             boolean result;
             if(f.isDirectory() || "xml".equalsIgnoreCase(FileUtil.getExtension(f.getName()))    // NOI18N
                                || "jxb".equalsIgnoreCase(FileUtil.getExtension(f.getName()))    // NOI18N
-                               || "xjb".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) { // NOI18N
+                               || "xjb".equalsIgnoreCase(FileUtil.getExtension(f.getName()))    // NOI18N
+                               || "xsd".equalsIgnoreCase(FileUtil.getExtension(f.getName()))) { // NOI18N
                 result = true;
             } else {
                 result = false;

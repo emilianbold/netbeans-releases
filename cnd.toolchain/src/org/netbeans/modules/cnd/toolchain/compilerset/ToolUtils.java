@@ -62,6 +62,7 @@ import org.netbeans.modules.nativeexecution.api.util.LinkSupport;
 import org.netbeans.modules.nativeexecution.api.util.Path;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
+import org.netbeans.modules.nativeexecution.api.util.WindowsRegistryIterator;
 import org.openide.util.Utilities;
 
 /**
@@ -521,33 +522,39 @@ public final class ToolUtils {
     }
 
     private static String readRegistry(String key, String pattern) {
+        String cachedResult = commandCache.get("reg " + key); // NOI18N
+        if (cachedResult != null) {
+            return cachedResult;
+        }
         if (ToolchainManagerImpl.TRACE) {
             System.err.println("Read registry " + key); // NOI18N
         }
         String base = null;
-        String res = getRegistry(key);
-        if (res != null){
-            Pattern p = Pattern.compile(pattern);
-            StringTokenizer st = new StringTokenizer(res, "\n"); // NOI18N
-            while(st.hasMoreTokens()) {
-                String line = st.nextToken().trim();
-                if (ToolchainManagerImpl.TRACE) {
-                    System.err.println("\t" + line); // NOI18N
-                }
-                Matcher m = p.matcher(line);
-                if (m.find() && m.groupCount() == 1) {
-                    base = m.group(1).trim();
-                    if (ToolchainManagerImpl.TRACE) {
-                        System.err.println("\tFound " + base); // NOI18N
+        Pattern p = Pattern.compile(pattern);
+        WindowsRegistryIterator regIterator = WindowsRegistryIterator.get(key, null, true);
+        try {
+            while (regIterator.hasNext()) {
+                String[] res = regIterator.next();
+                if (res != null) {
+                    for (String line : res) {
+                        if (ToolchainManagerImpl.TRACE) {
+                            System.err.println("\t" + line); // NOI18N
+                        }
+                        Matcher m = p.matcher(line.trim());
+                        if (m.find() && m.groupCount() == 1) {
+                            base = m.group(1).trim();
+                            if (ToolchainManagerImpl.TRACE) {
+                                System.err.println("\tFound " + base); // NOI18N
+                            }
+                            return base;
+                        }
                     }
                 }
             }
+        } finally {
+            commandCache.put("reg " + key, base == null ? "" : base); // NOI18N
         }
-        if (base == null && key.toLowerCase().startsWith("hklm\\")) { // NOI18N
-            // Cygwin on my Vista system has this information in HKEY_CURRENT_USER
-            base = readRegistry("hkcu\\" + key.substring(5), pattern); // NOI18N
-        }
-        return base;
+        return null;
     }
 
     private static String getCommandOutput(String path, String command, String flags, boolean bothStreams) {
@@ -579,36 +586,4 @@ public final class ToolUtils {
         commandCache.put(command+" "+flags, buf.toString()); // NOI18N
         return buf.toString();
     }
-
-    private static String getRegistry(String key) {
-        String res = commandCache.get("reg "+key); // NOI18N
-        if (res != null) {
-            //System.err.println("Get command output from cache #reg "+key); // NOI18N
-            return res;
-        }
-        String reg_exe = "reg.exe"; // NOI18N
-        try {
-            String windir = System.getenv("WINDIR"); // NOI18N
-            if (windir != null) {
-                File sys32 = new File(windir, "System32"); // NOI18N
-                reg_exe = new File(sys32, "reg.exe").getPath(); // NOI18N
-            }
-        } catch (Throwable th) {
-            th.printStackTrace(System.err);
-        }
-
-        ExitStatus status = ProcessUtils.executeWithoutMacroExpansion(null, ExecutionEnvironmentFactory.getLocal(), reg_exe, "query", key, "/s"); // NOI18N
-
-        //if (status.isOK()){
-        if (status.output != null) {
-            res = status.output.toString();
-        } else {
-            res = ""; // NOI18N
-        }
-        commandCache.put("reg "+key, res); // NOI18N
-        //System.err.println("Put command output from cache #reg "+key); // NOI18N
-        return res;
-
-    }
-
 }

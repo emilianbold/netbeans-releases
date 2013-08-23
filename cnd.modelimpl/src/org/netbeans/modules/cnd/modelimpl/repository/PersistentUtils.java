@@ -116,19 +116,19 @@ public class PersistentUtils {
         PersistentUtils.writeUTF(rootUrl, output);        
     }
 
-    public static void readErrorDirectives(Set<ErrorDirectiveImpl> errors, RepositoryDataInput input) throws IOException {
+    public static void readErrorDirectives(Set<ErrorDirectiveImpl> errors, FileSystem fs, RepositoryDataInput input, int unitIndex) throws IOException {
         int size = input.readInt();
         for (int i = 0; i < size; i++) {
-            ErrorDirectiveImpl offs = new ErrorDirectiveImpl(input);
+            ErrorDirectiveImpl offs = new ErrorDirectiveImpl(fs, input, unitIndex);
             errors.add(offs);
         }
     }
 
-    public static void writeErrorDirectives(Set<ErrorDirectiveImpl> errors, RepositoryDataOutput output) throws IOException {
+    public static void writeErrorDirectives(Set<ErrorDirectiveImpl> errors, RepositoryDataOutput output, int unitIndex) throws IOException {
         int size = errors.size();
         output.writeInt(size);
         for (ErrorDirectiveImpl error : errors) {
-            error.write(output);
+            error.write(output, unitIndex);
         }
     }
 

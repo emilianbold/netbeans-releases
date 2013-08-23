@@ -482,19 +482,16 @@ public class PortTypePanel extends SaveableSectionInnerPanel {
         defaultJavaClassCB.setText(bundle.getString("LBL_USE_DEFAULT")); // NOI18N
         defaultJavaClassCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         defaultJavaClassCB.setContentAreaFilled(false);
-        defaultJavaClassCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         enableWrapperStyleCB.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/customization/multiview/Bundle").getString("MNEMONIC_ENABLE_WRAPPER_STYLE").charAt(0));
         enableWrapperStyleCB.setText(bundle.getString("LBL_ENABLE_WRAPPER_STYLE")); // NOI18N
         enableWrapperStyleCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableWrapperStyleCB.setContentAreaFilled(false);
-        enableWrapperStyleCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         enableAsyncMappingCB.setMnemonic(java.util.ResourceBundle.getBundle("org/netbeans/modules/websvc/customization/multiview/Bundle").getString("MNEMONIC_ENABLE_ASYNC_CLIENT").charAt(0));
         enableAsyncMappingCB.setText(bundle.getString("LBL_ENABLE_ASYNC_MAPPING")); // NOI18N
         enableAsyncMappingCB.setBorder(javax.swing.BorderFactory.createEmptyBorder(0, 0, 0, 0));
         enableAsyncMappingCB.setContentAreaFilled(false);
-        enableAsyncMappingCB.setMargin(new java.awt.Insets(0, 0, 0, 0));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -507,21 +504,20 @@ public class PortTypePanel extends SaveableSectionInnerPanel {
                     .addComponent(enableWrapperStyleCB)
                     .addGroup(layout.createSequentialGroup()
                         .addComponent(javaClassLabel)
-                        .addGap(16, 16, 16)
+                        .addGap(18, 18, 18)
                         .addComponent(javaClassText, javax.swing.GroupLayout.PREFERRED_SIZE, 237, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(21, 21, 21)
+                        .addGap(18, 18, 18)
                         .addComponent(defaultJavaClassCB)))
-                .addContainerGap(33, Short.MAX_VALUE))
+                .addContainerGap(34, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(26, 26, 26)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGap(22, 22, 22)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(javaClassLabel)
-                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                        .addComponent(javaClassText, javax.swing.GroupLayout.PREFERRED_SIZE, 16, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addComponent(defaultJavaClassCB)))
+                    .addComponent(javaClassText, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(defaultJavaClassCB))
                 .addGap(18, 18, 18)
                 .addComponent(enableWrapperStyleCB)
                 .addGap(15, 15, 15)

@@ -12,6 +12,16 @@ namespace {
           return 0;
       }
   };
+  
+  struct AAA {    
+    using AAA_B = struct BBB {
+      int foo();
+    };
+    
+    int boo() {
+      return AAA_B().foo() + BBB().foo();
+    }
+  };
 
 
   int foo() {

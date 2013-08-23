@@ -66,25 +66,24 @@ public final class WindowsSupport {
 
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final Object initLock = new Object();
-    private static final WindowsSupport instance;
+    private static WindowsSupport instance;
+    private boolean initialized = false;
     private Shell activeShell = null;
-    private String REG_EXE;
     private PathConverter pathConverter = null;
-    private AtomicReference<String> pathKeyRef  = new AtomicReference<String>();
+    private AtomicReference<String> pathKeyRef = new AtomicReference<String>();
     private Charset charset;
-
-    static {
-        synchronized (initLock) {
-            instance = new WindowsSupport();
-            instance.init();
-        }
-    }
 
     private WindowsSupport() {
     }
 
     public static WindowsSupport getInstance() {
         synchronized (initLock) {
+            if (instance == null) {
+                instance = new WindowsSupport();
+            }
+            if (!instance.initialized) {
+                instance.init();
+            }
             return instance;
         }
     }
@@ -112,6 +111,7 @@ public final class WindowsSupport {
             pathConverter = new SimpleConverter();
             activeShell = findShell(searchDir);
             initCharset();
+            initialized = true;
         }
     }
 
@@ -119,26 +119,13 @@ public final class WindowsSupport {
         Shell shell;
         Shell candidate = null;
 
-        String reg_exe = "reg.exe"; // NOI18N
-
-        try {
-            String windir = System.getenv("WINDIR"); // NOI18N
-            File sys32 = new File(windir, "System32"); // NOI18N
-            reg_exe = new File(sys32, "reg.exe").getPath(); // NOI18N
-        } catch (Throwable th) {
-            System.out.println(th);
-        }
-
-        REG_EXE = reg_exe;
-
-
         // 1. Try to find cygwin ...
 
         String[][] cygwinRegKeys = new String[][]{
-            new String[]{"HKLM\\SOFTWARE\\cygwin\\setup\\", "rootdir", ".*rootdir.*REG_SZ(.*)"}, // NOI18N
-            new String[]{"HKLM\\SOFTWARE\\Wow6432Node\\cygwin\\setup\\", "rootdir", ".*rootdir.*REG_SZ(.*)"}, // NOI18N
-            new String[]{"HKLM\\SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/", "native", ".*native.*REG_SZ(.*)"}, // NOI18N
-            new String[]{"HKLM\\SOFTWARE\\Wow6432Node\\Cygnus Solutions\\Cygwin\\mounts v2\\/", "native", ".*native.*REG_SZ(.*)"}, // NOI18N
+            new String[]{"SOFTWARE\\cygwin\\setup", "rootdir", ".*rootdir.*REG_SZ(.*)"}, // NOI18N
+            new String[]{"SOFTWARE\\Wow6432Node\\cygwin\\setup", "rootdir", ".*rootdir.*REG_SZ(.*)"}, // NOI18N
+            new String[]{"SOFTWARE\\Cygnus Solutions\\Cygwin\\mounts v2\\/", "native", ".*native.*REG_SZ(.*)"}, // NOI18N
+            new String[]{"SOFTWARE\\Wow6432Node\\Cygnus Solutions\\Cygwin\\mounts v2\\/", "native", ".*native.*REG_SZ(.*)"}, // NOI18N
         };
 
         for (String[] regKey : cygwinRegKeys) {
@@ -156,8 +143,8 @@ public final class WindowsSupport {
         // try msys
 
         String[] msysRegKeys = new String[]{
-            "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
-            "HKLM\\SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
+            "SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
+            "SOFTWARE\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\MSYS-1.0_is1", // NOI18N
         };
 
         for (String regKey : msysRegKeys) {
@@ -265,33 +252,19 @@ public final class WindowsSupport {
     }
 
     private String queryWindowsRegistry(String key, String param, String regExpr) {
-        try {
-            ProcessBuilder pb = new ProcessBuilder(
-                    REG_EXE, "query", key, "/v", param); // NOI18N
-            Process p = pb.start();
-            Pattern pattern = Pattern.compile(regExpr);
-
-            try {
-                p.waitFor();
-            } catch (InterruptedException ex) {
-            }
-
-            List<String> out = ProcessUtils.readProcessOutput(p);
-
-            for (String s : out) {
-                Matcher m = pattern.matcher(s);
-                if (m.matches()) {
-                    return m.group(1).trim();
+        WindowsRegistryIterator registryIterator = WindowsRegistryIterator.get(key, param);
+        Pattern pattern = Pattern.compile(regExpr);
+        while (registryIterator.hasNext()) {
+            String[] output = registryIterator.next();
+            if (output != null) {
+                for (String line : output) {
+                    Matcher m = pattern.matcher(line);
+                    if (m.matches()) {
+                        return m.group(1).trim();
+                    }
                 }
             }
-        } catch (IOException e) {
         }
-
-        // If not found, try to search for the entry in user's space ...
-        if (key.toLowerCase().startsWith("hklm")) { // NOI18N
-            return queryWindowsRegistry("HKCU" + key.substring(4), param, regExpr); // NOI18N
-        }
-
         return null;
     }
 

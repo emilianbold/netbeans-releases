@@ -82,7 +82,7 @@ public class AstRenderer {
     protected final Map<Integer, CsmObject> objects;
     protected final String language;
 
-    private static final boolean SKIP_AST_RENDERER_EXCEPTIONS = Boolean.getBoolean("cnd.skip.ast.renderer.exceptions"); //NOI18N
+    protected static final boolean SKIP_AST_RENDERER_EXCEPTIONS = Boolean.getBoolean("cnd.skip.ast.renderer.exceptions"); //NOI18N
 
     public AstRenderer(FileImpl fileImpl, FileContent fileContent, String language, Map<Integer, CsmObject> objects) {
         if (isBeingParsed(fileImpl)) {
@@ -153,10 +153,7 @@ public class AstRenderer {
                             planB = true;
                         }                    
                         if(planB) {
-                            ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
-                                                ClassImplSpecialization.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container) :
-                                                ClassImpl.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container);
-                            container.addDeclaration(cls);
+                            ClassImpl cls = createClass(token, currentNamespace, container);
                             addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
                             renderVariableInClassifier(token, cls, currentNamespace, container);
                         }
@@ -181,8 +178,7 @@ public class AstRenderer {
                             planB = true;
                         }                    
                         if(planB) {
-                            csmEnum = EnumImpl.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext());
-                            container.addDeclaration(csmEnum);
+                            csmEnum = createEnum(token, currentNamespace, container);
                             renderVariableInClassifier(token, csmEnum, currentNamespace, container);                        
                         }
                         if (csmEnum != null) {
@@ -1029,7 +1025,7 @@ public class AstRenderer {
     }
 
     @SuppressWarnings("fallthrough")
-    protected Pair renderTypedef(AST ast, FileImpl file, FileContent fileContent, CsmScope scope, MutableDeclarationsContainer container) {
+    protected Pair renderTypedef(AST ast, FileImpl file, FileContent fileContent, CsmScope scope, MutableDeclarationsContainer container) throws AstRendererException {
         Pair results = new Pair();
         if (ast != null) {
             AST firstChild = ast.getFirstChild();
@@ -1187,21 +1183,18 @@ public class AstRenderer {
                                     // is not the declaration of a template-declaration.                                    
                                     break;
                                 }
-                                
-                                if (container == null) {
-                                    // TODO: maybe assert?
-                                    break;
-                                }
-                                
-                                LastDeclarationCatcher declarationCatcher = new LastDeclarationCatcher(container);
-                                
+
                                 // Process class definition
                                 AST fakeParent = new FakeAST();
                                 fakeParent.addChild(curr);
-                                render(fakeParent, findClosestNamespace(scope), declarationCatcher);
                                 
-                                // Find processed classifier
-                                CsmOffsetableDeclaration declaration = declarationCatcher.getLastDeclaration();
+                                CsmOffsetableDeclaration declaration;
+                                
+                                if (curr.getType() == CPPTokenTypes.CSM_CLASS_DECLARATION) {
+                                    declaration = createClass(curr, scope, container);
+                                } else {
+                                    declaration = createEnum(curr, scope, container);
+                                }
                                 
                                 // Create type alias
                                 if (CsmKindUtilities.isClassifier(declaration)) {
@@ -1237,7 +1230,25 @@ public class AstRenderer {
             results.typedefs.add(typedef);
         }
         return typedef;
-    }    
+    }  
+    
+    protected ClassImpl createClass(AST token, CsmScope scope, DeclarationsContainer container) throws AstRendererException {
+        ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
+                            ClassImplSpecialization.create(token, scope, file, language, fileContent, !isRenderingLocalContext(), container) :
+                            ClassImpl.create(token, scope, file, language, fileContent, !isRenderingLocalContext(), container);
+        if (container instanceof MutableDeclarationsContainer) {
+            ((MutableDeclarationsContainer)container).addDeclaration(cls);
+        }
+        return cls;
+    }
+    
+    protected EnumImpl createEnum(AST token, CsmScope scope, DeclarationsContainer container) {
+        EnumImpl csmEnum = EnumImpl.create(token, scope, file, fileContent, !isRenderingLocalContext());
+        if (container instanceof MutableDeclarationsContainer) {
+            ((MutableDeclarationsContainer)container).addDeclaration(csmEnum);
+        }
+        return csmEnum;
+    }
 
     protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
         return TypedefImpl.create(ast, file, container, type, name, !isRenderingLocalContext());
@@ -2511,47 +2522,6 @@ public class AstRenderer {
                 }
             }
             return null;
-        }
-    }
-    
-    private static class LastDeclarationCatcher implements MutableDeclarationsContainer {
-        
-        private final MutableDeclarationsContainer container;
-        
-        private CsmOffsetableDeclaration lastDeclaration;
-
-        public LastDeclarationCatcher(MutableDeclarationsContainer container) {
-            this.container = container;
-        }
-        
-        public CsmOffsetableDeclaration getLastDeclaration() {
-            return lastDeclaration;
-        }
-
-        @Override
-        public void addDeclaration(CsmOffsetableDeclaration declaration) {
-            container.addDeclaration(declaration);
-            lastDeclaration = declaration;
-        }
-
-        @Override
-        public void removeDeclaration(CsmOffsetableDeclaration declaration) {
-            container.removeDeclaration(declaration);
-        }
-
-        @Override
-        public Collection<CsmOffsetableDeclaration> getDeclarations() {
-            return container.getDeclarations();
-        }
-
-        @Override
-        public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name) {
-            return container.findExistingDeclaration(startOffset, endOffset, name);
-        }
-
-        @Override
-        public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind) {
-            return container.findExistingDeclaration(startOffset, name, kind);
         }
     }
 }
