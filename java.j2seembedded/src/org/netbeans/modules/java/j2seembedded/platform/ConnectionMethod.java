@@ -156,6 +156,11 @@ public final class ConnectionMethod {
             return kind.create(props);
         }
 
+        static void clear(@NonNull final String antPlatformName) {
+            Password.clear(antPlatformName);
+            Key.clear(antPlatformName);
+        }
+
         @NonNull
         private static String createKeyringKey(
             @NonNull String platformAntName,
@@ -198,6 +203,9 @@ public final class ConnectionMethod {
                     null);
             }
 
+            static void clear(@NonNull final String antPlatformName) {
+                Keyring.delete(createKeyringKey(antPlatformName, PLAT_PROP_AUTH_PASSWD));
+            }
         }
 
         public static final class Key extends Authentification {
@@ -239,6 +247,10 @@ public final class ConnectionMethod {
                         PLAT_PROP_AUTH_PASSPHRASE),
                     getPassPhrase().toCharArray(),
                     null);
+            }
+
+            static void clear(@NonNull final String antPlatformName) {
+                Keyring.delete(createKeyringKey(antPlatformName, PLAT_PROP_AUTH_PASSPHRASE));
             }
 
             @NonNull

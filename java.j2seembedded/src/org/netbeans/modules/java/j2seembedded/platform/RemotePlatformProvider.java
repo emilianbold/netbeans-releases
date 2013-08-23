@@ -115,11 +115,11 @@ public final class RemotePlatformProvider implements Lookup.Provider, InstanceCo
         this.store.getPrimaryFile().addFileChangeListener(new FileChangeAdapter(){
             @Override
             public void fileDeleted(@NonNull final FileEvent fe) {
+                final String systemName = fe.getFile().getName();
                 try {
                     ProjectManager.mutex().writeAccess( new Mutex.ExceptionAction<Void> () {
                         @Override
                         public Void run () throws IOException {
-                            final String systemName = fe.getFile().getName();
                             final String propPrefix =  String.format("platforms.%s.", systemName);   //NOI18N
                             boolean changed = false;
                             final EditableProperties props = PropertyUtils.getGlobalProperties();
@@ -139,6 +139,7 @@ public final class RemotePlatformProvider implements Lookup.Provider, InstanceCo
                 } catch (MutexException e) {
                     Exceptions.printStackTrace(e);
                 }
+                ConnectionMethod.Authentification.clear(systemName);
             }
         });
         final InstanceContent c = new InstanceContent();
