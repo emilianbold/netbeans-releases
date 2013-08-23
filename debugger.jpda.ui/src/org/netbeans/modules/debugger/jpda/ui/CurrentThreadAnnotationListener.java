@@ -320,6 +320,8 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                     if (csf != null && sourcePath != null && currentThread != null && url != null && lineNumber >= 0) {
                         // annotate current line
                         currentPC = sourcePath.annotate (currentThread, language, url, lineNumber);
+                    } else {
+                        currentPC = null;
                     }
                 }
             }
@@ -526,19 +528,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
         @SuppressWarnings(value="LeakingThisInConstructor")
         public AllThreadsAnnotator(JPDADebugger debugger) {
             this.debugger = debugger;
-            RequestProcessor rp;
-            try {
-                rp = ((Session) debugger.getClass().getMethod("getSession").invoke(debugger)).
-                        lookupFirst(null, RequestProcessor.class);
-            } catch (Exception ex) {
-                Exceptions.printStackTrace(ex);
-                rp = null;
-            }
-            if (rp != null) {
-                task = rp.create(this);
-            } else {
-                task = CurrentThreadAnnotationListener.this.rp.create(this);
-            }
+            task = CurrentThreadAnnotationListener.this.rp.create(this);
 
             //System.err.println("AllThreadsAnnotator("+Integer.toHexString(debugger.hashCode())+").NEW");
             for (JPDAThread t : debugger.getThreadsCollector().getAllThreads()) {
@@ -646,7 +636,7 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 }
                 EditorContextBridge.getContext().removeAnnotation(annotation);
             }
-            Map<JPDAThread, Object> threadAnnotations = new HashMap<JPDAThread, Object>();
+            Map<JPDAThread, FutureAnnotation> threadFutureAnnotations = new HashMap<JPDAThread, FutureAnnotation>();
             Set<JPDAThread> removeFutures = new HashSet<JPDAThread>();
             Session s;
             try {
@@ -666,8 +656,9 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                     annotation = null;
                 }
                 if (annotation != null) {
-                    threadAnnotations.put(t, annotation);
-                    futureAnnotations.get(t).setAnnotation(annotation);
+                    FutureAnnotation fa = futureAnnotations.get(t);
+                    fa.setAnnotation(annotation);
+                    threadFutureAnnotations.put(t, fa);
                 } else {
                     removeFutures.add(t);
                 }
@@ -676,7 +667,13 @@ public class CurrentThreadAnnotationListener extends DebuggerManagerAdapter {
                 //System.err.print("TASK annot: "+this.threadAnnotations.keySet()+" -> ");
                 this.threadAnnotations.keySet().removeAll(removeFutures);
                 //this.futureAnnotations.keySet().removeAll(removeFutures);
-                this.threadAnnotations.putAll(threadAnnotations);
+                for (JPDAThread t : threadFutureAnnotations.keySet()) {
+                    FutureAnnotation fa = threadFutureAnnotations.get(t);
+                    if (!this.annotationsToRemove.contains(fa)) {
+                        this.threadAnnotations.put(t, fa.getAnnotation());
+                    }
+                }
+                
                 //System.err.println(this.threadAnnotations.keySet());
                 /*for (JPDAThread t : futureAnnotations.keySet()) {
                     futureAnnotations.get(t).setAnnotation(threadAnnotations.get(t));

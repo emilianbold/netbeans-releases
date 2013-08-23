@@ -262,9 +262,14 @@ public class MylynSupport {
 
     NbTaskDataState getTaskDataState (NbTask task) throws CoreException {
         TaskDataState taskDataState = taskDataManager.getTaskDataState(task.getDelegate());
-        return taskDataState == null
-                ? null
-                : new NbTaskDataState(taskDataState);
+        if (taskDataState == null) {
+            return null;
+        } else {
+            if (taskDataState.getLastReadData() == null) {
+                taskDataState.setLastReadData(taskDataState.getRepositoryData());
+            }
+            return new NbTaskDataState(taskDataState);
+        }
     }
 
     public Set<TaskAttribute> countDiff (TaskData newTaskData, TaskData oldTaskData) {
@@ -757,6 +762,9 @@ public class MylynSupport {
         TaskRepository taskRepository = getTaskRepositoryFor(mylynTask);
         try {
             ITaskDataWorkingCopy workingCopy = taskDataManager.getWorkingCopy(mylynTask);
+            if (workingCopy instanceof TaskDataState && workingCopy.getLastReadData() == null) {
+                ((TaskDataState) workingCopy).setLastReadData(workingCopy.getRepositoryData());
+            }
             return new NbTaskDataModel(taskRepository, task, workingCopy);
         } catch (CoreException ex) {
             MylynSupport.LOG.log(Level.INFO, null, ex);

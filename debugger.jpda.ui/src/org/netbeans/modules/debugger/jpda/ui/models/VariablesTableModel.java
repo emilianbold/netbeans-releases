@@ -115,6 +115,7 @@ public class VariablesTableModel implements TableModel, Constants {
         debugger = contextProvider.lookupFirst(null, JPDADebugger.class);
     }
     
+    @Override
     public Object getValueAt (Object row, String columnID) throws 
     UnknownTypeException {
         
@@ -249,6 +250,7 @@ public class VariablesTableModel implements TableModel, Constants {
         }
     }
     
+    @Override
     public boolean isReadOnly (Object row, String columnID) throws 
     UnknownTypeException {
         if (row instanceof Variable) {
@@ -339,6 +341,7 @@ public class VariablesTableModel implements TableModel, Constants {
         throw new UnknownTypeException (row);
     }
     
+    @Override
     public void setValueAt (Object row, String columnID, Object value) 
     throws UnknownTypeException {
         if (row instanceof MutableVariable) {
@@ -459,7 +462,7 @@ public class VariablesTableModel implements TableModel, Constants {
                 pe.setValue(var);
             }
         } catch (Exception ex) {
-            ex.printStackTrace();
+            Exceptions.printStackTrace(ex);
         }
     }
     
@@ -468,6 +471,7 @@ public class VariablesTableModel implements TableModel, Constants {
      * 
      * @param l the listener to add
      */
+    @Override
     public void addModelListener (ModelListener l) {
         synchronized (modelListeners) {
             modelListeners.add(l);
@@ -479,6 +483,7 @@ public class VariablesTableModel implements TableModel, Constants {
      *
      * @param l the listener to remove
      */
+    @Override
     public void removeModelListener (ModelListener l) {
         synchronized (modelListeners) {
             modelListeners.remove(l);
