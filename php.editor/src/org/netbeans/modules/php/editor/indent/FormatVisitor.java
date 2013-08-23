@@ -1744,7 +1744,7 @@ public class FormatVisitor extends DefaultVisitor {
         String tokenText = ts.token().text().toString();
         int tokenStartOffset = ts.offset();
         if (countNewLines > 0) {
-            result.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, tokenStartOffset, tokenText));
+            result.add(new FormatToken(FormatToken.Kind.WHITESPACE_INDENT, tokenStartOffset, adjustLastWhitespaceToken(ts.token())));
         } else {
             int tokenEndOffset = tokenStartOffset + ts.token().length();
             if (GsfUtilities.isCodeTemplateEditing(document)
@@ -1757,8 +1757,39 @@ public class FormatVisitor extends DefaultVisitor {
                 result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, firstTextPart));
                 result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset + firstTextPart.length(), tokenText.substring(devideIndex)));
             } else {
-                result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, tokenText));
+                result.add(new FormatToken(FormatToken.Kind.WHITESPACE, tokenStartOffset, adjustLastWhitespaceToken(ts.token())));
             }
+        }
+        return result;
+    }
+
+    /**
+     * This is an ugly hack.
+     *
+     * Source which is lexed is adjusted by someone and '\n' is added at the end of source,
+     * even though there is NO new line at the end of file (source). Then FormatVisitor adds an extra
+     * formatting token of an invalid value and TokenFormatter can't count trailing new lines
+     * properly.
+     *
+     * @param token
+     * @return if last token is processed, then text without one '\n', tokenText otherwise
+     */
+    private String adjustLastWhitespaceToken(Token<PHPTokenId> token) {
+        assert token.id() == PHPTokenId.WHITESPACE;
+        String result;
+        String tokenText = token.text().toString();
+        boolean isLast;
+        if (ts.moveNext()) {
+            isLast = false;
+            ts.movePrevious();
+        } else {
+            isLast = true;
+        }
+        if (isLast) {
+            int firstNewLineOffset = tokenText.indexOf('\n');
+            result = tokenText.substring(0, firstNewLineOffset) + tokenText.substring(firstNewLineOffset + 1);
+        } else {
+            result = tokenText;
         }
         return result;
     }
