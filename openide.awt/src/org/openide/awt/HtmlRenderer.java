@@ -716,7 +716,7 @@ public final class HtmlRenderer {
                             break;
                         }
 
-                        if (!bold) {
+                        if (!bold && !(chars[pos+1] == 'o' || chars[pos+1] == 'O')) {
                             throwBadHTML("Closing bold tag w/o " + //NOI18N
                                 "opening bold tag", pos, chars
                             ); //NOI18N
