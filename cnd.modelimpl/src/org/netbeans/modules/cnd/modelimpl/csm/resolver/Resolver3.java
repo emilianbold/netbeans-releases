@@ -53,6 +53,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import org.netbeans.modules.cnd.api.model.CsmClass;
 import org.netbeans.modules.cnd.api.model.CsmClassForwardDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmClassifier;
@@ -81,6 +82,7 @@ import org.netbeans.modules.cnd.api.model.CsmUsingDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmUsingDirective;
 import org.netbeans.modules.cnd.api.model.deep.CsmDeclarationStatement;
 import org.netbeans.modules.cnd.api.model.services.CsmClassifierResolver;
+import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
 import org.netbeans.modules.cnd.api.model.services.CsmUsingResolver;
@@ -154,15 +156,18 @@ public final class Resolver3 implements Resolver {
         this(file, offset, parent, (parent == null) ? file : parent.getStartFile());
     }
 
-    private CsmClassifier findClassifier(CsmNamespace ns, CharSequence qualifiedNamePart) {
+    private CsmClassifier findClassifier(CsmNamespace ns, CharSequence qualifiedNamePart, AtomicBoolean outVisibility) {
+        outVisibility.set(false);
         CsmClassifier result = null;
         CsmClassifier backupResult = null;
         while ( ns != null  && result == null) {
             String fqn = ns.getQualifiedName() + "::" + qualifiedNamePart; // NOI18N
-            CsmClassifier aCls = findClassifierUsedInFile(fqn);
+            CsmClassifier aCls = findClassifierUsedInFile(fqn, outVisibility);
             if (aCls != null) {
                 if (!ForwardClass.isForwardClass(aCls) || needForwardClassesOnly()) {
-                    return aCls;
+                    if (outVisibility.get()) {
+                        return aCls;
+                    }
                 }
                 if (backupResult == null) {
                     backupResult = aCls;
@@ -176,7 +181,8 @@ public final class Resolver3 implements Resolver {
         return result;
     }
 
-    private CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName) {
+    private CsmClassifier findClassifierUsedInFile(CharSequence qualifiedName, AtomicBoolean resultIsVisible) {
+        resultIsVisible.set(false);
         // try to find visible classifier
         CsmClassifier result = null;
         final CharSequence id = CharSequences.create(qualifiedName);
@@ -189,13 +195,17 @@ public final class Resolver3 implements Resolver {
         }
         if (currLocalClassifier != null && needClassifiers()) {
             result = currLocalClassifier;
+            resultIsVisible.set(true);
         }
         if (result == null) {
             if (currUsedClassifiers.containsKey(id)) {
                 result = currUsedClassifiers.get(id);
             } else {
                 result = globalResult;
-                currUsedClassifiers.put(id, result);
+                if (isObjectVisibleFromFile(result, startFile)) {
+                    resultIsVisible.set(true);
+                    currUsedClassifiers.put(id, result);
+                }
             }
         }
         return result;
@@ -281,7 +291,8 @@ public final class Resolver3 implements Resolver {
                 }
             } else if (ForwardClass.isForwardClass(orig) || ForwardEnum.isForwardEnum(orig)) {
                 // try to find another classifier
-                resovedClassifier = findClassifierUsedInFile(orig.getQualifiedName());
+                AtomicBoolean resultIsVisible = new AtomicBoolean(false);
+                resovedClassifier = findClassifierUsedInFile(orig.getQualifiedName(), resultIsVisible);
             } else {
                 break;
             }
@@ -348,22 +359,26 @@ public final class Resolver3 implements Resolver {
         return false;
     }
 
-    private CsmObject resolveInUsings(CsmNamespace containingNS, CharSequence nameToken) {
+    private CsmObject resolveInUsings(CsmNamespace containingNS, CharSequence nameToken, AtomicBoolean outVisibility) {
         if (isRecursionOnResolving(INFINITE_RECURSION)) {
             return null;
         }
         CsmObject result = null;
+        Set<CharSequence> checked = new HashSet<>(10);
         for (CsmUsingDirective udir : CsmUsingResolver.getDefault().findUsingDirectives(containingNS)) {
-            String fqn = udir.getName() + "::" + nameToken; // NOI18N
-            if(fqn.startsWith("::")) { // NOI18N
-                fqn = fqn.substring(2);
-            }
-            result = findClassifierUsedInFile(fqn);
-            if (result != null) {
-                break;
+            final CharSequence name = udir.getName();
+            if (checked.add(name)) {
+                String fqn = name + "::" + nameToken; // NOI18N
+                if(fqn.startsWith("::")) { // NOI18N
+                    fqn = fqn.substring(2);
+                }
+                result = findClassifierUsedInFile(fqn, outVisibility);
+                if (result != null && outVisibility.get()) {
+                    break;
+                }
             }
         }
-        if (result == null) {
+        if (result == null || !outVisibility.get()) {
             CsmUsingResolver ur = CsmUsingResolver.getDefault();
             Collection<CsmDeclaration> decls;
             decls = ur.findUsedDeclarations(containingNS);
@@ -730,22 +745,25 @@ public final class Resolver3 implements Resolver {
                 }
             }
         }
+        CsmObject[] backupResult = new CsmObject[] {null};
+        AtomicBoolean resultIsVisible = new AtomicBoolean(true);
         if (result == null && needClassifiers()) {
             containingNS = context.getContainingNamespace();
-            result = findClassifier(containingNS, name);
-            if (result == null && containingNS != null) {
-                result = resolveInUsings(containingNS, name);
+            result = findClassifier(containingNS, name, resultIsVisible);
+            if (!canStop(result, resultIsVisible, backupResult) && containingNS != null) {
+                result = resolveInUsings(containingNS, name, resultIsVisible);
             }
         }
         if (result == null && needNamespaces()) {
+            resultIsVisible.set(true);
             containingNS = context.getContainingNamespace();
             result = findNamespace(containingNS, name);
         }
         if (needClassifiers() && 
-                (result == null ||
+                (!canStop(result, resultIsVisible, backupResult) ||
                  (!needForwardClassesOnly() && ForwardClass.isForwardClass(result)))) {
             CsmObject oldResult = result;
-            result = findClassifierUsedInFile(name);
+            result = findClassifierUsedInFile(name, resultIsVisible);
             if(needTemplateClassesOnly() && !CsmKindUtilities.isTemplate(result)) {
                 result = null;
             }
@@ -753,9 +771,12 @@ public final class Resolver3 implements Resolver {
                 result = oldResult;
             }
         }
-        CsmObject backupResult = result;
         if (!needForwardClassesOnly() && ForwardClass.isForwardClass(result)) {
             // try to find not forward class
+            backupResult[0] = result;
+            result = null;
+        } else if (!canStop(result, resultIsVisible, backupResult)) {
+            // try to find visible class
             result = null;
         }
         if (result == null) {
@@ -765,7 +786,7 @@ public final class Resolver3 implements Resolver {
             }
             if (result == null) {
                 CsmDeclaration decl = usingDeclarations.get(CharSequences.create(name));
-                if (decl != null) {
+                if (canStop(decl, resultIsVisible, backupResult)) {
                     result = decl;
                 }
             }
@@ -773,11 +794,11 @@ public final class Resolver3 implements Resolver {
                 for (Map.Entry<CharSequence, CsmObject> entry : usedNamespaces.entrySet()) {
                     String nsp = entry.getKey().toString();
                     String fqn = nsp + "::" + name; // NOI18N
-                    result = findClassifierUsedInFile(fqn);
-                    if (result == null) {
-                        result = findClassifier(containingNS, fqn);
+                    result = findClassifierUsedInFile(fqn, resultIsVisible);
+                    if (!canStop(result, resultIsVisible, backupResult)) {
+                        result = findClassifier(containingNS, fqn, resultIsVisible);
                     }
-                    if (result == null) {
+                    if (!canStop(result, resultIsVisible, backupResult)) {
                         CsmObject val = entry.getValue();
                         if (CsmKindUtilities.isUsingDirective(val)) {
                             // replace using namespace by referenced namespace
@@ -792,14 +813,14 @@ public final class Resolver3 implements Resolver {
                             CsmNamespace ns = (CsmNamespace)val;
                             if (!nsp.contains(ns.getQualifiedName())) {
                                 fqn = ns.getQualifiedName().toString() + "::" + name; // NOI18N
-                                result = findClassifierUsedInFile(fqn);
+                                result = findClassifierUsedInFile(fqn, resultIsVisible);
                             }
-                            if (result == null) {
-                                result = resolveInUsings(ns, name);
+                            if (!canStop(result, resultIsVisible, backupResult)) {
+                                result = resolveInUsings(ns, name, resultIsVisible);
                             }
                         }
                     }
-                    if (result != null) {
+                    if (canStop(result, resultIsVisible, backupResult)) {
                         break;
                     }
                 }
@@ -841,7 +862,7 @@ public final class Resolver3 implements Resolver {
             }
         }   
         if (result == null) {
-             result = backupResult;
+             result = backupResult[0];
         }
         if (result == null) {
             if (TemplateUtils.isTemplateQualifiedName(name.toString())) {
@@ -877,18 +898,20 @@ public final class Resolver3 implements Resolver {
     private CsmObject resolveCompoundName(CharSequence[] nameTokens, CsmObject result, int interestedKind) {
         CsmNamespace containingNS;
         String fullName = fullName(nameTokens);
+        CsmObject[] backupResult = new CsmObject[] {null};
+        AtomicBoolean resultIsVisible = new AtomicBoolean(true);
         if (needClassifiers()) {
-            result = findClassifierUsedInFile(fullName);
+            result = findClassifierUsedInFile(fullName, resultIsVisible);
         }
-        if (result == null && needClassifiers()) {
+        if (!canStop(result, resultIsVisible, backupResult) && needClassifiers()) {
             containingNS = context.getContainingNamespace();
-            result = findClassifier(containingNS, fullName);
+            result = findClassifier(containingNS, fullName, resultIsVisible);
         }
-        if (result == null && needNamespaces()) {
+        if (!canStop(result, resultIsVisible, backupResult) && needNamespaces()) {
             containingNS = context.getContainingNamespace();
             result = findNamespace(containingNS, fullName);
         }
-        if (result == null && needClassifiers()) {
+        if (!canStop(result, resultIsVisible, backupResult) && needClassifiers()) {
             gatherMaps(file, !FileImpl.isFileBeingParsedInCurrentThread(file), origOffset);
             if (currLocalClassifier != null && CsmKindUtilities.isTypedef(currLocalClassifier)) {
                 CsmType type = ((CsmTypedef)currLocalClassifier).getType();
@@ -904,20 +927,21 @@ public final class Resolver3 implements Resolver {
                     }
                     if (currNamIdx == names.length - 1) {
                         result = currentClassifier;
+                        resultIsVisible.set(isObjectVisibleFromFile(result, startFile));
                     }
                 }
             }
-            if (result == null) {
+            if (!canStop(result, resultIsVisible, backupResult)) {
                 for (Iterator<CharSequence> iter = usedNamespaces.keySet().iterator(); iter.hasNext();) {
                     String nsp = iter.next().toString();
                     String fqn = nsp + "::" + fullName; // NOI18N
-                    result = findClassifierUsedInFile(fqn);
-                    if (result != null) {
+                    result = findClassifierUsedInFile(fqn, resultIsVisible);
+                    if (canStop(result, resultIsVisible, backupResult)) {
                         break;
                     }
                 }
             }
-            if (result == null) {
+            if (!canStop(result, resultIsVisible, backupResult)) {
                 CsmNamespace ns = null;
                 String nsName = nameTokens[0].toString(); // NOI18N
                 int i;
@@ -944,19 +968,22 @@ public final class Resolver3 implements Resolver {
                         sb.append("::"); // NOI18N
                         sb.append(nameTokens[j]);
                     }
-                    result = findClassifierUsedInFile(sb.toString());
-                    if (result == null) {
+                    result = findClassifierUsedInFile(sb.toString(), resultIsVisible);
+                    if (!canStop(result, resultIsVisible, backupResult)) {
                         sb = new StringBuilder(nameTokens[i]);
                         for (int j = i + 1; j < nameTokens.length; j++) {
                             sb.append("::"); // NOI18N
                             sb.append(nameTokens[j]);
                         }
-                        result = resolveInUsings(ns, sb.toString());
+                        result = resolveInUsings(ns, sb.toString(), resultIsVisible);
                     }
                 }
             }
+            if (result == null) {
+                result = backupResult[0];
+            }
         }
-        if (result == null && needNamespaces()) {
+        if (!canStop(result, resultIsVisible, backupResult) && needNamespaces()) {
             CsmObject obj = null;
             Resolver aResolver = ResolverFactory.createResolver(file, origOffset);
             try {
@@ -1150,5 +1177,23 @@ public final class Resolver3 implements Resolver {
     
     private boolean needForwardClassesOnly() {
         return interestedKind == CLASS_FORWARD;
+    }
+
+    private boolean isObjectVisibleFromFile(CsmObject toCheck, CsmFile startFile) {
+        if (toCheck == null) {
+            return false;
+        }
+        CsmIncludeResolver resolver = CsmIncludeResolver.getDefault();
+        return resolver.isObjectVisible(startFile, toCheck);
+    }
+
+    private boolean canStop(CsmObject result, AtomicBoolean resultIsVisible, CsmObject[] backupResult) {
+        if (result != null) {
+            if (backupResult[0] == null) {
+                backupResult[0] = result;
+            }
+            return resultIsVisible.get();
+        }
+        return false;
     }
 }

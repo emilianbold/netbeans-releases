@@ -4115,6 +4115,10 @@ public final class GdbDebuggerImpl extends NativeDebuggerImpl
 
 	    switch (bp.op()) {
 		case NEW:
+                    if (template == null) {
+                        // we are unable to create handlers for breakpoints created in console
+                        return;
+                    }
 		    handler = handlerExpert.newHandler(template, result, null);
 		    break;
 		case RESTORE:

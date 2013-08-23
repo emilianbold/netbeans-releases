@@ -8,6 +8,14 @@ Event:CLASS:[PUBLIC]:ESCAPED{Event}:
 App:CLASS:[PUBLIC]:ESCAPED{App}:
   SchedulerDemo:CLASS:[PUBLIC]:ESCAPED{SchedulerDemo}:
     init:METHOD:[PUBLIC]:ESCAPED{init}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:
+      end:VARIABLE:[PRIVATE]:ESCAPED{end}:
+      endRepas:VARIABLE:[PRIVATE]:ESCAPED{endRepas}:
+      runner:VARIABLE:[PRIVATE]:ESCAPED{runner}<font color="#999999">ESCAPED{ : }Ext.util.TaskRunner</font>:
+      sched:CLASS:[PRIVATE]:ESCAPED{sched}:
+        eventResizeHandles:FIELD:[PUBLIC]:ESCAPED{eventResizeHandles}<font color="#999999">ESCAPED{ : }String</font>:
+      start:VARIABLE:[PRIVATE]:ESCAPED{start}:
+      startRepas:VARIABLE:[PRIVATE]:ESCAPED{startRepas}:
+      ta:VARIABLE:[PRIVATE]:ESCAPED{ta}<font color="#999999">ESCAPED{ : }MyTimeAxis</font>:
       task:CLASS:[PRIVATE]:ESCAPED{task}:
         interval:FIELD:[PUBLIC]:ESCAPED{interval}<font color="#999999">ESCAPED{ : }Number</font>:
         run:METHOD:[PUBLIC]:ESCAPED{run}ESCAPED{(}ESCAPED{)}<font color="#999999">ESCAPED{ : }undefined</font>:

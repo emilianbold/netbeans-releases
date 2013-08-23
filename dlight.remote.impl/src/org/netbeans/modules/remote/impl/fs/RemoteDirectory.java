@@ -53,6 +53,7 @@ import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.lang.ref.Reference;
 import java.lang.ref.SoftReference;
 import java.net.ConnectException;
@@ -209,7 +210,7 @@ public class RemoteDirectory extends RemoteFileObjectBase {
         if (directory) {
             res = ProcessUtils.execute(getExecutionEnvironment(), "mkdir", path); //NOI18N
         } else {
-            String script = String.format("ls \"%s\" || touch \"%s\"", name, name); // NOI18N
+            String script = String.format("ls ./\"%s\" || touch ./\"%s\"", name, name); // NOI18N
             res = ProcessUtils.executeInDir(getPath(), getExecutionEnvironment(), "sh", "-c", script); // NOI18N
             if (res.isOK() && res.error.length() == 0) {
                 creationFalure(name, directory, orig);
@@ -1222,13 +1223,13 @@ public class RemoteDirectory extends RemoteFileObjectBase {
                     throw new IOException("Unable to create parent firectory " + cacheParentFile.getAbsolutePath()); //NOI18N
                 }
             }
-            Future<Integer> task = CommonTasksSupport.downloadFile(child.getPath(), getExecutionEnvironment(), child.getCache().getAbsolutePath(), null);
+            StringWriter errorWriter = new StringWriter();
+            Future<Integer> task = CommonTasksSupport.downloadFile(child.getPath(), getExecutionEnvironment(), child.getCache().getAbsolutePath(), errorWriter);
             int rc = task.get().intValue();
             if (rc == 0) {
                 getFileSystem().incrementFileCopyCount();
             } else {
-                throw new IOException("Can't copy file " + child.getCache().getAbsolutePath() + // NOI18N
-                        " from " + getExecutionEnvironment() + ':' + getPath() + ": rc=" + rc); //NOI18N
+                throw new IOException("Can't download file " + getUrlToReport(child.getPath()) + ":\n" + errorWriter.toString()); //NOI18N
             }
         } catch (InterruptedException ex) {
             child.getCache().delete();

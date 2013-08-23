@@ -188,6 +188,7 @@ public class AnalyzeFolder extends BaseDwarfProvider {
     
     @Override
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
+        init(project);
         resetStopInterrupter(interrupter);
         String root = (String)getProperty(FOLDER_KEY).getValue();
         if (root == null || root.length() == 0) {

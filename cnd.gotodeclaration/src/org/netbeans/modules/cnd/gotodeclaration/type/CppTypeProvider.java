@@ -123,9 +123,9 @@ public class CppTypeProvider implements TypeProvider {
                     break;
                 }
             } catch (InterruptedException ex) {
-                // do not interrupt thread, 
-                // #234193 - Exception in repository from go to type
-//                Thread.interrupted();
+                task.cancel();
+                // clean flag
+                Thread.interrupted();
                 if (TRACE) {
                     LOG.log(Level.INFO, "InterruptedException"); // NOI18N
                 }                

@@ -236,7 +236,8 @@ public class ReformatterImpl {
                     if (braces.parenDepth == 0) {
                         StackEntry entry = braces.peek();
                         if (entry == null || entry.getKind() != LBRACE ||
-                            entry.getImportantKind() == CLASS || entry.getImportantKind() == STRUCT || entry.getImportantKind() == NAMESPACE){
+                            entry.getImportantKind() == CLASS || entry.getImportantKind() == STRUCT || 
+                            entry.getImportantKind() == UNION || entry.getImportantKind() == NAMESPACE){
                             Token<CppTokenId> next = ts.lookNextImportant();
                             if (next != null && next.id() == COLON) {
                                 braces.setStatementContinuation(BracesStack.StatementContinuation.CONTINUE_INIT);
@@ -271,6 +272,7 @@ public class ReformatterImpl {
                                         switch (entry.getImportantKind()) {
                                             case CLASS: //("class", "keyword"), //C++
                                             case STRUCT: //("struct", "keyword"),
+                                            case UNION:
                                                 removeLineBefore(true);
                                         }
                                     }
@@ -284,6 +286,7 @@ public class ReformatterImpl {
                                     switch (entry.getImportantKind()) {
                                         case CLASS: //("class", "keyword"), //C++
                                         case STRUCT: //("struct", "keyword"),
+                                        case UNION:
                                             newLineBefore(IndentKind.PARENT);
                                     }
                                 }
@@ -347,6 +350,7 @@ public class ReformatterImpl {
                             switch (entry.getImportantKind()) {
                                 case CLASS: //("class", "keyword"), //C++
                                 case STRUCT: //("struct", "keyword"),
+                                case UNION:
                                     Token<CppTokenId> next = ts.lookNextImportant();
                                     if (next != null && next.id() == COLON) {
                                         if (codeStyle.indentVisibility() == VisibilityIndent.NO_INDENT) {
@@ -796,7 +800,7 @@ public class ReformatterImpl {
             } else if (braces.getStatementContinuation() == BracesStack.StatementContinuation.CONTINUE_INIT){
                 if (entry.getKind() == LBRACE) {
                     if (entry.getImportantKind() != null &&
-                        (entry.getImportantKind() == CLASS || entry.getImportantKind() == STRUCT)) {
+                        (entry.getImportantKind() == CLASS || entry.getImportantKind() == STRUCT || entry.getImportantKind() == UNION)) {
                         shift += codeStyle.getConstructorInitializerListContinuationIndent();
                     }
                 }
@@ -2119,6 +2123,8 @@ public class ReformatterImpl {
                 if (entry.getImportantKind() != null) {
                     switch (entry.getImportantKind()) {
                         case CLASS:
+                        case STRUCT:
+                        case UNION:
                         case NAMESPACE:
                             spaceBefore(previous, codeStyle.spaceBeforeMethodDeclParen(), codeStyle.spaceKeepExtra());
                             spaceAfter(current, codeStyle.spaceWithinMethodDeclParens(), codeStyle.spaceKeepExtra());
@@ -2219,6 +2225,8 @@ public class ReformatterImpl {
                 if (entry.getImportantKind() != null) {
                     switch (entry.getImportantKind()) {
                         case CLASS:
+                        case STRUCT:
+                        case UNION:
                         case NAMESPACE:
                             spaceBefore(previous, codeStyle.spaceWithinMethodDeclParens(), codeStyle.spaceKeepExtra());
                             return;
