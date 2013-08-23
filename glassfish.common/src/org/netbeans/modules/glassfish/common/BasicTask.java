@@ -81,11 +81,19 @@ public abstract class BasicTask<V> implements Callable<V> {
      */
     protected static class StartStateListener extends WakeUpStateListener {
 
+        ////////////////////////////////////////////////////////////////////////
+        // Instance attributes                                                //
+        ////////////////////////////////////////////////////////////////////////
+
         /** Is server starting in profiling mode? */
         private final boolean profile;
 
         /** GlassFish process being started. */
         private volatile Process process;
+
+        ////////////////////////////////////////////////////////////////////////
+        // Constructors                                                       //
+        ////////////////////////////////////////////////////////////////////////
 
         /**
          * Constructs an instance of state check results notification.
@@ -99,6 +107,10 @@ public abstract class BasicTask<V> implements Callable<V> {
             this.process = null;
         }
 
+        ////////////////////////////////////////////////////////////////////////
+        // Getters and setters                                                //
+        ////////////////////////////////////////////////////////////////////////
+
         /**
          * Set GlassFish process being started.
          * <p/>
@@ -107,6 +119,10 @@ public abstract class BasicTask<V> implements Callable<V> {
         void setProcess(final Process process) {
             this.process = process;
         }
+
+        ////////////////////////////////////////////////////////////////////////
+        // Methods                                                            //
+        ////////////////////////////////////////////////////////////////////////
 
         /**
          * Callback to notify about current server status after every check
@@ -149,12 +165,20 @@ public abstract class BasicTask<V> implements Callable<V> {
      */
     protected static class ShutdownStateListener extends WakeUpStateListener {
 
+        ////////////////////////////////////////////////////////////////////////
+        // Constructors                                                       //
+        ////////////////////////////////////////////////////////////////////////
+
         /**
          * Constructs an instance of state check results notification.
          */
         protected ShutdownStateListener() {
             super();
         }
+
+        ////////////////////////////////////////////////////////////////////////
+        // Methods                                                            //
+        ////////////////////////////////////////////////////////////////////////
 
         /**
          * Callback to notify about current server status after every check
@@ -182,6 +206,10 @@ public abstract class BasicTask<V> implements Callable<V> {
      */
     protected static class StateChange {
 
+        ////////////////////////////////////////////////////////////////////////
+        // Instance attributes                                                //
+        ////////////////////////////////////////////////////////////////////////
+
         /** Command execution task. */
         private final BasicTask task;
 
@@ -196,6 +224,10 @@ public abstract class BasicTask<V> implements Callable<V> {
 
         /** Message arguments. */
         private final String[] msgArgs;
+
+        ////////////////////////////////////////////////////////////////////////
+        // Constructors                                                       //
+        ////////////////////////////////////////////////////////////////////////
 
         /**
          * Constructs an instance of state change request data.
@@ -233,6 +265,15 @@ public abstract class BasicTask<V> implements Callable<V> {
             this.msgArgs = msgArgs;
         }
 
+        ////////////////////////////////////////////////////////////////////////
+        // Methods                                                            //
+        ////////////////////////////////////////////////////////////////////////
+
+        /**
+         * Call all registered callback listeners to inform about state change.
+         * <p/>
+         * @return Passed new state of current command.
+         */
         protected TaskState fireOperationStateChanged() {
             return task.fireOperationStateChanged(
                     result, event, msgKey, msgArgs);

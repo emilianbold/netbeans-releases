@@ -42,6 +42,7 @@
 package org.netbeans.modules.glassfish.common;
 
 import java.util.prefs.Preferences;
+import org.glassfish.tools.ide.GlassFishToolsConfig;
 import org.openide.util.NbPreferences;
 
 /**
@@ -72,6 +73,13 @@ public class GlassFishSettings {
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //
     ////////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Initialize and configure GlassFish Tooling Library.
+     */
+    static void toolingLibraryconfig() {
+        GlassFishToolsConfig.noProxyForLoopback();
+    }
 
     /**
      * Get NetBeans preferences node for GlassFish module settings.

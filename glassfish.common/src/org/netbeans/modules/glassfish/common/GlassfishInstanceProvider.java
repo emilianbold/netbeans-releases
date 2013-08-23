@@ -50,8 +50,8 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.GlassFishStatus;
+import org.glassfish.tools.ide.GlassFishToolsConfig;
 import org.glassfish.tools.ide.admin.CommandSetProperty;
-import org.glassfish.tools.ide.admin.ServerAdmin;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.utils.ServerUtils;
@@ -93,6 +93,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
 
     static public String PRELUDE_DEFAULT_NAME = "GlassFish_v3_Prelude"; //NOI18N
     static public String EE6WC_DEFAULT_NAME = "GlassFish_Server_3.1"; // NOI18N
+
+    // GlassFish Tooling SDK configuration should be done before any server
+    // instance is created and used.
+    static {
+        GlassFishSettings.toolingLibraryconfig();
+    }
 
     public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
         List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
