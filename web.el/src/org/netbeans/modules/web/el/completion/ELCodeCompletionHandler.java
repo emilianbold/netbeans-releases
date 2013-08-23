@@ -70,6 +70,7 @@ import javax.lang.model.element.TypeElement;
 import javax.lang.model.util.ElementFilter;
 import javax.swing.text.Document;
 import javax.swing.text.JTextComponent;
+import org.netbeans.api.java.classpath.ClassPath;
 import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.CompilationController;
 import org.netbeans.api.java.source.JavaSource;
@@ -96,6 +97,7 @@ import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
 import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ResourceBundle;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -162,7 +164,7 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         final Node nodeToResolve = getNodeToResolve(target, rootToNode);
         final Map<AstIdentifier, Node> assignments = getAssignments(context.getParserResult(), context.getCaretOffset());
         final FileObject file = context.getParserResult().getSnapshot().getSource().getFileObject();
-        JavaSource jsource = JavaSource.create(ClasspathInfo.create(file));
+        JavaSource jsource = JavaSource.create(ELTypeUtilities.getElimplExtendedCPI(file));
         try {
             jsource.runUserActionTask(new Task<CompilationController>() {
 
