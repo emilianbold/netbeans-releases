@@ -70,7 +70,11 @@ public abstract class IndexedElement extends GroovyElement {
     private Document document;
 
     protected IndexedElement(IndexResult result, String in, String attributes, int flags) {
-        super(in);
+        this(result, in, null, attributes, flags);
+    }
+
+    protected IndexedElement(IndexResult result, String in, String name, String attributes, int flags) {
+        super(in, name);
         this.result = result;
         this.attributes = attributes;
         this.flags = flags;

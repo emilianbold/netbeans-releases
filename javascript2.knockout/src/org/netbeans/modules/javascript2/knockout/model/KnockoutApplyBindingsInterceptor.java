@@ -70,9 +70,11 @@ public class KnockoutApplyBindingsInterceptor implements FunctionInterceptor {
 
     private static final String GENERATED_FUNCTION_PREFIX = "_L"; //NOI18N
 
+    private static final Pattern NAME_PATTERN = Pattern.compile("ko\\.applyBindings"); // NOI18N
+
     @Override
     public Pattern getNamePattern() {
-        return Pattern.compile("ko\\.applyBindings"); // NOI18N
+        return NAME_PATTERN;
     }
 
     @Override
@@ -103,6 +105,8 @@ public class KnockoutApplyBindingsInterceptor implements FunctionInterceptor {
                 }
             }
             object = ref;
+        } else if (modelArgument.getKind() == FunctionArgument.Kind.ANONYMOUS_OBJECT) {
+            object = (JsObject) modelArgument.getValue();
         }
 
         if (object != null) {

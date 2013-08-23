@@ -56,6 +56,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -64,13 +65,24 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.prefs.Preferences;
 import javax.lang.model.element.Element;
+import javax.lang.model.element.ElementKind;
+import javax.lang.model.element.Name;
+import javax.lang.model.element.PackageElement;
+import javax.lang.model.type.TypeKind;
+import javax.lang.model.type.TypeMirror;
 import javax.swing.Icon;
 import javax.swing.JButton;
 import javax.swing.JDialog;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
+
+import com.sun.source.tree.AssignmentTree;
+import com.sun.source.tree.IdentifierTree;
+import com.sun.source.tree.Scope;
+import org.netbeans.api.java.source.CodeStyle;
 import org.netbeans.api.java.source.CompilationInfo;
 import org.netbeans.api.java.source.ElementHandle;
+import org.netbeans.api.java.source.ElementUtilities;
 import org.netbeans.api.java.source.GeneratorUtilities;
 import org.netbeans.api.java.source.Task;
 import org.netbeans.api.java.source.JavaSource;
@@ -78,6 +90,7 @@ import org.netbeans.api.java.source.JavaSource.Phase;
 import org.netbeans.api.java.source.ModificationResult;
 import org.netbeans.api.java.source.TreePathHandle;
 import org.netbeans.api.java.source.WorkingCopy;
+import org.netbeans.api.java.source.support.CancellableTreePathScanner;
 import org.netbeans.api.java.source.support.ReferencesCount;
 import org.netbeans.api.java.source.ui.ElementIcons;
 import org.netbeans.api.progress.ProgressUtils;
@@ -217,12 +230,18 @@ public class JavaFixAllImports {
     private static void performFixImports(WorkingCopy wc, ImportData data, CandidateDescription[] selections, boolean removeUnusedImports) throws IOException {
         //do imports:
         Set<Element> toImport = new HashSet<Element>();
+        Map<Name, Element> useFQNsFor = new HashMap<Name, Element>();
 
+        CodeStyle cs = CodeStyle.getDefault(wc.getDocument());
         for (CandidateDescription cd : selections) {
             Element el = cd.toImport != null ? cd.toImport.resolve(wc) : null;
 
             if (el != null) {
-                toImport.add(el);
+                if (cs.useFQNs()) {
+                    useFQNsFor.put(el.getSimpleName(), el);
+                } else {
+                    toImport.add(el);
+                }
             }
         }
 
@@ -230,6 +249,9 @@ public class JavaFixAllImports {
 
         if (!toImport.isEmpty()) {
             cut = GeneratorUtilities.get(wc).addImports(cut, toImport);
+        }
+        if (!useFQNsFor.isEmpty()) {
+            new TreeVisitorImpl(wc, useFQNsFor).scan(cut, null);
         }
         
         boolean someImportsWereRemoved = false;
@@ -254,7 +276,7 @@ public class JavaFixAllImports {
 
         if( !data.shouldShowImportsPanel ) {
             String statusText;
-            if( toImport.isEmpty() && !someImportsWereRemoved ) {
+            if( toImport.isEmpty() && useFQNsFor.isEmpty() && !someImportsWereRemoved ) {
                 Toolkit.getDefaultToolkit().beep();
                 statusText = NbBundle.getMessage( JavaFixAllImports.class, "MSG_NothingToFix" ); //NOI18N
             } else if( toImport.isEmpty() && someImportsWereRemoved ) {
@@ -450,6 +472,62 @@ public class JavaFixAllImports {
             this.displayName = displayName;
             this.icon = icon;
             this.toImport = toImport;
+        }
+    }
+    
+    private static class TreeVisitorImpl extends CancellableTreePathScanner<Void, Void> {
+
+        private WorkingCopy wc;
+        private Map<Name, Element> name2Element;
+
+        public TreeVisitorImpl(WorkingCopy wc, Map<Name, Element> name2Element) {
+            this.wc = wc;
+            this.name2Element = name2Element;
+        }        
+
+        @Override
+        public Void visitIdentifier(IdentifierTree node, Void p) {
+            Void ret = super.visitIdentifier(node, p);
+            final Element el = wc.getTrees().getElement(getCurrentPath());
+            if (el != null && (el.getKind().isClass() || el.getKind().isInterface() || el.getKind() == ElementKind.PACKAGE)) {
+                TypeMirror type = el.asType();
+                if (type != null) {
+                    if (type.getKind() == TypeKind.ERROR) {
+                        boolean allowImport = true;
+                        if (getCurrentPath().getParentPath() != null) {
+                            if (getCurrentPath().getParentPath().getLeaf().getKind() == Kind.ASSIGNMENT) {
+                                AssignmentTree at = (AssignmentTree) getCurrentPath().getParentPath().getLeaf();
+                                allowImport = at.getVariable() != node;
+                            } else if (getCurrentPath().getParentPath().getLeaf().getKind() == Kind.METHOD_INVOCATION) {
+                                Scope s = wc.getTrees().getScope(getCurrentPath());
+                                while (s != null) {
+                                    allowImport &= !wc.getElementUtilities().getLocalMembersAndVars(s, new ElementUtilities.ElementAcceptor() {
+                                        @Override public boolean accept(Element e, TypeMirror type) {
+                                            return e.getSimpleName().contentEquals(el.getSimpleName());
+                                        }
+                                    }).iterator().hasNext();
+                                    s = s.getEnclosingScope();
+                                }
+                            }
+                        }
+                        if (allowImport) {
+                            Element e = name2Element.get(node.getName());
+                            if (e != null) {
+                                wc.rewrite(node, wc.getTreeMaker().QualIdent(e));
+                            }
+                        }
+                    } else if (type.getKind() == TypeKind.PACKAGE) {
+                        String s = ((PackageElement) el).getQualifiedName().toString();
+                        if (wc.getElements().getPackageElement(s) == null) {
+                            Element e = name2Element.get(node.getName());
+                            if (e != null) {
+                                wc.rewrite(node, wc.getTreeMaker().QualIdent(e));
+                            }
+                        }
+                    }
+                }
+            }
+            return ret;
         }
     }
 }

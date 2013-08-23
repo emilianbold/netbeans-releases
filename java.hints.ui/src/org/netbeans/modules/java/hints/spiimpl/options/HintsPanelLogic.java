@@ -58,6 +58,7 @@ import java.awt.event.MouseListener;
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -276,15 +277,23 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
     State isSelected( DefaultMutableTreeNode node ) {
         boolean hasEnabled = false;
         boolean hasDisabled = false;
-        for( int i = 0; i < node.getChildCount(); i++ ) {
-            DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);
-            Object o = ch.getUserObject();
+        List<DefaultMutableTreeNode> todo = new LinkedList<>();
+
+        todo.add(node);
+        
+        while (!todo.isEmpty()) {
+            DefaultMutableTreeNode current = todo.remove(0);
+            Object o = current.getUserObject();
             if ( o instanceof HintMetadata ) {
                 HintMetadata hint = (HintMetadata)o;
                 if (isEnabled(hint)) {
                     hasEnabled = true;
                 } else {
                     hasDisabled = true;
+                }
+            } else if (o instanceof HintCategory) {
+                for (int i = 0; i < current.getChildCount(); i++) {
+                    todo.add((DefaultMutableTreeNode) current.getChildAt(i));
                 }
             }
         }
@@ -512,16 +521,23 @@ public class HintsPanelLogic implements MouseListener, KeyListener, TreeSelectio
         }
         else if ( o instanceof HintCategory ) {
             boolean value = isSelected(node) == State.NOT_SELECTED;
-                                   
-            for( int i = 0; i < node.getChildCount(); i++ ) {
-                DefaultMutableTreeNode ch = (DefaultMutableTreeNode) node.getChildAt(i);                
-                Object cho = ch.getUserObject();
+            List<DefaultMutableTreeNode> todo = new LinkedList<>();
+
+            todo.add(node);
+
+            while (!todo.isEmpty()) {
+                DefaultMutableTreeNode current = todo.remove(0);
+                Object cho = current.getUserObject();
                 if ( cho instanceof HintMetadata ) {
                     HintMetadata hint = (HintMetadata)cho;
                     boolean cv = isEnabled(hint);
                     if ( cv != value ) {                    
                         writableSettings.setEnabled(hint, value);
-                        model.nodeChanged( ch );
+                        model.nodeChanged( current );
+                    }
+                } else if (o instanceof HintCategory) {
+                    for (int i = 0; i < current.getChildCount(); i++) {
+                        todo.add((DefaultMutableTreeNode) current.getChildAt(i));
                     }
                 }
             }            

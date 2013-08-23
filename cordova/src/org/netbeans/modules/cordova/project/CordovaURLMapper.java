@@ -43,6 +43,7 @@ package org.netbeans.modules.cordova.project;
 
 import java.net.URL;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cordova.platforms.api.ClientProjectUtilities;
 import org.netbeans.modules.web.browser.spi.BrowserURLMapperImplementation;
 import org.openide.filesystems.FileObject;
 
@@ -60,7 +61,7 @@ public class CordovaURLMapper implements BrowserURLMapperImplementation {
 
     @Override
     public BrowserURLMapperImplementation.BrowserURLMapper toBrowser(Project p, FileObject projectFile, URL serverURL) {
-        browserURLMapper.setServerURLRoot("http://localhost:8383/" + p.getProjectDirectory().getName() + "/");
+        browserURLMapper.setServerURLRoot("http://localhost:8383" + ClientProjectUtilities.getWebContextRoot(p) + "/");
         return browserURLMapper;
     }
 

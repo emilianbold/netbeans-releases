@@ -252,5 +252,15 @@ public class ScssCompletionTest extends CssModuleTestBase {
                 + " }\n"
                 + "}", arr("one"), Match.EXACT);
     }
+
+    public void testSassKeywordsInMedia() throws ParseException {
+        checkCC("@media tv {  \n"
+                + "    @| \n"
+                + "}", arr("@if"), Match.CONTAINS);
+        
+        checkCC("@media tv {  \n"
+                + "    @ea| \n"
+                + "}", arr("@each"), Match.EXACT);
+    }
     
 }

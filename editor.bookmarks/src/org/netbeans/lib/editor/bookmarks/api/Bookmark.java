@@ -89,7 +89,6 @@ public final class Bookmark {
     private final BookmarkInfo info; // Hold name and key
 
     private Line            line;
-    private AAnnotation     annotation;
     
     /**
      * Construct new instance of bookmark.
@@ -113,16 +112,19 @@ public final class Bookmark {
             ) {
                 this.line = _line;
                 Reference<AAnnotation> annoRef = lineToAnnotation.get (_line);
-                this.annotation = annoRef.get();
-                if (this.annotation != null) {
+                info.setAnnotation(annoRef.get());
+                if (info.getAnnotation() != null) {
                     return;
                 }
             }
         }
         line = NbEditorUtilities.getLine (bookmarkList.getDocument (), offset, false);
         if (line != null) { // In tests it may be null
-            annotation = new AAnnotation ();
-            annotation.attach (line);
+            if (info.getAnnotation() == null) {
+                AAnnotation annotation = new AAnnotation ();
+                info.setAnnotation(annotation);
+                info.getAnnotation().attach (line);
+            } 
         }
     }
 
@@ -192,7 +194,9 @@ public final class Bookmark {
     void release () {
         assert (!released);
         released = true;
-        annotation.detach ();
+        if (info.getAnnotation() != null) {
+            info.getAnnotation().detach();
+        }
         lineToAnnotation.remove (line);
     }
     

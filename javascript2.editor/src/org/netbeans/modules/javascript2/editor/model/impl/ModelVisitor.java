@@ -983,6 +983,8 @@ public class ModelVisitor extends PathNodeVisitor {
             } else if (lastVisited instanceof PropertyNode) {
                 fqName = getName((PropertyNode) lastVisited);
                 isDeclaredInParent = true;
+            } else if (lastVisited instanceof ExecuteNode) {
+                treatAsAnonymous = true;
             } else if (lastVisited instanceof BinaryNode) {
                 BinaryNode binNode = (BinaryNode) lastVisited;
                 Node binLhs = binNode.lhs();

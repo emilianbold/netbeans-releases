@@ -87,6 +87,7 @@ import javax.lang.model.type.ArrayType;
 import javax.lang.model.type.DeclaredType;
 import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
+import javax.lang.model.type.WildcardType;
 import javax.lang.model.util.ElementFilter;
 import javax.lang.model.util.Types;
 import javax.swing.text.JTextComponent;
@@ -395,13 +396,21 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         if (te != null) {
             ClassTree nue = (ClassTree)path.getLeaf();
             Scope scope = wc.getTrees().getScope(path);
-            GeneratorUtilities gu = GeneratorUtilities.get(wc);
             List<Tree> members = new ArrayList<Tree>();
             if (hashCodeFields != null) {
-                members.add(createHashCodeMethod(wc, hashCodeFields, (DeclaredType)te.asType(), scope));
+                members.add(createHashCodeMethod(wc, hashCodeFields, scope));
             }
             if (equalsFields != null) {
-                members.add(createEqualsMethod(wc, equalsFields, (DeclaredType)te.asType(), scope));
+                DeclaredType dt = (DeclaredType)te.asType();
+                if (!dt.getTypeArguments().isEmpty()) {
+                    WildcardType wt = wc.getTypes().getWildcardType(null, null);
+                    TypeMirror[] typeArgs = new TypeMirror[dt.getTypeArguments().size()];
+                    for (int i = 0; i < typeArgs.length; i++) {
+                        typeArgs[i] = wt;
+                    }
+                    dt = wc.getTypes().getDeclaredType(te, typeArgs);
+                }
+                members.add(createEqualsMethod(wc, equalsFields, dt, scope));
             }
             wc.rewrite(nue, GeneratorUtils.insertClassMembers(wc, nue, members, offset));
         }        
@@ -434,7 +443,7 @@ public class EqualsHashCodeGenerator implements CodeGenerator {
         return make.Method(modifiers, "equals", make.PrimitiveType(TypeKind.BOOLEAN), Collections.<TypeParameterTree> emptyList(), params, Collections.<ExpressionTree>emptyList(), body, null); //NOI18N
     }    
     
-    private static MethodTree createHashCodeMethod(WorkingCopy wc, Iterable<? extends VariableElement> hashCodeFields, DeclaredType type, Scope scope) {
+    private static MethodTree createHashCodeMethod(WorkingCopy wc, Iterable<? extends VariableElement> hashCodeFields, Scope scope) {
         TreeMaker make = wc.getTreeMaker();
         Set<Modifier> mods = EnumSet.of(Modifier.PUBLIC);        
 

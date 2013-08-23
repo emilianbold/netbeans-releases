@@ -24,6 +24,7 @@ Document 2
 Searchable Keys:
   class : Hello1
   class-ig : hello1
+  ctor : Hello1;int
   field : field1;int;00;true
   field : greeting;java.lang.Object;00;true
   field : name;java.lang.Object;00;true
@@ -47,6 +48,8 @@ Document 3
 Searchable Keys:
   class : SecondTestClass
   class-ig : secondtestclass
+  ctor : SecondTestClass;String
+  ctor : SecondTestClass;int
   fqn : foo.SecondTestClass
 
 Not Searchable Keys:
@@ -56,6 +59,8 @@ Document 4
 Searchable Keys:
   class : ThirdTestClass
   class-ig : thirdtestclass
+  ctor : ThirdTestClass;String
+  ctor : ThirdTestClass;int
   fqn : foo.ThirdTestClass
 
 Not Searchable Keys:

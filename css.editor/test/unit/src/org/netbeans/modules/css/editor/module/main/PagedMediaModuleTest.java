@@ -57,19 +57,15 @@ public class PagedMediaModuleTest extends CssModuleTestBase {
     }
 
     public void testPageKeywordCompletion() throws ParseException  {
-        checkCC("|", arr("@page"), Match.CONTAINS);
-        checkCC("@|", arr("@page"), Match.CONTAINS);
-        checkCC("@pa|", arr("@page"), Match.CONTAINS);
+        checkCC("| ", arr("@page"), Match.CONTAINS);
+        checkCC("@| ", arr("@page"), Match.CONTAINS);
+        checkCC("@pa| ", arr("@page"), Match.CONTAINS);
     }
     
     public void testPagePseudoClassCompletion() throws ParseException  {
-//        checkCC("@page| ", arr(":first"), Match.CONTAINS);
         checkCC("@page:| ", arr("first"), Match.CONTAINS);
         checkCC("@page:fi| ", arr("first"), Match.CONTAINS);
-        
-        checkCC("@page :| ", arr("first"), Match.CONTAINS);
-        checkCC("@page :fi| ", arr("first"), Match.CONTAINS);
-        
+
         //named page
         checkCC("@page mypage| ", arr(":first"), Match.CONTAINS);
         checkCC("@page mypage:| ", arr("first"), Match.CONTAINS);

@@ -49,6 +49,7 @@ import java.util.StringTokenizer;
 import org.apache.tools.ant.BuildException;
 import org.apache.tools.ant.Task;
 import org.apache.tools.ant.taskdefs.ExecTask;
+import org.apache.tools.ant.types.Environment;
 import org.apache.tools.ant.types.Resource;
 
 /**
@@ -61,7 +62,12 @@ public class PluginTask extends Task {
         boolean isWin = System.getProperty("os.name").toLowerCase().indexOf("win") >= 0;
         return isWin;
     }
-    
+
+    public static boolean isMac() {
+        boolean isMac = System.getProperty("os.name").toLowerCase().indexOf("mac") >= 0;
+        return isMac;
+    }
+
     @Override
     public void execute() throws BuildException {
         try {
@@ -69,23 +75,22 @@ public class PluginTask extends Task {
                 return;
             }
             initCurrent();
-            
+
             HashSet<CordovaPlugin> pluginsToInstall = (HashSet<CordovaPlugin>) requestedPlugins.clone();
-            
+
             //plugins to install
             pluginsToInstall.removeAll(currentPlugins);
-            
+
             //plugins to remove
             currentPlugins.removeAll(requestedPlugins);
-            
+
             installPlugins(pluginsToInstall);
             uninstallPlugins(currentPlugins);
-            
+
         } catch (IOException ex) {
             throw new BuildException(ex);
         }
     }
-    
     private HashSet<CordovaPlugin> requestedPlugins;
     private HashSet<CordovaPlugin> currentPlugins;
 
@@ -97,23 +102,32 @@ public class PluginTask extends Task {
         }
         Properties props = new Properties();
         props.load(resource.getInputStream());
-        for (String name:props.stringPropertyNames()) {
+        for (String name : props.stringPropertyNames()) {
             requestedPlugins.add(new CordovaPlugin(name, props.getProperty(name)));
         }
         return true;
     }
-    
+
     public static String getCordovaCommand() {
-         boolean isWin = isWin();
-         return isWin?"cordova.cmd":"cordova";
+        boolean isWin = isWin();
+        return isWin ? "cordova.cmd" : "cordova";
     }
 
     private void initCurrent() {
         currentPlugins = new HashSet<CordovaPlugin>();
-        
+
         log(getCordovaCommand() + " plugins ");
 
         ExecTask exec = (ExecTask) getProject().createTask("exec");
+        final Environment.Variable variable = new Environment.Variable();
+        final String key = getProject().getProperty("cordova.path.key");
+        variable.setKey(key);
+        final String val = getProject().getProperty("cordova.path.value");
+        variable.setValue(val);
+        exec.addEnv(variable);
+        exec.setResolveExecutable(true);
+        exec.setSearchPath(true);
+
         exec.setExecutable(getCordovaCommand());
         exec.createArg().setValue("plugins");
         exec.setOutputproperty("cordova.current.plugins");
@@ -125,11 +139,11 @@ public class PluginTask extends Task {
             //empty
             return;
         }
-        plugins = plugins.substring(startPar+1, plugins.lastIndexOf("]")).trim();
+        plugins = plugins.substring(startPar + 1, plugins.lastIndexOf("]")).trim();
         StringTokenizer tokenizer = new StringTokenizer(plugins, ",");
         while (tokenizer.hasMoreTokens()) {
             String name = tokenizer.nextToken().trim();
-            currentPlugins.add(new CordovaPlugin(name.substring(name.indexOf("'")+1, name.lastIndexOf("'")), ""));
+            currentPlugins.add(new CordovaPlugin(name.substring(name.indexOf("'") + 1, name.lastIndexOf("'")), ""));
         }
     }
 
@@ -137,12 +151,19 @@ public class PluginTask extends Task {
         for (CordovaPlugin plugin : pluginsToInstall) {
             log(getCordovaCommand() + " -d plugin add " + plugin.getUrl());
             ExecTask exec = (ExecTask) getProject().createTask("exec");
+            final Environment.Variable variable = new Environment.Variable();
+            variable.setKey(getProject().getProperty("cordova.path.key"));
+            variable.setValue(getProject().getProperty("cordova.path.value"));
+            exec.addEnv(variable);
+
             exec.setExecutable(getCordovaCommand());
             exec.createArg().setValue("-d");
             exec.createArg().setValue("plugin");
             exec.createArg().setValue("add");
             exec.createArg().setValue(plugin.getUrl());
             exec.setFailonerror(true);
+            exec.setResolveExecutable(true);
+            exec.setSearchPath(true);
             exec.execute();
         }
     }
@@ -151,6 +172,13 @@ public class PluginTask extends Task {
         for (CordovaPlugin plugin : pluginsToUninstall) {
             log(getCordovaCommand() + " -d plugin remove " + plugin.getId());
             ExecTask exec = (ExecTask) getProject().createTask("exec");
+            final Environment.Variable variable = new Environment.Variable();
+            variable.setKey(getProject().getProperty("cordova.path.key"));
+            variable.setValue(getProject().getProperty("cordova.path.value"));
+            exec.addEnv(variable);
+            exec.setResolveExecutable(true);
+            exec.setSearchPath(true);
+
             exec.setExecutable(getCordovaCommand());
             exec.createArg().setValue("-d");
             exec.createArg().setValue("plugin");
