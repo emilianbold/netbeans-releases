@@ -60,7 +60,9 @@ import static org.glassfish.tools.ide.GlassFishStatus.SHUTDOWN;
 import static org.glassfish.tools.ide.GlassFishStatus.STARTUP;
 import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.data.GlassFishServerStatus;
-import org.glassfish.tools.ide.data.TaskEvent;
+import org.glassfish.tools.ide.TaskState;
+import org.glassfish.tools.ide.TaskEvent;
+import org.glassfish.tools.ide.TaskStateListener;
 import org.glassfish.tools.ide.utils.Utils;
 import org.netbeans.modules.glassfish.common.nodes.actions.RefreshModulesCookie;
 import org.netbeans.modules.glassfish.common.utils.Util;
@@ -235,6 +237,9 @@ public class CommonServerSupport
 
     private Process localStartProcess;
 
+    /** Last executed start task. */
+    private volatile FutureTask<TaskState> startTask;
+
     ////////////////////////////////////////////////////////////////////////////
     // Constructors                                                           //
     ////////////////////////////////////////////////////////////////////////////
@@ -245,6 +250,7 @@ public class CommonServerSupport
         // !PW FIXME temporary patch for JavaONE 2008 to make it easier
         // to persist per-instance property changes made by the user.
         instanceFO = getInstanceFileObject();
+        startTask = null;
     }
 
     /**
@@ -404,6 +410,7 @@ public class CommonServerSupport
                 (String[]) (endState == ServerState.STOPPED_JVM_PROFILER
                 ? new String[]{""} : null),
                 startServerListener, stateListener));
+        startTask = task;
         RP.post(task);
         return task;
     }
@@ -464,6 +471,54 @@ public class CommonServerSupport
                         TaskState.COMPLETED, TaskEvent.CMD_COMPLETED, "");
             }
             return task;
+        }
+        RP.post(task);
+        return task;
+    }
+
+    /**
+     * Terminates local GlassFish server process when started from UI.
+     * <p/>
+     * @param stateListener External state listener to register.
+     * @return Asynchronous GlassFish server termination task when 
+     */
+    @Override
+    public Future<TaskState> killServer(final TaskStateListener stateListener) {
+        TaskStateListener killServerListener = new TaskStateListener() {
+            @Override
+            public void operationStateChanged(final TaskState newState,
+                    final TaskEvent event, final String... args) {
+                if (newState == TaskState.RUNNING) {
+                    setServerState(ServerState.STOPPING);
+                } else if(newState == TaskState.COMPLETED) {
+                    setServerState(ServerState.STOPPED);
+                } else if(newState == TaskState.FAILED) {
+                    // Registered process has already finished.
+                    if (event == TaskEvent.PROCESS_NOT_RUNNING) {
+                        setServerState(ServerState.STOPPED);
+                    }
+                    // Otherwise do nothing for TaskEvent.PROCESS_NOT_EXISTS.
+                }
+            }
+        };
+        FutureTask<TaskState> task;
+        boolean isStateListener = stateListener != null;
+        if (!isRemote() && instance.getProcess() != null) {
+            FutureTask<TaskState> stTask = this.startTask;
+            // TODO: This may not be enough!
+            if (!stTask.isDone()) {
+                stTask.cancel(true);
+            }
+            TaskStateListener[] listeners
+                    = new TaskStateListener[isStateListener ? 2 : 1];
+            listeners[0] = killServerListener;
+            if (isStateListener) {
+                listeners[1] = stateListener;
+            }
+            task = new FutureTask<TaskState>(new KillTask(instance, listeners));
+        } else {
+            task = new FutureTask<TaskState>(
+                    new NoopTask(this, null, stateListener));
         }
         RP.post(task);
         return task;

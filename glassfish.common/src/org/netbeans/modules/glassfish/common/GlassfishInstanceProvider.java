@@ -50,8 +50,8 @@ import java.util.logging.Logger;
 import java.util.prefs.BackingStoreException;
 import javax.swing.event.ChangeListener;
 import org.glassfish.tools.ide.GlassFishStatus;
+import org.glassfish.tools.ide.GlassFishToolsConfig;
 import org.glassfish.tools.ide.admin.CommandSetProperty;
-import org.glassfish.tools.ide.admin.ServerAdmin;
 import org.glassfish.tools.ide.server.config.ConfigBuilderProvider;
 import org.netbeans.api.server.ServerInstance;
 import org.netbeans.modules.glassfish.common.utils.ServerUtils;
@@ -79,14 +79,6 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     private static final Logger LOGGER
             = GlassFishLogger.get(GlassfishInstanceProvider.class);
 
-    // Initialize GlassFish asadmin command execution framework to use
-    // AdminAuthenticator.
-    // Plugin proxy initialization is done as a side effect
-    // of AdminAuthenticator constructor.
-    static {
-        ServerAdmin.init(new AdminAuthenticator());
-    }
-    
     public static final String GLASSFISH_AUTOREGISTERED_INSTANCE = "glassfish_autoregistered_instance";
 
     private static final String AUTOINSTANCECOPIED = "autoinstance-copied"; // NOI18N
@@ -102,6 +94,12 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
     static public String PRELUDE_DEFAULT_NAME = "GlassFish_v3_Prelude"; //NOI18N
     static public String EE6WC_DEFAULT_NAME = "GlassFish_Server_3.1"; // NOI18N
 
+    // GlassFish Tooling SDK configuration should be done before any server
+    // instance is created and used.
+    static {
+        GlassFishSettings.toolingLibraryconfig();
+    }
+
     public static List<GlassfishInstanceProvider> getProviders(boolean initialize) {
         List<GlassfishInstanceProvider> providerList = new ArrayList<GlassfishInstanceProvider>();
         if(initialize) {
@@ -112,7 +110,7 @@ public final class GlassfishInstanceProvider implements ServerInstanceProvider, 
         }
         return providerList;
     }
-    
+
     public static GlassfishInstanceProvider getProvider() {
         if (ee6Provider != null) {
             return ee6Provider;
