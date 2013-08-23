@@ -759,9 +759,7 @@ public final class Resolver3 implements Resolver {
             containingNS = context.getContainingNamespace();
             result = findNamespace(containingNS, name);
         }
-        if (needClassifiers() && 
-                (!canStop(result, resultIsVisible, backupResult) ||
-                 (!needForwardClassesOnly() && ForwardClass.isForwardClass(result)))) {
+        if (needClassifiers() && !canStop(result, resultIsVisible, backupResult)) {
             CsmObject oldResult = result;
             result = findClassifierUsedInFile(name, resultIsVisible);
             if(needTemplateClassesOnly() && !CsmKindUtilities.isTemplate(result)) {
@@ -771,21 +769,19 @@ public final class Resolver3 implements Resolver {
                 result = oldResult;
             }
         }
-        if (!needForwardClassesOnly() && ForwardClass.isForwardClass(result)) {
-            // try to find not forward class
-            backupResult[0] = result;
-            result = null;
-        } else if (!canStop(result, resultIsVisible, backupResult)) {
-            // try to find visible class
+        if (!canStop(result, resultIsVisible, backupResult)) {
+            // try to find visible class or not forward
             result = null;
         }
         if (result == null) {
             gatherMaps(file, !FileImpl.isFileBeingParsedInCurrentThread(file), origOffset);
             if (currLocalClassifier != null && needClassifiers()) {
+                resultIsVisible.set(isObjectVisibleFromFile(currLocalClassifier, startFile));
                 result = currLocalClassifier;
             }
             if (result == null) {
                 CsmDeclaration decl = usingDeclarations.get(CharSequences.create(name));
+                resultIsVisible.set(isObjectVisibleFromFile(decl, startFile));
                 if (canStop(decl, resultIsVisible, backupResult)) {
                     result = decl;
                 }
@@ -1191,8 +1187,15 @@ public final class Resolver3 implements Resolver {
         if (result != null) {
             if (backupResult[0] == null) {
                 backupResult[0] = result;
+            } else if (!needForwardClassesOnly()) {
+                if (ForwardClass.isForwardClass(backupResult[0]) &&
+                    !ForwardClass.isForwardClass(result)) {
+                    backupResult[0] = result;
+                }
             }
-            return resultIsVisible.get();
+            if (resultIsVisible.get()) {
+                return !ForwardClass.isForwardClass(result) || needForwardClassesOnly();
+            }
         }
         return false;
     }
