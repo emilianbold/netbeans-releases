@@ -110,6 +110,7 @@ public class GarbageCollectAction extends CallableSystemAction {
 //        return new MemButton();
     }
 
+    private static final boolean NIMBUS_LAF = "Nimbus".equals(UIManager.getLookAndFeel().getID()); //NOI18N
     private static final class HeapViewWrapper extends JComponent {
         public HeapViewWrapper() {
             add(new HeapView());
@@ -153,7 +154,11 @@ public class GarbageCollectAction extends CallableSystemAction {
             int w = getWidth();
             int h = getHeight();
             HeapView heapView = getHeapView();
-            heapView.setBounds(4, 2, w - 6, h - 4);
+            if( NIMBUS_LAF ) {
+                heapView.setBounds(0, 0, w, h);
+            } else {
+                heapView.setBounds(4, 2, w - 6, h - 4);
+            }
         }
 
         private HeapView getHeapView() {
