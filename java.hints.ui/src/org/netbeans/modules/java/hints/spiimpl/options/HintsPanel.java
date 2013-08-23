@@ -853,6 +853,9 @@ public final class HintsPanel extends javax.swing.JPanel   {
         cpBased.reset();
         errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
         setModel(errorTreeModel);
+        if (logic != null) {
+            logic.errorTreeModel = errorTreeModel;
+        }
         select(getHintByName(selectedHintId));
         customHintCodeBeforeEditing = null;
         cancelEditActionPerformed(evt);
@@ -1256,6 +1259,9 @@ public final class HintsPanel extends javax.swing.JPanel   {
                         cpBased.reset();
                         errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
                         setModel(errorTreeModel);
+                        if (logic != null) {
+                            logic.errorTreeModel = errorTreeModel;
+                        }
                         select(getHintByName((String) newValue));
                         hasNewHints = true;
                     } catch (IOException ex) {
@@ -1416,6 +1422,9 @@ public final class HintsPanel extends javax.swing.JPanel   {
                     //errorTreeModel.removeNodeFromParent(node);
                     errorTreeModel = constructTM(Utilities.getBatchSupportedHints(cpBased).keySet(), false);
                     setModel(errorTreeModel);
+                    if (logic != null) {
+                        logic.errorTreeModel = errorTreeModel;
+                    }
                     hasNewHints = true;
                 }
             } catch (IOException ex) {
