@@ -74,6 +74,7 @@ import org.netbeans.modules.maven.classpath.MavenSourcesImpl;
 import org.netbeans.modules.maven.execute.model.ActionToGoalMapping;
 import org.netbeans.modules.maven.execute.model.NetbeansActionMapping;
 import org.netbeans.spi.project.ActionProvider;
+import org.netbeans.spi.project.ui.support.ProjectCustomizer;
 import org.openide.DialogDescriptor;
 import org.openide.DialogDisplayer;
 import org.openide.awt.MouseUtils;
@@ -110,9 +111,11 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
     private String oldAllParams;
     private DocumentListener docListener;
     private ActionListener comboListener;
+    private ProjectCustomizer.Category category;
     
-    public RunJarPanel(ModelHandle2 handle, NbMavenProjectImpl project) {
+    public RunJarPanel(ModelHandle2 handle, NbMavenProjectImpl project, ProjectCustomizer.Category category) {
         initComponents();
+        this.category = category;
         this.handle = handle;
         this.project = project;
         comConfiguration.setEditable(false);
@@ -220,7 +223,7 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
         isCurrentRun = checkNewMapping(run);
         isCurrentDebug = checkNewMapping(debug);
         isCurrentProfile = checkNewMapping(profile);
-        if (isCurrentDebug || isCurrentRun || isCurrentProfile) {
+        if (isCurrentDebug && isCurrentRun && isCurrentProfile ) {
             oldWorkDir = run.getProperties().get(RUN_WORKDIR);
             if (oldWorkDir == null) {
                 oldWorkDir = debug.getProperties().get(RUN_WORKDIR);
@@ -249,6 +252,21 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             } else {
                 oldAllParams = "";
             }
+            txtMainClass.setEnabled(true);
+            txtArguments.setEnabled(true);
+            txtVMOptions.setEnabled(true);
+            btnMainClass.setEnabled(true);
+            txtWorkDir.setEnabled(true);
+            btnWorkDir.setEnabled(true);
+            category.setErrorMessage(null);
+        } else {
+            txtMainClass.setEnabled(false);
+            txtArguments.setEnabled(false);
+            txtVMOptions.setEnabled(false);
+            txtWorkDir.setEnabled(false);
+            btnWorkDir.setEnabled(false);
+            btnMainClass.setEnabled(false);
+            category.setErrorMessage("One of Run/Debug/Profile Project actions has been modified and the Run panel cannot be safely edited");
         }
         
         if (oldMainClass == null) {
@@ -489,7 +507,12 @@ public class RunJarPanel extends javax.swing.JPanel implements HelpCtx.Provider 
             String goal = (String) it.next();
             if (goal.matches("org\\.codehaus\\.mojo\\:exec-maven-plugin\\:(.)+\\:exec") //NOI18N
                     || goal.indexOf("exec:exec") > -1) { //NOI18N
-                return true;
+                if (map.getProperties() != null && map.getProperties().containsKey("exec.args")) {
+                    String execArgs = map.getProperties().get("exec.args");
+                    if (execArgs.contains("-classpath")) {
+                        return true;
+                    }
+                }
             }
         }
         return false;
