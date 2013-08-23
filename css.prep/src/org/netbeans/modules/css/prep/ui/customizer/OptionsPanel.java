@@ -231,6 +231,7 @@ public class OptionsPanel extends JPanel {
         }
         compilerOptionsLabel.setEnabled(enabled);
         compilerOptionsTextField.setEnabled(enabled);
+        compilerOptionsInfoLabel.setEnabled(enabled);
     }
 
     void enableRemoveButton() {
