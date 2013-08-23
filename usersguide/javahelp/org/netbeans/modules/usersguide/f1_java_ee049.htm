@@ -2,30 +2,72 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Enterprise Application with Existing Sources: Application Modules</title>
+<title>Registering an Oracle WebLogic Server</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.javaee.project.api.ant.ui.wizard.PanelModuleDetection" name="org.netbeans.modules.javaee.project.api.ant.ui.wizard.PanelModuleDetection"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref628" name="sthref628"></a>
-<h1>New Enterprise Application with Existing Sources: Application Modules</h1>
+<p><a id="registering_app_server_weblogic" name="registering_app_server_weblogic"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref617" name="sthref617"></a>
+<h1>Registering an Oracle WebLogic Server</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The New Enterprise Application with Existing Sources wizard creates a new &nbsp; using the imported sources of an enterprise application that is structured according to the Sun Java BluePrints Guidelines. You open the Enterprise Application with Existing Sources wizard wizard by opening the New Project wizard and selecting the Enterprise Application with Existing Sources wizard template from the Java EE category.</p>
-<p>In the Application Modules page, the IDE displays the modules in the existing project. For each listed module, you can use the drop-down menu to specify the module type. If the existing project has a module you do not want to import, select the module and click Remove.</p>
-<p>To determine the project modules and their type, the IDE scans the project location for modules with standard deployment descriptors. If a module does not have deployment descriptors (for example, a Java EE 5 EJB module), you need to manually add that module and specify the module type.</p>
-<p>When you click Finish, the project is created on your computer and opened in the IDE. You can view its logical structure in the Projects window and its file structure in the Files window.</p>
+<p>Before you can start developing and deploying applications to an application server, you must register your application server with the IDE.</p>
+<a id="sthref618" name="sthref618"></a>
+<p><b>To register an instance of an Oracle WebLogic server:</b></p>
+<ol>
+<li>
+<p>Choose Tools &gt; Servers, and in the Server Manager, click Add Server.</p>
+<p><b>Note</b>: Alternatively, right-click the Servers node in the Services window and choose Add Server from the pop-up menu.</p>
+<p>The Add Server Instance wizard starts.</p>
+</li>
+<li>
+<p>In the Choose Server pane, do the following:</p>
+<ul>
+<li>Select your application server from the list.</li>
+<li>In the Name field, type a name for the server instance. This name is used to identify the server in the IDE.</li>
+<li>Click Next.</li>
+</ul>
+</li>
+<li>
+<p>In the Server Location pane, use the Browse button to navigate to and select the installation directory of your application server.</p>
+<p><b>Note</b>: The Next button is only enabled when you have selected the correct installation directory.</p>
+</li>
+<li>Click Next.</li>
+<li>
+<p>To define a local server instance, do the following:</p>
+<ul>
+<li>From the Local instances drop-down menu, select a server instance. When you select a server instance, the IDE updates the Domain path, Host, and Port fields.</li>
+<li>Fill in the Username and Password fields. The default username/password is weblogic/weblogic.</li>
+</ul>
+</li>
+<li>Click Finish.</li>
+<li>If you started the Add Server Instance wizard from the Server Manager, click Close in the Server Manager dialog box. The IDE displays a server node for your application server in the Services window under the Servers node.</li>
+</ol>
 <hr><p><b>Related Topics</b></p>
-<p>About Developing Enterprise Applications</p>
-<p><code>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1249">
-<param name="text" value="<html><u>Creating Application Client</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1681">
+<param name="text" value="<html><u>Working with Glassfish Application Servers</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</code>
-s</p>
+r</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1733">
+<param name="text" value="<html><u>Working With Tomcat Web Servers</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1722">
+<param name="text" value="<html><u>Working With JBoss Application Servers</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
 <!-- -->
 <!-- Start Footer -->

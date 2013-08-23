@@ -2,52 +2,114 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>ejb-jar.xml Visual Editor: General: Enterprise Beans: Session Bean</title>
+<title>New Enterprise Application Wizard: Server and Settings</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.j2ee.ddloaders.multiview.SessionNode" name="org.netbeans.modules.j2ee.ddloaders.multiview.SessionNode"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref620" name="sthref620"></a>
-<h1>ejb-jar.xml Visual Editor: General: Enterprise Beans: Session Bean</h1>
+<p><a id="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EAR" name="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EAR"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref609" name="sthref609"></a>
+<h1>New Enterprise Application Wizard: Server and Settings</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The ejb-jar.xml visual editor lets you edit the general for an EJB module. You open the editor by expanding the project's Configuration Files node in the Projects window and double-clicking ejb-jar.xml. The Enterprise Beans section of the General tab contains a section for each of your EJB module's enterprise beans.</p>
-<p>Each enterprise bean has an Enterprise Bean Implementation and Interfaces section where you can view and edit the bean class name and bean interface names.</p>
-<p>You can also quickly navigate to an enterprise bean's classes and interfaces by clicking Go To Source next to the name of the class or interface.</p>
-<p><b>Note</b>: This section is just called Enterprise Bean Implementation for message-driven beans because message-driven beans do not have interfaces.</p>
-<p>All enterprise beans also have the following sections in the ejb-jar.xml visual editor:</p>
-<ul>
-<li>Bean Environment</li>
-<li>Bean Details</li>
-<li>Security</li>
-</ul>
+<p>This wizard creates a new &nbsp; containing an enterprise application client module. You open the wizard by opening the and selecting the Enterprise Application Client template from the Java EE category.</p>
+<p>In the Server and Settings page, you have to set the following properties:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t31">Element</th>
+<th align="left" valign="bottom" id="r1c2-t31">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t31" headers="r1c1-t31">
+<p>Add to Enterprise Application</p>
+</td>
+<td align="left" headers="r2c1-t31 r1c2-t31">
+<p>Lets you add the application client to any open enterprise application project.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t31" headers="r1c1-t31">
+<p>Server</p>
+</td>
+<td align="left" headers="r3c1-t31 r1c2-t31">
+<p>Specifies the server to which the application client's enterprise application is deployed. To register servers, choose Tools &gt; Servers.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t31" headers="r1c1-t31">
+<p>Java EE Version</p>
+</td>
+<td align="left" headers="r4c1-t31 r1c2-t31">
+<p>Specifies the level of the Java EE specification that is used for the application client. If you set the Java EE version to 1.4, you should also set the source level to 1.4 in the drop-down list that appears.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t31" headers="r1c1-t31">
+<p>Source Level Recommendations</p>
+</td>
+<td align="left" headers="r5c1-t31 r1c2-t31">
+<p>One of the following checkboxes will appear if the Java EE Version is set to J2EE 1.4 and JDK 1.5 or JDK 1.6 is set as the default platform in the Java Platform Manager. The J2EE 1.4 and J2EE 1.3 specifications do not recommend JDK 1.5. Therefore, if you want to create a portable application, select the appropriate checkbox:</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t31" headers="r1c1-t31">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Use JDK 1.4 and Set Source Level to 1.4</p>
+</td>
+<td align="left" headers="r6c1-t31 r1c2-t31">
+<p>This checkbox appears if JDK 1.4 is available in the Java Platform Manager. Select this checkbox to set both your JDK level and your source level to 1.4.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t31" headers="r1c1-t31">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Set Source Level to 1.4</p>
+</td>
+<td align="left" headers="r7c1-t31 r1c2-t31">
+<p>This checkbox appears if JDK 1.4 is not available in the Java Platform Manager. Select this checkbox so that at least your source level is set to 1.4.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t31" headers="r1c1-t31">
+<p>Main Class</p>
+</td>
+<td align="left" headers="r8c1-t31 r1c2-t31">
+<p>Specifies the package and name of the main class. You should enter the fully qualified name of the class without the .java extension (for example, com.me.MyClass).</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>When you click Finish, the project is created on your computer and opened in the IDE. You can view its logical structure in the Projects window and its file structure in the Files window.</p>
+<p><b>Note</b>: If you are creating an application client with existing sources, you must click Next to specify existing sources and libraries.</p>
 <hr><p><b>Related Topics</b></p>
-<p><code>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1225">
-<param name="text" value="<html><u>Editing Deployment Descriptors</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1249">
+<param name="text" value="<html><u>Creating Application Clients</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</code>
 </p>
-<p><code>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1232">
-<param name="text" value="<html><u>Verifying Enterprise Applications</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG370">
+<param name="text" value="<html><u>Using Java Project Templates</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</code>
 </p>
-<p><code>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1681">
-<param name="text" value="<html><u>Working with Glassfish Application Servers</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG455">
+<param name="text" value="<html><u>Sharing Libraries with Other Users</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</code>
 </p>
 
 <!-- -->

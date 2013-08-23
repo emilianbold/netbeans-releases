@@ -2,52 +2,78 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Choose Database Dialog Box</title>
+<title>Specify Mail Resource Dialog Box</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="use_db" name="use_db"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref621" name="sthref621"></a>
-<h1>Choose Database Dialog Box</h1>
+<p><a id="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection" name="org.netbeans.modules.j2ee.earproject.ui.wizards.PanelModuleDetection"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref610" name="sthref610"></a>
+<h1>Specify Mail Resource Dialog Box</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>You use this dialog box to add code to a Java class file that looks up a networked database. You can choose to specify an existing class containing the lookup code or the IDE can generate the lookup code for you. The lookup code uses a reference name that refers to the JNDI name of your data resource. If there is no reference name associated with your data resource, you can create a new reference name in the dialog box.</p>
-<p>You can only insert database look-up code in Java classes that are located in an EJB module project or web application project. You open the dialog box by right-clicking the class in the Source Editor and choosing Insert Code &gt; Use Database.</p>
+<p>You use this dialog box to automatically generate code that sends an e-mail from a Java file. You open the dialog box by right-clicking a Java file in the Source Editor and choosing Insert Code &gt; Send E-mail. The file must be in an EJB module project or a standard web application project. You cannot generate e-mail code in a free-form web application project.</p>
 <p>You use the dialog box as follows:</p>
 <ol>
-<li>Select the name of the resource reference from the drop-down list. The resource reference refers to the JNDI name of the data source you want to use. If no resource reference to your data source is available in the drop-down list, click Add to create a new reference name.</li>
+<li>Specify the JNDI name of the resource.</li>
 <li>
-<p>Under Service Locator Strategy, specify whether to generate inline lookup code or use an existing service locator. You can click the Browse to search for the service locator class name. <code>
+<p>Under Service Locator Strategy, specify whether to generate inline lookup code or use an existing service locator. You can click Browse to search for the service locator class name. 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
 <param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1286">
 <param name="text" value="<html><u>How To</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</code>
 </p>
 </li>
-<li>Click OK.</li>
+<li>
+<p>Click OK.</p>
+<p>The IDE creates two methods:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t32">Element</th>
+<th align="left" valign="bottom" id="r1c2-t32">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t32" headers="r1c1-t32">
+<p>getSession</p>
+</td>
+<td align="left" headers="r2c1-t32 r1c2-t32">
+<p>Looks up the mail resource and creates a mail session.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t32" headers="r1c1-t32">
+<p>sendMail</p>
+</td>
+<td align="left" headers="r3c1-t32 r1c2-t32">
+<p>Constructs and send the e-mail.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>The IDE also registers the resource reference in your module's general deployment descriptor.</p>
+</li>
+<li>
+<p>In your code, call the sendMail method and pass the e-mail address, subject, and body as parameters.</p>
+<p><b>Note</b>: You have to configure the mail resource on the application server yourself. If your project's target server is the GlassFish server, the IDE automatically configures the resource reference in the application-specific deployment descriptor. If you are deploying to a different application server, you have to configure the server-specific deployment descriptors yourself.</p>
+</li>
 </ol>
-<p><b>Note</b>: When you create a new reference name for a data source you need to choose a data source in your project or on the server. If the data source does not exist, you must create the data source by specifying the JNDI name and database connection for the data source.</p>
 <hr><p><b>Related Topics</b></p>
-<p><code>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1655">
-<param name="text" value="<html><u>Understanding Connection Pools</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1269">
+<param name="text" value="<html><u>Creating an Enterprise Bean</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</code>
-</p>
-<p><code>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1821">
-<param name="text" value="<html><u>Setting Up a Database Connection</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</code>
 </p>
 
 <!-- -->

@@ -2,105 +2,88 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>ejb-jar.xml Visual Editor: Enterprise Beans: Entity Beans</title>
+<title>Standard Enterprise Application Project Properties Dialog Box: Run</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.j2ee.ddloaders.multiview.EntityNode" name="org.netbeans.modules.j2ee.ddloaders.multiview.EntityNode"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref610" name="sthref610"></a>
-<h1>ejb-jar.xml Visual Editor: Enterprise Beans: Entity Beans</h1>
+<p><a id="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun" name="org.netbeans.modules.j2ee.earproject.ui.customizer.CustomizerRun"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref604" name="sthref604"></a>
+<h1>Standard Enterprise Application Project Properties Dialog Box: Run</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The ejb-jar.xml visual editor lets you edit the general for an EJB module. You open the editor by expanding the project's Configuration Files node in the Projects window and double-clicking ejb-jar.xml. The Enterprise Beans section of the General tab contains a section for each of your EJB module's enterprise beans.</p>
-<p>The General section for entity beans lets you set the following general information about the enterprise bean:</p>
+<p>You open the Standard Enterprise Application Project Properties dialog box by right-clicking any &nbsp;and choosing Properties. The Run page lets you configure options for running your project.</p>
+<p>In the Run page, you can set the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t29">Element</th>
-<th align="left" valign="bottom" id="r1c2-t29">Description</th>
+<th align="left" valign="bottom" id="r1c1-t27">Element</th>
+<th align="left" valign="bottom" id="r1c2-t27">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t29" headers="r1c1-t29">
-<p>Name</p>
+<td align="left" id="r2c1-t27" headers="r1c1-t27">
+<p>Client Module</p>
 </td>
-<td align="left" headers="r2c1-t29 r1c2-t29">
-<p>Specifies the enterprise bean's name. This name is not related to the bean's JNDI name that is specified in the glassfish-ejb-jar.xml deployment descriptor. The name must be unique in the ejb-jar.xml file.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t29" headers="r1c1-t29">
-<p>Persistence Type</p>
-</td>
-<td align="left" headers="r3c1-t29 r1c2-t29">
-<p>Specifies whether the bean's persistence is managed by the container or by the bean.</p>
+<td align="left" headers="r2c1-t27 r1c2-t27">
+<p>Specifies the name of the WAR file or the client module in the EAR file.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t29" headers="r1c1-t29">
-<p>Abstract Schema Name</p>
+<td align="left" id="r3c1-t27" headers="r1c1-t27">
+<p>Server</p>
 </td>
-<td align="left" headers="r4c1-t29 r1c2-t29">
-<p>Specifies the abstract schema that declares the persistent fields and relationships of an entity bean.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r5c1-t29" headers="r1c1-t29">
-<p>Primary Key Field</p>
-</td>
-<td align="left" headers="r5c1-t29 r1c2-t29">
-<p>Specifies the primary key field of the entity bean. The combo box lists all of the CMP fields in your entity bean. A primary key uniquely identifies an entity bean.</p>
+<td align="left" headers="r3c1-t27 r1c2-t27">
+<p>Specifies the server where you want the enterprise application to be deployed. Only servers that are registered with the IDE are available to be selected here.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r6c1-t29" headers="r1c1-t29">
-<p>Primary Key Class</p>
+<td align="left" id="r4c1-t27" headers="r1c1-t27">
+<p>Deploy on Save</p>
 </td>
-<td align="left" headers="r6c1-t29 r1c2-t29">
-<p>Displays your primary key's class. You can change the class by going to the entity bean's CMP fields section and entering a new class in the primary key field's Type column. You can also specify a primary key class of an compound key if Multiple (Compound primary key) is selected in the Primary Key field.</p>
+<td align="left" headers="r4c1-t27 r1c2-t27">
+<p>Specifies whether changed files are automatically redeployed. This option saves you time when you run or debug your application in the IDE.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r7c1-t29" headers="r1c1-t29">
-<p>Reentrant</p>
+<td align="left" id="r5c1-t27" headers="r1c1-t27">
+<p>Display Browser on Run</p>
 </td>
-<td align="left" headers="r7c1-t29 r1c2-t29">
-<p>Specifies whether the bean is reentrant. Reentrant enterprise beans can handle multiple simultaneous, interleaved, or nested invocations which will not interfere with each other.</p>
+<td align="left" headers="r5c1-t27 r1c2-t27">
+<p>Specifies whether the browser is displayed. You can edit this if the selected Client Module is a web module.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t27" headers="r1c1-t27">
+<p>Relative URL</p>
+</td>
+<td align="left" headers="r6c1-t27 r1c2-t27">
+<p>Specifies the URL relative to the Client Module to run. You can edit this if the selected Client Module is a web module.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t27" headers="r1c1-t27">
+<p>Client Information</p>
+</td>
+<td align="left" headers="r7c1-t27 r1c2-t27">
+<p>Specifies options for running an enterprise application client. You can edit these fields if the selected Client Module is an application client.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>All enterprise beans also have the following sections in the ejb-jar.xml visual editor:</p>
-<ul>
-<li>Enterprise Bean Implementation and Interfaces</li>
-<li>Bean Environment</li>
-<li>Bean Details</li>
-<li>Security</li>
-</ul>
 <hr><p><b>Related Topics</b></p>
-<p><code>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1225">
-<param name="text" value="<html><u>Editing Deployment Descriptors</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG370">
+<param name="text" value="<html><u>Using Java Project Templates</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</code>
-</p>
-<p><code>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1232">
-<param name="text" value="<html><u>Verifying Enterprise Applications</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</code>
 </p>
 
 <!-- -->

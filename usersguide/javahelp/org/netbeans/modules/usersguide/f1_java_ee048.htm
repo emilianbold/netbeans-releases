@@ -2,17 +2,18 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Enterprise Application Wizard with Existing Sources: Server and Settings</title>
+<title>New Session Beans for Entity Classes: Generated Session Beans</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EAR_IMPORT" name="org.netbeans.modules.javaee.project.api.ant.ui.wizard.ProjectServerWizardPanel_EAR_IMPORT"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref627" name="sthref627"></a>
-<h1>New Enterprise Application Wizard with Existing Sources: Server and Settings</h1>
+<p><a id="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardPanel2" name="org.netbeans.modules.j2ee.ejbcore.ejb.wizard.jpa.dao.EjbFacadeWizardPanel2"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref616" name="sthref616"></a>
+<h1>New Session Beans for Entity Classes: Generated Session Beans</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>The New Enterprise Application wizard creates a new &nbsp; containing an empty enterprise application. You open the New Enterprise Application wizard by opening the and selecting the Enterprise Application template from the Java EE category.</p>
-<p>In the Server and Settings page, you have to set the following properties:</p>
+<p>This wizard generates Session EJB Facade classes based on the entity classes that you specify. In this wizard you choose from the available entity classes in your module. The IDE then generates a session class with basic access methods and the selected interfaces for each entity class.</p>
+<p>You open the wizard by right-clicking the project node and choosing New &gt; Other, selecting either the Persistence or Enterprise JavaBeans category and then selecting Session Beans for Entity Classes.</p>
+<p>In this page of the wizard you set the following:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -26,43 +27,34 @@
 <tbody>
 <tr align="left" valign="top">
 <td align="left" id="r2c1-t35" headers="r1c1-t35">
-<p>Server</p>
+<p>Project</p>
 </td>
 <td align="left" headers="r2c1-t35 r1c2-t35">
-<p>Specifies the server where you want the enterprise application to be deployed. Only servers that are with the IDE are available to be selected here. Any servers installed as part of the IDE installation are registered by default. Note that you cannot deploy Java EE applications and JSR-109 web service clients to the Tomcat Web Server.</p>
+<p>Displays the project where the entity classes will be saved. This field is read only.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t35" headers="r1c1-t35">
-<p>Copy Server JAR Files to Libraries Folder</p>
+<p>Location</p>
 </td>
 <td align="left" headers="r3c1-t35 r1c2-t35">
-<p>If you are using a dedicated folder for storing libraries, you can select this option to copy the server JAR files required for compilation into the dedicated libraries folder. If not selected, other users will need local copies of the server JAR files to build the project.</p>
+<p>Select the source folder where you want to create the entity class.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t35" headers="r1c1-t35">
-<p>Java EE Version</p>
+<p>Package</p>
 </td>
 <td align="left" headers="r4c1-t35 r1c2-t35">
-<p>Specifies the Java EE level against which you want to develop your enterprise application. You can deploy your application to an implementation that supports that specification level or a higher specification level.</p>
-<p>One of the following checkboxes will appear when JDK 1.5 is set as the default platform in the Java Platform Manager and if you choose a source level other than JDK 1.5. The J2EE 1.4 and J2EE 1.3 specifications do not recommend JDK 1.5. Therefore, if you want to create a portable application, select the appropriate checkbox:</p>
+<p>Select an existing package from the Package drop-down list or type the name of a new package.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r5c1-t35" headers="r1c1-t35">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Use JDK 1.4 and Set Source Level to 1.4</p>
+<p>Create Interfaces</p>
 </td>
 <td align="left" headers="r5c1-t35 r1c2-t35">
-<p>This checkbox appears if JDK 1.4 is available in the . Select this checkbox to set both your JDK level and your source level to 1.4.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r6c1-t35" headers="r1c1-t35">
-<p>&nbsp;&nbsp;&nbsp;&nbsp;Set Source Level to 1.4</p>
-</td>
-<td align="left" headers="r6c1-t35 r1c2-t35">
-<p>This checkbox appears if JDK 1.4 is not available in the Java Platform Manager. Select this checkbox so that at least your source level is set to 1.4.</p>
+<p>Select the session facade interfaces that you want the wizard to generate.</p>
 </td>
 </tr>
 </tbody>
@@ -70,24 +62,13 @@
 <br />
 <!-- -->
 <hr><p><b>Related Topics</b></p>
-<p>About Developing Enterprise Applications</p>
-<p><code>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1249">
-<param name="text" value="<html><u>Creating Application Client</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1263">
+<param name="text" value="<html><u>About Developing with Enterprise Beans</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</code>
-s</p>
-<p><code>
-<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG455">
-<param name="text" value="<html><u>Sharing Libraries with Other Users</u></html>">
-<param name="textFontSize" value="medium">
-<param name="textColor" value="blue">
-</object>
-</code>
 </p>
 
 <!-- -->

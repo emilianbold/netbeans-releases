@@ -2,82 +2,96 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>Cloud Providers Manager</title>
+<title>Deployment Descriptor Visual Editor: Messaging</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.api.server.CommonCloudUIs" name="org.netbeans.api.server.CommonCloudUIs"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref642" name="sthref642"></a>
-<h1>Cloud Providers Manager</h1>
+<p><a id="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView" name="org.netbeans.modules.j2ee.sun.ddloaders.multiview.jms.JmsMappingView"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref631" name="sthref631"></a>
+<h1>Deployment Descriptor Visual Editor: Messaging</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>In the Cloud Providers manager, you can add a cloud provider, remove a cloud provider, or change some details of a cloud provider. You open the Cloud Providers manager by choosing Tools &gt; Cloud Providers from the main menu.</p>
-<a id="sthref643" name="sthref643"></a>
-<p><b>Add Cloud/Remove Cloud</b></p>
-<p>To add a cloud provider, select Add Cloud. You can add either an Amazon Elastic Beanstalk or an Oracle Cloud provider (plugin required). To remove a cloud provider, select a provider from the list and click Remove Cloud.</p>
-<a id="sthref644" name="sthref644"></a>
-<p><b>Change Amazon Elastic Beanstalk Properties</b></p>
-<p>If you select an Amazon Elastic Beanstalk provider from the list, you can change the public key and secret key.</p>
-<a id="sthref645" name="sthref645"></a>
-<p><b>Change Oracle Cloud Properties</b></p>
-<p>If you select an Oracle Cloud provider from the list, you can edit the following properties:</p>
+<p>Use to edit the platform-specific deployment descriptors for GlassFish application server. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1226">
+<param name="text" value="<html><u>How?</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p>This pane lists the JMS message destinations in the project and enables you to provide a reference to any resource from which the application is going to send or receive messages. 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1279">
+<param name="text" value="<html><u>More</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
 
-<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
-<col width="24%" />
+<table summary="Descriptions of name and location properties of new Java Project existing sources wizard." dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="36%" />
 <col width="*" />
 <thead>
 <tr align="left" valign="top">
-<th align="left" valign="bottom" id="r1c1-t43">Element</th>
-<th align="left" valign="bottom" id="r1c2-t43">Description</th>
+<th align="left" valign="bottom" id="r1c1-t46">Element</th>
+<th align="left" valign="bottom" id="r1c2-t46">Description</th>
 </tr>
 </thead>
 <tbody>
 <tr align="left" valign="top">
-<td align="left" id="r2c1-t43" headers="r1c1-t43">
-<p>Database Service Name</p>
+<td align="left" id="r2c1-t46" headers="r1c1-t46">
+<p>Add Message Destination</p>
 </td>
-<td align="left" headers="r2c1-t43 r1c2-t43">
-<p>The name of the Database Service you created when you set up your Oracle Cloud account.</p>
-</td>
-</tr>
-<tr align="left" valign="top">
-<td align="left" id="r3c1-t43" headers="r1c1-t43">
-<p>SDK</p>
-</td>
-<td align="left" headers="r3c1-t43 r1c2-t43">
-<p>Path to your local copy of the Oracle Cloud SDK. Click Configure to browse for this file.</p>
+<td align="left" headers="r2c1-t46 r1c2-t46">
+<p>Adds descriptor properties for a message destination.</p>
+<p>Each message destination has the following properties: Message Destination Name and JNDI Name.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t43" headers="r1c1-t43">
-<p>Administrator</p>
+<td align="left" id="r3c1-t46" headers="r1c1-t46">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Message Destination Name</p>
 </td>
-<td align="left" headers="r4c1-t43 r1c2-t43">
-<p>Your identity as Oracle Cloud administrator (the email you gave when you set up your Oracle Cloud account).</p>
+<td align="left" headers="r3c1-t46 r1c2-t46">
+<p>Specifies the name of a logical message destination defined within the corresponding deployment descriptor file (<code>web.xml</code> or <code>ejb-jar.xml</code>).</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t43" headers="r1c1-t43">
-<p>Password</p>
+<td align="left" id="r4c1-t46" headers="r1c1-t46">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;JNDI Name</p>
 </td>
-<td align="left" headers="r5c1-t43 r1c2-t43">
-<p>Your Oracle Cloud administrator password.</p>
+<td align="left" headers="r4c1-t46 r1c2-t46">
+<p>Displays the JNDI name of the message destination.</p>
 </td>
 </tr>
 </tbody>
 </table>
 <br />
 <!-- -->
-<p>The other properties in the dialog box are read-only.</p>
+<p><b>Note:</b> The message destination name must match the corresponding message destination name in the <code>web.xml</code> file.</p>
 <hr><p><b>Related Topics</b></p>
-<p><code>
+<p><i>Developing Applications with NetBeans IDE</i>, 
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
-<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1756">
-<param name="text" value="<html><u>Working With Web Applications on the Cloud</u></html>">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1874">
+<param name="text" value="<html><u>&quot;About Deployment Descriptors&quot;</u></html>">
 <param name="textFontSize" value="medium">
 <param name="textColor" value="blue">
 </object>
-</code>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1111">
+<param name="text" value="<html><u>&quot;Configuring a Web Application&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
+</p>
+<p><i>Developing Applications with NetBeans IDE</i>, 
+<object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
+<param name="content" value="http://www.oracle.com/pls/topic/lookup?ctx=nb7400&id=NBDAG1269">
+<param name="text" value="<html><u>&quot;Creating an Enterprise Bean&quot;</u></html>">
+<param name="textFontSize" value="medium">
+<param name="textColor" value="blue">
+</object>
 </p>
 
 <!-- -->
