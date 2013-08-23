@@ -670,10 +670,7 @@ final class DocumentOpenClose {
                     }
 
                     // If a user did modification right before reload the change is lost
-                    if (ces.isAlreadyModified()) {
-                        LOG.fine("task-callNotifyUnmodified");
-                        ces.callNotifyUnmodified();
-                    }
+                    ces.callNotifyUnmodified();
                     
                     // Attach annotations
                     updateLines(loadDoc, false);
