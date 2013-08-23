@@ -39,6 +39,7 @@ import java.util.logging.Logger;
 import javax.swing.Action;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmMacro;
@@ -131,6 +132,12 @@ public class CsmFileModel {
                         preBuildModel.newList.add(node);
                     }
                 }
+                for (CsmErrorDirective element : csmFile.getErrors()) {
+                    CppDeclarationNode node = CppDeclarationNode.nodeFactory((CsmObject) element, this, false, preBuildModel.newLineNumberIndex);
+                    if (node != null) {
+                        preBuildModel.newList.add(node);
+                    }
+                }                
             }
             for (CsmOffsetableDeclaration element : csmFile.getDeclarations()) {
                 if (filter.isApplicable(element)) {

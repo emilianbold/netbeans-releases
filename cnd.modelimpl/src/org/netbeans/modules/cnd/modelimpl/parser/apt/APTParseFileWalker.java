@@ -178,9 +178,9 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
     @Override
     protected void onErrorNode(APT apt) {
         super.onErrorNode(apt);
+        evalCallback.onStoppedDirective(apt);
         if (needMacroAndIncludes()) {
             this.fileContent.addError(createError((APTError)apt));
-            evalCallback.onStoppedDirective(apt);
         }
     }
 
@@ -415,7 +415,7 @@ public class APTParseFileWalker extends APTProjectFileBasedWalker {
         APTToken token = error.getToken();
         SimpleOffsetableImpl pos = getOffsetable(token);
         setEndPosition(pos, token);
-        return ErrorDirectiveImpl.create(this.getFile(), token.getTextID(), pos);
+        return ErrorDirectiveImpl.create(this.getFile(), token.getTextID(), pos, getPreprocHandler().getState());
     }
 
     private MacroImpl createMacro(APTDefine define) {
