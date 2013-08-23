@@ -41,7 +41,12 @@
  */
 package org.netbeans.modules.java.j2seembedded.platform;
 
+import java.awt.BorderLayout;
 import java.awt.Component;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.beans.PropertyEditor;
 import java.beans.PropertyEditorSupport;
@@ -51,17 +56,25 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Iterator;
 import java.util.Map.Entry;
+import javax.swing.JButton;
 import javax.swing.JComponent;
+import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.KeyStroke;
 import org.netbeans.api.annotations.common.NonNull;
+import org.netbeans.api.progress.ProgressUtils;
+import org.openide.DialogDisplayer;
+import org.openide.NotifyDescriptor;
+import org.openide.WizardValidationException;
 import org.openide.explorer.propertysheet.ExPropertyEditor;
 import org.openide.explorer.propertysheet.InplaceEditor;
 import org.openide.explorer.propertysheet.PropertyEnv;
 import org.openide.explorer.propertysheet.PropertyModel;
+import org.openide.explorer.propertysheet.PropertySheet;
 import org.openide.loaders.XMLDataObject;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
+import org.openide.nodes.Node;
 import org.openide.nodes.PropertySupport;
 import org.openide.nodes.Sheet;
 import org.openide.util.NbBundle;
@@ -75,7 +88,6 @@ import org.openide.util.lookup.Lookups;
  */
 final class RemotePlatformNode extends AbstractNode {
     
-    private final RemotePlatform platform;
     
     public RemotePlatformNode(
         @NonNull final RemotePlatform platform,
@@ -85,7 +97,6 @@ final class RemotePlatformNode extends AbstractNode {
         Parameters.notNull("store", store);         //NOI18N
         setDisplayName(platform.getDisplayName());
         setIconBaseWithExtension("org/netbeans/modules/java/j2seembedded/resources/platform.gif");  //NOI18N
-        this.platform = platform;
     }
 
     @Override
@@ -100,7 +111,7 @@ final class RemotePlatformNode extends AbstractNode {
                 NbBundle.getMessage(RemotePlatformNode.class, "LBL_DisplayNameDesc")) { //NOI18N
             @Override
             public String getValue() throws IllegalAccessException, InvocationTargetException {
-                return platform.getDisplayName();
+                return getPlatform().getDisplayName();
             }
         };
         setConnection.put(property);
@@ -111,7 +122,7 @@ final class RemotePlatformNode extends AbstractNode {
                 NbBundle.getMessage(RemotePlatformNode.class, "LBL_HostDesc")) { //NOI18N
             @Override
             public String getValue() throws IllegalAccessException, InvocationTargetException {
-                return platform.getConnectionMethod().getHost();
+                return getPlatform().getConnectionMethod().getHost();
             }
 
             @Override
@@ -130,7 +141,7 @@ final class RemotePlatformNode extends AbstractNode {
                 NbBundle.getMessage(RemotePlatformNode.class, "LBL_PortDesc")) { //NOI18N
             @Override
             public Integer getValue() throws IllegalAccessException, InvocationTargetException {
-                return platform.getConnectionMethod().getPort();
+                return getPlatform().getConnectionMethod().getPort();
             }
 
             @Override
@@ -154,7 +165,7 @@ final class RemotePlatformNode extends AbstractNode {
                 NbBundle.getMessage(RemotePlatformNode.class, "LBL_UsernameDesc")) { //NOI18N
             @Override
             public String getValue() throws IllegalAccessException, InvocationTargetException {
-                return platform.getConnectionMethod().getAuthentification().getUserName();
+                return getPlatform().getConnectionMethod().getAuthentification().getUserName();
             }
 
             @Override
@@ -167,14 +178,14 @@ final class RemotePlatformNode extends AbstractNode {
         };
         setConnection.put(property);
 
-        if (platform.getConnectionMethod().getAuthentification().getKind() == ConnectionMethod.Authentification.Kind.PASSWORD) {
+        if (getPlatform().getConnectionMethod().getAuthentification().getKind() == ConnectionMethod.Authentification.Kind.PASSWORD) {
             property = new PropertySupport.ReadWrite<String>(NbBundle.getMessage(RemotePlatformNode.class, "LBL_Password"), //NOI18N
                     String.class,
                     NbBundle.getMessage(RemotePlatformNode.class, "LBL_Password"), //NOI18N
                     NbBundle.getMessage(RemotePlatformNode.class, "LBL_PasswordDesc")) { //NOI18N
                 @Override
                 public String getValue() throws IllegalAccessException, InvocationTargetException {
-                    return ((ConnectionMethod.Authentification.Password) platform.getConnectionMethod().getAuthentification()).getPassword();
+                    return ((ConnectionMethod.Authentification.Password) getPlatform().getConnectionMethod().getAuthentification()).getPassword();
                 }
 
                 @Override
@@ -191,14 +202,14 @@ final class RemotePlatformNode extends AbstractNode {
                 }
             };
             setConnection.put(property);
-        } else if (platform.getConnectionMethod().getAuthentification().getKind() == ConnectionMethod.Authentification.Kind.KEY) {
+        } else if (getPlatform().getConnectionMethod().getAuthentification().getKind() == ConnectionMethod.Authentification.Kind.KEY) {
             property = new PropertySupport.ReadWrite<File>(NbBundle.getMessage(RemotePlatformNode.class, "LBL_Keyfile"), //NOI18N
                     File.class,
                     NbBundle.getMessage(RemotePlatformNode.class, "LBL_Keyfile"), //NOI18N
                     NbBundle.getMessage(RemotePlatformNode.class, "LBL_KeyfileDesc")) { //NOI18N
                 @Override
                 public File getValue() throws IllegalAccessException, InvocationTargetException {
-                    return ((ConnectionMethod.Authentification.Key) platform.getConnectionMethod().getAuthentification()).getKeyStore();
+                    return ((ConnectionMethod.Authentification.Key) getPlatform().getConnectionMethod().getAuthentification()).getKeyStore();
                 }
 
                 @Override
@@ -217,7 +228,7 @@ final class RemotePlatformNode extends AbstractNode {
                     NbBundle.getMessage(RemotePlatformNode.class, "LBL_PassphraseDesc")) { //NOI18N
                 @Override
                 public String getValue() throws IllegalAccessException, InvocationTargetException {
-                    return ((ConnectionMethod.Authentification.Key) platform.getConnectionMethod().getAuthentification()).getPassPhrase();
+                    return ((ConnectionMethod.Authentification.Key) getPlatform().getConnectionMethod().getAuthentification()).getPassPhrase();
                 }
 
                 @Override
@@ -246,7 +257,7 @@ final class RemotePlatformNode extends AbstractNode {
                 NbBundle.getMessage(RemotePlatformNode.class, "LBL_InstallFolderDesc")) { //NOI18N
             @Override
             public String getValue() throws IllegalAccessException, InvocationTargetException {
-                return platform.getInstallFolder().getPath();
+                return getPlatform().getInstallFolder().getPath();
             }
         };
         setPlatform.put(property);
@@ -257,7 +268,7 @@ final class RemotePlatformNode extends AbstractNode {
                 NbBundle.getMessage(RemotePlatformNode.class, "LBL_WorkdirDesc")) { //NOI18N
             @Override
             public String getValue() throws IllegalAccessException, InvocationTargetException {
-                return platform.getWorkFolder().getPath();
+                return getPlatform().getWorkFolder().getPath();
             }
 
             @Override
@@ -272,7 +283,7 @@ final class RemotePlatformNode extends AbstractNode {
                     // User has entered invalid URI
                     return;
                 }
-                platform.setWorkFolder(modifiedURI);
+                getPlatform().setWorkFolder(modifiedURI);
             }
         };
         setPlatform.put(property);
@@ -281,7 +292,7 @@ final class RemotePlatformNode extends AbstractNode {
         Sheet.Set setSysProperties = Sheet.createPropertiesSet();
         setSysProperties.setName(NbBundle.getMessage(RemotePlatformNode.class, "LBL_SysProperties")); //NOI18N
         setSysProperties.setDisplayName(NbBundle.getMessage(RemotePlatformNode.class, "LBL_SysProperties")); //NOI18N
-        Iterator<Entry<String, String>> iterator = platform.getSystemProperties().entrySet().iterator();
+        Iterator<Entry<String, String>> iterator = getPlatform().getSystemProperties().entrySet().iterator();
         while (iterator.hasNext()) {
             final Entry<String, String> entry = iterator.next();
             property = new PropertySupport.ReadOnly<String>(entry.getKey(), String.class, entry.getKey(), entry.getKey()) {
@@ -300,29 +311,29 @@ final class RemotePlatformNode extends AbstractNode {
     private void updateConnectionMethod(String host, Integer port, String username, String password, File keyFile, String passphrase) {
         ConnectionMethod cm = null;
         if (host == null) {
-            host = platform.getConnectionMethod().getHost();
+            host = getPlatform().getConnectionMethod().getHost();
         }
         if (port == null) {
-            port = platform.getConnectionMethod().getPort();
+            port = getPlatform().getConnectionMethod().getPort();
         }
         if (username == null) {
-            username = platform.getConnectionMethod().getAuthentification().getUserName();
+            username = getPlatform().getConnectionMethod().getAuthentification().getUserName();
         }
-        if (platform.getConnectionMethod().getAuthentification().getKind() == ConnectionMethod.Authentification.Kind.PASSWORD) {
+        if (getPlatform().getConnectionMethod().getAuthentification().getKind() == ConnectionMethod.Authentification.Kind.PASSWORD) {
             if (password == null) {
-                password = ((ConnectionMethod.Authentification.Password) platform.getConnectionMethod().getAuthentification()).getPassword();
+                password = ((ConnectionMethod.Authentification.Password) getPlatform().getConnectionMethod().getAuthentification()).getPassword();
             }
             cm = ConnectionMethod.sshPassword(host, port, username, password);
         } else {
             if (keyFile == null) {
-                keyFile = ((ConnectionMethod.Authentification.Key) platform.getConnectionMethod().getAuthentification()).getKeyStore();
+                keyFile = ((ConnectionMethod.Authentification.Key) getPlatform().getConnectionMethod().getAuthentification()).getKeyStore();
             }
             if (passphrase == null) {
-                passphrase = ((ConnectionMethod.Authentification.Key) platform.getConnectionMethod().getAuthentification()).getPassPhrase();
+                passphrase = ((ConnectionMethod.Authentification.Key) getPlatform().getConnectionMethod().getAuthentification()).getPassPhrase();
             }
             cm = ConnectionMethod.sshKey(host, port, username, keyFile, passphrase);
         }
-        platform.setConnectionMethod(cm);
+        getPlatform().setConnectionMethod(cm);
     }
 
     public static class PasswordPropertyEditor extends PropertyEditorSupport implements ExPropertyEditor, InplaceEditor.Factory {
@@ -453,4 +464,78 @@ final class RemotePlatformNode extends AbstractNode {
             }
         }
     }
+
+    @Override
+    public boolean hasCustomizer() {
+        return true;
+    }
+
+    @Override
+    public Component getCustomizer() {
+        final JPanel customizer = new JPanel();
+        customizer.setLayout(new GridBagLayout());
+        final PropertySheet sheet = new PropertySheet();
+        sheet.setNodes(new Node[]{this});
+        GridBagConstraints c = new GridBagConstraints(
+                0,
+                0,
+                GridBagConstraints.REMAINDER,
+                1,
+                1.0,
+                1.0,
+                GridBagConstraints.NORTHWEST,
+                GridBagConstraints.BOTH,
+                new Insets(0,6,6,6),
+                0,
+                0);
+        customizer.add(sheet, c);
+        JButton test = new JButton(NbBundle.getMessage(RemotePlatformNode.class, "LBL_TestPlatform"));
+        test.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                ProgressUtils.showProgressDialogAndRun(new Runnable() {
+                        @Override
+                        public void run() {
+                            try {
+                                final RemotePlatform rp = getPlatform();
+                                RemotePlatformProbe.verifyPlatform(
+                                    rp.getInstallFolder().toString(),
+                                    rp.getWorkFolder().toString(),
+                                    rp.getConnectionMethod());
+                                DialogDisplayer.getDefault().notify(
+                                    new NotifyDescriptor.Message(
+                                        NbBundle.getMessage(RemotePlatformNode.class, "TXT_CorrectPlatform"),
+                                        NotifyDescriptor.INFORMATION_MESSAGE));
+                            } catch (WizardValidationException e) {
+                                DialogDisplayer.getDefault().notify(
+                                    new NotifyDescriptor.Message(
+                                        e.getLocalizedMessage(),
+                                        NotifyDescriptor.ERROR_MESSAGE));
+                            }
+                        }
+                    },
+                    NbBundle.getMessage(RemotePlatformNode.class, "TXT_VerifyingPlatform"));
+            }
+        });
+        c = new GridBagConstraints(
+                GridBagConstraints.RELATIVE,
+                GridBagConstraints.RELATIVE,
+                GridBagConstraints.REMAINDER,
+                1,
+                0.0,
+                0.0,
+                GridBagConstraints.NORTHWEST,
+                GridBagConstraints.NONE,
+                new Insets(0,6,0,6),
+                0,
+                0);
+        customizer.add(test,c);
+        return customizer;
+    }
+
+    @NonNull
+    private RemotePlatform getPlatform() {
+        return getLookup().lookup(RemotePlatform.class);
+    }
+
 }

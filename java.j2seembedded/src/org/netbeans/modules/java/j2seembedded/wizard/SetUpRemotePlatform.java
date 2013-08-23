@@ -42,13 +42,7 @@
 package org.netbeans.modules.java.j2seembedded.wizard;
 
 import java.awt.Component;
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.Properties;
 import java.util.concurrent.Callable;
 import javax.swing.JFileChooser;
@@ -57,19 +51,14 @@ import javax.swing.event.ChangeListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.Document;
-import org.apache.tools.ant.module.api.support.ActionUtils;
 import org.netbeans.api.annotations.common.NonNull;
 import org.netbeans.modules.java.j2seembedded.platform.ConnectionMethod;
+import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProbe;
 import org.netbeans.modules.java.j2seembedded.platform.RemotePlatformProvider;
 import org.netbeans.spi.project.support.ant.PropertyUtils;
 import org.openide.WizardDescriptor;
 import org.openide.WizardValidationException;
-import org.openide.execution.ExecutorTask;
-import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
-import org.openide.modules.InstalledFileLocator;
 import org.openide.util.ChangeSupport;
-import org.openide.util.Exceptions;
 import org.openide.util.HelpCtx;
 import org.openide.util.NbBundle;
 import org.openide.util.Parameters;
@@ -675,76 +664,9 @@ public class SetUpRemotePlatform extends javax.swing.JPanel {
             this.connectionMethod = connectionMethod;
         }
 
-
         @Override
         public Properties call() throws WizardValidationException {
-            String[] antTargets = null;
-            final Properties prop = new Properties();
-            prop.setProperty("remote.host", connectionMethod.getHost()); //NOI18N
-            prop.setProperty("remote.port", String.valueOf(connectionMethod.getPort())); //NOI18N
-            prop.setProperty("remote.username", connectionMethod.getAuthentification().getUserName()); //NOI18N
-            prop.setProperty("remote.platform.home", jreLocation); //NOI18N
-            prop.setProperty("remote.working.dir", workingDir.length() > 0 ? workingDir : "/home/" + connectionMethod.getAuthentification().getUserName() + "/NetBeansProjects/"); //NOI18N
-            final File probe = InstalledFileLocator.getDefault().locate("modules/ext/org-netbeans-modules-java-j2seembedded-probe.jar", "org.netbeans.modules.java.j2seembedded", false);   //NOI18N
-            if (probe == null) {
-                throw new WizardValidationException(
-                    null,
-                    NbBundle.getMessage(SetUpRemotePlatform.class, "MSG_MissingProbe"),
-                    null);
-            }
-            prop.setProperty("probe.file", probe.getAbsolutePath());
-            File platformProperties = null;
-            File buildScript = null;
-            ExecutorTask executorTask = null;
-            try {
-                platformProperties = File.createTempFile("platform", ".properties");   //NOI18N
-                prop.setProperty("platform.properties.file", platformProperties.getAbsolutePath()); //NOI18N
-                if (connectionMethod.getAuthentification().getKind() == ConnectionMethod.Authentification.Kind.PASSWORD) {
-                    antTargets = new String[]{"connect-ssh-password"}; //NOI18N
-                    prop.setProperty("remote.password", ((ConnectionMethod.Authentification.Password)connectionMethod.getAuthentification()).getPassword()); //NOI18N
-                } else {
-                    antTargets = new String[]{"connect-ssh-keyfile"}; //NOI18N
-                    prop.setProperty("keystore.file", ((ConnectionMethod.Authentification.Key)connectionMethod.getAuthentification()).getKeyStore().getAbsolutePath()); //NOI18N
-                    prop.setProperty("keystore.passphrase", ((ConnectionMethod.Authentification.Key)connectionMethod.getAuthentification()).getPassPhrase()); //NOI18N
-                }
-
-                final String resourcesPath = "org/netbeans/modules/java/j2seembedded/resources/validateconnection.xml"; //NOI18N
-                buildScript = FileUtil.normalizeFile(File.createTempFile("antScript", ".xml")); //NOI18N
-                try (InputStream inputStream = SetUpRemotePlatform.class.getClassLoader().getResourceAsStream(resourcesPath);
-                     OutputStream outputStream = new FileOutputStream(buildScript)) {
-                    FileUtil.copy(inputStream, outputStream);
-                }
-                final FileObject antScript = FileUtil.toFileObject(buildScript);
-                executorTask = ActionUtils.runTarget(antScript, antTargets, prop);
-                final int antResult = executorTask.result();
-                if (antResult != 0) {
-                    throw new WizardValidationException(
-                        null,
-                        NbBundle.getMessage(SetUpRemotePlatform.class, "LBL_ConnectionError"),
-                        null);
-                }
-                final Properties props = new Properties();
-                try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(platformProperties))) {
-                    props.load(in);
-                }
-                return props;
-            } catch (IllegalArgumentException | IOException ex) {
-                Exceptions.printStackTrace(ex);
-                throw new WizardValidationException(
-                    null,
-                    ex.getMessage(),
-                    ex.getLocalizedMessage());
-            } finally {
-                if (executorTask != null) {
-                    executorTask.getInputOutput().closeInputOutput();
-                }
-                if (buildScript != null) {
-                    buildScript.delete();
-                }
-                if (platformProperties != null) {
-                    platformProperties.delete();
-                }
-            }
+            return RemotePlatformProbe.verifyPlatform(jreLocation, workingDir, connectionMethod);
         }
     }
 }
