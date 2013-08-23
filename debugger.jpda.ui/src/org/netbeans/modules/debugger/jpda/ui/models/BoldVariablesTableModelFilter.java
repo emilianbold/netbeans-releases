@@ -50,7 +50,6 @@ import java.util.WeakHashMap;
 import javax.swing.JTable;
 import javax.swing.UIManager;
 import org.netbeans.api.debugger.jpda.Variable;
-import org.netbeans.spi.debugger.ContextProvider;
 import org.netbeans.spi.debugger.DebuggerServiceRegistration;
 import org.netbeans.spi.debugger.DebuggerServiceRegistrations;
 import org.netbeans.spi.debugger.ui.Constants;
@@ -91,6 +90,7 @@ Constants {
     
     
     
+    @Override
     public Object getValueAt (
         TableModel original, 
         Object row, 
@@ -155,6 +155,7 @@ Constants {
         return original.getHTMLValueAt(row, columnID);
     }
     
+    @Override
     public boolean isReadOnly (
         TableModel original, 
         Object row, 
@@ -163,6 +164,7 @@ Constants {
         return original.isReadOnly (row, columnID);
     }
     
+    @Override
     public void setValueAt (
         TableModel original, 
         Object row, 
@@ -177,6 +179,7 @@ Constants {
      * 
      * @param l the listener to add
      */
+    @Override
     public void addModelListener (ModelListener l) {
     }
 
@@ -185,6 +188,7 @@ Constants {
      *
      * @param l the listener to remove
      */
+    @Override
     public void removeModelListener (ModelListener l) {
     }
     
@@ -214,7 +218,7 @@ Constants {
         if (text.length() > 6 && text.substring(0, 6).equalsIgnoreCase("<html>")) {
             return text; // Already HTML
         }
-        StringBuffer sb = new StringBuffer ();
+        StringBuilder sb = new StringBuilder ();
         sb.append ("<html>");
         if (bold) sb.append ("<b>");
         if (italics) sb.append ("<i>");
