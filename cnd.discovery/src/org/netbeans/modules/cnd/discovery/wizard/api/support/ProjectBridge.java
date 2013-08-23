@@ -82,6 +82,7 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.cnd.utils.MIMENames;
 import org.netbeans.modules.cnd.utils.cache.CndFileUtils;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.Utilities;
@@ -859,6 +860,11 @@ public class ProjectBridge {
         return makeConfiguration.getCompilerSet().getCompilerSet();
     }
 
+    public ExecutionEnvironment getDevelopmentHostExecutionEnvironment() {
+        MakeConfiguration makeConfiguration = makeConfigurationDescriptor.getActiveConfiguration();
+        return makeConfiguration.getDevelopmentHost().getExecutionEnvironment();
+    }
+    
     public String getCygwinDrive(){
         String res =CompilerSetUtils.getCygwinBase();
         if (res != null && res.endsWith("/")){ // NOI18N

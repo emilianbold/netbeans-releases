@@ -1159,7 +1159,7 @@ public class AstRenderer {
                                 templateParams = curr;
                                 break;
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
-                            case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                            case CPPTokenTypes.CSM_TYPE_BUILTIN: {
                                 classifier = curr;
                                 TypeImpl typeImpl = null;
                                 if (classifier != null) {
@@ -1167,24 +1167,50 @@ public class AstRenderer {
                                 }
                                 if (typeImpl != null) {
                                     typeImpl.setTypeOfTypedef();
-                                    CsmTypedef typedef = createTypedef(ast/*nameToken*/, file, scope, typeImpl, name);
-                                    if (typedef != null) {
-                                        if (results.getEnclosingClassifier() != null && results.getEnclosingClassifier().getName().length() == 0) {
-                                            ((TypedefImpl) typedef).setTypeUnnamed();
-                                        }
-                                        if(templateParams != null) {
-                                            List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, getContainingFile(), scope, !isRenderingLocalContext());
-                                            TemplateDescriptor templateDescriptor = new TemplateDescriptor(params, name, false, !isRenderingLocalContext());
-                                            ((TypedefImpl) typedef).setTemplateDescriptor(templateDescriptor);
-                                        }
-                                        results.typedefs.add(typedef);
-                                    }
+                                    createTypeAlias(results, ast, templateParams, file, scope, typeImpl, name);
                                 }
                                 ptrOperator = null;
                                 name = "";
                                 nameToken = null;
                                 arrayDepth = 0;
                                 break;
+                            }
+                                
+                            case CPPTokenTypes.CSM_ENUM_DECLARATION:
+                            case CPPTokenTypes.CSM_CLASS_DECLARATION: {
+                                // This is type alias to class definition
+                                
+                                if (templateParams != null) {
+                                    // [dcl.type], point 3:
+                                    // A type-specifier-seq shall not define a class or enumeration
+                                    // unless it appears in the type-id of an alias-declaration (7.1.3) that
+                                    // is not the declaration of a template-declaration.                                    
+                                    break;
+                                }
+                                
+                                if (container == null) {
+                                    // TODO: maybe assert?
+                                    break;
+                                }
+                                
+                                LastDeclarationCatcher declarationCatcher = new LastDeclarationCatcher(container);
+                                
+                                // Process class definition
+                                AST fakeParent = new FakeAST();
+                                fakeParent.addChild(curr);
+                                render(fakeParent, findClosestNamespace(scope), declarationCatcher);
+                                
+                                // Find processed classifier
+                                CsmOffsetableDeclaration declaration = declarationCatcher.getLastDeclaration();
+                                
+                                // Create type alias
+                                if (CsmKindUtilities.isClassifier(declaration)) {
+                                    TypeImpl typeImpl = TypeFactory.createType((CsmClassifier)declaration, ptrOperator, arrayDepth, curr.getFirstChild(), file, declaration.getStartOffset(), declaration.getEndOffset());
+                                    typeImpl.setTypeOfTypedef();
+                                    createTypeAlias(results, ast, templateParams, file, scope, typeImpl, name);
+                                }                                
+                                break;
+                            }
                         }
                     }
                 }
@@ -1192,15 +1218,31 @@ public class AstRenderer {
         }
         return results;
     }
-
+    
     protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
         return ClassForwardDeclarationImpl.create(ast, file, scope, container, !isRenderingLocalContext());
     }
+    
+    private CsmTypedef createTypeAlias(Pair results, AST nameAST, AST templateParams, FileImpl file, CsmScope scope, CsmType typeImpl, CharSequence name) {
+        CsmTypedef typedef = createTypedef(nameAST/*nameToken*/, file, scope, typeImpl, name); 
+        if (typedef != null) {
+            if (results.getEnclosingClassifier() != null && results.getEnclosingClassifier().getName().length() == 0) {
+                ((TypedefImpl) typedef).setTypeUnnamed();
+            }
+            if(templateParams != null) {
+                List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, getContainingFile(), scope, !isRenderingLocalContext());
+                TemplateDescriptor templateDescriptor = new TemplateDescriptor(params, name, false, !isRenderingLocalContext());
+                ((TypedefImpl) typedef).setTemplateDescriptor(templateDescriptor);
+            }
+            results.typedefs.add(typedef);
+        }
+        return typedef;
+    }    
 
     protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
         return TypedefImpl.create(ast, file, container, type, name, !isRenderingLocalContext());
     }
-
+    
     public boolean renderForwardClassDeclaration(
             AST ast,
             NamespaceImpl currentNamespace, MutableDeclarationsContainer container,
@@ -1682,7 +1724,7 @@ public class AstRenderer {
                                     }
                                 }
                             }
-                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false, cfdi);
+                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, functionParameter, cfdi);
                             ptrOperator = null;
                             break;
                         case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
@@ -2469,6 +2511,47 @@ public class AstRenderer {
                 }
             }
             return null;
+        }
+    }
+    
+    private static class LastDeclarationCatcher implements MutableDeclarationsContainer {
+        
+        private final MutableDeclarationsContainer container;
+        
+        private CsmOffsetableDeclaration lastDeclaration;
+
+        public LastDeclarationCatcher(MutableDeclarationsContainer container) {
+            this.container = container;
+        }
+        
+        public CsmOffsetableDeclaration getLastDeclaration() {
+            return lastDeclaration;
+        }
+
+        @Override
+        public void addDeclaration(CsmOffsetableDeclaration declaration) {
+            container.addDeclaration(declaration);
+            lastDeclaration = declaration;
+        }
+
+        @Override
+        public void removeDeclaration(CsmOffsetableDeclaration declaration) {
+            container.removeDeclaration(declaration);
+        }
+
+        @Override
+        public Collection<CsmOffsetableDeclaration> getDeclarations() {
+            return container.getDeclarations();
+        }
+
+        @Override
+        public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, int endOffset, CharSequence name) {
+            return container.findExistingDeclaration(startOffset, endOffset, name);
+        }
+
+        @Override
+        public CsmOffsetableDeclaration findExistingDeclaration(int startOffset, CharSequence name, CsmDeclaration.Kind kind) {
+            return container.findExistingDeclaration(startOffset, name, kind);
         }
     }
 }

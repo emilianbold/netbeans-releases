@@ -50,6 +50,8 @@ import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils;
 import org.netbeans.modules.cnd.discovery.api.ItemProperties;
 import org.netbeans.modules.cnd.discovery.api.ProjectProxy;
 import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
+import org.netbeans.modules.dlight.libs.common.PathUtilities;
+import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.openide.util.Utilities;
 
 /**
@@ -67,6 +69,7 @@ public class CompilerSettings {
     private final CompilerFlavor compileFlavor;
     private final String cygwinDriveDirectory;
     private final boolean isWindows;
+    private final ExecutionEnvironment developmentHostExecutionEnvironment;
 
     public CompilerSettings(ProjectProxy project) {
         projectBridge = DiscoveryUtils.getProjectBridge(project);
@@ -81,12 +84,24 @@ public class CompilerSettings {
         } else {
             cygwinDriveDirectory = null;
         }
+        if (projectBridge != null) {
+            developmentHostExecutionEnvironment = projectBridge.getDevelopmentHostExecutionEnvironment();
+        } else {
+            developmentHostExecutionEnvironment = null;
+        }
     }
 
     public ProjectBridge getProjectBridge() {
         return projectBridge;
     }
 
+    public boolean isRemoteDevelopmentHost() {
+        if (developmentHostExecutionEnvironment == null) {
+            return false;
+        }
+        return developmentHostExecutionEnvironment.isRemote();
+    }
+    
     public List<String> getSystemIncludePaths(ItemProperties.LanguageKind lang) {
         if (lang == ItemProperties.LanguageKind.CPP) {
             return systemIncludePathsCpp;
@@ -115,7 +130,15 @@ public class CompilerSettings {
     }
 
     protected String normalizePath(String path) {
-        path = DiscoveryUtils.normalizeAbsolutePath(path);
+        if (path.startsWith("/")) { // NOI18N
+            if (isWindows() && isRemoteDevelopmentHost()) {
+                path = PathUtilities.normalizeUnixPath(path);
+            } else {
+                path = DiscoveryUtils.normalizeAbsolutePath(path);
+            }
+        } else if (path.length()>2 && path.charAt(1)==':') {
+            path = DiscoveryUtils.normalizeAbsolutePath(path);
+        }
         if (Utilities.isWindows()) {
             path = path.replace('\\', '/');
         }

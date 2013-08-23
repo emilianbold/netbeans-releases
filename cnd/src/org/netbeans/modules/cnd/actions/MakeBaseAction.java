@@ -72,12 +72,14 @@ import org.netbeans.modules.nativeexecution.api.execution.NativeExecutionService
 import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer;
 import org.netbeans.modules.nativeexecution.api.util.HelperLibraryUtility;
 import org.netbeans.modules.nativeexecution.api.util.MacroMap;
+import org.netbeans.modules.nativeexecution.api.util.WindowsSupport;
 import org.netbeans.modules.remote.spi.FileSystemProvider;
 import org.openide.LifecycleManager;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
 import org.openide.util.Exceptions;
+import org.openide.util.Utilities;
 import org.openide.windows.IOProvider;
 import org.openide.windows.InputOutput;
 import org.openide.windows.WindowManager;
@@ -187,6 +189,13 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
                 return null;
             }
         }
+        final CompilerSet compilerSet = getCompilerSet(project);
+        // See bug #229794 (and #228730)
+        if (execEnv.isLocal() && Utilities.isWindows()
+                && compilerSet.getCompilerFlavor().isMinGWCompiler()
+                && executable.contains("make")) { // NOI18N
+            envMap.put("MAKE", WindowsSupport.getInstance().convertToMSysPath(executable)); // NOI18N
+        }
         
         MacroMap mm = MacroMap.forExecEnv(execEnv);
         mm.putAll(envMap);
@@ -215,7 +224,7 @@ public abstract class MakeBaseAction extends AbstractExecutorRunAction {
         traceExecutable(executable, buildDir, args, execEnv.toString(), mm.toMap());
         
         ProcessChangeListener processChangeListener = new ProcessChangeListener(listener, outputListener,
-                new CompilerLineConvertor(project, getCompilerSet(project), execEnv, makeFileObject.getParent()), syncWorker); // NOI18N
+                new CompilerLineConvertor(project, compilerSet, execEnv, makeFileObject.getParent()), syncWorker); // NOI18N
 
         NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv).
                 setExecutable(executable).

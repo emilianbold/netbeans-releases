@@ -12,10 +12,12 @@ import javax.swing.AbstractAction;
 import javax.swing.Action;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import javax.swing.JPopupMenu.Separator;
 import org.netbeans.api.project.Project;
 import org.netbeans.api.project.ProjectUtils;
 import org.netbeans.modules.cnd.makeproject.api.ProjectActionEvent;
 import org.netbeans.modules.cnd.makeproject.api.configurations.ConfigurationSupport;
+import org.netbeans.modules.cnd.makeproject.ui.actions.MakeProjectActionsSupport;
 import org.netbeans.modules.nativeexecution.api.ExecutionListener;
 import org.netbeans.spi.project.ActionProvider;
 import org.netbeans.spi.project.ui.support.BuildExecutionSupport;
@@ -34,9 +36,11 @@ public class LauncherAction extends AbstractAction implements ContextAwareAction
 
     private Project project;
     private JMenu subMenu = null;
-    private boolean isEnabled;
+    private boolean isSubmenu;
     private final ProjectActionEvent.PredefinedType actionType;
     private final String displayName;
+    private Action delegate;
+    private static final String DEFAULT_ACTION_NAME = NbBundle.getMessage(LauncherAction.class, "LBL_DefaultAction_Name"); //NOI18N
 
     public LauncherAction(ProjectActionEvent.PredefinedType actionType, String displayName) {
         this.actionType = actionType;
@@ -45,47 +49,87 @@ public class LauncherAction extends AbstractAction implements ContextAwareAction
     }
 
     @Override
-    public void actionPerformed(ActionEvent e) {        
+    public void actionPerformed(ActionEvent e) {
+        if (!isSubmenu) {
+            delegate.actionPerformed(e);
+        }
     }
 
     @Override
     public Action createContextAwareInstance(Lookup actionContext) {
         this.project = actionContext.lookup(Project.class);
-        isEnabled = true;
+        isSubmenu = true;
         if (project == null) {
-            isEnabled = false;
+            isSubmenu = false;
         }         
-        isEnabled =  isEnabled && ConfigurationSupport.getProjectActiveConfiguration(project) != null && 
-                LaunchersRegistryFactory.getInstance(project.getProjectDirectory()).hasLaunchers();        
+        isSubmenu =  isSubmenu && ConfigurationSupport.getProjectActiveConfiguration(project) != null && 
+                LaunchersRegistryFactory.getInstance(project.getProjectDirectory()).hasLaunchers();   
+        switch (actionType) {
+        }
+        
         return this;
     }
-
-    @Override
-    public boolean isEnabled() {
-        return isEnabled;
-    }
-        
     
     @Override
     public JMenuItem getPopupPresenter() {
-        createSubMenu();
-        return subMenu;
+        return createMenuItem();
     }
 
     @Override
     public JMenuItem getMenuPresenter() {
-        createSubMenu();
-        return subMenu;
+        return createMenuItem();
+    }
+
+    private JMenuItem createMenuItem() {
+        if (isSubmenu) {
+            createSubMenu();
+            return subMenu;
+        } else {
+            switch (actionType) {
+                case RUN:
+                    delegate = MakeProjectActionsSupport.runAction();
+                    break;
+                case DEBUG:
+                    delegate = MakeProjectActionsSupport.debugAction();
+                    break;
+                case DEBUG_STEPINTO:
+                    delegate = MakeProjectActionsSupport.stepIntoAction();
+                    break;
+                default:
+                    assert false;
+                    return null;
+            }
+            JMenuItem item = new JMenuItem(delegate);
+            return item;
+        }
     }
 
     // This method is shared between multiple actions
     private void createSubMenu() {
         subMenu = new JMenu(displayName);
-        subMenu.setEnabled(isEnabled);
+        subMenu.setEnabled(isSubmenu);
         subMenu.putClientProperty(DynamicMenuContent.HIDE_WHEN_DISABLED, getValue(DynamicMenuContent.HIDE_WHEN_DISABLED));
         for (Launcher launcher : LaunchersRegistryFactory.getInstance(project.getProjectDirectory()).getLaunchers()) {
             subMenu.add(new LauncherExecutableAction(launcher));
         }
+        
+        JMenuItem add;
+        subMenu.add(new Separator());
+        switch (actionType) {
+            case RUN:
+                add = subMenu.add(MakeProjectActionsSupport.runAction());
+                break;
+            case DEBUG:
+                add = subMenu.add(MakeProjectActionsSupport.debugAction());
+                break;
+            case DEBUG_STEPINTO:
+                add = subMenu.add(MakeProjectActionsSupport.stepIntoAction());//NOI18N
+                break;
+            default:
+                assert false;
+                return;
+        }
+        add.setText(DEFAULT_ACTION_NAME);
     }
     
     private class LauncherExecutableAction extends AbstractAction {
@@ -180,7 +224,7 @@ public class LauncherAction extends AbstractAction implements ContextAwareAction
                 return getDisplayName().hashCode();
             }            
         }
-    }    
+    }
     
     
     public static LauncherAction runAsAction() {

@@ -50,6 +50,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.netbeans.api.project.Project;
+import org.netbeans.api.project.ProjectManager;
 import org.netbeans.modules.cnd.api.remote.RemoteFileUtil;
 import org.netbeans.modules.cnd.api.toolchain.CompilerSet;
 import org.netbeans.modules.cnd.api.toolchain.PredefinedToolKind;
@@ -57,11 +59,18 @@ import org.netbeans.modules.cnd.utils.CndPathUtilities;
 import org.netbeans.modules.cnd.makeproject.api.configurations.MakeConfiguration;
 import org.netbeans.modules.cnd.makeproject.api.configurations.QmakeConfiguration;
 import org.netbeans.modules.cnd.api.toolchain.Tool;
+import org.netbeans.modules.cnd.discovery.api.DiscoveryUtils.Artifacts;
+import org.netbeans.modules.cnd.discovery.wizard.api.support.ProjectBridge;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
+import org.netbeans.modules.nativeexecution.api.HostInfo;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcessBuilder;
 import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
+import org.netbeans.modules.nativeexecution.api.util.HostInfoUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
+import org.openide.filesystems.FileObject;
+import org.openide.util.Exceptions;
+import org.openide.util.Pair;
 
 /**
  * Utility to find Qt include directories for project configuration.
@@ -80,59 +89,149 @@ public abstract class QtInfoProvider {
         return DEFAULT;
     }
 
+    public abstract List<String> getQtAdditionalMacros(MakeConfiguration conf);
+
     public abstract List<String> getQtIncludeDirectories(MakeConfiguration conf);
 
     private static class Default extends QtInfoProvider {
 
-        private final Map<String, String> cache;
+        private final Map<String, Pair<String, String>> cache;
 
         private Default() {
-            cache = new HashMap<String, String>();
+            cache = new HashMap<String, Pair<String, String>>();
+        }
+
+        @Override
+        public List<String> getQtAdditionalMacros(MakeConfiguration conf) {
+            FileObject projectDir = conf.getBaseFSPath().getFileObject();
+            if (projectDir != null && projectDir.isValid()) {
+                try {
+                    FileObject qtMakeFile = RemoteFileUtil.getFileObject(projectDir, MakeConfiguration.NBPROJECT_FOLDER + "/qt-" + conf.getName() + ".mk"); //NOI18N
+                    Project project = ProjectManager.getDefault().findProject(projectDir);
+                    if (project != null && qtMakeFile != null && qtMakeFile.isValid()) {
+                        for (String str : qtMakeFile.asLines()) {
+                            if (str.startsWith("CXXFLAGS")) { //NOI18N
+                                String[] lines = str.split("="); //NOI18N
+                                if (lines.length == 2) {
+                                    Artifacts artifacts = new Artifacts();
+                                    DiscoveryUtils.gatherCompilerLine(lines[1].trim(), DiscoveryUtils.LogOrigin.BuildLog, artifacts, new ProjectBridge(project), true);
+                                    List<String> result = new ArrayList<>(artifacts.userMacros.size());
+                                    for (Map.Entry<String, String> pair : artifacts.userMacros.entrySet()) {
+                                        if (pair.getValue() == null) {
+                                            result.add(pair.getKey());
+                                        } else {
+                                            result.add(pair.getKey() + "=" + pair.getValue()); //NOI18N
+                                        }
+                                    }
+                                    return result;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                } catch (IOException | IllegalArgumentException ex) {
+                    Exceptions.printStackTrace(ex);
+                }
+            }
+            return java.util.Collections.EMPTY_LIST;
         }
 
         /**
          * Finds Qt include directories for given project configuration.
          *
-         * @param conf  Qt project configuration
-         * @return list of include directories, may be empty if qmake is not found
+         * @param conf Qt project configuration
+         * @return list of include directories, may be empty if qmake is not
+         * found
          */
         @Override
         public List<String> getQtIncludeDirectories(MakeConfiguration conf) {
-            String baseDir = getBaseQtIncludeDir(conf);
+            Pair<String, String> baseDir = getBaseQtIncludeDir(conf);
             List<String> result;
-            if (baseDir != null) {
+            if (baseDir != null && (baseDir.first() != null || baseDir.second() != null)) {
                 result = new ArrayList<String>();
-                result.add(baseDir);
+                if (baseDir.first() != null) {
+                    result.add(baseDir.first());
+                }
                 QmakeConfiguration qmakeConfiguration = conf.getQmakeConfiguration();
                 if (qmakeConfiguration.isCoreEnabled().getValue()) {
-                    result.add(baseDir + File.separator + "QtCore"); // NOI18N
+                    if (baseDir.second() != null) {
+                        result.add(baseDir.second() + File.separator + "QtCore.framework/Headers"); // NOI18N
+                    }
+                    if (baseDir.first() != null) {
+                        result.add(baseDir.first() + File.separator + "QtCore"); // NOI18N
+                    }
                 }
                 if (qmakeConfiguration.isGuiEnabled().getValue()) {
-                    result.add(baseDir + File.separator + "QtGui"); // NOI18N
+                    if (baseDir.second() != null) {
+                        result.add(baseDir.second() + File.separator + "QtGui.framework/Headers"); // NOI18N
+                    }
+                    if (baseDir.first() != null) {
+                        result.add(baseDir.first() + File.separator + "QtGui"); // NOI18N
+                    }
                 }
                 if (qmakeConfiguration.isNetworkEnabled().getValue()) {
-                    result.add(baseDir + File.separator + "QtNetwork"); // NOI18N
+                    if (baseDir.second() != null) {
+                        result.add(baseDir.second() + File.separator + "QtNetwork.framework/Headers"); // NOI18N
+                    }
+                    if (baseDir.first() != null) {
+                        result.add(baseDir.first() + File.separator + "QtNetwork"); // NOI18N
+                    }
                 }
                 if (qmakeConfiguration.isOpenglEnabled().getValue()) {
-                    result.add(baseDir + File.separator + "QtOpenGL"); // NOI18N
+                    if (baseDir.second() != null) {
+                        result.add(baseDir.second() + File.separator + "QtOpenGL.framework/Headers"); // NOI18N
+                    }
+                    if (baseDir.first() != null) {
+                        result.add(baseDir.first() + File.separator + "QtOpenGL"); // NOI18N
+                    }
                 }
                 if (qmakeConfiguration.isPhononEnabled().getValue()) {
-                    result.add(baseDir + File.separator + "phonon"); // NOI18N
+                    if (baseDir.second() != null) {
+                        result.add(baseDir.second() + File.separator + "phonon.framework/Headers"); // NOI18N
+                    }
+                    if (baseDir.first() != null) {
+                        result.add(baseDir.first() + File.separator + "phonon"); // NOI18N
+                    }
                 }
                 if (qmakeConfiguration.isQt3SupportEnabled().getValue()) {
-                    result.add(baseDir + File.separator + "Qt3Support"); // NOI18N
+                    if (baseDir.second() != null) {
+                        result.add(baseDir.second() + File.separator + "Qt3Support.framework/Headers"); // NOI18N
+                    }
+                    if (baseDir.first() != null) {
+                        result.add(baseDir.first() + File.separator + "Qt3Support"); // NOI18N
+                    }
                 }
                 if (qmakeConfiguration.isSqlEnabled().getValue()) {
-                    result.add(baseDir + File.separator + "QtSql"); // NOI18N
+                    if (baseDir.second() != null) {
+                        result.add(baseDir.second() + File.separator + "QtSql.framework/Headers"); // NOI18N
+                    }
+                    if (baseDir.first() != null) {
+                        result.add(baseDir.first() + File.separator + "QtSql"); // NOI18N
+                    }
                 }
                 if (qmakeConfiguration.isSvgEnabled().getValue()) {
-                    result.add(baseDir + File.separator + "QtSvg"); // NOI18N
+                    if (baseDir.second() != null) {
+                        result.add(baseDir.second() + File.separator + "QtSvg.framework/Headers"); // NOI18N
+                    }
+                    if (baseDir.first() != null) {
+                        result.add(baseDir.first() + File.separator + "QtSvg"); // NOI18N
+                    }
                 }
                 if (qmakeConfiguration.isXmlEnabled().getValue()) {
-                    result.add(baseDir + File.separator + "QtXml"); // NOI18N
+                    if (baseDir.second() != null) {
+                        result.add(baseDir.second() + File.separator + "QtXml.framework/Headers"); // NOI18N
+                    }
+                    if (baseDir.first() != null) {
+                        result.add(baseDir.first() + File.separator + "QtXml"); // NOI18N
+                    }
                 }
                 if (qmakeConfiguration.isWebkitEnabled().getValue()) {
-                    result.add(baseDir + File.separator + "QtWebKit"); // NOI18N
+                    if (baseDir.second() != null) {
+                        result.add(baseDir.second() + File.separator + "QtWebKit.framework/Headers"); // NOI18N
+                    }
+                    if (baseDir.first() != null) {
+                        result.add(baseDir.first() + File.separator + "QtWebKit"); // NOI18N
+                    }
                 }
                 String uiDir = qmakeConfiguration.getUiDir().getValue();
                 if (CndPathUtilities.isPathAbsolute(uiDir)) {
@@ -161,9 +260,9 @@ public abstract class QtInfoProvider {
             return conf.getDevelopmentHost().getHostKey() + '/' + getQmakePath(conf); // NOI18N
         }
 
-        private String getBaseQtIncludeDir(MakeConfiguration conf) {
+        private Pair<String, String> getBaseQtIncludeDir(MakeConfiguration conf) {
             String cacheKey = getCacheKey(conf);
-            String baseDir;
+            Pair<String, String> baseDir;
             synchronized (cache) {
                 if (cache.containsKey(cacheKey)) {
                     baseDir = cache.get(cacheKey);
@@ -171,17 +270,30 @@ public abstract class QtInfoProvider {
                     ExecutionEnvironment execEnv = conf.getDevelopmentHost().getExecutionEnvironment();
                     String qmakePath = getQmakePath(conf);
                     if (ConnectionManager.getInstance().isConnectedTo(execEnv)) {
-                        baseDir = queryBaseQtIncludeDir(execEnv, qmakePath);
+                        boolean isMac = false;
+                        try {
+                            isMac = HostInfoUtils.getHostInfo(execEnv).getOSFamily() == HostInfo.OSFamily.MACOSX;
+                        } catch (IOException | ConnectionManager.CancellationException ex) {
+                            ex.printStackTrace(System.err);
+                        }
+                        String baseInc = queryBaseQtIncludeDir(execEnv, qmakePath);
+                        String baseLib = null;
+                        if (isMac) {
+                            baseLib = queryBaseQtLibsDir(execEnv, qmakePath);
+                        }
+                        baseDir = Pair.of(baseInc, baseLib);
                         cache.put(cacheKey, baseDir);
                     } else {
-                        baseDir = guessBaseQtIncludeDir(qmakePath);
+                        String baseInc = guessBaseQtIncludeDir(qmakePath);
+                        String baseLib = null;
+                        baseDir = Pair.of(baseInc, baseLib);
                         // do not cache this result, so that we can
                         // really query qmake once connection is up
                     }
                 }
             }
             if (LOGGER.isLoggable(Level.FINE)) {
-                LOGGER.log(Level.FINE, "Qt include dir for {0} = {1}", new Object[] {cacheKey, baseDir});
+                LOGGER.log(Level.FINE, "Qt include dir for {0} = {1}", new Object[]{cacheKey, baseDir});
             }
             return baseDir;
         }
@@ -190,6 +302,24 @@ public abstract class QtInfoProvider {
             NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
             npb.setExecutable(qmakePath);
             npb.setArguments("-query", "QT_INSTALL_HEADERS"); // NOI18N
+            try {
+                NativeProcess process = npb.call();
+                String output = ProcessUtils.readProcessOutputLine(process).trim();
+                if (process.waitFor() == 0 && 0 < output.length()) {
+                    return output;
+                }
+            } catch (IOException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            } catch (InterruptedException ex) {
+                LOGGER.log(Level.INFO, null, ex);
+            }
+            return null;
+        }
+
+        private static String queryBaseQtLibsDir(ExecutionEnvironment execEnv, String qmakePath) {
+            NativeProcessBuilder npb = NativeProcessBuilder.newProcessBuilder(execEnv);
+            npb.setExecutable(qmakePath);
+            npb.setArguments("-query", "QT_INSTALL_LIBS"); // NOI18N
             try {
                 NativeProcess process = npb.call();
                 String output = ProcessUtils.readProcessOutputLine(process).trim();

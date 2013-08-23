@@ -137,9 +137,6 @@ public final class ConfigureUtils {
             return false;
         }
         if (configureFileObject.isValid() && configureFileObject.isData() && (configureFileObject.canRead()||FileSystemProvider.canExecute(configureFileObject))) {
-            if (configureFileObject == null || !configureFileObject.isValid()) {
-                return false;
-            }
             DataObject dObj;
             try {
                 dObj = DataObject.find(configureFileObject);
@@ -153,7 +150,7 @@ public final class ConfigureUtils {
             if (node == null) {
                 return false;
             }
-            ShellExecSupport ses = node.getCookie(ShellExecSupport.class);
+            ShellExecSupport ses = node.getLookup().lookup(ShellExecSupport.class);
             if (ses != null) {
                 return true;
             }
@@ -278,14 +275,15 @@ public final class ConfigureUtils {
         if (compiler == null) {
             return null;
         }
-        return escapeFlags(compiler.getPath());
+        return escapePath(compiler.getPath());
     }
 
-    private static String escapeFlags(String flags) {
-        if ((flags.indexOf(' ') > 0 || flags.indexOf('=') > 0)&& !flags.startsWith("\"")) { // NOI18N
-            flags = "\""+flags+"\""; // NOI18N
+    private static String escapePath(String path) {
+        path = path.replace("\\", "/"); // NOI18N
+        if ((path.indexOf(' ') > 0 || path.indexOf('=') > 0)&& !path.startsWith("\"")) { // NOI18N
+            path = "\""+path+"\""; // NOI18N
         }
-        return flags;
+        return path;
     }
 
     private static String getCompilerFlags(CompilerSet def){

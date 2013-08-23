@@ -104,7 +104,7 @@ public final class ToolchainManagerImpl {
     public static final String TOOLCHAIN_FOLDER = "ToolChains"; // NOI18N
     public static final String TOOL_FOLDER = "Tool"; // NOI18N
     private static final ToolchainManagerImpl manager = new ToolchainManagerImpl();
-    private List<ToolchainDescriptor> descriptors = new ArrayList<ToolchainDescriptor>();
+    private final List<ToolchainDescriptor> descriptors = new ArrayList<ToolchainDescriptor>();
 
     public static ToolchainManagerImpl getImpl() {
         return manager;
@@ -1128,16 +1128,16 @@ public final class ToolchainManagerImpl {
         List<FolderInfo> commandFolder;
         String qmakespec;
         String makefileWriter;
-        Compiler c = new Compiler();
-        Compiler cpp = new Compiler();
-        Compiler fortran = new Compiler();
-        Compiler assembler = new Compiler();
+        final Compiler c = new Compiler();
+        final Compiler cpp = new Compiler();
+        final Compiler fortran = new Compiler();
+        final Compiler assembler = new Compiler();
         Scanner scanner = new Scanner();
-        Linker linker = new Linker();
-        Make make = new Make();
-        Debugger debugger = new Debugger();
-        QMake qmake = new QMake();
-        CMake cmake = new CMake();
+        final Linker linker = new Linker();
+        final Make make = new Make();
+        final Debugger debugger = new Debugger();
+        final QMake qmake = new QMake();
+        final CMake cmake = new CMake();
 
         private CompilerVendor(String fileName, int position) {
             toolChainFileName = fileName;
@@ -1172,8 +1172,8 @@ public final class ToolchainManagerImpl {
     }
 
     static class Alternative implements AlternativePath {
-        String path;
-        AlternativePath.PathKind kind;
+        final String path;
+        final AlternativePath.PathKind kind;
         Alternative(String path, AlternativePath.PathKind kind){
             this.path = path;
             this.kind = kind;
@@ -1211,16 +1211,16 @@ public final class ToolchainManagerImpl {
         String precompiledHeaderFlags;
         String precompiledHeaderSuffix;
         boolean precompiledHeaderSuffixAppend;
-        DevelopmentMode developmentMode = new DevelopmentMode();
-        WarningLevel warningLevel = new WarningLevel();
-        Architecture architecture = new Architecture();
+        final DevelopmentMode developmentMode = new DevelopmentMode();
+        final WarningLevel warningLevel = new WarningLevel();
+        final Architecture architecture = new Architecture();
         String strip;
-        MultiThreading multithreading = new MultiThreading();
-        Standard standard = new Standard();
-        LanguageExtension languageExtension = new LanguageExtension();
-        CppStandard cppStandard = new CppStandard();
-        CStandard cStandard = new CStandard();
-        Library library = new Library();
+        final MultiThreading multithreading = new MultiThreading();
+        final Standard standard = new Standard();
+        final LanguageExtension languageExtension = new LanguageExtension();
+        final CppStandard cppStandard = new CppStandard();
+        final CStandard cStandard = new CStandard();
+        final Library library = new Library();
 
         public boolean isValid() {
             return name != null && name.length() > 0;
@@ -1233,14 +1233,14 @@ public final class ToolchainManagerImpl {
     static final class Scanner {
 
         String id;
-        List<ErrorPattern> patterns = new ArrayList<ErrorPattern>();
+        final List<ErrorPattern> patterns = new ArrayList<ErrorPattern>();
         String changeDirectoryPattern;
         String enterDirectoryPattern;
         String leaveDirectoryPattern;
         String makingAllInDirectoryPattern;
         String stackHeaderPattern;
         String stackNextPattern;
-        List<String> filterOut = new ArrayList<String>();
+        final List<String> filterOut = new ArrayList<String>();
     }
 
     /**
@@ -1510,10 +1510,10 @@ public final class ToolchainManagerImpl {
     private static final class SAXHandler extends DefaultHandler {
 
         private String path;
-        private CompilerVendor v;
+        private final CompilerVendor v;
         private boolean isScanerOverrided = false;
         private int version = 1;
-        private Map<String, String> cache;
+        private final Map<String, String> cache;
 
         private SAXHandler(CompilerVendor v, Map<String, String> cache) {
             this.v = v;
@@ -1762,14 +1762,17 @@ public final class ToolchainManagerImpl {
             if (path.indexOf(".scanner.") > 0) { // NOI18N
                 Scanner s = v.scanner;
                 if (path.endsWith(".error")) { // NOI18N
-                    ErrorPattern e = new ErrorPattern();
-                    s.patterns.add(e);
-                    e.severity = getValue(attributes, "severity"); // NOI18N
-                    if (e.severity == null) {
-                        e.severity = "error"; // NOI18N
+                    final String pattern = getValue(attributes, "pattern"); // NOI18N
+                    if (pattern != null) {
+                        ErrorPattern e = new ErrorPattern();
+                        s.patterns.add(e);
+                        e.severity = getValue(attributes, "severity"); // NOI18N
+                        if (e.severity == null) {
+                            e.severity = "error"; // NOI18N
+                        }
+                        e.pattern = pattern;
+                        e.language = getValue(attributes, "language"); // NOI18N
                     }
-                    e.pattern = getValue(attributes, "pattern"); // NOI18N
-                    e.language = getValue(attributes, "language"); // NOI18N
                 } else if (path.endsWith(".change_directory")) { // NOI18N
                     s.changeDirectoryPattern = getValue(attributes, "pattern"); // NOI18N
                 } else if (path.endsWith(".enter_directory")) { // NOI18N
@@ -1781,7 +1784,10 @@ public final class ToolchainManagerImpl {
                 } else if (path.endsWith(".stack_next")) { // NOI18N
                     s.stackNextPattern = getValue(attributes, "pattern"); // NOI18N
                 } else if (path.endsWith(".filter_out")) { // NOI18N
-                    s.filterOut.add(getValue(attributes, "pattern")); // NOI18N
+                    final String pattern = getValue(attributes, "pattern"); // NOI18N
+                    if (pattern != null) {
+                        s.filterOut.add(pattern);
+                    }
                 } else if (path.endsWith(".making_all_in_directory")) { // NOI18N
                     s.makingAllInDirectoryPattern = getValue(attributes, "pattern"); // NOI18N
                 }
@@ -2091,7 +2097,7 @@ public final class ToolchainManagerImpl {
      */
     static final class ToolchainDescriptorImpl implements ToolchainDescriptor {
 
-        CompilerVendor v;
+        final CompilerVendor v;
         private CompilerDescriptor c;
         private CompilerDescriptor cpp;
         private CompilerDescriptor fortran;
@@ -2124,16 +2130,20 @@ public final class ToolchainManagerImpl {
 
         @Override
         public String[] getFamily() {
-            if (v.family != null && v.family.length() > 0) {
-                return v.family.split(","); // NOI18N
+            synchronized(v) {
+                if (v.family != null && v.family.length() > 0) {
+                    return v.family.split(","); // NOI18N
+                }
             }
             return new String[]{};
         }
 
         @Override
         public String[] getPlatforms() {
-            if (v.platforms != null && v.platforms.length() > 0) {
-                return v.platforms.split(","); // NOI18N
+            synchronized(v) {
+                if (v.platforms != null && v.platforms.length() > 0) {
+                    return v.platforms.split(","); // NOI18N
+                }
             }
             return new String[]{};
         }
@@ -2170,8 +2180,10 @@ public final class ToolchainManagerImpl {
 
         @Override
         public String[] getAliases() {
-            if (v.aliases != null && v.aliases.length() > 0) {
-                return v.aliases.split(","); // NOI18N
+            synchronized(v) {
+                if (v.aliases != null && v.aliases.length() > 0) {
+                    return v.aliases.split(","); // NOI18N
+                }
             }
             return new String[]{};
         }
@@ -2193,8 +2205,10 @@ public final class ToolchainManagerImpl {
 
         @Override
         public CompilerDescriptor getC() {
-            if (c == null && v.c.isValid()) {
-                c = new CompilerDescriptorImpl(v.c);
+            synchronized(v) {
+                if (c == null && v.c.isValid()) {
+                    c = new CompilerDescriptorImpl(v.c);
+                }
             }
             return c;
         }
@@ -2230,48 +2244,60 @@ public final class ToolchainManagerImpl {
 
         @Override
         public CompilerDescriptor getCpp() {
-            if (cpp == null && v.cpp.isValid()) {
-                cpp = new CompilerDescriptorImpl(v.cpp);
+            synchronized(v) {
+                if (cpp == null && v.cpp.isValid()) {
+                    cpp = new CompilerDescriptorImpl(v.cpp);
+                }
             }
             return cpp;
         }
 
         @Override
         public CompilerDescriptor getFortran() {
-            if (fortran == null && v.fortran.isValid()) {
-                fortran = new CompilerDescriptorImpl(v.fortran);
+            synchronized(v) {
+                if (fortran == null && v.fortran.isValid()) {
+                    fortran = new CompilerDescriptorImpl(v.fortran);
+                }
             }
             return fortran;
         }
 
         @Override
         public CompilerDescriptor getAssembler() {
-            if (assembler == null && v.assembler.isValid()) {
-                assembler = new CompilerDescriptorImpl(v.assembler);
+            synchronized(v) {
+                if (assembler == null && v.assembler.isValid()) {
+                    assembler = new CompilerDescriptorImpl(v.assembler);
+                }
             }
             return assembler;
         }
 
         @Override
         public ScannerDescriptor getScanner() {
-            if (scanner == null) {
-                scanner = new ScannerDescriptorImpl(v.scanner);
+            synchronized(v) {
+                if (scanner == null) {
+                    scanner = new ScannerDescriptorImpl(v.scanner);
+                }
             }
             return scanner;
         }
 
         @Override
         public LinkerDescriptor getLinker() {
-            if (linker == null) {
-                linker = new LinkerDescriptorImpl(v.linker);
+            synchronized(v) {
+                if (linker == null) {
+                    linker = new LinkerDescriptorImpl(v.linker);
+                }
             }
             return linker;
         }
 
         @Override
         public MakeDescriptor getMake() {
-            if (make == null) {
-                make = new MakeDescriptorImpl(v.make);
+            synchronized(v) {
+                if (make == null) {
+                    make = new MakeDescriptorImpl(v.make);
+                }
             }
             return make;
         }
@@ -2283,24 +2309,30 @@ public final class ToolchainManagerImpl {
 
         @Override
         public DebuggerDescriptor getDebugger() {
-            if (debugger == null) {
-                debugger = new DebuggerDescriptorImpl(v.debugger);
+            synchronized(v) {
+                if (debugger == null) {
+                    debugger = new DebuggerDescriptorImpl(v.debugger);
+                }
             }
             return debugger;
         }
 
         @Override
         public QMakeDescriptor getQMake() {
-            if (qmake == null) {
-                qmake = new QMakeDescriptorImpl(v.qmake);
+            synchronized(v) {
+                if (qmake == null) {
+                    qmake = new QMakeDescriptorImpl(v.qmake);
+                }
             }
             return qmake;
         }
 
         @Override
         public CMakeDescriptor getCMake() {
-            if (cmake == null) {
-                cmake = new CMakeDescriptorImpl(v.cmake);
+            synchronized(v) {
+                if (cmake == null) {
+                    cmake = new CMakeDescriptorImpl(v.cmake);
+                }
             }
             return cmake;
         }
@@ -2312,7 +2344,7 @@ public final class ToolchainManagerImpl {
     }
 
     private static class BaseFolderImpl implements BaseFolder {
-        private FolderInfo info;
+        private final FolderInfo info;
 
         public BaseFolderImpl(FolderInfo info) {
             this.info = info;
@@ -2341,7 +2373,7 @@ public final class ToolchainManagerImpl {
 
     private static class ToolDescriptorImpl<T extends Tool> implements ToolDescriptor {
 
-        protected T tool;
+        protected final T tool;
 
         public ToolDescriptorImpl(T tool) {
             this.tool = tool;
@@ -2349,8 +2381,10 @@ public final class ToolchainManagerImpl {
 
         @Override
         public String[] getNames() {
-            if (tool.name != null && tool.name.length() > 0) {
-                return tool.name.split(","); // NOI18N
+            synchronized(tool) {
+                if (tool.name != null && tool.name.length() > 0) {
+                    return tool.name.split(","); // NOI18N
+                }
             }
             return new String[]{};
         }
@@ -2377,8 +2411,10 @@ public final class ToolchainManagerImpl {
 
         @Override
         public AlternativePath[] getAlternativePath() {
-            if (tool.alternativePath != null) {
-                return tool.alternativePath.toArray(new AlternativePath[tool.alternativePath.size()] );
+            synchronized(tool) {
+                if (tool.alternativePath != null) {
+                    return tool.alternativePath.toArray(new AlternativePath[tool.alternativePath.size()] );
+                }
             }
             return null;
         }
@@ -2533,9 +2569,9 @@ public final class ToolchainManagerImpl {
     }
     
     private static final class PredefinedMacroImpl implements PredefinedMacro {
-        String macro;
-        String flags;
-        boolean hidden;
+        final String macro;
+        final String flags;
+        final boolean hidden;
 
         PredefinedMacroImpl(String macro, String flags, boolean hidden){
             this.macro = macro;
@@ -2562,7 +2598,7 @@ public final class ToolchainManagerImpl {
 
     private static final class ScannerDescriptorImpl implements ScannerDescriptor {
 
-        private Scanner s;
+        private final Scanner s;
         private List<ScannerPattern> patterns;
         private List<String> filterOut;
 
@@ -2577,10 +2613,12 @@ public final class ToolchainManagerImpl {
 
         @Override
 	public List<ScannerPattern> getPatterns() {
-            if (patterns == null) {
-                patterns = new ArrayList<ScannerPattern>();
-                for (ErrorPattern p : s.patterns) {
-                    patterns.add(new ScannerPatternImpl(p));
+            synchronized(s) {
+                if (patterns == null) {
+                    patterns = new ArrayList<ScannerPattern>();
+                    for (ErrorPattern p : s.patterns) {
+                        patterns.add(new ScannerPatternImpl(p));
+                    }
                 }
             }
             return patterns;
@@ -2618,19 +2656,21 @@ public final class ToolchainManagerImpl {
 
         @Override
 	public List<String> getFilterOutPatterns() {
-	    if (filterOut == null){
-                filterOut = new ArrayList<String>();
-		if (s.filterOut != null) {
-		    filterOut.addAll(s.filterOut);
-		}
-	    }
+            synchronized(s) {
+                if (filterOut == null){
+                    filterOut = new ArrayList<String>();
+                    if (s.filterOut != null) {
+                        filterOut.addAll(s.filterOut);
+                    }
+                }
+            }
 	    return filterOut;
 	}
     }
 
     private static final class ScannerPatternImpl implements ScannerPattern {
 
-        private ErrorPattern e;
+        private final ErrorPattern e;
 
         private ScannerPatternImpl(ErrorPattern e) {
             this.e = e;
@@ -2654,7 +2694,7 @@ public final class ToolchainManagerImpl {
 
     private static final class LinkerDescriptorImpl implements LinkerDescriptor {
 
-        private Linker l;
+        private final Linker l;
 
         private LinkerDescriptorImpl(Linker l) {
             this.l = l;
@@ -2731,7 +2771,7 @@ public final class ToolchainManagerImpl {
 
     private static final class DebuggerDescriptorImpl
             extends ToolDescriptorImpl<Debugger> implements DebuggerDescriptor {
-        private Debugger debugger;
+        private final Debugger debugger;
 
         public DebuggerDescriptorImpl(Debugger debugger) {
             super(debugger);

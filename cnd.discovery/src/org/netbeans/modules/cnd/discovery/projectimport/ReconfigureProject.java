@@ -862,7 +862,15 @@ public class ReconfigureProject {
         if (compiler == null) {
             return null;
         }
-        return escapeFlags(compiler.getPath());
+        return escapePath(compiler.getPath());
+    }
+    
+    private static String escapePath(String path) {
+        path = path.replace("\\", "/"); // NOI18N
+        if ((path.indexOf(' ') > 0 || path.indexOf('=') > 0)&& !path.startsWith("\"")) { // NOI18N
+            path = "\""+path+"\""; // NOI18N
+        }
+        return path;
     }
 
     public DataObject getImportant(){
