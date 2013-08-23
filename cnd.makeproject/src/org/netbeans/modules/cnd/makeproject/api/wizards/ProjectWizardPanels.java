@@ -62,9 +62,16 @@ public final class ProjectWizardPanels {
         return NewMakeProjectWizardIterator.getPanels(wizardtype, name, wizardTitle, wizardACSD, fullRemote);
     }
 
-    public static MakeSamplePanel<WizardDescriptor> getMakeSampleProjectWizardPanel(int wizardtype, String name, String wizardTitle, String wizardACSD, boolean fullRemote) {
-        return MakeSampleProjectIterator.getPanel(wizardtype, name, wizardTitle, wizardACSD, fullRemote);
+    public static MakeSamplePanel<WizardDescriptor> getMakeSampleProjectWizardPanel(int wizardtype, String name, String wizardTitle, 
+            String wizardACSD, boolean fullRemote) {
+        return getMakeSampleProjectWizardPanel(wizardtype, name, wizardTitle, wizardACSD, fullRemote, null);
     }
+    
+    public static MakeSamplePanel<WizardDescriptor> getMakeSampleProjectWizardPanel(int wizardtype, String name, String wizardTitle, 
+            String wizardACSD, boolean fullRemote, String helpCtx) {
+        return MakeSampleProjectIterator.getPanel(wizardtype, name, wizardTitle, wizardACSD, fullRemote, helpCtx);
+    }
+    
     
     public static MakeModePanel<WizardDescriptor> getSelectModePanel() {
         return  NewMakeProjectWizardIterator.createSelectModePanel();

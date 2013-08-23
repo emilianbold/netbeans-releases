@@ -56,6 +56,7 @@ import org.netbeans.modules.csl.api.Rule;
 import org.netbeans.modules.csl.api.Rule.AstRule;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.web.el.CompilationContext;
+import org.netbeans.modules.web.el.ELTypeUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.util.Exceptions;
 
@@ -79,8 +80,7 @@ public final class ELHintsProvider implements HintsProvider {
             return;
         }
         final FileObject file = context.parserResult.getSnapshot().getSource().getFileObject();
-        JavaSource jsource = JavaSource.create(
-                ClasspathInfo.create(file));
+        JavaSource jsource = JavaSource.create(ELTypeUtilities.getElimplExtendedCPI(file));
         try {
             jsource.runUserActionTask(new Task<CompilationController>() {
 

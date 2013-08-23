@@ -207,4 +207,18 @@ public class ServerUtils {
         return sb.toString();
     }
 
+    /**
+     * Check if GlassFish server process is still running.
+     * <p/>
+     * @param process GlassFish server process. May not be <code>null</code>.
+     */
+    public static boolean isProcessRunning(final Process process) {
+        try {
+            process.exitValue();
+            return false;
+        } catch (IllegalThreadStateException itse) {
+            return true;
+        }
+    }
+
 }

@@ -497,7 +497,7 @@ public final class FileContent implements MutableDeclarationsContainer {
         assert fileInstantiationsKey != null : "file instantiation references key can not be null";
         fileInstantiationsKey.write(output);
         
-        PersistentUtils.writeErrorDirectives(this.errors, output);
+        PersistentUtils.writeErrorDirectives(this.errors, output, fileDeclarationsKey.getUnitId());
         output.writeInt(parserErrorsCount);
         
         FakeIncludePair.write(fakeIncludeRegistrations, output);
@@ -531,7 +531,7 @@ public final class FileContent implements MutableDeclarationsContainer {
         fileComponentInstantiations = Union2.createSecond(new WeakContainer<FileComponentInstantiations>(project, fileInstantiationsKey));
         
         this.errors = createErrors(Collections.<ErrorDirectiveImpl>emptySet());
-        PersistentUtils.readErrorDirectives(this.errors, input);
+        PersistentUtils.readErrorDirectives(this.errors, project.getFileSystem(), input, fileDeclarationsKey.getUnitId());
         parserErrorsCount = input.readInt();
         
         this.fakeIncludeRegistrations = createFakeIncludes(Collections.<FakeIncludePair>emptyList());

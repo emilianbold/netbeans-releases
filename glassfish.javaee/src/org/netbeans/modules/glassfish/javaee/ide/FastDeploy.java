@@ -56,8 +56,8 @@ import javax.enterprise.deploy.spi.TargetModuleID;
 import javax.enterprise.deploy.spi.status.ProgressEvent;
 import javax.enterprise.deploy.spi.status.ProgressListener;
 import javax.enterprise.deploy.spi.status.ProgressObject;
-import org.glassfish.tools.ide.data.TaskEvent;
-import org.glassfish.tools.ide.admin.TaskState;
+import org.glassfish.tools.ide.TaskEvent;
+import org.glassfish.tools.ide.TaskState;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.eecommon.api.HttpMonitorHelper;
@@ -517,8 +517,9 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
      */
     @Override
     public File getDirectoryForModule(TargetModuleID targetModuleID) {
-        File retVal = new File(((Hk2TargetModuleID) targetModuleID).getLocation());
-        if (null != retVal && retVal.getPath().contains("${")) {
+        File retVal
+                = new File(((Hk2TargetModuleID) targetModuleID).getLocation());
+        if (retVal.getPath().contains("${")) {
             throw new IllegalStateException(NbBundle.getMessage(FastDeploy.class,
                     "ERR_UndeployAndRedeploy"));
         }
@@ -567,9 +568,9 @@ public class FastDeploy extends IncrementalDeployment implements IncrementalDepl
     @Override
     public String getModuleUrl(TargetModuleID module) {
         assert null != module;
-        if (null == module) {
-            return "/bogusModule";
-        }
+//        if (null == module) {
+//            return "/bogusModule";
+//        }
         Hk2TargetModuleID self = (Hk2TargetModuleID) module;
         String retVal = self.getModuleID();
         return retVal.startsWith("/") ? retVal : "/"+retVal;

@@ -416,6 +416,9 @@ public final class NativeProjectProvider {
             NativeFileItemSet set = obj.getLookup().lookup(NativeFileItemSet.class);
             if (set != null) {
                 set.add(item);
+                if (item instanceof NativeFileItemImpl) {
+                    ((NativeFileItemImpl)item).lastDataObject = obj;
+                }
             }
         }
     }
@@ -425,6 +428,7 @@ public final class NativeProjectProvider {
         private final File file;
         private final NativeProjectImpl project;
         private final NativeFileItem.Language lang;
+        private DataObject lastDataObject; //keep data object, otherwise it will be recreated without association to NativeFileItem
 
         public NativeFileItemImpl(File file, NativeProjectImpl project, NativeFileItem.Language language) {
 	    

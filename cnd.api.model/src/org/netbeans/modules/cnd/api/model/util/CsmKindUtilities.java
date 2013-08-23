@@ -50,6 +50,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifierBasedTemplateParameter;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmExpressionBasedSpecializationParameter;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
@@ -661,6 +662,10 @@ public class CsmKindUtilities {
 
     public static boolean isExpression(CsmObject obj) {
         return obj instanceof CsmExpression;
+    }
+    
+    public static boolean isErrorDirective(CsmObject obj) {
+        return obj instanceof CsmErrorDirective;
     }
     
     public static boolean isMacro(CsmObject obj) {
