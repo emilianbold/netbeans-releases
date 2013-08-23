@@ -74,6 +74,7 @@ import javax.swing.UIManager;
 import javax.swing.border.Border;
 import org.netbeans.core.windows.Constants;
 import org.netbeans.core.windows.ModeImpl;
+import org.netbeans.core.windows.Switches;
 import org.netbeans.core.windows.TopComponentTracker;
 import org.netbeans.core.windows.WindowManagerImpl;
 import org.openide.DialogDescriptor;
@@ -348,7 +349,8 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
         //#70965 end
         for (int i = 0; i < selNodes.length; i++) {
             TopComponent tc = ((TopComponentNode) selNodes[i]).getTopComponent();
-            tc.close();
+            if( Switches.isEditorTopComponentClosingEnabled() && Switches.isClosingEnabled( tc ) )
+                tc.close();
         }
         
         List<TopComponent> tcList = getOpenedDocuments();
@@ -554,7 +556,13 @@ public class DocumentsDlg extends JPanel implements PropertyChangeListener, Expl
             }
             //Enable button Close only if at least one node is selected
             if (selNodes.length > 0) {
-                jButtonClose.setEnabled(true);
+                if( selNodes.length == 1 ) {
+                    TopComponent tc = ((TopComponentNode) selNodes[0]).getTopComponent();
+                    jButtonClose.setEnabled(Switches.isEditorTopComponentClosingEnabled()
+                            && Switches.isClosingEnabled( tc ));
+                } else {
+                    jButtonClose.setEnabled(Switches.isEditorTopComponentClosingEnabled());
+                }
             } else {
                 jButtonClose.setEnabled(false);
             }
