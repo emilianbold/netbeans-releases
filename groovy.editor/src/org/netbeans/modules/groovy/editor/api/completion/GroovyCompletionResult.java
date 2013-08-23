@@ -43,6 +43,7 @@
 package org.netbeans.modules.groovy.editor.api.completion;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import org.codehaus.groovy.ast.ClassCodeVisitorSupport;
 import org.codehaus.groovy.ast.ImportNode;
@@ -53,7 +54,6 @@ import org.netbeans.modules.csl.api.CodeCompletionResult;
 import org.netbeans.modules.csl.api.CompletionProposal;
 import org.netbeans.modules.csl.api.ElementKind;
 import org.netbeans.modules.csl.spi.DefaultCompletionResult;
-import org.netbeans.modules.editor.NbEditorUtilities;
 import org.netbeans.modules.groovy.editor.imports.ImportHelper;
 import org.netbeans.modules.groovy.editor.api.ASTUtils;
 import org.netbeans.modules.groovy.editor.api.completion.util.CompletionContext;
@@ -119,6 +119,10 @@ public class GroovyCompletionResult extends DefaultCompletionResult {
         }
 
         public static List<String> collect(ModuleNode root) {
+            if (root == null) {
+                return Collections.emptyList();
+            }
+
             ImportCollector collector = new ImportCollector(root);
             collector.visitImports(root);
             return collector.imports;
