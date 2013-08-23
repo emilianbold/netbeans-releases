@@ -60,6 +60,7 @@ import org.netbeans.modules.cnd.api.model.CsmClassifier;
 import org.netbeans.modules.cnd.api.model.CsmCompoundClassifier;
 import org.netbeans.modules.cnd.api.model.CsmDeclaration;
 import org.netbeans.modules.cnd.api.model.CsmEnumerator;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmFriend;
 import org.netbeans.modules.cnd.api.model.CsmFunction;
@@ -546,6 +547,11 @@ public class CppDeclarationNode extends AbstractCsmNode implements Comparable<Cp
             node.name = ((CsmEnumerator)element).getName();
             model.addOffset(node, (CsmOffsetable)element, lineNumberIndex);
             return node;
+        } else if (CsmKindUtilities.isErrorDirective(element)) {
+            node = createObject((CsmErrorDirective) element, model);
+            node.name = ((CsmErrorDirective) element).getErrorMessage();
+            model.addOffset(node, (CsmOffsetable) element, lineNumberIndex);
+            return node;            
         } else if(CsmKindUtilities.isMacro(element)){
             node = createObject((CsmMacro)element,model);
             node.name = ((CsmMacro)element).getName();
