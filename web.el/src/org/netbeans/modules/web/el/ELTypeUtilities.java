@@ -42,6 +42,8 @@
 package org.netbeans.modules.web.el;
 
 import com.sun.el.parser.*;
+import java.io.File;
+import java.net.URL;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -69,6 +71,9 @@ import javax.lang.model.type.TypeKind;
 import javax.lang.model.type.TypeMirror;
 import javax.lang.model.type.TypeVariable;
 import javax.lang.model.util.ElementFilter;
+import org.netbeans.api.java.classpath.ClassPath;
+import org.netbeans.api.java.platform.JavaPlatformManager;
+import org.netbeans.api.java.source.ClasspathInfo;
 import org.netbeans.api.java.source.TypeUtilities.TypeNameOptions;
 import org.netbeans.modules.web.el.completion.ELStreamCompletionItem;
 import org.netbeans.modules.web.el.spi.ELVariableResolver.VariableInfo;
@@ -78,7 +83,10 @@ import org.netbeans.modules.web.el.spi.ELPlugin;
 import org.netbeans.modules.web.el.spi.ELVariableResolver;
 import org.netbeans.modules.web.el.spi.Function;
 import org.netbeans.modules.web.el.spi.ImplicitObjectType;
+import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
+import org.openide.filesystems.FileUtil;
+import org.openide.modules.InstalledFileLocator;
 
 /**
  * Utility class for resolving elements/types for EL expressions.
@@ -89,8 +97,12 @@ public final class ELTypeUtilities {
 
     private static final Logger LOG = Logger.getLogger(ELTypeUtilities.class.getName());
 
-    private static final String FACES_CONTEXT_CLASS = "javax.faces.context.FacesContext"; //NOI18N
-    private static final String UI_COMPONENT_CLASS = "javax.faces.component.UIComponent";//NOI18N
+    private static final String FACES_CONTEXT_CLASS = "javax.faces.context.FacesContext";   //NOI18N
+    private static final String UI_COMPONENT_CLASS = "javax.faces.component.UIComponent";   //NOI18N
+    private static final String STREAM_CLASS = "com.sun.el.stream.Stream";                  //NOI18N
+
+    private static final FileObject EL_IMPL_JAR_FO = FileUtil.getArchiveRoot(FileUtil.toFileObject(
+            InstalledFileLocator.getDefault().locate("modules/ext/el-impl.jar", "org.netbeans.modules.libs.elimpl", false))); //NOI18N
 
     private static final Map<Class<? extends Node>, Set<TypeKind>> TYPES = new HashMap<>();
 
@@ -736,6 +748,28 @@ public final class ELTypeUtilities {
         return isSubtypeOf(ccontext, element.asType(), "java.util.Map"); //NOI18N
     }
 
+    /**
+     * Gets {@code ClasspathInfo} extended for the el-impl.jar. It guarantees to find Stream class on the classpath.
+     * @param file file to be used for getting classpaths
+     * @return extended classpath for the el-impl.jar
+     * @since 1.39
+     */
+    public static ClasspathInfo getElimplExtendedCPI(FileObject file) {
+        ClassPath bootPath = ClassPath.getClassPath(file, ClassPath.BOOT);
+        if (bootPath == null) {
+            bootPath = JavaPlatformManager.getDefault().getDefaultPlatform().getBootstrapLibraries();
+        }
+        ClassPath compilePath = ClassPath.getClassPath(file, ClassPath.COMPILE);
+        if (compilePath == null) {
+            compilePath = ClassPathSupport.createClassPath(new URL[0]);
+        }
+        ClassPath srcPath = ClassPath.getClassPath(file, ClassPath.SOURCE);
+        return ClasspathInfo.create(
+                bootPath,
+                ClassPathSupport.createProxyClassPath(compilePath, ClassPathSupport.createClassPath(EL_IMPL_JAR_FO)),
+                srcPath);
+    }
+
     private static boolean isSubtypeOf(CompilationContext info, TypeMirror tm, CharSequence typeName) {
         Element element = info.info().getElements().getTypeElement(typeName);
         if (element == null) {
@@ -837,7 +871,7 @@ public final class ELTypeUtilities {
 
                                 // stream method
                                 if (ELTypeUtilities.isIterableElement(info, enclosing)) {
-                                    propertyType = enclosing = info.info().getElements().getTypeElement("com.sun.el.stream.Stream"); //NOI18N
+                                    propertyType = enclosing = info.info().getElements().getTypeElement(STREAM_CLASS);
                                 }
                             }
                             if (propertyType == null) {
@@ -877,11 +911,12 @@ public final class ELTypeUtilities {
                     Node child = parent.jjtGetChild(i);
                     if (child instanceof AstDotSuffix) {
                         if (ELStreamCompletionItem.STREAM_METHOD.equals(child.getImage())) {
+                            TypeElement stream = info.info().getElements().getTypeElement(STREAM_CLASS);
                             if (target.getImage() != null && target.getImage().equals(child.getImage())) {
-                                result = info.info().getElements().getTypeElement("com.sun.el.stream.Stream"); //NOI18N
+                                result = stream;
                                 return;
                             } else {
-                                enclosing = info.info().getElements().getTypeElement("com.sun.el.stream.Stream"); //NOI18N
+                                enclosing = stream;
                             }
                         } else {
                             if (enclosing != null) {

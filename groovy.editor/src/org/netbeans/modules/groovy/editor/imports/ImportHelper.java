@@ -194,7 +194,12 @@ public final class ImportHelper {
 
             // Skip classes within the same package
             String pkgName = GroovyUtils.stripClassName(indexedClass.getFqn());
-            if (packageName.equals(pkgName)) {
+            if (packageName == null && pkgName == null) {
+                // Probably both in default package
+                continue;
+            }
+            if (packageName != null && packageName.equals(pkgName)) {
+                // Both in the same package
                 continue;
             }
 

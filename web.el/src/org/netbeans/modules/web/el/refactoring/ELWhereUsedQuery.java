@@ -98,7 +98,7 @@ public class ELWhereUsedQuery extends ELRefactoringPlugin {
         
         final FileObject file = handle.getFileObject();
         final AtomicReference<Problem> problemRef = new AtomicReference<>();
-        JavaSource jsource = JavaSource.create(ClasspathInfo.create(file));
+        JavaSource jsource = JavaSource.create(ELTypeUtilities.getElimplExtendedCPI(file));
         try {
             jsource.runUserActionTask(new Task<CompilationController>() {
 
