@@ -166,7 +166,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
     private String getTooltipTextForElement(final Pair<Node, ELElement> pair) {
         final String[] result = new String[1];
         final FileObject file = pair.second().getSnapshot().getSource().getFileObject();
-        ClasspathInfo cp = ClasspathInfo.create(file);
+        ClasspathInfo cp = ELTypeUtilities.getElimplExtendedCPI(file);
         try {
             JavaSource.create(cp, file).runUserActionTask(new Task<CompilationController>() {
 
@@ -265,7 +265,7 @@ public final class ELHyperlinkProvider implements HyperlinkProviderExt {
             return;
         }
         final FileObject file = DataLoadersBridge.getDefault().getFileObject(doc);
-        ClasspathInfo cp = ClasspathInfo.create(file);
+        ClasspathInfo cp = ELTypeUtilities.getElimplExtendedCPI(file);
         final AtomicReference<ElementHandle<Element>> handleRef = new AtomicReference<>();
         try {
             JavaSource.create(cp).runUserActionTask(new Task<CompilationController>() {

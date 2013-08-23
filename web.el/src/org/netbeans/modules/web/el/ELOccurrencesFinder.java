@@ -146,7 +146,7 @@ final class ELOccurrencesFinder extends OccurrencesFinder {
             });
         }
         final FileObject file = parserResult.getFileObject();
-        JavaSource jsource = JavaSource.create(ClasspathInfo.create(file));
+        JavaSource jsource = JavaSource.create(ELTypeUtilities.getElimplExtendedCPI(file));
         try {
             jsource.runUserActionTask(new Task<CompilationController>() {
 
