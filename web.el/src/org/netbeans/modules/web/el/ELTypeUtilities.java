@@ -921,8 +921,11 @@ public final class ELTypeUtilities {
                         } else {
                             if (enclosing != null) {
                                 Element propertyType = getElementForProperty(info, child, enclosing);
-                                if (child.equals(target)) {
+                                if (target.getImage() != null && target.getImage().equals(child.getImage())) {
                                     result = propertyType;
+                                    return;
+                                } else {
+                                    enclosing = propertyType;
                                 }
                             }
                         }
