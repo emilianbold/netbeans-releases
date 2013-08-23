@@ -42,6 +42,7 @@
 package org.netbeans.modules.cordova.platforms.android;
 
 import org.netbeans.api.project.Project;
+import org.netbeans.modules.cordova.platforms.api.WebKitDebuggingSupport;
 import org.netbeans.modules.web.browser.api.BrowserSupport;
 import org.netbeans.spi.project.ActionProvider;
 import org.openide.util.Lookup;
@@ -68,6 +69,7 @@ class AndroidBrowserActionProvider implements ActionProvider {
 
     @Override
     public void invokeAction(String command, final Lookup context) throws IllegalArgumentException {
+        WebKitDebuggingSupport.getDefault().stopDebugging(true);
         AndroidBrowser.openBrowser(command, context, AndroidBrowser.Kind.valueOf(browserId), project, browserSupport);
     }
 
