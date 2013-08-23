@@ -73,7 +73,9 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import javax.help.HelpSet;
 import javax.help.HelpSetException;
+import javax.help.InvalidHelpSetContextException;
 import javax.help.JHelp;
+import javax.help.Map.ID;
 import javax.help.NavigatorView;
 import javax.help.search.MergingSearchEngine;
 import javax.help.search.SearchEngine;
@@ -913,7 +915,17 @@ public final class JavaHelp extends AbstractHelp implements HelpCtx.Displayer, A
             if (helpID != null && ! helpID.equals(MASTER_ID)) {
                 HelpSet hs = jh.getModel().getHelpSet();
                 if (hs.getCombinedMap().isValidID(helpID, hs)) {
-                    jh.setCurrentID(helpID);
+                    HelpSet helpsetForId = findHelpSetForID(helpID); // #234143
+                    if (helpsetForId != getMaster()) {
+                        ID id = ID.create(helpID, helpsetForId);
+                        try {
+                            jh.setCurrentID(id);
+                        } catch (InvalidHelpSetContextException ex) {
+                            jh.setCurrentID(helpID);
+                        }
+                    } else {
+                        jh.setCurrentID(helpID);
+                    }
                 } else {
                     warnBadID(helpID);
                 }
