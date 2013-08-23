@@ -229,6 +229,9 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                 sourceRoot = null;
             }
         }
+        if (sourceRoot != null) {
+            sourceRoot = sourceRoot.replace('\\', '/');
+        }
         if (fo == null || !fo.isValid()) {
             ResolvedPath resolvedPath = mapper.getPath(name);
             if (resolvedPath == null) {
@@ -429,11 +432,11 @@ public abstract class BaseDwarfProvider implements DiscoveryProvider {
                     foundDebug++;
                     String path = cu.getSourceFileAbsolutePath();
                     incrementRoot(path, realRoots);
-                    path = DiscoveryUtils.normalizeAbsolutePath(path);
+                    path = myCommpilerSettings.getNormalizedPath(path);
                     if (!CndFileUtils.isExistingFile(path)) {
                         String fileFinder = Dwarf.fileFinder(objFileName, path);
                         if (fileFinder != null) {
-                            fileFinder = DiscoveryUtils.normalizeAbsolutePath(fileFinder);
+                            fileFinder = myCommpilerSettings.getNormalizedPath(fileFinder);
                             if (!CndFileUtils.isExistingFile(fileFinder)) {
                                 continue;
                             } else {

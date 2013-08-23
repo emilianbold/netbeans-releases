@@ -557,6 +557,11 @@ public class FileModelTest extends TraceModelTestBase {
         performTest("bug233263.cpp");
     }
     
+    public void testBug234768() throws Exception {
+        // Bug 234768 - Cpp11 classes/enums could not be defined inside type aliases
+        performTest("bug234768.cpp");
+    }
+    
     /////////////////////////////////////////////////////////////////////
     // FAILS
     

@@ -151,7 +151,7 @@ public class CompletionTestPerformer {
         final BaseDocument doc = aDoc == null ? Utilities.getDocument(editor) : aDoc;
         CsmFile csmFile = CsmUtilities.getCsmFile(doc, false, false);
         assert csmFile != null : "Must be csmFile for document " + doc;        
-        final CsmCompletionQuery query = CsmCompletionProvider.getCompletionQuery(csmFile, this.queryScope, null);
+        final CsmCompletionQuery query = CsmCompletionProvider.getTestCompletionQuery(csmFile, this.queryScope);
         final AtomicReference<CsmCompletionQuery.CsmCompletionResult> res = new AtomicReference<CsmCompletionQuery.CsmCompletionResult>();
         RP.post(new Runnable() {
             @Override

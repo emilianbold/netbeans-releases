@@ -76,7 +76,7 @@ public class UnixHostInfoProvider implements HostInfoProvider {
 
     private static final String TMPBASE = System.getProperty("cnd.tmpbase", null); // NOI18N
     private static final String PATH_VAR = "PATH"; // NOI18N
-    private static final String PATH_TO_PREPEND = "/bin:/usr/bin"; // NOI18N
+    private static final String PATH_TO_PREPEND = System.getProperty("hostinfo.prepend.path", null); // NOI18N
     private static final java.util.logging.Logger log = Logger.getInstance();
     private static final File hostinfoScript;
 
@@ -118,11 +118,13 @@ public class UnixHostInfoProvider implements HostInfoProvider {
         // Add /bin:/usr/bin
         String path = PATH_TO_PREPEND;
 
-        if (environment.containsKey(PATH_VAR)) {
-            path += ":" + environment.get(PATH_VAR); // NOI18N
-        }
+        if (path != null && !path.isEmpty()) {
+            if (environment.containsKey(PATH_VAR)) {
+                path += ":" + environment.get(PATH_VAR); // NOI18N
+            }
 
-        environment.put(PATH_VAR, path); // NOI18N
+            environment.put(PATH_VAR, path); // NOI18N
+        }
 
         return result;
     }
