@@ -198,7 +198,7 @@ public class HttpMonitorHelper {
             fr.close();
             fr = null;
         } catch (FileNotFoundException fnfe) {
-            Logger.getLogger("glassfish-eecommon").log(Level.WARNING, "This file existed a few milliseconds ago: "+ webXML.getAbsolutePath(), fnfe);
+            Logger.getLogger("glassfish-eecommon").log(Level.WARNING, "This file existed a few milliseconds ago: "+ webXML.getAbsolutePath());
         } catch (Exception e) {
             if (null != fw && deleteNew) {
                 if (!newWebXML.delete()) {

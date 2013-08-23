@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 2008-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2008-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -50,9 +50,9 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.glassfish.tools.ide.GlassFishIdeException;
+import org.glassfish.tools.ide.TaskState;
 import org.glassfish.tools.ide.admin.CommandGetProperty;
 import org.glassfish.tools.ide.admin.ResultMap;
-import org.glassfish.tools.ide.admin.TaskState;
 import org.netbeans.modules.glassfish.eecommon.api.FindJSPServletHelper;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.j2ee.deployment.plugins.spi.FindJSPServlet;

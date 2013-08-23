@@ -61,11 +61,13 @@ import static org.glassfish.tools.ide.GlassFishStatus.OFFLINE;
 import static org.glassfish.tools.ide.GlassFishStatus.ONLINE;
 import static org.glassfish.tools.ide.GlassFishStatus.SHUTDOWN;
 import static org.glassfish.tools.ide.GlassFishStatus.STARTUP;
+import org.glassfish.tools.ide.TaskEvent;
+import org.glassfish.tools.ide.TaskState;
+import org.glassfish.tools.ide.TaskStateListener;
 import org.glassfish.tools.ide.admin.*;
 import org.glassfish.tools.ide.data.GlassFishServerStatus;
 import org.glassfish.tools.ide.data.StartupArgs;
 import org.glassfish.tools.ide.data.StartupArgsEntity;
-import org.glassfish.tools.ide.data.TaskEvent;
 import org.glassfish.tools.ide.server.FetchLogSimple;
 import org.glassfish.tools.ide.server.ServerTasks;
 import org.glassfish.tools.ide.utils.ServerUtils;
@@ -102,8 +104,8 @@ public class StartTask extends BasicTask<TaskState> {
     /** Local logger. */
     private static final Logger LOGGER = GlassFishLogger.get(StartTask.class);
 
-    private static final String MAIN_CLASS = "com.sun.enterprise.glassfish.bootstrap.ASMain"; // NOI18N
-    private static RequestProcessor NODE_REFRESHER = new RequestProcessor("nodes to refresh");
+    private static RequestProcessor NODE_REFRESHER
+            = new RequestProcessor("nodes to refresh");
 
     ////////////////////////////////////////////////////////////////////////////
     // Static methods                                                         //

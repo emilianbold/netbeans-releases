@@ -44,6 +44,7 @@ package org.netbeans.modules.glassfish.common.ui;
 import org.netbeans.modules.glassfish.common.GlassFishSettings;
 import org.openide.DialogDisplayer;
 import org.openide.NotifyDescriptor;
+import static org.openide.NotifyDescriptor.YES_OPTION;
 import org.openide.util.NbBundle;
 
 /**
@@ -72,6 +73,35 @@ public class WarnPanel extends javax.swing.JPanel {
                     panel, NotifyDescriptor.PLAIN_MESSAGE);
             DialogDisplayer.getDefault().notify(notifyDescriptor);
             GlassFishSettings.setGf312WarningShowAgain(panel.showAgain());
+        }
+    }
+
+    /**
+     * Display GlassFish process kill warning message and handle <i>Show this
+     * warning next time</i> check box.
+     * <p/>
+     * @return Value of <code>true</code> when <code>YES</code> button
+     *         was selected or Value of <code>false</code> when <code>NO/code>
+     *         button was selected. Always returns true after <i>Show this
+     *         warning next time</i> check box was turned on.
+     */
+    public static boolean gfKillWarning(String serverName) {
+        boolean showAgain = GlassFishSettings.getGf312WarningShowAgain();
+        if (showAgain) {
+            String warning = NbBundle.getMessage(
+                    WarnPanel.class, "WarnPanel.GfKillWarning", serverName);
+            String title = NbBundle.getMessage(
+                    WarnPanel.class, "WarnPanel.GfKillTitle");
+            WarnPanel panel =  new WarnPanel(warning, showAgain);
+            NotifyDescriptor notifyDescriptor = new NotifyDescriptor(
+                panel, title, NotifyDescriptor.YES_NO_OPTION,
+                NotifyDescriptor.PLAIN_MESSAGE, null, null);
+            Object button
+                    = DialogDisplayer.getDefault().notify(notifyDescriptor);
+            GlassFishSettings.setGfKillWarningShowAgain(panel.showAgain());
+            return button == YES_OPTION;
+        } else {
+            return true;
         }
     }
 
