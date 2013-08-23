@@ -83,6 +83,7 @@ import org.netbeans.api.debugger.jpda.MethodBreakpoint;
 import org.netbeans.api.debugger.jpda.Variable;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointEvent;
 import org.netbeans.api.debugger.jpda.event.JPDABreakpointListener;
+import org.netbeans.modules.debugger.jpda.actions.CompoundSmartSteppingListener;
 
 import org.netbeans.modules.debugger.jpda.jdi.ClassNotPreparedExceptionWrapper;
 import org.netbeans.modules.debugger.jpda.jdi.ObjectCollectedExceptionWrapper;
@@ -785,6 +786,27 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                             logger.fine("Method"+m+" is a static initializer, or constructor - will step out.");
                         }
                     }
+                    if (useStepFilters && !doStepAgain) {
+                        boolean stop = getCompoundSmartSteppingListener ().stopHere
+                               (session, t, debuggerImpl.getSmartSteppingFilter());
+                        if (stop) {
+                            String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
+                            String className = ReferenceTypeWrapper.name(LocationWrapper.declaringType(loc));
+                            for (String pattern : exclusionPatterns) {
+                                if (match(className, pattern)) {
+                                    stop = false;
+                                    break;
+                                }
+                            }
+                        }
+                        if (!stop) {
+                            doStepAgain = true;
+                            EventRequest request = EventWrapper.request(event);
+                            if (request instanceof StepRequest) {
+                                doStepDepth = ((StepRequest) request).depth();
+                            }
+                        }
+                    }
 
                     if (doStepAgain) {
                         //S ystem.out.println("In synthetic method -> STEP OVER/OUT again");
@@ -799,10 +821,12 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
                             StepRequest.STEP_LINE,
                             doStepDepth
                         );
-                        EventRequestWrapper.addCountFilter(stepRequest, 1);
+                        //EventRequestWrapper.addCountFilter(stepRequest, 1);
                         String[] exclusionPatterns = debuggerImpl.getSmartSteppingFilter().getExclusionPatterns();
-                        for (int i = 0; i < exclusionPatterns.length; i++) {
-                            StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
+                        if (doStepDepth != StepRequest.STEP_OUT) {
+                            for (int i = 0; i < exclusionPatterns.length; i++) {
+                                StepRequestWrapper.addClassExclusionFilter(stepRequest, exclusionPatterns [i]);
+                            }
                         }
                         debuggerImpl.getOperator ().register (stepRequest, this);
                         EventRequestWrapper.setSuspendPolicy (stepRequest, debugger.getSuspend ());
@@ -917,6 +941,17 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
             return false;
         }
     }
+    
+    private static boolean match(String name, String pattern) {
+        if (pattern.startsWith ("*"))
+            return name.endsWith (pattern.substring (1));
+        else
+        if (pattern.endsWith ("*"))
+            return name.startsWith (
+                pattern.substring (0, pattern.length () - 1)
+            );
+        return name.equals (pattern);
+    }
 
     /** Cancel this step - remove all submitted event requests. */
     public void cancel() {
@@ -968,6 +1003,14 @@ public class JPDAStepImpl extends JPDAStep implements Executor {
         return TypeComponentWrapper.isSynthetic(m) ? -1 : 0;
     }
     
+    private CompoundSmartSteppingListener compoundSmartSteppingListener;
+
+    private CompoundSmartSteppingListener getCompoundSmartSteppingListener () {
+        if (compoundSmartSteppingListener == null)
+            compoundSmartSteppingListener = session.lookupFirst(null, CompoundSmartSteppingListener.class);
+        return compoundSmartSteppingListener;
+    }
+
     public static final class MethodExitBreakpointListener implements JPDABreakpointListener {
         
         private MethodBreakpoint mb;

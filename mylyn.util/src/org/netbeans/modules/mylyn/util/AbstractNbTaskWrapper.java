@@ -179,7 +179,7 @@ public abstract class AbstractNbTaskWrapper {
         }
     }
 
-    protected final void editorOpened () {
+    protected final boolean editorOpened () {
         list = new NbTaskDataModel.NbTaskDataModelListener() {
             @Override
             public void attributeChanged (NbTaskDataModel.NbTaskDataModelEvent event) {
@@ -200,8 +200,15 @@ public abstract class AbstractNbTaskWrapper {
                 setUpToDate(false, false);
             }
             model = task.getTaskDataModel();
+            if (model == null) {
+                if (!synchronizeTask()) {
+                    return false;
+                }
+                model = task.getTaskDataModel();
+            }
             model.addNbTaskDataModelListener(list);
         }
+        return true;
     }
 
     protected final void editorClosed () {
@@ -418,6 +425,12 @@ public abstract class AbstractNbTaskWrapper {
         }
         return null;
     }
+
+    /**
+     * Called when the task does not yet contain all needed data. Needs to re-sync to get full taskdata.
+     * @return false when the sync fails for some reason
+     */
+    protected abstract boolean synchronizeTask ();
 
     private class TaskDataListenerImpl implements TaskDataListener {
 

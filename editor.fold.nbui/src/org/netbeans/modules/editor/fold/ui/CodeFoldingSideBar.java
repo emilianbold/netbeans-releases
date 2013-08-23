@@ -274,13 +274,47 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
         });
     }
     
+    private static boolean canDisplay(JTextComponent component) {
+        Object o = component.getClientProperty(PROP_SIDEBAR_MARK);
+        return (o == null || ((o instanceof JComponent) && !((JComponent)o).isVisible()));
+    }
+
+    /**
+     * removeNotify will be called during sidebar rebuild, but
+     * before the constructor for a new sidebar is called
+     */
+    @Override
+    public void removeNotify() {
+        Object o = component.getClientProperty(PROP_SIDEBAR_MARK);
+        if (o == this) {
+            component.putClientProperty(PROP_SIDEBAR_MARK, null);
+        }
+        super.removeNotify();
+    }
+
+    /**
+     * This is just in case; usually sidebars are created anew, so the constructor
+     * will set the property. But if the components are just reattached, not rebuilt for
+     * whatever reason, stuff back the flag removed in addNotify.
+     */
+    @Override
+    public void addNotify() {
+        super.addNotify();
+        Object o = component.getClientProperty(PROP_SIDEBAR_MARK);
+        if (o == null) {
+            component.putClientProperty(PROP_SIDEBAR_MARK, this);
+        }
+    }
+    
+    
+    
     public CodeFoldingSideBar(final JTextComponent component){
         super();
         this.component = component;
 
         // prevent from display CF sidebar twice
-        if (component.getClientProperty(PROP_SIDEBAR_MARK) == null) {
-            component.putClientProperty(PROP_SIDEBAR_MARK, Boolean.TRUE);
+        if (canDisplay(component)) {
+            component.putClientProperty(PROP_SIDEBAR_MARK, this);
         } else {
             if (LOG.isLoggable(Level.FINE)) {
                 LOG.log(Level.FINE, "Folding sidebar already present at {0}", component);
@@ -1520,7 +1554,7 @@ public final class CodeFoldingSideBar extends JComponent implements Accessible {
     public static class Factory implements SideBarFactory {
         @Override
         public JComponent createSideBar(JTextComponent target) {
-            if (target.getClientProperty(PROP_SIDEBAR_MARK) != null) {
+            if (!canDisplay(target)) {
                 return null;
             }
             FoldHierarchy fh = FoldHierarchy.get(target);

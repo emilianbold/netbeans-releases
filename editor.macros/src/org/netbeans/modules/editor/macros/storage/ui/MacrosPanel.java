@@ -99,6 +99,8 @@ public class MacrosPanel extends JPanel {
     
     private ShortcutsFinder.Writer finder;
     
+    private boolean ignoreUIChanges;
+    
     /** 
      * Creates new form MacrosPanel.
      */
@@ -374,20 +376,25 @@ public class MacrosPanel extends JPanel {
     }
     
     private void updateButtons(int index) {
-        if (index < 0 || index >= tMacros.getRowCount()) {
-            epMacroCode.setText(""); //NOI18N
-            epMacroCode.setEnabled(false);
-            bRemove.setEnabled(false);
-            bSetShortcut.setEnabled(false);
-        } else {
-            int modelIndex = sorter.modelIndex(index);
-            epMacroCode.setText(model.getMacroByIndex(modelIndex).getCode()); //NOI18N
-            epMacroCode.getCaret().setDot(0);
-            epMacroCode.setEnabled(true);
-            // Fix for #135985 commented to avoid focus
-            //epMacroCode.requestFocusInWindow();
-            bRemove.setEnabled(true && finder != null);
-            bSetShortcut.setEnabled(true && finder != null);
+        ignoreUIChanges = true;
+        try {
+            if (index < 0 || index >= tMacros.getRowCount()) {
+                epMacroCode.setText(""); //NOI18N
+                epMacroCode.setEnabled(false);
+                bRemove.setEnabled(false);
+                bSetShortcut.setEnabled(false);
+            } else {
+                int modelIndex = sorter.modelIndex(index);
+                epMacroCode.setText(model.getMacroByIndex(modelIndex).getCode()); //NOI18N
+                epMacroCode.getCaret().setDot(0);
+                epMacroCode.setEnabled(true);
+                // Fix for #135985 commented to avoid focus
+                //epMacroCode.requestFocusInWindow();
+                bRemove.setEnabled(true && finder != null);
+                bSetShortcut.setEnabled(true && finder != null);
+            }
+        } finally {
+            ignoreUIChanges = false;
         }
     }
     
@@ -416,6 +423,9 @@ public class MacrosPanel extends JPanel {
     }
     
     private void epMacroCodeDocumentChanged() {
+        if (ignoreUIChanges) {
+            return;
+        }
         int index = tMacros.getSelectedRow();
         if (index >= 0) {
             model.getMacroByIndex(sorter.modelIndex(index)).setCode(epMacroCode.getText());

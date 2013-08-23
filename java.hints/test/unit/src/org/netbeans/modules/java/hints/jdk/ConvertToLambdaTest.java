@@ -936,6 +936,25 @@ public class ConvertToLambdaTest extends NbTestCase {
                        
     }
     
+    public void test234686() throws Exception {
+        HintTest.create()
+                .sourceLevel("1.8")
+                .input("package test;\n" +
+                       "public class Test {\n" +
+                       "    void foo() {\n" +
+                       "        print(0, new Runnable() {\n" +
+                       "            @ Override public void run() { }\n" +
+                       "        });\n" +
+                       "    }\n" +
+                       "    void print(String str, Runnable r) {\n" +
+                       "    }\n" +
+                       "}\n",
+                       false)
+                .run(ConvertToLambda.class)
+                .assertWarnings();
+
+    }
+
     static {
         TestCompilerSettings.commandLine = "-XDidentifyLambdaCandidate=true -XDfindDiamond";
         JavacParser.DISABLE_SOURCE_LEVEL_DOWNGRADE = true;
