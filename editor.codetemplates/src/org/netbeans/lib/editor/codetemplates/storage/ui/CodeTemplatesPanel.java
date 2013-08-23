@@ -210,6 +210,11 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         cbOnExpandAction.removeActionListener(this);
         tTemplates.getSelectionModel ().removeListSelectionListener (this);
         
+        String defaultSelectedLang = null;
+        Object selectedItem = cbLanguage.getSelectedItem();
+        if (selectedItem instanceof String) {
+            defaultSelectedLang = (String) selectedItem;
+        }
         cbLanguage.removeAllItems ();
         List<String> languages = new ArrayList<String>(model.getLanguages ());
         Collections.sort (languages);
@@ -257,9 +262,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         tTemplates.getSelectionModel ().addListSelectionListener (this);
         
         // Pre-select a language
-        String defaultSelectedLang = null;
         JTextComponent pane = EditorRegistry.lastFocusedComponent();
-        if (pane != null) {
+        if (defaultSelectedLang == null && pane != null) {
             String mimeType = (String)pane.getDocument().getProperty("mimeType"); // NOI18N
             if (mimeType != null) {
                 defaultSelectedLang = model.findLanguage(mimeType);

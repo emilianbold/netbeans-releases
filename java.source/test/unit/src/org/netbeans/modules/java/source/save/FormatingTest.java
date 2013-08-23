@@ -4243,6 +4243,157 @@ public class FormatingTest extends NbTestCase {
         reformat(doc, content, golden);
     }
 
+    public void test231874() throws Exception {
+        testFile = new File(getWorkDir(), "Test.java");
+        TestUtilities.copyStringToFile(testFile,
+                "package hierbas.del.litoral;\n"
+                + "\n"
+                + "public class Test {\n"
+                + "}\n");
+        FileObject testSourceFO = FileUtil.toFileObject(testFile);
+        DataObject testSourceDO = DataObject.find(testSourceFO);
+        EditorCookie ec = (EditorCookie)testSourceDO.getCookie(EditorCookie.class);
+        final Document doc = ec.openDocument();
+        doc.putProperty(Language.class, JavaTokenId.language());
+        String content =
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n\n"
+                + "private char c = System\n"
+                + ".getProperty(\n"
+                + "\"property\",\n"
+                + "\"default\")\n"
+                + ".charAt(\n"
+                + "0);\n"
+                + "}\n";
+        String golden =
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n\n"
+                + "    private char c = System\n"
+                + "            .getProperty(\n"
+                + "                    \"property\",\n"
+                + "                    \"default\")\n"
+                + "            .charAt(\n"
+                + "                    0);\n"
+                + "}\n";
+        reformat(doc, content, golden);
+
+        content =
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n\n"
+                + "private char c = System\n"
+                + ".getProperty(\n"
+                + "\"property\",\n"
+                + "\"default\"\n"
+                + ").charAt(\n"
+                + "0\n"
+                + ");\n"
+                + "}\n";
+        golden =
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n\n"
+                + "    private char c = System\n"
+                + "            .getProperty(\n"
+                + "                    \"property\",\n"
+                + "                    \"default\"\n"
+                + "            ).charAt(\n"
+                + "                    0\n"
+                + "            );\n"
+                + "}\n";
+        reformat(doc, content, golden);
+
+        content =
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n\n"
+                + "private char c = System\n"
+                + ".getProperty(\n"
+                + "\"property\",\n"
+                + "\"default\"\n"
+                + ")\n"
+                + ".charAt(\n"
+                + "0\n"
+                + ");\n"
+                + "}\n";
+        golden =
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n\n"
+                + "    private char c = System\n"
+                + "            .getProperty(\n"
+                + "                    \"property\",\n"
+                + "                    \"default\"\n"
+                + "            )\n"
+                + "            .charAt(\n"
+                + "                    0\n"
+                + "            );\n"
+                + "}\n";
+        reformat(doc, content, golden);
+
+        content =
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n\n"
+                + "private char c = System.getProperty(\n"
+                + "\"property\",\n"
+                + "\"default\")\n"
+                + ".charAt(\n"
+                + "0);\n"
+                + "}\n";
+        golden =
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n\n"
+                + "    private char c = System.getProperty(\n"
+                + "            \"property\",\n"
+                + "            \"default\")\n"
+                + "            .charAt(\n"
+                + "                    0);\n"
+                + "}\n";
+        reformat(doc, content, golden);
+
+        content =
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n\n"
+                + "private char c = System.getProperty(\n"
+                + "\"property\",\n"
+                + "\"default\"\n"
+                + ").charAt(\n"
+                + "0\n"
+                + ");\n"
+                + "}\n";
+        golden =
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n\n"
+                + "    private char c = System.getProperty(\n"
+                + "            \"property\",\n"
+                + "            \"default\"\n"
+                + "    ).charAt(\n"
+                + "            0\n"
+                + "    );\n"
+                + "}\n";
+        reformat(doc, content, golden);
+
+        content =
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n\n"
+                + "private char c = System.getProperty(\n"
+                + "\"property\",\n"
+                + "\"default\"\n"
+                + ")\n"
+                + ".charAt(\n"
+                + "0\n"
+                + ");\n"
+                + "}\n";
+        golden =
+                "package hierbas.del.litoral;\n\n"
+                + "public class Test {\n\n"
+                + "    private char c = System.getProperty(\n"
+                + "            \"property\",\n"
+                + "            \"default\"\n"
+                + "    )\n"
+                + "            .charAt(\n"
+                + "                    0\n"
+                + "            );\n"
+                + "}\n";
+        reformat(doc, content, golden);
+    }
+
     public void testLambdaParameterWithInferredType() throws Exception {
         testFile = new File(getWorkDir(), "Test.java");
         TestUtilities.copyStringToFile(testFile, "");

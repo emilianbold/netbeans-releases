@@ -1264,7 +1264,20 @@ public final class AnnotationHolder implements ChangeListener, DocumentListener 
         doc.render(new Runnable() {
 
             public void run() {
+                if (offset > doc.getLength()) {
+                  //may happen if the document has been modified between
+                  //the point caret location was read and the point where
+                  //the document has been locked:
+                  return;
+                }
                 try {
+                    if (offset > doc.getLength()) {
+                        //may happen if the document has been modified between
+                        //the point caret location was read and the point where
+                        //the document has been locked:
+                        return ;
+                    }
+
                     Position pos = getPosition(Utilities.getLineOffset(doc, offset), true);
 
                     List<ErrorDescription> errsForCurrentLine = getErrorsForLine(pos, true);
