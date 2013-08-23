@@ -326,7 +326,7 @@ public class DwarfDiscoveryTest  extends NbTestCase {
 
             @Override
             public Project getProject() {
-                throw new UnsupportedOperationException("Not supported yet.");
+                return null;
             }
 
             @Override

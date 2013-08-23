@@ -1791,14 +1791,10 @@ abstract public class CsmCompletionQuery {
                                         boolean inner = false;
                                         int ad = lastType.getArrayDepth();
                                         if (staticOnly && ad == 0) { // can be inner class
-                                            CsmClassifier classifier = getClassifier(lastType, contextFile, endOffset);
-                                            if (CsmKindUtilities.isClass(classifier)) {
-                                                CsmClass clazz = (CsmClass) classifier;
-                                                List<CsmClassifier> classes = finder.findNestedClassifiers(contextElement, clazz, var, true, true, this.sort);
-                                                if (classes != null && !classes.isEmpty()) {
-                                                    lastType = CsmCompletion.createType(classes.get(0), 0, 0, 0, false);
-                                                    inner = true;
-                                                }
+                                            CsmType nestedType = findNestedType(lastType, var, endOffset);
+                                            if (nestedType != null) {
+                                                lastType = nestedType;
+                                                inner = true;
                                             }
                                         }
                                         if (!inner) { // not inner class name
@@ -1967,7 +1963,12 @@ abstract public class CsmCompletionQuery {
                     if(typ == null) {
                         boolean oldFindType = findType;
                         findType = true;
+                        boolean oldStaticOnly = staticOnly;
+                        if (kind == ExprKind.SCOPE) {
+                            staticOnly = true;
+                        }
                         resolveExp(item.getParameter(0), first);
+                        staticOnly = oldStaticOnly;
                         typ = lastType;
                         findType = oldFindType;
                     }
@@ -2479,10 +2480,12 @@ abstract public class CsmCompletionQuery {
                                     if (CsmKindUtilities.isClass(classifier)) {
                                         // IZ#143044
                                         // There is no need for searching in parents for global declarations/definitions
-                                        boolean inspectParentClasses = (this.contextElement != null);
+                                        boolean inspectParentClasses = (this.contextElement != null);                                        
                                         mtdList.addAll(finder.findMethods(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, inspectParentClasses, scopeAccessedClassifier, this.sort));
                                         if (mtdList.isEmpty()) {
+                                            CsmType previousType = lastType;
                                             lastType = null;
+                                            boolean returnImmediately = true; 
                                             List<CsmField> foundFields = finder.findFields(this.contextElement, (CsmClass) classifier, mtdName, true, false, first, true, scopeAccessedClassifier, this.sort);
                                             if (foundFields != null && !foundFields.isEmpty()) {
                                                 // we found field with correct name, check if it has function pointer type
@@ -2523,8 +2526,16 @@ abstract public class CsmCompletionQuery {
                                                         }
                                                     }
                                                 }
+                                            } else if (previousType != null) {
+                                                // can be default constructor
+                                                if ((staticOnly || kind == ExprKind.SCOPE) && previousType.getArrayDepth() == 0) {
+                                                    lastType = findNestedType(previousType, mtdName, endOffset);
+                                                    returnImmediately = (lastType == null); // do not return if type is resolved
+                                                }
                                             }
-                                            return (lastType != null);
+                                            if (returnImmediately) {
+                                                return (lastType != null);
+                                            }                                            
                                         }
                                     }
                                 } else if (lastNamespace != null) {
@@ -2556,7 +2567,7 @@ abstract public class CsmCompletionQuery {
                             if (mtdList == null || mtdList.isEmpty()) {
                                 // If we have not found method and (lastType != null) it could be default constructor.
                                 if (!isConstructor) {
-                                    if (first) {
+                                    if (first || staticOnly || kind == ExprKind.SCOPE) {
                                         // It could be default constructor call without "new"
                                         CsmClassifier cls = null;
                                         //cls = sup.getClassFromName(CsmCompletionQuery.this.getFinder(), mtdName, true);
@@ -2781,6 +2792,20 @@ abstract public class CsmCompletionQuery {
                 }
             }
             return cls;
+        }
+        
+        private CsmType findNestedType(CsmType baseType, String name, int endOffset) {
+            if (baseType != null) {
+                CsmClassifier classifier = getClassifier(baseType, contextFile, endOffset);
+                if (CsmKindUtilities.isClass(classifier)) {
+                    CsmClass clazz = (CsmClass) classifier;
+                    List<CsmClassifier> classes = finder.findNestedClassifiers(contextElement, clazz, name, true, true, this.sort);
+                    if (classes != null && !classes.isEmpty()) {
+                        return CsmCompletion.createType(classes.get(0), 0, 0, 0, false);
+                    }
+                }
+            }
+            return null;
         }
 
         private CsmType findExactVarType(final String var, final int varPos) {

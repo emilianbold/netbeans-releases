@@ -60,7 +60,10 @@ import org.openide.util.NbBundle;
     private CreateHostVisualPanel2 component;
     private ExecutionEnvironment lastValidatedHost;
     private final CreateHostData data;
-    private Future<Boolean> validationTask;
+
+    /** NB: is written only in validate(), is read from other places */
+    private volatile Future<Boolean> validationTask;
+
     private WizardDescriptor settings;
 
     public CreateHostWizardPanel2(CreateHostData data) {
@@ -87,12 +90,14 @@ import org.openide.util.NbBundle;
     @Override
     public void validate() throws WizardValidationException {
         ExecutionEnvironment host = component.getHost();
-
+        
         if (host == null || !host.equals(lastValidatedHost)) {
             validationTask = component.validateHost();
 
             try {
                 validationTask.get();
+            } catch (InterruptedException ex) {
+                validationTask.cancel(true);
             } catch (Exception ex) {
                 // just skip it 
                 // component.getHost() == null will indicate that validation
@@ -157,13 +162,12 @@ import org.openide.util.NbBundle;
     @Override
     public final void removeChangeListener(ChangeListener l) {
         changeSupport.removeChangeListener(l);
-
-        if (validationTask != null && !validationTask.isDone()) {
-            try {
-                validationTask.cancel(true);
-            } finally {
-                validationTask = null;
-            }
+        Future<Boolean> task = validationTask;
+        if (task != null && !task.isDone()) {
+            task.cancel(true);
+            // no need to set validationTask to null:
+            // it is not null only if validate() is running =>
+            // it's validate() who will set it to null 
         }
     }
 

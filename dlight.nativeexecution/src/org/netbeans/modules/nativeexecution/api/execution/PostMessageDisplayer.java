@@ -38,11 +38,19 @@
  */
 package org.netbeans.modules.nativeexecution.api.execution;
 
+import java.awt.Color;
+import java.io.IOException;
 import java.util.concurrent.TimeUnit;
+import javax.swing.UIManager;
 import org.netbeans.modules.nativeexecution.api.NativeProcess;
 import org.netbeans.modules.nativeexecution.api.NativeProcess.State;
 import org.netbeans.modules.nativeexecution.api.ProcessStatusEx;
+import org.netbeans.modules.nativeexecution.api.execution.PostMessageDisplayer.AbstractDisplayer.Colors;
+import org.netbeans.swing.plaf.LFCustoms;
 import org.openide.util.NbBundle;
+import org.openide.windows.IOColorLines;
+import org.openide.windows.IOColors;
+import org.openide.windows.InputOutput;
 
 /**
  *
@@ -56,7 +64,7 @@ public interface PostMessageDisplayer {
 
     public String getPostMessage(NativeProcess.State state, int rc, long time);
 
-    public final static class Default implements PostMessageDisplayer {
+    public final static class Default implements PostMessageDisplayer2 {
 
         private final String actionName;
 
@@ -188,6 +196,112 @@ public interface PostMessageDisplayer {
             }
 
             return getPostMessage(state, status, time);
+        }
+
+        @Override
+        public void outPostMessage(InputOutput io, NativeProcess process, long time) {
+            Color color;
+            if (process.getState() == State.ERROR) {
+                color = Colors.getColorError(io);
+            } else {
+                color = process.exitValue() == 0
+                        ? Colors.getColorSuccess(io)
+                        : Colors.getColorFailure(io);
+            }
+            try {
+                IOColorLines.println(io, "\r", Color.BLACK); // NOI18N
+                IOColorLines.println(io, getPostMessage(process, time) + "\r", color); // NOI18N
+            } catch (IOException ex) {
+            }
+        }
+    }
+
+    /*
+     * @since 1.30.1
+     */
+    public static abstract class AbstractDisplayer implements PostMessageDisplayer2 {
+
+        private final Default defaultImpl;
+
+        protected AbstractDisplayer(String actionName) {
+            defaultImpl = new Default(null);
+        }
+
+        @Override
+        public void outPostMessage(InputOutput io, NativeProcess process, long time) {
+            defaultImpl.outPostMessage(io, process, time);
+        }
+
+        @Override
+        public String getPostMessage(NativeProcess process, long time) {
+            return defaultImpl.getPostMessage(process, time);
+        }
+
+        @Override
+        public String getPostStatusString(NativeProcess process) {
+            return defaultImpl.getPostStatusString(process);
+        }
+
+        @Override
+        public String getPostMessage(State state, int rc, long time) {
+            return defaultImpl.getPostMessage(state, rc, time);
+        }
+
+        protected final String formatTime(long millis) {
+            return Default.formatTime(millis);
+        }
+
+        protected static class Colors {
+
+            protected static Color getColorError(InputOutput io) {
+                Color color = IOColors.getColor(io, IOColors.OutputType.ERROR);
+                if (color == null) {
+                    color = UIManager.getColor("nb.output.err.foreground"); // NOI18N
+                    if (color == null) {
+                        color = LFCustoms.shiftColor(Color.RED);
+                    }
+                }
+                return color;
+            }
+
+            protected static Color getColorFailure(InputOutput io) {
+                Color color = IOColors.getColor(io, IOColors.OutputType.LOG_FAILURE);
+                if (color == null) {
+                    color = UIManager.getColor("nb.output.failure.foreground"); // NOI18N
+                    if (color == null) {
+                        color = Color.RED.darker();
+                    }
+                }
+                return color;
+            }
+
+            protected static Color getColorSuccess(InputOutput io) {
+                Color color = IOColors.getColor(io, IOColors.OutputType.LOG_SUCCESS);
+                if (color == null) {
+                    color = UIManager.getColor("nb.output.success.foreground"); // NOI18N
+                    if (color == null) {
+                        color = Color.GREEN.darker().darker();
+                    }
+                }
+                return color;
+            }
+
+            protected static Color getDefaultColorBackground() {
+                Color back = UIManager.getColor("nb.output.backgorund");        //NOI18N
+                if (back == null) {
+                    back = UIManager.getColor("TextField.background");          //NOI18N
+                    if (back == null) {
+                        back = Color.WHITE;
+                    } else if (isNimbus()) {
+                        back = new Color(back.getRGB()); // #225829
+                    }
+                }
+                return back;
+            }
+
+            static boolean isNimbus() {
+                return "Nimbus".equals(UIManager.getLookAndFeel().getID());     //NOI18N
+            }
         }
     }
 }

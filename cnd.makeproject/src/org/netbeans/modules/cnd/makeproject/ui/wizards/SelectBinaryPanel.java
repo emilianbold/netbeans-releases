@@ -107,7 +107,7 @@ public class SelectBinaryPanel implements WizardDescriptor.FinishablePanel<Wizar
 
     @Override
     public HelpCtx getHelp() {
-        return new HelpCtx("NewBinaryWizard"); // NOI18N
+        return new HelpCtx("NewBinaryWizardP1"); // NOI18N
     }
 
     @Override
