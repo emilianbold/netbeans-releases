@@ -3177,9 +3177,9 @@ public class CasualDiff {
         int lastGroup = -1;
         int i = 0;
         // copy to start position
-        int insertPos = estimator.getInsertPos(0);
+        int insertPos = Math.min(getCommentCorrectedOldPos(oldList.get(i)), estimator.getInsertPos(0));
         if (insertPos > localPointer) {
-            copyTo(localPointer, localPointer = estimator.getInsertPos(0), printer);
+            copyTo(localPointer, localPointer = insertPos, printer);
         } else {
             insertPos = localPointer;
         }

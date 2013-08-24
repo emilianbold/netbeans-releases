@@ -47,9 +47,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
-import javax.swing.text.BadLocationException;
-import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.Hint;
 import org.netbeans.modules.csl.api.RuleContext;
 import org.netbeans.modules.html.editor.api.gsf.HtmlErrorFilterContext;
@@ -68,7 +65,6 @@ import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.api.LibraryComponent;
 import org.netbeans.modules.web.jsfapi.api.Tag;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -79,7 +75,7 @@ public class ComponentUsagesChecker extends HintsProvider {
 
     @Override
     public List<Hint> compute(RuleContext context) {
-        List<Hint> hints = new ArrayList<Hint>();
+        List<Hint> hints = new ArrayList<>();
 
         checkCCCalls(hints, context);
 

@@ -534,10 +534,19 @@ public final class HtmlRenderer {
         return _renderHTML(s, 0, g, x, y, w, h, f, defaultColor, style, paint, null);
     }
 
+
     /** Implementation of HTML rendering */
     static double _renderHTML(
         String s, int pos, Graphics g, int x, int y, int w, int h, Font f, Color defaultColor, int style, boolean paint,
         Color background
+    ) {
+        return _renderHTML( s, pos, g, x, y, w, h, f, defaultColor, style, paint, background, false );
+    }
+
+    /** Implementation of HTML rendering */
+    static double _renderHTML(
+        String s, int pos, Graphics g, int x, int y, int w, int h, Font f, Color defaultColor, int style, boolean paint,
+        Color background, boolean forcedForeground
     ) {
         //        System.err.println ("rhs: " + y + " " + s);
         if (f == null) {
@@ -686,7 +695,7 @@ public final class HtmlRenderer {
                     case 'a': //NOI18N
                     case 'A': //NOI18N
                         
-                        if (_colorStack.isEmpty()) {
+                        if (_colorStack.isEmpty() || forcedForeground) {
                             g.setColor(defaultColor);
                         } else {
                             g.setColor(_colorStack.pop());
@@ -707,7 +716,7 @@ public final class HtmlRenderer {
                             break;
                         }
 
-                        if (!bold) {
+                        if (!bold && !(chars[pos+1] == 'o' || chars[pos+1] == 'O')) {
                             throwBadHTML("Closing bold tag w/o " + //NOI18N
                                 "opening bold tag", pos, chars
                             ); //NOI18N
@@ -778,7 +787,7 @@ public final class HtmlRenderer {
                     case 'F': //NOI18N
                     case 'f': //NOI18N
 
-                        if (_colorStack.isEmpty()) {
+                        if (_colorStack.isEmpty() || forcedForeground) {
                             g.setColor(defaultColor);
                         } else {
                             g.setColor(_colorStack.pop());
@@ -796,16 +805,17 @@ public final class HtmlRenderer {
                     switch (chars[pos]) {
                     case 'a': //NOI18N
                     case 'A': //NOI18N
-                        
-                        Color linkc = UIManager.getColor("nb.html.link.foreground");    // NOI18N
-                        if (linkc == null) {
-                            linkc = Color.BLUE;
-                        }
-                        _colorStack.push(g.getColor());
 
-                        linkc = HtmlLabelUI.ensureContrastingColor(linkc, background);
-                        g.setColor(linkc);
-                        
+                        if( !forcedForeground ) {
+                            Color linkc = UIManager.getColor("nb.html.link.foreground");    // NOI18N
+                            if (linkc == null) {
+                                linkc = Color.BLUE;
+                            }
+                            _colorStack.push(g.getColor());
+
+                            linkc = HtmlLabelUI.ensureContrastingColor(linkc, background);
+                            g.setColor(linkc);
+                        }
                         link = true;
 
                         break;
@@ -888,13 +898,14 @@ public final class HtmlRenderer {
 
                     case 'f': //NOI18N
                     case 'F': //NOI18N
+                        if( !forcedForeground ) {
+                            Color c = findColor(chars, pos, tagEnd);
+                            _colorStack.push(g.getColor());
 
-                        Color c = findColor(chars, pos, tagEnd);
-                        _colorStack.push(g.getColor());
+                            c = HtmlLabelUI.ensureContrastingColor(c, background);
 
-                        c = HtmlLabelUI.ensureContrastingColor(c, background);
-
-                        g.setColor(c);
+                            g.setColor(c);
+                        }
 
                         break;
 

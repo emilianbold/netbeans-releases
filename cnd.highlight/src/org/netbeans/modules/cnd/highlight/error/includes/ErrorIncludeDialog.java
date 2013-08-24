@@ -682,8 +682,13 @@ public class ErrorIncludeDialog extends JPanel implements CsmModelListener {
                         getObjectFile(found, file.getAbsolutePath().toString(), buf);
                     }
                     if (file.isHeaderFile()) {
-                        List<CsmInclude> list = CsmFileInfoQuery.getDefault().getIncludeStack(file);
-                        if (list.size() > 0) {
+                        List<CsmInclude> list = Collections.emptyList();
+                        if (handleIncludeError) {
+                            list = CsmFileInfoQuery.getDefault().getIncludeStack(file);
+                        } else if (CsmKindUtilities.isErrorDirective(error)) {
+                            list = CsmFileInfoQuery.getDefault().getIncludeStack((CsmErrorDirective)error);
+                        }
+                        if (!list.isEmpty()) {
                             buf.append(i18n("PathToHeader"));  // NOI18N
                             file = list.get(0).getContainingFile();
                             for (CsmInclude inc : list) {

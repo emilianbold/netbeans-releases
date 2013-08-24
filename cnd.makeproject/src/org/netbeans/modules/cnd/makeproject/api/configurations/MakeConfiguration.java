@@ -88,6 +88,7 @@ import org.openide.util.NbBundle;
 public final class MakeConfiguration extends Configuration implements Cloneable {
 
     public static final String NBPROJECT_FOLDER = "nbproject"; // NOI18N
+    public static final String PRIVATE_FOLDER = "private"; // NOI18N
     public static final String NBPROJECT_PRIVATE_FOLDER = "nbproject/private"; // NOI18N
     public static final String PROJECT_XML = "project.xml"; // NOI18N
     public static final String CONFIGURATIONS_XML = "configurations.xml"; // NOI18N

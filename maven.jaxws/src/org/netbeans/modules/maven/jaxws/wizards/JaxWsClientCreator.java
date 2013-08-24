@@ -142,17 +142,22 @@ public class JaxWsClientCreator implements ClientCreator {
                             }
                         }
                         String packageName = (String) wiz.getProperty(WizardProperties.WSDL_PACKAGE_NAME);
-                        org.netbeans.modules.maven.model.pom.Plugin plugin =
-                                WSUtils.isEJB(project) ?
-                                    MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
-                                    MavenModelUtils.addJaxWSPlugin(model);
-                        
-                        MavenModelUtils.addWsimportExecution(plugin, clientName, 
-                                relativePath,wsdlLocation, packageName);
-                        if (WSUtils.isWeb(project)) { // expecting web project
-                            MavenModelUtils.addWarPlugin(model);
-                        } else { // J2SE Project
-                            MavenModelUtils.addWsdlResources(model);
+                        try {
+                            model.startTransaction();
+                            org.netbeans.modules.maven.model.pom.Plugin plugin =
+                                    WSUtils.isEJB(project) ?
+                                        MavenModelUtils.addJaxWSPlugin(model, "2.0") : //NOI18N
+                                        MavenModelUtils.addJaxWSPlugin(model);
+
+                            MavenModelUtils.addWsimportExecution(plugin, clientName, 
+                                    relativePath,wsdlLocation, packageName);
+                            if (WSUtils.isWeb(project)) { // expecting web project
+                                MavenModelUtils.addWarPlugin(model);
+                            } else { // J2SE Project
+                                MavenModelUtils.addWsdlResources(model);
+                            }
+                        } finally {
+                            model.endTransaction();
                         }
                     }
                 };

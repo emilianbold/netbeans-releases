@@ -348,7 +348,7 @@ class HtmlLabelUI extends LabelUI {
         Color foreground = ensureContrastingColor(getForegroundFor(r), background);
 
         if (r.isHtml()) {
-            HtmlRenderer._renderHTML(text, 0, g, txtX, txtY, txtW, txtH, f, foreground, r.getRenderStyle(), true, background);
+            HtmlRenderer._renderHTML(text, 0, g, txtX, txtY, txtW, txtH, f, foreground, r.getRenderStyle(), true, background, r.isSelected());
         } else {
             HtmlRenderer.renderPlainString(text, g, txtX, txtY, txtW, txtH, f, foreground, r.getRenderStyle(), true);
         }
@@ -384,7 +384,7 @@ class HtmlLabelUI extends LabelUI {
 
         if (r.isHtml()) {
             HtmlRenderer._renderHTML(
-                r.getText(), 0, g, txtX, txtY, txtW, txtH, f, foreground, r.getRenderStyle(), true, background
+                r.getText(), 0, g, txtX, txtY, txtW, txtH, f, foreground, r.getRenderStyle(), true, background, r.isSelected()
             );
         } else {
             HtmlRenderer.renderString(

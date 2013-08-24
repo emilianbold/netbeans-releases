@@ -240,7 +240,11 @@ public class APTFileMacroMap extends APTBaseMacroMap {
         }
 
         APTHandlersSupportImpl.StateKeyImpl getStateKey(Key startFileProject) {
-            return new APTHandlersSupportImpl.StateKeyImpl(crc1, crc2, startFileProject);
+            long sysCrc = 0;
+            if (sysMacroMap instanceof APTSystemMacroMap) {
+                sysCrc = ((APTSystemMacroMap) sysMacroMap).getCompilationUnitCRC();
+            }            
+            return new APTHandlersSupportImpl.StateKeyImpl(crc1, crc2, sysCrc, startFileProject);
         }
 
         @Override

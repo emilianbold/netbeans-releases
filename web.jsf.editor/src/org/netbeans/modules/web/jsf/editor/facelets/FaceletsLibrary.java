@@ -150,48 +150,59 @@ public class FaceletsLibrary extends AbstractFaceletsLibrary {
         return libraryDescriptor;
     }
 
+    @Override
     public void putConverter(String name, String id) {
         components.put(name, new Converter(name, id, null));
     }
 
+    @Override
     public void putConverter(String name, String id, Class handlerClass) {
         components.put(name, new Converter(name, id, handlerClass));
     }
 
+    @Override
     public void putValidator(String name, String id) {
         components.put(name, new Validator(name, id, null));
     }
 
+    @Override
     public void putValidator(String name, String id, Class handlerClass) {
         components.put(name, new Validator(name, id, handlerClass));
     }
 
+    @Override
     public void putBehavior(String name, String id) {
         components.put(name, new Behavior(name, id, null));
     }
 
+    @Override
     public void putBehavior(String name, String id, Class handlerClass) {
         components.put(name, new Behavior(name, id, handlerClass));
     }
 
+    @Override
     public void putTagHandler(String name, Class type) {
         components.put(name, new TagHandler(name, type));
     }
 
+    @Override
     public void putComponent(String name, String componentType,
             String rendererType) {
         components.put(name, new Component(name, componentType, rendererType, null));
     }
 
+    @Override
     public void putComponent(String name, String componentType,
             String rendererType, Class handlerClass) {
         components.put(name, new Component(name, componentType, rendererType, handlerClass));
     }
 
+    @Override
     public void putUserTag(String name, URL source) {
         components.put(name, new UserTag(name, source));
     }
 
+    @Override
     public void putFunction(String name, Method method) {
         components.put(name, new Function(name, method));
     }

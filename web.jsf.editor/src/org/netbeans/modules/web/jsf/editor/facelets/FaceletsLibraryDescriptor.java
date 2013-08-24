@@ -82,8 +82,8 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
     private FileObject definitionFile;
     private String uri;
     private String prefix;
-    private Map<String, Tag> tags = new HashMap<String, Tag>();
-    private Map<String, Function> functions = new HashMap<String, Function>();
+    private Map<String, Tag> tags = new HashMap<>();
+    private Map<String, Function> functions = new HashMap<>();
 
     private FaceletsLibraryDescriptor(FileObject definitionFile) throws LibraryDescriptorException {
         this.definitionFile = definitionFile;
@@ -154,7 +154,7 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
                     String tagName = getTextContent(tag, "tag-name"); //NOI18N
                     String tagDescription = getTextContent(tag, "description"); //NOI18N
 
-                    Map<String, Attribute> attrs = new HashMap<String, Attribute>();
+                    Map<String, Attribute> attrs = new HashMap<>();
                     //find attributes
                     for (Node attrNode : getNodesByName(tag, "attribute")) { //NOI18N
                         String aName = getTextContent(attrNode, "name"); //NOI18N
@@ -184,11 +184,7 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
                 }
             }
 
-        } catch (ParserConfigurationException ex) {
-            throw new LibraryDescriptorException("Error parsing facelets library: ", ex); //NOI18N
-        } catch (SAXException ex) {
-            throw new LibraryDescriptorException("Error parsing facelets library: ", ex); //NOI18N
-        } catch (IOException ex) {
+        } catch (ParserConfigurationException | SAXException | IOException ex) {
             throw new LibraryDescriptorException("Error parsing facelets library: ", ex); //NOI18N
         }
 
@@ -254,7 +250,7 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
     public String toString() {
         try {
             StringBuilder sb = new StringBuilder();
-            sb.append(getDefinitionFile() != null ? getDefinitionFile().getFileSystem().getRoot().getURL().toString() + ";" + getDefinitionFile().getPath() : ""); //NOI18N
+            sb.append(getDefinitionFile() != null ? getDefinitionFile().getFileSystem().getRoot().toURL().toString() + ";" + getDefinitionFile().getPath() : ""); //NOI18N
             sb.append("; uri = ").append(getNamespace()).append("; tags={"); //NOI18N
             for (Tag t : getTags().values()) {
                 sb.append(t.toString());
@@ -281,7 +277,7 @@ public final class FaceletsLibraryDescriptor implements LibraryDescriptor {
     }
 
     static Collection<Node> getNodesByName(Node parent, String childName) {
-        Collection<Node> nodes = new ArrayList<Node>();
+        Collection<Node> nodes = new ArrayList<>();
         NodeList nl = parent.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             Node n = nl.item(i);

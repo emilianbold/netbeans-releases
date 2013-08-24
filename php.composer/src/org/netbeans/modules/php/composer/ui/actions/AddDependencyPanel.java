@@ -441,20 +441,28 @@ public final class AddDependencyPanel extends JPanel {
                         buffer.append(chunk);
                     }
                 });
-                if (task != null) {
+                if (task == null) {
+                    // cleanup => remove loading message
+                    resultDetails.remove(resultName);
+                } else {
                     showTasks.add(task);
-                    runWhenTaskFinish(task, new Runnable() {
+                    runWhenTaskFinish(task, null, new Runnable() {
                         @Override
                         public void run() {
-                            EventQueue.invokeLater(new Runnable() {
-                                @Override
-                                public void run() {
-                                    resultDetails.put(resultName, buffer.toString());
-                                    updateResultDetailsAndVersions(false);
-                                }
-                            });
+                            if (buffer.length() == 0) {
+                                // no output => remove loading message
+                                resultDetails.remove(resultName);
+                            } else {
+                                resultDetails.put(resultName, buffer.toString());
+                                EventQueue.invokeLater(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        updateResultDetailsAndVersions(false);
+                                    }
+                                });
+                            }
                         }
-                    }, null);
+                    });
                 }
             }
         });
@@ -529,10 +537,12 @@ public final class AddDependencyPanel extends JPanel {
         }
     }
 
-    void runWhenTaskFinish(Future<Integer> task, Runnable postTask, @NullAllowed Runnable finalTask) {
+    void runWhenTaskFinish(Future<Integer> task, @NullAllowed Runnable postTask, @NullAllowed Runnable finalTask) {
         try {
             task.get(3, TimeUnit.MINUTES);
-            postTask.run();
+            if (postTask != null) {
+                postTask.run();
+            }
         } catch (TimeoutException ex) {
             task.cancel(true);
         } catch (CancellationException ex) {

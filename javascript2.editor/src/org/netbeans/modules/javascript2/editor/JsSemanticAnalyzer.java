@@ -54,6 +54,7 @@ import org.netbeans.modules.csl.api.ColoringAttributes;
 import org.netbeans.modules.csl.api.Modifier;
 import org.netbeans.modules.csl.api.OffsetRange;
 import org.netbeans.modules.csl.api.SemanticAnalyzer;
+import org.netbeans.modules.csl.spi.ParserResult;
 import org.netbeans.modules.javascript2.editor.doc.spi.JsComment;
 import org.netbeans.modules.javascript2.editor.api.lexer.JsTokenId;
 import org.netbeans.modules.javascript2.editor.api.lexer.LexUtilities;
@@ -135,7 +136,7 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                                     }
                                 }
                             } 
-                            highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), coloring);
+                            addColoring(result, highlights, object.getDeclarationName().getOffsetRange(), coloring);
                         }
                         for(JsObject param: ((JsFunction)object).getParameters()) {
                             count(result, param, highlights);
@@ -167,10 +168,10 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
                     case OBJECT_LITERAL:
                         if(!"UNKNOWN".equals(object.getName())) {
                             if (parent.getParent() == null && !GLOBAL_TYPES.contains(object.getName())) {
-                                highlights.put(LexUtilities.getLexerOffsets(result, object.getDeclarationName().getOffsetRange()), ColoringAttributes.GLOBAL_SET);
+                                addColoring(result, highlights, object.getDeclarationName().getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                                 for (Occurrence occurence : object.getOccurrences()) {
                                     if (!isCommentOccurence(result, occurence)) {
-                                        highlights.put(LexUtilities.getLexerOffsets(result, occurence.getOffsetRange()), ColoringAttributes.GLOBAL_SET);
+                                        addColoring(result, highlights, occurence.getOffsetRange(), ColoringAttributes.GLOBAL_SET);
                                     }
                                 }
                             } else if (object.isDeclared() && !ModelUtils.PROTOTYPE.equals(object.getName()) && !object.isAnonymous()) {
@@ -245,6 +246,15 @@ public class JsSemanticAnalyzer extends SemanticAnalyzer<JsParserResult> {
         return highlights;
     }
 
+    private void addColoring(ParserResult result, Map<OffsetRange, Set<ColoringAttributes>> highlights, OffsetRange astRange, Set<ColoringAttributes> coloring) {
+        int start = result.getSnapshot().getOriginalOffset(astRange.getStart());
+        int end = result.getSnapshot().getOriginalOffset(astRange.getEnd());
+        if (start > -1 && end > -1 && start < end) {
+            OffsetRange range = start == astRange.getStart() ? astRange : new OffsetRange(start, end);
+            highlights.put(range, coloring);
+        }
+    }
+    
     @Override
     public int getPriority() {
         return 0;

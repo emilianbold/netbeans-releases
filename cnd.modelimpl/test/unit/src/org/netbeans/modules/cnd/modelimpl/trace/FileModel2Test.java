@@ -74,6 +74,11 @@ public class FileModel2Test extends TraceModelTestBase {
         getTraceModel().setDumpPPState(true);
     }
 
+    public void test229003() throws Exception {
+        // #229003 - inaccuracy tests: Perl project has unresolved identifiers
+        performTest("iz229003.cpp"); // NOI18N
+    }
+    
     public void test231216() throws Exception {
         // #231216 - IDE doesn't recognize operator~ 
         performTest("iz231216.cc"); // NOI18N

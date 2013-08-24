@@ -412,6 +412,10 @@ public class JsStructureScannerTest extends JsTestBase {
         checkStructure("testfiles/structure/issue219508.js");
     }
     
+    public void testIssue219508_01() throws Exception {
+        checkStructure("testfiles/structure/issue219508_01.js");
+    }
+    
     public void testIssue222179() throws Exception {
         checkStructure("testfiles/structure/issue222179.js");
     }
@@ -454,5 +458,29 @@ public class JsStructureScannerTest extends JsTestBase {
     
     public void testIssue233738() throws Exception {
         checkStructure("testfiles/structure/issue233738.js");
+    }
+    
+    public void testIssue222964() throws Exception {
+        checkStructure("testfiles/markoccurences/issue222964/issue222964.js"); 
+    }
+    
+    public void testIssue234430() throws Exception {
+        checkStructure("testfiles/structure/issue234430.js");
+    }
+    
+    public void testIssue234453() throws Exception {
+        checkStructure("testfiles/structure/issue234453.js");
+    }
+    
+    public void testIssue234371() throws Exception {
+        checkStructure("testfiles/structure/issue234371.js");
+    }
+    
+    public void testIssue233630A() throws Exception {
+        checkStructure("testfiles/structure/issue233630A.js");
+    }
+    
+    public void testIssue233630B() throws Exception {
+        checkStructure("testfiles/structure/issue233630B.js");
     }
 }

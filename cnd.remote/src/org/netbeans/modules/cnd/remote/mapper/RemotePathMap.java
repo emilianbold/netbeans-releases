@@ -220,7 +220,7 @@ public abstract class RemotePathMap extends PathMap {
             if (urpath.startsWith(value)) {
                 String mpoint = entry.getKey();
                 String rest = (value.length() > rpath.length()) ? "" : rpath.substring(value.length()); //NOI18N
-                if (mpoint.length() > 0 && !mpoint.endsWith("/")) { //NOI18N
+                if (mpoint.length() > 0 && !(mpoint.endsWith("/") || mpoint.endsWith("\\"))) { //NOI18N
                     mpoint += '/';
                 }
                 return mpoint + rest;

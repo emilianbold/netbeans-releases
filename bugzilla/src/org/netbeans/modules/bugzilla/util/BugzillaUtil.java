@@ -42,6 +42,7 @@
 
 package org.netbeans.modules.bugzilla.util;
 
+import java.awt.Color;
 import java.util.Collections;
 import java.util.MissingResourceException;
 import org.netbeans.modules.bugtracking.util.ListValuePicker;
@@ -49,6 +50,7 @@ import java.util.logging.Level;
 import javax.swing.JButton;
 import javax.swing.JPanel;
 import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
 import org.eclipse.core.runtime.CoreException;
 import org.netbeans.modules.bugtracking.api.Repository;
 import org.netbeans.modules.bugtracking.spi.RepositoryProvider;
@@ -73,6 +75,15 @@ import org.openide.util.NbBundle;
  * @author Tomas Stupka, Jan Stola
  */
 public class BugzillaUtil {
+    
+    private static final Color ERROR_COLOR;
+    static {
+        Color c = UIManager.getColor("nb.errorForeground"); //NOI18N
+        if (c == null) {
+            c = new Color(153, 0, 0);
+        }
+        ERROR_COLOR = c;
+    }
 
     public static boolean show(JPanel panel, String title, String okName) {
         return show(panel, title, okName, new HelpCtx(panel.getClass()));
@@ -200,5 +211,9 @@ public class BugzillaUtil {
         } else {
             SwingUtilities.invokeLater(r);
         }
+    }
+
+    public static Color getErrorForegroundColor () {
+        return ERROR_COLOR;
     }
 }

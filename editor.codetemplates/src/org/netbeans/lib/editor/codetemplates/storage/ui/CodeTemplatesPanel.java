@@ -210,6 +210,11 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         cbOnExpandAction.removeActionListener(this);
         tTemplates.getSelectionModel ().removeListSelectionListener (this);
         
+        String defaultSelectedLang = null;
+        Object selectedItem = cbLanguage.getSelectedItem();
+        if (selectedItem instanceof String) {
+            defaultSelectedLang = (String) selectedItem;
+        }
         cbLanguage.removeAllItems ();
         List<String> languages = new ArrayList<String>(model.getLanguages ());
         Collections.sort (languages);
@@ -257,9 +262,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         tTemplates.getSelectionModel ().addListSelectionListener (this);
         
         // Pre-select a language
-        String defaultSelectedLang = null;
         JTextComponent pane = EditorRegistry.lastFocusedComponent();
-        if (pane != null) {
+        if (defaultSelectedLang == null && pane != null) {
             String mimeType = (String)pane.getDocument().getProperty("mimeType"); // NOI18N
             if (mimeType != null) {
                 defaultSelectedLang = model.findLanguage(mimeType);
@@ -588,6 +592,8 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
         spTemplates = new javax.swing.JScrollPane();
         tTemplates = new javax.swing.JTable();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
         lLanguage.setLabelFor(cbLanguage);
         lLanguage.setText("Language:");
 
@@ -681,11 +687,11 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(cbOnExpandAction, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 363, Short.MAX_VALUE)
+                        .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 343, Short.MAX_VALUE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                             .addComponent(bNew, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(bRemove, javax.swing.GroupLayout.DEFAULT_SIZE, 89, Short.MAX_VALUE))))
+                            .addComponent(bRemove, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -703,7 +709,7 @@ public class CodeTemplatesPanel extends JPanel implements ActionListener, ListSe
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(bRemove)
                         .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 338, Short.MAX_VALUE))
+                    .addComponent(jSplitPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 318, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(cbExpandTemplateOn, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)

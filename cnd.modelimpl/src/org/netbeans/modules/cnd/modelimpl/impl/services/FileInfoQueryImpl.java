@@ -66,6 +66,7 @@ import org.netbeans.modules.cnd.apt.support.APTToken;
 import org.netbeans.modules.cnd.apt.support.StartEntry;
 import org.netbeans.modules.cnd.apt.utils.APTUtils;
 import org.netbeans.modules.cnd.modelimpl.content.project.FileContainer;
+import org.netbeans.modules.cnd.modelimpl.csm.core.ErrorDirectiveImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileBuffer;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FileImpl;
 import org.netbeans.modules.cnd.modelimpl.csm.core.FilePreprocessorConditionState;
@@ -135,10 +136,11 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
             FileImpl fileImpl = (FileImpl) file;
             Collection<PreprocessorStatePair> statePairs = fileImpl.getPreprocStatePairs();
             List<CsmOffsetable> result = new ArrayList<CsmOffsetable>();
+            // to have visible code, we prefer non-error directive based dead blocks
             boolean first = true;
             for (PreprocessorStatePair pair : statePairs) {
                 FilePreprocessorConditionState state = pair.pcState;
-                if (state != FilePreprocessorConditionState.PARSING) {
+                if (state != FilePreprocessorConditionState.PARSING && !state.isFromErrorDirective()) {
                     List<CsmOffsetable> blocks = state.createBlocksForFile(fileImpl);
                     if (first) {
                         result = blocks;
@@ -151,23 +153,16 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
                     }
                 }
             }
-            CsmOffsetable error = null;
-            for (CsmErrorDirective csmErrorDirective : fileImpl.getErrors()) {
-                error = org.netbeans.modules.cnd.modelimpl.csm.core.Utils.createOffsetable(fileImpl, csmErrorDirective.getEndOffset(), Integer.MAX_VALUE);
-                break;
-            }
-            if (error != null) {
-                out = new ArrayList<CsmOffsetable>(result.size());
-                for (CsmOffsetable offs : result) {
-                    if (offs.getEndOffset() < error.getStartOffset()) {
-                        out.add(offs);
-                    } else {
-                        break;
-                    }
-                }
-                out.add(error);
-            } else {
+            if (!result.isEmpty()) {
                 out = result;
+            } else {
+                // if no other dead blocks, check if we have error directive in file
+                CsmOffsetable error = null;
+                for (CsmErrorDirective csmErrorDirective : fileImpl.getErrors()) {
+                    error = org.netbeans.modules.cnd.modelimpl.csm.core.Utils.createOffsetable(fileImpl, csmErrorDirective.getEndOffset(), Integer.MAX_VALUE);
+                    out = Collections.singletonList(error);
+                    break;
+                }
             }
         }
         return out;
@@ -409,46 +404,65 @@ public final class FileInfoQueryImpl extends CsmFileInfoQuery {
     }
 
     @Override
+    public List<CsmInclude> getIncludeStack(CsmErrorDirective err) {
+        APTPreprocHandler.State state = null;
+        if (err instanceof ErrorDirectiveImpl) {
+            state = ((ErrorDirectiveImpl)err).getState();
+        }
+        return getIncludeStackImpl(state);
+    }
+
+    @Override
+    public List<CsmInclude> getIncludeStack(CsmInclude inc) {
+        return getIncludeStack(inc.getContainingFile());
+    }
+    
+    @Override
     public List<CsmInclude> getIncludeStack(CsmFile file) {
+        APTPreprocHandler.State state = null;
         if (file instanceof FileImpl) {
             FileImpl impl = (FileImpl) file;
             // use stack from one of states (i.e. first)
             CharSequence fileKey = FileContainer.getFileKey(impl.getAbsolutePath(), false);
-            APTPreprocHandler.State state = ((ProjectBase) impl.getProject()).getFirstValidPreprocState(fileKey);
-            if (state == null) {
-                return Collections.<CsmInclude>emptyList();
-            }
-            CndUtils.assertNotNull(state, "state must not be null in non empty collection");// NOI18N
-            List<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
-            StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
-            ProjectBase startProject = Utils.getStartProject(startEntry);
-            if (startProject != null) {
-                CsmFile startFile = startProject.getFile(startEntry.getStartFile(), false);
-                if (startFile != null) {
-                    List<CsmInclude> res = new ArrayList<CsmInclude>();
-                    Iterator<APTIncludeHandler.IncludeInfo> it = reverseInclStack.iterator();
-                    while(it.hasNext()){
-                        APTIncludeHandler.IncludeInfo info = it.next();
-                        int offset = info.getIncludeDirectiveOffset();
-                        CsmInclude find = null;
-                        for(CsmInclude inc : startFile.getIncludes()){
-                            if (offset == inc.getStartOffset()){
-                                find = inc;
-                                break;
-                            }
-                        }
-                        if (find != null) {
-                            res.add(find);
-                            startFile = find.getIncludeFile();
-                            if (startFile == null) {
-                                break;
-                            }
-                        } else {
+            state = ((ProjectBase) impl.getProject()).getFirstValidPreprocState(fileKey);
+        }
+        return getIncludeStackImpl(state);
+    }
+    
+    private List<CsmInclude> getIncludeStackImpl(APTPreprocHandler.State state) {
+        if (state == null) {
+            return Collections.<CsmInclude>emptyList();
+        }
+        CndUtils.assertNotNull(state, "state must not be null in non empty collection");// NOI18N
+        List<APTIncludeHandler.IncludeInfo> reverseInclStack = APTHandlersSupport.extractIncludeStack(state);
+        StartEntry startEntry = APTHandlersSupport.extractStartEntry(state);
+        ProjectBase startProject = Utils.getStartProject(startEntry);
+        if (startProject != null) {
+            CsmFile startFile = startProject.getFile(startEntry.getStartFile(), false);
+            if (startFile != null) {
+                List<CsmInclude> res = new ArrayList<CsmInclude>();
+                Iterator<APTIncludeHandler.IncludeInfo> it = reverseInclStack.iterator();
+                while(it.hasNext()){
+                    APTIncludeHandler.IncludeInfo info = it.next();
+                    int offset = info.getIncludeDirectiveOffset();
+                    CsmInclude find = null;
+                    for(CsmInclude inc : startFile.getIncludes()){
+                        if (offset == inc.getStartOffset()){
+                            find = inc;
                             break;
                         }
                     }
-                    return res;
+                    if (find != null) {
+                        res.add(find);
+                        startFile = find.getIncludeFile();
+                        if (startFile == null) {
+                            break;
+                        }
+                    } else {
+                        break;
+                    }
                 }
+                return res;
             }
         }
         return Collections.<CsmInclude>emptyList();

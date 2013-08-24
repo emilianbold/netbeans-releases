@@ -61,20 +61,20 @@ import org.openide.util.lookup.ServiceProvider;
 public class SiteMobileBoilerplate implements SiteTemplateImplementation {
 
     private static final Logger LOGGER = Logger.getLogger(SiteMobileBoilerplate.class.getName());
-    private static final File LIB_FILE = new File(SiteHelper.getJsLibsDirectory(), "mobile-boilerplate-30.zip"); // NOI18N
+    private static final File LIB_FILE = new File(SiteHelper.getJsLibsDirectory(), "mobile-boilerplate-41.zip"); // NOI18N
 
     @Override
     public String getId() {
         return "MOBILE.BOILER"; // NOI18N
     }
 
-    @NbBundle.Messages("SiteMobileBoilerplate.name=Mobile Boilerplate")
+    @NbBundle.Messages("SiteMobileBoilerplate.name=Mobile Boilerplate 4.1")
     @Override
     public String getName() {
         return Bundle.SiteMobileBoilerplate_name();
     }
 
-    @NbBundle.Messages("SiteMobileBoilerplate.description=Site template from html5boilerplate.com/mobile. Version: 3.0")
+    @NbBundle.Messages("SiteMobileBoilerplate.description=Site template from html5boilerplate.com/mobile. Version: 4.1")
     @Override
     public String getDescription() {
         return Bundle.SiteMobileBoilerplate_description();
@@ -89,7 +89,7 @@ public class SiteMobileBoilerplate implements SiteTemplateImplementation {
     public void prepare() throws IOException {
         assert !EventQueue.isDispatchThread();
         assert !isPrepared();
-        SiteHelper.download("https://github.com/h5bp/mobile-boilerplate/zipball/v3.0", LIB_FILE, null); // NOI18N
+        SiteHelper.download("https://github.com/h5bp/mobile-boilerplate/zipball/v4.1.0", LIB_FILE, null); // NOI18N
     }
 
     @Override

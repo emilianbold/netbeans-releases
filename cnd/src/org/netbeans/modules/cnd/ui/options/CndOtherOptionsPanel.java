@@ -352,6 +352,9 @@ import org.openide.util.lookup.Lookups;
             update();
             textfield.setContentType("text/html");  // NOI18N
             textfield.setEditable(false);
+            // bug 233412, fix for dark theme
+            textfield.putClientProperty(JEditorPane.HONOR_DISPLAY_PROPERTIES, true);
+            
             updateTextField();
             button.setText(getMessage("CndOtherOptionsPanel.Extensions.EditButton"));
         }

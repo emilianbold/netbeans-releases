@@ -1723,6 +1723,14 @@ public class JsFormatterTest extends JsTestBase {
         reformatFileContents("testfiles/formatter/issue234244.js",new IndentPrefs(4, 4));
     }
 
+    public void testIssue234385() throws Exception {
+        format("this.", "this.", new IndentPrefs(4, 4));
+    }
+
+    public void testIssue228716() throws Exception {
+        format("var o = {};", "var o = {};", new IndentPrefs(4, 4));
+    }
+
     // test from original formatter
 
     public void testSemi01() throws Exception {

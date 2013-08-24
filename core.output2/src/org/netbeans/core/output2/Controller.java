@@ -70,6 +70,7 @@ import org.openide.windows.IOColors;
 import org.openide.windows.IOContainer;
 import org.openide.windows.IOSelect;
 import org.openide.windows.OutputEvent;
+import org.openide.windows.OutputWriter;
 import org.openide.xml.XMLUtil;
 
 /**
@@ -129,6 +130,10 @@ public class Controller {
             ioContainer.setToolTipText(result, io.getToolTipText());
         }
         io.setClosed(false);
+        OutputWriter out = io.getOut();
+        if (out instanceof NbWriter) {
+            ((NbWriter) out).out().setDisposeOnClose(false);
+        }
 
         //Make sure names are boldfaced for all open streams - if the tabbed
         //pane was just added in, it will just have used the name of the

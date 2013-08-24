@@ -44,7 +44,6 @@ package org.netbeans.modules.web.jsf.editor.hints;
 
 import javax.swing.text.Document;
 import org.netbeans.modules.csl.api.HintFix;
-import org.netbeans.modules.web.jsf.api.facesmodel.JSFVersion;
 import org.netbeans.modules.web.jsfapi.api.Library;
 import org.netbeans.modules.web.jsfapi.spi.LibraryUtils;
 import org.openide.util.NbBundle;

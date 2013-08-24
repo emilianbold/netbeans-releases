@@ -146,6 +146,7 @@ public class TraitScopeImpl extends TypeScopeImpl implements TraitScope {
         }
         sb.append(Signature.ITEM_DELIMITER);
         sb.append(isDeprecated() ? 1 : 0).append(Signature.ITEM_DELIMITER);
+        sb.append(getFilenameUrl()).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 

@@ -319,7 +319,7 @@ public class Utilities {
         ClassPath cp = ClassPathSupport.createProxyClassPath(cps.toArray(new ClassPath[0]));
 
         for (ClassPathBasedHintProvider p : Lookup.getDefault().lookupAll(ClassPathBasedHintProvider.class)) {
-            result.addAll(p.computeHints(cp));
+            result.addAll(p.computeHints(cp, new AtomicBoolean()));
         }
 
         return result;

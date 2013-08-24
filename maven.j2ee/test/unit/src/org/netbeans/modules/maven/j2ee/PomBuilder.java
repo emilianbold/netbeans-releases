@@ -54,11 +54,13 @@ public class PomBuilder {
     private StringBuilder sb;
     private String projectValues;
     private List<PomPlugin> plugins;
+    private List<PomDependency> dependencies;
 
     
     public PomBuilder() {
         sb = new StringBuilder();
         plugins = new ArrayList<PomPlugin>();
+        dependencies = new ArrayList<>();
     }
     
     public PomBuilder appendDefaultTestValues() {
@@ -92,6 +94,11 @@ public class PomBuilder {
         plugins.add(plugin);
         return this;
     }
+    
+    public PomBuilder appendDependency(PomDependency dependency) {
+        dependencies.add(dependency);
+        return this;
+    }
      
     /**
      * Creates and returns pom.xml file based on the previous actions.
@@ -99,18 +106,25 @@ public class PomBuilder {
      * @return builded pom.xml file
      */
     public String buildPom() {
-        sb.append("<project>")
-              .append(projectValues)
-              .append("<build>")
-              .append("<plugins>");
+        sb.append("<project>");
+        sb.append(projectValues);      
+        sb.append("<build>");
+        sb.append("<plugins>");
         
         for (PomPlugin plugin : plugins) {
             addPlugin(plugin);
         }
         
-        sb.append("</plugins>")
-          .append("</build>")
-          .append("</project>");
+        sb.append("</plugins>");
+        sb.append("</build>");
+
+        sb.append("<dependencies>");
+        for (PomDependency dependency : dependencies) {
+            addDependency(dependency);
+        }
+        sb.append("</dependencies>");
+        
+        sb.append("</project>");
         
         return sb.toString();
     }
@@ -129,12 +143,32 @@ public class PomBuilder {
           .append("</plugin>");
     }
     
+    private void addDependency(PomDependency dependency) {
+        sb.append("<dependency>")
+            .append("<groupId>").append(dependency.groupId).append("</groupId>")
+            .append("<artifactId>").append(dependency.artifactId).append("</artifactId>")
+            .append("<version>").append(dependency.version).append("</version>")
+          .append("</dependency>");
+    }
+    
     public static class PomPlugin {
         private String groupId;
         private String artifactId;
         private String version;
 
         public PomPlugin(String groupId, String artifactId, String version) {
+            this.groupId = groupId;
+            this.artifactId = artifactId;
+            this.version = version;
+        }
+    }
+    
+    public static class PomDependency {
+        private String groupId;
+        private String artifactId;
+        private String version;
+
+        public PomDependency(String groupId, String artifactId, String version) {
             this.groupId = groupId;
             this.artifactId = artifactId;
             this.version = version;

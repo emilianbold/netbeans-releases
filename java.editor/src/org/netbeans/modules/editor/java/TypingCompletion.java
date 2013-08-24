@@ -174,10 +174,14 @@ class TypingCompletion {
      * @return relative caretOffset change
      * @throws BadLocationException
      */
-    static int moveSemicolon(TypedTextInterceptor.MutableContext context) throws BadLocationException {
+    static int moveOrSkipSemicolon(TypedTextInterceptor.MutableContext context) throws BadLocationException {
         TokenSequence<JavaTokenId> javaTS = javaTokenSequence(context, false);
         if (javaTS == null || isStringOrComment(javaTS.token().id())) {
             return -1;
+        }
+        if (javaTS.token().id() == JavaTokenId.SEMICOLON) {
+            context.setText("", 0); // NOI18N
+            return javaTS.offset() + 1;
         }
         int lastParenPos = context.getOffset();
         int index = javaTS.index();

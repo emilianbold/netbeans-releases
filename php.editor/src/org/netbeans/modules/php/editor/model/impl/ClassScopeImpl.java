@@ -467,6 +467,7 @@ class ClassScopeImpl extends TypeScopeImpl implements ClassScope, VariableNameFa
         }
         sb.append(Signature.ITEM_DELIMITER);
         sb.append(isDeprecated() ? 1 : 0).append(Signature.ITEM_DELIMITER);
+        sb.append(getFilenameUrl()).append(Signature.ITEM_DELIMITER);
         return sb.toString();
     }
 

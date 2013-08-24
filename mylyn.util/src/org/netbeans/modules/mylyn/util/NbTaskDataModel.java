@@ -185,6 +185,10 @@ public final class NbTaskDataModel {
     ITask getDelegateTask () {
         return delegateModel.getTask();
     }
+
+    public boolean hasOutgoingChanged () {
+        return isDirty() || !getChangedAttributes().isEmpty();
+    }
     
     public static interface NbTaskDataModelListener extends EventListener {
 

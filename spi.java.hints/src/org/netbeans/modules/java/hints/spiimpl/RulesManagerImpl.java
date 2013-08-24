@@ -119,7 +119,11 @@ public class RulesManagerImpl extends RulesManager {
         ClassPath compound = ClassPathSupport.createProxyClassPath(from.toArray(new ClassPath[0]));
 
         for (ClassPathBasedHintProvider p : Lookup.getDefault().lookupAll(ClassPathBasedHintProvider.class)) {
-            sortByMetadata(p.computeHints(compound), result);
+            Collection<? extends HintDescription> hints = p.computeHints(compound, cancel);
+
+            if (hints == null || (cancel != null && cancel.get())) return null;
+            
+            sortByMetadata(hints, result);
         }
 
         return result;

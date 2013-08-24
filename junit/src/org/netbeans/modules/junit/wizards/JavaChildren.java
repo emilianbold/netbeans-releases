@@ -66,11 +66,10 @@ public class JavaChildren extends FilterNode.Children {
     protected Node[] createNodes(Node originalNode) {
         Node newNode;
         
-        DataObject dataObj = originalNode.getCookie(DataObject.class);
-        if (dataObj == null) {
+        FileObject primaryFile = originalNode.getLookup().lookup(FileObject.class);
+        if (primaryFile == null) {
             newNode = copyNode(originalNode);
         } else {
-            FileObject primaryFile = dataObj.getPrimaryFile();
             if (primaryFile.isFolder()) {
                 newNode = new FilterNode(originalNode, new JavaChildren(originalNode));
             } else if (primaryFile.getMIMEType().equals(JAVA_MIME_TYPE)) {

@@ -153,6 +153,8 @@ public class HintsInvoker {
         List<HintDescription> descs = new LinkedList<HintDescription>();
         Map<HintMetadata, ? extends Collection<? extends HintDescription>> allHints = RulesManager.getInstance().readHints(info, null, cancel);
 
+        if (allHints == null || cancel.get()) return null;
+        
         for (Entry<HintMetadata, ? extends Collection<? extends HintDescription>> e : allHints.entrySet()) {
             HintMetadata m = e.getKey();
 

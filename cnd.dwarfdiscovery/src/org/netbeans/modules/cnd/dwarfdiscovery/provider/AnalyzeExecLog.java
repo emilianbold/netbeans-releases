@@ -81,6 +81,7 @@ import org.netbeans.modules.dlight.libs.common.PathUtilities;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileSystem;
 import org.openide.util.NbBundle;
+import org.openide.util.Utilities;
 
 /**
  *
@@ -235,6 +236,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
 
     @Override
     public DiscoveryExtensionInterface.Applicable canAnalyze(ProjectProxy project, Interrupter interrupter) {
+        init(project);
         String set = (String) getProperty(EXEC_LOG_KEY).getValue();
         if (set == null || set.length() == 0) {
             return ApplicableImpl.getNotApplicable(Collections.singletonList(NbBundle.getMessage(AnalyzeExecLog.class, "NotFoundExecLog")));
@@ -508,6 +510,10 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     compilePath = pathMapper.getLocalPath(args.get(0));
                     if (compilePath == null) {
                         compilePath = args.get(0);
+                    } else {
+                        if (Utilities.isWindows()) {
+                            compilePath = compilePath.replace('\\', '/');
+                        }
                     }
                 } else {
                     compilePath = args.get(0);
@@ -541,6 +547,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         String mapped = pathMapper.getLocalPath(s);
                         if (mapped != null) {
                             s = mapped;
+                            if (Utilities.isWindows()) {
+                                s = s.replace('\\', '/');
+                            }
                         }
                     }
                     userIncludes.add(PathCache.getString(s));
@@ -558,6 +567,9 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                         String mapped = pathMapper.getLocalPath(what);
                         if (mapped != null) {
                             what = mapped;
+                            if (Utilities.isWindows()) {
+                                what = what.replace('\\', '/');
+                            }
                         }
                     }
                     fullName = what;
@@ -594,8 +606,7 @@ public class AnalyzeExecLog extends BaseDwarfProvider {
                     res.compiler = compiler;
                     res.sourceName = sourceName;
                     //
-                    File file = new File(fullName);
-                    fullName = CndFileUtils.normalizeFile(file).getAbsolutePath();
+                    fullName = compilerSettings.normalizePath(fullName);
                     //
                     res.fullName = fullName;
                     res.language = language;

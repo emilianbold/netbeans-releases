@@ -184,10 +184,10 @@ public class LastTargetExecuted implements BuildExecutionSupport.ActionItem {
             return false;
         }
         final LastTargetExecuted other = (LastTargetExecuted) obj;
-        if (this.buildScript != other.buildScript && (this.buildScript == null || !this.buildScript.equals(other.buildScript))) {
-            return false;
-        }
-        if (!Arrays.deepEquals(this.targets, other.targets)) {
+        if (!((this.properties.get("work.dir") != null && this.properties.get("work.dir").equals(other.properties.get("work.dir"))) ||
+                this.buildScript.getParentFile().getAbsolutePath().equals(other.buildScript.getParentFile().getAbsolutePath()) ||
+                this.buildScript.getParentFile().getAbsolutePath().equals(other.properties.get("work.dir")) || 
+                other.buildScript.getParentFile().getAbsolutePath().equals(this.properties.get("work.dir")))) {
             return false;
         }
         return getAction().equals(other.getAction());

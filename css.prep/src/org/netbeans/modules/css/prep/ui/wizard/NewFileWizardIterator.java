@@ -298,6 +298,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
 
         private static final String ENABLED = "ENABLED"; // NOI18N
         private static final String MAPPINGS = "MAPPINGS"; // NOI18N
+        private static final String COMPILER_OPTIONS = "COMPILER_OPTIONS"; // NOI18N
 
         private final Project project;
         private final CssPreprocessorType type;
@@ -328,7 +329,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
             if (panel == null) {
                 CssPreprocessorPreferences preferences = type.getPreferences();
                 panel = new OptionsPanel(type, preferences.isEnabled(project),
-                        preferences.getMappings(project));
+                        preferences.getMappings(project), preferences.getCompilerOptions(project));
                 panel.showConfigureExecutableButton();
             }
             return panel;
@@ -339,12 +340,14 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
             this.settings = settings;
             settings.putProperty(ENABLED, getComponent().isCompilationEnabled());
             settings.putProperty(MAPPINGS, getComponent().getMappings());
+            settings.putProperty(COMPILER_OPTIONS, getComponent().getCompilerOptions());
         }
 
         @Override
         public void storeSettings(WizardDescriptor settings) {
             settings.putProperty(ENABLED, getComponent().isCompilationEnabled());
             settings.putProperty(MAPPINGS, getComponent().getMappings());
+            settings.putProperty(COMPILER_OPTIONS, getComponent().getCompilerOptions());
         }
 
         @Override
@@ -391,6 +394,7 @@ public class NewFileWizardIterator implements WizardDescriptor.InstantiatingIter
             }
             preferences.setEnabled(project, enabled);
             preferences.setMappings(project, (List<Pair<String, String>>) settings.getProperty(MAPPINGS));
+            preferences.setCompilerOptions(project, (String) settings.getProperty(COMPILER_OPTIONS));
         }
 
         private ValidationResult getValidationResult() {

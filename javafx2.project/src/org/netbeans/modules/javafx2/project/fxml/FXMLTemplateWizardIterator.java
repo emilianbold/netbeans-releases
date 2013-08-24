@@ -253,10 +253,12 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
         String cssFullName = null;
         if(enabledCSS) {
             if(cssExisting != null && !cssExisting.isEmpty()) {
-                File f = new File(cssExisting);
+                final String srcPath = FileUtil.normalizeFile(FileUtil.toFile(supportCSS.getCurrentSourceGroupFolder())).getPath();
+                File f = new File(srcPath + File.separator + cssExisting);
                 if(f.exists()) {
                     FileObject fo = FileUtil.toFileObject(f);
-                    cssFullName = JFXProjectUtils.getRelativePath(dirFXML, fo);
+                    cssFullName = fo.getParent().equals(dirFXML) ? fo.getNameExt() :
+                            JFXProjectUtils.getRelativePath(supportCSS.getCurrentSourceGroupFolder(), fo);
                     if(cssFullName == null) {
                         cssFullName = cssExisting;
                     }
@@ -273,7 +275,7 @@ public class FXMLTemplateWizardIterator implements WizardDescriptor.Instantiatin
                 String targetNameCSS = supportCSS.getCurrentFileName();
                 assert targetNameCSS.equals(cssName);
                 Object path = getPreselectedPackage(supportCSS.getCurrentSourceGroup(), dirCSS);
-                if(path != null) {
+                if(path != null && (dfFXML != null && !dfFXML.equals(dfCSS))) {
                     cssFullName =  "/" + ((String) path).replace('.', '/') + "/" + targetNameCSS; // NOI18N
                 } else {
                     cssFullName = targetNameCSS;

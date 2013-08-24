@@ -56,6 +56,7 @@ import org.netbeans.modules.git.Git;
 import org.netbeans.modules.git.client.GitClientExceptionHandler;
 import org.netbeans.modules.git.client.GitProgressSupport;
 import org.netbeans.modules.git.ui.actions.GitAction;
+import org.netbeans.modules.git.utils.GitUtils;
 import org.openide.awt.ActionID;
 import org.openide.awt.ActionRegistration;
 import org.openide.nodes.Node;
@@ -147,6 +148,7 @@ public class AnnotateAction extends GitAction {
         new GitProgressSupport() {
             @Override
             public void perform() {
+                GitUtils.logRemoteRepositoryAccess(repository);
                 if (revision != null) {
                     // showing annotations from past, the referenced file differs from the one being displayed
                     ab.setReferencedFile(file);

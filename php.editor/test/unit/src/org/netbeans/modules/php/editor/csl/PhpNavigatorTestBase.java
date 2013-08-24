@@ -47,7 +47,6 @@ import java.util.Comparator;
 import java.util.List;
 import org.netbeans.modules.csl.api.HtmlFormatter;
 import org.netbeans.modules.csl.api.StructureItem;
-import org.netbeans.modules.csl.api.StructureScanner;
 import org.netbeans.modules.parsing.api.ParserManager;
 import org.netbeans.modules.parsing.api.ResultIterator;
 import org.netbeans.modules.parsing.api.Source;

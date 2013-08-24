@@ -1,6 +1,7 @@
 $:PARAMETER:[PUBLIC]:ESCAPED{$}:
   fn:CLASS:[PUBLIC]:ESCAPED{fn}:
     ovuGraph:METHOD:[PUBLIC]:ESCAPED{ovuGraph}ESCAPED{(}ESCAPED{options}ESCAPED{)}:
+      GRAPH_HEIGHT:VARIABLE:[PRIVATE]:ESCAPED{GRAPH_HEIGHT}<font color="#999999">ESCAPED{ : }Number</font>:
       methods:CLASS:[PRIVATE]:ESCAPED{methods}:
         alert:METHOD:[PUBLIC]:ESCAPED{alert}ESCAPED{(}ESCAPED{)}:
         hide:METHOD:[PUBLIC]:ESCAPED{hide}ESCAPED{(}ESCAPED{)}:
@@ -51,6 +52,7 @@ $:PARAMETER:[PUBLIC]:ESCAPED{$}:
         maxValue:FIELD:[PUBLIC]:ESCAPED{maxValue}:
         minValue:FIELD:[PUBLIC]:ESCAPED{minValue}:
         scale:FIELD:[PUBLIC]:ESCAPED{scale}:
+      settings:CLASS:[PRIVATE]:ESCAPED{settings}:
 app:CLASS:[PUBLIC]:ESCAPED{app}:
   graph:CLASS:[PUBLIC]:ESCAPED{graph}:
     hint:FIELD:[PUBLIC]:ESCAPED{hint}<font color="#999999">ESCAPED{ : }String</font>:

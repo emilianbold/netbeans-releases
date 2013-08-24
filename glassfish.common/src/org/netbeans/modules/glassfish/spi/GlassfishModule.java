@@ -46,9 +46,9 @@ import java.io.File;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.swing.event.ChangeListener;
+import org.glassfish.tools.ide.TaskState;
+import org.glassfish.tools.ide.TaskStateListener;
 import org.glassfish.tools.ide.admin.ResultString;
-import org.glassfish.tools.ide.admin.TaskState;
-import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.glassfish.tools.ide.data.GlassFishServer;
 import org.netbeans.modules.glassfish.common.GlassFishJvmMode;
 import org.netbeans.modules.glassfish.common.GlassfishInstanceProvider;
@@ -199,6 +199,16 @@ public interface GlassfishModule {
      * 
      */
     public Future<TaskState> stopServer(TaskStateListener stateListener);
+
+    /**
+     * Terminates local GlassFish server process when started from UI.
+     * <p/>
+     * @param stateListener listener to listen message describing the shutdown 
+     *                      process as it progresses.  Can be null.
+     * @return Asynchronous GlassFish server termination task that finishes
+     *         when the server stops responding.
+     */
+    public Future<TaskState> killServer(final TaskStateListener stateListener);
 
     /**
      * Restart the server.  Starts the server if it's not running.  Stops and

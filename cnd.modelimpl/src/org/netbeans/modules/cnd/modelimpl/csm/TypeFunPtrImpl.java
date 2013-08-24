@@ -182,11 +182,16 @@ public final class TypeFunPtrImpl extends TypeImpl implements CsmFunctionPointer
                         ++instance.functionPointerDepth;
                     }
                 } while (next != null && next.getType() == CPPTokenTypes.CSM_PTR_OPERATOR);
-            } else if(inTypedef) {
+            } else if(inTypedef || (inFunctionParams && next.getType() == CPPTokenTypes.CSM_QUALIFIED_ID)) {
                 brace = AstUtil.findLastSiblingOfType(ast, CPPTokenTypes.LPAREN);
-                next = brace.getNextSibling();
-                if(next.getType() == CPPTokenTypes.CSM_PARMLIST) {
+                AST parmList = brace.getNextSibling();
+                if(parmList != null && parmList.getType() == CPPTokenTypes.CSM_PARMLIST) {
                     // typedef void (foo_type)(...);
+                    // or
+                    // fun-ptr param without '*' like: void foo(void (fun)(void));
+                    if (inTypedef) {
+                        next = parmList;
+                    }
                 } else {
                     return false;
                 }

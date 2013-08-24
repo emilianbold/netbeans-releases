@@ -50,6 +50,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Iterator;
 import java.util.List;
 import javax.lang.model.element.AnnotationMirror;
 import javax.lang.model.element.Element;
@@ -176,14 +177,17 @@ public class EnterpriseBeansImpl implements EnterpriseBeans {
             return result;
         }
 
+        @Override
         public boolean modifyObjects(TypeElement type, List<SessionImpl> objects) {
-            assert objects.size() == 1;
-            SessionImpl session = objects.get(0);
-            if (!session.refresh(type)) {
-                objects.remove(0);
-                return true;
+            boolean isModified = false;
+            for (Iterator<SessionImpl> it = objects.iterator(); it.hasNext();) {
+                SessionImpl session = it.next();
+                if (!session.refresh(type)) {
+                    it.remove();
+                    isModified = true;
+                }
             }
-            return false;
+            return isModified;
         }
     }
 
@@ -207,14 +211,17 @@ public class EnterpriseBeansImpl implements EnterpriseBeans {
             return result;
         }
 
+        @Override
         public boolean modifyObjects(TypeElement type, List<MessageDrivenImpl> objects) {
-            assert objects.size() == 1;
-            MessageDrivenImpl messageDriven = objects.get(0);
-            if (!messageDriven.refresh(type)) {
-                objects.remove(0);
-                return true;
+            boolean isModified = false;
+            for (Iterator<MessageDrivenImpl> it = objects.iterator(); it.hasNext();) {
+                MessageDrivenImpl messageDriven = it.next();
+                if (!messageDriven.refresh(type)) {
+                    it.remove();
+                    isModified = true;
+                }
             }
-            return false;
+            return isModified;
         }
     }
 

@@ -51,8 +51,6 @@ import javax.enterprise.deploy.spi.DeploymentManager;
 import org.glassfish.tools.ide.GlassFishIdeException;
 import org.glassfish.tools.ide.admin.CommandCreateJDBCConnectionPool;
 import org.glassfish.tools.ide.admin.CommandCreateJDBCResource;
-import org.glassfish.tools.ide.admin.ResultString;
-import org.glassfish.tools.ide.admin.TaskState;
 import org.netbeans.api.project.FileOwnerQuery;
 import org.netbeans.api.project.Project;
 import org.netbeans.modules.glassfish.eecommon.api.DomainEditor;

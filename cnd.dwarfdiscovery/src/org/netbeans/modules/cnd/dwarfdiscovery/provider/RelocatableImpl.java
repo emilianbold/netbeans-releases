@@ -86,7 +86,7 @@ public class RelocatableImpl implements Relocatable {
             List<String> newUserIncludes = new ArrayList<String>();
             for(String incl : userIncludes) {
                 String newIncl = null;
-                if (incl.startsWith("/")) { //NOI18N
+                if (incl.startsWith("/") || (incl.length() > 2 && incl.charAt(1) == ':')) { //NOI18N
                     if (!incl.startsWith(root)) {
                         ResolvedPath resolvedIncluded = mapper.getPath(incl);
                         if (resolvedIncluded != null) {

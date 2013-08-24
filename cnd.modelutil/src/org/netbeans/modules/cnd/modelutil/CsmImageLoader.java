@@ -180,6 +180,8 @@ public class CsmImageLoader implements CsmImageName {
             kind = CsmDeclaration.Kind.NAMESPACE_ALIAS;
         } else if (CsmKindUtilities.isMacro(o)) {
             return MACRO;
+        } else if (CsmKindUtilities.isErrorDirective(o)) {
+            return ERROR;
         } else if (CsmKindUtilities.isInclude(o)) {
             if (((CsmInclude)o).isSystem()){
                 return INCLUDE_SYSTEM;

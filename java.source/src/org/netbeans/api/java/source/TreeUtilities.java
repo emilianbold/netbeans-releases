@@ -340,7 +340,10 @@ public final class TreeUtilities {
                             path.getLeaf().getKind() == Tree.Kind.MEMBER_REFERENCE || path.getLeaf().getKind() == Tree.Kind.GREATER_THAN)
                         break;
                 case RPAREN:
-                    if (path.getLeaf().getKind() == Tree.Kind.ENHANCED_FOR_LOOP || path.getLeaf().getKind() == Tree.Kind.FOR_LOOP ||
+                    if (path.getLeaf().getKind() == Tree.Kind.PARENTHESIZED) {
+                        path = path.getParentPath();
+                        break;
+                    } else if (path.getLeaf().getKind() == Tree.Kind.ENHANCED_FOR_LOOP || path.getLeaf().getKind() == Tree.Kind.FOR_LOOP ||
                             path.getLeaf().getKind() == Tree.Kind.IF || path.getLeaf().getKind() == Tree.Kind.WHILE_LOOP ||
                             path.getLeaf().getKind() == Tree.Kind.DO_WHILE_LOOP || path.getLeaf().getKind() == Tree.Kind.TYPE_CAST ||
                             path.getLeaf().getKind() == Tree.Kind.LAMBDA_EXPRESSION)

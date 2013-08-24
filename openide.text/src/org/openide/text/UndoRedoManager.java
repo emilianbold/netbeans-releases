@@ -247,9 +247,8 @@ final class UndoRedoManager extends UndoRedo.Manager {
     private void checkCallNotifyUnmodified() {
         if (callNotifyUnmodified) {
             callNotifyUnmodified = false;
-            if (support.isAlreadyModified()) {
-                support.callNotifyUnmodified();
-            }
+            // If already modified make it unmodified.
+            support.callNotifyUnmodified();
         }
     }
 

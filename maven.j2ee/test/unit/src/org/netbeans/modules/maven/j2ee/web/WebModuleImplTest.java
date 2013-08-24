@@ -42,9 +42,13 @@
 package org.netbeans.modules.maven.j2ee.web;
 
 import java.io.IOException;
+import static junit.framework.Assert.assertEquals;
+import org.netbeans.api.j2ee.core.Profile;
+import org.netbeans.modules.javaee.project.api.JavaEEProjectSettings;
 import org.netbeans.modules.maven.j2ee.JavaEEMavenTestBase;
 import org.netbeans.modules.maven.j2ee.PomBuilder;
 import org.netbeans.modules.maven.j2ee.PomBuilder.PomPlugin;
+import org.netbeans.modules.maven.j2ee.utils.MavenProjectSupport;
 import org.openide.filesystems.FileObject;
 import org.openide.filesystems.FileUtil;
 
@@ -110,6 +114,86 @@ public class WebModuleImplTest extends JavaEEMavenTestBase {
         assertEquals(archiveType, archiveFile.getExt());
         assertEquals(true, archiveFile.getName().startsWith(artifactID));
         assertEquals(true, archiveFile.getName().contains(version.subSequence(0, version.length())));
+    }
+
+    public void testGetJ2eeProfile_javaEE5FullSpecification() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_5, "javaee", "javaee-api", "5.0"); //NOI18N
+    }
+
+    public void testGetJ2eeProfile_javaEE6FullSpecification() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_6_FULL, "javax", "javaee-api", "6.0"); //NOI18N
+    }
+
+    public void testGetJ2eeProfile_javaEE6WebSpecification() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_6_WEB, "javax", "javaee-web-api", "6.0"); //NOI18N
+    }
+
+    public void testGetJ2eeProfile_javaEE7FullSpecification() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_7_FULL, "javax", "javaee-api", "7.0"); //NOI18N
+    }
+
+    public void testGetJ2eeProfile_javaEE7WebSpecification() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_7_WEB, "javax", "javaee-web-api", "7.0"); //NOI18N
+    }
+
+    public void testGetJ2eeProfile_javaEE5Full_glassfish() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_5, "org.glassfish.main.extras", "glassfish-embedded-all", "2"); //NOI18N
+    }
+
+    public void testGetJ2eeProfile_javaEE5Web_glassfish() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_5, "org.glassfish.main.extras", "glassfish-embedded-web", "2"); //NOI18N
+    }
+
+    public void testGetJ2eeProfile_javaEE6Full_glassfish() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_6_FULL, "org.glassfish.main.extras", "glassfish-embedded-all", "3.1.1"); //NOI18N
+    }
+
+    public void testGetJ2eeProfile_javaEE6Web_glassfish() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_6_WEB, "org.glassfish.main.extras", "glassfish-embedded-web", "3.1.2.2"); //NOI18N
+    }
+
+    public void testGetJ2eeProfile_javaEE7Full_glassfish() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_7_FULL, "org.glassfish.main.extras", "glassfish-embedded-all", "4.0"); //NOI18N
+    }
+
+    public void testGetJ2eeProfile_javaEE7Web_glassfish() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_7_WEB, "org.glassfish.main.extras", "glassfish-embedded-web", "4.0.1"); //NOI18N
+    }
+
+    public void testGetJ2eeProfile_javaEE5_weblogic() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_5, "weblogic", "weblogic", "10.3.6"); //NOI18N
+    }
+
+    public void testGetJ2eeProfile_javaEE6Full_weblogic() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_6_FULL, "weblogic", "weblogic", "12.1.1"); //NOI18N
+    }
+    
+    public void testGetJ2eeProfile_javaEE5_jboss() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_5, "org.jboss.spec", "jboss-javaee-5.0", "1.0.0.GA"); //NOI18N
+    }
+    
+    public void testGetJ2eeProfile_javaEE5Full_jboss() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_5, "org.jboss.spec", "jboss-javaee-all-5.0", "	1.0.0.GA"); //NOI18N
+    }
+    
+    public void testGetJ2eeProfile_javaEE6_jboss() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_6_FULL, "org.jboss.spec", "jboss-javaee-6.0", "3.0.2.Final"); //NOI18N
+    }
+    
+    public void testGetJ2eeProfile_javaEE6Full_jboss() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_6_FULL, "org.jboss.spec", "jboss-javaee-all-6.0", "3.0.0.Final"); //NOI18N
+    }
+    
+    public void testGetJ2eeProfile_javaEE6Web_jboss() throws IOException {
+        checkJ2eeProfile(Profile.JAVA_EE_6_WEB, "org.jboss.spec", "jboss-javaee-web-6.0", "2.0.0.Final"); //NOI18N
+    }
+    
+    private void checkJ2eeProfile(Profile profile, String groupID, String artifactID, String version) throws IOException {
+        builder.appendPomContent("war"); //NOI18N
+        builder.appendDependency(new PomBuilder.PomDependency(groupID, artifactID, version));
+        createProject(builder);
+
+        assertEquals(profile, webModule.getJ2eeProfile());
     }
     
     /*

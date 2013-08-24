@@ -129,10 +129,10 @@ public final class Utils {
                     new FileInputStream(file), UTF_8)); 
             return (JSONObject)JSONValue.parseWithException(reader);
         } catch (ParseException ex) {
-            Logger.getLogger( Utils.class.getCanonicalName()).log(Level.WARNING, 
+            Logger.getLogger( Utils.class.getCanonicalName()).log(Level.FINE,
                     "cannot parse JSON file "+file , ex );
         } catch ( IOException e ){
-            Logger.getLogger( Utils.class.getCanonicalName()).log(Level.WARNING, 
+            Logger.getLogger( Utils.class.getCanonicalName()).log(Level.FINE,
                     null , e );
         }
         finally {
@@ -142,7 +142,7 @@ public final class Utils {
                 }
                 catch (IOException ex) {
                     Logger.getLogger(Utils.class.
-                            getCanonicalName()).log(Level.WARNING, null, ex);
+                            getCanonicalName()).log(Level.FINE, null, ex);
                 }
             }
         }

@@ -289,8 +289,8 @@ public class BreakpointAnnotationProvider extends DebuggerManagerAdapter
     
     private final class AnnotationRefresh implements Runnable {
         
-        private JPDABreakpoint b;
-        private boolean remove, add;
+        private final JPDABreakpoint b;
+        private final boolean remove, add;
         
         public AnnotationRefresh(JPDABreakpoint b, boolean remove, boolean add) {
             this.b = b;
@@ -558,17 +558,20 @@ public class BreakpointAnnotationProvider extends DebuggerManagerAdapter
         if (annotations.isEmpty()) {
             return ;
         }
-        Set<Annotation> bpAnnotations = breakpointToAnnotations.get(b);
-        if (bpAnnotations == null) {
-            breakpointToAnnotations.put(b, new WeakSet<Annotation>(annotations));
-        } else {
-            bpAnnotations.addAll(annotations);
-            breakpointToAnnotations.put(b, bpAnnotations);
+        synchronized (breakpointToAnnotations) {
+            Set<Annotation> bpAnnotations = breakpointToAnnotations.get(b);
+            if (bpAnnotations == null) {
+                breakpointToAnnotations.put(b, new WeakSet<Annotation>(annotations));
+            } else {
+                bpAnnotations.addAll(annotations);
+                breakpointToAnnotations.put(b, bpAnnotations);
+            }
         }
     }
 
     // Is called under synchronized (breakpointToAnnotations)
     private void removeAnnotations(JPDABreakpoint b) {
+        assert Thread.holdsLock(breakpointToAnnotations);
         Set<Annotation> annotations = breakpointToAnnotations.remove(b);
         if (annotations == null) {
             return ;

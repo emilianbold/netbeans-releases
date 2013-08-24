@@ -47,6 +47,7 @@ import org.netbeans.modules.css.editor.module.CssModuleSupport;
 import org.netbeans.modules.css.editor.module.spi.Browser;
 import org.netbeans.modules.css.lib.api.Node;
 import org.netbeans.modules.parsing.api.Snapshot;
+import org.netbeans.modules.web.common.api.Constants;
 import org.netbeans.modules.web.common.api.LexerUtils;
 import org.openide.filesystems.FileObject;
 
@@ -56,14 +57,37 @@ import org.openide.filesystems.FileObject;
  */
 public final class Css3Utils {
     
-    public static final String GENERATED_CODE_MARK = "@@@"; //NOI18N
-   
     public static OffsetRange getOffsetRange(Node node) {
-        return new OffsetRange(node.from(), node.to());
+        int from = node.from();
+        int to = node.to();
+        if(from < 0 || to < 0) {
+            return OffsetRange.NONE;
+        }
+        if(from > to) {
+            return OffsetRange.NONE;
+        }
+        return new OffsetRange(from, to);
     }
     
     public static OffsetRange getDocumentOffsetRange(Node node, Snapshot snapshot) {
-        return new OffsetRange(snapshot.getOriginalOffset(node.from()), snapshot.getOriginalOffset(node.to()));
+        int from = node.from();
+        int to = node.to();
+        if(from < 0 || to < 0) {
+            return OffsetRange.NONE;
+        }
+        if(from > to) {
+            return OffsetRange.NONE;
+        }
+        int origFrom = snapshot.getOriginalOffset(from);
+        int origTo = snapshot.getOriginalOffset(to);
+        if(origFrom < 0 || origTo < 0) {
+            return OffsetRange.NONE;
+        }
+        if(origFrom > origTo) {
+            return OffsetRange.NONE;
+        }
+        
+        return new OffsetRange(origFrom, origTo);
     }
     
     public static boolean isValidOffsetRange(OffsetRange range) {
@@ -75,7 +99,7 @@ public final class Css3Utils {
     }
 
     public static boolean containsGeneratedCode(CharSequence text) {
-        return CharSequenceUtilities.indexOf(text, GENERATED_CODE_MARK) != -1;
+        return CharSequenceUtilities.indexOf(text, Constants.LANGUAGE_SNIPPET_SEPARATOR) != -1;
     }
     
     public static boolean isVendorSpecificProperty(CharSequence propertyName) {

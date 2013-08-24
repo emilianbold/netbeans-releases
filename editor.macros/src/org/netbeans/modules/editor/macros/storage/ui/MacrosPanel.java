@@ -99,6 +99,8 @@ public class MacrosPanel extends JPanel {
     
     private ShortcutsFinder.Writer finder;
     
+    private boolean ignoreUIChanges;
+    
     /** 
      * Creates new form MacrosPanel.
      */
@@ -225,6 +227,8 @@ public class MacrosPanel extends JPanel {
         epMacroCode = new javax.swing.JEditorPane();
         lWait = new javax.swing.JLabel();
 
+        setBorder(javax.swing.BorderFactory.createEmptyBorder(10, 10, 10, 10));
+
         lMacros.setText("Macros:");
 
         tMacros.setModel(new javax.swing.table.DefaultTableModel(
@@ -277,7 +281,7 @@ public class MacrosPanel extends JPanel {
                     .addComponent(lMacros)
                     .addComponent(lMacroCode)
                     .addComponent(spMacros, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE)
-                    .addComponent(sMacroCode, javax.swing.GroupLayout.DEFAULT_SIZE, 352, Short.MAX_VALUE))
+                    .addComponent(sMacroCode, javax.swing.GroupLayout.DEFAULT_SIZE, 332, Short.MAX_VALUE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
                     .addComponent(bNew, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
@@ -304,7 +308,7 @@ public class MacrosPanel extends JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(lMacroCode)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(sMacroCode, javax.swing.GroupLayout.DEFAULT_SIZE, 147, Short.MAX_VALUE)))
+                        .addComponent(sMacroCode, javax.swing.GroupLayout.DEFAULT_SIZE, 127, Short.MAX_VALUE)))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(lWait)
                 .addGap(0, 0, 0))
@@ -372,20 +376,25 @@ public class MacrosPanel extends JPanel {
     }
     
     private void updateButtons(int index) {
-        if (index < 0 || index >= tMacros.getRowCount()) {
-            epMacroCode.setText(""); //NOI18N
-            epMacroCode.setEnabled(false);
-            bRemove.setEnabled(false);
-            bSetShortcut.setEnabled(false);
-        } else {
-            int modelIndex = sorter.modelIndex(index);
-            epMacroCode.setText(model.getMacroByIndex(modelIndex).getCode()); //NOI18N
-            epMacroCode.getCaret().setDot(0);
-            epMacroCode.setEnabled(true);
-            // Fix for #135985 commented to avoid focus
-            //epMacroCode.requestFocusInWindow();
-            bRemove.setEnabled(true && finder != null);
-            bSetShortcut.setEnabled(true && finder != null);
+        ignoreUIChanges = true;
+        try {
+            if (index < 0 || index >= tMacros.getRowCount()) {
+                epMacroCode.setText(""); //NOI18N
+                epMacroCode.setEnabled(false);
+                bRemove.setEnabled(false);
+                bSetShortcut.setEnabled(false);
+            } else {
+                int modelIndex = sorter.modelIndex(index);
+                epMacroCode.setText(model.getMacroByIndex(modelIndex).getCode()); //NOI18N
+                epMacroCode.getCaret().setDot(0);
+                epMacroCode.setEnabled(true);
+                // Fix for #135985 commented to avoid focus
+                //epMacroCode.requestFocusInWindow();
+                bRemove.setEnabled(true && finder != null);
+                bSetShortcut.setEnabled(true && finder != null);
+            }
+        } finally {
+            ignoreUIChanges = false;
         }
     }
     
@@ -414,6 +423,9 @@ public class MacrosPanel extends JPanel {
     }
     
     private void epMacroCodeDocumentChanged() {
+        if (ignoreUIChanges) {
+            return;
+        }
         int index = tMacros.getSelectedRow();
         if (index >= 0) {
             model.getMacroByIndex(sorter.modelIndex(index)).setCode(epMacroCode.getText());

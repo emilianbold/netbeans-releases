@@ -42,8 +42,6 @@
 package org.netbeans.modules.php.editor.model.impl;
 
 import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
 import org.netbeans.modules.php.editor.model.*;
 import org.netbeans.modules.parsing.spi.indexing.support.QuerySupport;
 import org.netbeans.modules.php.editor.model.FileScope;
@@ -57,27 +55,8 @@ public class ModelTest extends ModelTestBase {
         super(testName);
     }
 
-//    public void testOccurencesBasicFileScope() throws Exception {
-//        Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
-//        FileScope topScope = model.getFileScope();
-//        assertFalse(topScope.getElements().isEmpty());
-//        FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"myfnc"));
-//        assertNotNull(fncScope);
-//        model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
-//        Occurence underCaret = underCaret(
-//                model,prepareTestFile("testfiles/model/basicFileScope.php"), fncScope.getOffset());
-//        assertNotNull(underCaret);
-//        for (PhpElement phpElement : underCaret.getAllDeclarations()) {
-//            assertEquals(PhpElementKind.FUNCTION, phpElement.getPhpElementKind());
-//            assertEquals(fncScope.getName(), phpElement.getName());
-//        }
-//        Collection<Occurence> allOccurences = underCaret.getAllOccurences();
-//        assertEquals(3, allOccurences.size());
-//    }
-
-
     public void testVarsForBasicFileScope() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
+        Model model = getModel(getTestSource("testfiles/model/basicFileScope.php"));
         FileScope topScope = model.getFileScope();
         FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"myfnc"));
         assertNotNull(fncScope);
@@ -104,13 +83,13 @@ public class ModelTest extends ModelTestBase {
     }
 
     public void testGlobalVars2() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/globalvars2.php"));
+        Model model = getModel(getTestSource("testfiles/model/globalvars2.php"));
         FileScope topScope = model.getFileScope();
         varContainerTestForGlobal2(ModelUtils.getFirst(topScope.getDeclaredNamespaces()));
     }
 
     public void testGlobalVars3() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/globalvars3.php"));
+        Model model = getModel(getTestSource("testfiles/model/globalvars3.php"));
         FileScope topScope = model.getFileScope();
         FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"fnc"));
         assertNotNull(fncScope);
@@ -132,7 +111,7 @@ public class ModelTest extends ModelTestBase {
     }
 
     public void testFunctionVars2() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/globalvars2.php"));
+        Model model = getModel(getTestSource("testfiles/model/globalvars2.php"));
         FileScope topScope = model.getFileScope();
         FunctionScope fncScope = ModelUtils.getFirst(ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"myfnc"));
         assertNotNull(fncScope);
@@ -140,9 +119,8 @@ public class ModelTest extends ModelTestBase {
     }
 
     public void testScopes() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/scope.php"));
+        Model model = getModel(getTestSource("testfiles/model/scope.php"));
         FileScope topScope = model.getFileScope();
-
 
         Collection<? extends TypeScope> types = ModelUtils.getDeclaredTypes(topScope);
         Collection<? extends ClassScope> classes = ModelUtils.getDeclaredClasses(topScope);
@@ -193,7 +171,7 @@ public class ModelTest extends ModelTestBase {
     }
 
     public void testFunctionScopes() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/scope.php"));
+        Model model = getModel(getTestSource("testfiles/model/scope.php"));
         FileScope topScope = model.getFileScope();
         assertEquals(1, ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"fnca").size());
         assertEquals(2,  ModelUtils.filter(ModelUtils.getDeclaredFunctions(topScope),"fnca", "fncb").size());
@@ -203,7 +181,6 @@ public class ModelTest extends ModelTestBase {
         assertTrue(fnca.getInScope() instanceof NamespaceScope);
         assertTrue(fnca.getInScope().getInScope() instanceof FileScope);
         assertSame(topScope, fnca.getInScope().getInScope());
-
 
         assertEquals("fnca", fnca.getName());
         assertEquals("", ModelUtils.getCamelCaseName(fnca));
@@ -219,7 +196,7 @@ public class ModelTest extends ModelTestBase {
     }
 
     public void testBasicFileScope() throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/basicFileScope.php"));
+        Model model = getModel(getTestSource("testfiles/model/basicFileScope.php"));
         FileScope program = model.getFileScope();
         assertNotNull(program);
         assertEquals(1, program.getElements().size());
@@ -284,7 +261,7 @@ public class ModelTest extends ModelTestBase {
     }
 
     public void testIssue202460 () throws Exception {
-        Model model = getModel(prepareTestFile("testfiles/model/issue202460.php"));
+        Model model = getModel(getTestSource("testfiles/model/issue202460.php"));
         FileScope topScope = model.getFileScope();
         Collection<? extends NamespaceScope> declaredNamespaces = topScope.getDeclaredNamespaces();
         Collection<? extends ConstantElement> declaredConstants = declaredNamespaces.iterator().next().getDeclaredConstants();
@@ -335,15 +312,6 @@ public class ModelTest extends ModelTestBase {
         assertEquals("MyCls", otherComplexType.getName());
         TypeScope foreign2Type = ModelUtils.getFirst(foreign2.getTypes(last.getOffset()));
         assertNull(foreign2Type);
-    }
-
-    public void testModelPerformance() throws Exception {
-        Date start = new Date();
-        Model model = getModel(prepareTestFile("testfiles/model/performance.php"));
-        Date end = new Date();
-        long time = end.getTime() - start.getTime();
-        System.out.println("Creating model takes: " + time);
-        assertTrue(time < 3000);
     }
 
 }

@@ -267,10 +267,7 @@ made subject to such option by the copyright holder.
                 </file>
                 <file name="Reindenter.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.save.Reindenter$Factory"/>
-                </file>
-                <file name="JavacParser.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.parsing.JavacParserFactory"/>
-                </file>
+                </file>                
                 <file name="JavaIndexer.instance">
                     <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.indexing.JavaCustomIndexer$Factory"/>
                     <!--attr name="position" intvalue="1000"/-->
@@ -288,6 +285,7 @@ made subject to such option by the copyright holder.
                     <attr name="regex4" stringvalue="\s*default[:\s]"/>
                     <attr name="regex5" stringvalue="\s*else[\s\{]"/>
                     <attr name="regex6" stringvalue="\s*\w*\s*:"/>
+                    <attr name="regex7" stringvalue="\s*\)"/>
                 </file>
                 <folder name="SideBar">
                     <file name="org-netbeans-modules-java-classfile-SideBarFactoryImpl.instance">
@@ -297,14 +295,7 @@ made subject to such option by the copyright holder.
                     </file>
                 </folder>
             </folder>
-        </folder>
-        <folder name="application">
-            <folder name="x-class-file">
-                <file name="ClassParser.instance">
-                    <attr name="instanceClass" stringvalue="org.netbeans.modules.java.source.parsing.ClassParserFactory"/>
-                </file>
-            </folder>
-        </folder>
+        </folder>        
     </folder>
 
     <folder name="OptionsExport">

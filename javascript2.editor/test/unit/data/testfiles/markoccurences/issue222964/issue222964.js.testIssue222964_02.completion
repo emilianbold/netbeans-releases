@@ -1,0 +1,27 @@
+Code completion result for source line:
+console.log(window.store.address.|street);
+(QueryType=COMPLETION, prefixSearch=true, caseSensitive=true)
+------------------------------------
+CLASS      prototype                       [PUBLIC]   JS Platform
+METHOD     create(O: Object): Object       [PUBLIC,   JS Platform
+METHOD     defineProperties(O: Object, Pr  [PUBLIC,   JS Platform
+METHOD     defineProperty(O: Object, P: S  [PUBLIC,   JS Platform
+METHOD     freeze(O: Object): Object       [PUBLIC,   JS Platform
+METHOD     getOwnPropertyDescriptor(O: Ob  [PUBLIC,   JS Platform
+METHOD     getOwnPropertyNames(O: Object)  [PUBLIC,   JS Platform
+METHOD     getPrototypeOf(O: Object): Obj  [PUBLIC,   JS Platform
+METHOD     hasOwnProperty(V: String): Boo  [PUBLIC]   JS Platform
+METHOD     isExtensible(O: Object): Boole  [PUBLIC,   JS Platform
+METHOD     isFrozen(O: Object): Boolean    [PUBLIC,   JS Platform
+METHOD     isPrototypeOf(V: Object): Bool  [PUBLIC]   JS Platform
+METHOD     isSealed(O: Object): Boolean    [PUBLIC,   JS Platform
+METHOD     keys(O: Object): Array          [PUBLIC,   JS Platform
+METHOD     preventExtensions(O: Object):   [PUBLIC,   JS Platform
+METHOD     propertyIsEnumerable(V: String  [PUBLIC]   JS Platform
+METHOD     seal(O: Object): Object         [PUBLIC,   JS Platform
+METHOD     toLocaleString(): String        [PUBLIC]   JS Platform
+METHOD     toString(): String              [PUBLIC]   JS Platform
+METHOD     valueOf(): Object               [PUBLIC]   JS Platform
+FIELD      city: String                    [PUBLIC]   issue222964.js
+FIELD      constructor: Function           [PUBLIC]   JS Platform
+FIELD      street: String                  [PUBLIC]   issue222964.js

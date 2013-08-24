@@ -65,6 +65,11 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
         super(testName);
     }
 
+    public void test234573() throws Exception {
+        // #234573 - unresolved usage of static namespace functions
+        performStaticTest("namespace234573.cpp");
+    }
+    
     public void test218303() throws Exception {
         // #218303 - Unresolved identifiers in preprocessor directives with alternative tokens
         performStaticTest("iz218303.cpp");
@@ -371,7 +376,12 @@ public class UnresolvedIdentifierTest extends ErrorHighlightingBaseTestCase {
     public void testBug222883() throws Exception {
         // Bug 222883 - goto labes ("Unable to resolve identifier G_1")
         performStaticTest("bug222883.cpp");
-    }            
+    }
+    
+    public void testBug227266() throws Exception {
+        // Bug 227266 - incorrect error HL
+        performStaticTest("bug227266.cpp");
+    }
     
     /////////////////////////////////////////////////////////////////////
     // FAILS

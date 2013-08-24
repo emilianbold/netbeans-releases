@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.xml.multiview.ui;
 
+import java.awt.Color;
 import org.netbeans.modules.xml.multiview.cookies.LinkCookie;
 
 import javax.swing.*;
@@ -72,7 +73,7 @@ public class LinkButton extends JButton {
         button.setBorderPainted(false);
         button.setFocusPainted(false);
         button.setContentAreaFilled(false);
-        String text = "<html><b><u>" + button.getText() + "</u></b></html>";
+        String text = getFormatedLinkText(button.getText());
         button.setAction(new LinkAction(panel, ddBean, ddProperty));
         button.setText(text);
 
@@ -89,7 +90,20 @@ public class LinkButton extends JButton {
     }
 
     public void setText(String text) {
-        super.setText("<html><b><u>"+text+"</u></b></html>");
+        super.setText(getFormatedLinkText(text));
+    }
+
+    private static String getFormatedLinkText(String text) {
+        return "<html><b><u>" + getColorizedText(text) + "</u></b></html>"; //NOI18N
+    }
+
+    private static String getColorizedText(String text) {
+        Color linkColor = UIManager.getColor("nb.html.link.foreground"); //NOI18N
+        if (linkColor == null) {
+            return text;
+        } else {
+            return "<font color=\"#" + Integer.toHexString(linkColor.getRGB()).substring(2) + "\">" + text + "</font>";
+        }
     }
 
     public static class LinkAction extends AbstractAction {

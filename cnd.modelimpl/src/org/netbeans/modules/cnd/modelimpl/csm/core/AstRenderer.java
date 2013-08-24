@@ -53,6 +53,7 @@ import org.netbeans.modules.cnd.api.model.deep.*;
 import org.netbeans.modules.cnd.api.model.services.CsmIncludeResolver;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect;
 import org.netbeans.modules.cnd.api.model.services.CsmSelect.CsmFilter;
+import org.netbeans.modules.cnd.api.model.util.CsmBaseUtilities;
 import org.netbeans.modules.cnd.api.model.util.CsmKindUtilities;
 import org.netbeans.modules.cnd.utils.cache.TextCache;
 import org.netbeans.modules.cnd.modelimpl.parser.generated.CPPTokenTypes;
@@ -81,7 +82,7 @@ public class AstRenderer {
     protected final Map<Integer, CsmObject> objects;
     protected final String language;
 
-    private static final boolean SKIP_AST_RENDERER_EXCEPTIONS = Boolean.getBoolean("cnd.skip.ast.renderer.exceptions"); //NOI18N
+    protected static final boolean SKIP_AST_RENDERER_EXCEPTIONS = Boolean.getBoolean("cnd.skip.ast.renderer.exceptions"); //NOI18N
 
     public AstRenderer(FileImpl fileImpl, FileContent fileContent, String language, Map<Integer, CsmObject> objects) {
         if (isBeingParsed(fileImpl)) {
@@ -152,10 +153,7 @@ public class AstRenderer {
                             planB = true;
                         }                    
                         if(planB) {
-                            ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
-                                                ClassImplSpecialization.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container) :
-                                                ClassImpl.create(token, currentNamespace, file, language, fileContent, !isRenderingLocalContext(), container);
-                            container.addDeclaration(cls);
+                            ClassImpl cls = createClass(token, currentNamespace, container);
                             addTypedefs(renderTypedef(token, cls, currentNamespace).typedefs, currentNamespace, container, cls);
                             renderVariableInClassifier(token, cls, currentNamespace, container);
                         }
@@ -180,8 +178,7 @@ public class AstRenderer {
                             planB = true;
                         }                    
                         if(planB) {
-                            csmEnum = EnumImpl.create(token, currentNamespace, file, fileContent, !isRenderingLocalContext());
-                            container.addDeclaration(csmEnum);
+                            csmEnum = createEnum(token, currentNamespace, container);
                             renderVariableInClassifier(token, csmEnum, currentNamespace, container);                        
                         }
                         if (csmEnum != null) {
@@ -1028,7 +1025,7 @@ public class AstRenderer {
     }
 
     @SuppressWarnings("fallthrough")
-    protected Pair renderTypedef(AST ast, FileImpl file, FileContent fileContent, CsmScope scope, MutableDeclarationsContainer container) {
+    protected Pair renderTypedef(AST ast, FileImpl file, FileContent fileContent, CsmScope scope, MutableDeclarationsContainer container) throws AstRendererException {
         Pair results = new Pair();
         if (ast != null) {
             AST firstChild = ast.getFirstChild();
@@ -1158,7 +1155,7 @@ public class AstRenderer {
                                 templateParams = curr;
                                 break;
                             case CPPTokenTypes.CSM_TYPE_COMPOUND:
-                            case CPPTokenTypes.CSM_TYPE_BUILTIN:
+                            case CPPTokenTypes.CSM_TYPE_BUILTIN: {
                                 classifier = curr;
                                 TypeImpl typeImpl = null;
                                 if (classifier != null) {
@@ -1166,24 +1163,47 @@ public class AstRenderer {
                                 }
                                 if (typeImpl != null) {
                                     typeImpl.setTypeOfTypedef();
-                                    CsmTypedef typedef = createTypedef(ast/*nameToken*/, file, scope, typeImpl, name);
-                                    if (typedef != null) {
-                                        if (results.getEnclosingClassifier() != null && results.getEnclosingClassifier().getName().length() == 0) {
-                                            ((TypedefImpl) typedef).setTypeUnnamed();
-                                        }
-                                        if(templateParams != null) {
-                                            List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, getContainingFile(), scope, !isRenderingLocalContext());
-                                            TemplateDescriptor templateDescriptor = new TemplateDescriptor(params, name, false, !isRenderingLocalContext());
-                                            ((TypedefImpl) typedef).setTemplateDescriptor(templateDescriptor);
-                                        }
-                                        results.typedefs.add(typedef);
-                                    }
+                                    createTypeAlias(results, ast, templateParams, file, scope, typeImpl, name);
                                 }
                                 ptrOperator = null;
                                 name = "";
                                 nameToken = null;
                                 arrayDepth = 0;
                                 break;
+                            }
+                                
+                            case CPPTokenTypes.CSM_ENUM_DECLARATION:
+                            case CPPTokenTypes.CSM_CLASS_DECLARATION: {
+                                // This is type alias to class definition
+                                
+                                if (templateParams != null) {
+                                    // [dcl.type], point 3:
+                                    // A type-specifier-seq shall not define a class or enumeration
+                                    // unless it appears in the type-id of an alias-declaration (7.1.3) that
+                                    // is not the declaration of a template-declaration.                                    
+                                    break;
+                                }
+
+                                // Process class definition
+                                AST fakeParent = new FakeAST();
+                                fakeParent.addChild(curr);
+                                
+                                CsmOffsetableDeclaration declaration;
+                                
+                                if (curr.getType() == CPPTokenTypes.CSM_CLASS_DECLARATION) {
+                                    declaration = createClass(curr, scope, container);
+                                } else {
+                                    declaration = createEnum(curr, scope, container);
+                                }
+                                
+                                // Create type alias
+                                if (CsmKindUtilities.isClassifier(declaration)) {
+                                    TypeImpl typeImpl = TypeFactory.createType((CsmClassifier)declaration, ptrOperator, arrayDepth, curr.getFirstChild(), file, declaration.getStartOffset(), declaration.getEndOffset());
+                                    typeImpl.setTypeOfTypedef();
+                                    createTypeAlias(results, ast, templateParams, file, scope, typeImpl, name);
+                                }                                
+                                break;
+                            }
                         }
                     }
                 }
@@ -1191,15 +1211,49 @@ public class AstRenderer {
         }
         return results;
     }
-
+    
     protected CsmClassForwardDeclaration createForwardClassDeclaration(AST ast, MutableDeclarationsContainer container, FileImpl file, CsmScope scope) {
         return ClassForwardDeclarationImpl.create(ast, file, scope, container, !isRenderingLocalContext());
+    }
+    
+    private CsmTypedef createTypeAlias(Pair results, AST nameAST, AST templateParams, FileImpl file, CsmScope scope, CsmType typeImpl, CharSequence name) {
+        CsmTypedef typedef = createTypedef(nameAST/*nameToken*/, file, scope, typeImpl, name); 
+        if (typedef != null) {
+            if (results.getEnclosingClassifier() != null && results.getEnclosingClassifier().getName().length() == 0) {
+                ((TypedefImpl) typedef).setTypeUnnamed();
+            }
+            if(templateParams != null) {
+                List<CsmTemplateParameter> params = TemplateUtils.getTemplateParameters(templateParams, getContainingFile(), scope, !isRenderingLocalContext());
+                TemplateDescriptor templateDescriptor = new TemplateDescriptor(params, name, false, !isRenderingLocalContext());
+                ((TypedefImpl) typedef).setTemplateDescriptor(templateDescriptor);
+            }
+            results.typedefs.add(typedef);
+        }
+        return typedef;
+    }  
+    
+    protected ClassImpl createClass(AST token, CsmScope scope, DeclarationsContainer container) throws AstRendererException {
+        ClassImpl cls = TemplateUtils.isPartialClassSpecialization(token) ?
+                            ClassImplSpecialization.create(token, scope, file, language, fileContent, !isRenderingLocalContext(), container) :
+                            ClassImpl.create(token, scope, file, language, fileContent, !isRenderingLocalContext(), container);
+        if (container instanceof MutableDeclarationsContainer) {
+            ((MutableDeclarationsContainer)container).addDeclaration(cls);
+        }
+        return cls;
+    }
+    
+    protected EnumImpl createEnum(AST token, CsmScope scope, DeclarationsContainer container) {
+        EnumImpl csmEnum = EnumImpl.create(token, scope, file, fileContent, !isRenderingLocalContext());
+        if (container instanceof MutableDeclarationsContainer) {
+            ((MutableDeclarationsContainer)container).addDeclaration(csmEnum);
+        }
+        return csmEnum;
     }
 
     protected CsmTypedef createTypedef(AST ast, FileImpl file, CsmObject container, CsmType type, CharSequence name) {
         return TypedefImpl.create(ast, file, container, type, name, !isRenderingLocalContext());
     }
-
+    
     public boolean renderForwardClassDeclaration(
             AST ast,
             NamespaceImpl currentNamespace, MutableDeclarationsContainer container,
@@ -1681,7 +1735,7 @@ public class AstRenderer {
                                     }
                                 }
                             }
-                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, false, cfdi);
+                            processVariable(token, ptrOperator, (theOnly ? ast : token), typeAST/*tokType*/, namespaceContainer, container2, file, _static, _extern, functionParameter, cfdi);
                             ptrOperator = null;
                             break;
                         case CPPTokenTypes.CSM_VARIABLE_LIKE_FUNCTION_DECLARATION:
@@ -2388,7 +2442,8 @@ public class AstRenderer {
         public static CsmScope getScope(CsmScope scope, CsmFile file, boolean _static, boolean definition) {
             // change scope to file for static methods, but only to prevent
             // registration in global namespace
-            if(scope instanceof CsmNamespace) {
+//            if(scope instanceof CsmNamespace) {
+            if(CsmBaseUtilities.isGlobalNamespace(scope)) {
                 if( !NamespaceImpl.isNamespaceScope(file, definition, _static) ) {
                         scope = file;
                 }

@@ -567,7 +567,7 @@ public class OutputOptions {
      * Create a copy of this object, with the same options values, but with
      * separate set of listeners.
      */
-    public OutputOptions makeCopy() {
+    public synchronized OutputOptions makeCopy() {
         final OutputOptions copy = new OutputOptions(false);
         copy.font = font;
         copy.fontWrapped = fontWrapped;
@@ -589,7 +589,9 @@ public class OutputOptions {
                 public void propertyChange(PropertyChangeEvent evt) {
                     if (evt.getPropertyName().equals(PROP_INITIALIZED)) {
                         copy.assign(OutputOptions.this);
-                        copy.initialized = true;
+                        synchronized (copy) {
+                            copy.initialized = true;
+                        }
                         copy.pcs.firePropertyChange(PROP_INITIALIZED,
                                 false, true);
                         OutputOptions.this.removePropertyChangeListener(this);
@@ -597,8 +599,18 @@ public class OutputOptions {
                 }
             };
             OutputOptions.this.addPropertyChangeListener(l);
+        } else {
+            copy.initialized = true;
         }
         return copy;
+    }
+
+    /**
+     * @return True if this object has been initialized (with data from
+     * persistent storage), false otherwise.
+     */
+    public synchronized boolean isInitialized() {
+        return initialized;
     }
 
     /**

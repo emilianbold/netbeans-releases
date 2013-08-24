@@ -1485,4 +1485,17 @@ public class Css3ParserScssTest extends CssTestBase {
                 + "      }\n"
                 + "    }");
     }
+
+    public void testInterpolationExpressionWithBrackets() {
+        assertParses(".#{$item}-important { background-color: green; }");
+        
+        assertParses(".important[href]  {  }\n");
+        
+        assertParses(".#{$item}important[href]  {  }\n");
+        
+        assertParses("@each $item in label, badge {\n"
+                + "   .#{$item}-important         { background-color: green; }\n"
+                + "   .#{$item}-important[href]   { background-color: blue; }\n"
+                + " }");
+    }
 }

@@ -105,7 +105,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
     }
     
     @Override
-    protected final void validateBeforeNext () {
+    protected final boolean validateBeforeNext () {
         setValid(true, null);
         boolean acceptEmptySelection = mode == Mode.ACCEPT_EMPTY_SELECTION;
         if (!acceptEmptySelection && branches.getSelectedBranches().isEmpty()) {
@@ -120,6 +120,7 @@ public class FetchBranchesStep extends AbstractWizardPanel implements WizardDesc
                 setValid(true, new Message(msgDeletedBranches, true));
             }
         }
+        return isValid();
     }
 
     @Override

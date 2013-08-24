@@ -875,12 +875,16 @@ public class CssCompletion implements CodeCompletionHandler {
     }
 
     /**
-     * Complete at-rules and html selectors if there's no prefix.
+     * Complete at-rules and html selectors if *there's no prefix*.
      *
      * @param context
      * @param completionProposals
      */
     private void completeAtRulesAndHtmlSelectors(CompletionContext context, List<CompletionProposal> completionProposals) {
+        if(!context.getPrefix().trim().isEmpty()) {
+            return ;
+        }
+        
         Node node = context.getActiveNode();
         //switch to first non error node
         loop:
@@ -889,6 +893,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 case error:
                 case recovery:
                     node = node.parent();
+                    break;
                 default:
                     break loop;
             }
@@ -1037,6 +1042,7 @@ public class CssCompletion implements CodeCompletionHandler {
                 case error:
                 case recovery:
                     node = node.parent();
+                    break;
                 default:
                     break loop;
             }
@@ -1050,16 +1056,25 @@ public class CssCompletion implements CodeCompletionHandler {
             case bodyItem:
             case fontFace:
                 switch (completionContext.getTokenSequence().token().id()) {
-                case IMPORTANT_SYM:
-                case MEDIA_SYM:
-                case PAGE_SYM:
-                case CHARSET_SYM:
-                case AT_IDENT:
-                case FONT_FACE_SYM:
-                case ERROR:
-                    Collection<String> possibleValues = filterStrings(AT_RULES, completionContext.getPrefix());
-                    completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
-            }
+                    case IMPORTANT_SYM:
+                    case MEDIA_SYM:
+                    case PAGE_SYM:
+                    case CHARSET_SYM:
+                    case AT_IDENT:
+                    case FONT_FACE_SYM:
+                    case ERROR:
+                        Collection<String> possibleValues = filterStrings(AT_RULES, completionContext.getPrefix());
+                        completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
+                }
+                break;
+            case elementSubsequent:
+                //@| -- parsed as elementSubsequent due to the possible less_selector_interpolation -- @{...} in selectorsGroup
+                switch (completionContext.getTokenSequence().token().id()) {
+                    case AT_SIGN:
+                        Collection<String> possibleValues = filterStrings(AT_RULES, completionContext.getPrefix());
+                        completionProposals.addAll(Utilities.createRAWCompletionProposals(possibleValues, ElementKind.FIELD, completionContext.getSnapshot().getOriginalOffset(completionContext.getActiveNode().from())));
+                        break;
+                }
         }
     }
 

@@ -63,7 +63,9 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.EnumSet;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -213,10 +215,12 @@ public class ModelVisitor extends PathNodeVisitor {
                 onLeftSite = bNode.tokenType() == TokenType.ASSIGN && bNode.lhs().equals(accessNode);       
             }
             if (property != null) {
+                OffsetRange range = new OffsetRange(accessNode.getProperty().getStart(), accessNode.getProperty().getFinish());
                 if(onLeftSite && !property.isDeclared()) {
                     property.setDeclared(true);
+                    property.setDeclarationName(new IdentifierImpl(property.getName(), range));
                 }
-                property.addOccurrence(new OffsetRange(accessNode.getProperty().getStart(), accessNode.getProperty().getFinish()));
+                property.addOccurrence(range);
             } else {
                 Identifier name = ModelElementFactory.create(parserResult, (IdentNode)accessNode.getProperty());
                 if (name != null) {
@@ -596,11 +600,7 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node enter(FunctionNode functionNode) {
         addToPath(functionNode);
-        List<FunctionNode> functions = new ArrayList<FunctionNode>(functionNode.getFunctions().size());
-        // store all function nodes in cache
-        for (FunctionNode fn : functionNode.getFunctions()) {
-            functions.add(fn);
-        }
+        List<FunctionNode> functions = new ArrayList<FunctionNode>(functionNode.getFunctions());
 
         List<Identifier> name = null;
         boolean isPrivate = false;
@@ -646,6 +646,9 @@ public class ModelVisitor extends PathNodeVisitor {
             int end = functionNode.getIdent().getFinish();
             if(end == 0) {
                 end = parserResult.getSnapshot().getText().length();
+            }
+            if ((modelBuilder.getCurrentDeclarationScope()).getProperty(functionNode.getIdent().getName()) != null) {
+                return null;
             }
             name.add(new IdentifierImpl(functionNode.getIdent().getName(), new OffsetRange(start, end)));
             if (pathSize > 2 && getPath().get(pathSize - 2) instanceof FunctionNode) {
@@ -729,8 +732,9 @@ public class ModelVisitor extends PathNodeVisitor {
                 }
 
             }
-
-            for (FunctionNode fn : functions) {
+            
+            List<FunctionNode> copy = new ArrayList<FunctionNode>(functions);
+            for (FunctionNode fn : copy) {
                 if (fn.getIdent().getStart() < fn.getIdent().getFinish()) {
                     // go through all functions defined via reference
                     String functionName = fn.getIdent().getName();
@@ -979,6 +983,8 @@ public class ModelVisitor extends PathNodeVisitor {
             } else if (lastVisited instanceof PropertyNode) {
                 fqName = getName((PropertyNode) lastVisited);
                 isDeclaredInParent = true;
+            } else if (lastVisited instanceof ExecuteNode) {
+                treatAsAnonymous = true;
             } else if (lastVisited instanceof BinaryNode) {
                 BinaryNode binNode = (BinaryNode) lastVisited;
                 Node binLhs = binNode.lhs();
@@ -1296,23 +1302,6 @@ public class ModelVisitor extends PathNodeVisitor {
     @Override
     public Node enter(WithNode withNode) {
         JsObjectImpl currentObject = modelBuilder.getCurrentObject();
-//        Collection<TypeUsage> originalTypes = ModelUtils.resolveSemiTypeOfExpression(parserResult, withNode.getExpression());
-//        List<TypeUsage> types = new ArrayList(originalTypes);
-//        if (currentObject instanceof JsWith) {
-//            JsWith outerWith = (JsWith) currentObject;
-//            for (TypeUsage type : outerWith.getTypes()) {
-//                for (TypeUsage oType : originalTypes) {
-//                    String typeName = type.getType();
-//                    String alteredName = oType.getType();
-//                    if (alteredName.startsWith("@var;")) {
-//                        alteredName = alteredName.substring(5);
-//                        alteredName = "@pro;" + alteredName;
-//                    }
-//                    typeName = typeName + alteredName;
-//                    types.add(new TypeUsageImpl(typeName, oType.getOffset(), false));
-//                }
-//            }
-//        }
         Collection<TypeUsage> types = ModelUtils.resolveSemiTypeOfExpression(modelBuilder, withNode.getExpression());
         JsWithObjectImpl withObject = new JsWithObjectImpl(currentObject, modelBuilder.getUnigueNameForWithObject(), types, new OffsetRange(withNode.getStart(), withNode.getFinish()), 
                         new OffsetRange(withNode.getExpression().getStart(), withNode.getExpression().getFinish()),parserResult.getSnapshot().getMimeType(), null);
@@ -1549,7 +1538,7 @@ public class ModelVisitor extends PathNodeVisitor {
             // don't process this node.
             return;
         }
-        occurrenceBuilder.addOccurrence(name, range, modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject(), isFunction, leftSite);
+        occurrenceBuilder.addOccurrence(name, range, modelBuilder.getCurrentDeclarationScope(), modelBuilder.getCurrentObject(), modelBuilder.getCurrentWith(), isFunction, leftSite);
 //        DeclarationScope scope = modelBuilder.getCurrentDeclarationScope();
 //        JsObject property = null;
 //        JsObject parameter = null;
@@ -1719,12 +1708,14 @@ public class ModelVisitor extends PathNodeVisitor {
         }
         return lObject;
     }
+    
+    // TODO move this method to the ModelUtils
     /**
      * 
      * @param where the declaration context, where this is used
      * @return JsObject that should represent this. 
      */
-    private JsObject resolveThis(JsObject where) {
+    public JsObject resolveThis(JsObject where) {
         JsElement.Kind whereKind = where.getJSKind();
         if (canBeSingletonPattern()) {
             JsObject result = resolveThisInSingletonPattern(where);
@@ -1837,7 +1828,7 @@ public class ModelVisitor extends PathNodeVisitor {
         return null;
     }
     
-    private boolean canBeSingletonPattern() {
+    private  boolean canBeSingletonPattern() {
         int pathIndex = 1;
         Node lastNode = getPreviousFromPath(1);
         if (lastNode instanceof FunctionNode && !canBeSingletonPattern(pathIndex)) {

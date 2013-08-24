@@ -175,6 +175,7 @@ public class EditorContextImpl extends EditorContext {
 
     private PropertyChangeSupport   pcs;
     private Map<Annotation, String> annotationToURL = new HashMap<Annotation, String>();
+    private final Object annotationToURLLock = new Object();
     private PropertyChangeListener  dispatchListener;
     private EditorContextDispatcher contextDispatcher;
     private final Map<JavaSource, JavaSourceUtil.Handle> sourceHandles = new WeakHashMapActive<JavaSource, JavaSourceUtil.Handle>();
@@ -333,8 +334,10 @@ public class EditorContextImpl extends EditorContext {
         } else {
             annotation = new DebuggerAnnotation (annotationType, l, thread);
         }
-        annotationToURL.put (annotation, url);
-
+        synchronized (annotationToURLLock) {
+            assert url != null;
+            annotationToURL.put (annotation, url);
+        }
         return annotation;
     }
 
@@ -359,8 +362,10 @@ public class EditorContextImpl extends EditorContext {
         } catch (MalformedURLException ex) {
             throw new RuntimeException("Bad URL: "+url, ex);
         }
-        annotationToURL.put (annotation, url);
-
+        synchronized (annotationToURLLock) {
+            assert url != null;
+            annotationToURL.put (annotation, url);
+        }
         return annotation;
     }
 
@@ -402,8 +407,14 @@ public class EditorContextImpl extends EditorContext {
     }
 
     private void removeAnnotation(Annotation annotation) {
+        synchronized (annotationToURLLock) {
+            String url = annotationToURL.remove (annotation);
+            //logger.severe("Removing "+annotation+", URL = "+url+", thread = "+Thread.currentThread().getId());
+            //Thread.dumpStack();
+            assert url != null;
+        }
         annotation.detach ();
-        annotationToURL.remove (annotation);
+        
     }
 
     /**
@@ -440,7 +451,11 @@ public class EditorContextImpl extends EditorContext {
         if (timeStamp == null) {
             return line.getLineNumber () + 1;
         }
-        String url = annotationToURL.get ((Annotation) annotation);
+        String url;
+        synchronized (annotationToURLLock) {
+            url = annotationToURL.get ((Annotation) annotation);
+            assert url != null;
+        }
         Line.Set lineSet = LineTranslations.getTranslations().getLineSet (url, timeStamp);
         return lineSet.getOriginalLineNumber (line) + 1;
     }

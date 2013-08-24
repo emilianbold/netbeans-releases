@@ -99,6 +99,7 @@ import org.openide.util.Parameters;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
@@ -269,6 +270,11 @@ public final class ReferencesSupport {
         return null;
     }    
 
+    public static CsmErrorDirective findErrorDirective(CsmFile csmFile, int offset) {
+        assert (csmFile != null);
+        return CsmOffsetUtilities.findObject(csmFile.getErrors(), null, offset);
+    }
+    
     public static CsmInclude findInclude(CsmFile csmFile, int offset) {
         assert (csmFile != null);
         return CsmOffsetUtilities.findObject(csmFile.getIncludes(), null, offset);
@@ -315,10 +321,12 @@ public final class ReferencesSupport {
                     csmItem = labels.iterator().next().getReferencedObject();
                 }
             }
-            if (csmItem == null) {
-                // Exit now, don't look for variables, types and etc.
-                return null;
-            }
+// Commented because goto statements could be expression based. 
+// In such case there are inner identifiers
+//            if (csmItem == null) {
+//                // Exit now, don't look for variables, types and etc.
+//                return null;
+//            }
         } else if (CsmKindUtilities.isVariable(objUnderOffset) || CsmKindUtilities.isTypedef(objUnderOffset)) {
             CsmType type = CsmKindUtilities.isVariable(objUnderOffset) ? ((CsmVariable) objUnderOffset).getType() : ((CsmTypedef) objUnderOffset).getType();
             CsmParameter parameter = null;
@@ -465,7 +473,7 @@ public final class ReferencesSupport {
         }
         if (csmObject == null) {
             // try with code completion engine
-            Collection<CsmObject> objs = CompletionUtilities.findItemsReferencedAtCaretPos(null, doc, CsmCompletionProvider.getCompletionQuery(csmFile, queryScope, fileReferencesContext), offset);
+            Collection<CsmObject> objs = CompletionUtilities.findItemsReferencedAtCaretPos(null, doc, CsmCompletionProvider.createCompletionResolver(csmFile, queryScope, fileReferencesContext), offset);
             csmObject = extractBestReferencedObject(objs, csmObject);
         }
         return csmObject;

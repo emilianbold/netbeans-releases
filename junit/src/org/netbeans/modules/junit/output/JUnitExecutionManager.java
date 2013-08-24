@@ -106,6 +106,17 @@ public class JUnitExecutionManager implements RerunHandler{
                     targets[i] = ActionProvider.COMMAND_TEST_SINGLE;      
                 } else if (targets[i].equals("debug-test")){                //NOI18N
                     targets[i] = ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
+                } else if (targets[i].equals("test-unit")){                //NOI18N
+                    targets[i] = ActionProvider.COMMAND_TEST;
+                } else if (targets[i].equals("test-method")){                //NOI18N
+                    targets[i] = SingleMethod.COMMAND_RUN_SINGLE_METHOD;
+                } else if (targets[i].equals("debug-test-single-nb")){                //NOI18N
+                    String testMethods = properties.getProperty("test.methods");//NOI18N
+                    if (testMethods != null) {
+                        targets[i] = SingleMethod.COMMAND_DEBUG_SINGLE_METHOD;
+                    } else {
+                        targets[i] = ActionProvider.COMMAND_DEBUG_TEST_SINGLE;
+                    }
                 }
             }
             
@@ -113,6 +124,24 @@ public class JUnitExecutionManager implements RerunHandler{
             if (javacIncludes != null){
                 FileObject testFO = testSession.getFileLocator().find(javacIncludes);
                 lookup = Lookups.fixed(DataObject.find(testFO));
+            }
+            //"Test" action (test-unit) in a nb module project
+            String testIncludes = properties.getProperty("test.includes");//NOI18N
+            if (testIncludes != null){
+                FileObject testFO = testSession.getFileLocator().find(testIncludes);
+                lookup = Lookups.fixed(DataObject.find(testFO));
+            }
+            //"Run/Debug Focused Test Method" actions (test-method/debug-test-single-nb) in a nb module project
+            String testClass = properties.getProperty("test.class");//NOI18N
+            String testMethods = properties.getProperty("test.methods");//NOI18N
+            if(testClass != null) {
+                FileObject testFO = testSession.getFileLocator().find(testClass.replace('.', '/') + ".java"); //NOI18N
+                if (testMethods != null) {
+                    SingleMethod methodSpec = new SingleMethod(testFO, testMethods);
+                    lookup = Lookups.singleton(methodSpec);
+                } else {
+                    lookup = Lookups.fixed(DataObject.find(testFO));
+                }
             }
 
             if (targets.length == 0 ){
@@ -279,7 +308,7 @@ public class JUnitExecutionManager implements RerunHandler{
 
         return false;
     }
-
+    
     public void addChangeListener(ChangeListener listener) {
     }
 

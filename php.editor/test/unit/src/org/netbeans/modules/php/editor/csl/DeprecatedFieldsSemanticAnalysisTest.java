@@ -45,8 +45,6 @@ import java.io.File;
 import java.util.Collections;
 import java.util.Map;
 import org.netbeans.api.java.classpath.ClassPath;
-import org.netbeans.modules.csl.api.SemanticAnalyzer;
-import org.netbeans.modules.php.editor.completion.PHPCodeCompletionTestBase;
 import org.netbeans.modules.php.project.api.PhpSourcePath;
 import org.netbeans.spi.java.classpath.support.ClassPathSupport;
 import org.openide.filesystems.FileObject;
@@ -56,7 +54,7 @@ import org.openide.filesystems.FileUtil;
  *
  * @author Ondrej Brejla <obrejla@netbeans.org>
  */
-public class DeprecatedFieldsSemanticAnalysisTest extends PHPCodeCompletionTestBase {
+public class DeprecatedFieldsSemanticAnalysisTest extends DeprecatedSemanticAnalysisTestBase {
 
     public DeprecatedFieldsSemanticAnalysisTest(String testName) {
         super(testName);
@@ -64,11 +62,6 @@ public class DeprecatedFieldsSemanticAnalysisTest extends PHPCodeCompletionTestB
 
     public void testDeprecatedFieldsDeclarations() throws Exception {
         checkSemantic("testfiles/semantic/deprecatedFields/deprecatedFields.php");
-    }
-
-    @Override
-    protected SemanticAnalyzer getSemanticAnalyzer() {
-        return new SemanticAnalysis(true);
     }
 
     @Override

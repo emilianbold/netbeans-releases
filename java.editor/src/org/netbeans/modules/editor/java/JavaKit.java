@@ -570,7 +570,7 @@ public class JavaKit extends NbEditorKit {
                     break;
                 case ';':
                     if (TypingCompletion.isCompletionSettingEnabled())
-                        caretPosition = TypingCompletion.moveSemicolon(context);
+                        caretPosition = TypingCompletion.moveOrSkipSemicolon(context);
                     break;
                 case '\"':
                 case '\'':

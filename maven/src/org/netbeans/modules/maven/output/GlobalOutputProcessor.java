@@ -138,7 +138,7 @@ public class GlobalOutputProcessor implements OutputProcessor {
         if (processReactorSummary && projectIterator != null) {
             if (CommandLineOutputHandler.reactorSummaryLine.matcher(line).matches() && projectIterator.hasNext()) {
                 final ExecutionEventObject.Tree next = projectIterator.next();
-                boolean projectFailed = ExecutionEvent.Type.ProjectFailed.equals(next.getEndEvent().type);
+                boolean projectFailed = next.getEndEvent() != null ? ExecutionEvent.Type.ProjectFailed.equals(next.getEndEvent().type) : false; //#234614 - in some cases the reactor shows before we get the event for project build finish. maybe nested build somehow?
                 boolean lineFailed = line.contains(" FAILURE ");
                 if (lineFailed != projectFailed) {
                     LOG.log(Level.INFO, "Maven Project Reactor summary out of sync for:" + line);

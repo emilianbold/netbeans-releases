@@ -416,7 +416,7 @@ final class QuietEditorPane extends JEditorPane {
             try {
                 java.lang.reflect.Method method = delegator.getClass().getDeclaredMethod(
                     "exportDone",  // NOI18N
-                    new Class[] {javax.swing.JComponent.class, Transferable.class, int.class});
+                    new Class<?>[] {javax.swing.JComponent.class, Transferable.class, int.class});
                 method.setAccessible(true);
                 method.invoke(delegator, new Object[] {source, data, new Integer(action)});
             } catch (NoSuchMethodException ex) {
@@ -433,7 +433,7 @@ final class QuietEditorPane extends JEditorPane {
             try {
                 java.lang.reflect.Method method = delegator.getClass().getDeclaredMethod(
                     "createTransferable", // NOI18N
-                    new Class[] {javax.swing.JComponent.class});
+                    new Class<?>[] {javax.swing.JComponent.class});
                 method.setAccessible(true);
                 return (Transferable)method.invoke(delegator, new Object[] {comp});
             } catch (NoSuchMethodException ex) {

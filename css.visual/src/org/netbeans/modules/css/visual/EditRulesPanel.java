@@ -100,6 +100,7 @@ import org.openide.util.Mutex;
 import org.openide.util.NbBundle;
 
 /**
+ * !!!UNUSED!!!
  *
  * @author marekfukala
  */

@@ -58,8 +58,7 @@ public class SuperAndSubTypeTest extends ModelTestBase {
     }
 
     private Model getModel() throws Exception {
-        String preparedTestFile = prepareTestFile("testfiles/model/superandsubtype/" + getName() + ".php");
-        return getModel(preparedTestFile);
+        return getModel(getTestSource("testfiles/model/superandsubtype/" + getName() + ".php"));
     }
 
     private TypeScope getSuperType(final Model model) {

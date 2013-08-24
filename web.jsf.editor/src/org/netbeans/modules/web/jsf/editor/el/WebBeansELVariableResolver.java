@@ -95,7 +95,7 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
     @Override
     public List<VariableInfo> getManagedBeans(FileObject target, ResolverContext context) {
         List<WebBean> beans = getWebBeans(target, context);
-        List<VariableInfo> result = new ArrayList<VariableInfo>(beans.size());
+        List<VariableInfo> result = new ArrayList<>(beans.size());
         for (WebBean bean : beans) {
             result.add(VariableInfo.createResolvedVariable(bean.getName(), bean.getBeanClassName()));
         }
@@ -136,7 +136,7 @@ public final class WebBeansELVariableResolver implements ELVariableResolver {
                 @Override
                 public List<WebBean> run(WebBeansModel metadata) throws Exception {
                     List<Element> namedElements = metadata.getNamedElements();
-                    List<WebBean> webBeans = new LinkedList<WebBean>();
+                    List<WebBean> webBeans = new LinkedList<>();
                     for (Element e : namedElements) {
                         //filter out null elements - probably a WebBeansModel bug,
                         //happens under some circumstances when renaming/deleting beans

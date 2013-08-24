@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 1997-2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -55,16 +55,16 @@ import static org.glassfish.tools.ide.GlassFishStatus.ONLINE;
 import static org.glassfish.tools.ide.GlassFishStatus.SHUTDOWN;
 import static org.glassfish.tools.ide.GlassFishStatus.STARTUP;
 import static org.glassfish.tools.ide.GlassFishStatus.UNKNOWN;
+import org.glassfish.tools.ide.TaskEvent;
+import org.glassfish.tools.ide.TaskState;
+import org.glassfish.tools.ide.TaskStateListener;
 import org.glassfish.tools.ide.admin.CommandGetProperty;
 import org.glassfish.tools.ide.admin.CommandRestartDAS;
 import org.glassfish.tools.ide.admin.CommandSetProperty;
 import org.glassfish.tools.ide.admin.CommandStopDAS;
 import org.glassfish.tools.ide.admin.ResultMap;
 import org.glassfish.tools.ide.admin.ResultString;
-import org.glassfish.tools.ide.admin.TaskState;
-import org.glassfish.tools.ide.admin.TaskStateListener;
 import org.glassfish.tools.ide.data.GlassFishServerStatus;
-import org.glassfish.tools.ide.data.TaskEvent;
 import org.glassfish.tools.ide.utils.ServerUtils;
 import static org.netbeans.modules.glassfish.common.BasicTask.START_TIMEOUT;
 import static org.netbeans.modules.glassfish.common.BasicTask.STOP_TIMEOUT;
@@ -73,7 +73,6 @@ import static org.netbeans.modules.glassfish.common.GlassFishState.getStatus;
 import org.netbeans.modules.glassfish.spi.CommandFactory;
 import org.netbeans.modules.glassfish.spi.GlassfishModule;
 import org.netbeans.modules.glassfish.spi.GlassfishModule.ServerState;
-import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -94,6 +93,8 @@ public class RestartTask extends BasicTask<TaskState> {
     // Instance attributes                                                    //
     ////////////////////////////////////////////////////////////////////////////
 
+    /** How long to wait after stopping server to let OS clean up resources. */
+    @SuppressWarnings("FieldNameHidesFieldInSuperclass")
     private static final int RESTART_DELAY = 5000;
 
     /** Common support object for the server instance being restarted. */

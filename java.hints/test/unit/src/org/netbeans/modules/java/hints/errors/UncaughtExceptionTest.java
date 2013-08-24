@@ -130,6 +130,45 @@ public class UncaughtExceptionTest extends ErrorHintsTestBase {
                         "}\n").replaceAll("\\s+", " "));
     }
     
+    public void test229157a() throws Exception {
+        sourceLevel = "1.8";
+        String code =  "package test;\n" +
+                       "import java.io.*;\n" +
+                       "public class Test {\n" +
+                       "    void t2(Runnable r, File f) {\n" +
+                       "        t2( () -> {\n" +
+                       "             try (InputStream in = new FileInputStream(f)) {\n" +
+                       "                 in.read();\n" +
+                       "             }\n" +
+                       "        });\n" +
+                       "    }\n" +
+                       "}\n";
+        performAnalysisTest("test/Test.java",
+                            code,
+                            code.indexOf("in.read();") + 1,
+                            "LBL_AddCatchClauses",
+                            "Surround Statement with try-catch");
+    }
+
+    public void test229157b() throws Exception {
+        sourceLevel = "1.8";
+        String code =  "package test;\n" +
+                       "import java.io.*;\n" +
+                       "public class Test {\n" +
+                       "    void t2(Runnable r, File f) {\n" +
+                       "        try (InputStream in = new FileInputStream(f)) {\n" +
+                       "            t2( () -> {\n" +
+                       "                 in.read();\n" +
+                       "            });\n" +
+                       "        }\n" +
+                       "    }\n" +
+                       "}\n";
+        performAnalysisTest("test/Test.java",
+                            code,
+                            code.indexOf("in.read();") + 1,
+                            "Surround Statement with try-catch");
+    }
+
     @Override
     protected String toDebugString(CompilationInfo info, Fix f) {
         return f.getText();

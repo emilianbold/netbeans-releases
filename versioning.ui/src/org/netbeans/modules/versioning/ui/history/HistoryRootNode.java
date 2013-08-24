@@ -46,6 +46,7 @@ package org.netbeans.modules.versioning.ui.history;
 import java.lang.reflect.InvocationTargetException;
 import java.text.DateFormat;
 import java.util.*;
+import java.util.logging.Level;
 import javax.swing.Action;
 import org.openide.nodes.AbstractNode;
 import org.openide.nodes.Children;
@@ -94,12 +95,18 @@ public class HistoryRootNode extends AbstractNode {
         return n instanceof HistoryRootNode.WaitNode;
     }
                     
-    synchronized void addLHEntries(HistoryEntry[] entries) {
-        addEntries(entries, false);
+    /**
+     * @param removeThreshold all old entries newer than the theshold will be deleted
+     */
+    synchronized void addLHEntries (HistoryEntry[] entries, long removeThreshold) {
+        addEntries(entries, false, removeThreshold);
     }
         
-    synchronized void addVCSEntries(HistoryEntry[] entries) {
-        addEntries(entries, true);
+    /**
+     * @param removeThreshold all old entries newer than the theshold will be deleted
+     */
+    synchronized void addVCSEntries (HistoryEntry[] entries, long removeThreshold) {
+        addEntries(entries, true, removeThreshold);
     }
         
     synchronized HistoryEntry getPreviousEntry(HistoryEntry entry) {
@@ -123,9 +130,10 @@ public class HistoryRootNode extends AbstractNode {
         return null;
     }
     
-    private void addEntries(HistoryEntry[] entries, boolean vcs) {
+    private void addEntries (HistoryEntry[] entries, boolean vcs, long removeThreshold) {
         // add new
         List<Node> nodes = new LinkedList<Node>();
+        removeOldEntries(entries, !vcs, removeThreshold);
         for (HistoryEntry e : entries) {
             if(!revisionEntries.containsKey(e.getDateTime().getTime())) {
                 revisionEntries.put(e.getDateTime().getTime(), e);
@@ -139,6 +147,32 @@ public class HistoryRootNode extends AbstractNode {
             loadNextNode.refreshMessage();
         }
         getChildren().add(nodes.toArray(new Node[nodes.size()]));
+    }
+
+    private void removeOldEntries (HistoryEntry[] entries, boolean isLocal, long removeThreshold) {
+        Set<Long> timestamps = new HashSet<Long>(entries.length);
+        for (HistoryEntry e : entries) {
+            timestamps.add(e.getDateTime().getTime());
+        }
+        List<Node> toRemove = new ArrayList<Node>();
+        for (Node n : getChildren().getNodes()) {
+            HistoryEntry e = n.getLookup().lookup(HistoryEntry.class);
+            if (e != null && isLocal == e.isLocalHistory()) {
+                long time = e.getDateTime().getTime();
+                if (!timestamps.contains(time) && time > removeThreshold) {
+                    // old entry would fit between just fetched revisions, but is not among of them
+                    // probably was removed
+                    History.LOG.log(Level.FINE, "Removing obsolete history entry: {0} {1}", //NOI18N
+                            new Object[] { e.getRevisionShort(), e.getMessage() });
+                    toRemove.add(n);
+                    revisionEntries.remove(time);
+                    if (!isLocal) {
+                        vcsCount--;
+                    }
+                }
+            }
+        }
+        getChildren().remove(toRemove.toArray(new Node[toRemove.size()]));
     }
 
     public synchronized void addWaitNode() {

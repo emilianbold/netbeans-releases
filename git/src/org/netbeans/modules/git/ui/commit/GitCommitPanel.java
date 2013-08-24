@@ -266,8 +266,13 @@ public class GitCommitPanel extends VCSCommitPanel<GitLocalFileNode> {
 
         private void loadHeadLogMessage() throws IllegalArgumentException, GitException {
             GitRevisionInfo gitRevisionInfo = getClient().log(GitUtils.HEAD, getProgressMonitor());
-            String headCommitMessage = gitRevisionInfo.getFullMessage();
-            getParameters().getPanel().setHeadCommitMessage(headCommitMessage);
+            final String headCommitMessage = gitRevisionInfo.getFullMessage();
+            EventQueue.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    getParameters().getPanel().setHeadCommitMessage(headCommitMessage);
+                }
+            });
         }
 
         private boolean loadFiles() {

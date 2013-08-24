@@ -95,18 +95,20 @@ public class NbCsmCompletionQuery extends CsmCompletionQuery {
     private Integer offsetInFile;
     private final QueryScope queryScope;
     private final FileReferencesContext fileReferencesContext;
+    private final boolean forceCaseSensitiveMode;
     
-    protected NbCsmCompletionQuery(CsmFile csmFile, QueryScope localContext, FileReferencesContext fileReferencesContext) {
+    protected NbCsmCompletionQuery(CsmFile csmFile, QueryScope localContext, FileReferencesContext fileReferencesContext, boolean forceCaseSensitiveMode) {
         this.csmFile = csmFile;
         this.queryScope = localContext;
         this.fileReferencesContext = fileReferencesContext;
+        this.forceCaseSensitiveMode = forceCaseSensitiveMode;
     }
     
     @Override
     protected CsmFinder getFinder() {
 	CsmFinder finder = null; 
         if (getCsmFile() != null) {
-            if (fileReferencesContext != null) {
+            if (fileReferencesContext != null || forceCaseSensitiveMode) {
                 finder = new CsmFinderImpl(getCsmFile(), MIMENames.SOURCES_MIME_TYPE, true);
             } else {
                 finder = new CsmFinderImpl(getCsmFile(), MIMENames.SOURCES_MIME_TYPE);

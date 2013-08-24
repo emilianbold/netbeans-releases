@@ -330,7 +330,7 @@ public class MarkOccurrencesHighlighter extends JavaParserResultTask {
         if (isCancelled())
             return null;
         
-        if (node.getBoolean(MarkOccurencesSettings.IMPLEMENTS, true)) {
+        if (node.getBoolean(MarkOccurencesSettings.IMPLEMENTS, true) || node.getBoolean(MarkOccurencesSettings.OVERRIDES, true)) {
             //detect caret inside the extends/implements clause:
             if (typePath != null && TreeUtilities.CLASS_TREE_KINDS.contains(typePath.getParentPath().getLeaf().getKind())) {
                 ClassTree ctree = (ClassTree) typePath.getParentPath().getLeaf();

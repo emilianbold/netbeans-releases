@@ -41,32 +41,26 @@
  */
 package org.netbeans.modules.groovy.editor.api.elements.ast;
 
-import org.codehaus.groovy.ast.ASTNode;
+import java.util.Collections;
+import java.util.Set;
 import org.codehaus.groovy.ast.FieldNode;
 import org.netbeans.modules.csl.api.ElementKind;
-import org.netbeans.modules.groovy.editor.api.parser.GroovyParserResult;
+import org.netbeans.modules.csl.api.Modifier;
 
-public class ASTField extends ASTElement {
+public final class ASTField extends ASTElement {
 
-    private String type;
-    private boolean property;
+    private final String fieldType;
+    private final boolean isProperty;
 
-    public ASTField(GroovyParserResult info, ASTNode node) {
-        super(info, node);
+
+    public ASTField(FieldNode node, String in, boolean isProperty) {
+        super(node, in, node.getName());
+        this.isProperty = isProperty;
+        this.fieldType = node.getType().getNameWithoutPackage();
     }
 
     @Override
     public String getName() {
-        if (name == null) {
-            if (node instanceof FieldNode) {
-                name = ((FieldNode) node).getName();
-            }
-
-            if (name == null) {
-                name = node.toString();
-            }
-        }
-
         return name;
     }
     
@@ -76,17 +70,18 @@ public class ASTField extends ASTElement {
     }
     
     public String getType() {
-        if (type == null) {
-            type = ((FieldNode) node).getType().getNameWithoutPackage();
-        }
-        return type;
+        return fieldType;
     }
 
     public boolean isProperty() {
-        return property;
+        return isProperty;
     }
 
-    public void setProperty(boolean isProperty) {
-        this.property = isProperty;
+    @Override
+    public Set<Modifier> getModifiers() {
+        if (isProperty) {
+            return Collections.singleton(Modifier.PRIVATE);
+        }
+        return super.getModifiers();
     }
 }

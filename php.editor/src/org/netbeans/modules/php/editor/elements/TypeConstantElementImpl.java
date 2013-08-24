@@ -89,9 +89,8 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
         final String[] values = indexResult.getValues(IDX_FIELD);
         final Set<TypeConstantElement> retval = values.length > 0
                 ? new HashSet<TypeConstantElement>() : Collections.<TypeConstantElement>emptySet();
-        String url = indexResult.getUrl().toString();
         for (final String val : values) {
-            final TypeConstantElement constant = fromSignature(type, query, indexScopeQuery, url, Signature.get(val));
+            final TypeConstantElement constant = fromSignature(type, query, indexScopeQuery, Signature.get(val));
             if (constant != null) {
                 retval.add(constant);
             }
@@ -100,7 +99,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
     }
 
     private static TypeConstantElement fromSignature(final TypeElement type, final NameKind query,
-            final IndexQueryImpl indexScopeQuery, final String url, final Signature signature) {
+            final IndexQueryImpl indexScopeQuery, final Signature signature) {
         final ConstantSignatureParser signParser = new ConstantSignatureParser(signature);
         TypeConstantElement retval = null;
         if (matchesQuery(query, signParser)) {
@@ -109,7 +108,7 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
                     signParser.getConstantName(),
                     signParser.getValue(),
                     signParser.getOffset(),
-                    url,
+                    signParser.getFileUrl(),
                     indexScopeQuery,
                     signParser.isDeprecated());
         }
@@ -140,11 +139,12 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
     @Override
     public String getSignature() {
         StringBuilder sb = new StringBuilder();
-        sb.append(getName().toLowerCase()).append(Separator.SEMICOLON); //NOI18N
-        sb.append(getName()).append(Separator.SEMICOLON); //NOI18N
-        sb.append(getOffset()).append(Separator.SEMICOLON); //NOI18N
-        sb.append(getValue()).append(Separator.SEMICOLON); //NOI18N
+        sb.append(getName().toLowerCase()).append(Separator.SEMICOLON);
+        sb.append(getName()).append(Separator.SEMICOLON);
+        sb.append(getOffset()).append(Separator.SEMICOLON);
+        sb.append(getValue()).append(Separator.SEMICOLON);
         sb.append(isDeprecated() ? 1 : 0).append(Separator.SEMICOLON);
+        sb.append(getFilenameUrl()).append(Separator.SEMICOLON);
         checkSignature(sb);
         return sb.toString();
     }
@@ -227,6 +227,10 @@ public final class TypeConstantElementImpl extends PhpElementImpl implements Typ
 
         boolean isDeprecated() {
             return signature.integer(4) == 1;
+        }
+
+        String getFileUrl() {
+            return signature.string(5);
         }
     }
 }

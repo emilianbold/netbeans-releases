@@ -48,6 +48,7 @@ import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.logging.Logger;
 import org.netbeans.api.editor.mimelookup.MimeLookup;
+import org.netbeans.api.editor.mimelookup.MimeRegistration;
 import org.netbeans.modules.parsing.api.Snapshot;
 import org.netbeans.modules.parsing.spi.ParserFactory;
 import org.openide.filesystems.FileObject;
@@ -58,6 +59,7 @@ import org.openide.util.Lookup;
  *
  * @author Tomas Zezula
  */
+@MimeRegistration(mimeType = "text/x-java", service = ParserFactory.class)
 public class JavacParserFactory extends ParserFactory {
 
     /** used by tests to ensure that all instances of parser were GCed */
