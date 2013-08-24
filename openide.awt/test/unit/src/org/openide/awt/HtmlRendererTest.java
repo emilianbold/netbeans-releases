@@ -84,6 +84,7 @@ public class HtmlRendererTest extends TestCase {
         doTestRender("<html>text<</html>&");
         doTestRender("<html>text<sometag");
         doTestRender55310();
+        doTestRender("<html><body>text</body>");
     }
     
     private void doTestRender(String text) {
