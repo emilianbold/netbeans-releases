@@ -400,6 +400,7 @@ public class TokenFormatter {
                     int index = 0;
                     int newLines;
                     int countSpaces;
+                    int extraLines;
                     int column = 0;
                     int indentOfOpenTag = 0;
                     final Deque<Integer> lastBracedBlockIndent = new ArrayDeque<>();
@@ -607,7 +608,12 @@ public class TokenFormatter {
                                         break;
                                     case WHITESPACE_AFTER_CLASS:
                                         indentRule = true;
-                                        newLines = docOptions.blankLinesAfterClass + 1 > newLines ? docOptions.blankLinesAfterClass + 1 : newLines;
+                                        // If there is some another visible token after this one, add an extra line,
+                                        // because that will be the line, where that another token will start.
+                                        // So "docOptions.blankLinesAfterClass" is the number of real blank lines between elements
+                                        // and then one extra, where the next token will start
+                                        extraLines = isPenultimateTokenBeforeWhitespace(index, formatTokens) ? 0 : 1;
+                                        newLines = docOptions.blankLinesAfterClass + extraLines > newLines ? docOptions.blankLinesAfterClass + extraLines : newLines;
                                         countSpaces = indent;
                                         break;
                                     case WHITESPACE_BEFORE_CLASS_RIGHT_BRACE:
@@ -632,7 +638,12 @@ public class TokenFormatter {
                                         lastBracedBlockIndent.push(countLastBracedBlockIndent(indent, oldText));
                                         break;
                                     case WHITESPACE_AFTER_FUNCTION:
-                                        newLines = docOptions.blankLinesAfterFunction + 1 > newLines ? docOptions.blankLinesAfterFunction + 1 : newLines;
+                                        // If there is some another visible token after this one, add an extra line,
+                                        // because that will be the line, where that another token will start.
+                                        // So "docOptions.blankLinesAfterFunction" is the number of real blank lines between elements
+                                        // and then one extra, where the next token will start
+                                        extraLines = isPenultimateTokenBeforeWhitespace(index, formatTokens) ? 0 : 1;
+                                        newLines = docOptions.blankLinesAfterFunction + extraLines > newLines ? docOptions.blankLinesAfterFunction + extraLines : newLines;
                                         break;
                                     case WHITESPACE_BEFORE_FUNCTION_RIGHT_BRACE:
                                         indentRule = oldText != null && countOfNewLines(oldText) > 0 ? true : docOptions.wrapBlockBrace;
@@ -1878,6 +1889,17 @@ public class TokenFormatter {
                 return new Whitespace(lines, spaces);
             }
 
+            private boolean isPenultimateTokenBeforeWhitespace(int index, List<FormatToken> formatTokens) {
+                boolean result = false;
+                int sizeOfTokens = formatTokens.size();
+                if (sizeOfTokens > 0) {
+                    int lastTokenIndex = formatTokens.size() - 1;
+                    FormatToken lastToken = formatTokens.get(lastTokenIndex);
+                    result = index + 1 == lastTokenIndex && lastToken.isWhitespace();
+                }
+                return result;
+            }
+
             private Whitespace countWhiteSpaceBeforeRightBrace(
                     CodeStyle.BracePlacement placement,
                     int currentLine,
@@ -2190,7 +2212,7 @@ public class TokenFormatter {
                         }
                     }
                     if (startOffset <= realOffset
-                            && realOffset < endOffset + delta) {
+                            && ((realOffset < endOffset + delta) || (realOffset == endOffset + delta && !templateEdit))) {
 
                         if (!templateEdit || startOffset == 0) { // if is not in template, then replace simply or is not format selection
                             delta = replaceSimpleString(document, realOffset, oldText, newText, delta);

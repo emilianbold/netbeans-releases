@@ -113,6 +113,7 @@ public class InitAction implements ActionListener, HelpCtx.Provider {
         Git.getInstance().getRequestProcessor().post(new Runnable() {
             @Override
             public void run() {
+                Utils.logVCSActionEvent("Git"); //NOI18N
                 performInit(ctx);
             }
         });

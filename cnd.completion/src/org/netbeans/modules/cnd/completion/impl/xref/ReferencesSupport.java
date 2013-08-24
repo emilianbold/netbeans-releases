@@ -99,6 +99,7 @@ import org.openide.util.Parameters;
 import org.netbeans.cnd.api.lexer.CndTokenUtilities;
 import org.netbeans.cnd.api.lexer.TokenItem;
 import org.netbeans.lib.editor.hyperlink.spi.HyperlinkType;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFunctionPointerType;
 import org.netbeans.modules.cnd.api.model.CsmListeners;
 import org.netbeans.modules.cnd.api.model.CsmNamedElement;
@@ -269,6 +270,11 @@ public final class ReferencesSupport {
         return null;
     }    
 
+    public static CsmErrorDirective findErrorDirective(CsmFile csmFile, int offset) {
+        assert (csmFile != null);
+        return CsmOffsetUtilities.findObject(csmFile.getErrors(), null, offset);
+    }
+    
     public static CsmInclude findInclude(CsmFile csmFile, int offset) {
         assert (csmFile != null);
         return CsmOffsetUtilities.findObject(csmFile.getIncludes(), null, offset);

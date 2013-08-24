@@ -52,7 +52,6 @@ import java.awt.event.KeyEvent;
 import org.netbeans.jellytools.EditorOperator;
 import org.netbeans.jemmy.operators.JDialogOperator;
 import org.netbeans.jemmy.operators.JTreeOperator;
-import org.netbeans.junit.NbModuleSuite;
 import org.netbeans.jemmy.operators.JListOperator;
 import junit.framework.Test;
 import org.netbeans.jemmy.operators.JTextComponentOperator;
@@ -75,12 +74,12 @@ public class Commit extends GeneralPHP {
 
     static final String PROJECT_NAME = "LoginSample";
     static private final String TEST_PHP_NAME_1 = "PhpProject_commit_0001";
-    static private final String INDEX_PHP_INITIAL_CONTENT =
-            "<!DOCTYPEhtml><html><head><metahttp-equiv=\"Content-Type\"content=\"text/html;charset=UTF-8\"><title></title></head><body><?php//putyourcodehere?></body></html>";
-    static private final String EMPTY_PHP_INITIAL_CONTENT =
-            "<?php/**Tochangethislicenseheader,chooseLicenseHeadersinProjectProperties.*Tochangethistemplatefile,chooseTools|Templates*andopenthetemplateintheeditor.*/?>";
-    static private final String CLASS_PHP_INITIAL_CONTENT =
-            "<?php/**Tochangethislicenseheader,chooseLicenseHeadersinProjectProperties.*Tochangethistemplatefile,chooseTools|Templates*andopenthetemplateintheeditor.*//***DescriptionofnewPHPClass**@author" + System.getProperty("user.name") + "*/classnewPHPClass{//putyourcodehere}?>";
+    static private final String INDEX_PHP_INITIAL_CONTENT
+            = "<!DOCTYPEhtml><!--Tochangethislicenseheader,chooseLicenseHeadersinProjectProperties.Tochangethistemplatefile,chooseTools|Templatesandopenthetemplateintheeditor.--><html><head><metacharset=\"UTF-8\"><title></title></head><body><?php//putyourcodehere?></body></html>";
+    static private final String EMPTY_PHP_INITIAL_CONTENT
+            = "<?php/**Tochangethislicenseheader,chooseLicenseHeadersinProjectProperties.*Tochangethistemplatefile,chooseTools|Templates*andopenthetemplateintheeditor.*/";
+    static private final String CLASS_PHP_INITIAL_CONTENT
+            = "<?php/**Tochangethislicenseheader,chooseLicenseHeadersinProjectProperties.*Tochangethistemplatefile,chooseTools|Templates*andopenthetemplateintheeditor.*//***DescriptionofnewPHPClass**@author" + System.getProperty("user.name") + "*/classnewPHPClass{//putyourcodehere}";
     static private final int COMPLETION_LIST_INCLASS = 22;
     private static boolean bUnzipped = false;
 
@@ -584,7 +583,7 @@ public class Commit extends GeneralPHP {
         // Insert short php tags
         EditorOperator eoPHP = new EditorOperator("LoginForm.php");
         eoPHP.setCaretPosition("<p>&nbsp;</p>", false);
-        eoPHP.insert("\n<?\n\n?>");
+        eoPHP.insert("\n<?php\n\n?>");
 
         // test as usual
         TestPHPFile(
@@ -592,7 +591,7 @@ public class Commit extends GeneralPHP {
                 "LoginForm.php",
                 null,
                 false,
-                "<?",
+                "<?php",
                 false,
                 false,
                 1,//issue 1683650, for 65: ( 5 <= ++iErrorChecks )

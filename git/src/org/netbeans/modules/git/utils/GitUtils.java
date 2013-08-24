@@ -82,6 +82,7 @@ import org.netbeans.modules.git.ui.commit.CommitAction;
 import org.netbeans.modules.git.ui.ignore.IgnoreAction;
 import org.netbeans.modules.git.ui.repository.RepositoryInfo;
 import org.netbeans.modules.git.GitStatusNode;
+import org.netbeans.modules.git.client.GitClient;
 import org.netbeans.modules.git.ui.status.StatusAction;
 import org.netbeans.modules.versioning.diff.DiffUtils;
 import org.netbeans.modules.versioning.spi.VCSContext;
@@ -123,6 +124,7 @@ public final class GitUtils {
     public static final String PREFIX_R_REMOTES = "refs/remotes/"; //NOI18N
     public static final ProgressMonitor NULL_PROGRESS_MONITOR = new NullProgressMonitor();
     public static final String MASTER = "master"; //NOI18N
+    private static final Set<File> loggedRepositories = new HashSet<File>();
 
     /**
      * Checks file location to see if it is part of git metadata
@@ -929,6 +931,49 @@ public final class GitUtils {
                 original == null ? Collections.<String>emptyList() : original.getPushUris(),
                 refSpecs,
                 original == null ? Collections.<String>emptyList() : original.getPushRefSpecs());
+    }
+
+    /**
+     * Reads all remotes in a local repository's config and logs remote repository urls.
+     * Does this only once per a NB session and repository
+     * @param repositoryRoot root of the local repository
+     */
+    public static void logRemoteRepositoryAccess (final File repositoryRoot) {
+        if (loggedRepositories.add(repositoryRoot)) {
+            Git.getInstance().getRequestProcessor(repositoryRoot).post(new Runnable() {
+                @Override
+                public void run () {
+                    Set<String> urls = new HashSet<String>();
+                    GitClient client = null;
+                    try {
+                        client = Git.getInstance().getClient(repositoryRoot);
+                        Map<String, GitRemoteConfig> cfgs = client.getRemotes(GitUtils.NULL_PROGRESS_MONITOR);
+                        for (Map.Entry<String, GitRemoteConfig> e : cfgs.entrySet()) {
+                            GitRemoteConfig cfg = e.getValue();
+                            for (List<String> uris : Arrays.asList(cfg.getUris(), cfg.getPushUris())) {
+                                if (!uris.isEmpty()) {
+                                    urls.addAll(uris);
+                                }
+                            }
+                        }
+                    } catch (GitException ex) {
+                        // not interested
+                    } finally {
+                        if (client != null) {
+                            client.release();
+                        }
+                    }
+                    if (urls.isEmpty()) {
+                        Utils.logVCSExternalRepository("GIT", null);
+                    }
+                    for (String url : urls) {
+                        if (!url.trim().isEmpty()) {
+                            Utils.logVCSExternalRepository("GIT", url);
+                        }
+                    }
+                }
+            });
+        }
     }
 
     private static class NullProgressMonitor extends ProgressMonitor {
