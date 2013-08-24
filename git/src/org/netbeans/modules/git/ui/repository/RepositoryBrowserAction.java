@@ -84,7 +84,9 @@ public class RepositoryBrowserAction extends GitAction {
                 VCSContext context = getCurrentContext(nodes);
                 Set<File> repositories = GitUtils.getRepositoryRoots(context);
                 if (repositories.size() == 1) {
-                    rtc.selectRepository(repositories.iterator().next());
+                    File repository = repositories.iterator().next();
+                    GitUtils.logRemoteRepositoryAccess(repository);
+                    rtc.selectRepository(repository);
                 }
             }
         }, 0);

@@ -1131,6 +1131,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             for (File f : interestingFiles) {
                 File root = git.getRepositoryRoot(f);
                 if (root != null) {
+                    GitUtils.logRemoteRepositoryAccess(root);
                     GitLocalFileNode fNode = new GitLocalFileNode(root, f);
                     Setup setup = new Setup(fNode, mode, Revision.HEAD);
                     DiffNode diffNode = new DiffLocalNode(fNode, DiffUtils.getEditorCookie(setup), mode);
@@ -1147,6 +1148,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             File repository = GitUtils.getRootFile(context);
             GitClient client = null;
             try {
+                GitUtils.logRemoteRepositoryAccess(repository);
                 client = git.getClient(repository);
                 Map<File, GitStatus> statuses = client.getStatus(context.getRootFiles().toArray(new File[context.getRootFiles().size()]),
                         revisionLeft.getCommitId(), GitUtils.NULL_PROGRESS_MONITOR);
@@ -1191,6 +1193,7 @@ public class MultiDiffPanelController implements ActionListener, PropertyChangeL
             File repository = GitUtils.getRootFile(context);
             GitClient client = null;
             try {
+                GitUtils.logRemoteRepositoryAccess(repository);
                 client = git.getClient(repository);
                 Map<File, GitRevisionInfo.GitFileInfo> statuses = client.getStatus(context.getRootFiles().toArray(new File[context.getRootFiles().size()]),
                         revisionLeft.getCommitId(), revisionRight.getCommitId(), GitUtils.NULL_PROGRESS_MONITOR);

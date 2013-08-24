@@ -236,6 +236,8 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     private boolean annotationsLoaded;
     
     private DocFilter docFilter;
+    
+    private final Object checkModificationLock = new Object();
 
     /** Classes that have been warned about overriding asynchronousOpen() */
     private static final Set<Class<?>> warnedClasses = new WeakSet<Class<?>>();
@@ -1470,27 +1472,47 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
      * @return true if the modification was allowed, false if it should be prohibited
      */
     final boolean callNotifyModified() {
-        synchronized (getLock()) {
-            if (!isAlreadyModified()) {
-                if (preventModification) {
-                    return false;
-                }
-                setAlreadyModified(true); // Prevent repetitive calling to notifyModified()
-                if (!notifyModified()) {
-                    setAlreadyModified(false);
-                    return false;
-                }
+        synchronized (checkModificationLock) {
+            if (isAlreadyModified()) {
+                return true;
             }
+            if (preventModification) {
+                return false;
+            }
+            setAlreadyModified(true); // Prevent repetitive calling to notifyModified()
+        }
+
+        // Call notifyModified() outside of any lock to prevent deadlocks such as #228991
+        // and see also #234791.
+        // Note that notifyModified() may call DataEditorSupport.Env.markModified()
+        // which starts another thread (ProgressUtils) so any monitors acquired so far
+        // must not be re-acquired by the code called from notifyModify() otherwise
+        // a deadlock would occur.
+        // From document-editing point of view the modification notification
+        // should only be called upon document modification which is guarded
+        // by document's write-lock.
+        // Since unmodification (from save, undo, or document close) is also guarded either
+        // by document's read-lock or write-lock the call should be safe.
+        if (!notifyModified()) {
+            synchronized (checkModificationLock) {
+                setAlreadyModified(false);
+            }
+            return false;
         }
 
         return true;
     }
 
     final void callNotifyUnmodified() {
-        synchronized (getLock()) {
+        synchronized (checkModificationLock) {
+            if (!isAlreadyModified()) {
+                return;
+            }
             setAlreadyModified(false);
-            notifyUnmodified();
         }
+        
+        // Call notifyUnmodified() outside of any lock - see callNotifyModified() description.
+        notifyUnmodified();
     }
 
     /** Called when the document is being modified.
@@ -2015,7 +2037,11 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
     final void setAlreadyModified(boolean alreadyModified) {
         if (alreadyModified != this.alreadyModified) {
             if (ERR.isLoggable(Level.FINE)) {
-                ERR.fine(documentID() + ": setAlreadyModified from " + isAlreadyModified() + " to " + alreadyModified); // NOI18N
+                boolean origModified;
+                synchronized (checkModificationLock) {
+                    origModified = isAlreadyModified();
+                }
+                ERR.fine(documentID() + ": setAlreadyModified from " + origModified + " to " + alreadyModified); // NOI18N
                 ERR.log(Level.FINEST, null, new Exception("Setting to modified: " + alreadyModified));
             }
 
@@ -2156,13 +2182,16 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
             if ("modified".equals(evt.getPropertyName())) { // NOI18N
 
                 if (Boolean.TRUE.equals(evt.getNewValue())) {
-                    boolean wasModified = isAlreadyModified();
+                    boolean alreadyModified;
+                    synchronized (checkModificationLock) {
+                        alreadyModified = isAlreadyModified();
+                    }
 
                     if (!callNotifyModified()) {
                         throw new java.beans.PropertyVetoException("Not allowed", evt); // NOI18N
                     }
 
-                    revertModifiedFlag = !wasModified;
+                    revertModifiedFlag = !alreadyModified;
                 } else {
                     if (revertModifiedFlag) {
                         callNotifyUnmodified();
@@ -2325,7 +2354,10 @@ public abstract class CloneableEditorSupport extends CloneableOpenSupport {
         }
         
         private boolean checkModificationAllowed(int offset) throws BadLocationException {
-            boolean alreadyModified = isAlreadyModified();
+            boolean alreadyModified;
+            synchronized (checkModificationLock) {
+                alreadyModified = isAlreadyModified();
+            }
             if (!callNotifyModified()) {
                 modificationNotAllowed(offset);
             }
