@@ -124,6 +124,7 @@ class LegacySettingsSync implements PreferenceChangeListener {
     }
     
     private void syncKey(String k, Preferences pref) {
+        // keep the method in sync with fold options dialog for the "" mimetype (DefaultFoldingOptions in editor.fold.nbui
         String l;
         if (FoldType.MEMBER.code().equals(k)) {
             l = "method"; // NOI18N

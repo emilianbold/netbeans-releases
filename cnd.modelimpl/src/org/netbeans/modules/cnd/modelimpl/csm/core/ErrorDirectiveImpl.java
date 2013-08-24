@@ -82,6 +82,15 @@ public final class ErrorDirectiveImpl extends OffsetableBase implements CsmError
     }
 
     @Override
+    public CharSequence getText() {
+        return msg;
+    }
+
+    public APTPreprocHandler.State getState() {
+        return this.ppState;
+    }
+
+    @Override
     public String toString() {
         return super.toString() + msg;
     }

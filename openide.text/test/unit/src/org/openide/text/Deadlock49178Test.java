@@ -111,6 +111,9 @@ public class Deadlock49178Test extends NbTestCase implements CloneableEditorSupp
 	// open the document
         final StyledDocument docu = support.openDocument();
 
+        // Perform a modification so that notifyModify() gets called as supposed by the test
+        // Otherwise notifyUnmodified() would not be called (there's no reason to call it in such case).
+        docu.insertString(0, "a", null);
 
 	// start closing it
 	Thread closing = new Thread(new Runnable() { public void run() {

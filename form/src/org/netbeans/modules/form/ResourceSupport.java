@@ -191,15 +191,17 @@ public class ResourceSupport {
      *        contains the previous value)
      */
     public static Object makeResource(Object value, FormProperty property) {
-        if (!isResourceableProperty(property))
+        if (!isResourceableProperty(property)) {
             return value;
-
+        }
         ResourceSupport support = getResourceSupport(property);
+        if (support == null) {
+            return value; // bug 228813: no idea how this can be null
+        }
         if (isResourceType(property.getValueType())) {
             value = support.makeResource0(value, property);
-        }
-        else { // check nested values (borders are the only meaningful example)
-               // the same value is returned, but might have been changed inside
+        } else { // check nested values (borders are the only meaningful example)
+                 // the same value is returned, but might have been changed inside
             for (FormProperty prop : support.getNestedResourceProperties(
                     FormProperty.getEnclosedValue(value), property, PLAIN_VALUE)) {
                 boolean fire = prop.isChangeFiring();
