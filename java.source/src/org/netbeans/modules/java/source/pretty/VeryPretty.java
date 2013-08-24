@@ -323,7 +323,7 @@ public final class VeryPretty extends JCTree.Visitor implements DocTreeVisitor<V
     private java.util.List<JCVariableDecl> printOriginalPartOfFieldGroup(FieldGroupTree fgt) {
         java.util.List<JCVariableDecl> variables = fgt.getVariables();
         TreePath tp = TreePath.getPath(diffContext.mainUnit, variables.get(0));
-        TreePath parent = tp.getParentPath();
+        TreePath parent = tp != null ? tp.getParentPath() : null;
             
         if (parent == null) return variables;
             

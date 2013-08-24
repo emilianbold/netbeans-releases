@@ -47,6 +47,7 @@ package org.netbeans.modules.cnd.api.model.services;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import org.netbeans.modules.cnd.api.model.CsmErrorDirective;
 import org.netbeans.modules.cnd.api.model.CsmFile;
 import org.netbeans.modules.cnd.api.model.CsmInclude;
 import org.netbeans.modules.cnd.api.model.CsmOffsetable;
@@ -125,6 +126,20 @@ public abstract class CsmFileInfoQuery {
      * @return list of include directives from source file to header file
      */
     public abstract List<CsmInclude> getIncludeStack(CsmFile file);
+
+    /**
+     *
+     * @param incl #include directive
+     * @return list of include directives from source file to header file
+     */
+    public abstract List<CsmInclude> getIncludeStack(CsmInclude incl);
+
+    /**
+     *
+     * @param err #error directive
+     * @return list of include directives from source file to header file
+     */
+    public abstract List<CsmInclude> getIncludeStack(CsmErrorDirective err);
 
     /**
      *
@@ -217,6 +232,16 @@ public abstract class CsmFileInfoQuery {
 
         @Override
         public List<CsmInclude> getIncludeStack(CsmFile file) {
+            return Collections.<CsmInclude>emptyList();
+        }
+
+        @Override
+        public List<CsmInclude> getIncludeStack(CsmErrorDirective err) {
+            return Collections.<CsmInclude>emptyList();
+        }
+
+        @Override
+        public List<CsmInclude> getIncludeStack(CsmInclude incl) {
             return Collections.<CsmInclude>emptyList();
         }
 

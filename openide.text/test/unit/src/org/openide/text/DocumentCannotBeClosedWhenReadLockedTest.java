@@ -49,6 +49,8 @@ package org.openide.text;
 
 import java.awt.GraphicsEnvironment;
 import java.io.IOException;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import javax.swing.text.*;
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -85,7 +87,9 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
     
     /** lock to use for communication between AWT & main thread */
     private Object LOCK = new Object ();
-    
+
+    CountDownLatch unmarkModifiedFinished = new CountDownLatch(1);
+
     /** Creates new TextTest */
     public DocumentCannotBeClosedWhenReadLockedTest(String s) {
         super(s);
@@ -105,6 +109,10 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
         assertNotNull (pane);
         assertNotNull ("TopComponent is there", pane.getComponent ());
         
+        // Perform a modification so that notifyModify() gets called as supposed by the test
+        // Otherwise notifyUnmodified() would not be called (there's no reason to call it in such case).
+        doc.insertString(0, "a", null);
+
         class DoWork implements Runnable {
             private boolean startedAWT;
             private boolean finishedAWT;
@@ -134,6 +142,13 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
                 
                 // this will call into notifyUnmodified.
                 pane.getComponent ().close ();
+                // Wait for close() to finish fully
+                try {
+                    unmarkModifiedFinished.await(5, TimeUnit.SECONDS);
+                } catch (InterruptedException ex) {
+                    fail();
+                }
+
                 assertFalse ("The document should be marked unmodified now", modified);
                 synchronized (this) {
                     finishedAWT = true;
@@ -216,6 +231,13 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
                 
                 // this will call into notifyUnmodified.
                 support.close ();
+                // Wait for close() to finish fully
+                try {
+                    unmarkModifiedFinished.await(5, TimeUnit.SECONDS);
+                } catch (InterruptedException ex) {
+                    fail();
+                }
+
                 assertFalse ("The document should be marked unmodified now", modified);
                 synchronized (this) {
                     finishedAWT = true;
@@ -251,6 +273,10 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
         DoWork doWork = new DoWork ();
         StyledDocument doc = support.openDocument ();
         
+        // Perform a modification so that notifyModify() gets called as supposed by the test
+        // Otherwise notifyUnmodified() would not be called (there's no reason to call it in such case).
+        doc.insertString(0, "a", null);
+
         synchronized (LOCK) {
             javax.swing.SwingUtilities.invokeLater (doWork);
             LOCK.wait ();
@@ -341,6 +367,7 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
             }
         }
         modified = false;
+        unmarkModifiedFinished.countDown();
     }
 
     /** Implementation of the CES */
@@ -373,5 +400,11 @@ public class DocumentCannotBeClosedWhenReadLockedTest extends NbTestCase impleme
         protected EditorKit createEditorKit () {
             return new NbLikeEditorKit ();
         }
+
+        @Override
+        protected boolean canClose() {
+            return true; // Return true to allow closing of modified doc without asking and call unmarkModified()
+        }
+
     } // end of CES
 }
