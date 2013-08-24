@@ -2,18 +2,57 @@
     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
-<title>New Persistence Unit Wizard: Provider and Database</title>
+<title>persistence.xml Visual Editor</title>
 <link rel="stylesheet" href="ide.css" title="Oracle BLAFDoc" type="text/css"/>
 </head>
 
 <body>
-<p><a id="org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor" name="org.netbeans.modules.j2ee.persistence.wizard.unit.PersistenceUnitWizardDescriptor"></a></p>
-<!-- infolevel="all" infotype="General" --><a id="sthref670" name="sthref670"></a>
-<h1>New Persistence Unit Wizard: Provider and Database</h1>
+<p><a id="persistence_multiview_design_persistenceUnitNode" name="persistence_multiview_design_persistenceUnitNode"></a></p>
+<!-- infolevel="all" infotype="General" --><a id="sthref669" name="sthref669"></a>
+<h1>persistence.xml Visual Editor</h1>
 <a name="BEGIN" id="BEGIN"></a>
-<p>Use to create a persistence unit for your project. In this panel you supply the information that will be used to enable the persistence of your entity classes. The properties of the persistence unit are stored in <code>persistence.xml</code>. After <code>persistence.xml</code> is created, you can open the file by double-clicking <code>persistence.xml</code> in the Projects window. In a web or enterprise application, persistence.xml is located under the Configuration Files node in the Projects window (<code>src/conf</code> directory in the Files window).</p>
-<p>You see this panel when you open the New File wizard and select the Persistence category and then select Persistence Unit.</p>
-<p>In the New Persistence Unit wizard, you specify the following:</p>
+<p>Use to view the persistence units defined in <code>persistence.xml</code>. You open the <code>persistence.xml</code> Visual Editor from the Projects window by expanding the Configuration Files node and then double-clicking the <code>persistence.xml</code> file. You can use the visual editor to create, delete, and modify the persistence units. You can also click XML in the visual editor toolbar to access the XML view of <code>persistence.xml</code>.</p>
+<p>In the <code>persistence.xml</code> Visual Editor, you can perform the following tasks:</p>
+
+<table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
+<col width="24%" />
+<col width="*" />
+<thead>
+<tr align="left" valign="top">
+<th align="left" valign="bottom" id="r1c1-t7">Element</th>
+<th align="left" valign="bottom" id="r1c2-t7">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr align="left" valign="top">
+<td align="left" id="r2c1-t7" headers="r1c1-t7">
+<p>Create a persistence unit</p>
+</td>
+<td align="left" headers="r2c1-t7 r1c2-t7">
+<p>Click Add in the top right corner of the visual editor.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r3c1-t7" headers="r1c1-t7">
+<p>Delete a persistence unit</p>
+</td>
+<td align="left" headers="r3c1-t7 r1c2-t7">
+<p>Click Remove next to the name of the persistence unit you want to delete.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t7" headers="r1c1-t7">
+<p>Modify a persistence unit</p>
+</td>
+<td align="left" headers="r4c1-t7 r1c2-t7">
+<p>Click the expand icon to the left of the name of the persistence unit to display the editable properties of the persistence unit.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<br />
+<!-- -->
+<p>The visual editor displays the properties of each persistence unit in persistence.xml. Depending on your project configuration, for each persistence unit, you can modify the following properties:</p>
 
 <table summary="User interface elements and descriptions" dir="ltr" border="1" width="100%" frame="hsides" rules="groups" cellpadding="3" cellspacing="0">
 <col width="24%" />
@@ -30,23 +69,23 @@
 <p>Persistence Unit Name</p>
 </td>
 <td align="left" headers="r2c1-t8 r1c2-t8">
-<p>Specifies the name for the persistence unit.</p>
+<p>Each persistence unit in persistence.xml must have a unique name.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r3c1-t8" headers="r1c1-t8">
-<p>Persistence Provider</p>
+<p>Persistence Provider or Persistence Library</p>
 </td>
 <td align="left" headers="r3c1-t8 r1c2-t8">
-<p>Specifies the persistence provider supplies the functionality for managing entities. The IDE comes bundled with the EclipseLink persistence provider. Choose New Persistence Library to specify a different persistence provider.</p>
+<p>The persistence provider or library determines the entity manager that is used to manage the entities scoped by the persistence unit.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
 <td align="left" id="r4c1-t8" headers="r1c1-t8">
-<p>Data Source</p>
+<p>Data Source or JDBC Connection</p>
 </td>
 <td align="left" headers="r4c1-t8 r1c2-t8">
-<p>Specifies the data source specifies the connection information for your database.</p>
+<p>This is the JNDI name of the data source or the JDBC connection to the database.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -54,7 +93,7 @@
 <p>Use Java Transaction APIs</p>
 </td>
 <td align="left" headers="r5c1-t8 r1c2-t8">
-<p>Specifies the transaction type. If selected, the transactions involving the entity manager are set to JTA and managed by the container. If not selected, the transaction type is set to resource-local and managed by the application.</p>
+<p>If selected, the Java EE 5 container manages the lifecycle of entities. If not selected, the entities are managed by the application. (If the target container is not a Java EE 5 container, then this option is not available and the entities must be managed by the application.)</p>
 </td>
 </tr>
 <tr align="left" valign="top">
@@ -62,7 +101,41 @@
 <p>Table Generation Strategy</p>
 </td>
 <td align="left" headers="r6c1-t8 r1c2-t8">
-<p>Specifies the type of table generation for your database.</p>
+<p>Select the table generation strategy for the data source.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t8" headers="r1c1-t8">
+<p>Validation Strategy</p>
+</td>
+<td align="left" headers="r7c1-t8 r1c2-t8">
+<p>(EclipseLink) Select the validation mode for the persistence unit (default is Auto).</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r8c1-t8" headers="r1c1-t8">
+<p>Caching Type</p>
+</td>
+<td align="left" headers="r8c1-t8 r1c2-t8">
+<p>(EclipseLink) Select a caching type to explicitly specify if entities and entity-related data is cached.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r9c1-t8" headers="r1c1-t8">
+<p>Include All Entity Classes in "&lt;project&gt;" Module</p>
+</td>
+<td align="left" headers="r9c1-t8 r1c2-t8">
+<p>If selected, all entity classes in the persistence unit's root are included in the persistence unit. If not selected, only the classes listed in the Include Entity Classes textfield are included in the scope of the persistence unit.</p>
+<p>In Java EE projects, you do not need to explicitly specify which entity classes to include in the scope, because all entity classes in the persistence unit's root are included by default.</p>
+<p>In Java SE projects, the option to include all entity classes is not available. Instead, you need to explicitly specify which classes to include in the scope. Only the classes listed in the Include Entity Classes textfield are included.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r10c1-t8" headers="r1c1-t8">
+<p>Include Entity Classes</p>
+</td>
+<td align="left" headers="r10c1-t8 r1c2-t8">
+<p>The textfield lists the entity classes explicitly included in the scope of the persistence unit. By default, entity classes in the persistence unit's root are included in the scope and listed in the textfield. You can remove entity classes from the scope by selecting the class name and clicking Remove.</p>
 </td>
 </tr>
 </tbody>
