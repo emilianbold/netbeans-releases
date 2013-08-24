@@ -60,29 +60,59 @@
 <li>web/WEB-INF/jsp/index.jsp</li>
 </ul>
 <p>If you select the Spring Web MVC checkbox, you can set the default dispatcher name and mapping.</p>
-<p><b>Note:</b> Dispatcher mappings are based on the Java Servlet Specification Section SRV.11.2. In the web application deployment descriptor, the following syntax is used to define standard mappings:</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r4c1-t46" headers="r1c1-t46">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Libraries</p>
+</td>
+<td align="left" headers="r4c1-t46 r1c2-t46">
+<p>Select a Spring library from the dropdown list and whether whether JSTLs will be included in the project..</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r5c1-t46" headers="r1c1-t46">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;Configuration</p>
+</td>
+<td align="left" headers="r5c1-t46 r1c2-t46">
+<p>In the Configuration tab you c an set the default dispatcher name and mapping.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r6c1-t46" headers="r1c1-t46">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dispatcher Name</p>
+</td>
+<td align="left" headers="r6c1-t46 r1c2-t46">
+<p>Type a name for the default Spring dispatcher servlet.</p>
+</td>
+</tr>
+<tr align="left" valign="top">
+<td align="left" id="r7c1-t46" headers="r1c1-t46">
+<p>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Dispatcher Mapping</p>
+</td>
+<td align="left" headers="r7c1-t46 r1c2-t46">
+<p>Specify the mapping of the dispatcher. The default is set to <code>*.htm</code></p>
+<p>Dispatcher mappings are based on the Java Servlet Specification Section SRV.11.2. In the web application deployment descriptor, the following syntax is used to define standard mappings:</p>
 <ul>
 <li>A string beginning with a '/' character and ending with a '/*' postfix is used for path mapping.</li>
 <li>A string beginning with a '*.' prefix is used as an extension mapping.</li>
 <li>A string containing only the '/' character indicates the default servlet of the application. In this case the servlet path is the requested URI minus the context path and the path info is <code>null</code>.</li>
 <li>All other strings are used for exact matches only.</li>
 </ul>
-<p>When you click <b>Finish</b>, the project is created in your file system and opened in the IDE. The IDE automatically adds the necessary Spring libraries to the project's classpath.</p>
-<p>You can view the project's logical structure in the Projects window and its file structure in the Files window.</p>
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r4c1-t46" headers="r1c1-t46">
+<td align="left" id="r8c1-t46" headers="r1c1-t46">
 <p>Struts</p>
 </td>
-<td align="left" headers="r4c1-t46 r1c2-t46">
+<td align="left" headers="r8c1-t46 r1c2-t46">
 <p>Specifies that you want the IDE to provide the Struts libraries and create the following files for your application:</p>
 <ul>
-<li>welcomeStruts.jsp</li>
-<li>struts-config.xml</li>
-<li>tiles-defs.xml</li>
-<li>validator-rules.xml</li>
-<li>ApplicationResource.properties</li>
+<li><code>welcomeStruts.jsp</code></li>
+<li><code>struts-config.xml</code></li>
+<li><code>tiles-defs.xml</code></li>
+<li><code>validator-rules.xml</code></li>
+<li><code>ApplicationResource.properties</code></li>
 </ul>
 <p>For details, see <code>
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">
@@ -96,10 +126,10 @@
 </td>
 </tr>
 <tr align="left" valign="top">
-<td align="left" id="r5c1-t46" headers="r1c1-t46">
+<td align="left" id="r9c1-t46" headers="r1c1-t46">
 <p>Hibernate</p>
 </td>
-<td align="left" headers="r5c1-t46 r1c2-t46">
+<td align="left" headers="r9c1-t46 r1c2-t46">
 <p>Specifies that you want the IDE to provide the Hibernate libraries and create the Hibernate configuration file hibernate.cfg.xml for your project.</p>
 <p>For details, see <code>
 <object classid="java:org.netbeans.modules.javahelp.BrowserDisplayer">

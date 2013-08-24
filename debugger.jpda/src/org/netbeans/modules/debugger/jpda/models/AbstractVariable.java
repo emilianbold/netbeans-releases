@@ -210,6 +210,10 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
                 value = VirtualMachineWrapper.mirrorOf(
                         debugger.getVirtualMachine(),
                         expression.substring(1, expression.length() - 1));
+            } else if (oldV instanceof StringReference) {
+                value = VirtualMachineWrapper.mirrorOf(
+                        debugger.getVirtualMachine(),
+                        expression);
             } else if (oldV instanceof ObjectReference &&
                        ObjectReferenceWrapper.referenceType((ObjectReference) oldV) instanceof ClassType &&
                        ClassTypeWrapper.isEnum((ClassType) ObjectReferenceWrapper.referenceType((ObjectReference) oldV))) {
