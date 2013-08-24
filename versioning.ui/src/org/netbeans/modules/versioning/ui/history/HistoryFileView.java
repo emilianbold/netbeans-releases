@@ -232,7 +232,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                     for (VCSHistoryProvider.HistoryEntry he : vcsHistory) {
                         entries.add(new HistoryEntry(he, false));
                     }
-                    rootNode.addVCSEntries(entries.toArray(new HistoryEntry[entries.size()]));
+                    rootNode.addVCSEntries(entries.toArray(new HistoryEntry[entries.size()]), 0);
                 } finally {
                     rootNode.loadingVCSFinished(currentDateFrom);
                     // XXX yet select the first node on
@@ -518,7 +518,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
                 VCSHistoryProvider lhProvider = History.getHistoryProvider(lh);
                 if(lhProvider != null && (providerToRefresh == null || lhProvider == providerToRefresh)) {
                     logFiles("Refreshing LH entries for: ", fos); // NOI18N
-                    root.addLHEntries(loadLHEntries(proxies));
+                    root.addLHEntries(loadLHEntries(proxies), 0);
                 }
             } finally {
                 root.removeWaitNode();

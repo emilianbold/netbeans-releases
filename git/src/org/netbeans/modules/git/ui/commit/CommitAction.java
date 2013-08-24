@@ -54,9 +54,11 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.EnumSet;
 import java.util.Iterator;
+import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.netbeans.libs.git.GitBranch;
@@ -198,7 +200,7 @@ public class CommitAction extends SingleRepositoryAction {
             try {
                 List<File> addCandidates = new LinkedList<File>();
                 List<File> deleteCandidates = new LinkedList<File>();
-                List<File> commitCandidates = new LinkedList<File>();
+                Set<File> commitCandidates = new LinkedHashSet<File>();
                 GitCommitParameters parameters = panel.getParameters();
                 GitClient client = getClient();
 
@@ -237,6 +239,11 @@ public class CommitAction extends SingleRepositoryAction {
                     GitModuleConfig.getDefault().putRecentCommitAuthors(GitCommitParameters.getUserString(author));
                     GitModuleConfig.getDefault().putRecentCommiter(GitCommitParameters.getUserString(commiter));
 
+                    try {
+                        commitCandidates.addAll(info.getModifiedFiles().keySet());
+                    } catch (GitException ex) {
+                        LOG.log(Level.INFO, null, ex);
+                    }
                     afterCommitHook(commitCandidates, hooks, info, origMessage);
 
                 } catch (GitException ex) {
@@ -253,7 +260,7 @@ public class CommitAction extends SingleRepositoryAction {
             }
         }
         
-        private void populateCandidates (List<File> addCandidates, List<File> deleteCandidates, List<File> commitCandidates) {
+        private void populateCandidates (List<File> addCandidates, List<File> deleteCandidates, Collection<File> commitCandidates) {
             List<String> excPaths = new ArrayList<String>();
             List<String> incPaths = new ArrayList<String>();
 
@@ -289,7 +296,7 @@ public class CommitAction extends SingleRepositoryAction {
             }
         }
 
-        private String beforeCommitHook (List<File> commitCandidates, Collection<GitHook> hooks, String message) {
+        private String beforeCommitHook (Collection<File> commitCandidates, Collection<GitHook> hooks, String message) {
             if(hooks.isEmpty()) {
                 return message;
             }
@@ -311,7 +318,7 @@ public class CommitAction extends SingleRepositoryAction {
             return message;
         }
 
-        private void afterCommitHook(List<File> commitCandidates, Collection<GitHook> hooks, GitRevisionInfo info, String origMessage) {
+        private void afterCommitHook(Collection<File> commitCandidates, Collection<GitHook> hooks, GitRevisionInfo info, String origMessage) {
             if(hooks.isEmpty()) {
                 return;
             }
@@ -327,7 +334,7 @@ public class CommitAction extends SingleRepositoryAction {
             }
         }
 
-        private GitRevisionInfo commit (List<File> commitCandidates, String message, GitUser author, GitUser commiter, boolean amend) throws GitException {
+        private GitRevisionInfo commit (Collection<File> commitCandidates, String message, GitUser author, GitUser commiter, boolean amend) throws GitException {
             try {
                 GitRevisionInfo info = getClient().commit(
                         state == GitRepositoryState.MERGING_RESOLVED ? new File[0] : commitCandidates.toArray(new File[commitCandidates.size()]),
