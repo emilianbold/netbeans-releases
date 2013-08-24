@@ -361,7 +361,7 @@ public class HistoryFileView implements PreferenceChangeListener, VCSHistoryProv
     private static void unregisterHistoryListener(VersioningSystem versioningSystem, VCSHistoryProvider.HistoryChangeListener l) {
         VCSHistoryProvider hp = History.getHistoryProvider(versioningSystem);
         if(hp != null) {
-            hp.addHistoryChangeListener(l);
+            hp.removeHistoryChangeListener(l);
         }
     }
     
