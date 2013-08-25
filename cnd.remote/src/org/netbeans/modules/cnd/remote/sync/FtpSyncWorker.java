@@ -51,22 +51,26 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import org.netbeans.api.progress.ProgressHandle;
 import org.netbeans.api.progress.ProgressHandleFactory;
-import org.netbeans.modules.cnd.api.remote.PathMap;
 import org.netbeans.modules.cnd.api.remote.RemoteSyncWorker;
 import org.netbeans.modules.cnd.api.remote.ServerList;
 import org.netbeans.modules.cnd.remote.mapper.RemotePathMap;
 import org.netbeans.modules.cnd.remote.support.RemoteUtil;
-import org.netbeans.modules.cnd.remote.sync.FileData.FileInfo;
+import static org.netbeans.modules.cnd.remote.sync.FileState.COPIED;
+import static org.netbeans.modules.cnd.remote.sync.FileState.ERROR;
+import static org.netbeans.modules.cnd.remote.sync.FileState.INITIAL;
+import static org.netbeans.modules.cnd.remote.sync.FileState.TOUCHED;
+import static org.netbeans.modules.cnd.remote.sync.FileState.UNCONTROLLED;
 import org.netbeans.modules.cnd.utils.CndUtils;
 import org.netbeans.modules.cnd.utils.FSPath;
 import org.netbeans.modules.nativeexecution.api.ExecutionEnvironment;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport;
 import org.netbeans.modules.nativeexecution.api.util.CommonTasksSupport.UploadStatus;
+import org.netbeans.modules.nativeexecution.api.util.ConnectionManager;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils;
 import org.netbeans.modules.nativeexecution.api.util.ProcessUtils.ExitStatus;
 import org.openide.filesystems.FileObject;
-import org.openide.filesystems.FileUtil;
 import org.openide.util.Cancellable;
+import org.openide.util.Exceptions;
 import org.openide.util.NbBundle;
 
 /**
@@ -75,73 +79,26 @@ import org.openide.util.NbBundle;
  */
 /*package-local*/ final class FtpSyncWorker extends BaseSyncWorker implements RemoteSyncWorker, Cancellable {
 
-    private TimestampAndSharabilityFilter filter;
+    private FileData fileData;
+    private FileCollector fileCollector;
+    private final RemoteUtil.PrefixedLogger logger;
+    private final RemotePathMap mapper;
+    private final SharabilityFilter filter;
 
-    private int preliminaryCount;
     private int uploadCount;
     private long uploadSize;
     private volatile Thread thread;
     private boolean cancelled;
-    private final PathMap mapper;
     private ProgressHandle progressHandle;
 
-    // TODO: eliminate copy-paste with ZipSyncWorker.TimestampAndSharabilityFilters
-    private static class TimestampAndSharabilityFilter implements FileFilter {
-
-        private final FileData fileData;
-        private final File fileDataStorageFile;
-        private final SharabilityFilter delegate;
-
-        public TimestampAndSharabilityFilter(FileObject privProjectStorageDir, ExecutionEnvironment executionEnvironment) throws IOException {
-            fileData = FileData.get(privProjectStorageDir, executionEnvironment);
-            fileDataStorageFile = FileUtil.toFile(fileData.getDataFile());
-            delegate = new SharabilityFilter();
-        }
-
-        @Override
-        public boolean accept(File file) {
-            if (file.equals(fileDataStorageFile)) {
-                return false; // SharabilityFilter now includes nbproject/private. Exclude our storage
-            }
-            boolean accepted = delegate.accept(file);
-            if (accepted && ! file.isDirectory()) {
-                accepted = needsCopying(file);
-            }            
-            return accepted;
-        }
-
-        private boolean needsCopying(File file) {
-            FileInfo info = fileData.getFileInfo(file);
-            FileState state = (info == null) ? FileState.INITIAL : info.state;
-            switch (state) {
-                case INITIAL:       return true;
-                case TOUCHED:       return true;
-                case COPIED:        return info.timestamp != file.lastModified();
-                case ERROR:         return true;
-                case UNCONTROLLED:  return false;
-                default:
-                    CndUtils.assertTrue(false, "Unexpected state: " + state); //NOI18N
-                    return false;
-            }
-        }
-
-        public void setState(File file, FileState state) {
-            fileData.setState(file, state);
-        }
-
-        public void flush() {
-            fileData.store();
-        }
-
-        private void clear() {
-            fileData.clear();
-        }
-    }
+    private static final boolean HARD_CODED_FILTER = Boolean.valueOf(System.getProperty("cnd.remote.hardcoded.filter", "true")); //NOI18N
 
     public FtpSyncWorker(ExecutionEnvironment executionEnvironment, PrintWriter out, PrintWriter err, 
             FileObject privProjectStorageDir, FSPath... paths) {
         super(executionEnvironment, out, err, privProjectStorageDir, paths);
-        mapper = RemotePathMap.getPathMap(executionEnvironment);
+        this.mapper = RemotePathMap.getPathMap(executionEnvironment);
+        this.logger = new RemoteUtil.PrefixedLogger("FtpSyncWorker[" + executionEnvironment + "]"); //NOI18N
+        this.filter = new SharabilityFilter();
     }
 
     /** for trace/debug purposes */
@@ -156,9 +113,49 @@ import org.openide.util.NbBundle;
         return sb;
     }
 
+    private boolean needsCopying(File file) {
+
+        if (HARD_CODED_FILTER) {
+            // Filter out configurations.xml, timestamps, etc
+            // Auto-copy would never request these; but FTP will copy, unless filtered out
+            File parent = file.getParentFile();
+            if (parent != null) {
+                if (parent.getName().equals("nbproject")) { // NOI18N
+                    // we never need configuratins.xml for build purposes; however it might be quite large
+                    if (file.getName().equals("configurations.xml")) { // NOI18N
+                        return false;
+                    }
+                } else if (parent.getName().equals("private")) { // NOI18N
+                    File granpa = parent.getParentFile();
+                    if (granpa.getName().equals("nbproject")) {
+                        if (!file.getName().endsWith(".mk") && !file.getName().endsWith(".sh") && !file.getName().endsWith(".bash")) {
+                            return false;
+                        }
+                    }
+                }
+            }
+        }
+
+        FileData.FileInfo info = fileData.getFileInfo(file);
+        FileState state = (info == null) ? FileState.INITIAL : info.state;
+        switch (state) {
+            case INITIAL:       return true;
+            case TOUCHED:       return true;
+            case COPIED:        return info.timestamp != file.lastModified();
+            case ERROR:         return true;
+            case UNCONTROLLED:  return false;
+            default:
+                CndUtils.assertTrue(false, "Unexpected state: " + state); //NOI18N
+                return false;
+        }
+    }
+
     @SuppressWarnings("CallToThreadDumpStack")
-    private void synchronizeImpl(String remoteRoot) throws InterruptedException, ExecutionException, IOException {
-        
+    private void synchronizeImpl(String remoteRoot) throws InterruptedException, ExecutionException, IOException, ConnectionManager.CancellationException {
+
+        fileData = FileData.get(privProjectStorageDir, executionEnvironment);
+        fileCollector = new FileCollector(files, logger, mapper, filter, fileData, executionEnvironment, err);
+
         uploadCount = 0;
         uploadSize = 0;
         long time = 0;
@@ -167,47 +164,20 @@ import org.openide.util.NbBundle;
             System.out.printf("Uploading %s to %s ...\n", getLocalFilesString(), executionEnvironment); // NOI18N
             time = System.currentTimeMillis();
         }
-        filter = new TimestampAndSharabilityFilter(privProjectStorageDir, executionEnvironment);
-        preliminaryCount = 0;
-        List<String> dirsToCreate = new LinkedList<String>();
-        for (int i = 0; i < files.length; i++) {
-            final File name = files[i];
-            String remoteFile = mapper.getRemotePath(name.getAbsolutePath(), true);
-            if (name.isFile()) {
-                File parent = name.getParentFile();
-                if (parent != null) {
-                    String remoteParent = mapper.getRemotePath(parent.getAbsolutePath(), true);
-                    dirsToCreate.add(remoteParent);
-                }
-            }
-            preprocessFile(name, dirsToCreate, remoteFile);
-        }
-        
-        if (!dirsToCreate.isEmpty()) {
-            dirsToCreate.add(0, "-p"); // NOI18N
-            ExitStatus status = ProcessUtils.execute(executionEnvironment, "mkdir", dirsToCreate.toArray(new String[dirsToCreate.size()])); // NOI18N
-            if (!status.isOK()) {
-                throw new IOException("Can not check remote directories: " + status.toString()); // NOI18N
-            }
-        }
 
-        progressHandle.switchToDeterminate(preliminaryCount);
-        // success flag is for tracing only. TODO: should we drop it?
-        boolean success = false;
-        try  {
-            for (File file : files) {
-                String remoteFile = mapper.getRemotePath(file.getAbsolutePath(), false);
-                if (remoteFile == null) { // this never happens since mapper is fixed
-                    throw new IOException("Can not find remote path for " + file.getAbsolutePath()); //NOI18N
-                }
-                upload(file, remoteFile);
-            }
-            success = true;
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            err.println(ex.getMessage());
-        } finally {
+        fileCollector.gatherFiles();
+
+        progressHandle.switchToDeterminate(fileCollector.getFiles().size());
+
+        createDirs();
+        createLinks();
+        if (!fileCollector.initNewFilesDiscovery()) {
+            throw new IOException();
         }
+        uploadPlainFiles();
+
+        fileCollector.runNewFilesDiscovery(true);
+        fileCollector.shutDownNewFilesDiscovery();
 
         if (RemoteUtil.LOGGER.isLoggable(Level.FINE)) {
             time = System.currentTimeMillis() - time;
@@ -215,46 +185,86 @@ import org.openide.util.NbBundle;
             String speed = (bps < 1024*8) ? (bps + " b/s") : ((bps/1024) + " Kb/s"); // NOI18N
 
             String strUploadSize = (uploadSize < 1024 ? (uploadSize + " bytes") : ((uploadSize/1024) + " K")); // NOI18N
-            System.out.printf("\n\nCopied to %s:%s: %s in %d files. Time: %d ms. %s. Avg. speed: %s\n\n", // NOI18N
+            System.out.printf("\n\nCopied to %s:%s: %s in %d files. Time: %d ms. Avg. speed: %s\n\n", // NOI18N
                     executionEnvironment, remoteRoot,
-                    strUploadSize, uploadCount, time, success ? "OK" : "FAILURE", speed); // NOI18N
+                    strUploadSize, uploadCount, time, speed); // NOI18N
         }
     }
 
-    private void preprocessFile(File file, List<String> dirsToCreate, String remoteFile) {
-        if (file.isDirectory()) {
-            dirsToCreate.add(remoteFile); // create all directories // NOI18N
-            File[] children = file.listFiles(filter);
-            for (File child : children) {
-                preprocessFile(child, dirsToCreate, remoteFile + '/' + child.getName());
+    private void createDirs() throws IOException {
+        List<String> dirsToCreate = new LinkedList<String>();
+        for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+            if (fileInfo.file.isDirectory() && ! fileInfo.isLink()) {
+                String remoteDir = mapper.getRemotePath(fileInfo.file.getAbsolutePath(), true);
+                CndUtils.assertNotNull(remoteDir, "null remote file for " + fileInfo.file.getAbsolutePath()); //NOI18N
+                if (remoteDir != null) {
+                    dirsToCreate.add(remoteDir);
+                }
             }
-        } else {
-            preliminaryCount++;
         }
-    }
-
-    private void upload(File srcFile, String remotePath) throws InterruptedException, ExecutionException, IOException {
         if (cancelled) {
             return;
         }
-        if (srcFile.isDirectory()) {
-            File[] srcFiles = srcFile.listFiles(filter);
-            for (File file : srcFiles) {
-                upload(file, remotePath + '/' + file.getName()); //NOI18N
+        if (!dirsToCreate.isEmpty()) {
+            dirsToCreate.add(0, "-p"); // NOI18N
+            ExitStatus status = ProcessUtils.execute(executionEnvironment, "mkdir", dirsToCreate.toArray(new String[dirsToCreate.size()])); // NOI18N
+            if (!status.isOK()) {
+                throw new IOException("Can not check remote directories: " + status.toString()); // NOI18N
             }
-        } else {
-            Future<UploadStatus> fileTask = CommonTasksSupport.uploadFile(srcFile.getAbsolutePath(), executionEnvironment, remotePath, 0700);
-            UploadStatus uploadStatus = fileTask.get();
-            if (uploadStatus.isOK()) {
-                filter.setState(srcFile, FileState.COPIED);
-                progressHandle.progress(srcFile.getAbsolutePath(), uploadCount++);
-                uploadSize += srcFile.length();
-            } else {
-                if (err != null) {
-                    err.println(uploadStatus.getError());
+            uploadCount += dirsToCreate.size();
+            progressHandle.progress(uploadCount);
+        }
+    }
+
+    private void createLinks() throws IOException {
+        for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+            if (cancelled) {
+                return;
+            }
+            if (fileInfo.isLink()) {
+                progressHandle.progress(fileInfo.file.getAbsolutePath());
+                String localBaseDir = fileInfo.file.getParentFile().getAbsolutePath();
+                String remoteBaseDir = mapper.getRemotePath(localBaseDir, true);
+                CndUtils.assertNotNull(remoteBaseDir, "null remote dir for " + localBaseDir); //NOI18N
+                if (remoteBaseDir == null) {
+                    continue;
                 }
-                throw new IOException("uploading " + srcFile + " to " + executionEnvironment + ':' + remotePath + // NOI18N
-                        " finished with error code " + uploadStatus.getExitCode()); // NOI18N
+                // TODO: We now call "ln -s" per file. Optimize this: write and run a script.
+                ExitStatus status = ProcessUtils.executeInDir(remoteBaseDir, executionEnvironment, 
+                        "ln", "-s", fileInfo.getLinkTarget(), fileInfo.file.getName()); // NOI18N
+                if (!status.isOK()) {
+                    throw new IOException("Can not check remote directories: " + status.toString()); // NOI18N
+                }
+                progressHandle.progress(uploadCount++);
+            }
+        }
+    }
+
+    private void uploadPlainFiles() throws InterruptedException, ExecutionException, IOException {
+        for (FileCollector.FileInfo fileInfo : fileCollector.getFiles()) {
+            if (cancelled) {
+                return;
+            }
+            if (!fileInfo.isLink() && !fileInfo.file.isDirectory()) {
+                File srcFile = fileInfo.file;
+                if (srcFile.exists() && needsCopying(srcFile)) {
+                    progressHandle.progress(srcFile.getAbsolutePath());
+                    String remotePath = mapper.getRemotePath(srcFile.getAbsolutePath(), false);
+                    Future<UploadStatus> fileTask = CommonTasksSupport.uploadFile(srcFile.getAbsolutePath(),
+                            executionEnvironment, remotePath, srcFile.canExecute() ? 0700 : 0600);
+                    UploadStatus uploadStatus = fileTask.get();
+                    if (uploadStatus.isOK()) {
+                        fileData.setState(srcFile, FileState.COPIED);
+                        uploadSize += srcFile.length();
+                    } else {
+                        if (err != null) {
+                            err.println(uploadStatus.getError());
+                        }
+                        throw new IOException("uploading " + srcFile + " to " + executionEnvironment + ':' + remotePath + // NOI18N
+                                " finished with error code " + uploadStatus.getExitCode()); // NOI18N
+                    }
+                }
+                progressHandle.progress(uploadCount++);
             }
         }
     }
@@ -291,7 +301,7 @@ import org.openide.util.NbBundle;
             synchronizeImpl(remoteRoot);
             success = ! cancelled;
             if (success) {
-                filter.flush();
+                fileData.store();
             }
         } catch (InterruptedException ex) {
             // reporting does not make sense, just return false
@@ -311,6 +321,8 @@ import org.openide.util.NbBundle;
                 err.printf("%s\n", NbBundle.getMessage(getClass(), "MSG_Error_Copying",
                         remoteRoot, ServerList.get(executionEnvironment).toString(), ex.getLocalizedMessage()));
             }
+        } catch (ConnectionManager.CancellationException ex) {
+            cancelled = true;
         } finally {
             cancelled = false;
             thread = null;
