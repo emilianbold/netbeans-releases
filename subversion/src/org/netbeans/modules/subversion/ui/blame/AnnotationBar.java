@@ -1236,10 +1236,16 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     /** Implementation */
     @Override
     public void removeUpdate(DocumentEvent e) {
-        if (e.getDocument().getLength() == 0) { // external reload
-            hideBar();
-        }
-        repaint();
+        final int length = e.getDocument().getLength();
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run () {
+                if (length == 0) { // external reload
+                    hideBar();
+                }
+                repaint();
+            }
+        });
     }
 
     /** Caret */
