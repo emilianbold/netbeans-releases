@@ -126,9 +126,4 @@ public class BuildNumberJDK extends Task {
             "jdk-([0-9]+)u([0-9]+)-([a-z]+)-bin-" + // NOI18N
             "b(([0-9]+)+)-([A-Za-z0-9_-]+)\\.tar.gz"); // NOI18N
     
-    private static final Pattern PATTERN_2 = Pattern.compile(
-            "jdk-([0-9]+)u([0-9]+)-([ea|fcs])-bin-" + // NOI18N
-            "b(([0-9]+)+)-([A-Za-z0-9_-]+)\\.tar.gz"); // NOI18N
-    
-    
 }
