@@ -73,6 +73,18 @@ public class RepositoryValidationBase extends TraceModelTestBase {
     }
 
     @Override
+    protected void setUp() throws Exception {
+        System.out.println("### " + getClass().getSimpleName() + "." + getName() + " setUp");
+        super.setUp();
+    }
+
+    @Override
+    protected void tearDown() throws Exception {
+        super.tearDown();
+        System.out.println("### " + getClass().getSimpleName() + "." + getName() + " tearDown");
+    }
+    
+    @Override
     protected void doTest(String[] args, PrintStream streamOut, PrintStream streamErr, Object... params) throws Exception {
         super.doTest(args, streamOut, streamErr, params);
     }
