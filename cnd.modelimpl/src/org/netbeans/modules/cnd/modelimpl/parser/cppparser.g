@@ -2683,7 +2683,12 @@ direct_declarator[int kind, int level]
 	|	
 		LPAREN declarator[kind, level+1] RPAREN
                 (options {greedy=true;} :variable_attribute_specification)?
-                declarator_suffixes
+                (
+                    {_ts != tsInvalid}?
+                        (options {greedy=true;} : declarator_suffixes)?
+                |
+                    declarator_suffixes
+                )   
                 (options {greedy=true;} :variable_attribute_specification)?
 
 /* **            

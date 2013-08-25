@@ -1005,6 +1005,13 @@ public class BasicHyperlinkTestCase extends HyperlinkBaseTestCase {
         performTest("bug228953.cpp", 7, 18, "bug228953.cpp", 3, 7);
     }    
     
+    public void testParensInFunctionParameters() throws Exception { 
+        // Bug 228953 - inaccuracy tests: Python project has unresolved identifiers
+        performTest("parensInFunctionParameters.cpp", 3, 26, "parensInFunctionParameters.cpp", 3, 21);
+        performTest("parensInFunctionParameters.cpp", 5, 43, "parensInFunctionParameters.cpp", 5, 33);
+        performTest("parensInFunctionParameters.cpp", 5, 87, "parensInFunctionParameters.cpp", 5, 76);
+    }        
+    
     public static class Failed extends HyperlinkBaseTestCase {
 
         @Override

@@ -322,6 +322,12 @@ public class TypeImpl extends OffsetableBase implements CsmType, SafeTemplateBas
                     case CPPTokenTypes.CSM_QUALIFIED_ID:
                     case CPPTokenTypes.CSM_ARRAY_DECLARATION:
                         return AstUtil.getLastChildRecursively(last);
+                        
+                    case CPPTokenTypes.LPAREN: 
+                        // lparen cannot be last - entity's end should be on the left side of lparen
+                        // if there are no type modificators after lparen (*, &, ...)
+                        break;
+                        
                     default:
                         last = token;
                 }
