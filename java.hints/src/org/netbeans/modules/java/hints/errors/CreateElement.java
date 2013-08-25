@@ -435,7 +435,8 @@ public final class CreateElement implements ErrorRule<Void> {
                             boolean hasOtherConstructors = false;
                             for (Tree member : ((ClassTree)firstClass.getLeaf()).getMembers()) {
                                 if (member.getKind() == Tree.Kind.METHOD && "<init>".contentEquals(((MethodTree)member).getName()) && firstMethod.getLeaf() != member) { //NOI18N
-                                    Iterator<? extends StatementTree> stats = ((MethodTree) member).getBody().getStatements().iterator();
+                                    BlockTree body = ((MethodTree) member).getBody();
+                                    Iterator<? extends StatementTree> stats = body != null ? body.getStatements().iterator() : Collections.<StatementTree>emptyList().iterator();
                                     if (stats.hasNext()) {
                                         StatementTree stat = stats.next();
                                         if (stat.getKind() == Tree.Kind.EXPRESSION_STATEMENT) {
