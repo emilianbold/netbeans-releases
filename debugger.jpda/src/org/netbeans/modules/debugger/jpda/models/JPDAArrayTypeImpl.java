@@ -1,7 +1,7 @@
 /*
  * DO NOT ALTER OR REMOVE COPYRIGHT NOTICES OR THIS HEADER.
  *
- * Copyright 1997-2010 Oracle and/or its affiliates. All rights reserved.
+ * Copyright 2013 Oracle and/or its affiliates. All rights reserved.
  *
  * Oracle and Java are registered trademarks of Oracle and/or its affiliates.
  * Other names may be trademarks of their respective owners.
@@ -24,12 +24,6 @@
  * your own identifying information:
  * "Portions Copyrighted [year] [name of copyright owner]"
  *
- * Contributor(s):
- *
- * The Original Software is NetBeans. The Initial Developer of the Original
- * Software is Sun Microsystems, Inc. Portions Copyright 1997-2007 Sun
- * Microsystems, Inc. All Rights Reserved.
- *
  * If you wish your version of this file to be governed by only the CDDL
  * or only the GPL Version 2, indicate your decision by adding
  * "[Contributor] elects to include this software in this distribution
@@ -40,48 +34,64 @@
  * However, if you add GPL Version 2 code and therefore, elected the GPL
  * Version 2 license, then the option applies only if the new code is
  * made subject to such option by the copyright holder.
+ *
+ * Contributor(s):
+ *
+ * Portions Copyrighted 2013 Sun Microsystems, Inc.
  */
+package org.netbeans.modules.debugger.jpda.models;
 
-package org.netbeans.modules.debugger.jpda.heapwalk;
-
-import org.netbeans.lib.profiler.heap.PrimitiveArrayInstance;
-
-import java.util.ArrayList;
-import java.util.List;
-
-import org.netbeans.api.debugger.jpda.ObjectVariable;
-import org.netbeans.api.debugger.jpda.Variable;
+import com.sun.jdi.ArrayType;
+import com.sun.jdi.ClassNotLoadedException;
+import com.sun.jdi.ReferenceType;
+import com.sun.jdi.Type;
+import org.netbeans.api.debugger.jpda.JPDAArrayType;
+import org.netbeans.api.debugger.jpda.VariableType;
+import org.netbeans.modules.debugger.jpda.JPDADebuggerImpl;
+import org.netbeans.modules.debugger.jpda.jdi.ArrayTypeWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.InternalExceptionWrapper;
+import org.netbeans.modules.debugger.jpda.jdi.VMDisconnectedExceptionWrapper;
 
 /**
  *
  * @author Martin Entlicher
  */
-public class PrimitiveArrayInstanceImpl extends InstanceImpl implements PrimitiveArrayInstance {
+public class JPDAArrayTypeImpl extends JPDAClassTypeImpl implements JPDAArrayType {
     
-    private ObjectVariable array;
+    private final ArrayType arrayType;
     
-    /** Creates a new instance of PrimitiveArrayInstanceImpl */
-    public PrimitiveArrayInstanceImpl(HeapImpl heap, ObjectVariable array) {
-        super(heap, array);
-        this.array = array;
+    public JPDAArrayTypeImpl(JPDADebuggerImpl debugger, ArrayType arrayType) {
+        super(debugger, arrayType);
+        this.arrayType = arrayType;
     }
 
-    public int getLength() {
-        return array.getFieldsCount();
-    }
-
-    public List<String> getValues() {
-        Variable[] values = array.getFields(0, getLength());
-        List<String> strValues = new ArrayList<String>();
-        for (Variable value: values) {
-            String strVal = value.getValue();
-            if (strVal.length() >= 3 && strVal.startsWith("'") && strVal.endsWith("'")) {
-                // Characters are enclosed in apostrophes.
-                strVal = strVal.substring(1, strVal.length() - 1);
-            }
-            strValues.add(strVal);
+    @Override
+    public String getComponentTypeName() {
+        try {
+            return ArrayTypeWrapper.componentTypeName(arrayType);
+        } catch (InternalExceptionWrapper ex) {
+            return "";
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return "";
         }
-        return strValues;
     }
 
+    @Override
+    public VariableType getComponentType() {
+        try {
+            Type componentType = ArrayTypeWrapper.componentType(arrayType);
+            if (componentType instanceof ReferenceType) {
+                return getDebugger().getClassType((ReferenceType) componentType);
+            } else {
+                return null;
+            }
+        } catch (ClassNotLoadedException ex) {
+            return null;
+        } catch (InternalExceptionWrapper ex) {
+            return null;
+        } catch (VMDisconnectedExceptionWrapper ex) {
+            return null;
+        }
+    }
+    
 }
