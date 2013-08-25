@@ -127,8 +127,8 @@ import org.openide.util.NbBundle;
                     }
                 } else if (parent.getName().equals("private")) { // NOI18N
                     File granpa = parent.getParentFile();
-                    if (granpa.getName().equals("nbproject")) {
-                        if (!file.getName().endsWith(".mk") && !file.getName().endsWith(".sh") && !file.getName().endsWith(".bash")) {
+                    if (granpa.getName().equals("nbproject")) { // NOI18N
+                        if (!file.getName().endsWith(".mk") && !file.getName().endsWith(".sh") && !file.getName().endsWith(".bash")) { // NOI18N
                             return false;
                         }
                     }
