@@ -182,6 +182,10 @@
             debug="true"/>
         
         <taskdef 
+            name="jdk-buildnumber" 
+            classpath="${custom.tasks.cls}" 
+            classname="org.netbeans.installer.infra.build.ant.BuildNumberJDK"/>
+        <taskdef 
             name="glassfish-buildnumber" 
             classpath="${custom.tasks.cls}" 
             classname="org.netbeans.installer.infra.build.ant.BuildNumberGlassFish"/>
@@ -364,6 +368,19 @@
             file="${temp.file}" 
             prefix="openesb"/>
         -->
+        
+        <if property="do.build.jdk">
+            <get
+                src="${jdk.builds.host}/${jdk7.builds.path}/latest/bundles/"
+                dest="${temp.file}"/>
+            <jdk-buildnumber file="${temp.file}"/>
+
+            <echo message="Property jdk.version.number: ${jdk.version.number}"/>
+            <echo message="Property jdk.update.number: ${jdk.update.number}"/>
+            <echo message="Property jdk.build.number: ${jdk.build.number}"/>
+            <echo message="Property jdk.ea.text: ${jdk.ea.text}"/>
+        </if>
+        
         <if property="do.build.jtb">
 	    <!--
             <get
@@ -448,6 +465,7 @@ binary.cache.host=${binary.cache.host}
 nb.builds.host=${nb.builds.host}
 glassfish.builds.host=${glassfish.builds.host}
 jdk.builds.host=${jdk.builds.host}
+jdk7.builds.path=${jdk.builds.path}
 openesb.builds.host=${openesb.builds.host}
 remote.work.dir=~/.${nb.bundle.files.prefix}
 	</echo>
