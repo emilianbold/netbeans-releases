@@ -80,7 +80,7 @@ public class CordovaPlatform {
             try {
                 String v;
                 if (Utilities.isWindows()) {
-                    v = ProcessUtilities.callProcess("cordova.cmd", true, 60*1000, "-v");
+                    v = ProcessUtilities.callProcess("cmd", true, 60*1000, "/C cordova -v");
                 } else if (Utilities.isMac()) {
                     v = ProcessUtilities.callProcess("/bin/bash", true, 60*1000, "-lc", "cordova -v");
                 } else {
