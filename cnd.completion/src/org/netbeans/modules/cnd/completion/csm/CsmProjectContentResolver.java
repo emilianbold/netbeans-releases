@@ -107,6 +107,7 @@ import org.openide.util.CharSequences;
  * @author vv159170
  */
 public final class CsmProjectContentResolver {
+    private static final String SCOPE = "::";  // NOI18N
 
     private boolean caseSensitive = false;
     private boolean naturalSort = false;
@@ -1166,6 +1167,7 @@ public final class CsmProjectContentResolver {
                                 classesAskedForMembers.add((CsmClass) cls);
                             }
                         }
+                        className.append(SCOPE);
                     }
                 }
             }
@@ -1404,7 +1406,7 @@ public final class CsmProjectContentResolver {
         while(parentNS != null && !handledNS.contains(parentNS) && !ns.isGlobal()) {
             handledNS.add(parentNS);
 
-            strPrefix = ns.getName() + "::" + strPrefix; // NOI18N
+            strPrefix = ns.getName() + SCOPE + strPrefix; // NOI18N
             filterDeclarations(parentNS, res, kinds, strPrefix, match, returnUnnamedInParentNs);
 
             ns  = parentNS;
