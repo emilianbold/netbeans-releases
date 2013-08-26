@@ -2780,7 +2780,7 @@ function_direct_declarator [boolean definition, boolean symTabCheck]
 protected
 is_post_declarator_token
     :
-        SEMICOLON | ASSIGNEQUAL | LCURLY | EOF 
+        SEMICOLON | ASSIGNEQUAL | LCURLY | EOF | RPAREN
     ;
 
 trailing_type
