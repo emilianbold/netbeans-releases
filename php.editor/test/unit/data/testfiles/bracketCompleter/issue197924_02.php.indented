@@ -1,7 +1,8 @@
 <?php
 
 /**
- * ^
+ * 
+ * @param type $alias^
  */
 function func($alias) {
     $blah = "/blee/*";
