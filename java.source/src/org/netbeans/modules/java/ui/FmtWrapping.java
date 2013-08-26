@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.java.ui;
 
+import java.awt.Rectangle;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
 import javax.swing.JLabel;
@@ -143,7 +144,11 @@ public class FmtWrapping extends javax.swing.JPanel implements FocusListener {
     }
 
     public void focusGained(FocusEvent e) {
-        scrollPane.getViewport().scrollRectToVisible(e.getComponent().getBounds());
+        Rectangle viewRect = scrollPane.getViewport().getViewRect();
+        Rectangle bounds = e.getComponent().getBounds();
+        if (viewRect.y > bounds.y || viewRect.y + viewRect.height < bounds.y + bounds.height) {
+            scrollPane.getViewport().scrollRectToVisible(bounds);
+        }
     }
 
     public void focusLost(FocusEvent e) {
