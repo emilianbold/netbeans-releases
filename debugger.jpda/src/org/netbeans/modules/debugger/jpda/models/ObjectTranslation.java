@@ -44,6 +44,7 @@
 
 package org.netbeans.modules.debugger.jpda.models;
 
+import com.sun.jdi.ArrayType;
 import com.sun.jdi.LocalVariable;
 import com.sun.jdi.Mirror;
 import com.sun.jdi.ObjectReference;
@@ -109,6 +110,9 @@ public final class ObjectTranslation {
                     return null;
                 }
             case LOCALS_ID:
+                if (o instanceof ArrayType) {
+                    return new JPDAArrayTypeImpl(debugger, (ArrayType) o);
+                }
                 if (o instanceof ReferenceType) {
                     return new JPDAClassTypeImpl(debugger, (ReferenceType) o);
                 }

@@ -154,7 +154,7 @@ org.netbeans.api.debugger.jpda.Field {
 
     public JPDAClassType getDeclaringClass() {
         try {
-            return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) ValueWrapper.type(array));
+            return getDebugger().getClassType((ReferenceType) ValueWrapper.type(array));
         } catch (InternalExceptionWrapper ex) {
             // re-throw, we should not return null and can not throw anything checked.
             throw ex.getCause();

@@ -49,6 +49,7 @@ import org.openide.windows.OutputListener;
 import javax.swing.event.ChangeListener;
 import java.io.IOException;
 import java.util.Collection;
+import org.openide.util.Pair;
 import org.openide.windows.IOColors;
 
 /**
@@ -420,4 +421,15 @@ public interface Lines {
      * starts. If the line is not inside a fold, value -1 is returned.
      */
     int getParentFoldStart(int realLineIndex);
+
+    /**
+     * Remove characters from the end of the last unfinished line.
+     *
+     * @param length Number of characters to remove, -1 to remove all characters
+     * in the last line.
+     * @return Pair, where the first items is number of removed characters (can
+     * be different from parameter {@code length}), and the second item is
+     * number of removed tab spaces.
+     */
+    public Pair<Integer, Integer> removeCharsFromLastLine(int length);
 }

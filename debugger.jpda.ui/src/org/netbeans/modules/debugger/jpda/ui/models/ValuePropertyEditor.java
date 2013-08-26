@@ -116,15 +116,18 @@ class ValuePropertyEditor implements ExPropertyEditor {
     }
     
     private static boolean hasPropertyEditorFor(final Class clazz) {
+        if (Object.class.equals(clazz)/* || String.class.equals(clazz)*/) {
+            return false;
+        }
         if (SwingUtilities.isEventDispatchThread()) {
-            return findPropertyEditor(clazz) != null;
+            return findThePropertyEditor(clazz) != null;
         } else {
             final boolean[] has = new boolean[] { false };
             try {
                 SwingUtilities.invokeAndWait(new Runnable() {
                     @Override
                     public void run() {
-                        has[0] = findPropertyEditor(clazz) != null;
+                        has[0] = findThePropertyEditor(clazz) != null;
                     }
                 });
             } catch (InterruptedException ex) {
@@ -134,7 +137,26 @@ class ValuePropertyEditor implements ExPropertyEditor {
         }
     }
     
-    private static PropertyEditor findPropertyEditor(Class clazz) {
+    private static PropertyEditor findPropertyEditor(final Class clazz) {
+        if (SwingUtilities.isEventDispatchThread()) {
+            return findThePropertyEditor(clazz);
+        } else {
+            final PropertyEditor[] pe = new PropertyEditor[] { null };
+            try {
+                SwingUtilities.invokeAndWait(new Runnable() {
+                    @Override
+                    public void run() {
+                        pe[0] = findThePropertyEditor(clazz);
+                    }
+                });
+            } catch (InterruptedException ex) {
+            } catch (InvocationTargetException ex) {
+            }
+            return pe[0];
+        }
+    }
+    
+    private static PropertyEditor findThePropertyEditor(Class clazz) {
         if (Object.class.equals(clazz)) {
             return null;
         }
@@ -147,7 +169,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
         }
         return pe;
     }
-
+    
     @Override
     public void setValue(Object value) {
         logger.log(Level.FINE, "ValuePropertyEditor.setValue({0})", value);
@@ -188,7 +210,7 @@ class ValuePropertyEditor implements ExPropertyEditor {
             PropertyEditor propertyEditor = findPropertyEditor(clazz);
             if (propertyEditor == null) {
                 clazz = String.class;
-                propertyEditor = PropertyEditorManager.findEditor(String.class);
+                propertyEditor = findPropertyEditor(clazz);
                 valueMirror = VariablesTableModel.getValueOf((Variable) value);
             }
             mirrorClass = clazz;
