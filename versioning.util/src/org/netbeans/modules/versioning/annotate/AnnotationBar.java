@@ -79,6 +79,7 @@ import org.netbeans.api.editor.mimelookup.MimeLookup;
 import org.netbeans.api.editor.settings.EditorStyleConstants;
 import org.netbeans.api.editor.settings.FontColorNames;
 import org.netbeans.api.editor.settings.FontColorSettings;
+import org.openide.util.Mutex;
 
 /**
  * Represents annotation sidebar componnet in editor. It's
@@ -857,11 +858,18 @@ final class AnnotationBar extends JComponent implements Accessible, PropertyChan
     }
 
     /** Implementation */
+    @Override
     public void removeUpdate(DocumentEvent e) {
-        if (e.getDocument().getLength() == 0) { // external reload
-            hideBar();
-        }
-        repaint();
+        final int length = e.getDocument().getLength();
+        Mutex.EVENT.readAccess(new Runnable() {
+            @Override
+            public void run () {
+                if (length == 0) { // external reload
+                    hideBar();
+                }
+                repaint();
+            }
+        });
     }
 
     /** Caret */

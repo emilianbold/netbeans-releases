@@ -304,6 +304,6 @@ public final class BrowserSupport {
      */
     public synchronized boolean isWebBrowserPaneOpen() {
         WebBrowserPane p = pane;
-        return p != null & p.isOpen();
+        return p != null && p.isOpen();
     }
 }
