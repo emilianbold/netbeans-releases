@@ -66,9 +66,16 @@ public class NamespacesHyperlinkTestCase extends HyperlinkBaseTestCase {
     
     public void test228949_DeferWhenUsingNsInOtherHeader() throws Exception {
         // #228949 - inaccuracy tests: Clucene project has unresolved identifiers 
+        // size
         performTest("bug228949.cpp", 17, 20, "bug228949StdHeader.h", 20, 9);
-//        performTest("bug228949.cpp", 20, 20, "bug228949StdHeader.h", 20, 9);
-//        performTest("bug228949.h", 30, 30, "bug228949StdHeader.h", 20, 9);
+        performTest("bug228949.cpp", 23, 17, "bug228949StdHeader.h", 20, 9);
+        performTest("bug228949.h", 30, 28, "bug228949StdHeader.h", 20, 9);
+        
+        // get
+        performTest("bug228949.cpp", 23, 10, "bug228949.h", 25, 9);
+        // length
+        performTest("bug228949.h", 30, 40, "bug228949StdHeader.h", 13, 9);
+        performTest("bug228949.cpp", 21, 20, "bug228949StdHeader.h", 13, 9);
     }
     
     public void test228950() throws Exception {

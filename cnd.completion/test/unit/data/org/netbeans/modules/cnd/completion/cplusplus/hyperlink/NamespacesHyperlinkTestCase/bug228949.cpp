@@ -17,6 +17,9 @@ int main(int argc, char** argv) {
     collection.size();
     
     NN228949::AAA228949 obj;
+
+    obj.getStr().length();
+
     obj.get().size();
     return 0;
 }

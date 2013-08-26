@@ -27,8 +27,14 @@ namespace NN228949 {
         }
 
         int size() {
-            return field.size();
+            return field.size() + str.length();
+        }   
+        
+        string& getStr() { 
+            return str;
         }
+    private:
+        string str;
     };
 }
 

@@ -9,8 +9,8 @@
 #define	STDHEADER228949_H
 
 namespace Std228949 {
-    class string {
-        
+    struct string {
+        int length() { return 0; }
     };
     
     template<class T> class vector {
