@@ -48,6 +48,7 @@ import com.sun.el.parser.AstDotSuffix;
 import com.sun.el.parser.AstDynamicExpression;
 import com.sun.el.parser.AstFunction;
 import com.sun.el.parser.AstIdentifier;
+import com.sun.el.parser.AstInteger;
 import com.sun.el.parser.AstListData;
 import com.sun.el.parser.AstMapData;
 import com.sun.el.parser.AstMethodArguments;
@@ -243,17 +244,31 @@ public final class ELCodeCompletionHandler implements CodeCompletionHandler {
         } else {
             for (int i = rootToNode.size() - 1; i >= 0; i--) {
                 Node node = rootToNode.get(i);
-                if (node instanceof AstMethodArguments) {
+                if (isArrayIndexCall(rootToNode, i)) {
+                    // array item call - bean.myArray[0].
+                    return node;
+                } else if (node instanceof AstMethodArguments) {
                     // prvious node was method call
                     return rootToNode.get(i - 1);
                 } else if (node instanceof AstListData || node instanceof AstMapData) {
                     return node;
                 } else if (node.jjtGetParent() instanceof AstSemiColon) {
                     return previous;
+                } else if (node instanceof AstIdentifier || node instanceof AstDotSuffix) {
+                    return node;
                 }
             }
             return previous;
         }
+    }
+
+    private static boolean isArrayIndexCall(List<Node> rootToNode, int nodeIndex) {
+        for (int i = nodeIndex; i >= 0; i--) {
+            if (rootToNode.get(nodeIndex) instanceof AstInteger && rootToNode.get(i) instanceof AstBracketSuffix) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static ELElement getElementAt(ParserResult parserResult, int offset) {

@@ -199,4 +199,9 @@ public class ELCompletionTest extends ELTestBaseForTestProject {
         checkCompletion("projects/testWebProject/web/completion/completion22.xhtml", "#{request.r^}", false);
     }
 
+    public void testIssue234865() throws Exception {
+        List<String> toCheck = Arrays.asList("AssertionError", "Boolean", "Double", "Enum", "StringBuilder", "instanceof", "true", "bundle");
+        checkCompletion("projects/testWebProject/web/completion/completion23.xhtml", "#{['word', 4].stream().peek(i->^)}", false, toCheck);
+    }
+
 }
