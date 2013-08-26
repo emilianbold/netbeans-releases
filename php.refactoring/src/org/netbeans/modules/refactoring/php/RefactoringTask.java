@@ -42,6 +42,10 @@
 package org.netbeans.modules.refactoring.php;
 
 import java.util.Collections;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
@@ -61,7 +65,9 @@ import org.openide.cookies.EditorCookie;
 import org.openide.filesystems.FileObject;
 import org.openide.loaders.DataObject;
 import org.openide.nodes.Node;
+import org.openide.util.Cancellable;
 import org.openide.util.NbBundle;
+import org.openide.util.RequestProcessor;
 import org.openide.windows.TopComponent;
 
 /**
@@ -69,12 +75,64 @@ import org.openide.windows.TopComponent;
  * @author Radek Matous
  */
 public abstract class RefactoringTask extends UserTask implements Runnable {
-
+    private static final RequestProcessor RP = new RequestProcessor(RefactoringTask.class);
     private static final Logger LOG = Logger.getLogger(RefactoringTask.class.getName());
     protected RefactoringUI ui;
 
     public final RefactoringUI getRefactoringUI() {
         return ui;
+    }
+
+    @NbBundle.Messages("ERR_ScanningInProgress=Can't refactor - scanning in progress.")
+    protected void fetchRefactoringUI(Source source, UserTask userTask) {
+        Future<?> futureTask = RP.submit(new ParsingTask(source, userTask));
+        boolean scanningInProgress = false;
+        try {
+            futureTask.get(300, TimeUnit.MILLISECONDS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (ExecutionException ex) {
+            LOG.log(Level.WARNING, null, ex);
+        } catch (TimeoutException ex) {
+            futureTask.cancel(true);
+            scanningInProgress = true;
+        }
+        TopComponent activeTopComponent = TopComponent.getRegistry().getActivated();
+        if (ui != null) {
+            UI.openRefactoringUI(ui, activeTopComponent);
+        } else if (scanningInProgress) {
+            JOptionPane.showMessageDialog(null, Bundle.ERR_ScanningInProgress());
+        } else {
+            JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc"));//NOI18N
+        }
+    }
+
+    private static final class ParsingTask implements Runnable, Cancellable {
+        private final Source source;
+        private final UserTask userTask;
+        private volatile boolean cancelled;
+
+        private ParsingTask(Source source, UserTask userTask) {
+            this.source = source;
+            this.userTask = userTask;
+        }
+
+        @Override
+        public void run() {
+            try {
+                if (!cancelled) {
+                    ParserManager.parse(Collections.singleton(source), userTask);
+                }
+            } catch (ParseException e) {
+                LOG.log(Level.WARNING, null, e);
+            }
+        }
+
+        @Override
+        public boolean cancel() {
+            cancelled = true;
+            return true;
+        }
     }
 
     public static abstract class NodeToFileTask extends RefactoringTask {
@@ -110,24 +168,9 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
                     //folder
                     JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc"));//NOI18N
                 } else {
-                    //css file
-                    Source source = Source.create(fileObject);
-                    try {
-                        ParserManager.parse(Collections.singletonList(source), this);
-                    } catch (ParseException ex) {
-                        LOG.log(Level.WARNING, null, ex);
-                        return;
-                    }
-                    TopComponent activetc = TopComponent.getRegistry().getActivated();
-
-                    if (ui != null) {
-                        UI.openRefactoringUI(ui, activetc);
-                    } else {
-                        JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc"));//NOI18N
-                    }
+                    fetchRefactoringUI(Source.create(fileObject), this);
                 }
             }
-
         }
 
         protected abstract RefactoringUI createRefactoringUI(final PHPParseResult info);
@@ -148,21 +191,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
         @Override
         public void run() {
-            try {
-                Source source = Source.create(document);
-                ParserManager.parse(Collections.singleton(source), this);
-            } catch (ParseException e) {
-                LOG.log(Level.WARNING, null, e);
-                return;
-            }
-
-            TopComponent activetc = TopComponent.getRegistry().getActivated();
-
-            if (ui != null) {
-                UI.openRefactoringUI(ui, activetc);
-            } else {
-                JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc"));//NOI18N
-            }
+            fetchRefactoringUI(Source.create(document), this);
         }
 
         @Override
@@ -177,7 +206,6 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             }
             // TODO How do I add some kind of error message?
             RefactoringTask.LOG.log(Level.FINE, "FAILURE - can't refactor uncompileable sources");
-
         }
 
         protected abstract RefactoringUI createRefactoringUI(final PHPParseResult info, final int offset);
