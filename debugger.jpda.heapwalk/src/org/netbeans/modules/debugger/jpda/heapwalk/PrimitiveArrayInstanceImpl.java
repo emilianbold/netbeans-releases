@@ -74,7 +74,12 @@ public class PrimitiveArrayInstanceImpl extends InstanceImpl implements Primitiv
         Variable[] values = array.getFields(0, getLength());
         List<String> strValues = new ArrayList<String>();
         for (Variable value: values) {
-            strValues.add(value.getValue());
+            String strVal = value.getValue();
+            if (strVal.length() >= 3 && strVal.startsWith("'") && strVal.endsWith("'")) {
+                // Characters are enclosed in apostrophes.
+                strVal = strVal.substring(1, strVal.length() - 1);
+            }
+            strValues.add(strVal);
         }
         return strValues;
     }

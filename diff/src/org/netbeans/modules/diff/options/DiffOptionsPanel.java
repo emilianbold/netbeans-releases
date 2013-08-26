@@ -44,11 +44,10 @@
 
 package org.netbeans.modules.diff.options;
 
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import org.openide.util.NbBundle;
 import org.openide.filesystems.FileUtil;
-
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.DocumentEvent;
 import javax.swing.*;
@@ -62,23 +61,23 @@ import org.netbeans.spi.options.OptionsPanelController;
  * @author  Maros Sandor
  */
 @OptionsPanelController.Keywords(keywords={"diff"}, location=OptionsDisplayer.ADVANCED, tabTitle="Diff")
-class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, DocumentListener {
+class DiffOptionsPanel extends javax.swing.JPanel implements ActionListener, DocumentListener {
 
     private boolean isChanged;
     
     /** Creates new form DiffOptionsPanel */
     public DiffOptionsPanel() {
         initComponents();
-        internalDiff.addChangeListener(this);
-        externalDiff.addChangeListener(this);
-        ignoreWhitespace.addChangeListener(this);
-        ignoreAllWhitespace.addChangeListener(this);
-        ignoreCase.addChangeListener(this);
+        internalDiff.addActionListener(this);
+        externalDiff.addActionListener(this);
+        ignoreWhitespace.addActionListener(this);
+        ignoreAllWhitespace.addActionListener(this);
+        ignoreCase.addActionListener(this);
         externalCommand.getDocument().addDocumentListener(this);
         refreshComponents();
     }
 
-    private void refreshComponents() {
+    void refreshComponents() {
         ignoreWhitespace.setEnabled(internalDiff.isSelected());
         ignoreAllWhitespace.setEnabled(internalDiff.isSelected());
         ignoreCase.setEnabled(internalDiff.isSelected());
@@ -233,19 +232,23 @@ class DiffOptionsPanel extends javax.swing.JPanel implements ChangeListener, Doc
     private javax.swing.JLabel jLabel1;
     // End of variables declaration//GEN-END:variables
 
-    public void stateChanged(ChangeEvent e) {
+    @Override
+    public void actionPerformed (ActionEvent e) {
         isChanged = true;
         refreshComponents();
     }
 
+    @Override
     public void insertUpdate(DocumentEvent e) {
         isChanged = true;
     }
 
+    @Override
     public void removeUpdate(DocumentEvent e) {
         isChanged = true;
     }
 
+    @Override
     public void changedUpdate(DocumentEvent e) {
         isChanged = true;
     }

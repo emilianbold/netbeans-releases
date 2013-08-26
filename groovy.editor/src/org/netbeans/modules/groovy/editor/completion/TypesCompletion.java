@@ -169,6 +169,15 @@ public class TypesCompletion extends BaseCompletion {
         String currentPackage = getCurrentPackageName(moduleNode);
         JavaSource javaSource = getJavaSourceFromRequest();
 
+        GroovyIndex index = null;
+        FileObject fo = request.getSourceFile();
+        if (fo != null) {
+            index = GroovyIndex.get(QuerySupport.findRoots(fo,
+                    Collections.singleton(ClassPath.SOURCE),
+                    Collections.<String>emptyList(),
+                    Collections.<String>emptyList()));
+        }
+
         // if we are dealing with a basepackage we simply complete all the packages given in the basePackage
         if (packageRequest.basePackage.length() > 0 || request.isBehindImportStatement()) {
             List<TypeHolder> typeList = getTypeHoldersForPackage(javaSource, packageRequest.basePackage, currentPackage);
@@ -178,6 +187,14 @@ public class TypesCompletion extends BaseCompletion {
             for (TypeHolder singleType : typeList) {
                 addToProposalUsingFilter(addedTypes, singleType, onlyInterfaces);
             }
+
+            if (index != null) {
+                Set<IndexedClass> classes = index.getClassesFromPackage(packageRequest.basePackage);
+                for (IndexedClass indexedClass : classes) {
+                    addToProposalUsingFilter(addedTypes, new TypeHolder(indexedClass), onlyInterfaces);
+                }
+            }
+
             return true;
         }
 
@@ -192,42 +209,13 @@ public class TypesCompletion extends BaseCompletion {
         if (moduleNode != null) {
             LOG.log(Level.FINEST, "We are living in package : {0} ", currentPackage);
 
-            // FIXME parsing API
-            GroovyIndex index = null;
-            FileObject fo = request.getSourceFile();
-            if (fo != null) {
-                index = GroovyIndex.get(QuerySupport.findRoots(fo,
-                        Collections.singleton(ClassPath.SOURCE),
-                        Collections.<String>emptyList(),
-                        Collections.<String>emptyList()));
-            }
-
             if (index != null) {
                 String camelCaseFirstWord = CamelCaseUtil.getCamelCaseFirstWord(request.getPrefix());
                 Set<IndexedClass> classes = index.getClasses(camelCaseFirstWord, QuerySupport.Kind.PREFIX);
 
-                if (classes.isEmpty()) {
-                    LOG.log(Level.FINEST, "Nothing found in GroovyIndex");
-                } else {
-                    LOG.log(Level.FINEST, "Found this number of classes : {0} ", classes.size());
-
-                    Set<TypeHolder> typelist = new HashSet<>();
-
+                if (!classes.isEmpty()) {
                     for (IndexedClass indexedClass : classes) {
-                        LOG.log(Level.FINEST, "FQN classname from index : {0} ", indexedClass.getFqn());
-
-                        ElementKind ek;
-                        if (indexedClass.getKind() == org.netbeans.modules.csl.api.ElementKind.CLASS) {
-                            ek = ElementKind.CLASS;
-                        } else {
-                            ek = ElementKind.INTERFACE;
-                        }
-
-                        typelist.add(new TypeHolder(indexedClass.getFqn(), ek));
-                    }
-
-                    for (TypeHolder type : typelist) {
-                        addToProposalUsingFilter(addedTypes, type, onlyInterfaces);
+                        addToProposalUsingFilter(addedTypes, new TypeHolder(indexedClass), onlyInterfaces);
                     }
                 }
             }
@@ -424,6 +412,15 @@ public class TypesCompletion extends BaseCompletion {
         private final String name;
         private final ElementKind kind;
 
+        public TypeHolder(IndexedClass indexedClass) {
+            this.name = indexedClass.getFqn();
+
+            if (indexedClass.getKind() == org.netbeans.modules.csl.api.ElementKind.CLASS) {
+                this.kind = ElementKind.CLASS;
+            } else {
+                this.kind = ElementKind.INTERFACE;
+            }
+        }
         
         public TypeHolder(String name, ElementKind kind) {
             this.name = name;

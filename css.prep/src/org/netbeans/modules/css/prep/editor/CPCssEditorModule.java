@@ -205,6 +205,7 @@ public class CPCssEditorModule extends CssEditorModule {
             case bodyItem:
             case mediaBody:
             case mediaBodyItem:
+            case cssClass:
                 switch (tid) {
                 case WS:
                     //in stylesheet main body: @include |
@@ -219,11 +220,14 @@ public class CPCssEditorModule extends CssEditorModule {
                     break;
 
                 case IDENT:
-                    //in stylesheet main body: @include mix|
-                    if (LexerUtils.followsToken(ts, CssTokenId.SASS_INCLUDE, true, false, CssTokenId.WS) != null) {
-                    //ok so the ident if preceeded by WS and then by SASS_INCLUDE token
-                    proposals.addAll(getMixinsCompletionProposals(context, model));
-                }
+                    if (LexerUtils.followsToken(ts, CssTokenId.SASS_INCLUDE, true, true, CssTokenId.WS) != null) {
+                        //in stylesheet main body: @include mix|
+                        //ok so the ident if preceeded by WS and then by SASS_INCLUDE token
+                        proposals.addAll(getMixinsCompletionProposals(context, model));
+                    } else if (LexerUtils.followsToken(ts, CssTokenId.DOT, true, true, CssTokenId.WS) != null) {
+                        //in stylesheet main body: .mix| --> less mixins
+                        proposals.addAll(getMixinsCompletionProposals(context, model));
+                    }
                     break;
             }
                 break;
@@ -266,6 +270,14 @@ public class CPCssEditorModule extends CssEditorModule {
                     }
 
             }
+                break;
+            case selectorsGroup:
+                switch (ts.token().id()) {
+                    case DOT:
+                        //.| in body => less mixins
+                        proposals.addAll(getMixinsCompletionProposals(context, model));
+                }
+                break;
 
         }
         return Utilities.filterCompletionProposals(proposals, context.getPrefix(), true);

@@ -411,7 +411,7 @@ public class AbstractVariable implements JDIVariable, Customizer, Cloneable {
             return null;
         }
         if (type instanceof ReferenceType) {
-            return new JPDAClassTypeImpl(debugger, (ReferenceType) type);
+            return debugger.getClassType((ReferenceType) type);
         } else {
             return null;
         }

@@ -126,6 +126,11 @@ Constants {
                     String value = var.getValue();
                     return bold (row, value, variableToValueValue);
                 } else {
+                    if ("java.lang.String".equals(var.getType())) {             // NOI18N
+                        String value = var.getValue();
+                        value = adjustEscaped(value);
+                        return bold (row, value, variableToValueValue);
+                    }
                     // No HTML value, there's a special property editor that manages the value.
                     return null;
                 }
@@ -139,6 +144,52 @@ Constants {
             return bold (row, (String) result, variableToValueToString);
         }
         return original.getHTMLValueAt(row, columnID);
+    }
+    
+    private static String adjustEscaped(String text) {
+        text = text.replaceAll(java.util.regex.Matcher.quoteReplacement("\\"), "\\\\\\\\");
+        StringBuffer sb = null;
+        int j = 0;
+        int n = text.length();
+        boolean quotes = n > 1 && text.startsWith("\"") && text.endsWith("\"");
+        for (int i = 0; i < n; i++) {
+            char c = text.charAt(i);
+            String replacement = null;
+            if (c == '\n') {
+                replacement = "\\n";
+            } else if (c == '\r') {
+                replacement = "\\r";
+            } else if (c == '\f') {
+                replacement = "\\f";
+            } else if (c == '\b') {
+                replacement = "\\b";
+            } else if (c == '\t') {
+                replacement = "\\t";
+            } else if (c == '\f') {
+                replacement = "\\f";
+            } else if (c == '\'') {
+                replacement = "\\\'";
+            } else if (c == '\"') {
+                if (!quotes || (i != 0) && i != (n - 1)) {
+                    replacement = "\\\"";
+                }
+            }
+            if (replacement != null) {
+                if (sb == null) {
+                    sb = new StringBuffer(text.substring(0, i));
+                } else {
+                    sb.append(text.substring(j, i));
+                }
+                sb.append(replacement);
+                j = i+1;
+            }
+        }
+        if (sb == null) {
+            return text;
+        } else {
+            sb.append(text.substring(j));
+            return sb.toString();
+        }
     }
     
     @Override

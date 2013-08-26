@@ -774,7 +774,7 @@ public class AbstractObjectVariable extends AbstractVariable implements ObjectVa
         try {
             com.sun.jdi.Type type = getCachedType();
             if (type instanceof ReferenceType) {
-                return new JPDAClassTypeImpl(getDebugger(), (ReferenceType) type);
+                return getDebugger().getClassType((ReferenceType) type);
             } else {
                 return null;
             }

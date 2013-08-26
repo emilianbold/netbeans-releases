@@ -161,6 +161,29 @@ public class ComputeOverridersTest extends NbTestCase {
         assertEquals(golden, outputStrings);
     }
 
+    public void test234941() throws Exception {
+        prepareSourceRoot("1");
+        prepareSource("1",
+                      "test/Object.java",
+                      "package test;" +
+                      "import java.lang.Object;" +
+                      "public class Object extends Object {" +
+                      "}");
+
+        FileObject file = sourceDirectories.getFileObject("1/test/Object.java");
+
+        CompilationInfo info = SourceUtilsTestUtil.getCompilationInfo(JavaSource.forFileObject(file), Phase.RESOLVED);
+        URL r1 = sourceDirectories.getFileObject("1").getURL();
+
+        ComputeOverriders.reverseSourceRootsInOrderOverride = Arrays.asList(r1);
+
+        ComputeOverriders.dependenciesOverride = new HashMap<URL, List<URL>>();
+        ComputeOverriders.dependenciesOverride.put(r1, Collections.<URL>emptyList());
+
+        //only checking the computation will end:
+        new ComputeOverriders(new AtomicBoolean()).process(info, null, null, false);
+    }
+
 
     private Map<FileObject, ClassPath> root2ClassPath = new HashMap<FileObject, ClassPath>();
     private Map<FileObject, FileObject> root2BuildRoot = new HashMap<FileObject, FileObject>();
