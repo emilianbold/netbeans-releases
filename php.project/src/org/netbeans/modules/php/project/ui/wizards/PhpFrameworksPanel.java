@@ -163,7 +163,7 @@ public class PhpFrameworksPanel implements WizardDescriptor.Panel<WizardDescript
 
     @Override
     public boolean isFinishPanel() {
-        return true;
+        return NewPhpProjectWizardIterator.areAllStepsValid(descriptor);
     }
 
     @Override

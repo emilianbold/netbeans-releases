@@ -226,7 +226,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
         if (wizardType == NewPhpProjectWizardIterator.WizardType.REMOTE) {
             return false;
         }
-        return areOtherStepsValid();
+        return NewPhpProjectWizardIterator.areAllStepsValid(descriptor);
     }
 
     @Override
@@ -550,7 +550,7 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
 
     // #131023
     private String validateSourcesAndCopyTarget() {
-        if (!areOtherStepsValid()) {
+        if (!NewPhpProjectWizardIterator.areAllStepsValid(descriptor)) {
             // some error there, need to be fixed, so do not compare
             return null;
         }
@@ -583,18 +583,6 @@ public class ConfigureProjectPanel implements WizardDescriptor.Panel<WizardDescr
             return NbBundle.getMessage(ConfigureProjectPanel.class, "MSG_ProjectFolderCannotBeRead");
         }
         return null;
-    }
-
-    private boolean areOtherStepsValid() {
-        Boolean isValid = (Boolean) descriptor.getProperty(RunConfigurationPanel.VALID);
-        if (isValid != null && !isValid) {
-            return false;
-        }
-        isValid = (Boolean) descriptor.getProperty(PhpFrameworksPanel.VALID);
-        if (isValid != null && !isValid) {
-            return false;
-        }
-        return true;
     }
 
     // type - Project | Sources
