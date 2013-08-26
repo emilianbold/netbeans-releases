@@ -103,7 +103,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         } else if (scanningInProgress) {
             JOptionPane.showMessageDialog(null, Bundle.ERR_ScanningInProgress());
         } else {
-            JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc"));//NOI18N
+            JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc")); //NOI18N
         }
     }
 
@@ -135,7 +135,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         }
     }
 
-    public static abstract class NodeToFileTask extends RefactoringTask {
+    public abstract static class NodeToFileTask extends RefactoringTask {
 
         private final Node node;
         private FileObject fileObject;
@@ -166,7 +166,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
 
                 if (fileObject.isFolder()) {
                     //folder
-                    JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc"));//NOI18N
+                    JOptionPane.showMessageDialog(null, NbBundle.getMessage(RefactoringTask.class, "ERR_CannotRefactorLoc")); //NOI18N
                 } else {
                     fetchRefactoringUI(Source.create(fileObject), this);
                 }
@@ -176,7 +176,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
         protected abstract RefactoringUI createRefactoringUI(final PHPParseResult info);
     }
 
-    public static abstract class TextComponentTask extends RefactoringTask {
+    public abstract static class TextComponentTask extends RefactoringTask {
 
         private final JTextComponent textC;
         private final int caret;
@@ -200,7 +200,7 @@ public abstract class RefactoringTask extends UserTask implements Runnable {
             if (parserResult instanceof PHPParseResult) {
                 Program root = RefactoringUtils.getRoot((PHPParseResult) parserResult);
                 if (root != null) {
-                    ui = createRefactoringUI((PHPParseResult)parserResult, caret);
+                    ui = createRefactoringUI((PHPParseResult) parserResult, caret);
                     return;
                 }
             }
