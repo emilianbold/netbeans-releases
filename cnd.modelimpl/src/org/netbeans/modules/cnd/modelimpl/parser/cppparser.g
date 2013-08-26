@@ -3127,7 +3127,6 @@ type_name // aka type_id
 	:
 	declaration_specifiers[true, false] 
         abstract_declarator
-        (trailing_type)?
 	;
 
 /* This rule looks a bit weird because (...) can happen in two
@@ -3906,9 +3905,15 @@ alias_declaration_type
                     (init_declarator_list[declOther])?
                     {#alias_declaration_type = #(#[CSM_ENUM_DECLARATION, "CSM_ENUM_DECLARATION"], #alias_declaration_type);}
             |
-                type_name
+                alias_type_name
             )
     ;
+
+alias_type_name
+        :
+            type_name
+            (trailing_type)?
+	;
 
 visibility_redef_declaration
 {String qid="";}
