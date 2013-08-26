@@ -79,9 +79,14 @@ public final class ASTField extends ASTElement {
 
     @Override
     public Set<Modifier> getModifiers() {
-        if (isProperty) {
-            return Collections.singleton(Modifier.PRIVATE);
+        Set<Modifier> mods = super.getModifiers();
+        if (isProperty()) {
+            if (mods.isEmpty()) {
+                return Collections.singleton(Modifier.PRIVATE);
+            } else {
+                mods.add(Modifier.PRIVATE);
+            }
         }
-        return super.getModifiers();
+        return mods;
     }
 }
